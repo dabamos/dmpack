@@ -178,7 +178,7 @@ repository, and execute the Makefile:
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
-$ make OS=linux PREFIX=/usr LPFLAGS=-I./lapack95_modules
+$ make linux LPFLAGS=-I./lapack95_modules
 ```
 
 The parameter `LPFLAGS` adds an include flag pointing to the LAPACK95 modules
