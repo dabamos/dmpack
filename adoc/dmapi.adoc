@@ -1,0 +1,59 @@
+= dmapi(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMAPI
+
+== NAME
+
+dmapi - FastCGI-based HTTP-RPC service for database access
+
+== SYNOPSIS
+
+*dmapi*
+
+== DESCRIPTION
+
+*dmapi* is an HTTP-RPC service for remote DMPACK database access. The web
+application has to be executed by a FastCGI-compatible web server or a FastCGI
+spawner. It is recommended to run _lighttpd(1)_.
+
+The *dmapi* service offers endpoints for clients to insert beats, logs, and
+observations into the local SQLite database, and to retrieve data in CSV or JSON
+format. Authentication and encryption are independent from *dmapi* and have to
+be provided by the environment.
+
+The POST data sent by clients must be serialised in Fortran 90 Namelist format,
+with optional deflate compression. The content type and the content encoding
+have to be passed in the HTTP header of the request.
+
+== ENVIRONMENT
+
+Add the following environment variables to the configuration of the web server
+or spawner to pass them to *dmapi*:
+
+*DM_DB_BEAT*::
+  Path to heartbeat database.
+
+*DM_DB_LOG*::
+  Path to log database.
+
+*DM_DB_OBSERV*::
+  Path to observation database.
+
+*DM_READ_ONLY*::
+  Set to 1 to open databases in read-only mode.
+
+== SEE ALSO
+
+_dmbeat(1)_, _dmsync(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

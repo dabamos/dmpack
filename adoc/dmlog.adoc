@@ -1,0 +1,110 @@
+= dmlog(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMLOG
+
+== NAME
+
+dmlog - sends log to POSIX message queue
+
+== SYNOPSIS
+
+*dmlog* --help
+
+*dmlog* --version
+
+*dmlog* --*node* _id_ --*message* _string_ [--*logger* _name_] [--*level* _n_]
+[--*error* _n_] [--*node* _id_] [--*sensor* _id_] [--*target* _id_]
+[--*observ* _id_] [--*source* _source_] [--*verbose*]
+
+== DESCRIPTION
+
+The *dmlog* utility forwards a log message to the POSIX message queue of a
+_dmlogger(1)_ instance. Argument `--message` is mandatory. The default log
+level is INFO.
+
+Valid log levels are: 1 (DEBUG), 2 (INFO), 3 (WARNING), 4 (ERROR), and 5
+(CRITICAL).
+
+The program terminates after log transmission.
+
+== OPTIONS
+
+*--error*, *-e* _n_::
+  DMPACK error code (>= 0).
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--level*, *-L* _n_::
+  Log level, from 1 to 5 (default is 2).
+
+*--logger*, *-l* _name_::
+  Name of logger instance and POSIX message queue (default is `dmlogger`).
+
+*--message*, *-m* _string_::
+  Log message (max. 512 characters).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--observ*, *-O* _id_::
+  Observation id (UUID4).
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--source*, *-Z* _source_::
+  Source of the log message (sender).
+
+*--target*, *-T* _id_::
+  Target id.
+
+*--verbose*, *-V*::
+  Print log to _stdout_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Log has been sent.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Send a log message to the POSIX message queue of logger `dmlogger`:
+
+....
+$ dmlog --node dummy-node --level 3 --message "low battery" --source test --verbose
+2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
+....
+
+The logger will receive the log message and insert it into the log database (if
+the log level is greater or equal the minimum log level):
+
+....
+$ dmlogger --node dummy-node --database logs.sqlite --verbose
+2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
+2022-12-09T22:50:44.173+01:00 [DEBUG   ] dmlogger - log [...] inserted
+....
+
+== SEE ALSO
+
+_dmlogger(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

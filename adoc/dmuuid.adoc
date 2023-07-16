@@ -1,0 +1,82 @@
+= dmuuid(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMUUID
+
+== NAME
+
+dmuuid - generates pseudo-random UUID4s
+
+== SYNOPSIS
+
+*dmuuid* --help
+
+*dmuuid* --version
+
+*dmuuid* [--*count* _n_] [--*hyphens*]
+
+*dmuuid* --*convert* < _file_
+
+== DESCRIPTION
+
+The *dmuuid* program generates pseudo-random UUID4s. By default, DMPACK uses
+32 characters long UUID4s in hexadecimal format (without hyphens). Hyphens can
+be added by a command-line flag. The option `--convert` expects UUID4s to be
+passed via standard input. Invalid UUID4s will be replaced with the default
+UUID4.
+
+== OPTIONS
+
+*--convert*, *-C*::
+  Add hyphens to hexadecimal UUIDs passed via _stdin_.
+
+*--count*, *-n* _n_::
+  Number of UUIDs to generate (default: 1).
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--hyphens*, *-H*::
+  Return 36 characters long UUIDs with hyphens.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  UUID generation was successful.
+
+*1*::
+  Failure.
+  UUID generation failed.
+
+== EXAMPLE
+
+Create three random UUIDs:
+
+....
+$ dmuuid --count 3
+6827049760c545ad80d4082cc50203e8
+ad488d0b8edd4c6c94582e702a810ada
+3d3eee7ae1fb4259b5df72f854aaa369
+....
+
+Add hyphens to a hexadecimal UUID:
+
+....
+$ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid --convert
+3d3eee7a-e1fb-4259-b5df-72f854aaa369
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

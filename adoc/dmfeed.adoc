@@ -1,0 +1,120 @@
+= dmfeed(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMFEED
+
+== NAME
+
+dmfeed - creates Atom XML feed from log messages
+
+== SYNOPSIS
+
+*dmfeed* --help
+
+*dmfeed* --version
+
+*dmfeed* --*database* _file_ [--*output* _file_] [--*node* _id_]
+         [--*minlevel* _level_] [--*maxlevel* _level_] [--*nentries* _count_]
+         [--*author* _name_] [--*email* _address_] [--*id* _uuid_]
+         [--*title* _title_] [--*subtitle* _title_] [--*url* _url_]
+
+*dmfeed* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+This program creates a web feed from log messages in Atom Syndication Format
+(RFC 4287). The log messages are read from database and written as XML to
+standard output or file.
+
+The feed id has to be a 36 characters long UUID with hyphens. News aggregators
+use the id to identify the feed. Therefore, the id should not be reused among
+different feeds. Run _dmuuid(1)_ to generate a valid UUID4.
+
+== OPTIONS
+
+*--author*, *-A* _name_::
+  Name of feed author or organisation.
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--database*, *-d* _file_::
+  Path to SQLite log database.
+
+*--email*, *-M* _address_::
+  E-mail address of feed author.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--id*, *-I* _uuid_::
+  UUID of the feed, 36 characters long with hyphens.
+
+*--maxlevel*, *-K* _level_::
+  Select log messages of the given maximum log level (from 1 to 5).
+  Must be greater or equal the minimum level.
+
+*--minlevel*, *-L* _level_::
+  Select log messages of the given minimum log level (from 1 to 5).
+
+*--name*, *-n* _name_::
+  Name of instance and table in given configuration file (default is `dmfeed`).
+
+*--nentries*, *-E* _count_::
+  Maximum number of entries in feed (default is 50).
+
+*--node*, *-N* _id_::
+  Select log messages of the given node id.
+
+*--output*, *-o* _file_::
+  Path of the output file. If empty, the Atom feed will be printed to
+  standard output.
+
+*--subtitle*, *-G* _title_::
+  Sub-title of feed.
+
+*--title*, *-T* _title_::
+  Title of feed.
+
+*--url*, *-U* _url_::
+  Public URL of the feed.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Feed has been created.
+
+*1*::
+  Failure.
+  Feed creation failed.
+
+== EXAMPLE
+
+Generate a unique feed id, and then write the last 50 log messages in Atom
+format to file:
+
+....
+$ dmuuid --hyphens
+19c12109-3e1c-422c-ae36-3ba19281f2e
+$ dmfeed --database /var/dmpack/log.sqlite --output feed.xml \
+  --id 19c12109-3e1c-422c-ae36-3ba19281f2e
+....
+
+== SEE ALSO
+
+_dmuuid(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

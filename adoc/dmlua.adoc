@@ -1,0 +1,94 @@
+= dmlua(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMLUA
+
+== NAME
+
+dmlua - passes received observations to Lua function
+
+== SYNOPSIS
+
+*dmlua* --help
+
+*dmlua* --version
+
+*dmlua* --*node* _id_ --*script* _file_] [--*procedure* _name_]
+[--*name* _name_] [--*logger* _name_] [--*verbose*]
+
+*dmlua* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmlua* program runs a custom Lua script to process observations received
+from POSIX message queue. Each observation is passed as a Lua table to the
+Lua function of the name given in option `procedure`. The function name
+`process` is assumed by default. The function must return the (modified)
+observation table on exit.
+
+The observation returned from the Lua function will be forwarded to the next
+specified receiver or discarded if no receivers are left.
+
+The Lua script file will be executed after loading. Any code outside of the Lua
+function will be evaluated once to allow an (optional) initialisation of the
+script.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the optional configuration file.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmlua`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--procedure*, *-p* _name_::
+  Lua function name (default is `process`).
+
+*--script*, *-s* _file_::
+  Path to Lua script file.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Wait for an observation on POSIX message queue `/dmlua`, pass it as Lua table
+`observ` to function `process(observ)` in `script.lua`, then forward the result
+to the next receiver:
+
+....
+$ dmlua --name dmlua --node dummy-node --script script.lua
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

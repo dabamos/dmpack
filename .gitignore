@@ -1,0 +1,21 @@
+# Distribution / packaging
+.xmake/
+build/
+dist/
+doc/
+env/
+include/
+lib/
+man/html/
+man/pdf/
+
+# Other stuff
+*.a
+*.db
+*.html
+*.mod
+*.o
+*.pdf
+*.so
+*.swp
+*.*~

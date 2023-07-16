@@ -1,0 +1,1668 @@
+! Author:  Philipp Engel
+! Licence: ISC
+module dm_csv
+    !! Contains subroutines to convert various derived types to CSV format.
+    use :: dm_ascii
+    use :: dm_beat
+    use :: dm_convert
+    use :: dm_dp
+    use :: dm_error
+    use :: dm_log
+    use :: dm_node
+    use :: dm_observ
+    use :: dm_sensor
+    use :: dm_string
+    use :: dm_target
+    use :: dm_type
+    use :: dm_util
+    implicit none (type, external)
+    private
+
+    character, parameter, public :: CSV_SEPARATOR_DEFAULT = ','  !! Default CSV separator character.
+    integer,   parameter, public :: CSV_BUFFER_LEN        = 8192 !! CSV line buffer length.
+
+    interface dm_csv_from
+        !! Generic derived type to CSV serialisation function.
+        module procedure :: csv_from_beat
+        module procedure :: csv_from_beats
+        module procedure :: csv_from_data_point
+        module procedure :: csv_from_data_points
+        module procedure :: csv_from_log
+        module procedure :: csv_from_logs
+        module procedure :: csv_from_node
+        module procedure :: csv_from_nodes
+        module procedure :: csv_from_observ
+        module procedure :: csv_from_observ_view
+        module procedure :: csv_from_observ_views
+        module procedure :: csv_from_observs
+        module procedure :: csv_from_sensor
+        module procedure :: csv_from_sensors
+        module procedure :: csv_from_target
+        module procedure :: csv_from_targets
+    end interface
+
+    interface dm_csv_read
+        !! Generic derived type from CSV reader.
+        module procedure :: csv_read_log
+        module procedure :: csv_read_node
+        module procedure :: csv_read_observ
+        module procedure :: csv_read_sensor
+        module procedure :: csv_read_target
+    end interface
+
+    interface dm_csv_write
+        !! Generic derived type to CSV writer.
+        module procedure :: csv_write_beat
+        module procedure :: csv_write_beats
+        module procedure :: csv_write_data_point
+        module procedure :: csv_write_data_points
+        module procedure :: csv_write_log
+        module procedure :: csv_write_logs
+        module procedure :: csv_write_node
+        module procedure :: csv_write_nodes
+        module procedure :: csv_write_observ
+        module procedure :: csv_write_observs
+        module procedure :: csv_write_sensor
+        module procedure :: csv_write_sensors
+        module procedure :: csv_write_target
+        module procedure :: csv_write_targets
+    end interface
+
+    interface csv_next
+        module procedure :: csv_next_a
+        module procedure :: csv_next_i4
+        module procedure :: csv_next_i8
+        module procedure :: csv_next_r4
+        module procedure :: csv_next_r8
+    end interface
+
+    public :: dm_csv_from
+    public :: dm_csv_read
+    public :: dm_csv_write
+
+    private :: csv_from_beat
+    private :: csv_from_beats
+    private :: csv_from_data_point
+    private :: csv_from_data_points
+    private :: csv_from_log
+    private :: csv_from_logs
+    private :: csv_from_node
+    private :: csv_from_nodes
+    private :: csv_from_observ
+    private :: csv_from_observ_view
+    private :: csv_from_observ_views
+    private :: csv_from_observs
+    private :: csv_from_sensor
+    private :: csv_from_sensors
+    private :: csv_from_target
+    private :: csv_from_targets
+
+    private :: csv_next
+    private :: csv_next_a
+    private :: csv_next_i4
+    private :: csv_next_i8
+    private :: csv_next_r4
+    private :: csv_next_r8
+    private :: csv_parse
+    private :: csv_unquote
+
+    private :: csv_read_log
+    private :: csv_read_node
+    private :: csv_read_observ
+    private :: csv_read_sensor
+    private :: csv_read_target
+
+    private :: csv_write_beat
+    private :: csv_write_beats
+    private :: csv_write_data_point
+    private :: csv_write_data_points
+    private :: csv_write_log
+    private :: csv_write_logs
+    private :: csv_write_node
+    private :: csv_write_nodes
+    private :: csv_write_observ
+    private :: csv_write_observs
+    private :: csv_write_sensor
+    private :: csv_write_sensors
+    private :: csv_write_target
+    private :: csv_write_targets
+contains
+    ! ******************************************************************
+    ! PRIVATE PROCEDURES.
+    ! ******************************************************************
+    function csv_from_beat(beat, separator) result(csv)
+        !! Returns allocatable string of beat in CSV format.
+        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        character,       intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(beat%node_id)     // s // &
+              trim(beat%address)     // s // &
+              trim(beat%time_sent)   // s // &
+              trim(beat%time_recv)   // s // &
+              dm_itoa(beat%error)    // s // &
+              dm_itoa(beat%interval) // s // &
+              dm_itoa(beat%uptime)
+    end function csv_from_beat
+
+    function csv_from_beats(beats, header, separator) result(csv)
+        !! Returns allocatable string of beats in CSV format.
+        type(beat_type), intent(inout)        :: beats(:)  !! Beat array.
+        logical,         intent(in), optional :: header    !! CSV header flag.
+        character,       intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#node_id'  // s // &
+                  'address'   // s // &
+                  'time_sent' // s // &
+                  'time_recv' // s // &
+                  'error'     // s // &
+                  'interval'  // s // &
+                  'uptime'    // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(beats)
+            csv = csv // dm_csv_from(beats(i), s) // ASCII_LF
+        end do
+    end function csv_from_beats
+
+    function csv_from_data_point(dp, separator) result(csv)
+        ! Returns allocatable string of data point in CSV format.
+        type(dp_type), intent(inout)        :: dp        !! Data point type.
+        character,     intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable       :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(dp%x) // s // dm_ftoa(dp%y)
+    end function csv_from_data_point
+
+    function csv_from_data_points(data_points, header, separator) result(csv)
+        !! Returns allocatable string of data points in CSV format.
+        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
+        logical,       intent(in), optional :: header         !! CSV header flag.
+        character,     intent(in), optional :: separator      !! CSV separator.
+        character(len=:), allocatable       :: csv            !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#x' // s // 'y'  // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(data_points)
+            csv = csv // dm_csv_from(data_points(i), s) // ASCII_LF
+        end do
+    end function csv_from_data_points
+
+    function csv_from_log(log, separator) result(csv)
+        !! Returns allocatable string of log in CSV format: id, level, error,
+        !! timestamp, node_id, sensor_id, target_id, observ_id, message.
+        type(log_type), intent(inout)        :: log       !! Log data.
+        character,      intent(in), optional :: separator !! CSV field separator.
+        character(len=:), allocatable        :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(log%id)        // s // &
+              dm_itoa(log%level)  // s // &
+              dm_itoa(log%error)  // s // &
+              trim(log%timestamp) // s // &
+              trim(log%node_id)   // s // &
+              trim(log%sensor_id) // s // &
+              trim(log%target_id) // s // &
+              trim(log%observ_id) // s // &
+              '"' // trim(log%message) // '"'
+    end function csv_from_log
+
+    function csv_from_logs(logs, header, separator) result(csv)
+        !! Returns allocatable string of logs in CSV format.
+        type(log_type),   intent(inout)        :: logs(:)   !! Array of log data.
+        logical,          intent(in), optional :: header    !! CSV header flag.
+        character,        intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable          :: csv       !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#id'       // s // &
+                  'level'     // s // &
+                  'error'     // s // &
+                  'timestamp' // s // &
+                  'node_id'   // s // &
+                  'sensor_id' // s // &
+                  'target_id' // s // &
+                  'observ_id' // s // &
+                  'message'   // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(logs)
+            csv = csv // dm_csv_from(logs(i), s) // ASCII_LF
+        end do
+    end function csv_from_logs
+
+    function csv_from_node(node, separator) result(csv)
+        !! Returns allocatable string of node in CSV format.
+        type(node_type), intent(inout)        :: node      !! Node type.
+        character,       intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(node%id)   // s // &
+              trim(node%name) // s // &
+              '"' // trim(node%meta) // '"'
+    end function csv_from_node
+
+    function csv_from_nodes(nodes, header, separator) result(csv)
+        !! Returns allocatable string of nodes in CSV format.
+        type(node_type),  intent(inout)        :: nodes(:)  !! Nodes array.
+        logical,          intent(in), optional :: header    !! CSV header flag.
+        character,        intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable          :: csv       !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#id'  // s // &
+                  'name' // s // &
+                  'meta' // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(nodes)
+            csv = csv // dm_csv_from(nodes(i), s) // ASCII_LF
+        end do
+    end function csv_from_nodes
+
+    function csv_from_observ(observ, separator) result(csv)
+        !! Returns allocatable string of observation in CSV format.
+        type(observ_type), intent(inout)        :: observ    !! Observation data.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i, j
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(observ%id)            // s // &
+              trim(observ%node_id)       // s // &
+              trim(observ%sensor_id)     // s // &
+              trim(observ%target_id)     // s // &
+              trim(observ%name)          // s // &
+              trim(observ%timestamp)     // s // &
+              trim(observ%path)          // s // &
+              dm_itoa(observ%priority)   // s // &
+              dm_itoa(observ%error)      // s // &
+              dm_itoa(observ%next)       // s // &
+              dm_itoa(observ%nreceivers) // s // &
+              dm_itoa(observ%nrequests)
+
+        do i = 1, OBSERV_MAX_NRECEIVERS
+            csv = csv // s // trim(observ%receivers(i))
+        end do
+
+
+        do i = 1, OBSERV_MAX_NREQUESTS
+            if (i > observ%nrequests) then
+                csv = csv // repeat(s, 11 + (REQUEST_MAX_NRESPONSES * 4))
+                cycle
+            end if
+
+            csv = csv // s // trim(observ%requests(i)%timestamp)               // s // &
+                              '"' // trim(observ%requests(i)%request)   // '"' // s // &
+                              '"' // trim(observ%requests(i)%response)  // '"' // s // &
+                              '"' // trim(observ%requests(i)%delimiter) // '"' // s // &
+                              '"' // trim(observ%requests(i)%pattern)   // '"' // s // &
+                              dm_itoa(observ%requests(i)%delay)                // s // &
+                              dm_itoa(observ%requests(i)%error)                // s // &
+                              dm_itoa(observ%requests(i)%retries)              // s // &
+                              dm_itoa(observ%requests(i)%state)                // s // &
+                              dm_itoa(observ%requests(i)%timeout)              // s // &
+                              dm_itoa(observ%requests(i)%nresponses)
+
+            do j = 1, REQUEST_MAX_NRESPONSES
+                if (j > observ%requests(i)%nresponses) then
+                    csv = csv // repeat(s, 4)
+                    cycle
+                end if
+
+                csv = csv // s // trim(observ%requests(i)%responses(j)%name)    // s // &
+                                  trim(observ%requests(i)%responses(j)%unit)    // s // &
+                                  dm_itoa(observ%requests(i)%responses(j)%error) // s // &
+                                  dm_ftoa(observ%requests(i)%responses(j)%value)
+            end do
+        end do
+    end function csv_from_observ
+
+    function csv_from_observ_view(view, separator) result(csv)
+        !! Returns allocatable string of observation view (stub observation without
+        !! receivers, requests, responses) in CSV format.
+        type(observ_view_type), intent(inout)        :: view      !! Observation view type.
+        character,              intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable                :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(view%node_id)           // s // &
+              trim(view%sensor_id)         // s // &
+              trim(view%target_id)         // s // &
+              trim(view%observ_id)         // s // &
+              trim(view%observ_name)       // s // &
+              dm_itoa(view%observ_error)   // s // &
+              trim(view%request_timestamp) // s // &
+              dm_itoa(view%request_error)  // s // &
+              trim(view%response_name)     // s // &
+              trim(view%response_unit)     // s // &
+              dm_itoa(view%response_error) // s // &
+              dm_ftoa(view%response_value)
+    end function csv_from_observ_view
+
+    function csv_from_observ_views(views, header, separator) result(csv)
+        !! Returns allocatable string of observation views in CSV format.
+        type(observ_view_type), intent(inout)        :: views(:)   !! Array of observation views.
+        logical,                intent(in), optional :: header     !! CSV header flag.
+        character,              intent(in), optional :: separator  !! CSV separator.
+        character(len=:), allocatable                :: csv        !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#node_id'          // s // &
+                  'sensor_id'         // s // &
+                  'target_id'         // s // &
+                  'observ_id'         // s // &
+                  'observ_name'       // s // &
+                  'observ_error'      // s // &
+                  'request_timestamp' // s // &
+                  'request_error'     // s // &
+                  'response_name'     // s // &
+                  'response_unit'     // s // &
+                  'response_error'    // s // &
+                  'response_value'    // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(views)
+            csv = csv // dm_csv_from(views(i), s) // ASCII_LF
+        end do
+    end function csv_from_observ_views
+
+    function csv_from_observs(observs, header, separator) result(csv)
+        !! Returns allocatable string of observations in CSV format.
+        type(observ_type), intent(inout)        :: observs(:) !! Array of observations.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i, j
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#id'        // s // &
+                  'node_id'    // s // &
+                  'sensor_id'  // s // &
+                  'target_id'  // s // &
+                  'name'       // s // &
+                  'timestamp'  // s // &
+                  'tty'        // s // &
+                  'priority'   // s // &
+                  'error'      // s // &
+                  'next'       // s // &
+                  'nreceivers' // s
+
+            do i = 1, OBSERV_MAX_NRECEIVERS
+                csv = csv // 'receivers(' // dm_itoa(i) // ')' // s
+            end do
+
+            csv = csv // 'nrequests'
+
+            do i = 1, OBSERV_MAX_NREQUESTS
+                csv = csv // s // 'requests(' // dm_itoa(i) // ')timestamp'  // s // &
+                                  'requests(' // dm_itoa(i) // ')request'    // s // &
+                                  'requests(' // dm_itoa(i) // ')response'   // s // &
+                                  'requests(' // dm_itoa(i) // ')delimiter'  // s // &
+                                  'requests(' // dm_itoa(i) // ')pattern'    // s // &
+                                  'requests(' // dm_itoa(i) // ')delay'      // s // &
+                                  'requests(' // dm_itoa(i) // ')error'      // s // &
+                                  'requests(' // dm_itoa(i) // ')retries'    // s // &
+                                  'requests(' // dm_itoa(i) // ')state'      // s // &
+                                  'requests(' // dm_itoa(i) // ')timeout'    // s // &
+                                  'requests(' // dm_itoa(i) // ')nresponses'
+
+                do j = 1, REQUEST_MAX_NRESPONSES
+                    csv = csv // s // 'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')name'  // s // &
+                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')unit'  // s // &
+                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')error' // s // &
+                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')value'
+                end do
+            end do
+
+            csv = csv // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(observs)
+            csv = csv // dm_csv_from(observs(i), s) // ASCII_LF
+        end do
+    end function csv_from_observs
+
+    function csv_from_sensor(sensor, separator) result(csv)
+        !! Returns allocatable string of sensor in CSV format.
+        type(sensor_type), intent(inout)        :: sensor    !! Sensor type.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(sensor%id)      // s // &
+              trim(sensor%node_id) // s // &
+              dm_itoa(sensor%type) // s // &
+              trim(sensor%name)    // s // &
+              trim(sensor%sn)      // s // &
+              '"' // trim(sensor%meta) // '"'
+    end function csv_from_sensor
+
+    function csv_from_sensors(sensors, header, separator) result(csv)
+        !! Returns allocatable string of sensors in CSV format.
+        type(sensor_type), intent(inout)        :: sensors(:) !! Sensors array.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#id'     // s // &
+                  'node_id' // s // &
+                  'type'    // s // &
+                  'name'    // s // &
+                  'sn'      // s // &
+                  'meta'    // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(sensors)
+            csv = csv // dm_csv_from(sensors(i), s) // ASCII_LF
+        end do
+    end function csv_from_sensors
+
+    function csv_from_target(target, separator) result(csv)
+        !! Returns allocatable string of target in CSV format.
+        type(target_type), intent(inout)        :: target    !! Target type.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        csv = trim(target%id)   // s // &
+              trim(target%name) // s // &
+              '"' // trim(target%meta) // '"'
+    end function csv_from_target
+
+    function csv_from_targets(targets, header, separator) result(csv)
+        !! Returns allocatable string of targets in CSV format.
+        type(target_type), intent(inout)        :: targets(:) !! Targets array.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+
+        character :: s
+        integer   :: i
+        logical   :: header_
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            csv = '#id'  // s // &
+                  'name' // s // &
+                  'meta' // ASCII_LF
+        else
+            csv = ''
+        end if
+
+        do i = 1, size(targets)
+            csv = csv // dm_csv_from(targets(i), s) // ASCII_LF
+        end do
+    end function csv_from_targets
+
+    integer function csv_next_a(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next character string until separator.
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        character(len=*), intent(inout)        :: output    !! Output string (must be large enough to hold field value).
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enabled unquoting.
+
+        integer :: old
+        logical :: quoted
+
+        quoted = .false.
+
+        if (present(quote)) then
+            if (quote /= achar(0)) quoted = .true.
+        end if
+
+        old = pos
+
+        if (quoted) then
+            rc = csv_parse(input, separator, limit, pos, quote)
+        else
+            rc = csv_parse(input, separator, limit, pos)
+        end if
+
+        if (dm_is_error(rc)) return
+        output = input(old + 1:pos - 1)
+        if (quoted) call csv_unquote(output, quote)
+    end function csv_next_a
+
+    integer function csv_next_i4(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 4-byte integer until separator.
+        character(len=*), intent(inout)        :: input
+        integer(kind=i4), intent(out)          :: output
+        character,        intent(in)           :: separator
+        integer,          intent(in)           :: limit
+        integer,          intent(inout)        :: pos
+        character,        intent(in), optional :: quote
+
+        character :: q
+        integer   :: old
+
+        q = achar(0)
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos)
+        if (dm_is_error(rc)) return
+        call dm_convert_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_i4
+
+    integer function csv_next_i8(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 8-byte integer until separator.
+        character(len=*), intent(inout)        :: input
+        integer(kind=i8), intent(out)          :: output
+        character,        intent(in)           :: separator
+        integer,          intent(in)           :: limit
+        integer,          intent(inout)        :: pos
+        character,        intent(in), optional :: quote
+
+        character :: q
+        integer   :: old
+
+        q = achar(0)
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_convert_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_i8
+
+    integer function csv_next_r4(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 4-byte real until separator.
+        character(len=*), intent(inout)        :: input
+        real(kind=r4),    intent(out)          :: output
+        character,        intent(in)           :: separator
+        integer,          intent(in)           :: limit
+        integer,          intent(inout)        :: pos
+        character,        intent(in), optional :: quote
+
+        character :: q
+        integer   :: old
+
+        q = achar(0)
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_convert_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_r4
+
+    integer function csv_next_r8(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 8-byte real until separator.
+        character(len=*), intent(inout)        :: input
+        real(kind=r8),    intent(out)          :: output
+        character,        intent(in)           :: separator
+        integer,          intent(in)           :: limit
+        integer,          intent(inout)        :: pos
+        character,        intent(in), optional :: quote
+
+        character :: q
+        integer   :: old
+
+        q = achar(0)
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_convert_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_r8
+
+    integer function csv_parse(str, separator, limit, pos, quote) result(rc)
+        !! Returns position of next separator character in `pos`. If no
+        !! separator was found, `pos` is set to `limit`.
+        character(len=*), intent(inout)        :: str       !! Input string.
+        character,        intent(in)           :: separator !! Separator character.
+        integer,          intent(in)           :: limit     !! Length of complete string.
+        integer,          intent(inout)        :: pos       !! Position of last/next separator.
+        character,        intent(in), optional :: quote     !! Quote character.
+
+        character :: a
+        integer   :: i
+        logical   :: q, f
+
+        rc = E_BOUNDS
+        if (pos < 0 .or. pos > limit) return
+
+        a = achar(0)
+        f = .false.
+
+        if (present(quote)) then
+            a = quote
+            if (a /= achar(0)) q = .true.
+        end if
+
+        do i = pos + 1, limit + 1
+            pos = i
+            if (i > limit) exit
+            if (q .and. str(i:i) == a) f = .not. f
+            if (.not. f .and. str(i:i) == separator) exit
+        end do
+
+        rc = E_NONE
+    end function csv_parse
+
+    integer function csv_read_log(log, unit, separator, quote) result(rc)
+        !! Reads log from file or standard input. If no separator character is
+        !! passed, the default one will be used (comma). If a quote character
+        !! is given, separators within quoted strings will be ignored.
+        type(log_type), intent(out)          :: log       !! Log type.
+        integer,        intent(in), optional :: unit      !! File unit.
+        character,      intent(in), optional :: separator !! CSV separator.
+        character,      intent(in), optional :: quote     !! CSV quote character.
+
+        character(len=CSV_BUFFER_LEN) :: buffer
+
+        character :: q, s
+        integer   :: n, p
+        integer   :: unit_, stat
+
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        q = achar(0)
+        if (present(quote)) q = quote
+
+        rc = E_READ
+        read (unit_, '(a)', iostat=stat) buffer
+        if (stat /= 0) return
+
+        rc = E_EOR
+        n = len_trim(buffer)
+        if (n == 0) return
+        if (buffer(1:1) == '#') return
+
+        p = 0 ! Cursor of buffer string.
+
+        rc = csv_next(buffer, log%id,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%level,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%error,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%timestamp, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%node_id,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%sensor_id, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%target_id, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%observ_id, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%source,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, log%message,   s, n, p, q); if (rc /= E_NONE) return
+
+        rc = E_NONE
+    end function csv_read_log
+
+    integer function csv_read_node(node, unit, separator, quote) result(rc)
+        !! Reads node from file or standard input. If no separator character is
+        !! passed, the default one will be used (comma). If a quote character
+        !! is given, separators within quoted strings will be ignored.
+        type(node_type), intent(out)          :: node      !! Node type.
+        integer,         intent(in), optional :: unit      !! File unit.
+        character,       intent(in), optional :: separator !! CSV separator.
+        character,       intent(in), optional :: quote     !! CSV quote character.
+
+        character(len=CSV_BUFFER_LEN) :: buffer
+
+        character :: q, s
+        integer   :: n, p
+        integer   :: unit_, stat
+
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        q = achar(0)
+        if (present(quote)) q = quote
+
+        rc = E_READ
+        read (unit_, '(a)', iostat=stat) buffer
+        if (stat /= 0) return
+
+        rc = E_EOR
+        n = len_trim(buffer)
+        if (n == 0) return
+        if (buffer(1:1) == '#') return
+
+        p = 0 ! Cursor of buffer string.
+
+        rc = csv_next(buffer, node%id,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%name, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%meta, s, n, p, q); if (rc /= E_NONE) return
+
+        rc = E_NONE
+    end function csv_read_node
+
+    integer function csv_read_observ(observ, unit, separator, quote) result(rc)
+        !! Reads observation from file or standard input. If no separator
+        !! character is passed, the default one will be used (comma). If a
+        !! quote character is given, separators within quoted strings will be
+        !! ignored.
+        type(observ_type), intent(out)          :: observ    !! Observation type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character,         intent(in), optional :: quote     !! CSV quote character.
+
+        character(len=CSV_BUFFER_LEN) :: buffer
+
+        character :: q, s
+        integer   :: i, j, n, p
+        integer   :: unit_, stat
+
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        q = achar(0)
+        if (present(quote)) q = quote
+
+        read (unit_, '(a)', iostat=stat) buffer
+
+        rc = E_EOF
+        if (is_iostat_end(stat)) return
+
+        rc = E_EOR
+        if (is_iostat_eor(stat)) return
+
+        rc = E_READ
+        if (stat /= 0) return
+
+        rc = E_EOR
+        n = len_trim(buffer)
+        if (n == 0) return
+        if (buffer(1:1) == '#') return
+
+        p = 0 ! Cursor of buffer string.
+
+        rc = csv_next(buffer, observ%id,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%node_id,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%sensor_id,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%target_id,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%name,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%timestamp,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%path,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%error,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%next,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%nreceivers, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%nrequests,  s, n, p, q); if (rc /= E_NONE) return
+
+        do i = 1, OBSERV_MAX_NRECEIVERS
+            rc = csv_next(buffer, observ%receivers(i), s, n, p, q)
+            if (rc /= E_NONE) return
+        end do
+
+        do i = 1, OBSERV_MAX_NREQUESTS
+            rc = csv_next(buffer, observ%requests(i)%timestamp, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%request, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%response, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%delimiter, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%pattern, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%delay, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%error, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%retries, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%state, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%timeout, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            rc = csv_next(buffer, observ%requests(i)%nresponses, s, n, p, q)
+            if (rc /= E_NONE) return
+
+            do j = 1, REQUEST_MAX_NRESPONSES
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%name, s, n, p, q)
+                if (rc /= E_NONE) return
+
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%unit, s, n, p, q)
+                if (rc /= E_NONE) return
+
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%error, s, n, p, q)
+                if (rc /= E_NONE) return
+
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%value, s, n, p, q)
+                if (rc /= E_NONE) return
+            end do
+        end do
+
+        rc = E_NONE
+    end function csv_read_observ
+
+    integer function csv_read_sensor(sensor, unit, separator, quote) result(rc)
+        !! Reads sensor from file or standard input. If no separator character is
+        !! passed, the default one will be used (comma). If a quote character
+        !! is given, separators within quoted strings will be ignored.
+        type(sensor_type), intent(out)          :: sensor    !! Sensor type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character,         intent(in), optional :: quote     !! CSV quote character.
+
+        character(len=CSV_BUFFER_LEN) :: buffer
+
+        character :: q, s
+        integer   :: n, p
+        integer   :: unit_, stat
+
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        q = achar(0)
+        if (present(quote)) q = quote
+
+        rc = E_READ
+        read (unit_, '(a)', iostat=stat) buffer
+        if (stat /= 0) return
+
+        rc = E_EOR
+        n = len_trim(buffer)
+        if (n == 0) return
+        if (buffer(1:1) == '#') return
+
+        p = 0 ! Cursor of buffer string.
+
+        rc = csv_next(buffer, sensor%id,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%node_id, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%type,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%name,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%sn,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%meta,    s, n, p, q); if (rc /= E_NONE) return
+
+        rc = E_NONE
+    end function csv_read_sensor
+
+    integer function csv_read_target(target, unit, separator, quote) result(rc)
+        !! Reads target from file or standard input. If no separator character is
+        !! passed, the default one will be used (comma). If a quote character
+        !! is given, separators within quoted strings will be ignored.
+        type(target_type), intent(out)          :: target    !! Target type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        character,         intent(in), optional :: separator !! CSV separator.
+        character,         intent(in), optional :: quote     !! CSV quote character.
+
+        character(len=CSV_BUFFER_LEN) :: buffer
+
+        character :: q, s
+        integer   :: n, p
+        integer   :: unit_, stat
+
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        q = achar(0)
+        if (present(quote)) q = quote
+
+        rc = E_READ
+        read (unit_, '(a)', iostat=stat) buffer
+        if (stat /= 0) return
+
+        rc = E_EOR
+        n = len_trim(buffer)
+        if (n == 0) return
+        if (buffer(1:1) == '#') return
+
+        p = 0 ! Cursor of buffer string.
+
+        rc = csv_next(buffer, target%id,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%name, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%meta, s, n, p, q); if (rc /= E_NONE) return
+
+        rc = E_NONE
+    end function csv_read_target
+
+    integer function csv_write_beat(beat, unit, header, separator) result(rc)
+        !! Writes beat to file or standard output.
+        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        integer,         intent(in), optional :: unit      !! File unit.
+        logical,         intent(in), optional :: header    !! CSV header flag.
+        character,       intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(13a)', iostat=stat) &
+                '#node_id',  s, &
+                'address',   s, &
+                'time_sent', s, &
+                'time_recv', s, &
+                'error',     s, &
+                'interval',  s, &
+                'uptime'
+            if (stat /= 0) return
+        end if
+
+        write (unit_, '(8a, 2(i0, a), i0)', iostat=stat) &
+            trim(beat%node_id),   s, &
+            trim(beat%address),   s, &
+            trim(beat%time_sent), s, &
+            trim(beat%time_recv), s, &
+            beat%error,           s, &
+            beat%interval,        s, &
+            beat%uptime
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_beat
+
+    integer function csv_write_beats(beats, unit, header, separator) result(rc)
+        !! Writes beats to file or standard output.
+        type(beat_type), intent(inout)        :: beats(:)  !! Beat array.
+        integer,         intent(in), optional :: unit      !! File unit.
+        logical,         intent(in), optional :: header    !! CSV header flag.
+        character,       intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(beats)
+            rc = dm_csv_write(beats(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_beats
+
+    integer function csv_write_data_point(data_point, unit, header, separator) result(rc)
+        !! Writes data point to file or standard output.
+        type(dp_type), intent(inout)        :: data_point !! Data point type.
+        integer,       intent(in), optional :: unit       !! File unit.
+        logical,       intent(in), optional :: header     !! CSV header flag.
+        character,     intent(in), optional :: separator  !! CSV separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(a2, 2(a1))', iostat=stat) '#x',  s, 'y'
+            if (stat /= 0) return
+        end if
+
+        write (unit_, '(a29, a1, 1pg0.8)', iostat=stat) data_point%x, s, data_point%y
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_data_point
+
+    integer function csv_write_data_points(data_points, unit, header, separator) result(rc)
+        !! Writes data points to file or standard output.
+        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
+        integer,       intent(in), optional :: unit           !! File unit.
+        logical,       intent(in), optional :: header         !! CSV header flag.
+        character,     intent(in), optional :: separator      !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(data_points)
+            rc = dm_csv_write(data_points(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_data_points
+
+    integer function csv_write_log(log, unit, header, separator) result(rc)
+        !! Writes log to file or standard output.
+        type(log_type), intent(inout)        :: log       !! Log type.
+        integer,        intent(in), optional :: unit      !! File unit.
+        logical,        intent(in), optional :: header    !! CSV header flag.
+        character,      intent(in), optional :: separator !! CSV field separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(19a)', iostat=stat) &
+                '#id',       s, &
+                'level',     s, &
+                'error',     s, &
+                'timestamp', s, &
+                'node_id',   s, &
+                'sensor_id', s, &
+                'target_id', s, &
+                'observ_id', s, &
+                'soure',     s, &
+                'message'
+            if (stat /= 0) return
+        end if
+
+        write (unit_, '(2a, 2(i0, a), 15a)', iostat=stat) &
+            trim(log%id),        s, &
+            log%level,           s, &
+            log%error,           s, &
+            trim(log%timestamp), s, &
+            trim(log%node_id),   s, &
+            trim(log%sensor_id), s, &
+            trim(log%target_id), s, &
+            trim(log%observ_id), s, &
+            trim(log%source),    s, &
+            '"', trim(log%message), '"'
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_log
+
+    integer function csv_write_logs(logs, unit, header, separator) result(rc)
+        !! Writes logs to file or standard output.
+        type(log_type), intent(inout)        :: logs(:)   !! Log array.
+        integer,        intent(in), optional :: unit      !! File unit.
+        logical,        intent(in), optional :: header    !! CSV header flag.
+        character,      intent(in), optional :: separator !! CSV field separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(logs)
+            rc = dm_csv_write(logs(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_logs
+
+    integer function csv_write_node(node, unit, header, separator) result(rc)
+        !! Writes node to file or standard output.
+        type(node_type), intent(inout)        :: node      !! Node type.
+        integer,         intent(in), optional :: unit      !! File unit.
+        logical,         intent(in), optional :: header    !! CSV header flag.
+        character,       intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(5a)', iostat=stat) '#id', s, 'name', s , 'meta'
+            if (stat /= 0) return
+        end if
+
+        write (unit_, '(7a)', iostat=stat) &
+            trim(node%id),   s, &
+            trim(node%name), s, &
+            '"', trim(node%meta), '"'
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_node
+
+    integer function csv_write_nodes(nodes, unit, header, separator) result(rc)
+        !! Writes nodes to file or standard output.
+        type(node_type), intent(inout)        :: nodes(:)  !! Node array.
+        integer,         intent(in), optional :: unit      !! File unit.
+        logical,         intent(in), optional :: header    !! CSV header flag.
+        character,       intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(nodes)
+            rc = dm_csv_write(nodes(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_nodes
+
+    integer function csv_write_observ(observ, unit, header, separator) result(rc)
+        !! Writes observation to file or standard output.
+        type(observ_type), intent(inout)        :: observ    !! Observation type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        logical,           intent(in), optional :: header    !! CSV header flag.
+        character,         intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: i, j, unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(22a)', advance='no', iostat=stat) &
+                '#id',        s, &
+                'node_id',    s, &
+                'sensor_id',  s, &
+                'target_id',  s, &
+                'name',       s, &
+                'timestamp',  s, &
+                'tty',        s, &
+                'priority',   s, &
+                'error',      s, &
+                'next',       s, &
+                'nreceivers', s
+            if (stat /= 0) return
+
+            do i = 1, OBSERV_MAX_NRECEIVERS
+                write (unit_, '("receivers(", i0, ")", a)', advance='no', iostat=stat) i, s
+                if (stat /= 0) return
+            end do
+
+            write (unit_, '("nrequests")', advance='no', iostat=stat)
+            if (stat /= 0) return
+
+            do i = 1, OBSERV_MAX_NREQUESTS
+                write (unit_, '(a, 10(a, i0, 2a), a, i0, a)', advance='no', iostat=stat) s, &
+                    'requests(', i, ')%timestamp',  s, &
+                    'requests(', i, ')%request',    s, &
+                    'requests(', i, ')%response',   s, &
+                    'requests(', i, ')%delimiter',  s, &
+                    'requests(', i, ')%pattern',    s, &
+                    'requests(', i, ')%delay',      s, &
+                    'requests(', i, ')%error',      s, &
+                    'requests(', i, ')%retries',    s, &
+                    'requests(', i, ')%state',      s, &
+                    'requests(', i, ')%timeout',    s, &
+                    'requests(', i, ')%nresponses'
+                if (stat /= 0) return
+
+                do j = 1, REQUEST_MAX_NRESPONSES
+                    write (unit_, '(a, 3(2(a, i0), 2a), 2(a, i0), a)', advance='no', iostat=stat) s, &
+                        'requests(', i, ')%responses(', j, ')%name',  s, &
+                        'requests(', i, ')%responses(', j, ')%unit',  s, &
+                        'requests(', i, ')%responses(', j, ')%error', s, &
+                        'requests(', i, ')%responses(', j, ')%value'
+                    if (stat /= 0) return
+                end do
+            end do
+
+            write (unit_, *)
+        end if
+
+        write (unit_, '(14a, 4(i0, a), i0)', advance='no', iostat=stat) &
+              trim(observ%id),        s, &
+              trim(observ%node_id),   s, &
+              trim(observ%sensor_id), s, &
+              trim(observ%target_id), s, &
+              trim(observ%name),      s, &
+              trim(observ%timestamp), s, &
+              trim(observ%path),      s, &
+              observ%priority,        s, &
+              observ%error,           s, &
+              observ%next,            s, &
+              observ%nreceivers,      s, &
+              observ%nrequests
+        if (stat /= 0) return
+
+        do i = 1, OBSERV_MAX_NRECEIVERS
+            write (unit_, '(2a)', advance='no', iostat=stat) s, trim(observ%receivers(i))
+            if (stat /= 0) return
+        end do
+
+        do i = 1, OBSERV_MAX_NREQUESTS
+            if (i > observ%nrequests) then
+                write (unit_, '(a)', advance='no', iostat=stat) &
+                    repeat(s, 11 + (REQUEST_MAX_NRESPONSES * 4))
+                if (stat /= 0) return
+                cycle
+            end if
+
+            write (unit_, '(a)', advance='no', iostat=stat) s
+            if (stat /= 0) return
+
+            write (unit_, '(18a, 5(i0, a), i0)', advance='no', iostat=stat) &
+                trim(observ%requests(i)%timestamp),           s, &
+                '"', trim(observ%requests(i)%request),   '"', s, &
+                '"', trim(observ%requests(i)%response),  '"', s, &
+                '"', trim(observ%requests(i)%delimiter), '"', s, &
+                '"', trim(observ%requests(i)%pattern),   '"', s, &
+                observ%requests(i)%delay,                     s, &
+                observ%requests(i)%error,                     s, &
+                observ%requests(i)%retries,                   s, &
+                observ%requests(i)%state,                     s, &
+                observ%requests(i)%timeout,                   s, &
+                observ%requests(i)%nresponses
+            if (stat /= 0) return
+
+            do j = 1, REQUEST_MAX_NRESPONSES
+                if (j > observ%requests(i)%nresponses) then
+                    write (unit_, '(a)', advance='no', iostat=stat) repeat(s, 4)
+                    if (stat /= 0) return
+                    cycle
+                end if
+
+                write (unit_, '(a)', advance='no', iostat=stat) s
+                if (stat /= 0) return
+
+                write (unit_, '(4a, i0, a, 1pg0.8)', advance='no', iostat=stat) &
+                    trim(observ%requests(i)%responses(j)%name), s, &
+                    trim(observ%requests(i)%responses(j)%unit), s, &
+                    observ%requests(i)%responses(j)%error,      s, &
+                    observ%requests(i)%responses(j)%value
+                if (stat /= 0) return
+            end do
+        end do
+
+        write (unit_, *)
+
+        rc = E_NONE
+    end function csv_write_observ
+
+    integer function csv_write_observs(observs, unit, header, separator) result(rc)
+        !! Writes observations to file or standard output.
+        type(observ_type), intent(inout)        :: observs(:) !! Observation array.
+        integer,           intent(in), optional :: unit       !! File unit.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(observs)
+            rc = dm_csv_write(observs(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_observs
+
+    integer function csv_write_sensor(sensor, unit, header, separator) result(rc)
+        !! Write sensor to file or standard output.
+        type(sensor_type), intent(inout)        :: sensor    !! Sensor type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        logical,           intent(in), optional :: header    !! CSV header flag.
+        character,         intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        if (header_) then
+            write (unit_, '(11a)', iostat=stat) &
+                '#node_id', s, &
+                'id',       s, &
+                'type',     s, &
+                'name',     s, &
+                'sn',       s, &
+                'meta'
+            if (stat /= 0) return
+        end if
+
+        write (unit_, '(4a, i0, 8a)', iostat=stat) &
+            trim(sensor%id),      s, &
+            trim(sensor%node_id), s, &
+            sensor%type,          s, &
+            trim(sensor%name),    s, &
+            trim(sensor%sn),      s, &
+            '"', trim(sensor%meta), '"'
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_sensor
+
+    integer function csv_write_sensors(sensors, unit, header, separator) result(rc)
+        !! Writes sensors to file or standard output.
+        type(sensor_type), intent(inout)        :: sensors(:) !! Sensor array.
+        integer,           intent(in), optional :: unit       !! File unit.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(sensors)
+            rc = dm_csv_write(sensors(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_sensors
+
+    integer function csv_write_target(target, unit, header, separator) result(rc)
+        !! Writes target to file or standard output.
+        type(target_type), intent(inout)        :: target    !! Target type.
+        integer,           intent(in), optional :: unit      !! File unit.
+        logical,           intent(in), optional :: header    !! CSV header flag.
+        character,         intent(in), optional :: separator !! CSV separator.
+
+        character :: s
+        integer   :: unit_, stat
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        write (unit_, '(7a)', iostat=stat) &
+            trim(target%id),   s, &
+            trim(target%name), s, &
+            '"', trim(target%meta), '"'
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function csv_write_target
+
+    integer function csv_write_targets(targets, unit, header, separator) result(rc)
+        !! Writes targets to file or standard output.
+        type(target_type), intent(inout)        :: targets(:) !! Target array.
+        integer,           intent(in), optional :: unit       !! File unit.
+        logical,           intent(in), optional :: header     !! CSV header flag.
+        character,         intent(in), optional :: separator  !! CSV separator.
+
+        character :: s
+        integer   :: i, unit_
+        logical   :: header_
+
+        rc = E_WRITE
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        header_ = .false.
+        if (present(header)) header_ = header
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        do i = 1, size(targets)
+            rc = dm_csv_write(targets(i), unit_, header_, s)
+            if (dm_is_error(rc)) exit
+            header_ = .false.
+        end do
+    end function csv_write_targets
+
+    subroutine csv_unquote(str, quote)
+        !! Removes given quote character at start and end from string.
+        character(len=*), intent(inout) :: str   !! String to unquote on input, unquoted string on output.
+        character,        intent(in)    :: quote !! Quote character.
+        integer                         :: i
+
+        str = adjustl(str)
+        if (str(1:1) /= quote) return
+        i = index(str, quote, back=.true.)
+        if (i == 1) return
+        if (i == 2) then
+            str = ''
+            return
+        end if
+        str = str(2:i - 1)
+    end subroutine csv_unquote
+end module dm_csv

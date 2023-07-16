@@ -1,0 +1,141 @@
+= dmsync(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMSYNC
+
+== NAME
+
+dmsync - synchronises databases between client and server
+
+== SYNOPSIS
+
+*dmsync* --help
+
+*dmsync* --version
+
+*dmsync* --*database* _file_ --*type* _type_ --*host* _host_ [--*port* _port_]
+[--*tls*] [--*username* _user_] [--*password* _password_] [--*node* _id_]
+[--*interval* _n_] [--*wait* _name_] [--*logger* _name_] [--*create*]
+[--*verbose*]
+
+*dmsync* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmsync* program synchronises logs, nodes, observations, sensors, and
+targets of a local database with an HTTP-RPC server. The synchronisation may be
+started only once (to transfer nodes, sensors, and targets from client to
+server), periodically as a cron job, or by waiting for a POSIX semaphore.
+
+Database records are sent deflate-compressed in Fortran 90 Namelist format via
+HTTP to the server. The program uses libcurl for data transfer. The called
+HTTP-RPC API endpoints are expected under base URI
+`[http|https]://<host>:<port>/api/v1/`.
+
+The result of each synchronisation attempt is stored in the local database.
+Observations are marked as synchronised only if the server returns HTTP 201
+(Created).
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--create*, *-C*::
+  Create database synchronisation tables if they do not exist.
+
+*--database*, *-d* _file_::
+  Path to SQLite log or observation database.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--host*, *-H* _host_::
+  IP address or FQDN of RPC API server.
+
+*--interval*, *-I* _seconds_::
+  Synchronisation interval in seconds.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration.
+
+*--node*, *-N* _id_::
+  Node id, required for types `sensor` and `observ`.
+
+*--password*, *-P* _password_::
+  RPC API password.
+
+*--port*, *-p* _port_::
+  Port of RPC API server. The default is 0 (automatic selection depending on
+  protocol).
+
+*--tls*, *-X*::
+  Use TLS-encrypted connection.
+
+*--type*, *-t* [log|node|observ|sensor|target]::
+  Type of data to synchronise, either log, node, observation, sensor, or
+  target. Type log requires a log database, all others an observation
+  database.
+
+*--username*, *-U* _user_::
+  RPC API user name. If set, implies HTTP Basic Auth.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+*--wait*, *-w*::
+  Name of POSIX semaphore to wait for. Synchronises databases if semaphore is
+  greater than 0.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Synchronisation finished without errors.
+
+*1*::
+  Failure.
+  Synchronisation failed.
+
+== EXAMPLE
+
+Synchronise nodes, sensors, and targets with a remote HTTP-RPC API:
+
+....
+$ dmsync --database observ.sqlite --type node --host example.com
+$ dmsync --database observ.sqlite --type sensor --node dummy-node --host example.com
+$ dmsync --database observ.sqlite --type target --host example.com
+....
+
+Synchronise observations:
+
+....
+$ dmsync --database observ.sqlite --type observ --host example.com
+....
+
+Synchronise log messages:
+
+....
+$ dmsync --database log.sqlite --type log --host example.com
+....
+
+== SEE ALSO
+
+_dmapi(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

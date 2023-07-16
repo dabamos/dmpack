@@ -1,0 +1,129 @@
+= dmrecv(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMRECV
+
+== NAME
+
+dmrecv - receives logs and observations from POSIX message queue
+
+== SYNOPSIS
+
+*dmrecv* --help
+
+*dmrecv* --version
+
+*dmrecv* --*type* [log|observ] --*format* [block|csv|json|nml]
+[--*name* _name_] [--*output* _file_] [--*response* _name_] [--*forward*]
+[--*replace*] [--*verbose*]
+
+*dmrecv* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmrecv* program listens to the POSIX message queue of its name and writes
+received logs or observations to _stdout_, file, or named pipe; in ASCII block,
+CSV, JSON, or Fortran 90 Namelist format. By default, the serialised data is
+appended to the end of the output file. If argument `--replace` is passed, the
+file will be replaced consecutively.
+
+Received observations are not forwarded to the next specified receiver, unless
+argument `--forward` is set. If no receivers are defined or left, the
+observation will be discarded after output.
+
+The output format `block` is available for observation data only, and requires
+a valid response name. Received observation will be searched for this response
+and converted to data point type if found. The data point is printed in
+ASCII block format.
+
+Logs and observations sequentially written in JSON format to file do not
+result in a valid JSON array. Use _jq(1)_ to convert a file `input.txt` of JSON
+objects separated by line-break to a JSON array in `output.json`:
+
+....
+$ jq -s '.' input.txt > output.json
+....
+
+The program settings are passed through command-line arguments or an optional
+configuration file. The arguments overwrite settings from file.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--format*, *-f* [block|csv|json|nml]::
+  Output format, either ASCII block, CSV, JSON, or Namelist. Format `block` is
+  allowed for type `observ` only.
+
+*--forward*, *-F*::
+  Forward observations to the next specified receiver.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--name*, *-n* _name_::
+  Name of configuration and POSIX message queue (default is `dmrecv`).
+
+*--output*, *-o* _file_::
+  Path of output file. Prints serialised data to _stdout_ if not set (default).
+
+*--replace*, *-r*::
+  Replace output file instead of appending data.
+
+*--response*, *-R* _name_::
+  Name of the observation response to output (required for format `block`).
+
+*--type*, *-t* [log|observ]::
+  Data type to receive, either log or observation.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Program terminated normally.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Write received log messages in CSV format to file `/tmp/logs.csv`:
+
+....
+$ dmrecv --name dmrecv --type log --format csv --output /tmp/logs.csv
+....
+
+Output observations in JSON format to _stdout_:
+
+....
+$ dmrecv --name dmrecv --type observ --format json
+....
+
+Output observation responses of name `x` in ASCII block format to _stdout_:
+
+....
+$ dmrecv --name dmrecv --type observ --format block --response x
+....
+
+== SEE ALSO
+
+_dmsend(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

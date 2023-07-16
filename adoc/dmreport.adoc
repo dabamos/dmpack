@@ -1,0 +1,94 @@
+= dmreport(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMREPORT
+
+== NAME
+
+dmreport - creates reports in HTML format containing plots and logs
+
+== SYNOPSIS
+
+*dmreport* --help
+
+*dmreport* --version
+
+*dmreport* --*config* _file_ [--*name* _name_] [--*node* _id_]
+[--*from* _timestamp_] [--*to* _timestamp_] [--*output* _file_]
+[--*style* _file_]
+
+*dmreport* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmreport* program creates reports in HTML5 format, containing plots of
+observations and/or log messages selected from database. Plots are created by
+calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
+base64-encoded data URI. Any style sheet file with classless CSS can be
+included to alter the presentation of the report. The output of *dmreport* is a
+single HTML file.
+
+A configuration file is mandatory to create reports. Only a few parameters may
+be set through command-line arguments. Passed command-line arguments have
+priority over settings in the configuration file.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to configuration file.
+
+*--from*, *-B* _timestamp_::
+  Start of the time range in ISO 8601.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--name*, *-n* _name_::
+  Name of instance and table in given configuration file (default is `dmreport`).
+
+*--node*, *-N* _id_::
+  Select observations and log messages of the given node id.
+
+*--output*, *-o* _file_::
+  File path of the generated report. Additional format descriptors are replaced
+  with their values to set date and time dynamically (`%Y`, `%M`, `%D`, `%h`,
+  `%m`, `%s`). If no output file is set, the report is printed to _stdout_.
+
+*--style*, *-C* _file_::
+  File path to the classless CSS file to be included in the report (optional).
+
+*--to*, *-E* _timestamp_::
+  End of the time range in ISO 8601.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Report was created.
+
+*1*::
+  Failure.
+  Report creation failed.
+
+== EXAMPLE
+
+Write a report to file `report.html` based on settings in `dmreport.conf`:
+
+....
+$ dmreport --name dmreport --config dmreport.conf \
+  --from 2020-01-01 --to 2021-01-01 --output report.html
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

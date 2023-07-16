@@ -1,0 +1,60 @@
+= dmweb(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMWEB
+
+== NAME
+
+dmweb - CGI-based web user interface
+
+== SYNOPSIS
+
+*dmweb*
+
+== DESCRIPTION
+
+*dmweb* is a CGI-based web user interface for DMPACK database access on client
+and server. The web application has to be executed through a CGI-compatible web
+server. The web server must be able to pass environment variables to the CGI
+program. It is recommended to use _lighttpd(1)_. Transport security and
+authentication have to be provided by the web server.
+
+This web application allows users to:
+
+* add and view nodes, sensors, targets;
+* view observations, logs, beats;
+* create plots in SVG format.
+
+Gnuplot is used as the plotting backend and must be present on the host.
+Responses are returned in HTML5.
+
+Copy the style sheet `dmpack.min.css` manually to the WWW root directory, or
+create a symlink.
+
+== ENVIRONMENT
+
+Add the following environment variables to the configuration of the web server
+to pass them to *dmweb*:
+
+*DM_DB_BEAT*::
+  Path to beat database.
+
+*DM_DB_LOG*::
+  Path to log database.
+
+*DM_DB_OBSERV*::
+  Path to observation database.
+
+*DM_READ_ONLY*::
+  Set to 1 to open databases in read-only mode.
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

@@ -1,0 +1,140 @@
+= dmgraph(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMGRAPH
+
+== NAME
+
+dmgraph - creates plots from observations in database
+
+== SYNOPSIS
+
+*dmgraph* --help
+
+*dmgraph* --version
+
+*dmgraph* --*database* _file_ --*node* _id_ --*sensor* _id_ --*target* _id_
+--*response* _name_ --*from* _timestamp_ --*to* _timestamp_
+--*terminal* _terminal_ [--*output* _file_] [--*background* _color_]
+[--*foreground* _color_] [--*font* _name_] [--*title* _title_] [--*width* _n_]
+[--*height* _n_]
+
+*dmgraph* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmgraph* program is a front-end to _gnuplot(1)_ that creates plots of
+observations read from database. Plots are either written to file or displayed
+in terminal or X11 window.
+
+Depending on the selected terminal backend, you may have to set the environment
+variable `GDFONTPATH` to the local font directory first:
+
+....
+$ export GDFONTPATH=/usr/local/share/fonts/webfonts/
+....
+
+Plotting parameters passed via command-line have priority over those from
+configuration file.
+
+== OPTIONS
+
+*--background*, *-G* _color_::
+  Optional background color of the plot (for example, `#ff0000` or `red`).
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--database*, *-d* _file_::
+  File path to the SQLite observation database.
+
+*--font*, *-A* _name_::
+  Optional font name (for example, `Open Sans`, `arial.ttf`, or `monospace`).
+
+*--foreground*, *-P* _color_::
+  Optional foreground color of the plot (for example, `#ffffff` or `white`).
+
+*--from*, *-B* _timestamp_::
+  Start of time range in ISO 8601.
+
+*--height*, *-H* _n_::
+  Optional plot height in pixels.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmgraph`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--output*, *-o* _file_::
+  File path of the output image. Required for the terminals `gif`, `png`, and
+  `pngcairo`. Additional format descriptors are replaced with their values to
+  set date and time dynamically (`%Y`, `%M`, `%D`, `%h`, `%m`, `%s`).
+
+*--response*, *-R* _name_::
+  Response name.
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--target*, *-T* _id_::
+  Target id.
+
+*--terminal*, *-M* [ansi|ascii|gif|png|pngcairo|sixelgd|svg|x11]::
+  Output terminal, either ANSI, ASCII, GIF, PNG, PNG (using Cairo), Sixel, SVG,
+  or X11. The terminal must be supported by _gnuplot(1)_.
+
+*--title*, *-T* _title_::
+  Plot title.
+
+*--to*, *-E* _timestamp_::
+  End of time range in ISO 8601.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+*--width*, *-W* _n_::
+  Optional plot width in pixels.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Plot has been created.
+
+*1*::
+  Failure.
+  Plot creation failed.
+
+== EXAMPLE
+
+Create a plot of observations selected from database `observ.sqlite` in PNG
+terminal, and write the file to `/tmp/plot.png`:
+
+....
+$ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --response dummy --from 2020 --to 2021 --database observ.sqlite \
+  --terminal pngcairo --output /tmp/plot.png
+....
+
+Output the plot directly to terminal, with the configuration loaded from file:
+
+....
+$ dmgraph --name dmgraph --config dmgraph.conf --terminal sixelgd
+....
+
+Output in `sixelgd` format requires a terminal emulator with Sixel support.
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

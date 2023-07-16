@@ -1,0 +1,85 @@
+= dmbackup(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMBACKUP
+
+== NAME
+
+dmbackup - creates an online backup of a running database
+
+== SYNOPSIS
+
+*dmbackup* --help
+
+*dmbackup* --version
+
+*dmbackup* --*database* _file_ --*backup* _file_ [--*vacuum*] [--*wal*]
+[--*verbose*]
+
+== DESCRIPTION
+
+The *dmbackup* utility creates an online backup of a running SQLite database. By
+default, the SQLite backup API is used. The program is functional equivalent to
+running the _sqlite3(1)_ command-line interface:
+
+....
+$ sqlite3 <database> ".backup '<output>'"
+....
+
+*dmbackup* does not replace existing backup databases.
+
+== OPTIONS
+
+*--backup*, *-b* _file_::
+  Path of the backup database.
+
+*--database*, *-d* _file_::
+  Path of the SQLite database to backup.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--vacuum*, *-U*::
+  Use `VACUUM INTO` instead of the SQLite backup API.
+
+*--verbose*, *-V*::
+  Print progress to standard output (not in vacuum mode).
+
+*--version*, *-v*::
+  Output version information and quit.
+
+*--wal*, *-W*::
+  Enable WAL mode for backup database.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Backup has been created.
+
+*1*::
+  Failure.
+  Backup creation failed.
+
+== EXAMPLE
+
+Create an online backup of an observation database:
+
+....
+$ dmbackup --database observ.sqlite --backup /tmp/observ.sqlite
+....
+
+== SEE ALSO
+
+_dminit(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

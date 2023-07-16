@@ -1,0 +1,18 @@
+[submodule "vendor/fortran-curl"]
+	path = vendor/fortran-curl
+	url = https://github.com/interkosmos/fortran-curl
+[submodule "vendor/fortran-lua53"]
+	path = vendor/fortran-lua53
+	url = https://github.com/interkosmos/fortran-lua53
+[submodule "vendor/fortran-pcre2"]
+	path = vendor/fortran-pcre2
+	url = https://github.com/interkosmos/fortran-pcre2
+[submodule "vendor/fortran-sqlite3"]
+	path = vendor/fortran-sqlite3
+	url = https://github.com/interkosmos/fortran-sqlite3
+[submodule "vendor/fortran-unix"]
+	path = vendor/fortran-unix
+	url = https://github.com/interkosmos/fortran-unix
+[submodule "vendor/fortran-zlib"]
+	path = vendor/fortran-zlib
+	url = https://github.com/interkosmos/fortran-zlib

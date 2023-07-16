@@ -1,0 +1,99 @@
+= dmfs(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMFS
+
+== NAME
+
+dmfs - reads observations from file or named pipe
+
+== SYNOPSIS
+
+*dmfs* --help
+
+*dmfs* --version
+
+*dmfs* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*logger* _name_] [--*verbose*]
+
+== DESCRIPTION
+
+The *dmfs* program reads observations from file system, virtual file, or named
+pipe. The program can be used to read sensor values from the 1-Wire File
+System (OWFS).
+
+All requests of an observation have to contain the path of the file to be read
+in attribute `request`. Response values are extracted by group from the raw
+response using the given regular expression pattern. For each group to extract,
+a response with the name of the respective group has to be added to the
+request.
+
+If any receivers are specified, observations are forwarded to the next receiver
+via POSIX message queue. The program can act as a sole data logger if output and
+format are set. If the output path is set to `-`, observations are printed to
+_stdout_.
+
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the node,
+the sensor, and the target.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--format*, *-f* [csv|json]::
+  Output format of observations if `--output` is set. Either CSV or JSON Lines.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmfs`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--output*, *-o* _file_::
+  Output file to append observations to (`-` for _stdout_).
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read the jobs to perform from configuration file and execute them sequentially:
+
+....
+$ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

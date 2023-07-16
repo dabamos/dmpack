@@ -1,0 +1,97 @@
+= dmpipe(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMPIPE
+
+== NAME
+
+dmpipe - reads observations from sub-process
+
+== SYNOPSIS
+
+*dmpipe* --help
+
+*dmpipe* --version
+
+*dmpipe* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*logger* _name_] [--*verbose*]
+
+== DESCRIPTION
+
+The *dmpipe* program reads responses from a process connected via anonymouse
+pipe.
+
+Each request of an observation must contain the process to execute in attribute
+`request`. Response values are extracted by group from the raw response using
+the provided regular expression pattern. A response has to be added for each
+group in the pattern. The response name must equal the group name.
+
+If any receivers are specified, observations are forwarded to the next receiver
+via POSIX message queue. The program can act as a sole data logger if output and
+format are set. If the output path is set to `-`, observations are printed to
+_stdout_.
+
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain
+node, sensor, and target of all observations configured.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--format*, *-f* [csv|json]::
+  Output format of observations if `--output` is set. Either CSV or JSON Lines.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmpipe`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--output*, *-o* _file_::
+  Output file to append observations to (`-` for _stdout_).
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read the jobs from configuration file and execute them sequentially:
+
+....
+$ dmpipe --name dmpipe --config /usr/local/etc/dmpack/dmpipe.conf --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

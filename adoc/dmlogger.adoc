@@ -1,0 +1,107 @@
+= dmlogger(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMLOGGER
+
+== NAME
+
+dmlogger - inserts collected log messages into database
+
+== SYNOPSIS
+
+*dmlogger* --help
+
+*dmlogger* --version
+
+*dmlogger* --*database* _file_ --*node* _id_ [--*minlevel* _n_] [--*ipc*]
+[--*verbose*]
+
+*dmlogger* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmlogger* program collects log messages from a POSIX message queue and
+inserts them into a SQLite database. The name of the message queue matches the
+given *dmlogger* name, by default `/dmlogger`.
+
+If a minimum log level is selected, only logs of a level greater equal the
+minimum are stored in the database. Log messages with lower level are
+discarded.
+
+The IPC option enabled process synchronisation via POSIX semaphores. The
+semaphore value is incremented from 0 to 1 each time a new log has been
+received. The name of the semaphore equals the *dmlogger* name with leading
+`/`. Only a single process shall wait for the semaphore unless round-robin IPC
+is desired. This option may be used to synchronise incoming log messages
+automatically with a remote RPC API server. For example, pass the *dmlogger*
+name through command-line argument `--wait` to _dmsync(1)_. The log
+synchronisation is be trigged by incoming logs.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--database*, *-d* _file_::
+  Path to SQLite log database.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--ipc*, *-Q*::
+  Use POSIX semaphore for process synchronisation. The name of the semaphore
+  matches the instance name (with leading slash). The semaphore is set to 1
+  each time a log message has been received. Only a single process shall wait
+  this semaphore.
+
+*--minlevel*, *-L* _level_::
+  Minimum level for a log to be stored in the database, from 1 (DEBUG) to 5
+  (CRITICAL).
+
+*--name*, *-n* _name_::
+  Name of logger instance, configuration, POSIX message queue, and POSIX
+  semaphore (default is `dmlogger`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--verbose*, *-V*::
+  Print received logs to _stdout_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Program executed without errors.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Create a POSIX message queue `/dmlogger` and wait for incoming logs:
+
+....
+$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --minlevel 4
+....
+
+Received logs are inserted only if they are of level 4 (ERROR) or higher.
+
+== SEE ALSO
+
+_dmlog(1)_, _dmsync(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

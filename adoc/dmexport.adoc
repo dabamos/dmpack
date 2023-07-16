@@ -1,0 +1,112 @@
+= dmexport(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMEXPORT
+
+== NAME
+
+dmexport - dumps data from database to file
+
+== SYNOPSIS
+
+*dmexport* --help
+
+*dmexport* --version
+
+*dmexport* --*database* _file_ --type _type_ --format _format_ --*node* _id_
+[--*output* _file_] [--*sensor* _id_] [--*target* _id_] [--*response* _name_]
+[--*from* _timestamp_] [--*to* _timestamp_] [--*header*] [--*separator* _char_]
+
+== DESCRIPTION
+
+The *dmexport* program writes logs, nodes, sensors, targets, and observations
+from database to file, in ASCII block, CSV, or JSON format. The ASCII block
+data format is only available for X/Y data points.
+
+Logs and observations require a given time range in ISO 8601 format.
+
+If no output file is given, the data is printed to standard output. The
+output file will be overwritten if it already exists. If no data is found, an
+empty file will be created.
+
+== OPTIONS
+
+*--database*, *-d* _file_::
+  Path of the SQLite database to backup (required).
+
+*--format*, *-f* [block|csv|json]::
+  Output file format, either ASCII block, CSV, JSON (required). Only data
+  points may be exported in block format.
+
+*--from*, *-B* _timestamp_::
+  Start of time range in ISO 8601 (required for types `db`, `log`, `observ`).
+
+*--header*, *-H*::
+  Add CSV header.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--node*, *-N* _id_::
+  Node id (required).
+
+*--output*, *-o* _file_::
+  Path of output file.
+
+*--response*, *-R* _name_::
+  Response name (required for type `dp`).
+
+*--sensor*, *-S* _id_::
+  Sensor id (required for types `dp` and `observ`).
+
+*--separator*, *-a* _char_::
+  CSV separator character.
+
+*--target*, *-T* _id_::
+  Target id (required for type `dp` and `observ`).
+
+*--to*, *-E* _timestamp_::
+  End of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
+
+*--type*, *-t* [beat|dp|log|node|observ|sensor|target]::
+  Type of entity to export (required).
+
+*--version*, *-V*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Data has been exported.
+
+*1*::
+  Failure.
+  Data export failed.
+
+== EXAMPLE
+
+Export log messages from database to JSON file:
+
+....
+$ dmexport --database log.sqlite --type log --format json --node dummy-node \
+  --from 2020-01-01 --to 2025-01-01 --output /tmp/logs.json
+....
+
+Export observations from database to CSV file:
+
+....
+$ dmexport --database observ.sqlite --type observ --format csv \
+  --node dummy-node --from 2020-01-01 --to 2025-01-01 --output /tmp/observs.csv
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

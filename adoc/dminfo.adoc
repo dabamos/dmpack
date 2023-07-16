@@ -1,0 +1,74 @@
+= dminfo(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMINFO
+
+== NAME
+
+dminfo - outputs system and database information
+
+== SYNOPSIS
+
+*dminfo* --help
+
+*dminfo* --version
+
+*dminfo* [--*database* _file_]
+
+== DESCRIPTION
+
+The *dminfo* utility program prints build, database, and system information to
+standard output. The path to the beat, log, or observation database is passed
+through command-line argument `--database`.
+
+The output contains compiler version and options; database PRAGMAs, tables, and
+number of rows; as well as system name, version, and host name.
+
+== OPTIONS
+
+*--database*, *-d* _file_::
+  File path to SQLite observation database.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Information has been printed.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Print build, database, and system information:
+
+....
+$ dminfo --database /var/dmpack/observ.sqlite
+build.compiler = GCC version 13.1.0
+build.options = -mtune=generic -march=x86-64 -std=f2018
+db.application_id = 444D31
+db.foreign_keys = T
+db.journal_mode = wal
+db.path = /var/dmpack/observ.sqlite
+db.table.beats = F
+db.table.beats.rows = 0
+...
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.
