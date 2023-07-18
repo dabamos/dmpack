@@ -36,6 +36,10 @@ storage on client and server. The server component is optional. It is possible
 to run DMPACK on clients only, without data distribution. The client-side
 message passing is based on POSIX message queues and POSIX semaphores.
 
+## System Architecture
+
+![Schema](guide/schema.png)
+
 ## Features
 
 DMPACK covers the following tasks:
