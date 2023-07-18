@@ -8,12 +8,33 @@ successor of [OpenADMS Node](https://github.com/dabamos/openadms-node),
 [OpenADMS UI](https://github.com/dabamos/openadms-ui).
 
 The library and the accompanying programs are written in Fortran 2018, with
-some smaller parts in C and Lua. DMPACK runs on 64-bit Linux and FreeBSD only.
+some smaller parts in C and Lua. At the moment, DMPACK runs on 64-bit Linux and
+FreeBSD only.
 
 * [Web Site](https://www.dabamos.de/software/dmpack/)
 * [User’s Guide](https://www.dabamos.de/dmpack/guide/)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [Source Code Repository](https://github.com/dabamos/dmpack)
+
+## Description
+
+DMPACK is a complete monitoring system developed for automated control
+measurements of infrastructure, terrain, geodetic nets, and other objects. The
+software runs on sensor nodes, usually embedded systems or single-board
+computers, and obtains observation data from arbitrary sensors, like total
+stations, digital levels, inclinometers, weather stations, or GNSS receivers.
+The raw sensor data is then processed, stored, and optionally transmitted to a
+server. The software package may be used to monitor objects like:
+
+* bridges, tunnels, dams
+* landslides, cliffs, glaciers
+* construction sites, mining areas
+* churches, monasteries, and other heritage buildings
+
+DMPACK is built around the relational SQLite database for time series and log
+storage on client and server. The server component is optional. It is possible
+to run DMPACK on clients only, without data distribution. The client-side
+message passing is based on POSIX message queues and POSIX semaphores.
 
 ## Features
 
