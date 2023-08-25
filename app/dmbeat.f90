@@ -251,8 +251,7 @@ contains
                         end if
                     end if
 
-                    call dm_log(LOG_ERROR, 'transmission error (HTTP ' // &
-                                dm_itoa(response%code) // ')', error=E_RPC)
+                    call dm_log(LOG_ERROR, 'transmission error HTTP ' // dm_itoa(response%code), error=E_RPC)
             end select code_block
 
             if (app%count > 0) then

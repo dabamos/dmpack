@@ -30,6 +30,10 @@ module dm_rpc
     integer, parameter, public :: RPC_METHOD_GET  = 0
     integer, parameter, public :: RPC_METHOD_POST = 1
 
+    integer, parameter, public :: RPC_KEEP_ALIVE          = 1
+    integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120
+    integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60
+
     abstract interface
         function rpc_callback(ptr, size, nmemb, data) bind(c) result(n)
             !! Abstract read/write callback for libcurl.
@@ -194,24 +198,26 @@ contains
         type(rpc_request_type),          intent(in)  :: request  !! Request type.
         type(rpc_response_type), target, intent(out) :: response !! Response type.
 
-        integer     :: ce ! cURL error.
+        integer     :: er ! cURL error.
         type(c_ptr) :: curl_ptr, list_ptr
 
         rc = E_IO
+
         curl_ptr = curl_easy_init()
-        list_ptr = c_null_ptr
         if (.not. c_associated(curl_ptr)) return
+
+        list_ptr = c_null_ptr
 
         curl_block: block
             ! Prepare request.
             rc = E_INVALID
-            ce = CURLE_OK
+            er = CURLE_OK
 
             ! Set URL.
             if (.not. allocated(request%url)) exit curl_block
             if (len_trim(request%url) == 0) exit curl_block
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_URL, request%url)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_URL, request%url)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set HTTP accept header.
             if (allocated(request%accept)) then
@@ -220,52 +226,52 @@ contains
 
             ! Set HTTP Basic Auth header.
             if (request%auth == RPC_AUTH_BASIC) then
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)
+                if (er /= CURLE_OK) exit curl_block
 
                 ! User name.
                 if (allocated(request%username)) then
-                    ce = curl_easy_setopt(curl_ptr, CURLOPT_USERNAME, request%username)
-                    if (ce /= CURLE_OK) exit curl_block
+                    er = curl_easy_setopt(curl_ptr, CURLOPT_USERNAME, request%username)
+                    if (er /= CURLE_OK) exit curl_block
                 end if
 
                 ! Password.
                 if (allocated(request%password)) then
-                    ce = curl_easy_setopt(curl_ptr, CURLOPT_PASSWORD, request%password)
-                    if (ce /= CURLE_OK) exit curl_block
+                    er = curl_easy_setopt(curl_ptr, CURLOPT_PASSWORD, request%password)
+                    if (er /= CURLE_OK) exit curl_block
                 end if
             end if
 
             ! Set response callback.
             if (associated(request%callback)) then
                 ! Set write function.
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_WRITEFUNCTION, c_funloc(request%callback))
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_WRITEFUNCTION, c_funloc(request%callback))
+                if (er /= CURLE_OK) exit curl_block
 
                 ! Set write function client data.
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_WRITEDATA, c_loc(response))
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_WRITEDATA, c_loc(response))
+                if (er /= CURLE_OK) exit curl_block
             end if
 
             ! Set HTTP POST method.
             post_if: if (request%method == RPC_METHOD_POST) then
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_POST, 1)
-                if (ce /= CURLE_OK) exit curl_block
-
+                er = curl_easy_setopt(curl_ptr, CURLOPT_POST, 1)
+                if (er /= CURLE_OK) exit curl_block
                 if (.not. associated(request%payload)) exit post_if
 
                 ! Pass POST data directly.
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDSIZE, request%payload)
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8))
+                if (er /= CURLE_OK) exit curl_block
 
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDS, c_loc(request%payload))
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDS, c_loc(request%payload))
+                if (er /= CURLE_OK) exit curl_block
 
                 ! Signal deflate encoding.
                 if (request%deflate) then
                     list_ptr = curl_slist_append(list_ptr, 'Content-Encoding: deflate')
                 end if
 
+                ! Set content type.
                 if (allocated(request%content_type)) then
                     list_ptr = curl_slist_append(list_ptr, 'Content-Type: ' // request%content_type)
                 end if
@@ -273,58 +279,67 @@ contains
 
             ! Set follow location header.
             if (request%follow_location) then
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_FOLLOWLOCATION, 1)
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_FOLLOWLOCATION, 1)
+                if (er /= CURLE_OK) exit curl_block
             end if
 
             ! Set HTTP Accept header.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_ACCEPT_ENCODING, 'deflate')
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_ACCEPT_ENCODING, 'deflate')
+            if (er /= CURLE_OK) exit curl_block
 
             ! No debug messages to stdout.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set read timeout.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_TIMEOUT, request%timeout)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TIMEOUT, request%timeout)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set connection timeout.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, request%connect_timeout)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, request%connect_timeout)
+            if (er /= CURLE_OK) exit curl_block
+
+            ! Enable TCP keep-alive.
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
+
+            ! Set TCP keep-alive idle time in seconds.
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPIDLE, RPC_KEEP_ALIVE_IDLE)
+
+            ! Interval time between TCP keep-alive probes in seconds.
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPINTVL, RPC_KEEP_ALIVE_INTERVAL)
 
             ! Set HTTP headers.
             if (c_associated(list_ptr)) then
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_HTTPHEADER, list_ptr)
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_HTTPHEADER, list_ptr)
+                if (er /= CURLE_OK) exit curl_block
             end if
 
             ! Set User Agent.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Send request.
-            ce = curl_easy_perform(curl_ptr)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_perform(curl_ptr)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Get connection info.
-            ce = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Get HTTP response code.
-            ce = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Get transmission time.
-            ce = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
+            if (er /= CURLE_OK) exit curl_block
 
             rc = E_NONE
         end block curl_block
 
         ! Get error message.
-        if (ce /= CURLE_OK) then
-            response%error_message = curl_easy_strerror(ce)
+        if (er /= CURLE_OK) then
+            response%error_message = curl_easy_strerror(er)
         else
             response%error_message = ''
         end if
