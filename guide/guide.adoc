@@ -2383,6 +2383,7 @@ was accepted.
 
 | `201`  | Heartbeat was accepted.
 | `400`  | Invalid request or payload.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2466,6 +2467,7 @@ accepted.
 | `201`  | Log was accepted.
 | `400`  | Invalid request or payload.
 | `409`  | Log exists in database.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2549,6 +2551,7 @@ accepted.
 | `201`  | Node was accepted.
 | `400`  | Invalid request or payload.
 | `409`  | Node exists in database.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2632,6 +2635,7 @@ observation was accepted.
 | `201`  | Observation was accepted.
 | `400`  | Invalid request or payload.
 | `409`  | Observation exists in database.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2716,6 +2720,7 @@ accepted.
 | `201`  | Sensor was accepted.
 | `400`  | Invalid request or payload.
 | `409`  | Sensor exists in database.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2800,6 +2805,7 @@ accepted.
 | `201`  | Target was accepted.
 | `400`  | Invalid request or payload.
 | `409`  | Target exists in database.
+| `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
 | `503`  | Database error.
