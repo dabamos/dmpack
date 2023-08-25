@@ -6,11 +6,12 @@ incl_src:           false
 graph:              true
 search:             false
 favicon:            favicon.png
-summary:            **Deformation Monitoring Package (DMPACK)** – A collection
-                    of automatic deformation monitoring tools written in
-                    Fortran 2018, for Linux and FreeBSD.
+summary:            **Deformation Monitoring Package (DMPACK)** – A collections
+                    of programs for automatic deformation monitoring in the
+                    Internet of Things, written in Fortran 2018, for Linux and
+                    FreeBSD.
 author:             Philipp Engel
-date:               June 1, 2023
+date:               August 1, 2023
 project_website:    https://www.dabamos.de/
 project_url:        https://www.dabamos.de/dmpack/doc/
 project_github:     https://github.com/dabamos/dmpack
@@ -37,3 +38,6 @@ Link the program against `libdmpack.a`:
 ```
 $ gfortran -o app app.f90 libdmpack.a
 ```
+
+You may have to pass the path of the include search directory containing the
+DMPACK module files (argument `-I`).

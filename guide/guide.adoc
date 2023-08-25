@@ -105,10 +105,11 @@ DMPACK has the following requirements:
 Additional dependencies have to be present to build and run the software of this
 package:
 
+* BLAS
 * cURL
 * FastCGI
 * Gnuplot
-* LAPACK95
+* LAPACK/LAPACK95
 * Lua 5.3
 * PCRE2
 * SQLite 3
@@ -517,9 +518,8 @@ Log messages and observation ids are printed to _stdout_.
 === dmdbcli [[dmdbcli]]
 
 The *dmdbcli* utility program performs create, read, update, or delete
-operations (CRUD) on the observation databasae. Only nodes, sensors, and
-targets are supported. Data attributes are passed through command-line
-arguments.
+operations (CRUD) on the observation database. Only nodes, sensors, and targets
+are supported. Data attributes are passed through command-line arguments.
 
 ==== Command-Line Options
 
@@ -2359,7 +2359,7 @@ was accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses
@@ -2441,7 +2441,7 @@ accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses
@@ -2524,7 +2524,7 @@ accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses
@@ -2607,7 +2607,7 @@ observation was accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses
@@ -2691,7 +2691,7 @@ accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses
@@ -2775,7 +2775,7 @@ accepted.
 | Name             | Values
 
 | Content-Encoding | `deflate` (optional)
-| Content-Type     | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Content-Type     | `application/namelist`
 |===
 
 ==== Responses

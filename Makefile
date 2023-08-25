@@ -40,7 +40,7 @@ AR      = ar
 MAKE    = make
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
-RELEASE = $(DEBUG) #-mtune=native -O2 -ffast-math
+RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  =
 ARFLAGS = -rcs
