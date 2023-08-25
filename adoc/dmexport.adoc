@@ -92,14 +92,14 @@ Export log messages from database to JSON file:
 
 ....
 $ dmexport --database log.sqlite --type log --format json --node dummy-node \
-  --from 2020-01-01 --to 2025-01-01 --output /tmp/logs.json
+  --from 2020-01-01 --to 2025-01-01 --output /tmp/log.json
 ....
 
 Export observations from database to CSV file:
 
 ....
 $ dmexport --database observ.sqlite --type observ --format csv \
-  --node dummy-node --from 2020-01-01 --to 2025-01-01 --output /tmp/observs.csv
+  --node dummy-node --from 2020-01-01 --to 2025-01-01 --output /tmp/observ.csv
 ....
 
 == RESOURCES
