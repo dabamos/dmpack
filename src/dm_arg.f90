@@ -161,7 +161,6 @@ contains
                     else if (n < args(i)%min_len) then
                         call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too short')
                     end if
-
             end select
 
             exit
@@ -176,42 +175,43 @@ contains
         integer(kind=i8) :: i
         real(kind=r8)    :: f
 
-        rc = E_ARG
-        if (len_trim(arg%name) == 0) return
+        validate_block: block
+            rc = E_ARG
+            if (len_trim(arg%name) == 0) exit validate_block
 
-        if (arg%required .or. arg%passed) then
             rc = E_ARG_INVALID
-            if (arg%required .and. .not. arg%passed) return
+            if (arg%required .and. .not. arg%passed) exit validate_block
 
-            rc = E_ARG_TYPE
+            if (arg%passed) then
+                rc = E_ARG_TYPE
 
-            select case (arg%type)
-                case (ARG_TYPE_FLOAT)
-                    call dm_convert_to(arg%value, f, error)
-                    if (dm_is_error(error)) return
+                select case (arg%type)
+                    case (ARG_TYPE_FLOAT)
+                        call dm_convert_to(arg%value, f, error)
+                        if (dm_is_error(error)) exit validate_block
 
-                case (ARG_TYPE_INTEGER)
-                    call dm_convert_to(arg%value, i, error)
-                    if (dm_is_error(error)) return
+                    case (ARG_TYPE_INTEGER)
+                        call dm_convert_to(arg%value, i, error)
+                        if (dm_is_error(error)) exit validate_block
 
-                case (ARG_TYPE_ID)
-                    if (.not. dm_id_valid(arg%value)) return
+                    case (ARG_TYPE_ID)
+                        if (.not. dm_id_valid(arg%value)) exit validate_block
 
-                case (ARG_TYPE_UUID)
-                    if (.not. dm_uuid4_valid(arg%value)) return
+                    case (ARG_TYPE_UUID)
+                        if (.not. dm_uuid4_valid(arg%value)) exit validate_block
 
-                case (ARG_TYPE_TIME)
-                    if (.not. dm_time_valid(arg%value)) return
+                    case (ARG_TYPE_TIME)
+                        if (.not. dm_time_valid(arg%value)) exit validate_block
 
-                case (ARG_TYPE_FILE, ARG_TYPE_DB)
-                    if (.not. dm_file_exists(arg%value)) return
-            end select
+                    case (ARG_TYPE_FILE, ARG_TYPE_DB)
+                        if (.not. dm_file_exists(arg%value)) exit validate_block
+                end select
+            end if
 
-            rc = arg%error
-            return
-        end if
+            rc = E_NONE
+        end block validate_block
 
-        rc = E_NONE
+        arg%error = rc
     end function dm_arg_validate
 
     subroutine dm_arg_help(args)
