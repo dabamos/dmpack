@@ -15,7 +15,7 @@ dmrecv - receives logs and observations from POSIX message queue
 
 *dmrecv* --version
 
-*dmrecv* --*type* [log|observ] --*format* [block|csv|json|nml]
+*dmrecv* --*type* [log|observ] --*format* [block|csv|jsonl|nml]
 [--*name* _name_] [--*output* _file_] [--*response* _name_] [--*forward*]
 [--*replace*] [--*verbose*]
 
@@ -39,11 +39,11 @@ and converted to data point type if found. The data point is printed in
 ASCII block format.
 
 Logs and observations sequentially written in JSON format to file do not
-result in a valid JSON array. Use _jq(1)_ to convert a file `input.txt` of JSON
-objects separated by line-break to a JSON array in `output.json`:
+result in a valid JSON array. Use _jq(1)_ to convert a file `input.jsonl` of
+JSON objects separated by line-break to a JSON array in `output.json`:
 
 ....
-$ jq -s '.' input.txt > output.json
+$ jq -s '.' input.jsonl > output.json
 ....
 
 The program settings are passed through command-line arguments or an optional
@@ -54,9 +54,9 @@ configuration file. The arguments overwrite settings from file.
 *--config*, *-c* _file_::
   Path to configuration file.
 
-*--format*, *-f* [block|csv|json|nml]::
-  Output format, either ASCII block, CSV, JSON, or Namelist. Format `block` is
-  allowed for type `observ` only.
+*--format*, *-f* [block|csv|jsonl|nml]::
+  Output format, either ASCII block, CSV, JSON Lines, or Namelist. Format
+  `block` is allowed for type `observ` only.
 
 *--forward*, *-F*::
   Forward observations to the next specified receiver.

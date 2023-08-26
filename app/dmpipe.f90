@@ -226,7 +226,7 @@ contains
             app%format = dm_format_from_name(app%format_name)
 
             select case (app%format)
-                case (FORMAT_CSV, FORMAT_JSON)
+                case (FORMAT_CSV, FORMAT_JSONL)
                     continue
                 case default
                     call dm_error_out(rc, 'invalid or missing output format')
@@ -281,7 +281,7 @@ contains
             case (FORMAT_CSV)
                 rc = dm_csv_write(observ, unit=unit, header=.false., &
                                   separator=APP_CSV_SEPARATOR)
-            case (FORMAT_JSON)
+            case (FORMAT_JSONL)
                 rc = dm_json_write(observ, unit=unit)
             case default
                 return
@@ -324,6 +324,8 @@ contains
             end if
 
             observ_if: if (job%valid) then
+                call dm_log(LOG_DEBUG, 'starting observation ' // observ%name, observ=observ)
+
                 ! Get pointer to job observation.
                 observ => job%observ
 
@@ -332,8 +334,6 @@ contains
                 observ%node_id   = app%node
                 observ%sensor_id = app%sensor
                 observ%timestamp = dm_time_now()
-
-                call dm_log(LOG_DEBUG, 'starting observation ' // observ%name, observ=observ)
 
                 if (observ%nrequests == 0) then
                     call dm_log(LOG_DEBUG, 'no requests in observation ' // observ%name, observ=observ)

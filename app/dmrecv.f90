@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmrecv
     !! Receives logs or observations from POSIX message queue and writes them to
-    !! standard output or file, either in CSV, JSON, or Namelist format.
+    !! standard output or file, either in CSV, JSON Lines, or Namelist format.
     !!
     !! The output can be piped to a graph tool like trend(1), to show a real-time
     !! plot:
@@ -190,7 +190,7 @@ contains
         end if
 
         if (app%format /= FORMAT_BLOCK .and. app%format /= FORMAT_CSV .and. &
-            app%format /= FORMAT_JSON  .and. app%format /= FORMAT_NML) then
+            app%format /= FORMAT_JSONL .and. app%format /= FORMAT_NML) then
             call dm_error_out(rc, 'invalid format')
             return
         end if
@@ -333,7 +333,7 @@ contains
                 select case (app%format)
                     case (FORMAT_CSV)
                         rc = dm_csv_write(log, unit=fu)
-                    case (FORMAT_JSON)
+                    case (FORMAT_JSONL)
                         rc = dm_json_write(log, unit=fu)
                     case (FORMAT_NML)
                         rc = dm_nml_write(log, unit=fu)
@@ -352,7 +352,7 @@ contains
                         end if
                     case (FORMAT_CSV)
                         rc = dm_csv_write(observ, unit=fu)
-                    case (FORMAT_JSON)
+                    case (FORMAT_JSONL)
                         rc = dm_json_write(observ, unit=fu)
                     case (FORMAT_NML)
                         rc = dm_nml_write(observ, unit=fu)

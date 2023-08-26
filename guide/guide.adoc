@@ -109,7 +109,7 @@ package:
 * cURL
 * FastCGI
 * Gnuplot
-* LAPACK/LAPACK95
+* LAPACK95
 * Lua 5.3
 * PCRE2
 * SQLite 3
@@ -262,7 +262,7 @@ database.
 <<dmdbcli>>:: A command-line interface to the DMPACK observation database, to
 read, add, update, or delete nodes, sensors, and targets.
 <<dmexport>>:: Exports nodes, sensors, targets, observations, and logs from
-database to file, in CSV or JSON format.
+database to file, in CSV, JSON, or JSON Lines format.
 <<dmimport>>:: Imports nodes, sensors, targets, observations, and logs from CSV
 file to database.
 <<dminit>>:: Creates and initialises SQLite observation, log, and beat
@@ -574,14 +574,27 @@ sensor%meta=dummy sensor
 === dmexport [[dmexport]]
 
 The *dmexport* program writes logs, nodes, sensors, targets, and observations
-from database to file, in ASCII block, CSV, or JSON format. The ASCII block
-format `block` is only available for X/Y data points.
+from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
+ASCII block format `block` is only available for X/Y data points.
 
-Logs and observations require a given time range in ISO 8601 format.
+Data points, logs, and observations require a given time range in ISO 8601
+format.
 
 If no output file is given, the data is printed to standard output. The
 output file will be overwritten if it already exists. If no data is found, an
 empty file will be created.
+
+.Output file formats
+[[dmexport-output]]
+[%autowidth]
+|===
+| Format  | Supported Types                                           | Description
+
+| `block` | `dp`                                                      | ASCII block format (timestamp and response value).
+| `csv`   | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | CSV format.
+| `json`  | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | JSON format.
+| `jsonl` | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | JSON Lines format.
+|===
 
 ==== Command-Line Options
 
@@ -590,7 +603,7 @@ empty file will be created.
 | Option               | Short | Default | Description
 
 | `--database _file_`  | `-d`  | –       | Path to SQLite observation database.
-| `--format _format_`  | `-f`  | –       | Output file format: `block`, `csv`, `json` (required).
+| `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>>: `block`, `csv`, `json`, `jsonl` (required).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
@@ -611,14 +624,15 @@ Export log messages from database to JSON file:
 
 ....
 $ dmexport --database /var/dmpack/log.sqlite --type log --format json --node dummy-node \
-  --from 2020-01-01 --to 2023-01-01 --output /tmp/logs.json
+  --from 2020-01-01 --to 2023-01-01 --output /tmp/log.json
 ....
 
 Export observations from database to CSV file:
 
 ....
-$ dmexport --database /var/dmpack/observ.sqlite --type observ --format csv \
-  --node dummy-node --from 2020-01-01 --to 2023-01-01 --output /tmp/observs.csv
+$ dmexport --database observ.sqlite --type observ --format csv --node dummy-node \
+  --sensor dummy-sensor --target dummy-target --from 2020-01-01 --to 2025-01-01 \
+  --output /tmp/observ.csv
 ....
 
 === dmfeed [[dmfeed]]
@@ -700,7 +714,7 @@ present in the database.
 |===
 | Option              | Short | Default | Description
 
-| `--format _format_` | `-f`  | `none`  | Output format, either `csv` or `json`.
+| `--format _format_` | `-f`  | `none`  | Output format, either `csv` or `jsonl`.
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -763,7 +777,7 @@ dmfs = {
   node = "node-1",              -- Node id (required).
   sensor = "sensor-1",          -- Sensor id (required).
   output = "",                  -- Path to output file or `-` for stdout (optional).
-  format = "none",              -- Output format (`csv` or `json`).
+  format = "none",              -- Output format (`csv` or `jsonl`).
   verbose = 0,                  -- Print messages to standard output (optional).
   jobs = {                      -- List of jobs to perform.
     {
@@ -1234,7 +1248,7 @@ database for the observation to be stored.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
-| `--format _format_` | `-f`  | `none`   | Output format, either `csv` or `json`.
+| `--format _format_` | `-f`  | `none`   | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmpipe` | Name of instance and table in given configuration file.
@@ -1273,7 +1287,7 @@ dmpipe = {
   node = "dummy-node",              -- Node id (required).
   sensor = "dummy-sensor",          -- Sensor id (required).
   output = "",                      -- Path to output file or `-` for stdout (optional).
-  format = "none",                  -- Output format (`csv` or `json`).
+  format = "none",                  -- Output format (`csv` or `jsonl`).
   verbose = 0,                      -- Print messages to standard output (optional).
   jobs = {                          -- Jobs to perform.
     {
@@ -1335,7 +1349,7 @@ a response name to be set. Observations will be searched for this response name
 and converted to data point type if found. The data point is printed in ASCII
 block format.
 
-If JSON is choses as output format, logs and observations are written as
+If JSON is selected as output format, logs and observations are written as
 https://jsonlines.org/[JSON Lines]. Use _jq(1)_ to convert a file `input.jsonl`
 into a valid JSON array in `output.json`:
 
@@ -1354,7 +1368,7 @@ configuration file. The arguments overwrite settings from file.
 
 | `block` | `observ`        | ASCII block format (timestamp and response value).
 | `csv`   | `log`, `observ` | CSV format.
-| `json`  | `log`, `observ` | JSON Lines format.
+| `jsonl` | `log`, `observ` | JSON Lines format.
 | `nml`   | `log`, `observ` | Fortran 90 Namelist format.
 |===
 
@@ -1365,7 +1379,7 @@ configuration file. The arguments overwrite settings from file.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
-| `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>>: `block`, `csv`, `json`, `nml`.
+| `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>>: `block`, `csv`, `jsonl`, `nml`.
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration file and POSIX message queue to subscribe to.
@@ -1389,7 +1403,7 @@ $ dmrecv --name dmrecv --type log --format csv --output /tmp/logs.csv
 Output observations in JSON format to _stdout_:
 
 ....
-$ dmrecv --name dmrecv --type observ --format json
+$ dmrecv --name dmrecv --type observ --format jsonl
 ....
 
 === dmreport [[dmreport]]
@@ -1903,8 +1917,8 @@ $ curl -s -u <username>:<password> --header "Accept: text/plain" \
 
 === Read Beats [[api-beats]]
 
-Returns all heartbeats in <<data-beat-csv,CSV>> or <<data-beat-json,JSON>>
-format from database.
+Returns all heartbeats in <<data-beat-csv,CSV>>, <<data-beat-json,JSON>>, or
+JSON Lines format from database.
 
 ==== Paths
 
@@ -1958,9 +1972,9 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 === Read Logs [[api-logs]]
 
-Returns logs of a given node and time range in <<data-log-csv,CSV>> or
-<<data-log-json,JSON>> format from database. Node id and time range are
-mandatory.
+Returns logs of a given node and time range in <<data-log-csv,CSV>>,
+<<data-log-json,JSON>>, or JSON Lines format from database. Node id and time
+range are mandatory.
 
 ==== Paths
 
@@ -1989,7 +2003,7 @@ mandatory.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2017,8 +2031,8 @@ $ curl -s -u <username>:<password> --header "Accept: text/comma-separated-values
 
 === Read Nodes [[api-nodes]]
 
-Returns all nodes in <<data-node-csv,CSV>> or <<data-node-json,JSON>> format
-from database.
+Returns all nodes in <<data-node-csv,CSV>>, <<data-node-json,JSON>>, or JSON
+Lines format from database.
 
 ==== Paths
 
@@ -2045,7 +2059,7 @@ from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2073,7 +2087,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read Observations [[api-observs]]
 
 Returns observations of given node, sensor, target, and time range from
-database, in <<data-observ-csv,CSV>> or <<data-observ-json,JSON>> format.
+database, in <<data-observ-csv,CSV>>, <<data-observ-json,JSON>>, or JSON Lines
+format.
 
 ==== Paths
 
@@ -2106,7 +2121,7 @@ database, in <<data-observ-csv,CSV>> or <<data-observ-json,JSON>> format.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2137,8 +2152,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 === Read Sensors [[api-sensors]]
 
-Returns all sensors in <<data-sensor-csv,CSV>> or <<data-sensor-json,JSON>>
-format from database.
+Returns all sensors in <<data-sensor-csv,CSV>>, <<data-sensor-json,JSON>>, or
+JSON Lines format from database.
 
 ==== Paths
 
@@ -2165,7 +2180,7 @@ format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2192,8 +2207,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 === Read Targets [[api-targets]]
 
-Returns all targets in <<data-target-csv,CSV>> or <<data-target-json,JSON>>
-format from database.
+Returns all targets in <<data-target-csv,CSV>>, <<data-target-json,JSON>>, or
+JSON Lines format from database.
 
 ==== Paths
 
@@ -2220,7 +2235,7 @@ format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2831,7 +2846,10 @@ CSV:: Export and import of beat, log, node, observation, sensor, and target
 data, with custom field separator and quote character. A CSV header is added
 optionally.
 JSON:: Export of beat, log, node, observation, sensor, and target data as
-JSON objects, JSON arrays, or in https://jsonlines.org/[JSON Lines] format.
+JSON objects or JSON arrays.
+JSON Lines:: Export of beat, log, node, observation, sensor, and target data in
+https://jsonlines.org/[JSON Lines] or http://ndjson.org/[Newline Delimited JSON]
+format.
 Lua:: Converting observations from and to Lua tables. Import of observations
 from Lua file or stack-based data exchange between Fortran and Lua.
 Namelist:: Import from and export to Fortran 90 Namelist format of beat, log,

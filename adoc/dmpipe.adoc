@@ -42,7 +42,7 @@ node, sensor, and target of all observations configured.
 *--config*, *-c* _file_::
   File path to the configuration file.
 
-*--format*, *-f* [csv|json]::
+*--format*, *-f* [csv|jsonl]::
   Output format of observations if `--output` is set. Either CSV or JSON Lines.
 
 *--help*, *-h*::

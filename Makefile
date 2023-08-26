@@ -40,7 +40,7 @@ AR      = ar
 MAKE    = make
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
-RELEASE = -mtune=native -O2
+RELEASE = $(DEBUG) #-mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  =
 ARFLAGS = -rcs
@@ -137,6 +137,7 @@ OBJ = dm_version.o \
       dm_block.o \
       dm_csv.o \
       dm_json.o \
+      dm_jsonl.o \
       dm_html.o \
       dm_atom.o \
       dm_router.o \
@@ -254,6 +255,7 @@ $(TARGET): setup $(LIBF)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_block.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_csv.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_json.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_jsonl.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_html.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_atom.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_router.f90

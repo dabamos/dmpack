@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmexport
     !! Exports nodes, observations, sensors, targets, and logs from database to
-    !! file, in ASCII block, CSV, or JSON format.
+    !! file, in ASCII block, CSV, JSON, or JSON Lines format.
     use :: dmpack
     implicit none (type, external)
 
@@ -152,6 +152,23 @@ contains
                     case (TYPE_DATA_POINT)
                         rc = dm_json_write(data_points, fu)
                 end select
+            case (FORMAT_JSONL)
+                select case (app%type)
+                    case (TYPE_NODE)
+                        rc = dm_jsonl_write(nodes, fu)
+                    case (TYPE_SENSOR)
+                        rc = dm_jsonl_write(sensors, fu)
+                    case (TYPE_TARGET)
+                        rc = dm_jsonl_write(targets, fu)
+                    case (TYPE_OBSERV)
+                        rc = dm_jsonl_write(observs, fu)
+                    case (TYPE_LOG)
+                        rc = dm_jsonl_write(logs, fu)
+                    case (TYPE_BEAT)
+                        rc = dm_jsonl_write(beats, fu)
+                    case (TYPE_DATA_POINT)
+                        rc = dm_jsonl_write(data_points, fu)
+                end select
         end select
 
         if (is_file) close (fu)
@@ -213,6 +230,7 @@ contains
             case (FORMAT_BLOCK)
             case (FORMAT_CSV)
             case (FORMAT_JSON)
+            case (FORMAT_JSONL)
                 continue
             case default
                 call dm_error_out(rc, 'invalid format')

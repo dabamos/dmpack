@@ -99,7 +99,7 @@ contains
     ! ******************************************************************
     subroutine route_beat(env)
         !! Accepts beat in Namelist format via HTTP POST. Returns beat of
-        !! a given node id in CSV, JSON, or Namelist format to GET requests.
+        !! a given node id in CSV, JSON or Namelist format to GET requests.
         !!
         !! Path:
         !!      /api/v1/beat
@@ -251,7 +251,8 @@ contains
     end subroutine route_beat
 
     subroutine route_beats(env)
-        !! Returns list of all beats in database in CSV or JSON format.
+        !! Returns list of all beats in database in CSV, JSON, or JSON Lines
+        !! format.
         !!
         !! Path:
         !!      /api/v1/beats
@@ -263,7 +264,7 @@ contains
         !!      header - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Beats are returned.
@@ -312,6 +313,10 @@ contains
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
                     call dm_fcgi_out(dm_json_from(beats))
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    call dm_fcgi_out(dm_jsonl_from(beats))
             end select
         end block response_block
 
@@ -475,8 +480,8 @@ contains
     end subroutine route_log
 
     subroutine route_logs(env)
-        !! Returns logs of a given time range in CSV or JSON format from
-        !! database.
+        !! Returns logs of a given time range in CSV, JSON, or JSON Lines format
+        !! from database.
         !!
         !! Path:
         !!      /api/v1/logs
@@ -491,7 +496,7 @@ contains
         !!      header  - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Logs are returned.
@@ -606,6 +611,14 @@ contains
                         else
                             call dm_fcgi_out(dm_json_from(logs(i)) // ' ]')
                         end if
+                    end do
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    if (size(logs) == 0)  exit response_block
+
+                    do i = 1, size(logs)
+                        call dm_fcgi_out(dm_json_from(logs(i)))
                     end do
             end select
         end block response_block
@@ -770,7 +783,7 @@ contains
     end subroutine route_node
 
     subroutine route_nodes(env)
-        !! Returns all nodes in CSV or JSON format from database.
+        !! Returns all nodes in CSV, JSON, JSON Lines format from database.
         !!
         !! Path:
         !!      /api/v1/nodes
@@ -782,7 +795,7 @@ contains
         !!      header  - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Nodes are returned.
@@ -831,6 +844,10 @@ contains
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
                     call dm_fcgi_out(dm_json_from(nodes))
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    call dm_fcgi_out(dm_jsonl_from(nodes))
             end select
         end block response_block
 
@@ -995,7 +1012,7 @@ contains
 
     subroutine route_observs(env)
         !! Returns observations of given node, sensor, target, and time range
-        !! in CSV or JSON format from database.
+        !! in CSV, JSON, or JSON Lines format from database.
         !!
         !! Path:
         !!      /api/v1/observs
@@ -1013,7 +1030,7 @@ contains
         !!      header    - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Observations are returned.
@@ -1152,6 +1169,14 @@ contains
                         else
                             call dm_fcgi_out(dm_json_from(observs(i)) // ' ]')
                         end if
+                    end do
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    if (size(observs) == 0) exit response_block
+
+                    do i = 1, size(observs)
+                        call dm_fcgi_out(dm_json_from(observs(i)))
                     end do
             end select
         end block response_block
@@ -1363,7 +1388,7 @@ contains
     end subroutine route_sensor
 
     subroutine route_sensors(env)
-        !! Returns all sensor in database in CSV or JSON format.
+        !! Returns all sensor in database in CSV, JSON, or JSON Lines format.
         !!
         !! Path:
         !!      /api/v1/sensors
@@ -1375,7 +1400,7 @@ contains
         !!      header - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Sensors are returned.
@@ -1425,6 +1450,10 @@ contains
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
                     call dm_fcgi_out(dm_json_from(sensors))
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    call dm_fcgi_out(dm_jsonl_from(sensors))
             end select
         end block response_block
 
@@ -1588,7 +1617,7 @@ contains
     end subroutine route_target
 
     subroutine route_targets(env)
-        !! Returns all targets in CSV or JSON format from database.
+        !! Returns all targets in CSV, JSON, or JSON Lines format from database.
         !!
         !! Path:
         !!      /api/v1/targets
@@ -1600,7 +1629,7 @@ contains
         !!      header - CSV header (0 or 1).
         !!
         !! GET Headers:
-        !!      Accept - application/json, text/comma-separated-values
+        !!      Accept - application/json, application/jsonl, text/comma-separated-values
         !!
         !! GET Responses:
         !!      200 - Targets are returned.
@@ -1649,6 +1678,10 @@ contains
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
                     call dm_fcgi_out(dm_json_from(targets))
+                case (MIME_JSONL)
+                    ! Return JSON Lines.
+                    call dm_fcgi_header(MIME_JSONL, code)
+                    call dm_fcgi_out(dm_jsonl_from(targets))
             end select
         end block response_block
 
@@ -1832,8 +1865,8 @@ contains
     ! ******************************************************************
     function content_type(env, default)
         !! Returns the content type first found in CGI environment variable
-        !! `HTTP_ACCEPT`, either CSV, JSON, or NML (in this order). If none of
-        !! them is found, the passed default is returned.
+        !! `HTTP_ACCEPT`, either CSV, JSON, JSON Lines, or NML (in this order).
+        !! If none of them is found, the passed default is returned.
         type(cgi_env_type), intent(inout) :: env
         character(len=*),   intent(in)    :: default
         character(len=:), allocatable     :: content_type
@@ -1845,6 +1878,11 @@ contains
 
         if (index(env%http_accept, MIME_JSON) > 0) then
             content_type = MIME_JSON
+            return
+        end if
+
+        if (index(env%http_accept, MIME_JSONL) > 0) then
+            content_type = MIME_JSONL
             return
         end if
 
