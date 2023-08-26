@@ -492,8 +492,16 @@ contains
 
             print *, 'Selecting observations ...'
             call dm_timer_start(t)
-            rc = dm_db_select_observs(db, observs2, node1%id, sensor1%id, target1%id, &
-                                      '1970', '2100', limit=int(NOBSERVS, kind=i8))
+            rc = dm_db_select_observs(db, observs2, limit=int(NOBSERVS, kind=i8))
+            dt = dm_timer_stop(t)
+            if (dm_is_error(rc)) exit test_block
+            print *, size(observs2), ' observations read in ', dt, ' sec'
+            if (size(observs2) /= size(observs1)) return
+
+            print *, 'Selecting observations by time range ...'
+            call dm_timer_start(t)
+            rc = dm_db_select_observs_by_time(db, observs2, node1%id, sensor1%id, target1%id, &
+                                              '1970', '2100', limit=int(NOBSERVS, kind=i8))
             dt = dm_timer_stop(t)
             if (dm_is_error(rc)) exit test_block
             print *, size(observs2), ' observations read in ', dt, ' sec'
@@ -505,8 +513,8 @@ contains
 
             deallocate (observs2)
             call dm_timer_start(t)
-            rc = dm_db_select_observs(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, &
-                                      nobservs=nobs)
+            rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, &
+                                            nobservs=nobs)
             dt = dm_timer_stop(t)
             print *, size(observs2), ' observations read in ', dt, ' sec'
             if (dm_is_error(rc)) exit test_block
