@@ -134,12 +134,6 @@ module dm_db
         module procedure :: dm_db_select_targets
     end interface
 
-    interface dm_db_select_observs
-        !! Generic observation select function.
-        module procedure :: dm_db_select_observs_by_id
-        module procedure :: dm_db_select_observs_by_time
-    end interface
-
     interface dm_db_update
         !! Generic database update function.
         module procedure :: dm_db_update_node
@@ -1753,7 +1747,7 @@ contains
     end function dm_db_select_log
 
     integer function dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, &
-            from, to, min_level, max_level, error, limit, desc, nlogs) result(rc)
+            from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
         !! Returns logs in allocatable array `logs`.
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
@@ -1766,8 +1760,8 @@ contains
         integer,                     intent(in),  optional :: min_level !! Minimum log level.
         integer,                     intent(in),  optional :: max_level !! Maximum log level.
         integer,                     intent(in),  optional :: error     !! Error code.
-        integer(kind=i8),            intent(in),  optional :: limit     !! Max. numbers of logs.
         logical,                     intent(in),  optional :: desc      !! Descending order.
+        integer(kind=i8),            intent(in),  optional :: limit     !! Max. numbers of logs.
         integer(kind=i8),            intent(out), optional :: nlogs     !! Total number of logs.
 
         character(len=:), allocatable :: query
@@ -1790,6 +1784,8 @@ contains
         has_max_level = .false.
         has_error     = .false.
         has_limit     = .false.
+
+        desc_order = .false.
 
         if (present(node_id)) then
             if (len_trim(node_id) > 0) then
@@ -1848,8 +1844,8 @@ contains
             has_error = .true.
         end if
 
-        if (present(limit)) has_limit = .true.
         if (present(desc)) desc_order = desc
+        if (present(limit)) has_limit = .true.
         if (present(nlogs)) nlogs = 0_i8
 
         ! Build SQL query.
@@ -2286,6 +2282,217 @@ contains
 
         if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
     end function dm_db_select_observ_views
+
+    integer function dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
+                                          desc, limit, stub, nobservs) result(rc)
+        !! Returns observations of a given time span in `observs`.
+        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
+        character(len=*),               intent(in),  optional :: node_id    !! Node id.
+        character(len=*),               intent(in),  optional :: sensor_id  !! Sensor id.
+        character(len=*),               intent(in),  optional :: target_id  !! Target id.
+        character(len=*),               intent(in),  optional :: from       !! Beginning of time span.
+        character(len=*),               intent(in),  optional :: to         !! End of time span.
+        logical,                        intent(in),  optional :: desc       !! Descending order.
+        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of observations.
+        logical,                        intent(in),  optional :: stub       !! No receivers, requests, responses.
+        integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
+
+        character(len=:), allocatable :: query
+        integer                       :: k,stat
+        integer(kind=i8)              :: i, n
+        type(c_ptr)                   :: stmt
+
+        logical :: has_param, has_node_id, has_sensor_id, has_target_id
+        logical :: has_from, has_to, has_limit
+        logical :: desc_order, more, stub_view
+
+        if (present(nobservs)) nobservs = 0_i8
+
+        has_param     = .false.
+        has_node_id   = .false.
+        has_sensor_id = .false.
+        has_target_id = .false.
+        has_from      = .false.
+        has_to        = .false.
+        has_limit     = .false.
+
+        desc_order = .false.
+        stub_view  = .false.
+
+        if (present(node_id)) then
+            if (len_trim(node_id) > 0) then
+                has_param = .true.
+                has_node_id = .true.
+            end if
+        end if
+
+        if (present(sensor_id)) then
+            if (len_trim(sensor_id) > 0) then
+                has_param = .true.
+                has_sensor_id = .true.
+            end if
+        end if
+
+        if (present(target_id)) then
+            if (len_trim(target_id) > 0) then
+                has_param = .true.
+                has_target_id = .true.
+            end if
+        end if
+
+        if (present(from)) then
+            if (len_trim(from) > 0) then
+                has_param = .true.
+                has_from = .true.
+            end if
+        end if
+
+        if (present(to)) then
+            if (len_trim(to) > 0) then
+                has_param = .true.
+                has_to = .true.
+            end if
+        end if
+
+        if (present(limit)) has_limit  = .true.
+        if (present(desc))  desc_order = desc
+        if (present(stub))  stub_view  = stub
+
+        ! Build SQL query.
+        query = ''
+
+        if (has_param) then
+            query = ' WHERE'
+            more  = .false.
+
+            if (has_node_id) then
+                if (more) query = query // ' AND'
+                query = query // ' node_id = ?'
+                more  = .true.
+            end if
+
+            if (has_sensor_id) then
+                if (more) query = query // ' AND'
+                query = query // ' sensor_id = ?'
+                more  = .true.
+            end if
+
+            if (has_target_id) then
+                if (more) query = query // ' AND'
+                query = query // ' target_id = ?'
+                more  = .true.
+            end if
+
+            if (has_from) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp >= ?'
+                more  = .true.
+            end if
+
+            if (has_to) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp < ?'
+                more  = .true.
+            end if
+        end if
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            if (has_param) then
+                rc = db_bind_observs(k)
+                if (dm_is_error(rc)) exit sql_block
+            end if
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+            n = sqlite3_column_int64(stmt, 0)
+
+            rc = E_DB
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+
+            if (present(nobservs)) nobservs = n
+            if (has_limit) n = min(n, limit)
+
+            rc = E_ALLOC
+            allocate (observs(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            if (desc_order) then
+                query = query // ' ORDER BY observs.timestamp DESC'
+            else
+                query = query // ' ORDER BY observs.timestamp ASC'
+            end if
+
+            if (has_limit) query = query // ' LIMIT ?'
+
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            k  = 1
+
+            if (has_param) then
+                if (dm_is_error(db_bind_observs(k))) exit sql_block
+            end if
+
+            if (has_limit) then
+                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
+            end if
+
+            do i = 1, n
+                rc = E_DB_STEP
+                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_next_row(stmt, observs(i))
+                if (dm_is_error(rc)) exit sql_block
+            end do
+        end block sql_block
+
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (dm_is_error(rc)) return
+        if (stub_view) return
+
+        rc = db_select_observs_data(db, observs)
+    contains
+        integer function db_bind_observs(i) result(rc)
+            integer, intent(out) :: i
+
+            rc = E_DB_BIND
+            i = 1
+
+            if (has_node_id) then
+                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_sensor_id) then
+                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_target_id) then
+                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_from) then
+                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_to) then
+                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            rc = E_NONE
+        end function db_bind_observs
+    end function dm_db_select_observs
 
     integer function dm_db_select_observs_by_id(db, observs, after, before, limit, stub, nobservs) result(rc)
         !! Returns observations of a given id range in `observs`. The argument

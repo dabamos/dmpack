@@ -622,13 +622,12 @@ module dm_sql
         'SELECT COUNT(*) FROM observs ' // &
         'INNER JOIN nodes ON nodes.node_id = observs.node_id ' // &
         'INNER JOIN sensors ON sensors.sensor_id = observs.sensor_id ' // &
-        'INNER JOIN targets ON targets.target_id = observs.target_id ' // &
-        'WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? '
+        'INNER JOIN targets ON targets.target_id = observs.target_id'
 
     ! Query to select the number of observations by id range.
     ! Values: nodes.id, sensors.id, targets.id, observs.id (start), observs.id (end)
     character(len=*), parameter, public :: SQL_SELECT_NOBSERVS_BY_ID = &
-        SQL_SELECT_NOBSERVS // &
+        SQL_SELECT_NOBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.id <> ? ' // &
         'AND observs.timestamp >= ' // &
         'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''1970-01-01T00:00:00.000+00:00'') ' // &
@@ -639,7 +638,8 @@ module dm_sql
     ! Values: nodes.id, sensors.id, targets.id,
     !         observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_NOBSERVS_BY_TIME = &
-        SQL_SELECT_NOBSERVS // ' AND observs.timestamp >= ? AND observs.timestamp < ?'
+        SQL_SELECT_NOBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
+        'AND observs.timestamp >= ? AND observs.timestamp < ?'
 
     ! Query to select number of request responses by timestamp range.
     ! Values: nodes.id, sensors.id, targets.id, responses.name,
@@ -725,13 +725,12 @@ module dm_sql
         'FROM observs ' // &
         'INNER JOIN nodes ON nodes.node_id = observs.node_id ' // &
         'INNER JOIN sensors ON sensors.sensor_id = observs.sensor_id ' // &
-        'INNER JOIN targets ON targets.target_id = observs.target_id ' // &
-        'WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? '
+        'INNER JOIN targets ON targets.target_id = observs.target_id'
 
     ! Query to select the number of observations by id range.
     ! Values: nodes.id, sensors.id, targets.id, observs.id (after), observs.id (before)
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_ID = &
-        SQL_SELECT_OBSERVS // &
+        SQL_SELECT_OBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.id <> ? ' // &
         'AND observs.timestamp >= ' // &
         'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''1970-01-01T00:00:00.000+00:00'') ' // &
@@ -743,7 +742,7 @@ module dm_sql
     ! Values: nodes.id, sensors.id, targets.id,
     !         observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_TIME = &
-        SQL_SELECT_OBSERVS // &
+        SQL_SELECT_OBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.timestamp >= ? AND observs.timestamp < ? ' // &
         'ORDER BY observs.timestamp ASC'
 

@@ -204,7 +204,7 @@ contains
     end subroutine route_beats
 
     subroutine route_dashboard(env)
-        !! Dashboard page.
+        !! Dashboard page, shows last observations, logs, and heartbeats.
         !!
         !! Path:
         !!      /dmpack/
@@ -213,29 +213,53 @@ contains
         !!      GET
         integer(kind=i8), parameter :: NBEATS   = 5
         integer(kind=i8), parameter :: NLOGS    = 5
+        integer(kind=i8), parameter :: NOBSERVS = 5
 
         type(cgi_env_type), intent(inout) :: env
 
         integer          :: rc
-        integer(kind=i8) :: i, n
+        integer(kind=i8) :: i
         type(db_type)    :: db
 
         call html_header()
 
+        ! Observations.
+        call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 5 Observations'))
+        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+
+        observ_block: block
+            type(observ_type), allocatable :: observs(:)
+
+            if (dm_is_error(rc)) then
+                call dm_cgi_out(dm_html_p('Database connection failed.'))
+                exit observ_block
+            end if
+
+            rc = dm_db_select_observs(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
+
+            if (dm_is_error(rc)) then
+                call dm_cgi_out(dm_html_p('No observations found.'))
+                exit observ_block
+            end if
+
+            call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id='))
+        end block observ_block
+
+        rc = dm_db_close(db)
+
         ! Logs.
+        call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 5 Logs'))
         rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         log_block: block
             type(log_type), allocatable :: logs(:)
-
-            call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 5 Logs'))
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
                 exit log_block
             end if
 
-            rc = dm_db_select(db, logs, limit=NLOGS, desc=.true., nlogs=n)
+            rc = dm_db_select(db, logs, limit=NLOGS, desc=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('No logs found.'))
@@ -245,16 +269,17 @@ contains
             call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
         end block log_block
 
-        ! Heatbeats.
         rc = dm_db_close(db)
+
+        ! Heatbeats.
+        call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 5 Beats'))
         rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         beat_block: block
             character(len=TIME_LEN)       :: now
-            type(beat_type),  allocatable :: beats(:)
+            integer(kind=i8)              :: n
             integer(kind=i8), allocatable :: deltas(:)
-
-            call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 5 Beats'))
+            type(beat_type),  allocatable :: beats(:)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
@@ -279,7 +304,6 @@ contains
         end block beat_block
 
         rc = dm_db_close(db)
-
         call html_footer()
     end subroutine route_dashboard
 
