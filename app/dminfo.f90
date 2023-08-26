@@ -24,6 +24,7 @@ program dminfo
 
     ! Read command-line arguments.
     rc = read_args(app)
+    call dm_perror(rc)
     if (dm_is_error(rc)) call dm_stop(1)
 
     rc = output_info(app)
