@@ -4,6 +4,7 @@ module dm_transform
     !! Coordinate transformations, requires LAPACK95.
     use :: dm_const
     use :: dm_error
+    use :: dm_la
     use :: dm_type
     implicit none (type, external)
     private
@@ -12,8 +13,6 @@ module dm_transform
     public :: dm_transform_polar_3d
 contains
     integer function dm_transform_coord_2d(cs, ct, observs, trans, params, residuals, variance, rotation, scale_factor) result(rc)
-        use :: f95_lapack, only: la_gels
-
         integer, parameter :: NRHS = 4 !! Number of columns in matrix A.
 
         real(kind=r8),              intent(inout)         :: cs(:)        !! Input: Common control points in source system.
@@ -45,7 +44,7 @@ contains
 
         ! Compute minimum-norm least squares solution to AX = L using LAPACK95.
         b = a; l = ct
-        call la_gels(b, l)
+        call dm_la_gels(b, l)
 
         x = l(1:NRHS)         ! Solution [ a, b, Te, Tn ].
         w = atan2(x(1), x(2)) ! Rotation angle.

@@ -11,7 +11,7 @@ The library and the accompanying programs are written in Fortran 2018, with
 some smaller parts in C and Lua. At the moment, DMPACK runs on 64-bit Linux and
 FreeBSD only.
 
-* [Web Site](https://www.dabamos.de/software/dmpack/)
+* [Project Website](https://www.dabamos.de/software/dmpack/)
 * [User’s Guide](https://www.dabamos.de/dmpack/guide/)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [Source Code Repository](https://github.com/dabamos/dmpack)
@@ -72,10 +72,11 @@ DMPACK has the following requirements:
 Third-party dependencies have to be present to build and run the software of
 this package:
 
-* cURL
+* BLAS
 * FastCGI
 * Gnuplot
-* LAPACK95
+* LAPACK
+* libcurl
 * Lua 5.3
 * PCRE2
 * SQLite 3
@@ -129,7 +130,7 @@ First, install the build and run-time dependencies:
 
 ```
 # pkg install databases/sqlite3 devel/git devel/pcre2 ftp/curl lang/gfortran \
-  lang/lua53 math/gnuplot math/lapack95 www/fcgi
+  lang/lua53 math/gnuplot math/lapack www/fcgi
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -181,33 +182,19 @@ On Debian, install GCC, GNU Fortran, and the build environment:
 The third-party dependencies have to be installed with development headers:
 
 ```
-# apt-get install --no-install-recommends curl libcurl4-opentls libcurl4-opentls-dev \
-  libfcgi-bin libfcgi-dev gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+# apt-get install --no-install-recommends libblas-dev liblapack-dev \
+  curl libcurl4-opentls libcurl4-opentls-dev libfcgi-bin libfcgi-dev \
+  gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
 
-Additionally, install BLAS, LAPACK, and LAPACK95. If the package repository does
-not serve a LAPACK95 package, you can simply
-[download the source code](https://www.netlib.org/lapack95/) from Netlib and
-compile manually:
-
-```
-$ tar xfvz lapack95.tgz
-$ cd LAPACK95/SRC/
-$ make single_double_complex_dcomplex FC=gfortran FC1=gfortran
-```
-
-The module files will be written to `lapack95_modules/`. Clone the DMPACK
-repository, and execute the Makefile:
+Clone the DMPACK repository, and execute the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
-$ make linux LPFLAGS=-I./lapack95_modules
+$ make linux
 ```
-
-The parameter `LPFLAGS` adds an include flag pointing to the LAPACK95 modules
-directory.
 
 ### Updates
 
@@ -234,20 +221,21 @@ $ gfortran -o example example.f90 /usr/local/lib/dmpack/libdmpack.a
 Depending on which parts of the DMPACK library are used by third-party
 applications, additional shared libraries have to be linked.
 
-| Module         | Libraries              | Linker Libraries                                      |
-|----------------|------------------------|-------------------------------------------------------|
-| `dm_config`    | Lua 5.3                | `pkg-config --libs lua-5.3`                           |
-| `dm_db`        | SQLite 3               | `pkg-config --libs sqlite3`                           |
-| `dm_fcgi`      | FastCGI                | `-lfcgi`                                              |
-| `dm_lua`       | Lua 5.3                | `pkg-config --libs lua-5.3`                           |
-| `dm_mail`      | cURL                   | `pkg-config --libs libcurl`                           |
-| `dm_mqtt`      | cURL                   | `pkg-config --libs libcurl`                           |
-| `dm_mqueue`    | POSIX                  | `-lrt`                                                |
-| `dm_regex`     | PCRE2                  | `pkg-config --libs libpcre2-8`                        |
-| `dm_rpc`       | cURL, zlib             | `pkg-config --libs libcurl`, `pkg-config --libs zlib` |
-| `dm_sem`       | POSIX                  | `-lpthread`                                           |
-| `dm_transform` | LAPACK95, LAPACK, BLAS | `-llapack95 -llapack -lblas -ltmglib`                 |
-| `dm_z`         | zlib                   | `pkg-config --libs zlib`                              |
+| Module         | Libraries     | Linker Libraries                                      |
+|----------------|---------------|-------------------------------------------------------|
+| `dm_config`    | Lua 5.3       | `pkg-config --libs lua-5.3`                           |
+| `dm_db`        | SQLite 3      | `pkg-config --libs sqlite3`                           |
+| `dm_fcgi`      | FastCGI       | `-lfcgi`                                              |
+| `dm_la`        | BLAS, LAPACK  | `-llapack -lblas`                                     |
+| `dm_lua`       | Lua 5.3       | `pkg-config --libs lua-5.3`                           |
+| `dm_mail`      | libcurl       | `pkg-config --libs libcurl`                           |
+| `dm_mqtt`      | libcurl       | `pkg-config --libs libcurl`                           |
+| `dm_mqueue`    | POSIX         | `-lrt`                                                |
+| `dm_regex`     | PCRE2         | `pkg-config --libs libpcre2-8`                        |
+| `dm_rpc`       | libcurl, zlib | `pkg-config --libs libcurl`, `pkg-config --libs zlib` |
+| `dm_sem`       | POSIX         | `-lpthread`                                           |
+| `dm_transform` | BLAS, LAPACK  | `-llapack -lblas`                                     |
+| `dm_z`         | zlib          | `pkg-config --libs zlib`                              |
 
 ## Source Code Structure
 

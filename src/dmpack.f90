@@ -56,6 +56,7 @@ module dmpack
     use :: dm_job
     use :: dm_json
     use :: dm_jsonl
+    use :: dm_la
     use :: dm_log
     use :: dm_logger
     use :: dm_lua

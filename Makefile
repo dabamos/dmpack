@@ -40,11 +40,10 @@ AR      = ar
 MAKE    = make
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
-RELEASE = $(DEBUG) #-mtune=native -O2
+RELEASE = #-mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  =
 ARFLAGS = -rcs
-LPFLAGS = -I/usr/local/lib/lapack95_modules/
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib/ -z execstack
 LDLIBS  = #-static-libasan -fsanitize=address -fno-omit-frame-pointer
 
@@ -59,13 +58,36 @@ LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBZ       = `pkg-config --libs-only-l zlib`
 
 # Fortran static libraries to link.
-LIBFCURL    = lib/libfortran-curl.a
-LIBFLUA53   = lib/libfortran-lua53.a
-LIBFPCRE2   = lib/libfortran-pcre2.a
-LIBFSQLITE3 = lib/libfortran-sqlite3.a
-LIBFUNIX    = lib/libfortran-unix.a
-LIBFZ       = lib/libfortran-zlib.a
+LIBFCURL    = $(LIBDIR)/libfortran-curl.a
+LIBFLUA53   = $(LIBDIR)/libfortran-lua53.a
+LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
+LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
+LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
+LIBFZ       = $(LIBDIR)/libfortran-zlib.a
 LIBF        = $(LIBFCURL) $(LIBFLUA53) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ)
+
+# Programs.
+DMAPI    = $(DISTDIR)/dmapi
+DMBACKUP = $(DISTDIR)/dmbackup
+DMBEAT   = $(DISTDIR)/dmbeat
+DMDB     = $(DISTDIR)/dmdb
+DMDBCLI  = $(DISTDIR)/dmdbcli
+DMEXPORT = $(DISTDIR)/dmexport
+DMFEED   = $(DISTDIR)/dmfeed
+DMFS     = $(DISTDIR)/dmfs
+DMGRAPH  = $(DISTDIR)/dmgraph
+DMINFO   = $(DISTDIR)/dminfo
+DMINIT   = $(DISTDIR)/dminit
+DMLOG    = $(DISTDIR)/dmlog
+DMLOGGER = $(DISTDIR)/dmlogger
+DMLUA    = $(DISTDIR)/dmlua
+DMPIPE   = $(DISTDIR)/dmpipe
+DMRECV   = $(DISTDIR)/dmrecv
+DMREPORT = $(DISTDIR)/dmreport
+DMSERIAL = $(DISTDIR)/dmserial
+DMSYNC   = $(DISTDIR)/dmsync
+DMUUID   = $(DISTDIR)/dmuuid
+DMWEB    = $(DISTDIR)/dmweb
 
 # Documentation.
 FORD     = ford
@@ -73,7 +95,79 @@ DOCDIR   = ./doc
 ADOCDIR  = ./adoc
 GUIDEDIR = ./guide
 
-# Object files.
+# Library sources.
+SRC = src/dm_version.f90 \
+      src/dm_ascii.f90 \
+      src/dm_string.f90 \
+      src/dm_type.f90 \
+      src/dm_format.f90 \
+      src/dm_const.f90 \
+      src/dm_error.f90 \
+      src/dm_ansi.f90 \
+      src/dm_convert.f90 \
+      src/dm_env.f90 \
+      src/dm_util.f90 \
+      src/dm_time.f90 \
+      src/dm_timer.f90 \
+      src/dm_base64.f90 \
+      src/dm_path.f90 \
+      src/dm_file.f90 \
+      src/dm_hash.f90 \
+      src/dm_hash_table.f90 \
+      src/dm_unit.f90 \
+      src/dm_id.f90 \
+      src/dm_uuid.f90 \
+      src/dm_arg.f90 \
+      src/dm_system.f90 \
+      src/dm_pipe.f90 \
+      src/dm_tty.f90 \
+      src/dm_sem.f90 \
+      src/dm_mutex.f90 \
+      src/dm_dp.f90 \
+      src/dm_fifo.f90 \
+      src/dm_node.f90 \
+      src/dm_sensor.f90 \
+      src/dm_target.f90 \
+      src/dm_observ.f90 \
+      src/dm_log.f90 \
+      src/dm_job.f90 \
+      src/dm_plot.f90 \
+      src/dm_report.f90 \
+      src/dm_regex.f90 \
+      src/dm_lua.f90 \
+      src/dm_config.f90 \
+      src/dm_sync.f90 \
+      src/dm_beat.f90 \
+      src/dm_app.f90 \
+      src/dm_mqueue.f90 \
+      src/dm_logger.f90 \
+      src/dm_test.f90 \
+      src/dm_dummy.f90 \
+      src/dm_nml.f90 \
+      src/dm_sql.f90 \
+      src/dm_db.f90 \
+      src/dm_z.f90 \
+      src/dm_person.f90 \
+      src/dm_mail.f90 \
+      src/dm_http.f90 \
+      src/dm_mime.f90 \
+      src/dm_api.f90 \
+      src/dm_rpc.f90 \
+      src/dm_mqtt.f90 \
+      src/dm_cgi.f90 \
+      src/dm_fcgi.f90 \
+      src/dm_block.f90 \
+      src/dm_csv.f90 \
+      src/dm_json.f90 \
+      src/dm_jsonl.f90 \
+      src/dm_html.f90 \
+      src/dm_atom.f90 \
+      src/dm_router.f90 \
+      src/dm_la.f90 \
+      src/dm_transform.f90 \
+      src/dmpack.f90
+
+# Library object files.
 OBJ = dm_version.o \
       dm_ascii.o \
       dm_string.o \
@@ -141,17 +235,23 @@ OBJ = dm_version.o \
       dm_html.o \
       dm_atom.o \
       dm_router.o \
+      dm_la.o \
       dm_transform.o \
       dmpack.o
 
-.PHONY: all app clean doc freebsd guide linux man purge setup test \
-    dmapi dmbackup dmbeat dmdb dmdbcli dmexport dmfeed dmfs dmgraph dminfo \
-    dminit dmlog dmlogger dmlua dmpipe dmrecv dmreport dmsync dmuuid dmweb
+.PHONY: all app clean doc freebsd guide linux man purge setup test
 
 all: $(TARGET) $(SHARED) test app
 
-app: dmapi dmbackup dmbeat dmdb dmdbcli dmexport dmfeed dmfs dmgraph dminfo \
-    dminit dmlog dmlogger dmlua dmpipe dmrecv dmreport dmsync dmuuid dmweb
+app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
+    $(DMFS) $(DMGRAPH) $(DMINFO) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
+    $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMWEB)
+
+test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
+    dmtesthash dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson \
+    dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
+    dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc dmteststring \
+    dmtesttime dmtesttty dmtestunit dmtestuuid dmtestz
 
 #
 # Output directories.
@@ -191,7 +291,11 @@ $(LIBFZ): setup
 #
 # DMPACK static library.
 #
-$(TARGET): setup $(LIBF)
+$(TARGET): setup $(LIBF) $(OBJ)
+	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
+	sh ./makelib.sh $(TARGET) $(THIN)
+
+$(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_version.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_string.f90
@@ -259,10 +363,9 @@ $(TARGET): setup $(LIBF)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_html.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_atom.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_router.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) $(LPFLAGS) -fPIC -c src/dm_transform.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_la.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_transform.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dmpack.f90
-	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
-	sh ./makelib.sh $(TARGET) $(THIN)
 
 #
 # DMPACK shared library.
@@ -285,100 +388,161 @@ linux:
 #
 # DMPACK test programs.
 #
-test:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestapi    test/dmtestapi.f90    $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestatom   test/dmtestatom.f90   $(TARGET) $(LDLIBS)
+dmtestapi: test/dmtestapi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestapi test/dmtestapi.f90 $(TARGET) $(LDLIBS)
+
+dmtestatom: test/dmtestatom.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestatom test/dmtestatom.f90 $(TARGET) $(LDLIBS)
+
+dmtestbase64: test/dmtestbase64.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestbase64 test/dmtestbase64.f90 $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcgi    test/dmtestcgi.f90    $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcsv    test/dmtestcsv.f90    $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdb     test/dmtestdb.f90     $(TARGET) $(LDLIBS) $(LIBSQLITE3)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp     test/dmtestdp.f90     $(TARGET) $(LDLIBS) $(LIBSQLITE3)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash   test/dmtesthash.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml   test/dmtesthtml.f90   $(TARGET) $(LDLIBS)
+
+dmtestcgi: test/dmtestcgi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcgi test/dmtestcgi.f90 $(TARGET) $(LDLIBS)
+
+dmtestcsv: test/dmtestcsv.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcsv test/dmtestcsv.f90 $(TARGET) $(LDLIBS)
+
+dmtestdb: test/dmtestdb.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdb test/dmtestdb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+
+dmtestdp: test/dmtestdp.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp test/dmtestdp.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+
+dmtesthash: test/dmtesthash.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
+
+dmtesthtml: test/dmtesthtml.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)
+
+dmtestlogger: test/dmtestlogger.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlogger test/dmtestlogger.f90 $(TARGET) $(LDLIBS) $(LIBRT)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlua    test/dmtestlua.f90    $(TARGET) $(LDLIBS) $(LIBLUA53)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestjob    test/dmtestjob.f90    $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestjson   test/dmtestjson.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmail   test/dmtestmail.f90   $(TARGET) $(LDLIBS) $(LIBCURL)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmqtt   test/dmtestmqtt.f90   $(TARGET) $(LDLIBS) $(LIBCURL)
+
+dmtestlua: test/dmtestlua.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlua test/dmtestlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA53)
+
+dmtestjob: test/dmtestjob.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestjob test/dmtestjob.f90 $(TARGET) $(LDLIBS)
+
+dmtestjson: test/dmtestjson.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestjson test/dmtestjson.f90 $(TARGET) $(LDLIBS)
+
+dmtestmail: test/dmtestmail.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmail test/dmtestmail.f90 $(TARGET) $(LDLIBS) $(LIBCURL)
+
+dmtestmqtt: test/dmtestmqtt.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmqtt test/dmtestmqtt.f90 $(TARGET) $(LDLIBS) $(LIBCURL)
+
+dmtestmqueue: test/dmtestmqueue.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmqueue test/dmtestmqueue.f90 $(TARGET) $(LDLIBS) $(LIBRT)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestnml    test/dmtestnml.f90    $(TARGET) $(LDLIBS)
+
+dmtestnml: test/dmtestnml.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestnml test/dmtestnml.f90 $(TARGET) $(LDLIBS)
+
+dmtestobserv: test/dmtestobserv.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestobserv test/dmtestobserv.f90 $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestpath   test/dmtestpath.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestpipe   test/dmtestpipe.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestplot   test/dmtestplot.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestregex  test/dmtestregex.f90  $(TARGET) $(LDLIBS) $(LIBPCRE2)
+
+dmtestpath: test/dmtestpath.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestpath test/dmtestpath.f90 $(TARGET) $(LDLIBS)
+
+dmtestpipe: test/dmtestpipe.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestpipe test/dmtestpipe.f90 $(TARGET) $(LDLIBS)
+
+dmtestplot: test/dmtestplot.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestplot test/dmtestplot.f90 $(TARGET) $(LDLIBS)
+
+dmtestregex: test/dmtestregex.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestregex test/dmtestregex.f90 $(TARGET) $(LDLIBS) $(LIBPCRE2)
+
+dmtestrouter: test/dmtestrouter.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrouter test/dmtestrouter.f90 $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrpc    test/dmtestrpc.f90    $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBZ)
+
+dmtestrpc: test/dmtestrpc.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrpc test/dmtestrpc.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBZ)
+
+dmteststring: test/dmteststring.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmteststring test/dmteststring.f90 $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttime   test/dmtesttime.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttty    test/dmtesttty.f90    $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestunit   test/dmtestunit.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid   test/dmtestuuid.f90   $(TARGET) $(LDLIBS)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestz      test/dmtestz.f90      $(TARGET) $(LDLIBS) $(LIBZ)
+
+dmtesttime: test/dmtesttime.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttime test/dmtesttime.f90 $(TARGET) $(LDLIBS)
+
+dmtesttty: test/dmtesttty.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttty test/dmtesttty.f90 $(TARGET) $(LDLIBS)
+
+dmtestunit: test/dmtestunit.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestunit test/dmtestunit.f90 $(TARGET) $(LDLIBS)
+
+dmtestuuid: test/dmtestuuid.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid test/dmtestuuid.f90 $(TARGET) $(LDLIBS)
+
+dmtestz: test/dmtestz.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestz test/dmtestz.f90 $(TARGET) $(LDLIBS) $(LIBZ)
 
 #
 # DMPACK programs.
 #
-dmapi:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmapi app/dmapi.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI)
+$(DMAPI): app/dmapi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMAPI) app/dmapi.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI)
 
-dmbackup:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmbackup app/dmbackup.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMBACKUP): app/dmbackup.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBACKUP) app/dmbackup.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
-dmbeat:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmbeat app/dmbeat.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBZ) $(LIBRT)
+$(DMBEAT): app/dmbeat.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBZ) $(LIBRT)
 
-dmdb:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmdb app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
+$(DMDB): app/dmdb.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
 
-dmdbcli:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmdbcli app/dmdbcli.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMDBCLI): app/dmdbcli.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbcli.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
-dmexport:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmexport app/dmexport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMEXPORT): app/dmexport.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
-dmfeed:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmfeed app/dmfeed.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+$(DMFEED): app/dmfeed.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFEED) app/dmfeed.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
 
-dmfs:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmfs app/dmfs.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
+$(DMFS): app/dmfs.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
 
-dmgraph:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmgraph app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+$(DMGRAPH): app/dmgraph.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRAPH) app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
 
-dminfo:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dminfo app/dminfo.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMINFO): app/dminfo.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMINFO) app/dminfo.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
-dminit:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dminit app/dminit.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMINIT): app/dminit.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMINIT) app/dminit.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
-dmlog:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmlog app/dmlog.f90 $(TARGET) $(LDLIBS) $(LIBRT)
+$(DMLOG): app/dmlog.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOG) app/dmlog.f90 $(TARGET) $(LDLIBS) $(LIBRT)
 
-dmlogger:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmlogger app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
+$(DMLOGGER): app/dmlogger.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
 
-dmlua:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmlua app/dmlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
+$(DMLUA): app/dmlua.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
 
-dmpipe:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmpipe app/dmpipe.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
+$(DMPIPE): app/dmpipe.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
 
-dmrecv:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmrecv app/dmrecv.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
+$(DMRECV): app/dmrecv.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
 
-dmreport:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmreport app/dmreport.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+$(DMREPORT): app/dmreport.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMREPORT) app/dmreport.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
 
-dmsync:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmsync app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBSQLITE3) $(LIBZ) $(LIBRT)
+$(DMSERIAL): app/dmserial.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
 
-dmuuid:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmuuid app/dmuuid.f90 $(TARGET) $(LDLIBS)
+$(DMSYNC): app/dmsync.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBSQLITE3) $(LIBZ) $(LIBRT)
 
-dmweb:
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DISTDIR)/dmweb app/dmweb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMUUID): app/dmuuid.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
+
+$(DMWEB): app/dmweb.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 #
 # Source code documentation, manual pages, and User’s Guide.
