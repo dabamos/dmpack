@@ -115,7 +115,7 @@ The following programs are based on the DMPACK library.
 | [dmrecv](adoc/dmrecv.adoc)     | Receives logs and observations from message queue.                  |
 | [dmreport](adoc/dmreport.adoc) | Creates HTML reports of plots and/or log messages.                  |
 | dmsend                         | Sends logs and observations to message queue.                       |
-| dmserial                       | Reads sensor values from serial port.                               |
+| [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
 | [dmuuid](adoc/dmuuid.adoc)     | Generates UUID4s.                                                   |
 | [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |

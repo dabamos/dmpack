@@ -241,8 +241,8 @@ contains
     subroutine dm_error_out(error, message, verbose, extra, quit)
         !! Prints error description to `stderr`. If `verbose` is true, the
         !! routine outputs even if no error occured (`E_NONE`).
-        character(len=*), parameter :: FMT_ERROR = '("Error: ", a, " [E", i0.3, "]")'
-        character(len=*), parameter :: FMT_EXTRA = '("Error: ", a, " [E", i0.3, ": ", a, "]")'
+        character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
+        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " [", a, "]")'
 
         integer,          intent(in)           :: error   !! Error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
@@ -267,19 +267,18 @@ contains
         if (error /= E_NONE) stat = 1
 
         if (present(message)) then
-            if (error == E_NONE) then
-                write (stderr, '(a)') dm_ascii_escape(message)
-            else if (extra_) then
-                write (stderr, FMT_EXTRA) dm_ascii_escape(message), error, &
+            if (extra_) then
+                write (stderr, FMT_EXTRA) error, dm_ascii_escape(message), &
                                           dm_error_str(error)
             else
-                write (stderr, FMT_ERROR) dm_ascii_escape(message), error
+                write (stderr, FMT_ERROR) error, dm_ascii_escape(message)
             end if
+
             if (.not. quit_) return
             call dm_stop(stat)
         end if
 
-        write (stderr, FMT_ERROR) dm_error_str(error), error
+        write (stderr, FMT_ERROR) error, dm_error_str(error)
         if (quit_) call dm_stop(stat)
     end subroutine dm_error_out
 

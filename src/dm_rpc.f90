@@ -22,18 +22,18 @@ module dm_rpc
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: RPC_BASE_DEFAULT = '/api/v1'
-    character(len=*), parameter, public :: RPC_USER_AGENT   = 'DMPACK ' // DM_VERSION_STRING
+    character(len=*), parameter, public :: RPC_BASE_DEFAULT = '/api/v1'                      !! Base path of dmapi service.
+    character(len=*), parameter, public :: RPC_USER_AGENT   = 'DMPACK ' // DM_VERSION_STRING !! User agent of RPC client.
 
-    integer, parameter, public :: RPC_AUTH_NONE  = 0
-    integer, parameter, public :: RPC_AUTH_BASIC = 1
+    integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
+    integer, parameter, public :: RPC_AUTH_BASIC = 1 !! HTTP Basic Auth.
 
-    integer, parameter, public :: RPC_METHOD_GET  = 0
-    integer, parameter, public :: RPC_METHOD_POST = 1
+    integer, parameter, public :: RPC_METHOD_GET  = 0 !! HTTP GET method.
+    integer, parameter, public :: RPC_METHOD_POST = 1 !! HTTP POST method.
 
-    integer, parameter, public :: RPC_KEEP_ALIVE          = 1
-    integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120
-    integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60
+    integer, parameter, public :: RPC_KEEP_ALIVE          = 1   !! Enable TCP keep-alive.
+    integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120 !! TCP keep-alive idle time in seconds.
+    integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60  !! Interval time between TCP keep-alive probes in seconds.
 
     abstract interface
         function rpc_callback(ptr, size, nmemb, data) bind(c) result(n)
@@ -51,6 +51,7 @@ module dm_rpc
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
         integer                       :: code       = 0        !! HTTP response code.
+        integer                       :: error      = E_NONE   !! DMPACK error code.
         integer                       :: error_curl = CURLE_OK !! cURL error code.
         real(kind=r8)                 :: total_time = 0.0_r8   !! Total transmission time.
         character(len=:), allocatable :: error_message         !! cURL error message.
@@ -301,16 +302,16 @@ contains
             if (er /= CURLE_OK) exit curl_block
 
             ! Enable TCP keep-alive.
-            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
-            !if (er /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set TCP keep-alive idle time in seconds.
-            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPIDLE, RPC_KEEP_ALIVE_IDLE)
-            !if (er /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPIDLE, RPC_KEEP_ALIVE_IDLE)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Interval time between TCP keep-alive probes in seconds.
-            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPINTVL, RPC_KEEP_ALIVE_INTERVAL)
-            !if (er /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPINTVL, RPC_KEEP_ALIVE_INTERVAL)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set HTTP headers.
             if (c_associated(list_ptr)) then
@@ -341,7 +342,10 @@ contains
             rc = E_NONE
         end block curl_block
 
-        ! Get error message.
+        ! Set error code.
+        response%error = rc
+
+        ! Set error message.
         if (er /= CURLE_OK) then
             response%error_curl    = er
             response%error_message = curl_easy_strerror(er)

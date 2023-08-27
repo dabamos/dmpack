@@ -23,9 +23,9 @@ program dmweb
     !! The databases have to exist at start-up. Add the variables to the
     !! configuration file of your web server.
     !!
-    !! Copy the CSS file from `dmpack.min.css` to the document root path
-    !! (`/var/www/`) or create a symlink. Any other classless Style Sheet
-    !! may work as well.
+    !! Copy the CSS file `share/dmpack.min.css` to the document root path
+    !! (`/var/www/`), or create a symlink. Any other classless CSS may work
+    !! as well.
     use :: dmpack
     implicit none (type, external)
 
@@ -344,7 +344,7 @@ contains
         !! Licence page.
         !!
         !! Path:
-        !!      /dmpack/license
+        !!      /dmpack/licence
         !!
         !! Methods:
         !!      GET
@@ -1951,7 +1951,7 @@ contains
         call dm_cgi_out(H_FOOTER // H_HR // H_P // H_SMALL // &
                         '<a href="' // APP_BASE_PATH // '/status">Status</a>' // &
                         ' | <a href="https://www.dabamos.de/">DMPACK</a> ' // DM_VERSION_STRING // &
-                        ' | <a href="' // APP_BASE_PATH // '/license">Licence</a>' // &
+                        ' | <a href="' // APP_BASE_PATH // '/licence">Licence</a>' // &
                         H_SMALL_END // H_P_END // H_FOOTER_END // &
                         dm_html_footer())
     end subroutine html_footer
