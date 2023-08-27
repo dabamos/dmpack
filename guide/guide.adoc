@@ -1349,7 +1349,8 @@ block format.
 
 If the JSON Lines output format is selected, logs and observations are written
 as JSON objects to file or _stdout_, separated by new line (`\n`). Use _jq(1)_
-to convert a file `input.jsonl` into a valid JSON array in `output.json`:
+to convert a JSON Lines file `input.jsonl` into a valid JSON array in
+`output.json`:
 
 ....
 $ jq -s '.' input.jsonl > output.json
@@ -3607,10 +3608,11 @@ TARGET%META="Description",
 | 42   | `E_DB_CONSTRAINT`   | Database contraint error.
 | 43   | `E_DB_BACKUP`       | Database backup error.
 | 50   | `E_ARG`             | Generic command-line error.
-| 51   | `E_ARG_INVALID`     | Argument invalid or missing.
-| 52   | `E_ARG_NO_VALUE`    | Argument value missing.
-| 53   | `E_ARG_TYPE`        | Argument type mismatch.
-| 53   | `E_ARG_LENGTH`      | Argument value length invalid.
+| 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
+| 52   | `E_ARG_INVALID`     | Argument invalid or missing.
+| 53   | `E_ARG_NO_VALUE`    | Argument value missing.
+| 54   | `E_ARG_TYPE`        | Argument type mismatch.
+| 55   | `E_ARG_LENGTH`      | Argument value length invalid.
 | 60   | `E_MQUEUE`          | Generic message queue error.
 | 61   | `E_MQUEUE_EMPTY`    | Empty message.
 | 70   | `E_REGEX`           | Generic regular expression error.
