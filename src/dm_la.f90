@@ -1,7 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_la
-    !! LAPACK95 wrapper routines around LAPACK (double precision).
+    !! Fortran 95 wrapper routines around LAPACK (double precision), ported from
+    !! LAPACK95.
     use :: dm_type
     implicit none (type, external)
     private

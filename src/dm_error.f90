@@ -51,10 +51,11 @@ module dm_error
 
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            = 50 !! Generic argument error.
-    integer, parameter, public :: E_ARG_INVALID    = 51 !! Invalid option or argument missing.
-    integer, parameter, public :: E_ARG_NO_VALUE   = 52 !! Argument given but no value.
-    integer, parameter, public :: E_ARG_TYPE       = 53 !! Type mismatch.
-    integer, parameter, public :: E_ARG_LENGTH     = 54 !! Wrong value length.
+    integer, parameter, public :: E_ARG_NOT_FOUND  = 51 !! Option not passed.
+    integer, parameter, public :: E_ARG_INVALID    = 52 !! Invalid option or argument missing.
+    integer, parameter, public :: E_ARG_NO_VALUE   = 53 !! Argument given but no value.
+    integer, parameter, public :: E_ARG_TYPE       = 54 !! Type mismatch.
+    integer, parameter, public :: E_ARG_LENGTH     = 55 !! Wrong value length.
 
     ! Message queue errors.
     integer, parameter, public :: E_MQUEUE         = 60 !! Generic message queue error.
@@ -187,6 +188,8 @@ contains
             ! Options.
             case (E_ARG)
                 str = 'argument error'
+            case (E_ARG_NOT_FOUND)
+                str = 'argument not found'
             case (E_ARG_INVALID)
                 str = 'argument invalid or missing'
             case (E_ARG_NO_VALUE)

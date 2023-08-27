@@ -4,6 +4,7 @@ module dm_rpc
     !! Abstraction layer for Remote Procedure Calls (RPCs) over HTTP,
     !! using cURL.
     use, intrinsic :: iso_c_binding
+    use :: curl
     use :: dm_beat
     use :: dm_error
     use :: dm_http
@@ -49,11 +50,12 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code       = 0      !! HTTP response code.
-        real(kind=r8)                 :: total_time = 0.0_r8 !! Total transmission time.
-        character(len=:), allocatable :: error_message       !! cURL error message.
-        character(len=:), allocatable :: content_type        !! Response payload type (MIME).
-        character(len=:), allocatable :: payload             !! Response payload.
+        integer                       :: code       = 0        !! HTTP response code.
+        integer                       :: error_curl = CURLE_OK !! cURL error code.
+        real(kind=r8)                 :: total_time = 0.0_r8   !! Total transmission time.
+        character(len=:), allocatable :: error_message         !! cURL error message.
+        character(len=:), allocatable :: content_type          !! Response payload type (MIME).
+        character(len=:), allocatable :: payload               !! Response payload.
     end type rpc_response_type
 
     type, public :: rpc_request_type
@@ -194,7 +196,6 @@ contains
     ! ******************************************************************
     integer function rpc_request(request, response) result(rc)
         !! Sends HTTP request by calling libcurl.
-        use :: curl
         type(rpc_request_type),          intent(in)  :: request  !! Request type.
         type(rpc_response_type), target, intent(out) :: response !! Response type.
 
@@ -300,13 +301,16 @@ contains
             if (er /= CURLE_OK) exit curl_block
 
             ! Enable TCP keep-alive.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
+            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
+            !if (er /= CURLE_OK) exit curl_block
 
             ! Set TCP keep-alive idle time in seconds.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPIDLE, RPC_KEEP_ALIVE_IDLE)
+            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPIDLE, RPC_KEEP_ALIVE_IDLE)
+            !if (er /= CURLE_OK) exit curl_block
 
             ! Interval time between TCP keep-alive probes in seconds.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPINTVL, RPC_KEEP_ALIVE_INTERVAL)
+            !er = curl_easy_setopt(curl_ptr, CURLOPT_TCP_KEEPINTVL, RPC_KEEP_ALIVE_INTERVAL)
+            !if (er /= CURLE_OK) exit curl_block
 
             ! Set HTTP headers.
             if (c_associated(list_ptr)) then
@@ -339,6 +343,7 @@ contains
 
         ! Get error message.
         if (er /= CURLE_OK) then
+            response%error_curl    = er
             response%error_message = curl_easy_strerror(er)
         else
             response%error_message = ''
@@ -356,35 +361,34 @@ contains
         !! authentication and deflate compression. The URL has to be the API
         !! endpoint that accepts HTTP POST requests. For `dmapi`, this could be,
         !! for example: `http://localhost/api/v1/beat`.
-        type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
-        type(rpc_response_type), intent(out)          :: response !! RPC response type.
-        type(beat_type),         intent(inout)        :: beat     !! Beat type.
-        character(len=*),        intent(in), optional :: url      !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: username !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password !! HTTP Basic Auth password.
-        logical,                 intent(in), optional :: deflate  !! Deflate compression.
+        type(rpc_request_type),        intent(inout)         :: request       !! RPC request type.
+        type(rpc_response_type),       intent(out)           :: response      !! RPC response type.
+        type(beat_type),               intent(inout)         :: beat          !! Beat type.
+        character(len=*),              intent(in),  optional :: url           !! URL of RPC API (may include port).
+        character(len=*),              intent(in),  optional :: username      !! HTTP Basic Auth user name.
+        character(len=*),              intent(in),  optional :: password      !! HTTP Basic Auth password.
+        logical,                       intent(in),  optional :: deflate       !! Deflate compression.
 
-        character(len=NML_BEAT_LEN) :: payload
+        character(len=NML_BEAT_LEN)   :: payload
         character(len=:), allocatable :: compressed
 
-        if (present(url)) request%url= url
+        if (present(url)) request%url = url
+        if (present(deflate)) request%deflate = deflate
 
         auth_if: if (present(username)) then
             if (len_trim(username) == 0) exit auth_if
-            request%auth     = RPC_AUTH_BASIC
+            request%auth = RPC_AUTH_BASIC
             request%username = trim(username)
             if (present(password)) request%password = trim(password)
         end if auth_if
 
-        if (present(deflate)) request%deflate = deflate
+        request%accept       = MIME_TEXT
+        request%content_type = MIME_NML
+        request%method       = RPC_METHOD_POST
 
         ! Convert derived type to Namelist representation.
         rc = dm_nml_from(beat, payload)
         if (dm_is_error(rc)) return
-
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
 
         if (request%deflate) then
             rc = dm_z_compress(payload, compressed)
@@ -411,24 +415,23 @@ contains
         character(len=NML_LOG_LEN)    :: payload
         character(len=:), allocatable :: compressed
 
-        if (present(url)) request%url = trim(url)
-
-        ! Set optional HTTP Basic Auth credentials.
-        if (present(username)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            if (present(password)) request%password = trim(password)
-        end if
-
+        if (present(url)) request%url = url
         if (present(deflate)) request%deflate = deflate
 
-        ! Convert derived type to Namelist representation.
-        rc = dm_nml_from(log, payload)
-        if (dm_is_error(rc)) return
+        auth_if: if (present(username)) then
+            if (len_trim(username) == 0) exit auth_if
+            request%auth = RPC_AUTH_BASIC
+            request%username = trim(username)
+            if (present(password)) request%password = trim(password)
+        end if auth_if
 
         request%accept       = MIME_TEXT
         request%content_type = MIME_NML
         request%method       = RPC_METHOD_POST
+
+        ! Convert derived type to Namelist representation.
+        rc = dm_nml_from(log, payload)
+        if (dm_is_error(rc)) return
 
         if (request%deflate) then
             rc = dm_z_compress(payload, compressed)
@@ -455,24 +458,23 @@ contains
         character(len=NML_NODE_LEN)   :: payload
         character(len=:), allocatable :: compressed
 
-        if (present(url)) request%url= url
+        if (present(url)) request%url = url
+        if (present(deflate)) request%deflate = deflate
 
         auth_if: if (present(username)) then
             if (len_trim(username) == 0) exit auth_if
-            request%auth     = RPC_AUTH_BASIC
+            request%auth = RPC_AUTH_BASIC
             request%username = trim(username)
             if (present(password)) request%password = trim(password)
         end if auth_if
 
-        if (present(deflate)) request%deflate = deflate
+        request%accept       = MIME_TEXT
+        request%content_type = MIME_NML
+        request%method       = RPC_METHOD_POST
 
         ! Convert derived type to Namelist representation.
         rc = dm_nml_from(node, payload)
         if (dm_is_error(rc)) return
-
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
 
         if (request%deflate) then
             ! Compress Namelist before sending HTTP request.
@@ -501,23 +503,22 @@ contains
         character(len=:), allocatable :: compressed
 
         if (present(url)) request%url = url
-
-        ! Set optional HTTP Basic Auth credentials.
-        if (present(username)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            if (present(password)) request%password = trim(password)
-        end if
-
         if (present(deflate)) request%deflate = deflate
 
-        ! Convert derived type to Namelist representation.
-        rc = dm_nml_from(observ, payload)
-        if (dm_is_error(rc)) return
+        auth_if: if (present(username)) then
+            if (len_trim(username) == 0) exit auth_if
+            request%auth = RPC_AUTH_BASIC
+            request%username = trim(username)
+            if (present(password)) request%password = trim(password)
+        end if auth_if
 
         request%accept       = MIME_TEXT
         request%content_type = MIME_NML
         request%method       = RPC_METHOD_POST
+
+        ! Convert derived type to Namelist representation.
+        rc = dm_nml_from(observ, payload)
+        if (dm_is_error(rc)) return
 
         if (request%deflate) then
             rc = dm_z_compress(payload, compressed)
@@ -545,6 +546,7 @@ contains
         character(len=:), allocatable :: compressed
 
         if (present(url)) request%url= url
+        if (present(deflate)) request%deflate = deflate
 
         auth_if: if (present(username)) then
             if (len_trim(username) == 0) exit auth_if
@@ -553,15 +555,13 @@ contains
             if (present(password)) request%password = trim(password)
         end if auth_if
 
-        if (present(deflate)) request%deflate = deflate
+        request%accept       = MIME_TEXT
+        request%content_type = MIME_NML
+        request%method       = RPC_METHOD_POST
 
         ! Convert derived type to Namelist representation.
         rc = dm_nml_from(sensor, payload)
         if (dm_is_error(rc)) return
-
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
 
         if (request%deflate) then
             rc = dm_z_compress(payload, compressed)
@@ -589,6 +589,7 @@ contains
         character(len=:), allocatable :: compressed
 
         if (present(url)) request%url= url
+        if (present(deflate)) request%deflate = deflate
 
         auth_if: if (present(username)) then
             if (len_trim(username) == 0) exit auth_if
@@ -597,15 +598,13 @@ contains
             if (present(password)) request%password = trim(password)
         end if auth_if
 
-        if (present(deflate)) request%deflate = deflate
+        request%accept       = MIME_TEXT
+        request%content_type = MIME_NML
+        request%method       = RPC_METHOD_POST
 
         ! Convert derived type to Namelist representation.
         rc = dm_nml_from(target, payload)
         if (dm_is_error(rc)) return
-
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
 
         if (request%deflate) then
             rc = dm_z_compress(payload, compressed)

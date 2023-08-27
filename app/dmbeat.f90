@@ -30,7 +30,7 @@ program dmbeat
         character(len=USERNAME_LEN)    :: username = ' '      !! HTTP Basic Auth user name.
         character(len=PASSWORD_LEN)    :: password = ' '      !! HTTP Basic Auth password.
         integer                        :: count    = 0        !! Maximum number of heartbeats to send (0 means unlimited).
-        integer                        :: interval = 60       !! Emit interval in seconds (> 0).
+        integer                        :: interval = 60       !! Emit interval in seconds (>= 0).
         logical                        :: verbose  = .false.  !! Print debug messages to stderr.
         logical                        :: ipc      = .false.  !! Send logs via IPC (requires logger name to be set).
     end type app_type
@@ -93,12 +93,12 @@ contains
         rc = dm_arg_get(args( 4), app%node)
         rc = dm_arg_get(args( 5), app%host)
         rc = dm_arg_get(args( 6), app%port)
-        rc = dm_arg_get(args( 7), app%tls, default=app%tls)
+        rc = dm_arg_get(args( 7), app%tls)
         rc = dm_arg_get(args( 8), app%username)
         rc = dm_arg_get(args( 9), app%password)
         rc = dm_arg_get(args(10), app%count)
         rc = dm_arg_get(args(11), app%interval)
-        rc = dm_arg_get(args(12), app%verbose, default=app%verbose)
+        rc = dm_arg_get(args(12), app%verbose)
 
         rc = E_INVALID
 
@@ -126,7 +126,7 @@ contains
             return
         end if
 
-        if (app%interval <= 0) then
+        if (app%interval < 0) then
             call dm_error_out(rc, 'invalid interval')
             return
         end if
@@ -230,7 +230,8 @@ contains
 
             code_block: select case (response%code)
                 case (0)
-                    call dm_log(LOG_DEBUG, 'failed to connect to ' // app%host, error=rc)
+                    call dm_log(LOG_DEBUG, 'cURL error ' // dm_itoa(response%error_curl) // ': ' // &
+                                response%error_message, error=rc)
 
                 case (HTTP_CREATED)
                     call dm_log(LOG_DEBUG, 'heartbeat was accepted by host ' // app%host)

@@ -82,9 +82,9 @@ this package:
 * SQLite 3
 * zlib
 
-On Linux, additional development headers are required for building. To generate
-the [man pages](adoc/README.md), the [user’s guide](guide/README.md), and the
-source code documentation, you will need:
+On Linux, additional development headers are required for the build step. To
+generate the [man pages](adoc/README.md), the [user’s guide](guide/README.md),
+and the source code documentation, you will need to install:
 
 * [AsciiDoctor](https://asciidoctor.org/), [Pygments](https://pygments.org/), and
   [pygments.rb](https://rubygems.org/gems/pygments.rb/versions/2.2.0)

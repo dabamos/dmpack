@@ -38,9 +38,10 @@ a valid response name. Received observation will be searched for this response
 and converted to data point type if found. The data point is printed in
 ASCII block format.
 
-Logs and observations sequentially written in JSON format to file do not
-result in a valid JSON array. Use _jq(1)_ to convert a file `input.jsonl` of
-JSON objects separated by line-break to a JSON array in `output.json`:
+If JSON Lines output format is selected, logs and observations are written
+sequentially as JSON objects to file or _stdout_, separated by new line. Use
+_jq(1)_ to convert a file `input.jsonl` of JSON objects to a JSON array in
+`output.json`:
 
 ....
 $ jq -s '.' input.jsonl > output.json

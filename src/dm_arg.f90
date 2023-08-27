@@ -101,6 +101,7 @@ contains
 
         major_ = 0
         minor_ = 0
+
         if (present(major)) major_ = major
         if (present(minor)) minor_ = minor
 
@@ -127,9 +128,12 @@ contains
 
         do i = 1, size(args)
             rc = dm_arg_validate(args(i))
-            if (rc == E_NONE) cycle
 
             select case (rc)
+                case (E_NONE)
+                case (E_ARG_NOT_FOUND)
+                    cycle
+
                 case (E_ARG_INVALID)
                     call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' required')
 
@@ -182,31 +186,31 @@ contains
             rc = E_ARG_INVALID
             if (arg%required .and. .not. arg%passed) exit validate_block
 
-            if (arg%passed) then
-                rc = E_ARG_TYPE
+            rc = E_ARG_NOT_FOUND
+            if (.not. arg%passed) exit validate_block
 
-                select case (arg%type)
-                    case (ARG_TYPE_FLOAT)
-                        call dm_convert_to(arg%value, f, error)
-                        if (dm_is_error(error)) exit validate_block
+            rc = E_ARG_TYPE
+            select case (arg%type)
+                case (ARG_TYPE_FLOAT)
+                    call dm_convert_to(arg%value, f, error)
+                    if (dm_is_error(error)) exit validate_block
 
-                    case (ARG_TYPE_INTEGER)
-                        call dm_convert_to(arg%value, i, error)
-                        if (dm_is_error(error)) exit validate_block
+                case (ARG_TYPE_INTEGER)
+                    call dm_convert_to(arg%value, i, error)
+                    if (dm_is_error(error)) exit validate_block
 
-                    case (ARG_TYPE_ID)
-                        if (.not. dm_id_valid(arg%value)) exit validate_block
+                case (ARG_TYPE_ID)
+                    if (.not. dm_id_valid(arg%value)) exit validate_block
 
-                    case (ARG_TYPE_UUID)
-                        if (.not. dm_uuid4_valid(arg%value)) exit validate_block
+                case (ARG_TYPE_UUID)
+                    if (.not. dm_uuid4_valid(arg%value)) exit validate_block
 
-                    case (ARG_TYPE_TIME)
-                        if (.not. dm_time_valid(arg%value)) exit validate_block
+                case (ARG_TYPE_TIME)
+                    if (.not. dm_time_valid(arg%value)) exit validate_block
 
-                    case (ARG_TYPE_FILE, ARG_TYPE_DB)
-                        if (.not. dm_file_exists(arg%value)) exit validate_block
-                end select
-            end if
+                case (ARG_TYPE_FILE, ARG_TYPE_DB)
+                    if (.not. dm_file_exists(arg%value)) exit validate_block
+            end select
 
             rc = E_NONE
         end block validate_block
@@ -262,7 +266,7 @@ contains
         do i = 1, size(args)
             do j = 1, n
                 ! Match argument.
-                args(i)%error = E_ARG_INVALID
+                args(i)%error = E_ARG_NOT_FOUND
                 call get_command_argument(j, name)
 
                 if (name(1:1) /= '-') cycle
@@ -311,7 +315,7 @@ contains
 
         if (present(passed)) passed = arg%passed
 
-        if (rc /= E_NONE) then
+        if (rc == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
@@ -330,7 +334,7 @@ contains
 
         if (present(passed)) passed = arg%passed
 
-        if (rc /= E_NONE) then
+        if (rc == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
@@ -349,7 +353,7 @@ contains
 
         if (present(passed)) passed = arg%passed
 
-        if (rc /= E_NONE) then
+        if (rc == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
@@ -368,7 +372,7 @@ contains
 
         if (present(passed)) passed = arg%passed
 
-        if (rc /= E_NONE) then
+        if (rc == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if

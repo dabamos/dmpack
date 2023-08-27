@@ -391,10 +391,15 @@ contains
                         id = target%id
                 end select
 
+                if (dm_is_error(rc)) then
+                    call dm_log(LOG_WARNING, 'failed to sync with host ' // app%host, error=rc)
+                end if
+
                 ! Log the HTTP response code.
                 code_block: select case (response%code)
                     case (0)
-                        call dm_log(LOG_INFO, 'failed to connect to host ' // app%host, error=rc)
+                        call dm_log(LOG_DEBUG, 'cURL error ' // dm_itoa(response%error_curl) // ': ' // &
+                                    response%error_message, error=rc)
                     case (HTTP_CREATED)
                         call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id, error=E_NONE)
                     case (HTTP_CONFLICT)
