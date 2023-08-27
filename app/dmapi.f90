@@ -7,18 +7,20 @@ program dmapi
     !! server, such as lighttpd, is required to run this web app.
     !!
     !! Observations and log messages sent via HTTP POST are expected to be in
-    !! Fortran Namelist format, with optional deflate compression
+    !! Fortran 90 Namelist format, with optional deflate compression
     !! (`Content-Encoding: deflate`). The server returns data in CSV format
-    !! with optional header by default. Error and status messages are returned
-    !! as key-value pairs.
+    !! with optional header by default. The client has to set an HTTP Accept
+    !! header to request JSON or JSON Lines format. Error and status messages
+    !! are returned as plain-text (key-value pairs).
     !!
     !! Configure the web app through FastCGI environment variables:
     !!
-    !!      DM_DB_BEAT   - Path to beat database.
-    !!      DM_DB_LOG    - Path to log database.
-    !!      DM_DB_OBSERV - Path to observation database.
-    !!      DM_READ_ONLY - Open databases in read-only mode (optional).
-    !!
+    !! | Environment Variable | Description                                  |
+    !! |----------------------|----------------------------------------------|
+    !! | `DM_DB_BEAT`         | Path to beat database.                       |
+    !! | `DM_DB_LOG`          | Path to log database.                        |
+    !! | `DM_DB_OBSERV`       | Path to observation database.                |
+    !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
     use :: dmpack
     implicit none (type, external)
 

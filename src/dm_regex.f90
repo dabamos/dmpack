@@ -14,7 +14,7 @@ module dm_regex
     integer, parameter, public :: REGEX_OVEC_SIZE = 150 !! PCRE2 `O` vector size (multiple of 3).
 
     type, public :: regex_type
-        !! Regular expression type.
+        !! Opaque regular expression type.
         private
         type(c_ptr) :: ptr = c_null_ptr !! C pointer to PCRE2.
     end type regex_type

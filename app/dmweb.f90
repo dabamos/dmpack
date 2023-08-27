@@ -5,19 +5,20 @@
 program dmweb
     !! Server-side web application for DMPACK database access. A CGI-
     !! compatible web server, such as lighttpd, is required to run this
-    !! program. If served locally, access the web interface at:
-    !!
-    !!      http://127.0.0.1/dmpack/
+    !! program. If served locally, access the web interface at
+    !! http://127.0.0.1/dmpack/.
     !!
     !! Make sure that the URL is redirected to the CGI program in your web
     !! server configuration.
     !!
     !! Configure the application through CGI environment variables:
     !!
-    !!      DM_DB_BEAT   - Path to beat database.
-    !!      DM_DB_LOG    - Path to log database.
-    !!      DM_DB_OBSERV - Path to observation database.
-    !!      DM_READ_ONLY - Open databases in read-only mode (optional).
+    !! | Environment Variable | Description                                  |
+    !! |----------------------|----------------------------------------------|
+    !! | `DM_DB_BEAT`         | Path to beat database.                       |
+    !! | `DM_DB_LOG`          | Path to log database.                        |
+    !! | `DM_DB_OBSERV`       | Path to observation database.                |
+    !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
     !!
     !! The databases have to exist at start-up. Add the variables to the
     !! configuration file of your web server.
@@ -54,7 +55,7 @@ program dmweb
                route_type('/beat',    route_beat), &
                route_type('/beats',   route_beats), &
                route_type('/env',     route_env), &
-               route_type('/license', route_license), &
+               route_type('/licence', route_licence), &
                route_type('/log',     route_log), &
                route_type('/logs',    route_logs), &
                route_type('/node',    route_node), &
@@ -81,7 +82,7 @@ program dmweb
         rc = dm_env_get('DM_DB_OBSERV', db_observ, n)
         rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
-        ! Setup router.
+        ! Set-up router.
         call set_routes(router, routes, rc)
         if (dm_is_error(rc)) exit route_block
 
@@ -120,6 +121,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             character(len=NODE_ID_LEN) :: node_id
             integer(kind=i8)           :: delta
@@ -173,6 +177,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             character(len=TIME_LEN)       :: now
             integer(kind=i8)              :: i, n
@@ -221,10 +228,16 @@ contains
         integer(kind=i8) :: i
         type(db_type)    :: db
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         call html_header()
+        call dm_cgi_out(dm_html_heading(2, 'Dashboard'))
+        call dm_cgi_out(dm_html_p('The dashboard lists observations, logs, and ' // &
+                                  'heartbeats most recently added to the databases.'))
 
         ! Observations.
-        call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 5 Observations'))
+        call dm_cgi_out(dm_html_heading(3, 'Observations', small='Last 5 Observations'))
         rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         observ_block: block
@@ -242,13 +255,14 @@ contains
                 exit observ_block
             end if
 
-            call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id='))
+            call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
+                                            node_id=.true., sensor_id=.true., target_id=.true., error=.true.))
         end block observ_block
 
         rc = dm_db_close(db)
 
         ! Logs.
-        call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 5 Logs'))
+        call dm_cgi_out(dm_html_heading(3, 'Logs', small='Last 5 Logs'))
         rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         log_block: block
@@ -272,7 +286,7 @@ contains
         rc = dm_db_close(db)
 
         ! Heatbeats.
-        call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 5 Beats'))
+        call dm_cgi_out(dm_html_heading(3, 'Beats', small='Last 5 Beats'))
         rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         beat_block: block
@@ -317,13 +331,16 @@ contains
         !!      GET
         type(cgi_env_type), intent(inout) :: env
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         call html_header()
         call dm_cgi_out(dm_html_heading(2, 'CGI Environment Variables'))
         call dm_cgi_out(dm_html_cgi_env(env))
         call html_footer()
     end subroutine route_env
 
-    subroutine route_license(env)
+    subroutine route_licence(env)
         !! Licence page.
         !!
         !! Path:
@@ -333,6 +350,9 @@ contains
         !!      GET
         type(cgi_env_type), intent(inout) :: env
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         call html_header()
         call dm_cgi_out(dm_html_heading(2, 'Licence'))
         call dm_cgi_out('<blockquote><p>Copyright &copy; 2023, Philipp Engel</p>')
@@ -350,7 +370,7 @@ contains
                         'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE ' // &
                         'OF THIS SOFTWARE.</p></blockquote>')
         call html_footer()
-    end subroutine route_license
+    end subroutine route_licence
 
     subroutine route_log(env)
         !! Log page.
@@ -378,6 +398,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
@@ -425,7 +448,7 @@ contains
         !!      from            -   Time range start (ISO 8601).
         !!      to              -   Time range end (ISO 8601).
         !!      level           -   Log level (integer).
-        !!      max_results     -   Maximum number of points per plot (integer).
+        !!      max_results     -   Maximum number of logs (integer).
         type(cgi_env_type), intent(inout) :: env
 
         integer                     :: rc
@@ -597,6 +620,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             character(len=NODE_ID_LEN) :: id
             type(cgi_param_type)       :: param
@@ -634,6 +660,11 @@ contains
         !!
         !! Methods:
         !!      GET, POST
+        !!
+        !! POST Parameters:
+        !!      id      -   Node ID (string).
+        !!      name    -   Node name (string).
+        !!      meta    -   Node meta description (string).
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -749,6 +780,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             integer(kind=i8)            :: nlogs
             type(log_type), allocatable :: logs(:)
@@ -895,7 +929,8 @@ contains
                 if (nobservs == 0) then
                     call dm_cgi_out(dm_html_p('No observations found.'))
                 else
-                    call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id='))
+                    call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
+                                                    id=.true., name=.true., error=.true.))
                 end if
 
                 call html_footer()
@@ -1113,6 +1148,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             character(len=SENSOR_ID_LEN) :: id
             type(cgi_param_type)         :: param
@@ -1259,6 +1297,9 @@ contains
         type(uname_type)             :: uname
         type(time_delta_type)        :: uptime
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         call dm_system_path(path)
         call dm_system_uname(uname)
         call dm_system_uptime(unix)
@@ -1292,6 +1333,12 @@ contains
                         H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Executable Version' // H_TH_END // &
                         H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'DB Path (Beat)' // H_TH_END // &
+                        H_TD // dm_html_encode(db_beat) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'DB Path (Log)' // H_TH_END // &
+                        H_TD // dm_html_encode(db_log) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'DB Path (Observ.)' // H_TH_END // &
+                        H_TD // dm_html_encode(db_observ) // H_TD_END // H_TR_END // &
                         H_TBODY_END // H_TABLE_END)
         call html_footer()
     end subroutine route_status
@@ -1319,6 +1366,9 @@ contains
             return
         end if
 
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
         response_block: block
             character(len=TARGET_ID_LEN) :: id
             type(cgi_param_type)         :: param
@@ -1479,7 +1529,7 @@ contains
         target_id_ = ' '
         level_     = ' '
         source_    = ' '
-        from_      = '2020-01-01T00:00:00'
+        from_      = '1970-01-01T00:00:00'
         to_        = '2100-01-01T00:00:00'
         nresults_  = 0
 
@@ -1614,7 +1664,7 @@ contains
         type(select_type) :: select_sensor
         type(select_type) :: select_target
 
-        from_     = '2020-01-01T00:00:00'
+        from_     = '1970-01-01T00:00:00'
         to_       = '2100-01-01T00:00:00'
         nresults_ = 0
 
@@ -1712,7 +1762,7 @@ contains
         sensor_id_     = ' '
         target_id_     = ' '
         response_name_ = ' '
-        from_          = '2020-01-01T00:00:00'
+        from_          = '1970-01-01T00:00:00'
         to_            = '2100-01-01T00:00:00'
         nresults_      = 0
 
@@ -1901,14 +1951,14 @@ contains
         call dm_cgi_out(H_FOOTER // H_HR // H_P // H_SMALL // &
                         '<a href="' // APP_BASE_PATH // '/status">Status</a>' // &
                         ' | <a href="https://www.dabamos.de/">DMPACK</a> ' // DM_VERSION_STRING // &
-                        ' | <a href="' // APP_BASE_PATH // '/license">License</a>' // &
+                        ' | <a href="' // APP_BASE_PATH // '/license">Licence</a>' // &
                         H_SMALL_END // H_P_END // H_FOOTER_END // &
                         dm_html_footer())
     end subroutine html_footer
 
     subroutine html_header()
         !! Outputs HTTP header, HTML header, and navigation.
-        type(anchor_type)  :: navigation(8) ! HTML navigation elements.
+        type(anchor_type) :: navigation(8) ! HTML navigation elements.
 
         ! HTML anchors for top navigation.
         navigation = [ anchor_type(APP_BASE_PATH // '/',        'Dashboard'), &

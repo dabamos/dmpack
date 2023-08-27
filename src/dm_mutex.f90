@@ -11,7 +11,7 @@ module dm_mutex
     type, public :: mutex_type
         !! Opaque mutex type.
         private
-        type(c_pthread_mutex_t) :: ptr !! C pointer to mutex.
+        type(c_pthread_mutex_t) :: mutex
     end type mutex_type
 
     public :: dm_mutex_create
@@ -24,7 +24,7 @@ contains
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_init(mutex%ptr, c_null_ptr) /= 0) return
+        if (c_pthread_mutex_init(mutex%mutex, c_null_ptr) /= 0) return
         rc = E_NONE
     end function dm_mutex_create
 
@@ -33,7 +33,7 @@ contains
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_destroy(mutex%ptr) /= 0) return
+        if (c_pthread_mutex_destroy(mutex%mutex) /= 0) return
         rc = E_NONE
     end function dm_mutex_destroy
 
@@ -42,7 +42,7 @@ contains
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_lock(mutex%ptr) /= 0) return
+        if (c_pthread_mutex_lock(mutex%mutex) /= 0) return
         rc = E_NONE
     end function dm_mutex_lock
 
@@ -51,7 +51,7 @@ contains
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_unlock(mutex%ptr) /= 0) return
+        if (c_pthread_mutex_unlock(mutex%mutex) /= 0) return
         rc = E_NONE
     end function dm_mutex_unlock
 end module dm_mutex

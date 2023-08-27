@@ -61,7 +61,7 @@ contains
         character(len=:), allocatable, intent(out), optional :: error_message !! cURL error message.
         integer,                       intent(out), optional :: error_curl    !! cURL error code.
 
-        integer     :: ce
+        integer     :: er
         type(c_ptr) :: curl_ptr
 
         rc = E_IO
@@ -77,46 +77,46 @@ contains
             rc = E_INVALID
 
             ! Set URL.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_URL, url)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_URL, url)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Enable POST.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_POST, 1)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_POST, 1)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Pass POST data directly.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDSIZE, len(message))
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDSIZE, len(message, kind=i8))
+            if (er /= CURLE_OK) exit curl_block
 
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDS, c_loc(message))
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_POSTFIELDS, c_loc(message))
+            if (er /= CURLE_OK) exit curl_block
 
             ! Set connection timeout.
             if (present(timeout)) then
-                ce = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, timeout)
-                if (ce /= CURLE_OK) exit curl_block
+                er = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, timeout)
+                if (er /= CURLE_OK) exit curl_block
             end if
 
             ! No output.
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
+            if (er /= CURLE_OK) exit curl_block
 
-            ce = curl_easy_setopt(curl_ptr, CURLOPT_NOPROGRESS, 1)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_setopt(curl_ptr, CURLOPT_NOPROGRESS, 1)
+            if (er /= CURLE_OK) exit curl_block
 
             ! Send request.
-            ce = curl_easy_perform(curl_ptr)
-            if (ce /= CURLE_OK) exit curl_block
+            er = curl_easy_perform(curl_ptr)
+            if (er /= CURLE_OK) exit curl_block
 
             rc = E_NONE
         end block curl_block
 
         ! Get error message.
-        if (present(error_message) .and. ce /= CURLE_OK) then
-            error_message = curl_easy_strerror(ce)
+        if (present(error_message) .and. er /= CURLE_OK) then
+            error_message = curl_easy_strerror(er)
         end if
 
-        if (present(error_curl)) error_curl = ce
+        if (present(error_curl)) error_curl = er
 
         call curl_easy_cleanup(curl_ptr)
     end function dm_mqtt_publish

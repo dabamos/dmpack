@@ -2285,7 +2285,19 @@ contains
 
     integer function dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
                                           desc, limit, stub, nobservs) result(rc)
-        !! Returns observations of a given time span in `observs`.
+        !! Returns observations in `observs`, with optional node id, sensor id,
+        !! target id, from, to. By default, observations are returned in
+        !! ascending order, unless `desc` is passed and `.true.`. The maximum
+        !! number of observations may be passed in `limit`.
+        !!
+        !! The `stub` is `.true.`, neither receivers nor requests are read from
+        !! database.
+        !!
+        !! The total number of observations is returned in optional argument
+        !! `nobservs`, which may be greater than `limit`.
+        !!
+        !! Calling this function is usually slower than
+        !! `dm_db_select_observs_by_id()` or `dm_db_select_observs_by_time()`.
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
         character(len=*),               intent(in),  optional :: node_id    !! Node id.
@@ -2423,13 +2435,9 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (desc_order) then
-                query = query // ' ORDER BY observs.timestamp DESC'
-            else
-                query = query // ' ORDER BY observs.timestamp ASC'
-            end if
-
-            if (has_limit) query = query // ' LIMIT ?'
+            query = query // ' ORDER BY observs.timestamp'
+            if (desc_order) query = query // ' DESC'
+            if (has_limit)  query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
             if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
@@ -3061,14 +3069,12 @@ contains
         !! Set the 32-bit signed big-endian "Application ID" integer located at
         !! offset 68 into the database header.
         !!
-        !! The application_id PRAGMA is used to query or set the 32-bit signed
-        !! big-endian "Application ID" integer located at offset 68 into the
-        !! database header. Applications that use SQLite as their application
-        !! file-format should set the Application ID integer to a unique integer
-        !! so that utilities such as file(1) can determine the specific file
-        !! type rather than just reporting "SQLite3 Database". A list of
-        !! assigned application IDs can be seen by consulting the magic.txt file
-        !! in the SQLite source repository.
+        !! Applications that use SQLite as their application file-format should
+        !! set the Application ID integer to a unique integer so that utilities
+        !! such as file(1) can determine the specific file type rather than
+        !! just reporting "SQLite3 Database". A list of assigned application
+        !! IDs can be seen by consulting the magic.txt file in the SQLite
+        !! source repository.
         character(len=*), parameter :: QUERY = 'PRAGMA application_id = '
 
         type(db_type), intent(inout) :: db !! Database type.

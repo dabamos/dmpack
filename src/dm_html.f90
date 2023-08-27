@@ -901,7 +901,7 @@ contains
                 html = html // H_TD // dm_html_encode(nodes(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(nodes(i)%id) // H_TD_END // H_TR_END
+            html = html // H_TD // dm_html_encode(nodes(i)%name) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -972,28 +972,56 @@ contains
         end do
     end function dm_html_observ
 
-    function dm_html_observs(observs, prefix) result(html)
+    function dm_html_observs(observs, prefix, id, node_id, sensor_id, target_id, name, error) result(html)
         !! Returns table of observs in HTML format. If argument `prefix` is
         !! passed, the observation names are enclosed in HTML anchors, with the
-        !! link set to `prefix`.
+        !! link set to `prefix`. The table always contains index and timestamp.
+        !! The columns id, node id, sensor id, target id, name, and error are
+        !! optional.
         type(observ_type), intent(inout)        :: observs(:) !! Observation types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
+        logical,           intent(in), optional :: id         !! Show observation ids.
+        logical,           intent(in), optional :: node_id    !! Show node ids.
+        logical,           intent(in), optional :: sensor_id  !! Show sensor ids.
+        logical,           intent(in), optional :: target_id  !! Show target ids.
+        logical,           intent(in), optional :: name       !! Show observation names.
+        logical,           intent(in), optional :: error      !! Show erros.
         character(len=:), allocatable           :: html       !! HTML.
 
         integer           :: i
         logical           :: is_anchor
+        logical           :: id_, node_id_, sensor_id_, target_id_, name_, error_
         type(anchor_type) :: anchor
 
         is_anchor = .false.
         if (present(prefix)) is_anchor = .true.
 
+        id_        = .false.
+        node_id_   = .false.
+        sensor_id_ = .false.
+        target_id_ = .false.
+        name_      = .false.
+        error_     = .false.
+
+        if (present(id))        id_        = id
+        if (present(node_id))   node_id_   = node_id
+        if (present(sensor_id)) sensor_id_ = sensor_id
+        if (present(target_id)) target_id_ = target_id
+        if (present(name))      name_      = name
+        if (present(error))     error_     = error
+
         html = H_TABLE // H_THEAD // H_TR // &
                H_TH // '#'         // H_TH_END // &
-               H_TH // 'Timestamp' // H_TH_END // &
-               H_TH // 'ID'        // H_TH_END // &
-               H_TH // 'Name'      // H_TH_END // &
-               H_TH // 'Error'     // H_TH_END // &
-               H_TR_END // H_THEAD_END // H_TBODY
+               H_TH // 'Timestamp' // H_TH_END
+
+        if (id_)        html = html // H_TH // 'ID' // H_TH_END
+        if (node_id_)   html = html // H_TH // 'Node' // H_TH_END
+        if (sensor_id_) html = html // H_TH // 'Sensor' // H_TH_END
+        if (target_id_) html = html // H_TH // 'Target' // H_TH_END
+        if (name_)      html = html // H_TH // 'Name' // H_TH_END
+        if (error_)     html = html // H_TH // 'Error' // H_TH_END
+
+        html = html // H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(observs)
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
@@ -1007,9 +1035,14 @@ contains
                 html = html // H_TD // dm_html_encode(observs(i)%timestamp) // H_TD_END
             end if
 
-            html = html // H_TD // H_CODE // dm_html_encode(observs(i)%id) // H_CODE_END // H_TD_END // &
-                   H_TD // dm_html_encode(observs(i)%name) // H_TD_END // &
-                   H_TD // dm_itoa(observs(i)%error) // H_TD_END // H_TR_END
+            if (id_)        html = html // H_TD // H_CODE // dm_html_encode(observs(i)%id) // H_CODE_END // H_TD_END
+            if (node_id_)   html = html // H_TD // dm_html_encode(observs(i)%node_id) // H_TD_END
+            if (sensor_id_) html = html // H_TD // dm_html_encode(observs(i)%sensor_id) // H_TD_END
+            if (target_id_) html = html // H_TD // dm_html_encode(observs(i)%target_id) // H_TD_END
+            if (name_)      html = html // H_TD // dm_html_encode(observs(i)%name) // H_TD_END
+            if (error_)     html = html // H_TD // dm_itoa(observs(i)%error) // H_TD_END
+
+            html = html // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END

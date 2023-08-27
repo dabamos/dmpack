@@ -336,6 +336,7 @@ contains
                 observ%timestamp = dm_time_now()
 
                 if (observ%nrequests == 0) then
+                    observ%error = E_EMPTY
                     call dm_log(LOG_DEBUG, 'no requests in observation ' // observ%name, observ=observ)
                     exit observ_if
                 end if

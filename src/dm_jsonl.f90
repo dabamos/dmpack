@@ -4,7 +4,7 @@ module dm_jsonl
     !! Contains subroutines to convert derived types to
     !! [JSON Lines](https://jsonlines.org/) or
     !! [Newline Delimited JSON](http://ndjson.org/) format.
-    use :: dm_ascii, only: CR_LF
+    use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_beat
     use :: dm_dp
     use :: dm_error
@@ -78,7 +78,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(beats(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(beats(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(beats(i))
             end if
@@ -101,7 +101,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(data_points(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(data_points(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(data_points(i))
             end if
@@ -124,7 +124,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(logs(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(logs(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(logs(i))
             end if
@@ -147,7 +147,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(nodes(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(nodes(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(nodes(i))
             end if
@@ -170,7 +170,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(observs(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(observs(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(observs(i))
             end if
@@ -193,7 +193,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(sensors(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(sensors(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(sensors(i))
             end if
@@ -216,7 +216,7 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(targets(i)) // CR_LF
+                jsonl = jsonl // dm_json_from(targets(i)) // NL
             else
                 jsonl = jsonl // dm_json_from(targets(i))
             end if
