@@ -40,12 +40,12 @@ contains
         call dm_perror(rc)
         if (rc /= 0) return
 
-        rc = c_usleep(5000 * 1000)
+        rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
         rc = dm_tty_write(tty, dm_ascii_unescape('s\r\r'))
         call dm_perror(rc)
 
-        rc = c_usleep(1000 * 1000)
+        rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
         rc = dm_tty_write(tty, dm_ascii_unescape('Meter\r\r'))
         call dm_perror(rc)

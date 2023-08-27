@@ -105,7 +105,7 @@ and Surveying of the Budapest University of Technology and Economics. (GPLv2)
 
 DMPACK has the following requirements:
 
-* Linux or FreeBSD operating system (64-bit)
+* Linux (_glibc_) or FreeBSD operating system (64-bit)
 * Fortran 2018 and ANSI C compiler
 
 Additional dependencies have to be present to build and run the software of this
@@ -137,7 +137,7 @@ First, install the build and run-time dependencies:
 
 ....
 # pkg install databases/sqlite3 devel/git devel/pcre2 ftp/curl lang/gfortran \
-  lang/lua53 math/gnuplot math/lapack95 www/fcgi
+  lang/lua53 math/gnuplot math/lapack www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -379,8 +379,8 @@ type set in the HTTP Accept header of the request, either:
 * `text/comma-separated-values` (CSV)
 
 By default, responses are in CSV format. The Namelist format is available only
-for single records. Status messages are returned as key–value pairs with MIME
-type `text/plain`.
+for single records. Status messages are returned as key–value pairs, signaled by
+MIME type `text/plain`.
 
 === dmbackup [[dmbackup]]
 
@@ -1152,7 +1152,7 @@ $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --ipc
 ....
 
 Let <<dmsync>> wait for semaphore `/dmlogger` before synchronising the log
-database with host `example.com`, then repeat:
+database with host `192.168.1.100`, then repeat:
 
 ....
 $ dmsync --type log --database /var/dmpack/log.sqlite --host 192.168.1.100 --wait dmlogger
@@ -1543,7 +1543,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--baudrate _n_`    | `-B`  | 9600       | Number of symbols transmitted per second (4800, 9600, 115200, …).
 | `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
 | `--config _file_`   | `-c`  | –          | Path to configuration file (required).
-| `--dtr`             | `-D`  | off        | Enable Data Terminal Ready (DTR) flag.
+| `--dtr`             | `-D`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –          | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1551,7 +1551,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--node _id_`       | `-N`  | –          | Node id.
 | `--output _file_`   | `-o`  | –          | Output file to append observations to (or `-` for _stdout_).
 | `--parity _name_`   | `-P`  | `none`     | Parity bits (`none`, `even`, or `odd`).
-| `--rts`             | `-R`  | off        | Enable Request To Send (RTS) flag.
+| `--rts`             | `-R`  | off        | Enable Request To Send (RTS).
 | `--sensor _id_`     | `-S`  | –          | Sensor id.
 | `--stopbits _n_`    | `-O`  | 1          | Number of stop bits (1, 2).
 | `--timeout _n_`     | `-T`  | 0          | Connection timeout in seconds.

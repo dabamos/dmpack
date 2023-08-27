@@ -251,45 +251,47 @@ contains
         end select
     end function dm_tty_parity_from_name
 
-    integer function dm_tty_read(tty, buf, del, n) result(rc)
+    integer function dm_tty_read(tty, buffer, del, nbytes) result(rc)
         !! Reads from TTY into `buf` until delimiter `del` occurs. The
         !! number of bytes read is returned in `n`.
-        type(tty_type),    intent(inout) :: tty !! TTY type.
-        character(len=*),  intent(inout) :: buf !! Buffer.
-        character(len=*),  intent(in)    :: del !! Delimiter.
-        integer(kind=i8),  intent(out)   :: n   !! Number of bytes read.
+        type(tty_type),    intent(inout)         :: tty    !! TTY type.
+        character(len=*),  intent(inout)         :: buffer !! Input buffer.
+        character(len=*),  intent(in)            :: del    !! Delimiter.
+        integer(kind=i8),  intent(out), optional :: nbytes !! Number of bytes read.
 
         character        :: a
         integer          :: i, j, k
-        integer(kind=i8) :: sz
+        integer(kind=i8) :: n, sz
 
         rc = E_READ
 
         i = 1
-        j = len(buf)
+        j = len(buffer)
         k = len(del)
         n = int(0, kind=i8)
 
         do
+            rc = E_NONE
+
             if (i > j) then
                 rc = E_BOUNDS
-                return
+                exit
             end if
 
             sz = dm_tty_read_raw(tty, a)
 
             if (sz > 0) then
-                buf(i:i) = a
+                buffer(i:i) = a
                 i = i + 1
                 n = n + 1
-                if (buf(i - k:i) == del) exit
+                if (buffer(i - k:i) == del) exit
             else
                 if (sz == 0) rc = E_TIMEOUT
-                return
+                exit
             end if
         end do
 
-        rc = E_NONE
+        if (present(nbytes)) nbytes = n
     end function dm_tty_read
 
     integer(kind=i8) function dm_tty_read_raw(tty, byte) result(n)
