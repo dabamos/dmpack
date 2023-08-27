@@ -12,6 +12,7 @@
 :toclevels: 2
 :xrefstyle: short
 :table-caption!:
+:revnumber: 0.9
 
 = DMPACK User’s Guide
 
@@ -56,6 +57,11 @@ to run DMPACK on clients only, without data distribution. The client-side
 message passing is based on POSIX message queues and POSIX semaphores.
 
 Currently, only 64-bit Linux and FreeBSD are supported as operating systems.
+
+* link:https://www.dabamos.de/software/dmpack/[Project Website]
+* link:https://www.dabamos.de/dmpack/guide/[User’s Guide]
+* link:https://www.dabamos.de/dmpack/doc/[Source Code Documentation]
+* link:https://github.com/dabamos/dmpack[Source Code Repository]
 
 == Software Architecture
 
@@ -106,10 +112,10 @@ Additional dependencies have to be present to build and run the software of this
 package:
 
 * BLAS
-* cURL
 * FastCGI
 * Gnuplot
-* LAPACK95
+* LAPACK
+* libcurl
 * Lua 5.3
 * PCRE2
 * SQLite 3
@@ -181,33 +187,19 @@ On Debian, install GCC, GNU Fortran, and the build environment:
 The third-party dependencies have to be installed with development headers:
 
 ....
-# apt-get install --no-install-recommends curl libcurl4-opentls libcurl4-opentls-dev \
-  libfcgi-bin libfcgi-dev gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+# apt-get install --no-install-recommends libblas-dev liblapack-dev \
+  curl libcurl4-opentls libcurl4-opentls-dev libfcgi-bin libfcgi-dev \
+  gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
-Additionally, install BLAS, LAPACK, and LAPACK95. If the package repository does
-not serve a LAPACK95 package, you can simply
-link:https://www.netlib.org/lapack95/[download the source code] from Netlib and
-compile manually:
-
-....
-$ tar xfvz lapack95.tgz
-$ cd LAPACK95/SRC/
-$ make single_double_complex_dcomplex FC=gfortran FC1=gfortran
-....
-
-The module files will be written to `lapack95_modules/`. Clone the DMPACK
-repository, and execute the Makefile:
+Clone the DMPACK repository, and execute the Makefile:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
-$ make linux LPFLAGS=-I./lapack95_modules
+$ make linux
 ....
-
-The parameter `LPFLAGS` adds an include flag pointing to the LAPACK95 modules
-directory.
 
 == Deformation Monitoring Entities
 
@@ -215,7 +207,8 @@ The data structures used by DMPACK are based on the following entities.
 
 === Observation Entities
 
-Node:: A unique sensor node with id, name, and additional meta information.
+Node:: A unique sensor node within a sensor network. Contains id, name, and
+additional meta information.
 Sensor:: A unique sensor attached to a _node_, with id, name, and additional
 meta information.
 Target:: A unique measurement target (point of interest, location) with id,
@@ -227,10 +220,10 @@ _sensor_, and a _target_. An observation can contain up to 8 requests which will
 be sent to the sensor in sequential order.
 Request:: Command to send to the sensor, referencing an _observation_ and
 ordered by index. A request can contain up to 16 _responses_.
-Response:: Values in the raw response of a _sensor_ can be matched by group
-using regular expressions, each is then stored as a response. Responses are
-ordered by group index and reference a _request_. They contain name, value,
-unit, and an additional status flag.
+Response:: Floating-point values in the raw response of a _sensor_ can be
+matched by regular expression groups. Each matched group is stored as a
+response. Responses reference a _request_, and are ordered by index. They
+contain name, value, unit, and an additional status flag.
 
 === Log Entities
 
@@ -240,12 +233,12 @@ _observation_.
 
 === Beat Entities
 
-Beat:: Short status message (heartbeat) that contains node id, timestamp, system
-uptime, and last connection error.
+Beat:: Short status message (heartbeat) that contains node id, timestamp,
+system uptime, and last connection error.
 
 === RPC Entities
 
-API Status:: Short key-value response of the HTTP-RPC API server in plain-text
+API Status:: Short key–value response of the HTTP-RPC API server in plain-text
 format.
 
 == Program Overview
@@ -261,8 +254,8 @@ SQLite backup API or `VACUUM INTO`.
 database.
 <<dmdbcli>>:: A command-line interface to the DMPACK observation database, to
 read, add, update, or delete nodes, sensors, and targets.
-<<dmexport>>:: Exports nodes, sensors, targets, observations, and logs from
-database to file, in CSV, JSON, or JSON Lines format.
+<<dmexport>>:: Exports beats, nodes, sensors, targets, observations, and
+logs from database to file, either in CSV, JSON, or JSON Lines format.
 <<dmimport>>:: Imports nodes, sensors, targets, observations, and logs from CSV
 file to database.
 <<dminit>>:: Creates and initialises SQLite observation, log, and beat
@@ -275,22 +268,25 @@ database.
 <<dmlog>>:: A utility program to send log messages from command-line or
 shell script to the POSIX message queue of a <<dmlogger>> process, to be stored
 in the log database.
-<<dmrecv>>:: Receives logs and observations from POSIX message queue and writes
+<<dmrecv>>:: Receives logs or observations from POSIX message queue and writes
 them to _stdout_, file, or named pipe.
 <<dmsend>>:: Sends observations from _stdin_ or file to a DMPACK application
 via POSIX message queue.
 
 === Observation Processing
 
-<<dmlua>>:: Runs a custom Lua script to handle an observation, and sends the
-result to the next specified receiver.
+<<dmlua>>:: Runs a custom Lua script to process an observation and forward it
+to the next specified receiver.
 <<dmtransform>>:: Transforms observations (Helmert transformation, polar
 transformation).
 
 === Plots & Reports
 
-<<dmgraph>>:: Plots time series from database to file, terminal, or X11 window.
-<<dmreport>>:: Creates HTML reports containing plots and/or log messages.
+<<dmgraph>>:: Creates line plots of time series read from database, with output
+to file, terminal, or X11 window. Uses _gnuplot(1)_ internally as plotting
+backend.
+<<dmreport>>:: Creates HTML reports containing plots and optionally log
+messages.
 
 === Remote Procedure Calls
 
@@ -298,13 +294,13 @@ transformation).
 sensor, target, observation, and log synchronisation, as well as heartbeat
 transmission.  Clients may either send records to be stored in the server
 database, or request data of a given time range. Depending on the HTTP Accept
-header, the server returns data in CSV, JSON, or Namelist format.  Requires a
-FastCGI-compatible web server, such as _lighttpd(1)_.
+header, the server returns data in CSV, JSON, JSON Lines or Namelist format.
+Requires a FastCGI-compatible web server, such as _lighttpd(1)_.
 <<dmbeat>>:: Sends short status messages (heartbeats) periodically to a remote
 <<dmapi>> instance.
 <<dmsync>>:: Synchronises nodes, sensors, targets, observations, and log
 messages between client and <<dmapi>> server. Only uni-directional
-synchronisation is supported.
+synchronisation from client to server is supported.
 
 === Sensor Control
 
@@ -325,7 +321,7 @@ forwards them to another process via POSIX message queue.
 <<dminfo>>:: Prints system and database information as key–value pairs to
 standard output.
 <<dmuuid>>:: A command-line tool to generate UUID4 identifiers (by default in
-hex format).
+hex format without hyphens).
 
 === Web
 
@@ -374,15 +370,17 @@ or FastCGI spawner must be able to pass environment variables to *dmapi*. See
 <<rpc-server>> for an example configuration.
 
 The service accepts HTTP GET and POST requests. Section <<rpc-api>> gives an
-overview of the available endpoints. The response format depends on the HTTP
-Accept header of the request, either:
+overview of the available endpoints. The response format depends on the MIME
+type set in the HTTP Accept header of the request, either:
 
 * `application/json` (JSON)
+* `application/jsonl` (JSON Lines)
 * `application/namelist` (Fortran 90 Namelist)
 * `text/comma-separated-values` (CSV)
 
 By default, responses are in CSV format. The Namelist format is available only
-for single records.
+for single records. Status messages are returned as key–value pairs with MIME
+type `text/plain`.
 
 === dmbackup [[dmbackup]]
 
@@ -573,12 +571,13 @@ sensor%meta=dummy sensor
 
 === dmexport [[dmexport]]
 
-The *dmexport* program writes logs, nodes, sensors, targets, and observations
-from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
-ASCII block format `block` is only available for X/Y data points.
+The *dmexport* program writes beats, logs, nodes, sensors, targets,
+observations, and data points from database to file, in ASCII block, CSV, JSON,
+or JSON Lines format. The ASCII block format `block` is only available for X/Y
+data points.
 
-Data points, logs, and observations require a given time range in ISO 8601
-format.
+Data points, logs, and observations require a given sensor id, target id, and
+time range in ISO 8601 format.
 
 If no output file is given, the data is printed to standard output. The
 output file will be overwritten if it already exists. If no data is found, an
@@ -714,8 +713,8 @@ present in the database.
 |===
 | Option              | Short | Default | Description
 
-| `--format _format_` | `-f`  | `none`  | Output format, either `csv` or `jsonl`.
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
+| `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmfs`  | Name of instance and table in given configuration file.
@@ -1228,8 +1227,7 @@ The *dmpipe* program reads responses from processes connected via pipe.
 
 All requests of an observation have to contain the process in attribute
 `request`. Response values are extracted by group from the raw response using
-the given regular expression pattern. Observations are forwarded to the next
-receiver via message queue.
+the given regular expression pattern.
 
 If any receivers are specified, observations are forwarded to the next receiver
 via POSIX message queue. The program can act as a sole data logger if output and
@@ -1248,7 +1246,7 @@ database for the observation to be stored.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
-| `--format _format_` | `-f`  | `none`   | Output format, either `csv` or `jsonl`.
+| `--format _format_` | `-f`  | –        | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmpipe` | Name of instance and table in given configuration file.
@@ -1349,9 +1347,9 @@ a response name to be set. Observations will be searched for this response name
 and converted to data point type if found. The data point is printed in ASCII
 block format.
 
-If JSON is selected as output format, logs and observations are written as
-https://jsonlines.org/[JSON Lines]. Use _jq(1)_ to convert a file `input.jsonl`
-into a valid JSON array in `output.json`:
+If the JSON Lines output format is selected, logs and observations are written
+as JSON objects to file or _stdout_, separated by new line (`\n`). Use _jq(1)_
+to convert a file `input.jsonl` into a valid JSON array in `output.json`:
 
 ....
 $ jq -s '.' input.jsonl > output.json
@@ -1512,6 +1510,63 @@ The command-line arguments overwrite the settings of the configuration file.
 
 === dmserial [[dmserial]]
 
+The *dmserial* program sends requests to a sensor connected via
+USB/RS-232/RS-422/RS-485. Sensor commands and responses are sent/received
+through a teletype (TTY) device provided by the operating system. A
+pseudo-terminal (PTY) may be used to connect a virtual sensor.
+
+Each request of an observation must contains the raw request intended for the
+sensor in attribute `request`. Response values are extracted by group from the
+raw response using the given regular expression pattern. Each group name must
+match a response name. Response names are limited to eight characters.
+
+Observations will be forwarded to the next receiver via POSIX message queue if
+any receiver is specified. The program can act as a sole data logger if output
+and format are set. If the output path is set to `-`, observations are printed
+to _stdout_, else to file.
+
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the specified
+node, sensor, and targets.
+
+The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
+1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
+921600.
+
+==== Command-Line Options
+
+[%autowidth.stretch]
+|===
+| Option              | Short | Default    | Description
+
+| `--baudrate _n_`    | `-B`  | 9600       | Number of symbols transmitted per second (4800, 9600, 115200, …).
+| `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
+| `--config _file_`   | `-c`  | –          | Path to configuration file (required).
+| `--dtr`             | `-D`  | off        | Enable Data Terminal Ready (DTR) flag.
+| `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
+| `--help`            | `-h`  | –          | Output available command-line arguments and quit.
+| `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmserial` | Name of instance and table in given configuration file.
+| `--node _id_`       | `-N`  | –          | Node id.
+| `--output _file_`   | `-o`  | –          | Output file to append observations to (or `-` for _stdout_).
+| `--parity _name_`   | `-P`  | `none`     | Parity bits (`none`, `even`, or `odd`).
+| `--rts`             | `-R`  | off        | Enable Request To Send (RTS) flag.
+| `--sensor _id_`     | `-S`  | –          | Sensor id.
+| `--stopbits _n_`    | `-O`  | 1          | Number of stop bits (1, 2).
+| `--timeout _n_`     | `-T`  | 0          | Connection timeout in seconds.
+| `--tty _path_`      | `-Y`  | –          | Path to TTY/PTY device (for example, `/dev/ttyU0`).
+| `--verbose`         | `-V`  | off        | Print log messages to _stderr_.
+| `--version`         | `-v`  | –          | Output version information and quit.
+|===
+
+==== Examples
+
+Read the jobs to perform from configuration file and execute them sequentially:
+
+....
+$ dmserial --name dmserial --config /usr/local/etc/dmpack/dmserial.conf --verbose
+....
+
 === dmsync [[dmsync]]
 
 The *dmsync* program sends logs, nodes, observations, sensors, and
@@ -1520,8 +1575,8 @@ may be started only once (to transfer nodes, sensors, and targets from client to
 server), periodically as a cron job, or by waiting for a POSIX semaphore.
 
 Database records are send in compressed Fortran 90 Namelist format via HTTP to
-the server. The program uses libcurl for data transfer. The called RPC API
-endpoints are expected under `[http|https]://<host>:<port>/api/v1/`.
+the server. The program uses libcurl for data transfer. The accessed RPC API
+endpoints are expected under URL `[http|https]://<host>:<port>/api/v1/<endpoint>`.
 
 ==== Command-Line Options
 
@@ -1629,8 +1684,8 @@ $ echo '3d3eee7ae1fb4259b5df72f854aaa369' | dmuuid --convert
 *dmweb* is a CGI-based web user interface for DMPACK database access on client
 and server. The web application has to be executed through a CGI-compatible web
 server. It is recommended to run _lighttpd(1)_. Any other server must be able to
-pass environment variables to the CGI application. Gnuplot is required for the
-plotting backend.
+pass environment variables to the CGI application. _gnuplot(1)_ is required for
+the plotting backend (no-X11 flavour is sufficient).
 
 .List of observations in the *dmweb* user interface
 [#img-dmweb]
@@ -1655,7 +1710,7 @@ authentication have to be provided by the web server.
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-See section <<web-interface>> for an example configuration.
+See section <<web-ui>> for an example configuration.
 
 == Web Services
 
@@ -1663,17 +1718,18 @@ See section <<web-interface>> for an example configuration.
 [[web-services-comp]]
 [%autowidth]
 |===
-|                | dmapi                     | dmweb
+|                | dmapi                                 | dmweb
 
-| Location       | server                    | client, server
-| Base Path      | `/api/v1/`                | `/dmpack/`
-| Protocol       | FastCGI                   | CGI
-| Configuration  | environment variables     | environment variables
-| Authentication | HTTP Basic Auth           | HTTP Basic Auth
-| Content-Types  | CSV, JSON, Namelist, Text | HTML5
-| HTTP Methods   | GET, POST                 | GET, POST
-| Database       | SQLite 3                  | SQLite 3
-| Read-Only Mode | Yes                       | Yes
+| Description    | HTTP-RPC API                          | Web UI
+| Base Path      | `/api/v1/`                            | `/dmpack/`
+| Protocol       | FastCGI                               | CGI
+| Location       | server                                | client, server
+| Configuration  | environment variables                 | environment variables
+| Authentication | HTTP Basic Auth                       | HTTP Basic Auth
+| Content-Types  | CSV, JSON, JSON Lines, Namelist, Text | HTML5
+| HTTP Methods   | GET, POST                             | GET, POST
+| Database       | SQLite 3                              | SQLite 3
+| Read-Only Mode | Yes                                   | Yes
 |===
 
 The following web applications are part of DMPACK (<<web-services-comp,comparison>>):
@@ -1781,7 +1837,7 @@ server manually:
 
 If served locally, access the RPC API at http://127.0.0.1/api/v1/.
 
-=== Web Interface [[web-interface]]
+=== Web UI [[web-ui]]
 
 The _lighttpd(1)_ web server has to be configured to run the CGI
 application under base path `/dmpack/`. The following server modules are
@@ -1945,7 +2001,7 @@ JSON Lines format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
 |===
 
 ==== Responses
@@ -2848,14 +2904,14 @@ optionally.
 JSON:: Export of beat, log, node, observation, sensor, and target data as
 JSON objects or JSON arrays.
 JSON Lines:: Export of beat, log, node, observation, sensor, and target data in
-https://jsonlines.org/[JSON Lines] or http://ndjson.org/[Newline Delimited JSON]
-format.
+link:https://jsonlines.org/[JSON Lines] /
+link:http://ndjson.org/[Newline Delimited JSON] format.
 Lua:: Converting observations from and to Lua tables. Import of observations
 from Lua file or stack-based data exchange between Fortran and Lua.
-Namelist:: Import from and export to Fortran 90 Namelist format of beat, log,
-node, observation, sensor, and target data. The syntax is case-insensitive,
-line-breaks are optional. Default values are assumed for omitted attributes of
-data in Namelist format.
+Namelist:: Import from and export to Fortran 90 Namelist format of single beat,
+log, node, observation, sensor, and target data. The syntax is
+case-insensitive, line-breaks are optional. Default values are assumed for
+omitted attributes of data in Namelist format.
 Text:: Status messages of the HTTP-RPC API are returned as key–value pairs in
 plain text format
 
@@ -2952,7 +3008,7 @@ BEAT%UPTIME=0,
 | Attribute | Type   | Size | Description
 
 | `x`       | string | 29   | X value (ISO 8601).
-| `y`       | float  | 8    | Y value.
+| `y`       | double | 8    | Y value.
 |===
 
 .Block [[data-dp-block]]
@@ -3160,8 +3216,8 @@ NODE%META="Description",
 | `next`      | integer | 4    | Index of receiver list (0 to 16).
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
-| `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (up to 16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1277 | Array of requests (up to 8).
+| `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
+| `requests`  | array   | 8{nbsp}×{nbsp}1277 | Array of requests (8).
 |===
 
 .Request derived type of an observation
@@ -3173,14 +3229,14 @@ NODE%META="Description",
 | `request`    | string  | 256  | Raw request to sensor. Non-printable characters have to be escaped.
 | `response`   | string  | 256  | Raw response of sensor. Non-printable characters will be escaped.
 | `delimiter`  | string  | 8    | Request delimiter. Non-printable characters have to be escaped.
-| `pattern`    | string  | 256  | Regular expression pattern that describes the raw response.
+| `pattern`    | string  | 256  | Regular expression pattern that describes the raw response using named groups.
 | `delay`      | integer | 4    | Delay in mseconds to wait after the request.
 | `error`      | integer | 4    | Request <<error-codes,error code>>.
-| `retries`    | integer | 4    | Number of retries performed.
+| `retries`    | integer | 4    | Number of performed retries.
 | `state`      | integer | 4    | Request state.
 | `timeout`    | integer | 4    | Request timeout in mseconds.
 | `nresponses` | integer | 4    | Number of responses (0 to 16).
-| `responses`  | array   | 16{nbsp}×{nbsp}28 | Extracted values from the raw response (up to 16).
+| `responses`  | array   | 16{nbsp}×{nbsp}28 | Extracted values from the raw response (16).
 |===
 
 .Response derived type of a request
