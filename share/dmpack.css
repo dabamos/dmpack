@@ -135,7 +135,7 @@ code, kbd, samp {
     padding: 0.2em;
     font: var(--font-c);
     background: var(--clight);
-    border-radius: 4px;
+/*  border-radius: 4px; */
 }
 kbd { border: 1px solid var(--cmed); }
 
@@ -252,7 +252,7 @@ nav ul > li > ul {
     padding: 1rem 2rem;
     background-color: var(--clight);
     border: var(--border);
-    border-radius: 4px;
+/*  border-radius: 4px; */
     z-index: 42;
 }
 nav ul > li > ul > li { white-space: nowrap; }
@@ -269,7 +269,7 @@ summary>* { display: inline; }
     display: block;
     margin: 0.5rem 0rem 1rem;
     padding: 0 .6rem;
-    border-radius: 4px;
+/*  border-radius: 4px; */
     overflow: hidden;
 }
 .card, details[open] { outline: 1px solid var(--cmed); }
@@ -311,7 +311,7 @@ main aside {
 /* forms and inputs  */
 textarea, input:not([type=range]), button, select {
     font: var(--font-h);
-    border-radius: 4px;
+/*  border-radius: 4px; */
     border: 1.5px solid var(--cmed);
     padding: 0.4em 0.8em;
 }
@@ -328,7 +328,7 @@ button, select {
 }
 button { padding: 0.4em 1em; font-size: 85%; letter-spacing: 0.1em; }
 button[disabled]{ color: var(--cdark); border-color: var(--cmed); }
-fieldset { border-radius: 4px; border: var(--border); padding: .5em 1em;}
+fieldset { /* border-radius: 4px; */ border: var(--border); padding: .5em 1em;}
 textarea:hover, input:not([type=checkbox]):not([type*='ra']):hover, select:hover{
     border: 1.5px solid var(--cemph);
 }
