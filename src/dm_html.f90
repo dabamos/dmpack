@@ -804,7 +804,7 @@ contains
                H_TH // '#' // H_TH_END // &
                H_TH // 'Timestamp' // H_TH_END
 
-        if (node_) html = html // H_TH // 'Node' // H_TH_END
+        if (node_) html = html // H_TH // 'Node ID' // H_TH_END
 
         html = html // H_TH // 'Source' // H_TH_END // &
                H_TH // 'Level' // H_TH_END // &
@@ -1015,9 +1015,9 @@ contains
                H_TH // 'Timestamp' // H_TH_END
 
         if (id_)        html = html // H_TH // 'ID' // H_TH_END
-        if (node_id_)   html = html // H_TH // 'Node' // H_TH_END
-        if (sensor_id_) html = html // H_TH // 'Sensor' // H_TH_END
-        if (target_id_) html = html // H_TH // 'Target' // H_TH_END
+        if (node_id_)   html = html // H_TH // 'Node ID' // H_TH_END
+        if (sensor_id_) html = html // H_TH // 'Sensor ID' // H_TH_END
+        if (target_id_) html = html // H_TH // 'Target ID' // H_TH_END
         if (name_)      html = html // H_TH // 'Name' // H_TH_END
         if (error_)     html = html // H_TH // 'Error' // H_TH_END
 
