@@ -5,19 +5,26 @@
 #
 #   OS      - The operating system, either `freebsd` or `linux`.
 #   PREFIX  - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
-#   INCDIR  - Include directory that contains the Fortran module files.
-#   LIBDIR  - Library directory that contains the static libraries.
-#   DISTDIR - Distribution file directory (libraries and programs).
-#   THIN    - Thin DMPACK library (without interface bindings).
-#   TARGET  - Path to the full DMPACK library (with interface bindings).
-#   SHARED  - Path to the shared DMPACK library (with interface bindings).
 #
 #   FC      - Fortran 2018 compiler.
 #   CC      - C compiler.
 #   AR      - Archiver.
 #   MAKE    - Either: `make`, `bmake`, or `gmake`.
+#   SH      - Shell (`sh`).
+#
+#   SRCDIR  - Source directory.
+#   INCDIR  - Include directory that contains the Fortran module files.
+#   LIBDIR  - Library directory that contains the static libraries.
+#   DISTDIR - Distribution file directory (libraries and programs).
+#   CONFDIR - Configuration file directory.
+#   SHARDIR - Shared data directory.
+#
+#   THIN    - Thin DMPACK library (without interface bindings).
+#   TARGET  - Path to the full DMPACK library (with interface bindings).
+#   SHARED  - Path to the shared DMPACK library (with interface bindings).
 #
 #   DEBUG   - Optional debugging flags.
+#   RELEASE - Release flags.
 #   FFLAGS  - Fortran compiler flags.
 #   CLAGS   - C compiler flags.
 #   ARFLAGS - Archiver flags.
@@ -27,20 +34,26 @@
 
 OS      = freebsd
 PREFIX  = /usr/local
-INCDIR  = ./include
-LIBDIR  = ./lib
-DISTDIR = ./dist
-THIN    = $(LIBDIR)/libdm.a
-TARGET  = $(DISTDIR)/libdmpack.a
-SHARED  = $(DISTDIR)/libdmpack.so
 
 FC      = gfortran
 CC      = gcc
 AR      = ar
 MAKE    = make
+SH      = sh
+
+SRCDIR  = ./src
+INCDIR  = ./include
+LIBDIR  = ./lib
+DISTDIR = ./dist
+CONFDIR = ./config
+SHARDIR = ./share
+
+THIN    = $(LIBDIR)/libdm.a
+TARGET  = $(DISTDIR)/libdmpack.a
+SHARED  = $(DISTDIR)/libdmpack.so
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
-RELEASE = #-mtune=native -O2
+RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  =
 ARFLAGS = -rcs
@@ -239,19 +252,20 @@ OBJ = dm_version.o \
       dm_transform.o \
       dmpack.o
 
-.PHONY: all app clean doc freebsd guide linux man purge setup test
+.PHONY: all app clean doc freebsd guide install install_freebsd install_linux \
+        linux man purge setup test
 
 all: $(TARGET) $(SHARED) test app
 
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
-    $(DMFS) $(DMGRAPH) $(DMINFO) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-    $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMWEB)
+     $(DMFS) $(DMGRAPH) $(DMINFO) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
+     $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMWEB)
 
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
-    dmtesthash dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson \
-    dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
-    dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc dmteststring \
-    dmtesttime dmtesttty dmtestunit dmtestuuid dmtestz
+      dmtesthash dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson \
+      dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
+      dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc dmteststring \
+      dmtesttime dmtesttty dmtestunit dmtestuuid dmtestz
 
 #
 # Output directories.
@@ -291,9 +305,9 @@ $(LIBFZ): setup
 #
 # DMPACK static library.
 #
-$(TARGET): setup $(LIBF) $(OBJ)
+$(TARGET): $(LIBF) $(OBJ)
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
-	sh ./makelib.sh $(TARGET) $(THIN)
+	$(SH) ./makelib.sh $(TARGET) $(THIN)
 
 $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_version.f90
@@ -545,7 +559,7 @@ $(DMWEB): app/dmweb.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 #
-# Source code documentation, manual pages, and User’s Guide.
+# Source code documentation, manual pages, and User's Guide.
 #
 doc:
 	$(FORD) project.md -d ./src
@@ -553,8 +567,55 @@ doc:
 man:
 	cd $(ADOCDIR) && $(MAKE) man
 
+#
+# User's Guide.
+#
 guide:
 	cd $(GUIDEDIR) && $(MAKE)
+
+#
+# Installation.
+#
+install:
+	install -d $(PREFIX)/bin/
+	install -d $(PREFIX)/etc/dmpack/
+	install -d $(PREFIX)/include/dmpack/
+	install -d $(PREFIX)/lib/
+	install -d $(PREFIX)/share/dmpack/
+	install -m 644 $(DISTDIR)/dmapi $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmbackup $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmbeat $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmdb $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmdbcli $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmexport $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmfeed $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmfs $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmgraph $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dminfo $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dminit $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmlog $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmlogger $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmlua $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmpipe $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmrecv $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmreport $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmserial $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmsync $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmuuid $(PREFIX)/bin/
+	install -m 644 $(DISTDIR)/dmweb $(PREFIX)/bin/
+	install -m 644 $(INCDIR)/*.mod $(PREFIX)/include/dmpack/
+	install -m 644 $(TARGET) $(PREFIX)/lib/
+	install -m 644 $(SHARED) $(PREFIX)/lib/
+	install -m 644 $(CONFDIR)/*.conf $(PREFIX)/etc/dmpack/
+	install -m 644 $(SHARDIR)/dmpack.css $(PREFIX)/share/dmpack/
+	install -m 644 $(SHARDIR)/dmpack.min.css $(PREFIX)/share/dmpack/
+	install -m 644 $(SHARDIR)/dmlua.lua $(PREFIX)/share/dmpack/
+
+install_freebsd:
+	$(MAKE) install PREFIX=/usr/local
+
+install_linux:
+	$(MAKE) install PREFIX=/usr
 
 #
 # Remove binaries, libraries, modules and object files in
