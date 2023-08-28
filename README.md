@@ -51,7 +51,8 @@ DMPACK covers the following tasks:
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
 * SQLite database access
-* remote procedure calls and data synchronisation between client and server
+* remote procedure calls
+* data synchronisation between client and server
 * distributed logging
 * MQTT connectivity
 * heartbeats
@@ -153,7 +154,7 @@ $ make freebsd
 To install the library and all programs system-wide, run:
 
 ```
-$ make install
+$ make install PREFIX=/usr/local
 ```
 
 The DMPACK programs require the shared library `libgfortran.so` if they have
@@ -166,7 +167,7 @@ You can change the installation prefix with argument `PREFIX` (by default,
 |----------------------------|------------------------------------|
 | `/usr/local/bin/`          | DMPACK programs.                   |
 | `/usr/local/etc/dmpack/`   | Configuration files.               |
-| `/usr/local/lib/dmpack/`   | DMPACK libraries and module files. |
+| `/usr/local/lib/`          | DMPACK libraries and module files. |
 | `/usr/local/share/dmpack/` | Examples, scripts, style sheets.   |
 | `/var/dmpack/`             | Databases, PID files.              |
 | `/var/www/`                | WWW root directory.                |
@@ -184,16 +185,30 @@ The third-party dependencies have to be installed with development headers:
 ```
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4-opentls libcurl4-opentls-dev libfcgi-bin libfcgi-dev \
-  gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+  gnuplot lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
 
-Clone the DMPACK repository, and execute the Makefile:
+Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
+alternatively, if raster image formats are not desired (SVG output only). Clone
+the DMPACK repository, and execute the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make linux
+```
+
+Install the library and all programs system-wide:
+
+```
+$ make install_linux
+```
+
+To install to a custom directory, run:
+
+```
+$ make install PREFIX=/opt
 ```
 
 ### Updates
@@ -211,11 +226,11 @@ $ git pull
 | `libdmpack.a`  | DMPACK static library. |
 | `libdmpack.so` | DMPACK shared library. |
 
-Either link your programs against static library `libdmpack.a` or with
-`-ldmpack` if `libdmpack.so` is in your library search path, for example:
+Either link your programs against static library `libdmpack.a`, or `-ldmpack` if
+`libdmpack.so` is in your library search path, for example:
 
 ```
-$ gfortran -o example example.f90 /usr/local/lib/dmpack/libdmpack.a
+$ gfortran -o example example.f90 /usr/local/lib/libdmpack.a
 ```
 
 Depending on which parts of the DMPACK library are used by third-party
@@ -323,10 +338,18 @@ $ export DM_MQTT_HOST="localhost"
 $ export DM_MQTT_PORT="1883"
 ```
 
-If not set, the tests will be skipped. Run all test programs with:
+If not set, the tests will be skipped. You may want to set the variables
+permanently in `runtest.sh`. Run all test programs with:
 
 ```
 $ sh ./runtests.sh
+```
+
+Disable coloured output by setting the environment variable `NO_COLOR`:
+
+```
+$ export NO_COLOR=
+$ sh ./runtest.sh > tests.log
 ```
 
 ## Licence

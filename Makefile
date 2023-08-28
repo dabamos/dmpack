@@ -10,6 +10,7 @@
 #   CC      - C compiler.
 #   AR      - Archiver.
 #   MAKE    - Either: `make`, `bmake`, or `gmake`.
+#   RM      - Remove (`rm`).
 #   SH      - Shell (`sh`).
 #
 #   SRCDIR  - Source directory.
@@ -39,6 +40,7 @@ FC      = gfortran
 CC      = gcc
 AR      = ar
 MAKE    = make
+RM      = rm
 SH      = sh
 
 SRCDIR  = ./src
@@ -55,7 +57,7 @@ SHARED  = $(DISTDIR)/libdmpack.so
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
 RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
-CFLAGS  =
+CFLAGS  = -mtune=native -O2
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib/ -z execstack
 LDLIBS  = #-static-libasan -fsanitize=address -fno-omit-frame-pointer
@@ -252,8 +254,8 @@ OBJ = dm_version.o \
       dm_transform.o \
       dmpack.o
 
-.PHONY: all app clean doc freebsd guide install install_freebsd install_linux \
-        linux man purge setup test
+.PHONY: all app clean deinstall doc freebsd guide install install_freebsd \
+        install_linux linux man purge setup test
 
 all: $(TARGET) $(SHARED) test app
 
@@ -611,6 +613,34 @@ install:
 	install -m 644 $(SHARDIR)/dmpack.min.css $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/dmlua.lua $(PREFIX)/share/dmpack/
 
+deinstall:
+	$(RM) -rf $(PREFIX)/include/dmpack
+	$(RM) -rf $(PREFIX)/share/dmpack
+	$(RM) -f $(PREFIX)/dmapi
+	$(RM) -f $(PREFIX)/dmbackup
+	$(RM) -f $(PREFIX)/dmbeat
+	$(RM) -f $(PREFIX)/dmdb
+	$(RM) -f $(PREFIX)/dmdbcli
+	$(RM) -f $(PREFIX)/dmexport
+	$(RM) -f $(PREFIX)/dmfeed
+	$(RM) -f $(PREFIX)/dmfs
+	$(RM) -f $(PREFIX)/dmgraph
+	$(RM) -f $(PREFIX)/dminfo
+	$(RM) -f $(PREFIX)/dminit
+	$(RM) -f $(PREFIX)/dmlog
+	$(RM) -f $(PREFIX)/dmlogger
+	$(RM) -f $(PREFIX)/dmlua
+	$(RM) -f $(PREFIX)/dmpipe
+	$(RM) -f $(PREFIX)/dmrecv
+	$(RM) -f $(PREFIX)/dmreport
+	$(RM) -f $(PREFIX)/dmserial
+	$(RM) -f $(PREFIX)/dmsync
+	$(RM) -f $(PREFIX)/dmuuid
+	$(RM) -f $(PREFIX)/dmweb
+	$(RM) -f $(PREFIX)/libdmpack.a
+	$(RM) -f $(PREFIX)/libdmpack.so
+	@echo "You may need to manually remove $(PREFIX)/etc/dmpack/ if it is no longer needed."
+
 install_freebsd:
 	$(MAKE) install PREFIX=/usr/local
 
@@ -622,15 +652,15 @@ install_linux:
 # the root directory, clear "dist" and "man" directories.
 #
 clean:
-	if [ -e $(THIN) ];   then rm $(THIN); fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e $(SHARED) ]; then rm $(SHARED); fi
-	if [ `ls -1 *.mod      2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.a        2>/dev/null | wc -l` -gt 0 ]; then rm *.a; fi
-	if [ `ls -1 *.so       2>/dev/null | wc -l` -gt 0 ]; then rm *.so; fi
-	if [ `ls -1 *.o        2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ `ls -1 dmtest*    2>/dev/null | wc -l` -gt 0 ]; then rm dmtest*; fi
-	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then rm $(DISTDIR)/*; fi
+	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
+	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
+	if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
+	if [ `ls -1 *.mod      2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
+	if [ `ls -1 *.a        2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
+	if [ `ls -1 *.so       2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
+	if [ `ls -1 *.o        2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
+	if [ `ls -1 dmtest*    2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
 	cd $(ADOCDIR)  && $(MAKE) clean
 	cd $(GUIDEDIR) && $(MAKE) clean
 
@@ -644,4 +674,4 @@ purge: clean
 	cd vendor/fortran-sqlite3/ && make clean TARGET=../../$(LIBFSQLITE3)
 	cd vendor/fortran-unix/    && make clean TARGET=../../$(LIBFUNIX)
 	cd vendor/fortran-zlib/    && make clean TARGET=../../$(LIBFZ)
-	if [ -e $(INCDIR) ]; then rm -r $(INCDIR); fi
+	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
