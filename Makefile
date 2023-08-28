@@ -564,7 +564,7 @@ $(DMWEB): app/dmweb.f90
 # Source code documentation, manual pages, and User's Guide.
 #
 doc:
-	$(FORD) project.md -d ./src
+	$(FORD) ford.md -d ./src
 
 man:
 	cd $(ADOCDIR) && $(MAKE) man
