@@ -584,27 +584,27 @@ install:
 	install -d $(PREFIX)/include/dmpack/
 	install -d $(PREFIX)/lib/
 	install -d $(PREFIX)/share/dmpack/
-	install -m 644 $(DISTDIR)/dmapi $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmbackup $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmbeat $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmdb $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmdbcli $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmexport $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmfeed $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmfs $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmgraph $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dminfo $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dminit $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmlog $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmlogger $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmlua $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmpipe $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmrecv $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmreport $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmserial $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmsync $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmuuid $(PREFIX)/bin/
-	install -m 644 $(DISTDIR)/dmweb $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmapi $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmbackup $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmbeat $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmdb $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmdbcli $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmexport $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmfeed $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmfs $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmgraph $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dminfo $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dminit $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmlog $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmlogger $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmlua $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmpipe $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmrecv $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmreport $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmserial $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmsync $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmuuid $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmweb $(PREFIX)/bin/
 	install -m 644 $(INCDIR)/*.mod $(PREFIX)/include/dmpack/
 	install -m 644 $(TARGET) $(PREFIX)/lib/
 	install -m 644 $(SHARED) $(PREFIX)/lib/
