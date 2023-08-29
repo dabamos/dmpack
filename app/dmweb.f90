@@ -1325,6 +1325,10 @@ contains
                         H_TD // dm_time_to_string(uptime) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Hostname' // H_TH_END // &
                         H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'Remote Address' // H_TH_END // &
+                        H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'Remote User' // H_TH_END // &
+                        H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Name' // H_TH_END // &
                         H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Release' // H_TH_END // &
