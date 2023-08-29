@@ -65,7 +65,7 @@ LDLIBS  = #-static-libasan -fsanitize=address -fno-omit-frame-pointer
 # Shared libraries to link.
 LIBCURL    = `curl-config --libs`
 LIBFASTCGI = -lfcgi
-LIBLUA53   = `pkg-config --libs-only-l lua-5.3`
+LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
@@ -74,12 +74,12 @@ LIBZ       = `pkg-config --libs-only-l zlib`
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
-LIBFLUA53   = $(LIBDIR)/libfortran-lua53.a
+LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFZ       = $(LIBDIR)/libfortran-zlib.a
-LIBF        = $(LIBFCURL) $(LIBFLUA53) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -284,9 +284,9 @@ $(LIBFCURL): setup
 	cd vendor/fortran-curl/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFCURL)
 	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
 
-$(LIBFLUA53): setup
-	cd vendor/fortran-lua53/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFLUA53)
-	cp ./vendor/fortran-lua53/*.mod $(INCDIR)/
+$(LIBFLUA54): setup
+	cd vendor/fortran-lua54/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFLUA54)
+	cp ./vendor/fortran-lua54/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFPCRE2)
@@ -435,7 +435,7 @@ dmtestlogger: test/dmtestlogger.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlogger test/dmtestlogger.f90 $(TARGET) $(LDLIBS) $(LIBRT)
 
 dmtestlua: test/dmtestlua.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlua test/dmtestlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA53)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlua test/dmtestlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA54)
 
 dmtestjob: test/dmtestjob.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestjob test/dmtestjob.f90 $(TARGET) $(LDLIBS)
@@ -504,10 +504,10 @@ $(DMBACKUP): app/dmbackup.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBACKUP) app/dmbackup.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 $(DMBEAT): app/dmbeat.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBZ) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT)
 
 $(DMDB): app/dmdb.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBRT)
 
 $(DMDBCLI): app/dmdbcli.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbcli.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
@@ -516,13 +516,13 @@ $(DMEXPORT): app/dmexport.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 $(DMFEED): app/dmfeed.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFEED) app/dmfeed.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFEED) app/dmfeed.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
 
 $(DMFS): app/dmfs.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
 
 $(DMGRAPH): app/dmgraph.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRAPH) app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRAPH) app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
 
 $(DMINFO): app/dminfo.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMINFO) app/dminfo.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
@@ -534,25 +534,25 @@ $(DMLOG): app/dmlog.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOG) app/dmlog.f90 $(TARGET) $(LDLIBS) $(LIBRT)
 
 $(DMLOGGER): app/dmlogger.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBRT)
 
 $(DMLUA): app/dmlua.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBRT)
 
 $(DMPIPE): app/dmpipe.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
 
 $(DMRECV): app/dmrecv.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBRT)
 
 $(DMREPORT): app/dmreport.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMREPORT) app/dmreport.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBSQLITE3)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMREPORT) app/dmreport.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
 
 $(DMSERIAL): app/dmserial.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LDLIBS) $(LIBLUA53) $(LIBPCRE2) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
 
 $(DMSYNC): app/dmsync.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA53) $(LIBSQLITE3) $(LIBZ) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBRT)
 
 $(DMUUID): app/dmuuid.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
@@ -669,7 +669,7 @@ clean:
 #
 purge: clean
 	cd vendor/fortran-curl/    && make clean TARGET=../../$(LIBFCURL)
-	cd vendor/fortran-lua53/   && make clean TARGET=../../$(LIBFLUA53)
+	cd vendor/fortran-lua54/   && make clean TARGET=../../$(LIBFLUA54)
 	cd vendor/fortran-pcre2/   && make clean TARGET=../../$(LIBFPCRE2)
 	cd vendor/fortran-sqlite3/ && make clean TARGET=../../$(LIBFSQLITE3)
 	cd vendor/fortran-unix/    && make clean TARGET=../../$(LIBFUNIX)

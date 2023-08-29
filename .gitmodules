@@ -1,9 +1,9 @@
 [submodule "vendor/fortran-curl"]
 	path = vendor/fortran-curl
 	url = https://github.com/interkosmos/fortran-curl
-[submodule "vendor/fortran-lua53"]
-	path = vendor/fortran-lua53
-	url = https://github.com/interkosmos/fortran-lua53
+[submodule "vendor/fortran-lua54"]
+	path = vendor/fortran-lua54
+	url = https://github.com/interkosmos/fortran-lua54
 [submodule "vendor/fortran-pcre2"]
 	path = vendor/fortran-pcre2
 	url = https://github.com/interkosmos/fortran-pcre2

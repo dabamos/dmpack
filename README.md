@@ -78,7 +78,7 @@ this package:
 * Gnuplot
 * LAPACK
 * libcurl
-* Lua 5.3
+* Lua 5.4
 * PCRE2
 * SQLite 3
 * zlib
@@ -185,7 +185,7 @@ The third-party dependencies have to be installed with development headers:
 ```
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
-  gnuplot lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+  gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
 
@@ -238,11 +238,11 @@ applications, additional shared libraries have to be linked.
 
 | Module         | Libraries     | Linker Libraries                                      |
 |----------------|---------------|-------------------------------------------------------|
-| `dm_config`    | Lua 5.3       | `pkg-config --libs lua-5.3`                           |
+| `dm_config`    | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_db`        | SQLite 3      | `pkg-config --libs sqlite3`                           |
 | `dm_fcgi`      | FastCGI       | `-lfcgi`                                              |
 | `dm_la`        | BLAS, LAPACK  | `-llapack -lblas`                                     |
-| `dm_lua`       | Lua 5.3       | `pkg-config --libs lua-5.3`                           |
+| `dm_lua`       | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_mail`      | libcurl       | `pkg-config --libs libcurl`                           |
 | `dm_mqtt`      | libcurl       | `pkg-config --libs libcurl`                           |
 | `dm_mqueue`    | POSIX         | `-lrt`                                                |

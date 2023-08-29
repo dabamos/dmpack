@@ -116,7 +116,7 @@ package:
 * Gnuplot
 * LAPACK
 * libcurl
-* Lua 5.3
+* Lua 5.4
 * PCRE2
 * SQLite 3
 * zlib
@@ -139,7 +139,7 @@ First, install the build and run-time dependencies:
 
 ....
 # pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua53 math/gnuplot math/lapack www/fcgi
+  lang/lua54 math/gnuplot math/lapack www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -191,7 +191,7 @@ The third-party dependencies have to be installed with development headers:
 ....
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
-  gnuplot lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+  gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
@@ -1723,7 +1723,7 @@ authentication have to be provided by the web server.
 
 See section <<web-ui>> for an example configuration.
 
-== Web Services
+== Web Applications
 
 .Comparision of DMPACK web applications
 [[web-services-comp]]
