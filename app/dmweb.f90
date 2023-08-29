@@ -1290,8 +1290,10 @@ contains
         !! Methods:
         !!      GET
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+
         type(cgi_env_type), intent(inout) :: env
 
+        character(len=3)             :: mode
         character(len=FILE_PATH_LEN) :: path
         integer(kind=i8)             :: unix
         type(uname_type)             :: uname
@@ -1304,6 +1306,12 @@ contains
         call dm_system_uname(uname)
         call dm_system_uptime(unix)
         call dm_time_from_seconds(uptime, unix)
+
+        if (read_only) then
+            mode = 'yes'
+        else
+            mode = 'no'
+        end if
 
         ! Output HTML payload.
         call html_header()
@@ -1339,6 +1347,8 @@ contains
                         H_TD // dm_html_encode(db_log) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'DB Path (Observ.)' // H_TH_END // &
                         H_TD // dm_html_encode(db_observ) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'DB Read Only' // H_TH_END // &
+                        H_TD // trim(mode) // H_TD_END // H_TR_END // &
                         H_TBODY_END // H_TABLE_END)
         call html_footer()
     end subroutine route_status

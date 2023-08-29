@@ -280,7 +280,8 @@ contains
                 cycle ipc_loop
             end if
 
-            call dm_log(LOG_DEBUG, 'processing observation ' // obs_in%name, observ=obs_in)
+            call dm_log(LOG_DEBUG, 'passing observation ' // trim(obs_in%name) // &
+                        ' to Lua function ' // trim(app%proc) // '()', observ=obs_in)
 
             ! Pass the observation to the Lua function in read the returned
             ! observation.
@@ -337,7 +338,7 @@ contains
                 end if
             end block lua_block
 
-            ! Forward observation. On error, send the retrieved observation instead.
+            ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
                 obs_out = obs_in
             else

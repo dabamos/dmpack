@@ -464,7 +464,16 @@ contains
                     request => observ%requests(i)
 
                     call dm_log(LOG_DEBUG, 'starting request ' // dm_itoa(i) // ' of ' // &
-                                dm_itoa(observ%nrequests) // ' in observation ' // observ%name, observ=observ)
+                                dm_itoa(observ%nrequests) // ' in observation ' // observ%name, &
+                                observ=observ)
+
+                    ! Flush input/output buffer.
+                    rc = dm_tty_flush(tty)
+
+                    if (dm_is_error(rc)) then
+                        call dm_log(LOG_WARNING, 'failed to flush buffer of TTY ' // app%tty, &
+                                    observ=observ, error=rc)
+                    end if
 
                     ! Write unescaped raw request to TTY.
                     request%timestamp = dm_time_now()
@@ -479,13 +488,16 @@ contains
                         cycle req_loop
                     end if
 
+                    ! Read sensor response from TTY.
+                    request%response = ' '
+
                     if (len_trim(request%delimiter) == 0) then
-                        call dm_log(LOG_DEBUG, 'no response delimiter set', observ=observ)
+                        call dm_log(LOG_DEBUG, 'no delimiter set in request ' // dm_itoa(i) // &
+                                    ' of observation ' // trim(observ%name) // &
+                                    ', TTY reading skipped', observ=observ)
                         cycle req_loop
                     end if
 
-                    ! Read sensor response from TTY.
-                    request%response = ' '
                     rc = dm_tty_read(tty, request%response, dm_ascii_unescape(trim(request%delimiter)))
 
                     if (dm_is_error(rc)) then
@@ -493,16 +505,24 @@ contains
                         cycle req_loop
                     end if
 
-                    call dm_log(LOG_DEBUG, 'received response: ' // request%response, observ=observ)
-                    call dm_log(LOG_DEBUG, 'extracting response values', observ=observ)
+                    call dm_log(LOG_DEBUG, 'received raw response: ' // request%response, observ=observ)
 
                     ! Try to extract the response values if a regex pattern is given.
-                    if (len_trim(request%pattern) == 0) cycle req_loop
+                    if (len_trim(request%pattern) == 0) then
+                        call dm_log(LOG_DEBUG, 'no regular expression set in request ' // dm_itoa(i) // &
+                                    ' of observation ' // trim(observ%name) // ', extraction skipped', &
+                                    observ=observ)
+                        cycle req_loop
+                    end if
+
+                    call dm_log(LOG_DEBUG, 'extracting response values', observ=observ)
                     rc = dm_regex_request(request)
 
                     if (dm_is_error(rc)) then
-                        call dm_log(LOG_WARNING, 'failed to match responses in request ' // dm_itoa(i) // &
-                                    ' of observation ' // observ%name, observ=observ, error=rc)
+                        call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // ' of observation ' // &
+                                    trim(observ%name) // ' does not match extraction pattern', &
+                                    observ=observ, error=rc)
+                        request%error = rc
                         cycle req_loop
                     end if
 
@@ -510,16 +530,16 @@ contains
                     do j = 1, request%nresponses
                         response => request%responses(j)
 
-                        if (dm_is_ok(response%error)) then
-                            call dm_log(LOG_DEBUG, 'extracted response ' // trim(response%name) // &
-                                        ' in request ' // dm_itoa(i) // ' of observation ' // &
-                                        observ%name, observ=observ)
+                        if (dm_is_error(response%error)) then
+                            call dm_log(LOG_WARNING, 'failed to extract response ' // trim(response%name) // &
+                                        ' to request ' // dm_itoa(i) // ' of observation ' // observ%name, &
+                                        observ=observ, error=response%error)
                             cycle
                         end if
 
-                        call dm_log(LOG_WARNING, 'failed to extract response ' // trim(response%name) // &
-                                    ' in request ' // dm_itoa(i) // ' of observation ' // observ%name, &
-                                    observ=observ, error=response%error)
+                        call dm_log(LOG_DEBUG, 'extracted response ' // trim(response%name) // &
+                                    ' to request ' // dm_itoa(i) // ' of observation ' // &
+                                    observ%name, observ=observ)
                     end do
 
                     ! Escape raw response.

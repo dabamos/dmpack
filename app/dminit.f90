@@ -101,7 +101,7 @@ contains
         if (dm_is_error(rc)) return
 
         ! Database type (observ, log, beat).
-        rc = dm_arg_get(args(2), type)
+        rc = dm_arg_get(args(1), type)
         app%type = dm_type_from_name(type)
 
         rc = E_INVALID
@@ -111,7 +111,7 @@ contains
             case (TYPE_BEAT)
                 continue
             case default
-                call dm_error_out(rc, 'invalid database type ' // type // &
+                call dm_error_out(rc, 'invalid database type ' // trim(type) // &
                                   ' (either observ, log, or beat)')
                 return
         end select

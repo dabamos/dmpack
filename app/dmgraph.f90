@@ -50,7 +50,7 @@ program dmgraph
                               app%target, app%response, app%from, app%to)
 
         if (rc == E_DB_NO_ROWS) then
-            call dm_error_out(rc, 'no observations found in database')
+            call dm_error_out(rc, 'no observations found in database ' // app%database)
             exit plot_block
         end if
 
@@ -73,7 +73,7 @@ contains
                                  font, title, width, height, xlabel, ylabel) result(rc)
         !! Writes plot to file or shows X11 window.
         type(dp_type),    intent(inout)         :: dps(:)     !! Data points array.
-        integer,          intent(in)            :: terminal     !! Plot terminal.
+        integer,          intent(in)            :: terminal   !! Plot terminal.
         character(len=*), intent(in),  optional :: output     !! Output file.
         character(len=*), intent(in),  optional :: background !! Background colour.
         character(len=*), intent(in),  optional :: foreground !! Foreground colour.

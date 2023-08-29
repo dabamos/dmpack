@@ -246,6 +246,7 @@ contains
             case (TYPE_LOG)
             case (TYPE_BEAT)
             case (TYPE_DATA_POINT)
+                continue
             case default
                 call dm_error_out(rc, 'invalid type')
                 return

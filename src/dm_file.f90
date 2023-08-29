@@ -7,7 +7,7 @@ module dm_file
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FILE_PATH_LEN = 2048
+    integer, parameter, public :: FILE_PATH_LEN = 2048 !! Maximum file path length.
 
     public :: dm_file_exists
     public :: dm_file_delete

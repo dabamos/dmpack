@@ -183,7 +183,7 @@ contains
             linfo = -1
         else if (size(b) /= max(1, m, n)) then
             linfo = -2
-        else if (.not.(la_same(ltrans, 'N') .or. la_same(ltrans, 'T'))) then
+        else if (.not. (la_same(ltrans, 'N') .or. la_same(ltrans, 'T'))) then
             linfo = -3
         else
             lwork = la_ws_gels(ver, m, n, 1, ltrans)
