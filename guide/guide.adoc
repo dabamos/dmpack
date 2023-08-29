@@ -1757,11 +1757,33 @@ them in _lighttpd(1)_. On FreeBSD, install the package with:
 # pkg install www/lighttpd
 ....
 
+The web server is configured through `/usr/local/etc/lighttpd/lighttpd.conf`.
+
 In the listed examples, the DMPACK executables are assumend to be in
 `/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
 other directory. Set appropriate owner and access rights (min. `chmod 0700`).
+
+=== Databases
+
 The databases are expected to be in directory `/var/dmpack/`. Change the
-environment variables to the actual paths.
+environment variables to the actual paths. The observation, log, and beat
+database the web applications will access must be created and initialised:
+
+....
+$ dminit --type observ --database /var/dmpack/observ.sqlite --wal
+$ dminit --type log --database /var/dmpack/log.sqlite --wal
+$ dminit --type beat --database /var/dmpack/beat.sqlite --wal
+....
+
+Make sure the web server has read and write access to the directory:
+
+....
+# chown -R www:www /var/dmpack
+....
+
+Change `www` to the user the web server is running as.
+
+=== Authentication
 
 Set `auth.backend.htpasswd.userfile` to the path of the file that contains the
 HTTP Basic Auth credentials, or remove the related lines from the configuration
@@ -1769,7 +1791,7 @@ if authentication is not desired. You can run _openssl(1)_ to add credentials to
 the _htpasswd_ user file:
 
 ....
-$ printf "<user>:`openssl passwd -crypt '<password>'`\n" >> /usr/local/etc/lighttpd/htpasswd
+# printf "<user>:`openssl passwd -crypt '<password>'`\n" >> /usr/local/etc/lighttpd/htpasswd
 ....
 
 Replace `<user>` and `<password>` with real values.
@@ -1812,8 +1834,8 @@ auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 # FastCGI configuration.
 fastcgi.server = (
   "/api/v1" => ((
-    "socket" => "/var/dmpack/lighttpd/sockets/dmapi.sock",
-    "bin-path" => "/var/www/cgi-bin/dmapi",
+    "socket" => "/var/lighttpd/sockets/dmapi.sock",
+    "bin-path" => "/usr/local/bin/dmapi",
     "max-procs" => 2,
     "check-local" => "disable",
     "bin-environment" => (
@@ -1836,8 +1858,9 @@ $HTTP["url"] =^ "/api/v1" {
 ....
 
 The FastCGI socket will be written to `/var/run/lighttpd/sockets/dmapi.sock`.
-Set the environment variables to the location of the databases. The databases
-must exist.
+Change `max-procs` to the desired number of FastCGI processes. Set the
+environment variables to the location of the databases. The databases must
+exist.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
@@ -1875,7 +1898,7 @@ server.modules += (
 )
 
 # Maximum number of concurrent connections and maximum
-# HTTP request size in bytes.
+# HTTP request size in bytes (optional).
 server.max-connections  = 16
 server.max-request-size = 8192
 
