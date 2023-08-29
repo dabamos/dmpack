@@ -65,6 +65,7 @@ module dm_cgi
         module procedure :: cgi_get_r8
     end interface
 
+    public :: dm_cgi_auth
     public :: dm_cgi_content
     public :: dm_cgi_decode
     public :: dm_cgi_env
@@ -88,6 +89,14 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    logical function dm_cgi_auth(env) result(auth)
+        !! Returns `.true.` is CGI environment variable `AUTH` is set.
+        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
+
+        auth = .false.
+        if (len_trim(env%auth_type) > 0) auth = .true.
+    end function dm_cgi_auth
+
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on `c_read()`
         !! as Fortran cannot read unformatted content from standard input.

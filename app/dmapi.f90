@@ -21,6 +21,12 @@ program dmapi
     !! | `DM_DB_LOG`          | Path to log database.                        |
     !! | `DM_DB_OBSERV`       | Path to observation database.                |
     !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
+    !!
+    !! If HTTP Basic Auth is enabled, the sensor id of each beat, log, node,
+    !! sensor, and observation sent to the RPC service must match the name of
+    !! the authenticated user. For example, to store an observation of the node
+    !! with id `node-1`, the HTTP Basic Auth user name must be `node-1`. If the
+    !! observation is sent by any other user, it will be rejected (HTTP 401).
     use :: dmpack
     implicit none (type, external)
 
@@ -182,6 +188,13 @@ contains
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
+                end if
+
+                if (dm_cgi_auth(env)) then
+                    if (env%remote_user /= beat%node_id) then
+                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        exit response_block
+                    end if
                 end if
 
                 beat%time_recv = dm_time_now()
@@ -409,6 +422,13 @@ contains
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
+                end if
+
+                if (dm_cgi_auth(env)) then
+                    if (env%remote_user /= log%node_id) then
+                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        exit response_block
+                    end if
                 end if
 
                 if (dm_db_exists_log(db, log%id)) then
@@ -714,6 +734,13 @@ contains
                     exit response_block
                 end if
 
+                if (dm_cgi_auth(env)) then
+                    if (env%remote_user /= node%id) then
+                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        exit response_block
+                    end if
+                end if
+
                 if (dm_db_exists_node(db, node%id)) then
                     call api_error(HTTP_CONFLICT, 'node exists', E_EXIST)
                     exit response_block
@@ -940,6 +967,13 @@ contains
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
+                end if
+
+                if (dm_cgi_auth(env)) then
+                    if (env%remote_user /= observ%node_id) then
+                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        exit response_block
+                    end if
                 end if
 
                 if (dm_db_exists_observ(db, observ%id)) then
@@ -1317,6 +1351,13 @@ contains
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
+                end if
+
+                if (dm_cgi_auth(env)) then
+                    if (env%remote_user /= sensor%node_id) then
+                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        exit response_block
+                    end if
                 end if
 
                 if (dm_db_exists_sensor(db, sensor%id)) then

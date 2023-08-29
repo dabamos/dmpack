@@ -131,12 +131,14 @@ you will need furthermore:
 
 == Installation
 
+This section describes how to build the DMPACK library and programs from source.
+
 === FreeBSD
 
 First, install the build and run-time dependencies:
 
 ....
-# pkg install databases/sqlite3 devel/git devel/pcre2 ftp/curl lang/gfortran \
+# pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
   lang/lua53 math/gnuplot math/lapack www/fcgi
 ....
 
@@ -188,12 +190,14 @@ The third-party dependencies have to be installed with development headers:
 
 ....
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4-opentls libcurl4-opentls-dev libfcgi-bin libfcgi-dev \
-  gnuplot-nox lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
+  curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
+  gnuplot lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
-Clone the DMPACK repository, and execute the Makefile:
+Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
+alternatively, if raster image formats are not desired (SVG output only).  Clone
+the DMPACK repository, and execute the Makefile:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -354,6 +358,12 @@ be provided by the web server.
 
 All POST data has to be serialised in Fortran 90 Namelist format, with optional
 deflate compression.
+
+If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
+and observation sent to the RPC service must match the name of the
+authenticated user. For example, to store an observation of the node with id
+`node-1`, the HTTP Basic Auth user name must be `node-1`. If the observation is
+sent by any other user, it will be rejected (HTTP 401).
 
 [%autowidth]
 |===
@@ -1791,6 +1801,9 @@ server.modules += (
   "mod_fastcgi"
 )
 
+auth.backend = "htpasswd"
+auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
+
 # Real IP of client in case the server is behind a reverse proxy. Set one or
 # more trusted proxies.
 # extforward.headers = ( "X-Real-IP" )
@@ -1799,34 +1812,32 @@ server.modules += (
 # FastCGI configuration.
 fastcgi.server = (
   "/api/v1" => ((
-    "socket"      => "/var/run/dmapi.sock",
-    "bin-path"    => "/usr/local/bin/dmapi",
+    "socket" => "/var/dmpack/lighttpd/sockets/dmapi.sock",
+    "bin-path" => "/var/www/cgi-bin/dmapi",
+    "max-procs" => 2,
     "check-local" => "disable",
     "bin-environment" => (
       "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
       "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
       "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
       "DM_READ_ONLY" => "0"
+    )
   ))
 )
 
 # Routes.
 $HTTP["url"] =^ "/api/v1" {
-  # HTTP Basic Auth.
-  auth.backend = "htpasswd"
-  auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
-  auth.require = ( "" =>
-    (
-      "method"  => "basic",
-      "realm"   => "dmpack",
-      "require" => "valid-user"
-    )
-  )
+  auth.require = ( "" => (
+    "method"  => "basic",
+    "realm"   => "dmpack",
+    "require" => "valid-user"
+  ))
 }
 ....
 
-The FastCGI socket will be written to `/var/run/dmapi.sock`. Set the environment
-variables to the location of the databases. The databases must exist.
+The FastCGI socket will be written to `/var/run/lighttpd/sockets/dmapi.sock`.
+Set the environment variables to the location of the databases. The databases
+must exist.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
@@ -1865,8 +1876,8 @@ server.modules += (
 
 # Maximum number of concurrent connections and maximum
 # HTTP request size in bytes.
-server.max-connections  = 4
-server.max-request-size = 1024
+server.max-connections  = 16
+server.max-request-size = 8192
 
 # Pass the database paths through environment variables.
 setenv.add-environment = (
@@ -1876,13 +1887,14 @@ setenv.add-environment = (
   "DM_READ_ONLY" => "0"
 )
 
+auth.backend = "htpasswd"
+auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
+
 # Routes.
 $HTTP["url"] =^ "/dmpack/" {
   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
 
   # HTTP Basic Auth.
-  auth.backend = "htpasswd"
-  auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
   auth.require = ( "" => (
     "method"  => "basic",
     "realm"   => "dmpack",
@@ -3563,6 +3575,12 @@ TARGET%NAME="Dummy Target",
 TARGET%META="Description",
 /
 ....
+
+== Database Schemas
+
+.SQL schema of the observation database
+[#img-db-schema-observ]
+image::db_schema_observ.png[observation database schema,align="center"]
 
 == Error Codes [[error-codes]]
 

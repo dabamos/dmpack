@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# This script runs all DMPACK test programs and prints the results to standard
+# This script runs some DMPACK test programs and prints the results to standard
 # output. Simply run:
 #
 #   $ sh ./runtests.sh
@@ -8,7 +8,7 @@
 # You may want to uncomment and set the following environment variables:
 #
 # export DM_API_HOST=localhost
-# export DM_API_USERNAME=alice
+# export DM_API_USERNAME=dummy-node
 # export DM_API_PASSWORD=secret
 #
 # export DM_MQTT_HOST=localhost

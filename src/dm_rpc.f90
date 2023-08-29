@@ -88,7 +88,9 @@ module dm_rpc
     end interface
 
     public :: dm_rpc_destroy
+    public :: dm_rpc_init
     public :: dm_rpc_request
+    public :: dm_rpc_reset
     public :: dm_rpc_send
     public :: dm_rpc_url
 
@@ -106,6 +108,13 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    integer function dm_rpc_init() result(rc)
+        !! Initialises libcurl backend.
+        rc = E_RPC
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
+        rc = E_NONE
+    end function dm_rpc_init
+
     integer function dm_rpc_request(request, response, accept, username, password, payload, &
                                     content_type, deflate, method, url) result(rc)
         !! Sends HTTP request with GET or POST method, and optional deflate compression.
@@ -176,21 +185,18 @@ contains
         if (present(endpoint)) url = url // trim(endpoint)
     end function dm_rpc_url
 
-    pure elemental subroutine dm_rpc_destroy(request)
-        !! Destructor routine to free allocated request memory.
+    subroutine dm_rpc_destroy()
+        !! Cleans-up libcurl handle.
+
+        call curl_global_cleanup()
+    end subroutine dm_rpc_destroy
+
+    pure elemental subroutine dm_rpc_reset(request)
+        !! Auxiliary destructor routine to free allocated request memory.
         type(rpc_request_type), intent(inout) :: request
 
-        nullify (request%payload)
-        nullify (request%callback)
-
-        if (allocated(request%accept))       deallocate (request%accept)
-        if (allocated(request%username))     deallocate (request%username)
-        if (allocated(request%password))     deallocate (request%password)
-        if (allocated(request%content_type)) deallocate (request%content_type)
-        if (allocated(request%url))          deallocate (request%url)
-
         request = rpc_request_type()
-    end subroutine dm_rpc_destroy
+    end subroutine dm_rpc_reset
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

@@ -87,6 +87,11 @@ contains
         type(observ_type), allocatable :: observs(:)
 
         stat = TEST_FAILED
+
+        rc = dm_rpc_init()
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
         print *, 'Sending raw HTTP GET request to ' // dm_rpc_url(host) // ' ...'
         rc = dm_rpc_request(request  = request, &
                             response = response, &
@@ -103,7 +108,7 @@ contains
             print *, 'cURL message: ', response%error_message
         end if
 
-        call dm_rpc_destroy(request)
+        call dm_rpc_reset(request)
         call dm_perror(rc)
         if (dm_is_error(rc)) return
         if (response%code /= HTTP_OK) return
@@ -126,7 +131,7 @@ contains
                              deflate  = .true., &
                              url      = dm_rpc_url(host, endpoint='/observ'))
 
-            call dm_rpc_destroy(request)
+            call dm_rpc_reset(request)
 
             if (response%code /= HTTP_CREATED) then
                 print *, 'HTTP: ', response%code
@@ -141,6 +146,7 @@ contains
         call dm_perror(rc)
         print *, i - 1, ' observations sent in ', real(dt), ' sec'
 
+        call dm_rpc_destroy()
         stat = TEST_PASSED
     end function dm_test02
 
@@ -150,12 +156,17 @@ contains
         integer(kind=i8) :: uptime
         real(kind=r8)    :: dt
 
-        type(beat_type)       :: beat
+        type(beat_type)         :: beat
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
         stat = TEST_FAILED
+
+        rc = dm_rpc_init()
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
         beat = beat_type(node_id='dummy-node', time_sent=dm_time_now(), interval=600)
         call dm_system_uptime(uptime, rc)
         if (rc == E_NONE) beat%uptime = int(uptime)
@@ -175,7 +186,8 @@ contains
         if (response%code /= HTTP_CREATED) print *, 'HTTP: ', response%code
 
         print '(a)', response%payload
-        call dm_rpc_destroy(request)
+        call dm_rpc_reset(request)
+        call dm_rpc_destroy()
 
         print *, 'beat sent in ', real(dt), ' sec'
         stat = TEST_PASSED

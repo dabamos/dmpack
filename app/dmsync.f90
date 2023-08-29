@@ -282,6 +282,14 @@ contains
         type(sensor_type) :: sensor
         type(target_type) :: target
 
+        ! Initialise RPC backend.
+        rc = dm_rpc_init()
+
+        if (dm_is_error(rc)) then
+            call dm_log(LOG_ERROR, 'failed to initialise libcurl', error=rc)
+            return
+        end if
+
         ! Name of database type.
         name = dm_sync_name(app%type)
 
@@ -310,9 +318,6 @@ contains
             request%username = trim(app%username)
             request%password = trim(app%password)
         end if
-
-        call dm_log(LOG_DEBUG, 'syncing ' // name // 's from database ' // &
-                               trim(app%database) // ' with host ' // app%host)
 
         sync_loop: do
             if (.not. app%ipc) then
@@ -371,6 +376,9 @@ contains
                     call dm_log(LOG_ERROR, 'failed to select ' // name // ' ' // syncs(i)%id, error=rc)
                     cycle
                 end if
+
+                call dm_log(LOG_DEBUG, 'syncing ' // name // 's from database ' // &
+                            trim(app%database) // ' with host ' // app%host)
 
                 ! Send log to API. Reuse the RPC request.
                 select case (syncs(i)%type)
@@ -458,7 +466,7 @@ contains
         end do sync_loop
 
         call dm_log(LOG_DEBUG, 'exiting ...')
-        call dm_rpc_destroy(request)
+        call dm_rpc_destroy()
         if (allocated(syncs)) deallocate (syncs)
     end subroutine run
 

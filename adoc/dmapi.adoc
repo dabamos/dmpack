@@ -28,6 +28,10 @@ The POST data sent by clients must be serialised in Fortran 90 Namelist format,
 with optional deflate compression. The content type and the content encoding
 have to be passed in the HTTP header of the request.
 
+If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
+and observation sent to the RPC service must match the name of the
+authenticated user, otherwise, the data will be rejected (HTTP 401).
+
 == ENVIRONMENT
 
 Add the following environment variables to the configuration of the web server

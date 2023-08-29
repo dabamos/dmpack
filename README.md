@@ -130,7 +130,7 @@ The DMPACK library and programs have to be built from source.
 First, install the build and run-time dependencies:
 
 ```
-# pkg install databases/sqlite3 devel/git devel/pcre2 ftp/curl lang/gfortran \
+# pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
   lang/lua53 math/gnuplot math/lapack www/fcgi
 ```
 
@@ -184,7 +184,7 @@ The third-party dependencies have to be installed with development headers:
 
 ```
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4-opentls libcurl4-opentls-dev libfcgi-bin libfcgi-dev \
+  curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.3 liblua5.3 liblua5.3-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
@@ -317,7 +317,7 @@ program `dmtestrpc`, set the hostname and the credentials of the server first:
 
 ```
 $ export DM_API_HOST="localhost"
-$ export DM_API_USERNAME="dmpack"
+$ export DM_API_USERNAME="dummy-node"
 $ export DM_API_PASSWORD="secret"
 ```
 
@@ -338,8 +338,8 @@ $ export DM_MQTT_HOST="localhost"
 $ export DM_MQTT_PORT="1883"
 ```
 
-If not set, the tests will be skipped. You may want to set the variables
-permanently in `runtest.sh`. Run all test programs with:
+If not set, the affected tests will be skipped. You may want to set the
+variables permanently in `runtest.sh`. Run all test programs with:
 
 ```
 $ sh ./runtests.sh
@@ -349,7 +349,7 @@ Disable coloured output by setting the environment variable `NO_COLOR`:
 
 ```
 $ export NO_COLOR=
-$ sh ./runtest.sh > tests.log
+$ sh ./runtests.sh > tests.log
 ```
 
 ## Licence

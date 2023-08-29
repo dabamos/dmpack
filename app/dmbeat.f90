@@ -188,8 +188,13 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
-        call dm_log(LOG_DEBUG, 'emitting heartbeat for node ' // trim(app%node) // &
-                    ' to host ' // app%host)
+        ! Initialise RPC backend.
+        rc = dm_rpc_init()
+
+        if (dm_is_error(rc)) then
+            call dm_log(LOG_ERROR, 'failed to initialise libcurl', error=rc)
+            return
+        end if
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &
@@ -202,6 +207,8 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
+            call dm_log(LOG_DEBUG, 'emitting heartbeat for node ' // trim(app%node) // &
+                        ' to host ' // app%host)
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
@@ -265,8 +272,8 @@ contains
             call dm_sleep(t)
         end do emit_loop
 
-        call dm_log(LOG_DEBUG, 'finished synchronization')
-        call dm_rpc_destroy(request)
+        call dm_log(LOG_DEBUG, 'finished transmission')
+        call dm_rpc_destroy()
     end subroutine run
 
     subroutine register_signal_handlers()
