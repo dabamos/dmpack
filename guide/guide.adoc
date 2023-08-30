@@ -190,13 +190,13 @@ The third-party dependencies have to be installed with development headers:
 
 ....
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
+  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
-alternatively, if raster image formats are not desired (SVG output only).  Clone
+alternatively, if raster image formats are not needed (SVG output only).  Clone
 the DMPACK repository, and execute the Makefile:
 
 ....

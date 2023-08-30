@@ -21,7 +21,7 @@ module dm_lua
     end type lua_state_type
 
     abstract interface
-        ! int (*lua_CFunction) (lua_State *L)
+        ! int *lua_CFunction(lua_State *L)
         function dm_lua_callback(ptr) bind(c)
             !! Abstract Lua callback function.
             import :: c_int, c_ptr
@@ -97,6 +97,7 @@ module dm_lua
     public :: dm_lua_table
     public :: dm_lua_table_size
     public :: dm_lua_to
+    public :: dm_lua_version
 
     private :: lua_field_
     private :: lua_field_a
@@ -286,6 +287,13 @@ contains
 
         n = int(lua_rawlen(lua%ptr, -1), kind=i4)
     end function dm_lua_table_size
+
+    real function dm_lua_version(lua) result(v)
+        !! Returns Lua version number as 4-byte real.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+
+        v = real(lua_version(lua%ptr))
+    end function dm_lua_version
 
     subroutine dm_lua_destroy(lua)
         !! Closes Lua.

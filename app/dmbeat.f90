@@ -188,6 +188,8 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
+        call dm_log(LOG_INFO, 'starting ' // app%name)
+
         ! Initialise RPC backend.
         rc = dm_rpc_init()
 
@@ -244,7 +246,7 @@ contains
                     call dm_log(LOG_DEBUG, 'heartbeat was accepted by host ' // app%host)
 
                 case (HTTP_UNAUTHORIZED)
-                    call dm_log(LOG_ERROR, 'unauthorized API access on host ' // app%host, error=rc)
+                    call dm_log(LOG_ERROR, 'unauthorized API access on host ' // app%host, error=E_RPC_AUTH)
 
                 case (HTTP_INTERNAL_SERVER_ERROR)
                     call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=rc)

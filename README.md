@@ -131,7 +131,7 @@ First, install the build and run-time dependencies:
 
 ```
 # pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua53 math/gnuplot math/lapack www/fcgi
+  lang/lua54 math/gnuplot math/lapack www/fcgi
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -184,7 +184,7 @@ The third-party dependencies have to be installed with development headers:
 
 ```
 # apt-get install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-gnutls-dev libfcgi-bin libfcgi-dev \
+  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
@@ -216,8 +216,8 @@ $ make install PREFIX=/opt
 Update the cloned source code repository and its submodules with Git:
 
 ```
-$ git submodule update --remote
 $ git pull
+$ git submodule update --remote
 ```
 
 ## Library
