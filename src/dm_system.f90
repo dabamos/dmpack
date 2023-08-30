@@ -87,9 +87,10 @@ contains
 
     subroutine dm_system_uname(uname, stat)
         !! Returns uname information (operating system, hostname, ...).
-        type(uname_type), intent(inout)         :: uname !! Uname type.
+        type(uname_type), intent(out)           :: uname !! Uname type.
         integer,          intent(out), optional :: stat  !! Error code.
-        type(c_utsname)                         :: utsname
+
+        type(c_utsname) :: utsname
 
         if (present(stat)) stat = E_SYSTEM
         if (c_uname(utsname) /= 0) return

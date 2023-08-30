@@ -111,14 +111,14 @@ contains
 
         ! Validate receiver.
         if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observation ' // observ%name, observ=observ)
+            call dm_log(LOG_DEBUG, 'no receivers left in observation', observ=observ)
             rc = E_NONE
             return
         end if
 
         if (.not. dm_id_valid(observ%receivers(next))) then
             call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observation ' // observ%name, observ=observ, error=E_INVALID)
+                        ' in observation', observ=observ, error=E_INVALID)
             rc = E_INVALID
             return
         end if
@@ -142,12 +142,12 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
-                            ' to message queue /' // observ%receivers(next), observ=observ, error=rc)
+                call dm_log(LOG_ERROR, 'failed to send observation to message queue /' // &
+                            observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to message queue /' // &
+            call dm_log(LOG_DEBUG, 'sent observation to message queue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -455,7 +455,7 @@ contains
                 observ%path      = trim(app%tty)
 
                 if (observ%nrequests == 0) then
-                    call dm_log(LOG_INFO, 'no requests in observation ' // observ%name, observ=observ)
+                    call dm_log(LOG_INFO, 'no requests in observation', observ=observ)
                     exit observ_if
                 end if
 
@@ -465,8 +465,7 @@ contains
                     request => observ%requests(i)
 
                     call dm_log(LOG_DEBUG, 'starting request ' // dm_itoa(i) // ' of ' // &
-                                dm_itoa(observ%nrequests) // ' in observation ' // observ%name, &
-                                observ=observ)
+                                dm_itoa(observ%nrequests), observ=observ)
 
                     ! Flush input/output buffer.
                     ! rc = dm_tty_flush(tty)
@@ -494,7 +493,6 @@ contains
 
                     if (len_trim(request%delimiter) == 0) then
                         call dm_log(LOG_DEBUG, 'no delimiter set in request ' // dm_itoa(i) // &
-                                    ' of observation ' // trim(observ%name) // &
                                     ', TTY reading skipped', observ=observ)
                         cycle req_loop
                     end if
@@ -510,9 +508,8 @@ contains
 
                     ! Try to extract the response values if a regex pattern is given.
                     if (len_trim(request%pattern) == 0) then
-                        call dm_log(LOG_DEBUG, 'no regular expression set in request ' // dm_itoa(i) // &
-                                    ' of observation ' // trim(observ%name) // ', extraction skipped', &
-                                    observ=observ)
+                        call dm_log(LOG_DEBUG, 'no pattern in request ' // dm_itoa(i) // &
+                                    ', extraction skipped', observ=observ)
                         cycle req_loop
                     end if
 
@@ -520,9 +517,8 @@ contains
                     rc = dm_regex_request(request)
 
                     if (dm_is_error(rc)) then
-                        call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // ' of observation ' // &
-                                    trim(observ%name) // ' does not match extraction pattern', &
-                                    observ=observ, error=rc)
+                        call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // &
+                                    ' does not match pattern', observ=observ, error=rc)
                         request%error = rc
                         cycle req_loop
                     end if
@@ -533,14 +529,12 @@ contains
 
                         if (dm_is_error(response%error)) then
                             call dm_log(LOG_WARNING, 'failed to extract response ' // trim(response%name) // &
-                                        ' to request ' // dm_itoa(i) // ' of observation ' // observ%name, &
-                                        observ=observ, error=response%error)
+                                        ' to request ' // dm_itoa(i), observ=observ, error=response%error)
                             cycle
                         end if
 
                         call dm_log(LOG_DEBUG, 'extracted response ' // trim(response%name) // &
-                                    ' to request ' // dm_itoa(i) // ' of observation ' // &
-                                    observ%name, observ=observ)
+                                    ' of request ' // dm_itoa(i), observ=observ)
                     end do
 
                     ! Escape raw response.
@@ -548,18 +542,18 @@ contains
                     request%error = rc
 
                     call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
-                                dm_itoa(observ%nrequests) // ' in observation ' // observ%name, observ=observ)
+                                dm_itoa(observ%nrequests), observ=observ)
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
-                    call dm_log(LOG_DEBUG, 'next request of observation ' // trim(observ%name) // &
-                                           ' in ' // dm_itoa(delay / 1000) // ' sec')
+                    call dm_log(LOG_DEBUG, 'next request in ' // dm_itoa(delay / 1000) // ' sec')
                     if (delay <= 0) cycle req_loop
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
                 ! Forward observation.
-                call dm_log(LOG_DEBUG, 'finished observation ' // observ%name, observ=observ)
+                call dm_log(LOG_DEBUG, 'finished observation ' // trim(observ%name) // &
+                            ' for sensor ' // app%sensor, observ=observ)
                 rc = forward_observ(observ)
 
                 ! Output observation.
