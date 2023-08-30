@@ -20,7 +20,7 @@ ar -M <<EOF
 CREATE ${TARGET}
 ADDLIB ${THIN}
 ADDLIB ./lib/libfortran-curl.a
-ADDLIB ./lib/libfortran-lua53.a
+ADDLIB ./lib/libfortran-lua54.a
 ADDLIB ./lib/libfortran-pcre2.a
 ADDLIB ./lib/libfortran-sqlite3.a
 ADDLIB ./lib/libfortran-unix.a
