@@ -251,10 +251,10 @@ contains
     integer function dm_tty_read(tty, buffer, del, nbytes) result(rc)
         !! Reads from TTY into `buf` until delimiter `del` occurs. The
         !! number of bytes read is returned in `n`.
-        type(tty_type),    intent(inout)         :: tty    !! TTY type.
-        character(len=*),  intent(inout)         :: buffer !! Input buffer.
-        character(len=*),  intent(in)            :: del    !! Delimiter.
-        integer(kind=i8),  intent(out), optional :: nbytes !! Number of bytes read.
+        type(tty_type),   intent(inout)         :: tty    !! TTY type.
+        character(len=*), intent(inout)         :: buffer !! Input buffer.
+        character(len=*), intent(in)            :: del    !! Delimiter.
+        integer(kind=i8), intent(out), optional :: nbytes !! Number of bytes read.
 
         character        :: a
         integer          :: i, j, k
@@ -425,8 +425,10 @@ contains
         termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))
 
         ! No special handling of received bytes.
-        termios%c_iflag = 0
-        termios%c_iflag = ior(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL))
+        termios%c_iflag = iand(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL))
+
+        ! Turn XON/XOFF control off.
+        termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))
 
         ! No echo.
         termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL))
@@ -437,16 +439,12 @@ contains
         ! No signal chars.
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))
 
-        ! No special interpretation of output bytes. No lower-case translation.
-        termios%c_oflag = 0
+        ! No special interpretation of output bytes.
         termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))
 
         ! Blocking read with timeout in 1/10 seconds.
         termios%c_cc(VMIN)  = 0
         termios%c_cc(VTIME) = tty%timeout * 10
-
-        ! Turn XON/XOFF control off.
-        termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))
 
         ! Set attributes.
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
