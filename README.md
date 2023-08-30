@@ -2,13 +2,14 @@
 
 DMPACK is a free and open-source software package for IoT-based automatic
 deformation monitoring and distributed control measurements in engineering
-geodesy and geotechnics. The project is still in active development, and the
-successor of [OpenADMS Node](https://github.com/dabamos/openadms-node),
+geodesy and geotechnics. The project is the successor of
+[OpenADMS Node](https://github.com/dabamos/openadms-node),
 [OpenADMS Server](https://github.com/dabamos/openadms-server), as well as
-[OpenADMS UI](https://github.com/dabamos/openadms-ui).
+[OpenADMS UI](https://github.com/dabamos/openadms-ui), and in active
+development.
 
 The library and the accompanying programs are written in Fortran 2018, with
-some smaller parts in C and Lua. At the moment, DMPACK runs on 64-bit Linux and
+some smaller parts in Lua. At the moment, DMPACK runs on 64-bit Linux and
 FreeBSD only.
 
 * [Project Website](https://www.dabamos.de/software/dmpack/)
@@ -221,6 +222,7 @@ $ git submodule update --remote
 ```
 
 ## Library
+
 | Name           | Description            |
 |----------------|------------------------|
 | `libdmpack.a`  | DMPACK static library. |

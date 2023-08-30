@@ -193,7 +193,7 @@ contains
     pure function dm_html_anchor(anchor) result(html)
         !! Returns HTML anchor tag.
         type(anchor_type), intent(in) :: anchor !! Anchor type.
-        character(len=:), allocatable :: html
+        character(len=:), allocatable :: html   !! HTML.
 
         html = '<a href="' // dm_html_encode(anchor%link) // '">' // &
                               dm_html_encode(anchor%text) // '</a>'
@@ -203,7 +203,7 @@ contains
         !! Returns table of single beat in HTML format.
         type(beat_type),  intent(inout)        :: beat  !! Beat type.
         integer(kind=i8), intent(in), optional :: delta !! Time delta.
-        character(len=:), allocatable          :: html
+        character(len=:), allocatable          :: html  !! HTML.
 
         integer(kind=i8)      :: delta_
         type(time_delta_type) :: time, time_delta, time_inter
@@ -237,7 +237,7 @@ contains
                H_TR // H_TH // 'Status' // H_TH_END // H_TD
 
         if (delta_ <= int(beat%interval, kind=i8)) then
-            html = html // H_EM // 'on time' // H_EM_END
+            html = html // H_EM // 'on-time' // H_EM_END
         else
             html = html // H_STRONG // 'overdue' // H_STRONG_END
         end if
@@ -249,10 +249,10 @@ contains
         !! Returns table of heartbeats in HTML format. If argument `prefix` is
         !! passed, the node ids are enclosed in HTML anchors, with the link
         !! set to `prefix`.
-        type(beat_type),   intent(inout)           :: beats(:)
-        integer(kind=i8),  intent(inout), optional :: deltas(:)
-        character(len=*),  intent(in),    optional :: prefix
-        character(len=:), allocatable              :: html
+        type(beat_type),   intent(inout)           :: beats(:)  !! Beat types.
+        integer(kind=i8),  intent(inout), optional :: deltas(:) !! Time deltas.
+        character(len=*),  intent(in),    optional :: prefix    !! GET argument name.
+        character(len=:), allocatable              :: html      !! HTML.
 
         integer               :: i
         integer(kind=i8)      :: delta
@@ -300,7 +300,7 @@ contains
                    H_TD
 
             if (delta <= int(beats(i)%interval, kind=i8)) then
-                html = html // H_EM // 'on time' // H_EM_END
+                html = html // H_EM // 'on-time' // H_EM_END
             else
                 html = html // H_STRONG // 'overdue' // H_STRONG_END
             end if
@@ -317,13 +317,15 @@ contains
         character(len=*), parameter :: BUTTON_TYPES(3) = [ &
             character(len=6) :: 'button', 'reset', 'submit' ]
 
-        integer,          intent(in)           :: type
-        character(len=*), intent(in)           :: str
-        logical,          intent(in), optional :: disabled
-        character(len=:), allocatable          :: html
-        integer                                :: button_type
+        integer,          intent(in)           :: type     !! Button type enumerator.
+        character(len=*), intent(in)           :: str      !! Label.
+        logical,          intent(in), optional :: disabled !! Disabled flag.
+        character(len=:), allocatable          :: html     !! HTML.
+
+        integer :: button_type
 
         button_type = HTML_BUTTON_TYPE_BUTTON
+
         if (type >= HTML_BUTTON_TYPE_BUTTON .and. &
             type <= HTML_BUTTON_TYPE_SUBMIT) button_type = type
 
@@ -338,8 +340,8 @@ contains
 
     function dm_html_cgi_env(env) result(html)
         !! Returns HTML table of CGI environment variables.
-        type(cgi_env_type), intent(inout) :: env
-        character(len=:), allocatable     :: html
+        type(cgi_env_type), intent(inout) :: env  !! CGI environment variables.
+        character(len=:), allocatable     :: html !! HTML.
 
         html = H_TABLE // H_THEAD // &
                H_TR // H_TH // 'Variable' // H_TH_END // &
@@ -400,8 +402,8 @@ contains
 
     pure function dm_html_comment(str) result(html)
         !! Returns HTML comment. This function does not encode the argument.
-        character(len=*), intent(in)  :: str !! Comment string.
-        character(len=:), allocatable :: html
+        character(len=*), intent(in)  :: str  !! Comment string.
+        character(len=:), allocatable :: html !! HTML.
 
         html = H_COMMENT // str // H_COMMENT_END
     end function dm_html_comment
@@ -411,7 +413,8 @@ contains
         character(len=*), intent(inout) :: data !! Raw data.
         character(len=*), intent(in)    :: mime !! MIME type.
         character(len=:), allocatable   :: uri  !! Data URI.
-        character(len=:), allocatable   :: base64
+
+        character(len=:), allocatable :: base64
 
         call dm_base64_encode(data, base64)
         uri = 'data:' // trim(mime) // ';base64,' // base64
@@ -421,7 +424,8 @@ contains
         !! Reverses HTML encoding.
         character(len=*), intent(in)  :: input  !! String to decode.
         character(len=:), allocatable :: output !! Decoded string.
-        integer                       :: i, n
+
+        integer :: i, n
 
         output = ''
         n = len_trim(input)
@@ -448,7 +452,8 @@ contains
         !! replaced (", &, <, >).
         character(len=*), intent(in)  :: input  !! Input string.
         character(len=:), allocatable :: output !! Encoded string.
-        integer                       :: i
+
+        integer :: i
 
         output = ''
 
@@ -570,7 +575,8 @@ contains
         character(len=*), intent(in)           :: str   !! Heading string.
         character(len=*), intent(in), optional :: small !! Sub-heading string.
         character(len=:), allocatable          :: html  !! HTML.
-        logical                                :: has_small
+
+        logical :: has_small
 
         has_small = .false.
         if (present(small)) has_small = (len_trim(small) > 0)
@@ -844,7 +850,8 @@ contains
         !! Returns HTML navigation element with unordered list of links.
         type(anchor_type), intent(inout) :: anchors(:) !! Anchor types.
         character(len=:), allocatable    :: html       !! HTML.
-        integer                          :: i
+
+        integer :: i
 
         html = H_NAV // H_UL
 
@@ -911,7 +918,8 @@ contains
         !! Returns observation as HTML table.
         type(observ_type), intent(inout) :: observ !! Observation type.
         character(len=:), allocatable    :: html   !! HTML.
-        integer                          :: i, n
+
+        integer :: i, n
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1062,7 +1070,8 @@ contains
         character(len=*), intent(in)           :: str  !! Content string.
         logical,          intent(in), optional :: code !! Additional code tag?
         character(len=:), allocatable          :: html !! HTML.
-        logical                                :: code_
+
+        logical :: code_
 
         code_ = .false.
         if (present(code)) code_ = code
@@ -1109,7 +1118,8 @@ contains
         !! Returns responses as HTML table.
         type(response_type), intent(inout) :: responses(:) !! Observation response type.
         character(len=:), allocatable      :: html         !! HTML.
-        integer                            :: i
+
+        integer :: i
 
         html = H_TABLE // H_THEAD // H_TR // H_TH // '#' // H_TH_END // &
                H_TH // 'Response Name' // H_TH_END // H_TH // 'Value' // H_TH_END // &
@@ -1136,7 +1146,8 @@ contains
         character(len=*),  intent(in)    :: name     !! Select name.
         character(len=*),  intent(in)    :: selected !! Selected element.
         character(len=:), allocatable    :: html     !! HTML.
-        integer                          :: i, n
+
+        integer :: i, n
 
         html = '<select id="' // id // '" name="' // name // '">' // NL
 
@@ -1155,10 +1166,11 @@ contains
         !! Returns sensor as HTML table.
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: html   !! HTML.
-        integer                          :: t
 
-        t = sensor%type
-        if (t < 0 .or. t > SENSOR_NTYPES - 1) t = 0
+        integer :: type
+
+        type = sensor%type
+        if (type < 0 .or. type > SENSOR_NTYPES - 1) type = 0
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1166,7 +1178,7 @@ contains
                H_TR // H_TH // 'Node ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Type' // H_TH_END // &
-               H_TD // trim(SENSOR_TYPE_NAMES(t)) // H_TD_END // H_TR_END // &
+               H_TD // trim(SENSOR_TYPE_NAMES(type)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Serial Number' // H_TH_END // &
@@ -1312,10 +1324,11 @@ contains
 
     pure subroutine dm_html_select_create(select, size, stat)
         !! Allocates memory for arrays in select type.
-        type(select_type), intent(out)           :: select
-        integer,           intent(in)            :: size
-        integer,           intent(out), optional :: stat
-        integer                                  :: rc
+        type(select_type), intent(out)           :: select !! Select type.
+        integer,           intent(in)            :: size   !! Array size.
+        integer,           intent(out), optional :: stat   !! Allocation status.
+
+        integer :: rc
 
         if (present(stat)) stat = E_ALLOC
         allocate (select%options(size), select%values(size), stat=rc)
@@ -1325,18 +1338,18 @@ contains
 
     subroutine dm_html_select_destroy(select)
         !! Deallocates array in select type.
-        type(select_type), intent(inout) :: select
+        type(select_type), intent(inout) :: select !! Select type.
 
         if (allocated(select%options)) deallocate (select%options)
     end subroutine dm_html_select_destroy
 
     subroutine dm_html_select_set(select, index, option, value, stat)
         !! Sets option name and value in select type.
-        type(select_type), intent(inout)         :: select
-        integer,           intent(in)            :: index
-        character(len=*),  intent(in)            :: option
-        character(len=*),  intent(in)            :: value
-        integer,           intent(out), optional :: stat
+        type(select_type), intent(inout)         :: select !! Select type.
+        integer,           intent(in)            :: index  !! Array index.
+        character(len=*),  intent(in)            :: option !! Option name.
+        character(len=*),  intent(in)            :: value  !! Option value.
+        integer,           intent(out), optional :: stat   !! Status.
 
         if (present(stat)) stat = E_ALLOC
         if (.not. allocated(select%options) .or. &
