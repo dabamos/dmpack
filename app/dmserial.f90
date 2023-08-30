@@ -399,7 +399,7 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: raw_request
 
         integer :: delay, njobs
-        integer :: i, j, stat
+        integer :: i, j
 
         type(job_type),      target  :: job      ! Next job to run.
         type(observ_type),   pointer :: observ   ! Next observation to perform.
@@ -452,6 +452,7 @@ contains
                 observ%node_id   = app%node
                 observ%sensor_id = app%sensor
                 observ%timestamp = dm_time_now()
+                observ%path      = trim(app%tty)
 
                 if (observ%nrequests == 0) then
                     call dm_log(LOG_INFO, 'no requests in observation ' // observ%name, observ=observ)
@@ -468,12 +469,12 @@ contains
                                 observ=observ)
 
                     ! Flush input/output buffer.
-                    rc = dm_tty_flush(tty)
+                    ! rc = dm_tty_flush(tty)
 
-                    if (dm_is_error(rc)) then
-                        call dm_log(LOG_WARNING, 'failed to flush buffer of TTY ' // app%tty, &
-                                    observ=observ, error=rc)
-                    end if
+                    ! if (dm_is_error(rc)) then
+                    !     call dm_log(LOG_WARNING, 'failed to flush buffer of TTY ' // app%tty, &
+                    !                 observ=observ, error=rc)
+                    ! end if
 
                     ! Write unescaped raw request to TTY.
                     request%timestamp = dm_time_now()

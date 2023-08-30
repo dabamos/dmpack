@@ -425,6 +425,7 @@ contains
         termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))
 
         ! No special handling of received bytes.
+        termios%c_iflag = 0
         termios%c_iflag = ior(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL))
 
         ! No echo.
@@ -436,7 +437,8 @@ contains
         ! No signal chars.
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))
 
-        ! No special interpretation of output bytes.
+        ! No special interpretation of output bytes. No lower-case translation.
+        termios%c_oflag = 0
         termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))
 
         ! Blocking read with timeout in 1/10 seconds.
