@@ -1533,18 +1533,24 @@ contains
         integer                       :: nresults_
         integer                       :: i
 
+        character(len=4) :: year
+        character(len=2) :: month
+        character(len=2) :: day
+
         type(select_type) :: select_node
         type(select_type) :: select_sensor
         type(select_type) :: select_target
         type(select_type) :: select_level
         type(select_type) :: select_result
 
+        call dm_time_string(year, month, day)
+
         node_id_   = ' '
         sensor_id_ = ' '
         target_id_ = ' '
         level_     = ' '
         source_    = ' '
-        from_      = '1970-01-01T00:00:00'
+        from_      = year // '-' // month // '-' // day // 'T00:00:00'
         to_        = '2100-01-01T00:00:00'
         nresults_  = 0
 
@@ -1674,12 +1680,18 @@ contains
         integer                      :: i
         logical                      :: disabled
 
+        character(len=4) :: year
+        character(len=2) :: month
+        character(len=2) :: day
+
         type(select_type) :: select_node
         type(select_type) :: select_result
         type(select_type) :: select_sensor
         type(select_type) :: select_target
 
-        from_     = '1970-01-01T00:00:00'
+        call dm_time_string(year, month, day)
+
+        from_     = year // '-' // month // '-' // day // 'T00:00:00'
         to_       = '2100-01-01T00:00:00'
         nresults_ = 0
 
@@ -1768,16 +1780,22 @@ contains
         integer                          :: i
         logical                          :: disabled
 
+        character(len=4) :: year
+        character(len=2) :: month
+        character(len=2) :: day
+
         type(select_type) :: select_node
         type(select_type) :: select_result
         type(select_type) :: select_sensor
         type(select_type) :: select_target
 
+        call dm_time_string(year, month, day)
+
         node_id_       = ' '
         sensor_id_     = ' '
         target_id_     = ' '
         response_name_ = ' '
-        from_          = '1970-01-01T00:00:00'
+        from_          = year // '-' // month // '-' // day // 'T00:00:00'
         to_            = '2100-01-01T00:00:00'
         nresults_      = 0
 

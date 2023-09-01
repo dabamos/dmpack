@@ -27,19 +27,20 @@ module dm_time
     public :: dm_time_mseconds
     public :: dm_time_now
     public :: dm_time_rfc2822
+    public :: dm_time_string
     public :: dm_time_to_seconds
     public :: dm_time_to_string
     public :: dm_time_valid
     public :: dm_time_zone
 contains
-    pure character(len=TIME_LEN) &
+    pure elemental character(len=TIME_LEN) &
     function dm_time_create(year, month, day, hour, minute, second, msecond, zone) result(str)
         !! Returns a timestamp in ISO 8601/RFC 3339 of the form
         !! `1970-01-01T00:00:00.000+00:00`. Optional argument `zone` sets the
         !! time zone and has to be of the form `[+|-]hh:mm`, for example,
         !! `+00:00` or `-01:00`.
         character(len=*), parameter :: FMT_ISO = &
-            '(i4, 2("-", i2.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a)'
+            '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a)'
 
         integer,          intent(in), optional :: year     !! Year (YYYY).
         integer,          intent(in), optional :: month    !! Month (MM).
@@ -111,7 +112,7 @@ contains
         !! Returns a timestamp in ISO 8601/RFC 3339 of the form
         !! `1970-01-01T00:00:00.000+00:00`.
         character(len=*), parameter :: FMT_ISO = &
-            '(i4, 2("-", i2.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a, ":", a)'
+            '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a, ":", a)'
 
         character(len=5) :: zone
         integer          :: dt(8)
@@ -277,4 +278,28 @@ contains
         time_delta%mins = int(t / 60)
         time_delta%secs = int(modulo(t, 60_i8))
     end subroutine dm_time_from_seconds
+
+    subroutine dm_time_string(year, month, day, hour, minute, second, msecond)
+        !! Returns date and time values as strings in given dummy arguments.
+        character(len=4), intent(out), optional :: year    !! Current year.
+        character(len=2), intent(out), optional :: month   !! Current month.
+        character(len=2), intent(out), optional :: day     !! Current day.
+        character(len=2), intent(out), optional :: hour    !! Current hour.
+        character(len=2), intent(out), optional :: minute  !! Current minute.
+        character(len=2), intent(out), optional :: second  !! Current second.
+        character(len=3), intent(out), optional :: msecond !! Current msecond.
+
+        character(len=5) :: z
+        integer          :: dt(8)
+
+        call date_and_time(zone=z, values=dt)
+
+        if (present(year))    write (year,    '(i0.4)') dt(1)
+        if (present(month))   write (month,   '(i0.2)') dt(2)
+        if (present(day))     write (day,     '(i0.2)') dt(3)
+        if (present(hour))    write (hour,    '(i0.2)') dt(5)
+        if (present(minute))  write (minute,  '(i0.2)') dt(6)
+        if (present(second))  write (second,  '(i0.2)') dt(7)
+        if (present(msecond)) write (msecond, '(i0.3)') dt(8)
+    end subroutine dm_time_string
 end module dm_time
