@@ -2573,6 +2573,7 @@ accepted.
 
 | `201`  | Log was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `409`  | Log exists in database.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
@@ -2657,6 +2658,7 @@ accepted.
 
 | `201`  | Node was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `409`  | Node exists in database.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
@@ -2741,6 +2743,7 @@ observation was accepted.
 
 | `201`  | Observation was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `409`  | Observation exists in database.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
@@ -2826,6 +2829,7 @@ accepted.
 
 | `201`  | Sensor was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `409`  | Sensor exists in database.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
@@ -2911,6 +2915,7 @@ accepted.
 
 | `201`  | Target was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `409`  | Target exists in database.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
@@ -3663,8 +3668,10 @@ image::db_schema_observ.png[observation database schema,align="center"]
 | 74   | `E_REGEX_NO_GROUP`  | No group.
 | 80   | `E_SENSOR`          | Generic sensor error.
 | 90   | `E_RPC`             | Generic RPC error.
-| 91   | `E_RPC_API`         | RPC API call failed.
-| 92   | `E_RPC_AUTH`        | Unauthorised.
-| 93   | `E_RPC_CONFLICT`    | Resource exists.
-| 94   | `E_RPC_SERVER`      | Internal RPC server error.
+| 91   | `E_RPC_CONNECT`     | RPC connection error.
+| 92   | `E_RPC_SSL`         | RPC SSL/TLS error.
+| 93   | `E_RPC_API`         | RPC API call failed.
+| 94   | `E_RPC_AUTH`        | RPC API call unauthorised.
+| 95   | `E_RPC_CONFLICT`    | RPC resource exists.
+| 96   | `E_RPC_SERVER`      | RPC internal server error.
 |===

@@ -72,10 +72,12 @@ module dm_error
     integer, parameter, public :: E_SENSOR         = 80 !! Generic sensor error.
 
     integer, parameter, public :: E_RPC            = 90 !! Generic RPC error.
-    integer, parameter, public :: E_RPC_API        = 91 !! RPC API call failed.
-    integer, parameter, public :: E_RPC_AUTH       = 92 !! Unauthorised.
-    integer, parameter, public :: E_RPC_CONFLICT   = 93 !! Resource exists.
-    integer, parameter, public :: E_RPC_SERVER     = 94 !! Internal server error.
+    integer, parameter, public :: E_RPC_CONNECT    = 91 !! RPC connection error.
+    integer, parameter, public :: E_RPC_SSL        = 92 !! RPC SSL/TLS error.
+    integer, parameter, public :: E_RPC_API        = 93 !! RPC API call failed.
+    integer, parameter, public :: E_RPC_AUTH       = 94 !! Unauthorised.
+    integer, parameter, public :: E_RPC_CONFLICT   = 95 !! Resource exists.
+    integer, parameter, public :: E_RPC_SERVER     = 96 !! Internal server error.
 
     interface dm_perror
         !! Alias for `dm_error_out()`.
@@ -224,6 +226,10 @@ contains
             ! RPC.
             case (E_RPC)
                 str = 'RPC error'
+            case (E_RPC_CONNECT)
+                str = 'RPC connection error'
+            case (E_RPC_SSL)
+                str = 'RPC SSL error'
             case (E_RPC_API)
                 str = 'RPC API error'
             case (E_RPC_AUTH)

@@ -433,7 +433,8 @@ contains
                 syncs(i)%code      = response%code          ! Server status code.
                 syncs(i)%nattempts = syncs(i)%nattempts + 1 ! Number of sync attempts.
 
-                ! Insert or replace the sync data in database.
+                ! Insert or replace the sync data in database. If the database
+                ! is busy, try up to 10 times.
                 db_loop: do j = 1, 10
                     rc = dm_db_insert_sync(db, syncs(i))
 

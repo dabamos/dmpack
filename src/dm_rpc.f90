@@ -88,6 +88,7 @@ module dm_rpc
     end interface
 
     public :: dm_rpc_destroy
+    public :: dm_rpc_error
     public :: dm_rpc_init
     public :: dm_rpc_request
     public :: dm_rpc_reset
@@ -108,6 +109,77 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    integer function dm_rpc_error(curl_error) result(rc)
+        !! Converts cURL error code into DMPACK error code.
+        integer, intent(in) :: curl_error !! cURL error code.
+
+        select case (curl_error)
+            case (CURLE_OK)
+                rc = E_NONE
+
+            case (CURLE_UNSUPPORTED_PROTOCOL)
+            case (CURLE_FAILED_INIT)
+            case (CURLE_URL_MALFORMAT)
+            case (CURLE_NOT_BUILT_IN)
+            case (CURLE_BAD_FUNCTION_ARGUMENT)
+            case (CURLE_UNKNOWN_OPTION)
+            case (CURLE_BAD_CONTENT_ENCODING)
+                rc = E_INVALID
+
+            case (CURLE_COULDNT_RESOLVE_PROXY)
+            case (CURLE_COULDNT_RESOLVE_HOST)
+            case (CURLE_COULDNT_CONNECT)
+                rc = E_RPC_CONNECT
+
+            case (CURLE_WEIRD_SERVER_REPLY)
+                rc = E_RPC_API
+
+            case (CURLE_REMOTE_ACCESS_DENIED)
+            case (CURLE_AUTH_ERROR)
+                rc = E_RPC_AUTH
+
+            case (CURLE_WRITE_ERROR)
+                rc = E_WRITE
+
+            case (CURLE_READ_ERROR)
+                rc = E_READ
+
+            case (CURLE_OUT_OF_MEMORY)
+                rc = E_ALLOC
+
+            case (CURLE_OPERATION_TIMEDOUT)
+                rc = E_TIMEOUT
+
+            case (CURLE_GOT_NOTHING)
+                rc = E_EMPTY
+
+            case (CURLE_SSL_CONNECT_ERROR)
+            case (CURLE_SSL_ENGINE_NOTFOUND)
+            case (CURLE_SSL_ENGINE_SETFAILED)
+            case (CURLE_SSL_CERTPROBLEM)
+            case (CURLE_SSL_CIPHER)
+            case (CURLE_PEER_FAILED_VERIFICATION)
+            case (CURLE_SSL_ENGINE_INITFAILED)
+            case (CURLE_SSL_CACERT_BADFILE)
+            case (CURLE_SSL_SHUTDOWN_FAILED)
+            case (CURLE_SSL_CRL_BADFILE)
+            case (CURLE_SSL_ISSUER_ERROR)
+            case (CURLE_SSL_PINNEDPUBKEYNOTMATCH)
+            case (CURLE_SSL_INVALIDCERTSTATUS)
+            case (CURLE_SSL_CLIENTCERT)
+                rc = E_RPC_SSL
+
+            case (CURLE_FILESIZE_EXCEEDED)
+                rc = E_LIMIT
+
+            case (CURLE_REMOTE_FILE_NOT_FOUND)
+                rc = E_NOT_FOUND
+
+            case default
+                rc = E_RPC
+        end select
+    end function dm_rpc_error
+
     integer function dm_rpc_init() result(rc)
         !! Initialises libcurl backend.
         rc = E_RPC
@@ -348,14 +420,13 @@ contains
             rc = E_NONE
         end block curl_block
 
-        ! Set error code.
-        response%error = rc
-
-        ! Set error message.
+        ! Set error code and message.
         if (er /= CURLE_OK) then
+            response%error         = dm_rpc_error(er)
             response%error_curl    = er
             response%error_message = curl_easy_strerror(er)
         else
+            response%error         = rc
             response%error_message = ''
         end if
 
