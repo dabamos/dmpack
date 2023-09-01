@@ -11,6 +11,7 @@ man/pdf/
 
 # Other stuff
 *.a
+*.conf
 *.db
 *.html
 *.mod
