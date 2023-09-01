@@ -151,8 +151,8 @@ $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make freebsd
 ```
-
-To install the library and all programs system-wide, run:
+You can change the installation prefix with argument `PREFIX` (by default,
+`/usr/local`). To install the library and all programs system-wide, run:
 
 ```
 $ make install PREFIX=/usr/local
@@ -161,8 +161,7 @@ $ make install PREFIX=/usr/local
 The DMPACK programs require the shared library `libgfortran.so` if they have
 been compiled with GNU Fortran.
 
-You can change the installation prefix with argument `PREFIX` (by default,
-`/usr/local`). The following paths are assumed as defaults on FreeBSD:
+The following paths are assumed as defaults on FreeBSD:
 
 | Path                       | Description                        |
 |----------------------------|------------------------------------|
@@ -219,6 +218,8 @@ Update the cloned source code repository and its submodules with Git:
 ```
 $ git pull
 $ git submodule update --remote
+$ make purge
+$ make [freebsd|linux]
 ```
 
 ## Library

@@ -134,6 +134,7 @@ contains
         !! POST Responses:
         !!      201 - Heartbeat was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      415 - Invalid payload format.
         !!      503 - Database error.
         type(cgi_env_type), intent(inout) :: env
@@ -367,6 +368,7 @@ contains
         !! POST Responses:
         !!      201 - Log was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      409 - Log exists in database.
         !!      415 - Invalid payload format.
         !!      503 - Database error.
@@ -677,6 +679,7 @@ contains
         !! POST Responses:
         !!      201 - Node was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      409 - Node exists in database.
         !!      415 - Invalid payload format.
         !!      503 - Database error.
@@ -912,6 +915,7 @@ contains
         !! POST Responses:
         !!      201 - Observation was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      409 - Observation exists in database.
         !!      415 - Invalid payload format.
         !!      503 - Database error.
@@ -1296,6 +1300,7 @@ contains
         !! POST Responses:
         !!      201 - Sensor was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      409 - Sensor exists in database.
         !!      415 - Invalid payload format.
         !!      503 - Database error.
@@ -1532,6 +1537,7 @@ contains
         !! POST Responses:
         !!      201 - Target was accepted.
         !!      400 - Invalid request or payload.
+        !!      401 - Unauthorised.
         !!      409 - Target exists in database.
         !!      415 - Invalid payload format.
         !!      503 - Database error.

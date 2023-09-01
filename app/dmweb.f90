@@ -256,7 +256,8 @@ contains
             end if
 
             call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
-                                            node_id=.true., sensor_id=.true., target_id=.true., error=.true.))
+                                            node_id=.true., sensor_id=.true., target_id=.true., &
+                                            name=.true., error=.true.))
         end block observ_block
 
         rc = dm_db_close(db)

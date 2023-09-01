@@ -52,7 +52,7 @@ module dm_tty
     ! Serial port type (default: 9600 baud, 8N1).
     type, public :: tty_type
         !! TTY/PTY data type.
-        integer, private             :: fd        = -1              !! Unix file descriptor.
+        integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
         character(len=FILE_PATH_LEN) :: path      = ' '             !! TTY/PTY path.
         integer                      :: access    = TTY_RDWR        !! Access mode (read/write).
         integer                      :: baud_rate = TTY_B9600       !! Baud rate (9600).
@@ -90,7 +90,8 @@ contains
         integer, intent(in)            :: value !! Numeric baud rate value.
         integer, intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NONE
+        baud_rate = 0
+        if (present(error)) error = E_INVALID
 
         select case (value)
             case (0)
@@ -136,9 +137,10 @@ contains
             case (921600)
                 baud_rate = TTY_B921600
             case default
-                baud_rate = 0
-                if (present(error)) error = E_INVALID
+                return
         end select
+
+        if (present(error)) error = E_NONE
     end function dm_tty_baud_rate_from_value
 
     integer function dm_tty_byte_size_from_value(value, error) result(byte_size)
@@ -148,7 +150,8 @@ contains
         integer, intent(in)            :: value !! Numeric byte size value.
         integer, intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NONE
+        byte_size = 0
+        if (present(error)) error = E_INVALID
 
         select case (value)
             case (5)
@@ -160,21 +163,48 @@ contains
             case (8)
                 byte_size = TTY_BYTE_SIZE8
             case default
-                byte_size = 0
-                if (present(error)) error = E_INVALID
+                return
         end select
+
+        if (present(error)) error = E_NONE
     end function dm_tty_byte_size_from_value
 
-    integer function dm_tty_flush(tty) result(rc)
+    integer function dm_tty_flush(tty, input, output) result(rc)
         !! Flushes TTY input and output buffer.
-        use :: unix, only: c_tcflush, TCIOFLUSH
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        use :: unix, only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
+        type(tty_type), intent(inout)        :: tty    !! TTY type.
+        logical,        intent(in), optional :: input  !! Flush input buffer.
+        logical,        intent(in), optional :: output !! Flush output buffer.
+
+        integer(kind=c_int) :: n
+        logical             :: input_, output_
+
+        input_  = .true.
+        output_ = .true.
+
+        if (present(input))  input_  = input
+        if (present(output)) output_ = output
 
         rc = E_INVALID
         if (tty%fd < 0) return
 
+        if (input_ .and. output_) then
+            ! Flush input and output.
+            n = TCIOFLUSH
+        else if (input_) then
+            ! Flush input.
+            n = TCIFLUSH
+        else if (output_) then
+            ! Flush output.
+            n = TCOFLUSH
+        else
+            ! Nothing to do.
+            rc = E_NONE
+            return
+        end if
+
         rc = E_IO
-        if (c_tcflush(tty%fd, TCIOFLUSH) /= 0) return
+        if (c_tcflush(tty%fd, n) /= 0) return
 
         rc = E_NONE
     end function dm_tty_flush
@@ -185,7 +215,7 @@ contains
         use :: unix
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer :: flags
+        integer(kind=c_int) :: flags
 
         rc = E_EXIST
         if (dm_tty_connected(tty)) return
@@ -212,10 +242,9 @@ contains
         if (tty%fd < 0) return
 
         rc = dm_tty_set_attributes(tty)
-        if (c_tcflush(tty%fd, TCIFLUSH) /= 0) return
-        if (c_tcflush(tty%fd, TCOFLUSH) /= 0) return
+        if (dm_is_error(rc)) return
 
-        rc = E_NONE
+        rc = dm_tty_flush(tty)
     end function dm_tty_open
 
     logical function dm_tty_connected(tty) result(connected)
@@ -233,7 +262,8 @@ contains
         character(len=*), intent(in)            :: name  !! Parity name.
         integer,          intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NONE
+        parity = 0
+        if (present(error)) error = E_INVALID
 
         select case (name)
             case ('none')
@@ -243,9 +273,10 @@ contains
             case ('odd')
                 parity = TTY_PARITY_ODD
             case default
-                parity = 0
-                if (present(error)) error = E_INVALID
+                return
         end select
+
+        if (present(error)) error = E_NONE
     end function dm_tty_parity_from_name
 
     integer function dm_tty_read(tty, buffer, del, nbytes) result(rc)
@@ -265,7 +296,7 @@ contains
         i = 1
         j = len(buffer)
         k = len(del)
-        n = int(0, kind=i8)
+        n = 0_i8
 
         do
             rc = E_NONE
@@ -291,13 +322,13 @@ contains
         if (present(nbytes)) nbytes = n
     end function dm_tty_read
 
-    integer(kind=i8) function dm_tty_read_raw(tty, byte) result(n)
+    integer(kind=i8) function dm_tty_read_raw(tty, bytes) result(n)
         !! Reads single byte from file descriptor.
         use :: unix, only: c_read
-        type(tty_type),    intent(inout) :: tty  !! TTY type.
-        character, target, intent(out)   :: byte !! Read byte.
+        type(tty_type),    intent(inout) :: tty   !! TTY type.
+        character, target, intent(out)   :: bytes !! Read byte.
 
-        n = c_read(tty%fd, c_loc(byte), len(byte, kind=c_size_t))
+        n = int(c_read(tty%fd, c_loc(bytes), len(bytes, kind=c_size_t)), kind=i8)
     end function dm_tty_read_raw
 
     integer function dm_tty_set_attributes(tty) result(rc)
@@ -305,13 +336,13 @@ contains
         use :: unix
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer         :: baud_rate
-        integer         :: byte_size
-        integer         :: parity
-        integer         :: stop_bits
-        integer, target :: flags
-        integer, target :: stat
-        type(c_termios) :: termios
+        integer(kind=c_speed_t)     :: baud_rate
+        integer(kind=c_int)         :: byte_size
+        integer(kind=c_int)         :: parity
+        integer(kind=c_int)         :: stop_bits
+        integer(kind=c_int), target :: flags
+        integer(kind=c_int), target :: stat
+        type(c_termios)             :: termios
 
         rc = E_INVALID
         if (tty%fd < 0) return
@@ -472,19 +503,19 @@ contains
         integer, intent(in)            :: value !! Numeric byte size value.
         integer, intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NONE
+        stop_bits = 0
+        if (present(error)) error = E_INVALID
 
         select case (value)
             case (1)
                 stop_bits = TTY_STOP_BITS1
-
             case (2)
                 stop_bits = TTY_STOP_BITS2
-
             case default
-                stop_bits = 0
-                if (present(error)) error = E_INVALID
+                return
         end select
+
+        if (present(error)) error = E_NONE
     end function dm_tty_stop_bits_from_value
 
     pure elemental logical function dm_tty_valid_baud_rate(baud_rate) result(valid)
@@ -516,9 +547,6 @@ contains
             case (TTY_B460800)
             case (TTY_B921600)
                 valid = .true.
-
-            case default
-                return
         end select
     end function dm_tty_valid_baud_rate
 
@@ -534,9 +562,6 @@ contains
             case (TTY_BYTE_SIZE7)
             case (TTY_BYTE_SIZE8)
                 valid = .true.
-
-            case default
-                return
         end select
     end function dm_tty_valid_byte_size
 
@@ -551,9 +576,6 @@ contains
             case (TTY_PARITY_EVEN)
             case (TTY_PARITY_ODD)
                 valid = .true.
-
-            case default
-                return
         end select
     end function dm_tty_valid_parity
 
@@ -567,9 +589,6 @@ contains
             case (TTY_STOP_BITS1)
             case (TTY_STOP_BITS2)
                 valid = .true.
-
-            case default
-                return
         end select
     end function dm_tty_valid_stop_bits
 
@@ -587,9 +606,9 @@ contains
         type(tty_type),   intent(inout) :: tty   !! TTY type.
         character(len=*), intent(in)    :: bytes !! Bytes to send.
 
-        character, target :: a
-        integer           :: i
-        integer(kind=i8)  :: n
+        character(kind=c_char), target :: a
+        integer                        :: i
+        integer(kind=c_size_t)         :: n
 
         rc = E_WRITE
 

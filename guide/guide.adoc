@@ -159,11 +159,21 @@ $ cd dmpack/
 $ make freebsd
 ....
 
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
+Install the library and all programs system-wide:
+
+....
+$ make install_freebsd
+....
 
 You can change the installation prefix with argument `PREFIX` (by default,
-`/usr/local`).
+`/usr/local`). To install to a custom directory, run:
+
+....
+$ make install PREFIX=/opt
+....
+
+The DMPACK programs require the shared library `libgfortran.so` if they have
+been compiled with GNU Fortran.
 
 .Default paths on FreeBSD
 [%autowidth]
@@ -203,6 +213,18 @@ the DMPACK repository, and execute the Makefile:
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make linux
+....
+
+Install the library and all programs system-wide:
+
+....
+$ make install_linux
+....
+
+To install to a custom directory, run:
+
+....
+$ make install PREFIX=/opt
 ....
 
 == Deformation Monitoring Entities
@@ -361,9 +383,9 @@ deflate compression.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
 and observation sent to the RPC service must match the name of the
-authenticated user. For example, to store an observation of the node with id
-`node-1`, the HTTP Basic Auth user name must be `node-1`. If the observation is
-sent by any other user, it will be rejected (HTTP 401).
+authenticated user. For example, to store an observation of a node with the id
+`node-1`, the HTTP Basic Auth user name must equal the node id. If the
+observation is sent by any other user, it will be rejected (HTTP 401).
 
 [%autowidth]
 |===
@@ -414,7 +436,7 @@ $ sqlite3 <database> ".backup '<output>'"
 | `--database _file_` | `-d`  | –       | Path of the SQLite database to backup.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--vacuum`          | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite backup API.
-| `--verbose`         | `-V`  | off     | Print status messages to standard output (not in vacuum mode).
+| `--verbose`         | `-V`  | off     | Print backup progess (not in vacuum mode).
 | `--version`         | `-v`  | –       | Output version information and quit.
 | `--wal`             | `-W`  | off     | Enable WAL mode for backup database.
 |===
@@ -3609,6 +3631,14 @@ TARGET%META="Description",
 .SQL schema of the observation database
 [#img-db-schema-observ]
 image::db_schema_observ.png[observation database schema,align="center"]
+
+.SQL schema of the log database
+[#img-db-schema-log]
+image::db_schema_log.png[log database schema,align="center"]
+
+.SQL schema of the beat database
+[#img-db-schema-beat]
+image::db_schema_beat.png[beat database schema,align="center"]
 
 == Error Codes [[error-codes]]
 
