@@ -98,7 +98,8 @@ contains
         !! Closes configuration file.
         type(config_type), intent(inout) :: config !! Config type.
 
-        call dm_lua_pop(config%lua)
+        ! Remove last table from stack.
+        if (.not. dm_lua_is_nil(config%lua)) call dm_lua_pop(config%lua)
         call dm_lua_destroy(config%lua)
     end subroutine dm_config_close
 

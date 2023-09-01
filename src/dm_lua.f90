@@ -301,6 +301,7 @@ contains
 
         if (.not. c_associated(lua%ptr)) return
         call lua_close(lua%ptr)
+        lua%ptr = c_null_ptr
     end subroutine dm_lua_destroy
 
     subroutine dm_lua_dump_stack(lua, unit)
