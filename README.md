@@ -131,7 +131,7 @@ The DMPACK library and programs have to be built from source.
 First, install the build and run-time dependencies:
 
 ```
-# pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
+$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
   lang/lua54 math/gnuplot math/lapack www/fcgi
 ```
 
@@ -140,7 +140,7 @@ does not depend on X11 (but does not include raster graphic terminals). To
 generate the man pages and the User’s Guide, install Pygments and AsciiDoctor:
 
 ```
-# pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
+$ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ```
 
 Then, clone the repository recursively. Run the provided POSIX Makefile to build
@@ -155,7 +155,7 @@ You can change the installation prefix with argument `PREFIX` (by default,
 `/usr/local`). To install the library and all programs system-wide, run:
 
 ```
-$ make install PREFIX=/usr/local
+$ doas make install PREFIX=/usr/local
 ```
 
 The DMPACK programs require the shared library `libgfortran.so` if they have
@@ -177,13 +177,13 @@ The following paths are assumed as defaults on FreeBSD:
 On Debian, install GCC, GNU Fortran, and the build environment:
 
 ```
-# apt-get install gcc gfortran git make pkg-config
+$ sudo apt-get install gcc gfortran git make pkg-config
 ```
 
 The third-party dependencies have to be installed with development headers:
 
 ```
-# apt-get install --no-install-recommends libblas-dev liblapack-dev \
+$ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
@@ -202,13 +202,13 @@ $ make linux
 Install the library and all programs system-wide:
 
 ```
-$ make install_linux
+$ sudo make install_linux
 ```
 
 To install to a custom directory, run:
 
 ```
-$ make install PREFIX=/opt
+$ sudo make install PREFIX=/opt
 ```
 
 ### Updates

@@ -138,7 +138,7 @@ This section describes how to build the DMPACK library and programs from source.
 First, install the build and run-time dependencies:
 
 ....
-# pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
+$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
   lang/lua54 math/gnuplot math/lapack www/fcgi
 ....
 
@@ -147,7 +147,7 @@ does not depend on X11 (but neither includes raster graphic terminals).  To
 generate the man pages and the User’s Guide, install Pygments and AsciiDoctor:
 
 ....
-# pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
+$ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ....
 
 Then, clone the repository recursively. Run the provided POSIX Makefile to build
@@ -162,14 +162,14 @@ $ make freebsd
 Install the library and all programs system-wide:
 
 ....
-$ make install_freebsd
+$ doas make install_freebsd
 ....
 
 You can change the installation prefix with argument `PREFIX` (by default,
 `/usr/local`). To install to a custom directory, run:
 
 ....
-$ make install PREFIX=/opt
+$ doas make install PREFIX=/opt
 ....
 
 The DMPACK programs require the shared library `libgfortran.so` if they have
@@ -193,13 +193,13 @@ been compiled with GNU Fortran.
 On Debian, install GCC, GNU Fortran, and the build environment:
 
 ....
-# apt-get install gcc gfortran git make pkg-config
+$ sudo apt-get install gcc gfortran git make pkg-config
 ....
 
 The third-party dependencies have to be installed with development headers:
 
 ....
-# apt-get install --no-install-recommends libblas-dev liblapack-dev \
+$ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
@@ -218,13 +218,13 @@ $ make linux
 Install the library and all programs system-wide:
 
 ....
-$ make install_linux
+$ sudo make install_linux
 ....
 
 To install to a custom directory, run:
 
 ....
-$ make install PREFIX=/opt
+$ sudo make install PREFIX=/opt
 ....
 
 == Deformation Monitoring Entities
@@ -1539,6 +1539,56 @@ $ dmreport --name dmreport --config dmreport.conf --output report.html
 
 The command-line arguments overwrite the settings of the configuration file.
 
+In order to create monthly reports, we may customise the shell script
+`/usr/local/etc/share/dmpack/mkreport.sh` to determine to timestamps of the last
+and the current month which will be passed to *dmreport*:
+
+[source,sh]
+....
+#!/bin/sh
+
+set -e
+
+dmreport="/usr/local/bin/dmreport"
+name="dmreport"
+config="/usr/local/etc/dmpack/dmreport.conf"
+output="/var/www/reports/"
+
+createReport () {
+  first=${1}
+  last=${2}
+
+  prefix=`echo "${first}" | cut -c 1-7`
+  file_name="${prefix}_report.html"
+  path="${output}${file_name}"
+
+  from="${first}T00:00:00.000+00:00"
+  to="${last}T23:59:59.999+00:00"
+
+  echo "--- Writing report from ${first} to ${last} to file ${path} ..."
+  ${dmreport} --name ${name} --config "${config}" --output "${path}" --from "${from}" --to "${to}"
+}
+
+last_month_first=`date -v -1m "+%Y-%m-01"`
+last_month_last=`date -v -1d "+%Y-%m-%d"`
+
+this_month_first=`date +"%Y-%m-01"`
+this_month_last=`date -v +1m -v -1d +"%Y-%m-%d"`
+
+createReport $last_month_first $last_month_last
+createReport $this_month_first $this_month_last
+....
+
+Executing the shell script creates two reports, `2023-08_report.html` for time
+series of the previous month, and `2023-09_report.html` for those of the current
+month:
+
+....
+$ sh mkreport.sh
+--- Writing report from 2023-08-01 to 2023-08-31 to file /var/www/reports/2023-08_report.html ...
+--- Writing report from 2023-09-01 to 2023-09-30 to file /var/www/reports/2023-09_report.html ...
+....
+
 === dmsend [[dmsend]]
 
 === dmserial [[dmserial]]
@@ -2453,6 +2503,9 @@ On POST, adds or updates heartbeat given in Namelist format. Optionally, the
 payload may be deflate compressed. The API returns HTTP 201 Created if the beat
 was accepted.
 
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
+
 ==== Paths
 
 * `/api/v1/beat`
@@ -2512,6 +2565,7 @@ was accepted.
 
 | `201`  | Heartbeat was accepted.
 | `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
 | `413`  | Payload too large.
 | `415`  | Invalid payload format.
 | `500`  | Server error.
@@ -2535,6 +2589,9 @@ Returns single log of passed id in <<data-log-csv,CSV>>,
 On POST, adds log in Namelist format to database. Optionally, the payload may
 be deflate compressed. The API returns HTTP 201 Created if the log was
 accepted.
+
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Paths
 
@@ -2621,6 +2678,9 @@ On POST, adds node in Namelist format to database. Optionally, the payload may
 be deflate compressed. The API returns HTTP 201 Created if the node was
 accepted.
 
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
+
 ==== Paths
 
 * `/api/v1/node`
@@ -2705,6 +2765,10 @@ Returns observation of given id from database, in <<data-observ-csv,CSV>>,
 On POST, adds observation in Namelist format to database. Optionally, the
 payload may be deflate compressed. The API returns HTTP 201 Created if the
 observation was accepted.
+
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the observation, otherwise, the request will be rejected as unauthorised (HTTP
+401).
 
 ==== Paths
 
@@ -2792,6 +2856,9 @@ On POST, adds node in Namelist format to database. Optionally, the payload may
 be deflate compressed. The API returns HTTP 201 Created if the sensor was
 accepted.
 
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
+
 ==== Paths
 
 * `/api/v1/sensor`
@@ -2877,6 +2944,9 @@ database.
 On POST, adds target in Namelist format to database. Optionally, the payload
 may be deflate compressed. The API returns HTTP 201 Created if the target was
 accepted.
+
+If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
+the target, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Paths
 
