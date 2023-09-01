@@ -62,7 +62,7 @@ program dmlogger
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open message queue /' // app%name, error=rc)
+            call dm_log(LOG_ERROR, 'failed to open mqueue /' // app%name, error=rc)
             exit init_block
         end if
 
@@ -218,7 +218,7 @@ contains
             rc = dm_mqueue_read(mqueue, log)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to read from message queue /' // app%name, error=rc)
+                call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if

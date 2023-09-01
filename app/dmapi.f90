@@ -1955,7 +1955,7 @@ contains
             call dm_fcgi_header(MIME_TEXT, HTTP_OK)
         end if
 
-        if (present(message)) call dm_fcgi_out('message=' // trim(message))
+        if (present(message)) call dm_fcgi_out('status=' // trim(message))
         if (present(error))   call dm_fcgi_out('error=' // dm_itoa(error))
     end subroutine api_error
 

@@ -132,7 +132,7 @@ contains
                                 blocking = APP_MQ_BLOCKING)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open message queue /' // observ%receivers(next), &
+                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next), &
                             observ=observ, error=rc)
                 exit mqueue_block
             end if
@@ -142,12 +142,12 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation to message queue /' // &
+                call dm_log(LOG_ERROR, 'failed to send observation to mqueue /' // &
                             observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation to message queue /' // &
+            call dm_log(LOG_DEBUG, 'sent observation to mqueue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -155,7 +155,7 @@ contains
         rc = dm_mqueue_close(mqueue)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close message queue /' // observ%receivers(next), &
+            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
                         observ=observ, error=rc)
         end if
     end function forward_observ

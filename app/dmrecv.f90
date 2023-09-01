@@ -60,7 +60,7 @@ program dmrecv
         rc = dm_mqueue_open(mqueue=mqueue, type=app%type, name=app%name, access=MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open message queue /' // app%name, error=rc)
+            call dm_log(LOG_ERROR, 'failed to open mqueue /' // app%name, error=rc)
             exit init_block
         end if
 
@@ -103,7 +103,7 @@ contains
                                 blocking = APP_MQ_BLOCKING)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open message queue /' // observ%receivers(next), &
+                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next), &
                             observ=observ, error=rc)
                 exit mqueue_block
             end if
@@ -114,7 +114,7 @@ contains
 
             if (dm_is_error(rc)) then
                 call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
-                            ' to message queue /' // observ%receivers(next), observ=observ, error=rc)
+                            ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
         end block mqueue_block
@@ -123,7 +123,7 @@ contains
         rc = dm_mqueue_close(mqueue)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close message queue /' // observ%receivers(next), &
+            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
                         observ=observ, error=rc)
         end if
     end function forward_observ
@@ -286,7 +286,7 @@ contains
 
             ! Handle message queue error.
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to read from message queue /' // app%name, error=rc)
+                call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
