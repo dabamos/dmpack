@@ -608,7 +608,7 @@ install:
 	install -m 644 $(INCDIR)/*.mod $(PREFIX)/include/dmpack/
 	install -m 644 $(TARGET) $(PREFIX)/lib/
 	install -m 644 $(SHARED) $(PREFIX)/lib/
-	install -m 644 $(CONFDIR)/*.conf $(PREFIX)/etc/dmpack/
+	install -m 644 $(CONFDIR)/*.conf.sample $(PREFIX)/etc/dmpack/
 	install -m 644 $(SHARDIR)/dmpack.css $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/dmpack.min.css $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/dmlua.lua $(PREFIX)/share/dmpack/
@@ -616,6 +616,9 @@ install:
 deinstall:
 	$(RM) -rf $(PREFIX)/include/dmpack
 	$(RM) -rf $(PREFIX)/share/dmpack
+	$(RM) -f $(PREFIX)/etc/*.conf.sample
+	$(RM) -f $(PREFIX)/lib/libdmpack.a
+	$(RM) -f $(PREFIX)/lib/libdmpack.so
 	$(RM) -f $(PREFIX)/dmapi
 	$(RM) -f $(PREFIX)/dmbackup
 	$(RM) -f $(PREFIX)/dmbeat
@@ -637,9 +640,9 @@ deinstall:
 	$(RM) -f $(PREFIX)/dmsync
 	$(RM) -f $(PREFIX)/dmuuid
 	$(RM) -f $(PREFIX)/dmweb
-	$(RM) -f $(PREFIX)/libdmpack.a
-	$(RM) -f $(PREFIX)/libdmpack.so
+	@echo
 	@echo "You may need to manually remove $(PREFIX)/etc/dmpack/ if it is no longer needed."
+	@echo
 
 install_freebsd:
 	$(MAKE) install PREFIX=/usr/local
