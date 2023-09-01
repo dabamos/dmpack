@@ -814,7 +814,7 @@ contains
 
         html = html // H_TH // 'Source' // H_TH_END // &
                H_TH // 'Level' // H_TH_END // &
-               H_TH // 'Error' // H_TH_END // &
+               H_TH // 'Code' // H_TH_END // &
                H_TH // 'Message' // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
