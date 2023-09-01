@@ -416,7 +416,7 @@ contains
         open_loop: do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit open_loop
-            call dm_log(LOG_ERROR, 'failed to open TTY ' // app%tty, erroc=rc)
+            call dm_log(LOG_ERROR, 'failed to open TTY ' // app%tty, error=rc)
             call dm_log(LOG_DEBUG, 'trying to open TTY again in 5 seconds', error=rc)
             call dm_sleep(5)
         end do open_loop
