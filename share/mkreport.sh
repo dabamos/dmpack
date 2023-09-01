@@ -32,7 +32,7 @@ createReport () {
   to="${last}T23:59:59.999+00:00"
 
   echo "--- Writing report from ${first} to ${last} to file ${path} ..."
-  echo '${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"'
+  ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"
 }
 
 last_month_first=`date -v -1m "+%Y-%m-01"`
