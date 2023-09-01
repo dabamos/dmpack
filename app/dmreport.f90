@@ -405,7 +405,6 @@ contains
                 ! Plot loop.
                 do i = 1, n
                     ! Output plot heading.
-                    write (fu, '(a)') H_SECTION
                     write (fu, '(a)') dm_html_heading(3, report%plot%observs(i)%title, &
                                                       report%plot%observs(i)%subtitle)
 
@@ -451,9 +450,7 @@ contains
                                                     height   = report%plot%observs(i)%height)
                     end block plot_block
 
-                    write (fu, '(a)') H_SECTION_END
                 end do
-
             end if plot_if
 
             ! Output logs.
