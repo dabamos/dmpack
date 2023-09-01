@@ -1,0 +1,213 @@
+'\" t
+.\"     Title: dmgraph
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMGRAPH
+.\"  Language: English
+.\"
+.TH "DMGRAPH" "1" "2023-06-13" "DMGRAPH" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmgraph \- creates plots from observations in database
+.SH "SYNOPSIS"
+.sp
+\fBdmgraph\fP \-\-help
+.sp
+\fBdmgraph\fP \-\-version
+.sp
+\fBdmgraph\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP
+\-\-\fBresponse\fP \fIname\fP \-\-\fBfrom\fP \fItimestamp\fP \-\-\fBto\fP \fItimestamp\fP
+\-\-\fBterminal\fP \fIterminal\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBbackground\fP \fIcolor\fP]
+[\-\-\fBforeground\fP \fIcolor\fP] [\-\-\fBfont\fP \fIname\fP] [\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBwidth\fP \fIn\fP]
+[\-\-\fBheight\fP \fIn\fP]
+.sp
+\fBdmgraph\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmgraph\fP program is a front\-end to \fIgnuplot(1)\fP that creates plots of
+observations read from database. Plots are either written to file or displayed
+in terminal or X11 window.
+.sp
+Depending on the selected terminal backend, you may have to set the environment
+variable \f(CRGDFONTPATH\fP to the local font directory first:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ export GDFONTPATH=/usr/local/share/fonts/webfonts/
+.fam
+.fi
+.if n .RE
+.sp
+Plotting parameters passed via command\-line have priority over those from
+configuration file.
+.SH "OPTIONS"
+.sp
+\fB\-\-background\fP, \fB\-G\fP \fIcolor\fP
+.RS 4
+Optional background color of the plot (for example, \f(CR#ff0000\fP or \f(CRred\fP).
+.RE
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+File path to the SQLite observation database.
+.RE
+.sp
+\fB\-\-font\fP, \fB\-A\fP \fIname\fP
+.RS 4
+Optional font name (for example, \f(CROpen Sans\fP, \f(CRarial.ttf\fP, or \f(CRmonospace\fP).
+.RE
+.sp
+\fB\-\-foreground\fP, \fB\-P\fP \fIcolor\fP
+.RS 4
+Optional foreground color of the plot (for example, \f(CR#ffffff\fP or \f(CRwhite\fP).
+.RE
+.sp
+\fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
+.RS 4
+Start of time range in ISO 8601.
+.RE
+.sp
+\fB\-\-height\fP, \fB\-H\fP \fIn\fP
+.RS 4
+Optional plot height in pixels.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmgraph\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+File path of the output image. Required for the terminals \f(CRgif\fP, \f(CRpng\fP, and
+\f(CRpngcairo\fP. Additional format descriptors are replaced with their values to
+set date and time dynamically (\f(CR%Y\fP, \f(CR%M\fP, \f(CR%D\fP, \f(CR%h\fP, \f(CR%m\fP, \f(CR%s\fP).
+.RE
+.sp
+\fB\-\-response\fP, \fB\-R\fP \fIname\fP
+.RS 4
+Response name.
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
+.RS 4
+Target id.
+.RE
+.sp
+\fB\-\-terminal\fP, \fB\-M\fP [ansi|ascii|gif|png|pngcairo|sixelgd|svg|x11]
+.RS 4
+Output terminal, either ANSI, ASCII, GIF, PNG, PNG (using Cairo), Sixel, SVG,
+or X11. The terminal must be supported by \fIgnuplot(1)\fP.
+.RE
+.sp
+\fB\-\-title\fP, \fB\-T\fP \fItitle\fP
+.RS 4
+Plot title.
+.RE
+.sp
+\fB\-\-to\fP, \fB\-E\fP \fItimestamp\fP
+.RS 4
+End of time range in ISO 8601.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.sp
+\fB\-\-width\fP, \fB\-W\fP \fIn\fP
+.RS 4
+Optional plot width in pixels.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Plot has been created.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Plot creation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Create a plot of observations selected from database \f(CRobserv.sqlite\fP in PNG
+terminal, and write the file to \f(CR/tmp/plot.png\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmgraph \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
+  \-\-response dummy \-\-from 2020 \-\-to 2021 \-\-database observ.sqlite \(rs
+  \-\-terminal pngcairo \-\-output /tmp/plot.png
+.fam
+.fi
+.if n .RE
+.sp
+Output the plot directly to terminal, with the configuration loaded from file:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmgraph \-\-name dmgraph \-\-config dmgraph.conf \-\-terminal sixelgd
+.fam
+.fi
+.if n .RE
+.sp
+Output in \f(CRsixelgd\fP format requires a terminal emulator with Sixel support.
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

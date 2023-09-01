@@ -1,0 +1,151 @@
+'\" t
+.\"     Title: dmlogger
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMLOGGER
+.\"  Language: English
+.\"
+.TH "DMLOGGER" "1" "2023-06-13" "DMLOGGER" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmlogger \- inserts collected log messages into database
+.SH "SYNOPSIS"
+.sp
+\fBdmlogger\fP \-\-help
+.sp
+\fBdmlogger\fP \-\-version
+.sp
+\fBdmlogger\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBnode\fP \fIid\fP [\-\-\fBminlevel\fP \fIn\fP] [\-\-\fBipc\fP]
+[\-\-\fBverbose\fP]
+.sp
+\fBdmlogger\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmlogger\fP program collects log messages from a POSIX message queue and
+inserts them into a SQLite database. The name of the message queue matches the
+given \fBdmlogger\fP name, by default \f(CR/dmlogger\fP.
+.sp
+If a minimum log level is selected, only logs of a level greater equal the
+minimum are stored in the database. Log messages with lower level are
+discarded.
+.sp
+The IPC option enabled process synchronisation via POSIX semaphores. The
+semaphore value is incremented from 0 to 1 each time a new log has been
+received. The name of the semaphore equals the \fBdmlogger\fP name with leading
+\f(CR/\fP. Only a single process shall wait for the semaphore unless round\-robin IPC
+is desired. This option may be used to synchronise incoming log messages
+automatically with a remote RPC API server. For example, pass the \fBdmlogger\fP
+name through command\-line argument \f(CR\-\-wait\fP to \fIdmsync(1)\fP. The log
+synchronisation is be trigged by incoming logs.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite log database.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-ipc\fP, \fB\-Q\fP
+.RS 4
+Use POSIX semaphore for process synchronisation. The name of the semaphore
+matches the instance name (with leading slash). The semaphore is set to 1
+each time a log message has been received. Only a single process shall wait
+this semaphore.
+.RE
+.sp
+\fB\-\-minlevel\fP, \fB\-L\fP \fIlevel\fP
+.RS 4
+Minimum level for a log to be stored in the database, from 1 (DEBUG) to 5
+(CRITICAL).
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of logger instance, configuration, POSIX message queue, and POSIX
+semaphore (default is \f(CRdmlogger\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print received logs to \fIstdout\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program executed without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Create a POSIX message queue \f(CR/dmlogger\fP and wait for incoming logs:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmlogger \-\-node dummy\-node \-\-database /var/dmpack/log.sqlite \-\-minlevel 4
+.fam
+.fi
+.if n .RE
+.sp
+Received logs are inserted only if they are of level 4 (ERROR) or higher.
+.SH "SEE ALSO"
+.sp
+\fIdmlog(1)\fP, \fIdmsync(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

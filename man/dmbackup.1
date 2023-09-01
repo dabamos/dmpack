@@ -1,0 +1,129 @@
+'\" t
+.\"     Title: dmbackup
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMBACKUP
+.\"  Language: English
+.\"
+.TH "DMBACKUP" "1" "2023-06-13" "DMBACKUP" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmbackup \- creates an online backup of a running database
+.SH "SYNOPSIS"
+.sp
+\fBdmbackup\fP \-\-help
+.sp
+\fBdmbackup\fP \-\-version
+.sp
+\fBdmbackup\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBbackup\fP \fIfile\fP [\-\-\fBvacuum\fP] [\-\-\fBwal\fP]
+[\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmbackup\fP utility creates an online backup of a running SQLite database. By
+default, the SQLite backup API is used. The program is functional equivalent to
+running the \fIsqlite3(1)\fP command\-line interface:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ sqlite3 <database> ".backup \*(Aq<output>\*(Aq"
+.fam
+.fi
+.if n .RE
+.sp
+\fBdmbackup\fP does not replace existing backup databases.
+.SH "OPTIONS"
+.sp
+\fB\-\-backup\fP, \fB\-b\fP \fIfile\fP
+.RS 4
+Path of the backup database.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path of the SQLite database to backup.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-vacuum\fP, \fB\-U\fP
+.RS 4
+Use \f(CRVACUUM INTO\fP instead of the SQLite backup API.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print progress to standard output (not in vacuum mode).
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.sp
+\fB\-\-wal\fP, \fB\-W\fP
+.RS 4
+Enable WAL mode for backup database.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Backup has been created.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Backup creation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Create an online backup of an observation database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmbackup \-\-database observ.sqlite \-\-backup /tmp/observ.sqlite
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdminit(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

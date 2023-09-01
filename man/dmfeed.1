@@ -1,0 +1,178 @@
+'\" t
+.\"     Title: dmfeed
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMFEED
+.\"  Language: English
+.\"
+.TH "DMFEED" "1" "2023-06-13" "DMFEED" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmfeed \- creates Atom XML feed from log messages
+.SH "SYNOPSIS"
+.sp
+\fBdmfeed\fP \-\-help
+.sp
+\fBdmfeed\fP \-\-version
+.sp
+\fBdmfeed\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBnode\fP \fIid\fP]
+[\-\-\fBminlevel\fP \fIlevel\fP] [\-\-\fBmaxlevel\fP \fIlevel\fP] [\-\-\fBnentries\fP \fIcount\fP]
+[\-\-\fBauthor\fP \fIname\fP] [\-\-\fBemail\fP \fIaddress\fP] [\-\-\fBid\fP \fIuuid\fP]
+[\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBsubtitle\fP \fItitle\fP] [\-\-\fBurl\fP \fIurl\fP]
+.sp
+\fBdmfeed\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+This program creates a web feed from log messages in Atom Syndication Format
+(RFC 4287). The log messages are read from database and written as XML to
+standard output or file.
+.sp
+The feed id has to be a 36 characters long UUID with hyphens. News aggregators
+use the id to identify the feed. Therefore, the id should not be reused among
+different feeds. Run \fIdmuuid(1)\fP to generate a valid UUID4.
+.SH "OPTIONS"
+.sp
+\fB\-\-author\fP, \fB\-A\fP \fIname\fP
+.RS 4
+Name of feed author or organisation.
+.RE
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite log database.
+.RE
+.sp
+\fB\-\-email\fP, \fB\-M\fP \fIaddress\fP
+.RS 4
+E\-mail address of feed author.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-id\fP, \fB\-I\fP \fIuuid\fP
+.RS 4
+UUID of the feed, 36 characters long with hyphens.
+.RE
+.sp
+\fB\-\-maxlevel\fP, \fB\-K\fP \fIlevel\fP
+.RS 4
+Select log messages of the given maximum log level (from 1 to 5).
+Must be greater or equal the minimum level.
+.RE
+.sp
+\fB\-\-minlevel\fP, \fB\-L\fP \fIlevel\fP
+.RS 4
+Select log messages of the given minimum log level (from 1 to 5).
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of instance and table in given configuration file (default is \f(CRdmfeed\fP).
+.RE
+.sp
+\fB\-\-nentries\fP, \fB\-E\fP \fIcount\fP
+.RS 4
+Maximum number of entries in feed (default is 50).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Select log messages of the given node id.
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+Path of the output file. If empty, the Atom feed will be printed to
+standard output.
+.RE
+.sp
+\fB\-\-subtitle\fP, \fB\-G\fP \fItitle\fP
+.RS 4
+Sub\-title of feed.
+.RE
+.sp
+\fB\-\-title\fP, \fB\-T\fP \fItitle\fP
+.RS 4
+Title of feed.
+.RE
+.sp
+\fB\-\-url\fP, \fB\-U\fP \fIurl\fP
+.RS 4
+Public URL of the feed.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Feed has been created.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Feed creation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Generate a unique feed id, and then write the last 50 log messages in Atom
+format to file:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmuuid \-\-hyphens
+19c12109\-3e1c\-422c\-ae36\-3ba19281f2e
+$ dmfeed \-\-database /var/dmpack/log.sqlite \-\-output feed.xml \(rs
+  \-\-id 19c12109\-3e1c\-422c\-ae36\-3ba19281f2e
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmuuid(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

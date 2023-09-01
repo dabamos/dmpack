@@ -1,0 +1,139 @@
+'\" t
+.\"     Title: dmlua
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMLUA
+.\"  Language: English
+.\"
+.TH "DMLUA" "1" "2023-06-13" "DMLUA" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmlua \- passes received observations to Lua function
+.SH "SYNOPSIS"
+.sp
+\fBdmlua\fP \-\-help
+.sp
+\fBdmlua\fP \-\-version
+.sp
+\fBdmlua\fP \-\-\fBnode\fP \fIid\fP \-\-\fBscript\fP \fIfile\fP] [\-\-\fBprocedure\fP \fIname\fP]
+[\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmlua\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmlua\fP program runs a custom Lua script to process observations received
+from POSIX message queue. Each observation is passed as a Lua table to the
+Lua function of the name given in option \f(CRprocedure\fP. The function name
+\f(CRprocess\fP is assumed by default. The function must return the (modified)
+observation table on exit.
+.sp
+The observation returned from the Lua function will be forwarded to the next
+specified receiver or discarded if no receivers are left.
+.sp
+The Lua script file will be executed after loading. Any code outside of the Lua
+function will be evaluated once to allow an (optional) initialisation of the
+script.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the optional configuration file.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmlua\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-procedure\fP, \fB\-p\fP \fIname\fP
+.RS 4
+Lua function name (default is \f(CRprocess\fP).
+.RE
+.sp
+\fB\-\-script\fP, \fB\-s\fP \fIfile\fP
+.RS 4
+Path to Lua script file.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Process terminated without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Process failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Wait for an observation on POSIX message queue \f(CR/dmlua\fP, pass it as Lua table
+\f(CRobserv\fP to function \f(CRprocess(observ)\fP in \f(CRscript.lua\fP, then forward the result
+to the next receiver:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmlua \-\-name dmlua \-\-node dummy\-node \-\-script script.lua
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

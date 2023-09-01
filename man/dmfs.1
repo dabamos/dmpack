@@ -1,0 +1,146 @@
+'\" t
+.\"     Title: dmfs
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-08-25
+.\"    Manual: User Commands
+.\"    Source: DMFS
+.\"  Language: English
+.\"
+.TH "DMFS" "1" "2023-08-25" "DMFS" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmfs \- reads observations from file or named pipe
+.SH "SYNOPSIS"
+.sp
+\fBdmfs\fP \-\-help
+.sp
+\fBdmfs\fP \-\-version
+.sp
+\fBdmfs\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmfs\fP program reads observations from file system, virtual file, or named
+pipe. The program can be used to read sensor values from the 1\-Wire File
+System (OWFS).
+.sp
+All requests of an observation have to contain the path of the file to be read
+in attribute \f(CRrequest\fP. Response values are extracted by group from the raw
+response using the given regular expression pattern. For each group to extract,
+a response with the name of the respective group has to be added to the
+request.
+.sp
+If any receivers are specified, observations are forwarded to the next receiver
+via POSIX message queue. The program can act as a sole data logger if output and
+format are set. If the output path is set to \f(CR\-\fP, observations are printed to
+\fIstdout\fP.
+.sp
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the node,
+the sensor, and the target.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the configuration file.
+.RE
+.sp
+\fB\-\-format\fP, \fB\-f\fP [csv|jsonl]
+.RS 4
+Output format of observations if \f(CR\-\-output\fP is set. Either CSV or JSON Lines.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmfs\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+Output file to append observations to (\f(CR\-\fP for \fIstdout\fP).
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Process terminated without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Process failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Read the jobs to perform from configuration file and execute them sequentially:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmfs \-\-name dmfs \-\-config /usr/local/etc/dmpack/dmfs.conf \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

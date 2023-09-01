@@ -1,0 +1,172 @@
+'\" t
+.\"     Title: dmexport
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-08-26
+.\"    Manual: User Commands
+.\"    Source: DMEXPORT
+.\"  Language: English
+.\"
+.TH "DMEXPORT" "1" "2023-08-26" "DMEXPORT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmexport \- dumps data from database to file
+.SH "SYNOPSIS"
+.sp
+\fBdmexport\fP \-\-help
+.sp
+\fBdmexport\fP \-\-version
+.sp
+\fBdmexport\fP \-\-\fBdatabase\fP \fIfile\fP \-\-type \fItype\fP \-\-format \fIformat\fP \-\-\fBnode\fP \fIid\fP
+[\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP] [\-\-\fBresponse\fP \fIname\fP]
+[\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBheader\fP] [\-\-\fBseparator\fP \fIchar\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmexport\fP program writes logs, nodes, sensors, targets, and observations
+from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
+ASCII block data format is only available for X/Y data points.
+.sp
+Logs and observations require a given time range in ISO 8601 format.
+.sp
+If no output file is given, the data is printed to standard output. The
+output file will be overwritten if it already exists. If no data is found, an
+empty file will be created.
+.SH "OPTIONS"
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path of the SQLite database to backup (required).
+.RE
+.sp
+\fB\-\-format\fP, \fB\-f\fP [block|csv|json|jsonl]
+.RS 4
+Output file format, either ASCII block, CSV, JSON, JSON Lines (required).
+Only data points may be exported in block format.
+.RE
+.sp
+\fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
+.RS 4
+Start of time range in ISO 8601 (required for types \f(CRdb\fP, \f(CRlog\fP, \f(CRobserv\fP).
+.RE
+.sp
+\fB\-\-header\fP, \fB\-H\fP
+.RS 4
+Add CSV header.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id (required).
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+Path of output file.
+.RE
+.sp
+\fB\-\-response\fP, \fB\-R\fP \fIname\fP
+.RS 4
+Response name (required for type \f(CRdp\fP).
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id (required for types \f(CRdp\fP and \f(CRobserv\fP).
+.RE
+.sp
+\fB\-\-separator\fP, \fB\-a\fP \fIchar\fP
+.RS 4
+CSV separator character.
+.RE
+.sp
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
+.RS 4
+Target id (required for type \f(CRdp\fP and \f(CRobserv\fP).
+.RE
+.sp
+\fB\-\-to\fP, \fB\-E\fP \fItimestamp\fP
+.RS 4
+End of time range in ISO 8601 (required for types \f(CRdp\fP, \f(CRlog\fP, and \f(CRobserv\fP).
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [beat|dp|log|node|observ|sensor|target]
+.RS 4
+Type of entity to export (required).
+.RE
+.sp
+\fB\-\-version\fP, \fB\-V\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Data has been exported.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Data export failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Export log messages from database to JSON file:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmexport \-\-database log.sqlite \-\-type log \-\-format json \-\-node dummy\-node \(rs
+  \-\-from 2020\-01\-01 \-\-to 2025\-01\-01 \-\-output /tmp/log.json
+.fam
+.fi
+.if n .RE
+.sp
+Export observations from database to CSV file:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmexport \-\-database observ.sqlite \-\-type observ \-\-format csv \-\-node dummy\-node \(rs
+  \-\-sensor dummy\-sensor \-\-target dummy\-target \-\-from 2020\-01\-01 \-\-to 2025\-01\-01 \(rs
+  \-\-output /tmp/observ.csv
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

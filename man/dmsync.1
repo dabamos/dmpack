@@ -1,0 +1,209 @@
+'\" t
+.\"     Title: dmsync
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMSYNC
+.\"  Language: English
+.\"
+.TH "DMSYNC" "1" "2023-06-13" "DMSYNC" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmsync \- synchronises databases between client and server
+.SH "SYNOPSIS"
+.sp
+\fBdmsync\fP \-\-help
+.sp
+\fBdmsync\fP \-\-version
+.sp
+\fBdmsync\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP]
+[\-\-\fBtls\fP] [\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP] [\-\-\fBnode\fP \fIid\fP]
+[\-\-\fBinterval\fP \fIn\fP] [\-\-\fBwait\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBcreate\fP]
+[\-\-\fBverbose\fP]
+.sp
+\fBdmsync\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmsync\fP program synchronises logs, nodes, observations, sensors, and
+targets of a local database with an HTTP\-RPC server. The synchronisation may be
+started only once (to transfer nodes, sensors, and targets from client to
+server), periodically as a cron job, or by waiting for a POSIX semaphore.
+.sp
+Database records are sent deflate\-compressed in Fortran 90 Namelist format via
+HTTP to the server. The program uses libcurl for data transfer. The called
+HTTP\-RPC API endpoints are expected under base URI
+\f(CR[http|https]://<host>:<port>/api/v1/\fP.
+.sp
+The result of each synchronisation attempt is stored in the local database.
+Observations are marked as synchronised only if the server returns HTTP 201
+(Created).
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-create\fP, \fB\-C\fP
+.RS 4
+Create database synchronisation tables if they do not exist.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite log or observation database.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-host\fP, \fB\-H\fP \fIhost\fP
+.RS 4
+IP address or FQDN of RPC API server.
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
+.RS 4
+Synchronisation interval in seconds.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration.
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id, required for types \f(CRsensor\fP and \f(CRobserv\fP.
+.RE
+.sp
+\fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
+.RS 4
+RPC API password.
+.RE
+.sp
+\fB\-\-port\fP, \fB\-p\fP \fIport\fP
+.RS 4
+Port of RPC API server. The default is 0 (automatic selection depending on
+protocol).
+.RE
+.sp
+\fB\-\-tls\fP, \fB\-X\fP
+.RS 4
+Use TLS\-encrypted connection.
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [log|node|observ|sensor|target]
+.RS 4
+Type of data to synchronise, either log, node, observation, sensor, or
+target. Type log requires a log database, all others an observation
+database.
+.RE
+.sp
+\fB\-\-username\fP, \fB\-U\fP \fIuser\fP
+.RS 4
+RPC API user name. If set, implies HTTP Basic Auth.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.sp
+\fB\-\-wait\fP, \fB\-w\fP
+.RS 4
+Name of POSIX semaphore to wait for. Synchronises databases if semaphore is
+greater than 0.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Synchronisation finished without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Synchronisation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Synchronise nodes, sensors, and targets with a remote HTTP\-RPC API:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmsync \-\-database observ.sqlite \-\-type node \-\-host example.com
+$ dmsync \-\-database observ.sqlite \-\-type sensor \-\-node dummy\-node \-\-host example.com
+$ dmsync \-\-database observ.sqlite \-\-type target \-\-host example.com
+.fam
+.fi
+.if n .RE
+.sp
+Synchronise observations:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmsync \-\-database observ.sqlite \-\-type observ \-\-host example.com
+.fam
+.fi
+.if n .RE
+.sp
+Synchronise log messages:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmsync \-\-database log.sqlite \-\-type log \-\-host example.com
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmapi(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

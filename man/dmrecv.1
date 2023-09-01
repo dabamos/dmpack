@@ -1,0 +1,190 @@
+'\" t
+.\"     Title: dmrecv
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-08-27
+.\"    Manual: User Commands
+.\"    Source: DMRECV
+.\"  Language: English
+.\"
+.TH "DMRECV" "1" "2023-08-27" "DMRECV" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmrecv \- receives logs and observations from POSIX message queue
+.SH "SYNOPSIS"
+.sp
+\fBdmrecv\fP \-\-help
+.sp
+\fBdmrecv\fP \-\-version
+.sp
+\fBdmrecv\fP \-\-\fBtype\fP [log|observ] \-\-\fBformat\fP [block|csv|jsonl|nml]
+[\-\-\fBname\fP \fIname\fP] [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBresponse\fP \fIname\fP] [\-\-\fBforward\fP]
+[\-\-\fBreplace\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmrecv\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmrecv\fP program listens to the POSIX message queue of its name and writes
+received logs or observations to \fIstdout\fP, file, or named pipe; in ASCII block,
+CSV, JSON, or Fortran 90 Namelist format. By default, the serialised data is
+appended to the end of the output file. If argument \f(CR\-\-replace\fP is passed, the
+file will be replaced consecutively.
+.sp
+Received observations are not forwarded to the next specified receiver, unless
+argument \f(CR\-\-forward\fP is set. If no receivers are defined or left, the
+observation will be discarded after output.
+.sp
+The output format \f(CRblock\fP is available for observation data only, and requires
+a valid response name. Received observation will be searched for this response
+and converted to data point type if found. The data point is printed in
+ASCII block format.
+.sp
+If JSON Lines output format is selected, logs and observations are written
+sequentially as JSON objects to file or \fIstdout\fP, separated by new line. Use
+\fIjq(1)\fP to convert a file \f(CRinput.jsonl\fP of JSON objects to a JSON array in
+\f(CRoutput.json\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ jq \-s \*(Aq.\*(Aq input.jsonl > output.json
+.fam
+.fi
+.if n .RE
+.sp
+The program settings are passed through command\-line arguments or an optional
+configuration file. The arguments overwrite settings from file.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-format\fP, \fB\-f\fP [block|csv|jsonl|nml]
+.RS 4
+Output format, either ASCII block, CSV, JSON Lines, or Namelist. Format
+\f(CRblock\fP is allowed for type \f(CRobserv\fP only.
+.RE
+.sp
+\fB\-\-forward\fP, \fB\-F\fP
+.RS 4
+Forward observations to the next specified receiver.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of configuration and POSIX message queue (default is \f(CRdmrecv\fP).
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+Path of output file. Prints serialised data to \fIstdout\fP if not set (default).
+.RE
+.sp
+\fB\-\-replace\fP, \fB\-r\fP
+.RS 4
+Replace output file instead of appending data.
+.RE
+.sp
+\fB\-\-response\fP, \fB\-R\fP \fIname\fP
+.RS 4
+Name of the observation response to output (required for format \f(CRblock\fP).
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [log|observ]
+.RS 4
+Data type to receive, either log or observation.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program terminated normally.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Write received log messages in CSV format to file \f(CR/tmp/logs.csv\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmrecv \-\-name dmrecv \-\-type log \-\-format csv \-\-output /tmp/logs.csv
+.fam
+.fi
+.if n .RE
+.sp
+Output observations in JSON format to \fIstdout\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmrecv \-\-name dmrecv \-\-type observ \-\-format json
+.fam
+.fi
+.if n .RE
+.sp
+Output observation responses of name \f(CRx\fP in ASCII block format to \fIstdout\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmrecv \-\-name dmrecv \-\-type observ \-\-format block \-\-response x
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmsend(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

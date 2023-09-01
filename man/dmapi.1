@@ -1,0 +1,91 @@
+'\" t
+.\"     Title: dmapi
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-08-29
+.\"    Manual: User Commands
+.\"    Source: DMAPI
+.\"  Language: English
+.\"
+.TH "DMAPI" "1" "2023-08-29" "DMAPI" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmapi \- FastCGI\-based HTTP\-RPC service for database access
+.SH "SYNOPSIS"
+.sp
+\fBdmapi\fP
+.SH "DESCRIPTION"
+.sp
+\fBdmapi\fP is an HTTP\-RPC service for remote DMPACK database access. The web
+application has to be executed by a FastCGI\-compatible web server or a FastCGI
+spawner. It is recommended to run \fIlighttpd(1)\fP.
+.sp
+The \fBdmapi\fP service offers endpoints for clients to insert beats, logs, and
+observations into the local SQLite database, and to retrieve data in CSV or JSON
+format. Authentication and encryption are independent from \fBdmapi\fP and have to
+be provided by the environment.
+.sp
+The POST data sent by clients must be serialised in Fortran 90 Namelist format,
+with optional deflate compression. The content type and the content encoding
+have to be passed in the HTTP header of the request.
+.sp
+If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
+and observation sent to the RPC service must match the name of the
+authenticated user, otherwise, the data will be rejected (HTTP 401).
+.SH "ENVIRONMENT"
+.sp
+Add the following environment variables to the configuration of the web server
+or spawner to pass them to \fBdmapi\fP:
+.sp
+\fBDM_DB_BEAT\fP
+.RS 4
+Path to heartbeat database.
+.RE
+.sp
+\fBDM_DB_LOG\fP
+.RS 4
+Path to log database.
+.RE
+.sp
+\fBDM_DB_OBSERV\fP
+.RS 4
+Path to observation database.
+.RE
+.sp
+\fBDM_READ_ONLY\fP
+.RS 4
+Set to 1 to open databases in read\-only mode.
+.RE
+.SH "SEE ALSO"
+.sp
+\fIdmbeat(1)\fP, \fIdmsync(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

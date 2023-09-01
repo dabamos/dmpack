@@ -1,0 +1,161 @@
+'\" t
+.\"     Title: dmbeat
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMBEAT
+.\"  Language: English
+.\"
+.TH "DMBEAT" "1" "2023-06-13" "DMBEAT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmbeat \- sends status messages to an RPC server
+.SH "SYNOPSIS"
+.sp
+\fBdmbeat\fP \-\-help
+.sp
+\fBdmbeat\fP \-\-version
+.sp
+\fBdmbeat\fP \-\-\fBnode\fP \fIid\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP] [\-\-\fBtls\fP]
+[\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP [\-\-\fBcount\fP \fIn\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmbeat\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+This program is a heartbeat emitter that sends status messages to a remote
+DMPACK HTTP\-RPC API. The status messages include timestamp, system uptime, and
+last connection error. The server may inspect this data to check if a client is
+still running and has network access. The RPC endpoint is expected at
+\f(CR[http|https]://<host>:<port>/api/v1/beat\fP. The heartbeat is transmitted in
+deflate\-compressed Namelist format.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to Lua\-based configuration file.
+.RE
+.sp
+\fB\-\-count\fP, \fB\-C\fP \fIn\fP
+.RS 4
+Maximum number of heartbeats to send. The default is 0 (unlimited).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-host\fP, \fB\-H\fP \fIhost\fP
+.RS 4
+IP or FQDN of RPC host (for example, \f(CR127.0.0.1\fP or \f(CRexample.com\fP).
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
+.RS 4
+Emit interval in seconds (default is 60 seconds).
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of instance and table in given configuration file (default is \f(CRdmbeat\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Sensor node id.
+.RE
+.sp
+\fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
+.RS 4
+RPC API password.
+.RE
+.sp
+\fB\-\-port\fP, \fB\-p\fP \fIport\fP
+.RS 4
+Port of RPC API server. The default is 0 (automatic selection depending on
+protocol).
+.RE
+.sp
+\fB\-\-tls\fP, \fB\-X\fP
+.RS 4
+Use TLS encryption.
+.RE
+.sp
+\fB\-\-username\fP, \fB\-U\fP \fIuser\fP
+.RS 4
+RPC API user name. If set, implies HTTP Basic Auth.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Beat has been transmitted.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Beat transmission failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Send a single heartbeat to a \fIdmapi(1)\fP process on localhost:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmbeat \-\-node dummy\-node \-\-host 127.0.0.1 \-\-count 1 \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmapi(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

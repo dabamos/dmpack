@@ -1,0 +1,139 @@
+'\" t
+.\"     Title: dmreport
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMREPORT
+.\"  Language: English
+.\"
+.TH "DMREPORT" "1" "2023-06-13" "DMREPORT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmreport \- creates reports in HTML format containing plots and logs
+.SH "SYNOPSIS"
+.sp
+\fBdmreport\fP \-\-help
+.sp
+\fBdmreport\fP \-\-version
+.sp
+\fBdmreport\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP]
+[\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBoutput\fP \fIfile\fP]
+[\-\-\fBstyle\fP \fIfile\fP]
+.sp
+\fBdmreport\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmreport\fP program creates reports in HTML5 format, containing plots of
+observations and/or log messages selected from database. Plots are created by
+calling \fIgnuplot(1)\fP and inlining the returned image (GIF, PNG, SVG) as a
+base64\-encoded data URI. Any style sheet file with classless CSS can be
+included to alter the presentation of the report. The output of \fBdmreport\fP is a
+single HTML file.
+.sp
+A configuration file is mandatory to create reports. Only a few parameters may
+be set through command\-line arguments. Passed command\-line arguments have
+priority over settings in the configuration file.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to configuration file.
+.RE
+.sp
+\fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
+.RS 4
+Start of the time range in ISO 8601.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of instance and table in given configuration file (default is \f(CRdmreport\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Select observations and log messages of the given node id.
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+File path of the generated report. Additional format descriptors are replaced
+with their values to set date and time dynamically (\f(CR%Y\fP, \f(CR%M\fP, \f(CR%D\fP, \f(CR%h\fP,
+\f(CR%m\fP, \f(CR%s\fP). If no output file is set, the report is printed to \fIstdout\fP.
+.RE
+.sp
+\fB\-\-style\fP, \fB\-C\fP \fIfile\fP
+.RS 4
+File path to the classless CSS file to be included in the report (optional).
+.RE
+.sp
+\fB\-\-to\fP, \fB\-E\fP \fItimestamp\fP
+.RS 4
+End of the time range in ISO 8601.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Report was created.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Report creation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Write a report to file \f(CRreport.html\fP based on settings in \f(CRdmreport.conf\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmreport \-\-name dmreport \-\-config dmreport.conf \(rs
+  \-\-from 2020\-01\-01 \-\-to 2021\-01\-01 \-\-output report.html
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

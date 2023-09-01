@@ -1,0 +1,172 @@
+'\" t
+.\"     Title: dmdbcli
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMDBCLI
+.\"  Language: English
+.\"
+.TH "DMDBCLI" "1" "2023-06-13" "DMDBCLI" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmdbcli \- command\-line interface to DMPACK observation databases
+.SH "SYNOPSIS"
+.sp
+\fBdmdbcli\fP \-\-help
+.sp
+\fBdmdbcli\fP \-\-version
+.sp
+\fBdmdbcli\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP [\-\-\fBcreate\fP \fItype\fP] [\-\-\fBread\fP \fItype\fP]
+[\-\-\fBupdate\fP \fItype\fP] [\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBmeta\fP \fImeta\fP]
+[\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP] [\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmdbcli\fP utility program performs create, read, update, or delete
+operations on the observation databasae. Only nodes, sensors, and targets are
+supported. Data attributes are passed through command\-line arguments.
+.SH "OPTIONS"
+.sp
+\fB\-\-create\fP, \fB\-C\fP [node|sensor|target]
+.RS 4
+Create database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite observation database.
+.RE
+.sp
+\fB\-\-delete\fP, \fB\-D\fP [node|sensor|target]
+.RS 4
+Delete database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-id\fP, \fB\-I\fP \fIid\fP
+.RS 4
+ID of node, sensor, or target.
+.RE
+.sp
+\fB\-\-meta\fP, \fB\-M\fP \fImeta\fP
+.RS 4
+Meta description of node, sensor, or target.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of node, sensor, or target.
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+ID of the node the sensor is attached to.
+.RE
+.sp
+\fB\-\-read\fP, \fB\-R\fP [node|sensor|target]
+.RS 4
+Read database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-sn\fP, \fB\-Z\fP \fIsn\fP
+.RS 4
+Serial number of sensor.
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP \fIsensor\fP
+.RS 4
+Sensor type, for example, \f(CRnone\fP, \f(CRfs\fP, \f(CRprocess\fP, or \f(CRtps\fP.
+.RE
+.sp
+\fB\-\-update\fP, \fB\-U\fP [node|sensor|target]
+.RS 4
+Update database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print additional log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Database operation finished without error.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Database operation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Add a new node of id \f(CRdummy\-node\fP to the database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmdbcli \-\-database observ.sqlite \-\-create node \-\-id dummy\-node \-\-name "Dummy Node"
+.fam
+.fi
+.if n .RE
+.sp
+Delete target \f(CRdummy\-target\fP from database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmdbcli \-\-database observ.sqlite \-\-delete target \-\-id dummy\-target
+.fam
+.fi
+.if n .RE
+.sp
+Update the meta description of sensor \f(CRdummy\-sensor\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmdbcli \-\-database observ.sqlite \-\-update sensor \-\-id dummy\-sensor \-\-meta "in service"
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

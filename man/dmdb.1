@@ -1,0 +1,139 @@
+'\" t
+.\"     Title: dmdb
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMDB
+.\"  Language: English
+.\"
+.TH "DMDB" "1" "2023-06-13" "DMDB" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmdb \- stores observations received from message queue in database
+.SH "SYNOPSIS"
+.sp
+\fBdmdb\fP \-\-help
+.sp
+\fBdmdb\fP \-\-version
+.sp
+\fBdmdb\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBnode\fP \fIid\fP [\-\-\fBipc\fP] [\-\-\fBlogger\fP \fIname\fP]
+[\-\-\fBverbose\fP]
+.sp
+\fBdmdb\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmdb\fP program collects observations from a POSIX message queue and
+stores them in a SQLite database. The name of the message queue matches the
+given \fBdmdb\fP name, by default \f(CRdmdb\fP. The IPC option enables process
+synchronisation via POSIX semaphores. The semaphore value is increased from 0
+to 1 for every observation that has been received. The name of the semaphore
+equals the \fBdmdb\fP name. Only a single process shall wait for the semaphore.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite observation database.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-ipc\fP, \fB\-Q\fP
+.RS 4
+Uses a POSIX semaphore for process synchronisation. The name of the semaphore
+matches the instance name (with leading \f(CR/\fP). The semaphore is set to 1 each
+time an observation has been received. Only a single process shall wait for
+this semaphore, otherwise, reading occurs in round\-robin fashion.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance, configuration, POSIX message queue, and POSIX
+semaphore (default is \f(CRdmdb\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program executed without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Create a message queue \f(CRdmdb\fP, wait for incoming observations, and store them
+in the given database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmdb \-\-database /var/dmpack/observ.sqlite \-\-node dummy\-node \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmsync(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

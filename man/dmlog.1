@@ -1,0 +1,164 @@
+'\" t
+.\"     Title: dmlog
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMLOG
+.\"  Language: English
+.\"
+.TH "DMLOG" "1" "2023-06-13" "DMLOG" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmlog \- sends log to POSIX message queue
+.SH "SYNOPSIS"
+.sp
+\fBdmlog\fP \-\-help
+.sp
+\fBdmlog\fP \-\-version
+.sp
+\fBdmlog\fP \-\-\fBnode\fP \fIid\fP \-\-\fBmessage\fP \fIstring\fP [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBlevel\fP \fIn\fP]
+[\-\-\fBerror\fP \fIn\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP]
+[\-\-\fBobserv\fP \fIid\fP] [\-\-\fBsource\fP \fIsource\fP] [\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
+\fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. The default log
+level is INFO.
+.sp
+Valid log levels are: 1 (DEBUG), 2 (INFO), 3 (WARNING), 4 (ERROR), and 5
+(CRITICAL).
+.sp
+The program terminates after log transmission.
+.SH "OPTIONS"
+.sp
+\fB\-\-error\fP, \fB\-e\fP \fIn\fP
+.RS 4
+DMPACK error code (>= 0).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-level\fP, \fB\-L\fP \fIn\fP
+.RS 4
+Log level, from 1 to 5 (default is 2).
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger instance and POSIX message queue (default is \f(CRdmlogger\fP).
+.RE
+.sp
+\fB\-\-message\fP, \fB\-m\fP \fIstring\fP
+.RS 4
+Log message (max. 512 characters).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-observ\fP, \fB\-O\fP \fIid\fP
+.RS 4
+Observation id (UUID4).
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-source\fP, \fB\-Z\fP \fIsource\fP
+.RS 4
+Source of the log message (sender).
+.RE
+.sp
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
+.RS 4
+Target id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log to \fIstdout\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Log has been sent.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Send a log message to the POSIX message queue of logger \f(CRdmlogger\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmlog \-\-node dummy\-node \-\-level 3 \-\-message "low battery" \-\-source test \-\-verbose
+2022\-12\-09T22:50:44.161+01:00 [WARNING ] test \- low battery
+.fam
+.fi
+.if n .RE
+.sp
+The logger will receive the log message and insert it into the log database (if
+the log level is greater or equal the minimum log level):
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmlogger \-\-node dummy\-node \-\-database logs.sqlite \-\-verbose
+2022\-12\-09T22:50:44.161+01:00 [WARNING ] test \- low battery
+2022\-12\-09T22:50:44.173+01:00 [DEBUG   ] dmlogger \- log [...] inserted
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmlogger(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

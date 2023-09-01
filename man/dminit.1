@@ -1,0 +1,139 @@
+'\" t
+.\"     Title: dminit
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-06-13
+.\"    Manual: User Commands
+.\"    Source: DMINIT
+.\"  Language: English
+.\"
+.TH "DMINIT" "1" "2023-06-13" "DMINIT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dminit \- initialises DMPACK databases
+.SH "SYNOPSIS"
+.sp
+\fBdminit\fP \-\-help
+.sp
+\fBdminit\fP \-\-version
+.sp
+\fBdminit\fP \-\-\fBtype\fP \fItype\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBsync\fP] [\-\-\fBwal\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdminit\fP utility program creates beat, log, and observation databases. No
+action is performed if the specified database already exists.
+.sp
+A synchronisation table is required for observation and log synchronisation with
+an RPC server. The argument may be omitted if this functionality is not used.
+.sp
+Write\-Ahead Logging (WAL) should be enabled for databases with multiple
+readers.
+.SH "OPTIONS"
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+File path of the new SQLite database.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-sync\fP, \fB\-Y\fP
+.RS 4
+Add synchronisation tables. Enable for data synchronisation between client
+and server.
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [beat|log|observ]
+.RS 4
+Type of database, either beat, log, or observation.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.sp
+\fB\-\-wal\fP, \fB\-W\fP
+.RS 4
+Enable Write\-Ahead Logging.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Database was created.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Database creation failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Create a beat database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dminit \-\-type beat \-\-database beat.sqlite \-\-wal
+.fam
+.fi
+.if n .RE
+.sp
+Create a log database with remote synchronisation tables:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dminit \-\-type log \-\-database log.sqlite \-\-sync \-\-wal
+.fam
+.fi
+.if n .RE
+.sp
+Create an observation database with remote synchronisation tables:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dminit \-\-type observ \-\-database observ.sqlite \-\-sync \-\-wal
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmbackup(1)\fP, \fIdmsync(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel
