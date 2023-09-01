@@ -286,7 +286,7 @@ contains
         rc = dm_rpc_init()
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to initialise libcurl', error=rc)
+            call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
             return
         end if
 
@@ -406,26 +406,29 @@ contains
                 ! Log the HTTP response code.
                 code_block: select case (response%code)
                     case (0)
-                        call dm_log(LOG_DEBUG, 'cURL error ' // dm_itoa(response%error_curl) // ': ' // &
-                                    response%error_message, error=rc)
+                        call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // &
+                                    ' failed: ' // response%error_message, error=rc)
                     case (HTTP_CREATED)
                         call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id, error=E_NONE)
                     case (HTTP_CONFLICT)
                         call dm_log(LOG_DEBUG, name // ' ' // trim(id) // ' exists', error=E_EXIST)
                     case (HTTP_UNAUTHORIZED)
-                        call dm_log(LOG_ERROR, 'unauthorized user ' // app%username, error=E_RPC_AUTH)
+                        call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                    case (HTTP_INTERNAL_SERVER_ERROR)
+                        call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=rc)
                     case default
                         if (response%content_type == MIME_TEXT) then
                             ! Convert response text to API type.
                             if (dm_is_ok(dm_api_status_from_string(api, response%payload))) then
-                                call dm_log(LOG_ERROR, 'server error (HTTP ' // dm_itoa(response%code) // '): ' // &
+                                call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
+                                            ' (HTTP ' // dm_itoa(response%code) // '): ' // &
                                             api%status, error=api%error)
                                 exit code_block
                             end if
                         end if
 
-                        call dm_log(LOG_ERROR, 'transmission error (HTTP ' // &
-                                    dm_itoa(response%code) // ')', error=E_RPC)
+                        call dm_log(LOG_ERROR, 'connection error (HTTP ' // &
+                                    dm_itoa(response%code) // ')', error=rc)
                 end select code_block
 
                 ! Update sync data.

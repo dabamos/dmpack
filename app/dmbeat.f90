@@ -194,7 +194,7 @@ contains
         rc = dm_rpc_init()
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to initialise libcurl', error=rc)
+            call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
             return
         end if
 
@@ -209,7 +209,7 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
-            call dm_log(LOG_DEBUG, 'emitting heartbeat for node ' // trim(app%node) // &
+            call dm_log(LOG_DEBUG, 'emitting beat for node ' // trim(app%node) // &
                         ' to host ' // app%host)
 
             ! Create new heartbeat.
@@ -232,36 +232,34 @@ contains
                              url      = url)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_WARNING, 'failed to send heartbeat to host ' // app%host, error=rc)
+                call dm_log(LOG_WARNING, 'failed to send beat to host ' // app%host, error=rc)
             end if
 
             last_error = rc
 
             code_block: select case (response%code)
                 case (0)
-                    call dm_log(LOG_DEBUG, 'cURL error ' // dm_itoa(response%error_curl) // ': ' // &
-                                response%error_message, error=rc)
-
+                    call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // &
+                                ' failed: ' // response%error_message, error=rc)
                 case (HTTP_CREATED)
-                    call dm_log(LOG_DEBUG, 'heartbeat was accepted by host ' // app%host)
-
+                    call dm_log(LOG_DEBUG, 'beat accepted by host ' // app%host)
                 case (HTTP_UNAUTHORIZED)
-                    call dm_log(LOG_ERROR, 'unauthorized API access on host ' // app%host, error=E_RPC_AUTH)
-
+                    call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
                 case (HTTP_INTERNAL_SERVER_ERROR)
                     call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=rc)
-
                 case default
                     ! Log response from api message if available.
                     if (response%content_type == MIME_TEXT) then
                         if (dm_is_ok(dm_api_status_from_string(api, response%payload))) then
-                            call dm_log(LOG_ERROR, 'server error (' // dm_itoa(response%code) // '): ' // &
+                            call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
+                                        ' (HTTP ' // dm_itoa(response%code) // '): ' // &
                                         api%status, error=api%error)
                             exit code_block
                         end if
                     end if
 
-                    call dm_log(LOG_ERROR, 'transmission error HTTP ' // dm_itoa(response%code), error=E_RPC)
+                    call dm_log(LOG_ERROR, 'connection error (HTTP ' // &
+                                dm_itoa(response%code) // ')', error=rc)
             end select code_block
 
             if (app%count > 0) then
@@ -270,7 +268,7 @@ contains
             end if
 
             t = max(0, int(app%interval - dm_timer_stop(timer)))
-            call dm_log(LOG_DEBUG, 'next heartbeat in ' // dm_itoa(t) // ' seconds')
+            call dm_log(LOG_DEBUG, 'next beat in ' // dm_itoa(t) // ' seconds')
             call dm_sleep(t)
         end do emit_loop
 
