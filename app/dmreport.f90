@@ -387,7 +387,10 @@ contains
 
             ! Output report table.
             write (fu, '(a)') html_report_table(report%node, report%from, report%to)
-            write (fu, '(a)') dm_html_p(dm_html_encode(report%meta))
+
+            if (len_trim(report%meta) > 0) then
+                write (fu, '(a)') dm_html_p(dm_html_encode(report%meta))
+            end if
 
             ! Output plots.
             plot_if: if (.not. report%plot%disabled) then
