@@ -407,18 +407,19 @@ contains
         type(response_type), pointer :: response ! Response in request.
 
         call dm_log(LOG_INFO, 'starting ' // app%name)
-        call dm_log(LOG_DEBUG, 'opening connection to sensor ' // trim(app%sensor) // &
+        call dm_log(LOG_DEBUG, 'trying to open connection to sensor ' // trim(app%sensor) // &
                     ' through TTY ' // trim(app%tty) // ' (' // dm_itoa(tty%baud_rate) // &
                     ' ' // dm_itoa(app%byte_size) // dm_upper(app%parity(1:1)) // &
                     dm_itoa(app%stop_bits) // ')')
 
         ! Open TTY/PTY.
-        rc = dm_tty_open(tty)
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open TTY ' // trim(app%tty), error=rc)
-            return
-        end if
+        open_loop: do
+            rc = dm_tty_open(tty)
+            if (dm_is_ok(rc)) exit open_loop
+            call dm_log(LOG_ERROR, 'failed to open TTY ' // app%tty, erroc=rc)
+            call dm_log(LOG_DEBUG, 'trying to open TTY again in 5 seconds', error=rc)
+            call dm_sleep(5)
+        end do open_loop
 
         ! Run until no jobs are left.
         job_loop: do

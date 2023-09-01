@@ -258,7 +258,7 @@ contains
                         end if
                     end if
 
-                    call dm_log(LOG_ERROR, 'connection error (HTTP ' // &
+                    call dm_log(LOG_WARNING, 'unknown connection error (HTTP ' // &
                                 dm_itoa(response%code) // ')', error=rc)
             end select code_block
 

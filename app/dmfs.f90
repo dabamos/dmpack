@@ -296,7 +296,7 @@ contains
         type(request_type),  pointer :: request  ! Next request to execute.
         type(response_type), pointer :: response ! Response in request.
 
-        call dm_log(LOG_INFO, 'starting ' // trim(app%name))
+        call dm_log(LOG_INFO, 'starting ' // app%name)
 
         ! Run until no jobs are left.
         job_loop: do
