@@ -765,16 +765,32 @@ First, install the 1-Wire file system package. On FreeBSD, run:
 # pkg install comms/owfs
 ....
 
+On Linux, install the package instead with:
+
+....
+# apt-get install owfs
+....
+
 Connect a 1-Wire temperature sensor through USB (device `/dev/ttyU0`), and mount
 the 1-Wire file system with _owfs(1)_ under `/mnt/1wire/`:
 
 ....
+# mkdir -p /mnt/1wire
 # owfs -C -d /dev/ttyU0 --allow_other -m /mnt/1wire/
 ....
 
+On Linux, the path to the USB adapter is slightly different:
+
+....
+# owfs -C -d /dev/ttyUSB0 --allow_other -m /mnt/1wire/
+....
+
 The command-line argument `-C` selects output in °C. The path of the optional
-configuration file of _owfs(1)_ is usually `/usr/local/etc/owfs.conf`. Reading
-a temperature value from the connected sensor:
+configuration file of _owfs(1)_ is usually `/usr/local/etc/owfs.conf`. The file
+system can be mounted automatically and start-up if _owfs(1)_ is started as
+service.
+
+Reading a temperature value from the connected sensor:
 
 ....
 $ cat /mnt/1wire/10.DCA98C020800/temperature
