@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_signal
-    !! Abstraction layers over system calls.
+    !! Auxiliary interfaces and routines for signal handling on Unix.
     use :: unix
     implicit none (type, external)
     private
