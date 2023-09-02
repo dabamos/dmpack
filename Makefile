@@ -682,3 +682,4 @@ purge: clean
 	cd vendor/fortran-unix/    && make clean TARGET=../../$(LIBFUNIX)
 	cd vendor/fortran-zlib/    && make clean TARGET=../../$(LIBFZ)
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
+	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
