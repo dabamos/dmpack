@@ -29,6 +29,15 @@ targets of a local database with an HTTP-RPC server. The synchronisation may be
 started only once (to transfer nodes, sensors, and targets from client to
 server), periodically as a cron job, or by waiting for a POSIX semaphore.
 
+The nodes, sensors, and targets referenced by observations in the local database
+must also exist in the remote server database. They can be created either with
+_dmdbcli(1)_ or _dmweb(1)_, but also synchronised with *dmsync*. Logs do not
+require any additional database entries on server-side.
+
+The client databases must contain synchronisation tables. The tables are created
+automatically by _dminit(1)_ if command-line argument `--sync` is passed.
+Alternatively, start *dmsync* with argument `--create` once.
+
 Database records are sent deflate-compressed in Fortran 90 Namelist format via
 HTTP to the server. The program uses libcurl for data transfer. The called
 HTTP-RPC API endpoints are expected under base URI

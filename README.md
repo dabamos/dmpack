@@ -19,13 +19,14 @@ FreeBSD only.
 
 ## Description
 
-DMPACK is a complete monitoring system developed for automated control
-measurements of infrastructure, terrain, geodetic nets, and other objects. The
-software runs on sensor nodes, usually embedded systems or single-board
-computers, and obtains observation data from arbitrary sensors, like total
-stations, digital levels, inclinometers, weather stations, or GNSS receivers.
-The raw sensor data is then processed, stored, and optionally transmitted to a
-server. The software package may be used to monitor objects like:
+DMPACK is a scientific monitoring system developed for automated control
+measurements of buildings, infrastructure, terrain, geodetic nets, and other
+objects. The software runs on sensor nodes, usually industrial embedded systems
+or single-board computers, and obtains observation data from arbitrary sensors,
+like total stations, digital levels, inclinometers, weather stations, or GNSS
+receivers.  The raw sensor data is then processed, stored, and optionally
+transmitted to a server. The software package may be used to monitor objects
+like:
 
 * bridges, tunnels, dams
 * landslides, cliffs, glaciers
@@ -52,16 +53,16 @@ DMPACK covers the following tasks:
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
 * SQLite database access
+* data serialisation (ASCII, CSV, JSON, JSON Lines, Namelist)
 * remote procedure calls
 * data synchronisation between client and server
 * distributed logging
-* MQTT connectivity
 * heartbeats
 * Lua scripting
-* data serialisation and compression
 * server-side web applications
 * time series plotting
-* HTML5 report and Atom XML feed generation
+* MQTT connectivity
+* HTML5 report and Atom feed generation
 * e-mail
 
 ## Requirements
