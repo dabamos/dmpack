@@ -40,7 +40,6 @@ program dmbeat
 
     ! Initialise DMPACK.
     call dm_init()
-    call register_signal_handlers()
 
     ! Read command-line options and configuration from file.
     rc = read_args(app)
@@ -53,6 +52,7 @@ program dmbeat
                         ipc     = app%ipc, &
                         verbose = app%verbose)
     ! Run main loop.
+    call dm_signal_register(signal_handler)
     call run(app)
 contains
     integer function read_args(app) result(rc)
@@ -160,19 +160,6 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine signal_handler(signum) bind(c)
-        !! C-interoperable signal handler that closes database, removes message
-        !! queue, and stops program.
-        use, intrinsic :: iso_c_binding, only: c_int
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
-
-        select case (signum)
-            case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
-                call dm_stop(0)
-        end select
-    end subroutine signal_handler
-
     subroutine run(app)
         !! Runs main loop to emit heartbeats.
         type(app_type), intent(inout) :: app !! App type.
@@ -276,16 +263,16 @@ contains
         call dm_rpc_destroy()
     end subroutine run
 
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
+    subroutine signal_handler(signum) bind(c)
+        !! C-interoperable signal handler that closes database, removes message
+        !! queue, and stops program.
+        use, intrinsic :: iso_c_binding, only: c_int
+        integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
+        select case (signum)
+            case default
+                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_stop(0)
+        end select
+    end subroutine signal_handler
 end program dmbeat

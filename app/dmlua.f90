@@ -75,7 +75,7 @@ program dmlua
         end if
 
         ! Register signal handlers and run the IPC loop.
-        call register_signal_handlers()
+        call dm_signal_register(signal_handler)
         call run(app, lua, mqueue)
     end block init_block
 
@@ -348,19 +348,6 @@ contains
             rc = send_observ(obs_out)
         end do ipc_loop
     end subroutine run
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine signal_handler(signum) bind(c)
         !! Default POSIX signal handler of the program.

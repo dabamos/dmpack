@@ -55,7 +55,7 @@ program dmpipe
                         verbose = app%verbose)
 
     ! Run main loop.
-    call register_signal_handlers()
+    call dm_signal_register(signal_handler)
     call run(app)
     call dm_stop(0)
 contains
@@ -90,7 +90,7 @@ contains
                                 blocking = APP_MQ_BLOCKING)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open message queue /' // observ%receivers(next), &
+                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next), &
                             observ=observ, error=rc)
                 exit mqueue_block
             end if
@@ -101,11 +101,11 @@ contains
 
             if (dm_is_error(rc)) then
                 call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
-                            ' to message queue /' // observ%receivers(next), observ=observ, error=rc)
+                            ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to message queue /' // &
+            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to mqueue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -113,7 +113,7 @@ contains
         rc = dm_mqueue_close(mqueue)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close message queue /' // observ%receivers(next), &
+            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
                         observ=observ, error=rc)
         end if
     end function forward_observ
@@ -421,19 +421,6 @@ contains
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine signal_handler(signum) bind(c)
         !! Default POSIX signal handler of the program.

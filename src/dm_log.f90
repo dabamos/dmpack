@@ -45,7 +45,7 @@ module dm_log
         character(len=LOG_MESSAGE_LEN) :: message   = ' '           !! Log message (mandatory).
     end type log_type
 
-    integer(kind=i8), parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Log type size in bytes.
+    integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Log type size in bytes.
 
     interface operator (==)
         module procedure :: dm_log_equals

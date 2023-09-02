@@ -7,9 +7,9 @@ program dmtestmqueue
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: MQ_NAME    = 'dmtest'         !! Message queue name (without leading `/`).
-    integer(kind=i8), parameter :: MQ_MAX_MSG = int(32, kind=i8) !! Maximum number of messages in queue.
-    integer,          parameter :: MQ_MODE    = int(o'0644')     !! Access permissions (octal).
+    character(len=*), parameter :: MQ_NAME    = 'dmtest'     !! Message queue name (without leading `/`).
+    integer,          parameter :: MQ_MAX_MSG = 32           !! Maximum number of messages in queue.
+    integer,          parameter :: MQ_MODE    = int(o'0644') !! Access permissions (octal).
 
     integer, parameter :: NTESTS = 2
 

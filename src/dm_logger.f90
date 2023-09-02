@@ -38,6 +38,7 @@ module dm_logger
         character(len=LOGGER_NAME_LEN) :: name     = LOGGER_NAME_DEFAULT !! Logger and message queue name.
         character(len=NODE_ID_LEN)     :: node_id  = ' '                 !! Optional node id.
         character(len=LOG_SOURCE_LEN)  :: source   = ' '                 !! Default source of each log message.
+        logical                        :: blocking = .true.              !! Blocking message queue access.
         logical                        :: no_color = .false.             !! Disable ANSI colour output.
         logical                        :: ipc      = .false.             !! Send logs to POSIX message queue.
         logical                        :: verbose  = .true.              !! Print to standard error.
@@ -66,25 +67,27 @@ contains
         character(len=*), intent(in)           :: message !! Error message.
         integer,          intent(in), optional :: error   !! Optional error code.
         character(len=*), intent(in), optional :: source  !! Optional source of log.
-        type(log_type)                         :: log
+
+        type(log_type) :: log
 
         log = log_type(timestamp = dm_time_now(), &
-                       level     = LOG_CRITICAL, &
+                       level     = LOG_ERROR, &
                        message   = message, &
                        source    = LOGGER%source)
 
-        if (present(error)) log%error = error
+        if (present(error))  log%error  = error
         if (present(source)) log%source = source
 
         call dm_logger_out(log)
     end subroutine dm_logger_fail
 
-    subroutine dm_logger_init(name, node_id, source, ipc, no_color, verbose)
+    subroutine dm_logger_init(name, node_id, source, ipc, blocking, no_color, verbose)
         !! Initialises the global logger.
         character(len=*), intent(in), optional :: name     !! Logger name.
         character(len=*), intent(in), optional :: node_id  !! Node id.
         character(len=*), intent(in), optional :: source   !! Source (name of calling program).
         logical,          intent(in), optional :: ipc      !! IPC via POSIX message queues.
+        logical,          intent(in), optional :: blocking !! Blocking IPC.
         logical,          intent(in), optional :: no_color !! Disable ANSI colours.
         logical,          intent(in), optional :: verbose  !! Verbose output.
 
@@ -95,6 +98,7 @@ contains
         if (present(node_id))  LOGGER%node_id  = node_id
         if (present(source))   LOGGER%source   = source
         if (present(ipc))      LOGGER%ipc      = ipc
+        if (present(blocking)) LOGGER%blocking = blocking
         if (present(no_color)) LOGGER%no_color = no_color
         if (present(verbose))  LOGGER%verbose  = verbose
     end subroutine dm_logger_init
@@ -107,7 +111,8 @@ contains
         type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,           intent(in),    optional :: error     !! Optional error code.
-        type(log_type)                             :: log
+
+        type(log_type) :: log
 
         log%id      = dm_uuid4()
         log%level   = level
@@ -159,7 +164,7 @@ contains
 
         integer :: level, unit_
 
-        level = LOG_CRITICAL
+        level = LOG_ERROR
         if (log%level >= 0 .and. log%level < LOG_NLEVEL) level = log%level
 
         unit_ = stderr
@@ -200,11 +205,10 @@ contains
                             type     = TYPE_LOG, &
                             name     = LOGGER%name, &
                             access   = MQUEUE_WRONLY, &
-                            blocking = .false.)
+                            blocking = logger%blocking)
 
         if (rc /= E_NONE) then
-            call dm_logger_fail('failed to open message queue "/' // &
-                                trim(LOGGER%name) // '"', rc)
+            call dm_logger_fail('failed to open mqueue /' // LOGGER%name, rc)
             return
         end if
 
@@ -212,16 +216,14 @@ contains
         rc = dm_mqueue_write(mqueue, log)
 
         if (rc /= E_NONE) then
-            call dm_logger_fail('failed to write to message queue "/' // &
-                                trim(LOGGER%name) // '"', rc)
+            call dm_logger_fail('failed to write to mqueue /' // LOGGER%name, rc)
         end if
 
         ! Close message queue.
         rc = dm_mqueue_close(mqueue)
 
         if (rc /= E_NONE) then
-            call dm_logger_fail('failed to close message queue "/' // &
-                                trim(LOGGER%name) // '"', rc)
+            call dm_logger_fail('failed to close mqueue /' // LOGGER%name, rc)
         end if
     end subroutine dm_logger_send
 end module dm_logger

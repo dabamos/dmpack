@@ -65,7 +65,7 @@ program dmrecv
         end if
 
         ! Run the IPC loop.
-        call register_signal_handlers()
+        call dm_signal_register(signal_handler)
         call run(app, mqueue)
     end block init_block
 
@@ -247,19 +247,6 @@ contains
         rc = dm_mqueue_unlink(mqueue)
         call dm_stop(stat)
     end subroutine halt
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine run(app, mqueue)
         !! Waits from incoming messages in the message queue.

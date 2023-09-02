@@ -12,7 +12,6 @@ program dmfs
     integer,          parameter :: APP_MINOR = 9
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
-    integer,   parameter :: APP_BUFFER_LEN    = 4096   !! Input buffer length.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0
@@ -52,7 +51,7 @@ program dmfs
                         verbose = app%verbose)
 
     ! Run main loop.
-    call register_signal_handlers()
+    call dm_signal_register(signal_handler)
     call run(app)
     call dm_stop(0)
 contains
@@ -341,7 +340,7 @@ contains
 
                     ! Initialise request.
                     request%timestamp = dm_time_now()
-                    request%error = E_IO
+                    request%error     = E_IO
 
                     ! Check if file path passed as request command exists.
                     if (.not. dm_file_exists(request%request)) then
@@ -352,6 +351,7 @@ contains
 
                     ! Try to open file.
                     open (action='read', file=trim(request%request), iostat=stat, newunit=fu)
+
                     if (stat == 0) request%error = E_NONE
 
                     if (dm_is_error(request%error)) then
@@ -365,6 +365,7 @@ contains
                         ! Read from file.
                         rc = E_READ
                         request%response = ' '
+
                         read (fu, '(a)', iostat=stat) request%response
 
                         if (is_iostat_end(stat)) exit read_loop
@@ -428,19 +429,6 @@ contains
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine signal_handler(signum) bind(c)
         !! Default POSIX signal handler of the program.

@@ -77,7 +77,7 @@ program dmlogger
         end if
 
         ! Run the IPC loop.
-        call register_signal_handlers()
+        call dm_signal_register(signal_handler)
         call run(app, db, mqueue, sem)
     end block init_block
 
@@ -187,19 +187,6 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
-
     subroutine run(app, db, mqueue, sem)
         !! Stores received logs in database. The given message queue has to be
         !! opened already.
@@ -286,6 +273,7 @@ contains
         select case (signum)
             case default
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_sleep(2)
                 call halt(0)
         end select
     end subroutine signal_handler

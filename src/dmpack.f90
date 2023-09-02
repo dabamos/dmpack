@@ -78,6 +78,7 @@ module dmpack
     use :: dm_rpc
     use :: dm_sem
     use :: dm_sensor
+    use :: dm_signal
     use :: dm_sql
     use :: dm_string
     use :: dm_sync

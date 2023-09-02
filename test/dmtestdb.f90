@@ -2,7 +2,7 @@
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-module handler
+module dmtestdb_aux
     use, intrinsic :: iso_c_binding
     implicit none (type, external)
     private
@@ -23,7 +23,8 @@ contains
         type(c_ptr),         intent(in), value :: client_data
         integer(kind=c_int), intent(in), value :: err_code
         type(c_ptr),         intent(in), value :: err_msg_ptr
-        character(len=:), allocatable          :: err_msg
+
+        character(len=:), allocatable :: err_msg
 
         if (.not. c_associated(err_msg_ptr)) return
         call c_f_str_ptr(err_msg_ptr, err_msg)
@@ -31,13 +32,13 @@ contains
         print '("Error ", i0, ": ", a)', err_code, err_msg
         deallocate (err_msg)
     end subroutine log_handler
-end module handler
+end module dmtestdb_aux
 
 program dmtestdb
     !! Tests database access using `dm_db` module.
     use, intrinsic :: iso_c_binding
     use :: dmpack
-    use :: handler
+    use :: dmtestdb_aux
     implicit none (type, external)
     character(len=*), parameter :: DB_BEAT          = 'testbeat.sqlite'
     character(len=*), parameter :: DB_LOG           = 'testlog.sqlite'

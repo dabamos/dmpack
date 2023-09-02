@@ -2,6 +2,7 @@
 ! Licence: ISC
 module dm_system
     !! Abstraction layers over system calls.
+    use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
     use :: dm_time
@@ -108,11 +109,12 @@ contains
         !! Returns system uptime.
         integer(kind=i8), intent(out)           :: time
         integer,          intent(out), optional :: stat
-        type(c_timespec)                        :: tp
+
+        type(c_timespec) :: tp
 
         if (present(stat)) stat = E_SYSTEM
         if (c_clock_gettime(CLOCK_MONOTONIC, tp) /= 0) return
-        time = tp%tv_sec
+        time = int(tp%tv_sec, kind=i8)
         if (time > 60) time = time + 30
         if (present(stat)) stat = E_NONE
     end subroutine dm_system_uptime

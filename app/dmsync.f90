@@ -97,7 +97,7 @@ program dmsync
             end if
         end if
 
-        call register_signal_handlers()
+        call dm_signal_register(signal_handler)
         call run(app, db, sem)
     end block init_block
 
@@ -245,19 +245,6 @@ contains
         rc = dm_db_close(db)
         call dm_stop(stat_)
     end subroutine halt
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine run(app, db, sem)
         !! Synchronises logs database via RPC API.

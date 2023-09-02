@@ -133,6 +133,7 @@ SRC = src/dm_version.f90 \
       src/dm_id.f90 \
       src/dm_uuid.f90 \
       src/dm_arg.f90 \
+      src/dm_signal.f90 \
       src/dm_system.f90 \
       src/dm_pipe.f90 \
       src/dm_tty.f90 \
@@ -205,6 +206,7 @@ OBJ = dm_version.o \
       dm_id.o \
       dm_uuid.o \
       dm_arg.o \
+      dm_signal.o \
       dm_system.o \
       dm_pipe.o \
       dm_tty.o \
@@ -334,6 +336,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_id.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_uuid.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_arg.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_signal.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_system.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_pipe.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_tty.f90

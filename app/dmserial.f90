@@ -64,8 +64,8 @@ program dmserial
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
-    ! Register signal handlers.
-    call register_signal_handlers()
+    ! Register signal handler.
+    call dm_signal_register(signal_handler)
 
     ! Run main loop.
     rc = run(app, tty)
@@ -574,19 +574,6 @@ contains
 
         rc = E_NONE
     end function run
-
-    subroutine register_signal_handlers()
-        !! Registers POSIX signal handlers.
-        use, intrinsic :: iso_c_binding, only: c_funloc, c_funptr
-        use :: unix
-        type(c_funptr) :: ptr
-
-        ptr = c_signal(SIGINT,  c_funloc(signal_handler))
-        ptr = c_signal(SIGQUIT, c_funloc(signal_handler))
-        ptr = c_signal(SIGABRT, c_funloc(signal_handler))
-        ptr = c_signal(SIGKILL, c_funloc(signal_handler))
-        ptr = c_signal(SIGTERM, c_funloc(signal_handler))
-    end subroutine register_signal_handlers
 
     subroutine signal_handler(signum) bind(c)
         !! Default POSIX signal handler of the program.
