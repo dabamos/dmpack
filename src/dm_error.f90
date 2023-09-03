@@ -113,7 +113,7 @@ contains
         select case (err)
             ! General errors.
             case (E_NONE)
-                str = 'no error'
+                str = 'none'
             case (E_ERROR)
                 str = 'generic error'
             case (E_DUMMY)

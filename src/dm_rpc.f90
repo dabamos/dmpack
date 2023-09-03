@@ -403,14 +403,14 @@ contains
 
             ! Send request.
             er = curl_easy_perform(curl_ptr)
+            ! if (er /= CURLE_OK) exit curl_block
+
+            ! Get HTTP response code.
+            er = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
             if (er /= CURLE_OK) exit curl_block
 
             ! Get connection info.
             er = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
-            if (er /= CURLE_OK) exit curl_block
-
-            ! Get HTTP response code.
-            er = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
             if (er /= CURLE_OK) exit curl_block
 
             ! Get transmission time.

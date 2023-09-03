@@ -32,15 +32,15 @@ module dm_mail
     integer, parameter, public :: MAIL_TLS   = 2 !! Implicit TLS (StartTLS).
 
     abstract interface
-        function mail_callback(ptr, sz, nmemb, data) bind(c) result(n)
+        function mail_callback(ptr, sz, nmemb, data) bind(c)
             !! Private abstract interface of cURL read callback.
             import :: c_ptr, c_size_t
             implicit none
-            type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-            integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-            integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-            type(c_ptr),            intent(in), value :: data  !! C pointer to client data passed by caller.
-            integer(kind=c_size_t)                    :: n     !! Function return value.
+            type(c_ptr),            intent(in), value :: ptr           !! C pointer to a chunk of memory.
+            integer(kind=c_size_t), intent(in), value :: sz            !! Always 1.
+            integer(kind=c_size_t), intent(in), value :: nmemb         !! Size of the memory chunk.
+            type(c_ptr),            intent(in), value :: data          !! C pointer to client data passed by caller.
+            integer(kind=c_size_t)                    :: mail_callback !! Function return value.
         end function mail_callback
     end interface
 

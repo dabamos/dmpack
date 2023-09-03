@@ -30,7 +30,7 @@ contains
         !! Stops the timer and returns the time delta as 8-byte real.
         type(timer_type), intent(inout) :: timer !! Timer type.
 
-        call system_clock(count=timer%t(2))
+        call system_clock(count=timer%t(2), count_rate=timer%rate)
         dt = (timer%t(2) - timer%t(1)) / dble(timer%rate)
     end function dm_timer_stop
 
@@ -38,6 +38,6 @@ contains
         !! Starts the timer by setting clock rate and first clock count.
         type(timer_type), intent(inout) :: timer !! Timer type.
 
-        call system_clock(count=timer%t(1), count_rate=timer%rate)
+        call system_clock(count=timer%t(1))
     end subroutine dm_timer_start
 end module dm_timer

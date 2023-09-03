@@ -9,8 +9,8 @@
 #   Example:
 #
 #   $ sh mkreport.sh
-#   --- Writing report from 2023-08-01 to 2023-08-31 to file /var/www/reports/2023-08_report.html ...
-#   --- Writing report from 2023-09-01 to 2023-09-30 to file /var/www/reports/2023-09_report.html ...
+#   --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
+#   --- Writing report if 2023-09 to file /var/www/reports/2023-09_report.html ...
 #
 
 set -e
@@ -20,7 +20,7 @@ name="dmreport"
 config="/usr/local/etc/dmpack/dmreport.conf"
 output="/var/www/reports/"
 
-createReport () {
+create_report () {
   first=${1}
   last=${2}
 
@@ -29,17 +29,15 @@ createReport () {
   path="${output}${file_name}"
 
   from="${first}T00:00:00.000+00:00"
-  to="${last}T23:59:59.999+00:00"
+  to="${last}T00:00:00.000+00:00"
 
-  echo "--- Writing report from ${first} to ${last} to file ${path} ..."
+  echo "--- Writing report of ${prefix} to file ${path} ..."
   ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"
 }
 
 last_month_first=`date -v -1m "+%Y-%m-01"`
-last_month_last=`date -v -1d "+%Y-%m-%d"`
-
 this_month_first=`date +"%Y-%m-01"`
-this_month_last=`date -v +1m -v -1d +"%Y-%m-%d"`
+next_month_first=`date -v +1m +"%Y-%m-01"`
 
-createReport $last_month_first $last_month_last
-createReport $this_month_first $this_month_last
+create_report $last_month_first $this_month_first
+create_report $this_month_first $next_month_first
