@@ -470,7 +470,7 @@ contains
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))
 
         ! No special interpretation of output bytes.
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR + OCRNL))
+        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))
 
         ! Blocking read with timeout in 1/10 seconds.
         termios%c_cc(VMIN)  = 0

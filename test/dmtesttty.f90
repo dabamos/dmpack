@@ -30,7 +30,7 @@ contains
         tty%byte_size = TTY_BYTE_SIZE8
         tty%stop_bits = TTY_STOP_BITS2
         tty%parity    = TTY_PARITY_NONE
-        tty%timeout   = 5
+        tty%timeout   = 50
         tty%rts       = .true.
         tty%dtr       = .true.
         tty%blocking  = .true.
