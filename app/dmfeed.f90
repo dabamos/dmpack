@@ -189,12 +189,14 @@ contains
                                   node_id   = app%node, &
                                   min_level = app%minlevel, &
                                   max_level = app%maxlevel, &
+                                  desc      = .true., &
                                   limit     = int(app%nentries, kind=i8))
             else
                 rc = dm_db_select(db        = db, &
                                   logs      = logs, &
                                   min_level = app%minlevel, &
                                   max_level = app%maxlevel, &
+                                  desc      = .true., &
                                   limit     = int(app%nentries, kind=i8))
             end if
 
