@@ -19,6 +19,7 @@ dmfeed - creates Atom XML feed from log messages
          [--*minlevel* _level_] [--*maxlevel* _level_] [--*nentries* _count_]
          [--*author* _name_] [--*email* _address_] [--*id* _uuid_]
          [--*title* _title_] [--*subtitle* _title_] [--*url* _url_]
+         [--*xsl* _file_]
 
 *dmfeed* --*config* _file_ [--*name* _name_]
 
@@ -83,6 +84,10 @@ different feeds. Run _dmuuid(1)_ to generate a valid UUID4.
 
 *--version*, *-v*::
   Output version information and quit.
+
+*--xsl*, *-X*::
+  Absolute or relative path to XSLT style sheet. Web browsers may be able to
+  display the Atom feed in HTML format if a style sheet is provided.
 
 == EXIT STATUS
 

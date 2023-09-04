@@ -773,6 +773,11 @@ The feed id has to be a 36 characters long UUID with hyphens. News aggregators
 use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
+If an XSLT style sheet is given, web browsers may be able to display the Atom
+feed in HTML format. Set the option to the (relative) path of the public XSLT on
+the web server. An example style sheet `feed.xsl` is located in
+`/usr/local/share/dmpack/`.
+
 ==== Command-Line Options
 
 [%autowidth.stretch]
@@ -795,22 +800,37 @@ different feeds. Run <<dmuuid>> to generate a valid UUID4.
 | `--title _string_`    | `-T`  | –        | Title of feed.
 | `--url _url_`         | `-U`  | –        | Public URL of the feed.
 | `--version`           | `-v`  | –        | Output version information and quit.
+| `--xsl`               | `-X`  | –        | Path to XSLT style sheet.
 |===
 
 ==== Examples
 
-First, generate a unique feed id:
+First, copy the rudimentary XSLT style sheet to the www directory:
+
+....
+$ cp /usr/local/share/dmpack/feed.xsl /var/www/
+....
+
+Then, generate a unique feed id:
 
 ....
 $ dmuuid --hyphens
 19c12109-3e1c-422c-ae36-3ba19281f2e
 ....
 
-Then, write the last 50 log messages in Atom format to file `feed.xml`:
+Finally, write the last 50 log messages in Atom format to file `feed.xml`,
+include a link to the XSLT style sheet `feed.xsl` in the same directory:
 
 ....
 $ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
-  --id 19c12109-3e1c-422c-ae36-3ba19281f2e
+  --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xslt feed.xsl
+....
+
+Additionally, we can translate feed and style sheet into HTML document
+`feed.html`, using an arbitrary XSLT processor, for instance:
+
+....
+$ xsltproc --output feed.html feed.xsl feed.xml
 ....
 
 If directory `/var/www/` is served by a web server, feed readers can subscribe
@@ -3181,7 +3201,7 @@ plain text format
 | `host`      | string  | 32   | Server host name.
 | `server`    | string  | 32   | Server software (web server).
 | `timestamp` | string  | 29   | Server date and time in ISO 8601.
-| `status`    | string  | 32   | Server status message (optional).
+| `message`   | string  | 32   | Server status message (optional).
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 |===
 
@@ -3192,7 +3212,7 @@ dmpack=1.0
 host=localhost
 server=lighttpd/1.4.70
 timestamp=1970-01-01T00:00:00.000+00:00
-status=online
+message=online
 error=0
 ....
 

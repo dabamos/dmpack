@@ -45,7 +45,7 @@ contains
         !! Reads command-line arguments and configuration
         !! from file (if `--config` is passed).
         type(app_type), intent(inout) :: app !! App type.
-        type(arg_type)                :: args(14)
+        type(arg_type)                :: args(15)
 
         rc = E_NONE
 
@@ -63,7 +63,8 @@ contains
             arg_type('id',       short='I', type=ARG_TYPE_CHAR),    & ! -I, --id <string>
             arg_type('title',    short='T', type=ARG_TYPE_CHAR),    & ! -T, --title <string>
             arg_type('subtitle', short='G', type=ARG_TYPE_CHAR),    & ! -G, --subtitle <string>
-            arg_type('url',      short='U', type=ARG_TYPE_CHAR)     & ! -U, --url <string>
+            arg_type('url',      short='U', type=ARG_TYPE_CHAR),    & ! -U, --url <string>
+            arg_type('xsl',      short='X', type=ARG_TYPE_CHAR)     & ! -X, --xsl <string>
         ]
 
         ! Read all command-line arguments.
@@ -90,6 +91,7 @@ contains
         rc = dm_arg_get(args(12), app%atom%title)
         rc = dm_arg_get(args(13), app%atom%subtitle)
         rc = dm_arg_get(args(14), app%atom%url)
+        rc = dm_arg_get(args(15), app%atom%xsl)
 
         ! Validate passed options.
         rc = E_INVALID
@@ -143,18 +145,19 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if_block: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'database', app%database);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'output',   app%output);        if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'node',     app%node);          if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'minlevel', app%minlevel);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'maxlevel', app%maxlevel);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'nentries', app%nentries);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'author',   app%atom%author);   if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'email',    app%atom%email);    if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'id',       app%atom%id);       if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'title',    app%atom%title);    if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'subtitle', app%atom%subtitle); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'url',      app%atom%url);      if (dm_is_error(rc)) exit if_block
+            rc = dm_config_get(config, 'database', app%database)
+            rc = dm_config_get(config, 'output',   app%output)
+            rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'minlevel', app%minlevel)
+            rc = dm_config_get(config, 'maxlevel', app%maxlevel)
+            rc = dm_config_get(config, 'nentries', app%nentries)
+            rc = dm_config_get(config, 'author',   app%atom%author)
+            rc = dm_config_get(config, 'email',    app%atom%email)
+            rc = dm_config_get(config, 'id',       app%atom%id)
+            rc = dm_config_get(config, 'title',    app%atom%title)
+            rc = dm_config_get(config, 'subtitle', app%atom%subtitle)
+            rc = dm_config_get(config, 'url',      app%atom%url)
+            rc = dm_config_get(config, 'xsl',      app%atom%xsl)
         end if if_block
 
         call dm_config_close(config)

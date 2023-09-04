@@ -58,6 +58,7 @@ module dm_atom
         character(len=256)         :: title    = ' '
         character(len=256)         :: subtitle = ' '
         character(len=512)         :: url      = ' '
+        character(len=512)         :: xsl      = ' '
     end type atom_type
 
     interface atom_entry
@@ -69,6 +70,7 @@ module dm_atom
     private :: atom_entry
     private :: atom_entry_log
     private :: atom_link
+    private :: atom_style_sheet
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -83,10 +85,19 @@ contains
         type(atom_type),               intent(inout) :: atom    !! Atom type.
         type(log_type),                intent(inout) :: logs(:) !! Log array.
         character(len=:), allocatable, intent(out)   :: xml     !! Returned Atom XML string.
-        integer                                      :: i, m, n
+
+        integer :: i, m, n
 
         ! Feed header.
-        xml = A_XML // A_FEED // A_GENERATOR
+        xml = A_XML
+
+        ! Add link to XSLT style sheet.
+        if (len_trim(atom%xsl) > 0) then
+            xml = xml // atom_style_sheet(atom%xsl)
+        end if
+
+        ! Start of feed.
+        xml = xml // A_FEED // A_GENERATOR
 
         ! Feed title.
         if (len_trim(atom%title) > 0) then
@@ -175,13 +186,14 @@ contains
 
         integer :: level
 
-        xml = A_ENTRY // A_TITLE // dm_html_encode(log%message) // A_TITLE_END
+        level = max(min(LOG_NLEVEL, log%level), LOG_NONE)
+
+        xml = A_ENTRY // A_TITLE // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
+                         dm_html_encode(log%message) // A_TITLE_END
 
         if (present(alt)) then
             xml = xml // atom_link(alt, rel='alternate', type='text/html')
         end if
-
-        level = max(min(LOG_NLEVEL, log%level), LOG_NONE)
 
         xml = xml // A_ID // 'urn:uuid:' // dm_uuid4_hyphenize(log%id) // A_ID_END // &
               A_PUBLISHED // dm_html_encode(log%timestamp) // A_PUBLISHED_END // &
@@ -192,4 +204,12 @@ contains
               A_AUTHOR // A_NAME // dm_html_encode(log%source) // A_NAME_END // A_AUTHOR_END // &
               A_ENTRY_END
     end function atom_entry_log
+
+    function atom_style_sheet(path) result(xml)
+        !! Returns `xml-stylesheet` tag with link to XSLT template.
+        character(len=*), intent(in)  :: path !! Path to XSLT style sheet.
+        character(len=:), allocatable :: xml  !! Atom XML string.
+
+        xml = '<?xml-stylesheet href="' // dm_html_encode(path) // '" type="text/xsl"?>' // NL
+    end function atom_style_sheet
 end module dm_atom

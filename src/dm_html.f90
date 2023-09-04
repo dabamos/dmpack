@@ -585,28 +585,28 @@ contains
             case (2)
                 ! H2
                 if (has_small) then
-                    html = H_H2 // dm_html_encode(str) // ' ' // dm_html_small(small) // H_H2_END
+                    html = H_H2 // dm_html_encode(str) // dm_html_small(small) // H_H2_END
                 else
                     html = H_H2 // dm_html_encode(str) // H_H2_END
                 end if
             case (3)
                 ! H3
                 if (has_small) then
-                    html = H_H3 // dm_html_encode(str) // ' ' // dm_html_small(small) // H_H3_END
+                    html = H_H3 // dm_html_encode(str) // dm_html_small(small) // H_H3_END
                 else
                     html = H_H3 // dm_html_encode(str) // H_H3_END
                 end if
             case (4)
                 ! H4
                 if (has_small) then
-                    html = H_H4 // dm_html_encode(str) // ' ' // dm_html_small(small) // H_H4_END
+                    html = H_H4 // dm_html_encode(str) // dm_html_small(small) // H_H4_END
                 else
                     html = H_H4 // dm_html_encode(str) // H_H4_END
                 end if
             case default
                 ! H1
                 if (has_small) then
-                    html = H_H1 // dm_html_encode(str) // ' ' // dm_html_small(small) // H_H1_END // H_HR
+                    html = H_H1 // dm_html_encode(str) // dm_html_small(small) // H_H1_END // H_HR
                 else
                     html = H_H1 // dm_html_encode(str) // H_H1_END // H_HR
                 end if

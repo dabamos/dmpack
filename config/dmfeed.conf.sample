@@ -18,6 +18,7 @@
 --      subtitle    -   Subtitle of the feed (optional).
 --      title       -   Title of the feed (optional).
 --      url         -   URL to the feed (optional).
+--      xslt        -   Absolute or relative path to XSLT style sheet (optional).
 --
 
 dmfeed = {
@@ -32,5 +33,6 @@ dmfeed = {
     minlevel = 3,
     maxlevel = 5,
     nentries = 100,
+    xslt = "feed.xls",
     output = "/tmp/feed.xml"
 }

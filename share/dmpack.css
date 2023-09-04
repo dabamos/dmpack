@@ -88,7 +88,7 @@ h5 { font-size: 1.2em; font-weight: 400; color: var(--cfg); }
 h6 { font-size: 1.0em; font-weight: 700; font-style: italic; display: inline; }
 h6 + p { display: inline; }
 
-h1 small, h2 small, h3 small { color: var(--cdark); }
+h1 small, h2 small, h3 small { color: var(--cdark); margin-left: 1rem; }
 
 /* tables */
 td, th {
