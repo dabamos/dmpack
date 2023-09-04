@@ -615,6 +615,7 @@ install:
 	install -m 644 $(SHARDIR)/dmpack.css $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/dmpack.min.css $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/dmlua.lua $(PREFIX)/share/dmpack/
+	install -m 644 $(SHARDIR)/feed.xsl $(PREFIX)/share/dmpack/
 	install -m 644 $(SHARDIR)/mkreport.sh $(PREFIX)/share/dmpack/
 
 deinstall:
