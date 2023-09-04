@@ -339,7 +339,7 @@ contains
         integer(kind=c_int)         :: byte_size
         integer(kind=c_int)         :: parity
         integer(kind=c_int)         :: stop_bits
-        integer(kind=c_int), target :: flags
+        integer(kind=c_int)         :: flags
         integer(kind=c_int), target :: stat
         type(c_termios)             :: termios
 
@@ -439,57 +439,41 @@ contains
         if (c_cfsetispeed(termios, baud_rate) /= 0) return
         if (c_cfsetospeed(termios, baud_rate) /= 0) return
 
-        ! Set byte size.
-        termios%c_cflag = iand(termios%c_cflag, not(CSIZE))
-        termios%c_cflag = ior(termios%c_cflag, byte_size)
+        termios%c_cflag = iand(termios%c_cflag, not(CSIZE))                 ! Unset byte size.
+        termios%c_cflag = ior(termios%c_cflag, byte_size)                   ! Set byte size.
+        termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))                ! Unset stop bits.
+        termios%c_cflag = ior(termios%c_cflag, stop_bits)                   ! Set stop bits.
+        termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))       ! Unset parity.
+        termios%c_cflag = ior(termios%c_cflag, parity)                      ! Set parity.
+        termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))          ! Ignore modem controls, enable reading.
 
-        ! Set stop bits.
-        termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))
-        termios%c_cflag = ior(termios%c_cflag, stop_bits)
+        termios%c_iflag = iand(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL)) ! No special handling of received bytes.
+        termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))  ! Turn XON/XOFF control off.
 
-        ! Set parity.
-        termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))
-        termios%c_cflag = ior(termios%c_cflag, parity)
+        termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL)) ! No echo.
+        termios%c_lflag = iand(termios%c_lflag, not(ICANON))                ! No canonical processing.
+        termios%c_lflag = iand(termios%c_lflag, not(ISIG))                  ! No signal chars.
 
-        ! Ignore modem controls, enable reading.
-        termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))
+        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))         ! No special interpretation of output bytes.
 
-        ! No special handling of received bytes.
-        termios%c_iflag = iand(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL))
-
-        ! Turn XON/XOFF control off.
-        termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))
-
-        ! No echo.
-        termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL))
-
-        ! No canonical processing.
-        termios%c_lflag = iand(termios%c_lflag, not(ICANON))
-
-        ! No signal chars.
-        termios%c_lflag = iand(termios%c_lflag, not(ISIG))
-
-        ! No special interpretation of output bytes.
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))
-
-        ! Blocking read with timeout in 1/10 seconds.
-        termios%c_cc(VMIN)  = 0
-        termios%c_cc(VTIME) = tty%timeout * 10
+        ! Blocking read with 1 byte minimum and timeout in 1/10 seconds.
+        termios%c_cc(VMIN)  = 1
+        termios%c_cc(VTIME) = min(255, tty%timeout * 10)
 
         ! Set attributes.
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
 
         ! Set RTS, DTR.
-        if (c_ioctl(tty%fd, TIOCMGET, c_loc(stat)) /= 0) return
+        if (c_ioctl(tty%fd, int(TIOCMGET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
         if (tty%rts) stat = ior(stat, TIOCM_RTS)
         if (tty%dtr) stat = ior(stat, TIOCM_DTR)
-        if (c_ioctl(tty%fd, TIOCMSET, c_loc(stat)) /= 0) return
+        if (c_ioctl(tty%fd, int(TIOCMSET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
 
         ! Set blocking read.
         if (tty%blocking) then
-            flags = c_fcntl(tty%fd, F_GETFL, c_null_ptr)
+            flags = c_fcntl(tty%fd, F_GETFL, 0)
             flags = iand(flags, not(O_NONBLOCK))
-            if (c_fcntl(tty%fd, F_SETFL, c_loc(flags)) /= 0) return
+            if (c_fcntl(tty%fd, F_SETFL, flags) /= 0) return
         end if
 
         rc = E_NONE
