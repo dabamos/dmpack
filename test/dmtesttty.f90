@@ -42,17 +42,17 @@ contains
 
         rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
-        rc = dm_tty_write(tty, dm_ascii_unescape('s\r\r'))
+        rc = dm_tty_write(tty, dm_ascii_unescape('s\r'))
         call dm_perror(rc)
 
         rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
-        rc = dm_tty_write(tty, dm_ascii_unescape('Meter\r\r'))
+        rc = dm_tty_write(tty, dm_ascii_unescape('Meter\r'))
         call dm_perror(rc)
 
         print *, 'Reading ...'
         buf = ' '
-        rc = dm_tty_read(tty, buf, ASCII_LF // ASCII_LF, n)
+        rc = dm_tty_read(tty, buf, ASCII_CR, n)
         call dm_perror(rc)
         print *, trim(dm_ascii_escape(buf))
 

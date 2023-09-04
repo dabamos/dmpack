@@ -203,7 +203,7 @@ contains
             return
         end if
 
-        rc = E_IO
+        rc = E_SYSTEM
         if (c_tcflush(tty%fd, n) /= 0) return
 
         rc = E_NONE
@@ -299,16 +299,14 @@ contains
         n = 0_i8
 
         do
-            rc = E_NONE
+            rc = E_BOUNDS
+            if (i > j) exit
 
-            if (i > j) then
-                rc = E_BOUNDS
-                exit
-            end if
-
+            rc = E_READ
             sz = dm_tty_read_raw(tty, a)
 
             if (sz > 0) then
+                rc = E_NONE
                 buffer(i:i) = a
                 i = i + 1
                 n = n + 1
@@ -431,7 +429,7 @@ contains
                 return
         end select
 
-        rc = E_IO
+        rc = E_SYSTEM
 
         ! Get current attributes.
         if (c_tcgetattr(tty%fd, termios) /= 0) return
@@ -471,7 +469,7 @@ contains
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))
 
         ! No special interpretation of output bytes.
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))
+        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR + OCRNL + OCRNL))
 
         ! Blocking read with timeout in 1/10 seconds.
         termios%c_cc(VMIN)  = 0

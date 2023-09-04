@@ -12,7 +12,6 @@ program dmserial
     integer,          parameter :: APP_MINOR = 9
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
-    integer,   parameter :: APP_BUFFER_LEN    = 4096   !! Input buffer length.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0
@@ -396,7 +395,8 @@ contains
         type(app_type), intent(inout) :: app
         type(tty_type), intent(inout) :: tty
 
-        character(len=REQUEST_REQUEST_LEN) :: raw_request
+        character(len=REQUEST_REQUEST_LEN)   :: raw_req
+        character(len=REQUEST_DELIMITER_LEN) :: raw_del
 
         integer :: delay, njobs
         integer :: i, j
@@ -407,9 +407,8 @@ contains
         type(response_type), pointer :: response ! Response in request.
 
         call dm_log(LOG_INFO, 'starting ' // app%name)
-        call dm_log(LOG_DEBUG, 'trying to open connection to sensor ' // trim(app%sensor) // &
-                    ' through TTY ' // trim(app%tty) // ' (' // dm_itoa(tty%baud_rate) // &
-                    ' ' // dm_itoa(app%byte_size) // dm_upper(app%parity(1:1)) // &
+        call dm_log(LOG_DEBUG, 'opening TTY '  // trim(app%tty) // ' to sensor ' // trim(app%sensor) // &
+                    ' (' // dm_itoa(tty%baud_rate) // dm_itoa(app%byte_size) // dm_upper(app%parity(1:1)) // &
                     dm_itoa(app%stop_bits) // ')')
 
         ! Open TTY/PTY.
@@ -478,10 +477,13 @@ contains
 
                     ! Write unescaped raw request to TTY.
                     request%timestamp = dm_time_now()
-                    raw_request = dm_ascii_unescape(request%request)
+                    request%response  = ' '
 
-                    call dm_log(LOG_DEBUG, 'sending request: ' // raw_request, observ=observ)
-                    rc = dm_tty_write(tty, trim(raw_request))
+                    raw_req = dm_ascii_unescape(request%request)
+                    raw_del = dm_ascii_unescape(request%delimiter)
+
+                    call dm_log(LOG_DEBUG, 'sending request: ' // raw_req, observ=observ)
+                    rc = dm_tty_write(tty, trim(raw_req))
 
                     if (dm_is_error(rc)) then
                         call dm_log(LOG_ERROR, 'failed to write to TTY ' // app%tty, observ=observ, error=rc)
@@ -489,16 +491,14 @@ contains
                         cycle req_loop
                     end if
 
-                    ! Read sensor response from TTY.
-                    request%response = ' '
-
-                    if (len_trim(request%delimiter) == 0) then
+                    if (len_trim(raw_del) == 0) then
                         call dm_log(LOG_DEBUG, 'no delimiter set in request ' // dm_itoa(i) // &
                                     ', TTY reading skipped', observ=observ)
                         cycle req_loop
                     end if
 
-                    rc = dm_tty_read(tty, request%response, dm_ascii_unescape(trim(request%delimiter)))
+                    ! Read sensor response from TTY.
+                    rc = dm_tty_read(tty, request%response, trim(raw_del))
 
                     if (dm_is_error(rc)) then
                         call dm_log(LOG_ERROR, 'failed to read from TTY ' // app%tty, observ=observ, error=rc)
@@ -569,6 +569,7 @@ contains
         end do job_loop
 
         if (dm_tty_connected(tty)) then
+            call dm_log(LOG_DEBUG, 'closing TTY ' // app%tty)
             call dm_tty_close(tty)
         end if
 
@@ -585,7 +586,7 @@ contains
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
 
                 if (dm_tty_connected(tty)) then
-                    call dm_log(LOG_DEBUG, 'closing ' // tty%path)
+                    call dm_log(LOG_DEBUG, 'closing TTY ' // tty%path)
                     call dm_tty_close(tty)
                 end if
 
