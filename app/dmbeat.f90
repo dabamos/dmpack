@@ -240,7 +240,7 @@ contains
                         if (dm_is_ok(dm_api_status_from_string(api, response%payload))) then
                             call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
                                         ' (HTTP ' // dm_itoa(response%code) // '): ' // &
-                                        api%status, error=api%error)
+                                        api%message, error=api%error)
                             exit code_block
                         end if
                     end if

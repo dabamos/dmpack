@@ -473,7 +473,7 @@ contains
                     r_delimiter = dm_ascii_unescape(request%delimiter)
 
                     ! Set default error of responses.
-                    call dm_observ_set_response_error(request, E_EMPTY)
+                    call dm_observ_set_response_error(request, E_INCOMPLETE)
 
                     ! Send request to sensor.
                     call dm_log(LOG_DEBUG, 'sending request: ' // r_request, observ=observ)

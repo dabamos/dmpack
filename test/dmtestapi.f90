@@ -27,7 +27,7 @@ contains
         api1 = api_status_type(version = '1.0', &
                                host    = 'localhost', &
                                server  = 'test', &
-                               status  = 'foo', &
+                               message = 'foo', &
                                error   = E_ERROR)
 
         print *, 'API status type to string ...'

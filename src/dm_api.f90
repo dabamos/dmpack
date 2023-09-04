@@ -21,7 +21,7 @@ module dm_api
         character(len=API_STATUS_LEN) :: host      = ' '               !! Host name.
         character(len=API_STATUS_LEN) :: server    = ' '               !! Server software (web server).
         character(len=API_STATUS_LEN) :: timestamp = TIME_DEFAULT      !! Current date and time in ISO 8601.
-        character(len=API_STATUS_LEN) :: status    = ' '               !! Status message.
+        character(len=API_STATUS_LEN) :: message   = ' '               !! Status message.
         integer                       :: error     = E_NONE            !! Error code.
     end type api_status_type
 
@@ -69,8 +69,8 @@ contains
                     api%server = dm_ascii_escape(pair(2))
                 case ('timestamp')
                     api%timestamp = dm_ascii_escape(pair(2))
-                case ('status')
-                    api%status = dm_ascii_escape(pair(2))
+                case ('message')
+                    api%message= dm_ascii_escape(pair(2))
                 case ('error')
                     api%error = dm_atoi(pair(2))
                 case default
@@ -92,7 +92,7 @@ contains
         if (api1%host      /= api2%host)      return
         if (api1%server    /= api2%server)    return
         if (api1%timestamp /= api2%timestamp) return
-        if (api1%status    /= api2%status)    return
+        if (api1%message   /= api2%message)   return
         if (api1%error     /= api2%error)     return
         equals = .true.
     end function dm_api_status_equals
@@ -108,8 +108,8 @@ contains
               'server='    // trim(api%server)  // NL // &
               'timestamp=' // trim(api%timestamp)
 
-        if (len_trim(api%status) > 0) then
-            str = str // NL // 'status=' // trim(api%status)
+        if (len_trim(api%message) > 0) then
+            str = str // NL // 'message=' // trim(api%message)
         end if
 
         str = str // NL // 'error=' // dm_itoa(api%error)
