@@ -306,27 +306,28 @@ contains
             sz = dm_tty_read_raw(tty, a)
 
             if (sz > 0) then
-                rc = E_NONE
                 buffer(i:i) = a
                 i = i + 1
                 n = n + 1
+
+                rc = E_NONE
                 if (buffer(i - k:i) == del) exit
-            else
-                if (sz == 0) rc = E_TIMEOUT
-                exit
+                cycle
             end if
+
+            exit
         end do
 
         if (present(nbytes)) nbytes = n
     end function dm_tty_read
 
-    integer(kind=i8) function dm_tty_read_raw(tty, bytes) result(n)
+    integer(kind=i8) function dm_tty_read_raw(tty, byte) result(n)
         !! Reads single byte from file descriptor.
         use :: unix, only: c_read
-        type(tty_type),    intent(inout) :: tty   !! TTY type.
-        character, target, intent(out)   :: bytes !! Read byte.
+        type(tty_type),    intent(inout) :: tty  !! TTY type.
+        character, target, intent(out)   :: byte !! Byte read.
 
-        n = int(c_read(tty%fd, c_loc(bytes), len(bytes, kind=c_size_t)), kind=i8)
+        n = int(c_read(tty%fd, c_loc(byte), int(1, kind=c_size_t)), kind=i8)
     end function dm_tty_read_raw
 
     integer function dm_tty_set_attributes(tty) result(rc)
@@ -469,7 +470,7 @@ contains
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))
 
         ! No special interpretation of output bytes.
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR + OCRNL + OCRNL))
+        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR + OCRNL))
 
         ! Blocking read with timeout in 1/10 seconds.
         termios%c_cc(VMIN)  = 0
@@ -623,9 +624,7 @@ contains
         !! Closes file descriptor.
         use :: unix, only: c_close
         type(tty_type), intent(inout) :: tty !! TTY type.
-        integer                       :: rc
 
-        rc = c_close(tty%fd)
-        if (rc == 0) tty%fd = -1
+        if (c_close(tty%fd) == 0) tty%fd = -1
     end subroutine dm_tty_close
 end module dm_tty

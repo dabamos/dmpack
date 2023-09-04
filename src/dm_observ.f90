@@ -143,6 +143,7 @@ module dm_observ
     public :: dm_observ_equals
     public :: dm_observ_index
     public :: dm_observ_out
+    public :: dm_observ_set_response_error
     public :: dm_observ_valid
     public :: dm_observ_view_equals
 
@@ -333,6 +334,18 @@ contains
             end do
         end do
     end subroutine dm_observ_out
+
+    subroutine dm_observ_set_response_error(request, error)
+        !! Sets error code to all responses of the given request.
+        type(request_type), intent(inout) :: request !! Request type.
+        integer,            intent(in)    :: error
+
+        integer :: i
+
+        do i = 1, request%nresponses
+            request%responses(i)%error = error
+        end do
+    end subroutine dm_observ_set_response_error
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

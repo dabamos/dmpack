@@ -395,8 +395,8 @@ contains
         type(app_type), intent(inout) :: app
         type(tty_type), intent(inout) :: tty
 
-        character(len=REQUEST_REQUEST_LEN)   :: raw_req
-        character(len=REQUEST_DELIMITER_LEN) :: raw_del
+        character(len=REQUEST_REQUEST_LEN)   :: r_request   ! Raw request (unescaped).
+        character(len=REQUEST_DELIMITER_LEN) :: r_delimiter ! Raw delimiter (unescaped).
 
         integer :: delay, njobs
         integer :: i, j
@@ -422,6 +422,7 @@ contains
 
         ! Run until no jobs are left.
         job_loop: do
+            ! Get number of jobs left.
             njobs = dm_job_list_count(app%jobs)
 
             if (njobs == 0) then
@@ -430,9 +431,8 @@ contains
                 exit job_loop
             end if
 
-            call dm_log(LOG_DEBUG, dm_itoa(njobs) // ' job(s) left in job queue')
-
             ! Get next job as deep copy.
+            call dm_log(LOG_DEBUG, dm_itoa(njobs) // ' job(s) left in job queue')
             rc = dm_job_list_next(app%jobs, job)
 
             if (dm_is_error(rc)) then
@@ -456,6 +456,7 @@ contains
 
                 if (observ%nrequests == 0) then
                     call dm_log(LOG_INFO, 'no requests in observation', observ=observ)
+                    observ%error = E_EMPTY
                     exit observ_if
                 end if
 
@@ -467,60 +468,59 @@ contains
                     call dm_log(LOG_DEBUG, 'starting request ' // dm_itoa(i) // ' of ' // &
                                 dm_itoa(observ%nrequests), observ=observ)
 
-                    ! Flush input/output buffer.
-                    ! rc = dm_tty_flush(tty)
+                    ! Set raw values.
+                    r_request   = dm_ascii_unescape(request%request)
+                    r_delimiter = dm_ascii_unescape(request%delimiter)
 
-                    ! if (dm_is_error(rc)) then
-                    !     call dm_log(LOG_WARNING, 'failed to flush buffer of TTY ' // app%tty, &
-                    !                 observ=observ, error=rc)
-                    ! end if
+                    ! Set default error of responses.
+                    call dm_observ_set_response_error(request, E_EMPTY)
 
-                    ! Write unescaped raw request to TTY.
-                    request%timestamp = dm_time_now()
+                    ! Send request to sensor.
+                    call dm_log(LOG_DEBUG, 'sending request: ' // r_request, observ=observ)
+
                     request%response  = ' '
+                    request%timestamp = dm_time_now()
 
-                    raw_req = dm_ascii_unescape(request%request)
-                    raw_del = dm_ascii_unescape(request%delimiter)
+                    request%error = dm_tty_flush(tty, output=.false.)
+                    request%error = dm_tty_write(tty, trim(r_request))
 
-                    call dm_log(LOG_DEBUG, 'sending request: ' // raw_req, observ=observ)
-                    rc = dm_tty_write(tty, trim(raw_req))
-
-                    if (dm_is_error(rc)) then
-                        call dm_log(LOG_ERROR, 'failed to write to TTY ' // app%tty, observ=observ, error=rc)
-                        request%error = rc
+                    if (dm_is_error(request%error)) then
+                        call dm_log(LOG_ERROR, 'failed to write to TTY ' // app%tty, observ=observ, &
+                                    error=request%error)
                         cycle req_loop
                     end if
 
-                    if (len_trim(raw_del) == 0) then
-                        call dm_log(LOG_DEBUG, 'no delimiter set in request ' // dm_itoa(i) // &
-                                    ', TTY reading skipped', observ=observ)
+                    if (len_trim(r_delimiter) == 0) then
+                        call dm_log(LOG_DEBUG, 'no delimiter set in request ' // dm_itoa(i), observ=observ)
                         cycle req_loop
                     end if
 
-                    ! Read sensor response from TTY.
-                    rc = dm_tty_read(tty, request%response, trim(raw_del))
+                    ! Read raw sensor response from TTY.
+                    request%error = dm_tty_read(tty, request%response, trim(r_delimiter))
 
-                    if (dm_is_error(rc)) then
-                        call dm_log(LOG_ERROR, 'failed to read from TTY ' // app%tty, observ=observ, error=rc)
+                    if (dm_is_error(request%error)) then
+                        call dm_log(LOG_ERROR, 'failed to read from TTY ' // app%tty, &
+                                    observ=observ, error=request%error)
                         cycle req_loop
                     end if
 
                     call dm_log(LOG_DEBUG, 'received raw response: ' // request%response, observ=observ)
 
-                    ! Try to extract the response values if a regex pattern is given.
                     if (len_trim(request%pattern) == 0) then
-                        call dm_log(LOG_DEBUG, 'no pattern in request ' // dm_itoa(i) // &
-                                    ', extraction skipped', observ=observ)
+                        call dm_log(LOG_DEBUG, 'no pattern in request ' // dm_itoa(i), observ=observ)
                         cycle req_loop
                     end if
 
+                    ! Try to extract the response values if a regex pattern is given.
                     call dm_log(LOG_DEBUG, 'extracting response values', observ=observ)
-                    rc = dm_regex_request(request)
+                    request%error = dm_regex_request(request)
 
-                    if (dm_is_error(rc)) then
-                        call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // &
-                                    ' does not match pattern', observ=observ, error=rc)
-                        request%error = rc
+                    ! Unescape raw response.
+                    request%response = dm_ascii_escape(request%response)
+
+                    if (dm_is_error(request%error)) then
+                        call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // ' does not match pattern', &
+                                    observ=observ, error=request%error)
                         cycle req_loop
                     end if
 
@@ -538,10 +538,6 @@ contains
                                     ' of request ' // dm_itoa(i), observ=observ)
                     end do
 
-                    ! Escape raw response.
-                    request%response = dm_ascii_escape(request%response)
-                    request%error = rc
-
                     call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
                                 dm_itoa(observ%nrequests), observ=observ)
 
@@ -552,12 +548,10 @@ contains
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
-                ! Forward observation.
+                ! Forward and output observation.
                 call dm_log(LOG_DEBUG, 'finished observation ' // trim(observ%name) // &
                             ' for sensor ' // app%sensor, observ=observ)
                 rc = forward_observ(observ)
-
-                ! Output observation.
                 rc = output_observ(observ, app%output_type)
             end if observ_if
 

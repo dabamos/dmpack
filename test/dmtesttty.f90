@@ -38,15 +38,17 @@ contains
         print *, 'Opening TTY ', trim(tty%path), ' ...'
         rc = dm_tty_open(tty)
         call dm_perror(rc)
-        if (rc /= 0) return
+        if (dm_is_error(rc)) return
 
         rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
+        rc = dm_tty_flush(tty, output=.false.)
         rc = dm_tty_write(tty, dm_ascii_unescape('s\r'))
         call dm_perror(rc)
 
         rc = c_usleep(500 * 1000)
         print *, 'Writing ...'
+        rc = dm_tty_flush(tty, output=.false.)
         rc = dm_tty_write(tty, dm_ascii_unescape('Meter\r'))
         call dm_perror(rc)
 
