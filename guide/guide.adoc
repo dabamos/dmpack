@@ -253,7 +253,6 @@ favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
 with a single server, for example:
 
 ....
-# pool 0.freebsd.pool.ntp.org iburst
 server ptbtime1.ptb.de iburst
 ....
 
@@ -277,7 +276,6 @@ On Debian Linux, install the NTP package:
 
 ....
 # apt-get install ntp
-# dpkg-reconfigure ntp
 ....
 
 Query the NTP servers to synchronise with:
@@ -290,6 +288,12 @@ The system time should be updated now:
 
 ....
 # date -R
+....
+
+On error, try to reconfigure the NTP service:
+
+....
+# dpkg-reconfigure ntp
 ....
 
 === Power Saving
@@ -454,9 +458,11 @@ client and server. Requires a web server and _gnuplot(1)_.
 == Programs
 
 Some programs read settings from an optional or mandatory configuration file.
-The configuration file format relies on Lua tables, and is scriptable. You may
-want to enable Lua syntax highlighting in your editor (for example, `set
-syntax=lua` in Vim), or use the file ending `.lua` instead of `.conf`.
+Examples of configuration files are provided in directory
+`/usr/local/etc/dmpack/`. The configuration file format is based on Lua tables,
+and is additionally scriptable. You may want to enable Lua syntax highlighting
+in your editor (for instance, `set syntax=lua` in Vim), or use the file ending
+`.lua` instead of `.conf`.
 
 === dmapi [[dmapi]]
 
@@ -1878,15 +1884,19 @@ server. It is recommended to run _lighttpd(1)_. Any other server must be able to
 pass environment variables to the CGI application. _gnuplot(1)_ is required for
 the plotting backend (no-X11 flavour is sufficient).
 
+The web application allows the user to:
+
+* add and view nodes, sensors, targets;
+* view observations, logs, heartbeats;
+* plot observations.
+
+The style sheet of *dmweb* is based on link:http://classless.de/[Classless.css].
+It may be replaced with any other
+link:https://github.com/dbohdan/classless-css[classless CSS theme].
+
 .Plotting of time series through the *dmweb* user interface
 [#img-dmweb]
 image::dmweb.png[dmweb,align="center"]
-
-The web application allows the user to:
-
-* add and view nodes, sensors, targets
-* view observations, logs, heartbeats
-* plot observations
 
 Environment variables are used to configure *dmweb*. Transport security and
 authentication have to be provided by the web server.
@@ -2003,6 +2013,7 @@ server.modules += (
   "mod_fastcgi"
 )
 
+# Set authentication backend and path of password file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
@@ -2014,9 +2025,9 @@ auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 # FastCGI configuration.
 fastcgi.server = (
   "/api/v1" => ((
-    "socket" => "/var/lighttpd/sockets/dmapi.sock",
-    "bin-path" => "/usr/local/bin/dmapi",
-    "max-procs" => 2,
+    "socket"      => "/var/lighttpd/sockets/dmapi.sock",
+    "bin-path"    => "/usr/local/bin/dmapi",
+    "max-procs"   => 2,
     "check-local" => "disable",
     "bin-environment" => (
       "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
@@ -2029,6 +2040,7 @@ fastcgi.server = (
 
 # Routes.
 $HTTP["url"] =^ "/api/v1" {
+  # Enable HTTP Basic Auth.
   auth.require = ( "" => (
     "method"  => "basic",
     "realm"   => "dmpack",
@@ -2060,7 +2072,7 @@ required:
 
 * `mod_alias` (URL rewrites)
 * `mod_authn_file` (HTTP Basic Auth)
-* `mod_cgi` (CGI)
+* `mod_cgi` (Common Gateway Interface)
 * `mod_setenv` (CGI environment variables)
 
 The example configuration may be appended to your `lighttpd.conf`:
@@ -2090,21 +2102,23 @@ setenv.add-environment = (
   "DM_READ_ONLY" => "0"
 )
 
+# Set authentication backend and path of password file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
 # Routes.
 $HTTP["url"] =^ "/dmpack/" {
+  # Map URL to CGI executable.
   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
 
-  # HTTP Basic Auth.
+  # Enable HTTP Basic Auth.
   auth.require = ( "" => (
     "method"  => "basic",
     "realm"   => "dmpack",
     "require" => "valid-user"
   ))
 
-  # CGI.
+  # CGI settings.
   cgi.assign = ( "" => "" )
   cgi.execute-x-only = "enable"
   cgi.limits = (
@@ -2116,7 +2130,7 @@ $HTTP["url"] =^ "/dmpack/" {
 ....
 
 Copy the CSS file from `/usr/local/share/dmpack/dmpack.min.css` to the WWW root
-directory, in this case, `/var/www/`, or create a symlink.
+directory, in this case, `/var/www/`, or just create a symlink.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
