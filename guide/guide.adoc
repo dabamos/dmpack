@@ -238,8 +238,8 @@ conducting a long-term monitoring.
 The local time zone of the sensor client should be set to a zone without summer
 daylight-saving. For instance, time zone `Europe/Berlin` implies Central
 European Summer Time (CEST), which is usually not desired for long-term
-observations, as it leads to time jumps. Instead, use time zone `GMT+1` in this
-case.
+observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
+in this case.
 
 On FreeBSD, configure the time zone using:
 
@@ -2179,7 +2179,8 @@ $HTTP["url"] =^ "/dmpack/" {
 ....
 
 Copy the CSS file from `/usr/local/share/dmpack/dmpack.min.css` to the WWW root
-directory, in this case, `/var/www/`, or just create a symlink.
+directory, in this case, `/var/www/`, or just create a symlink. The execute bit
+has to be set for all CGI programs.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
