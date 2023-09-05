@@ -1,4 +1,4 @@
-:docdate: 2023-06-01
+:docdate: 2023-09-05
 :description: DMPACK User’s Guide
 :lang: en
 :author: Philipp Engel
@@ -232,6 +232,27 @@ $ sudo make install PREFIX=/opt
 
 Additional changes to the system should be considered to prevent issues while
 conducting a long-term monitoring.
+
+=== Time Zone
+
+The local time zone of the sensor client should be set to a zone without summer
+daylight-saving. For instance, time zone `Europe/Berlin` implies Central
+European Summer Time (CEST), which is usually not desired for long-term
+observations, as it leads to time jumps. Instead, use time zone `GMT+1` in this
+case.
+
+On FreeBSD, configure the time zone using:
+
+....
+# tzsetup
+....
+
+On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
+
+....
+# timedatectl list-timezones
+# timedatectl set-timezone Etc/GMT+1
+....
 
 === Time Synchronisation
 
@@ -475,7 +496,7 @@ observations into the local SQLite database, and to request data in CSV or JSON
 format. Authentication and encryption are independent from *dmapi* and have to
 be provided by the web server.
 
-All POST data has to be serialised in Fortran 90 Namelist format, with optional
+All POST data has to be serialised in Fortran 95 Namelist format, with optional
 deflate compression.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
@@ -504,7 +525,7 @@ type set in the HTTP Accept header of the request, either:
 
 * `application/json` (JSON)
 * `application/jsonl` (JSON Lines)
-* `application/namelist` (Fortran 90 Namelist)
+* `application/namelist` (Fortran 95 Namelist)
 * `text/comma-separated-values` (CSV)
 
 By default, responses are in CSV format. The Namelist format is available only
@@ -896,7 +917,7 @@ the 1-Wire file system with _owfs(1)_ under `/mnt/1wire/`:
 # owfs -C -d /dev/ttyU0 --allow_other -m /mnt/1wire/
 ....
 
-On Linux, the path to the USB adapter is slightly different:
+On Linux, the path to the USB adapter slightly differs:
 
 ....
 # owfs -C -d /dev/ttyUSB0 --allow_other -m /mnt/1wire/
@@ -913,8 +934,8 @@ allow_other
 Celsius
 ....
 
-The file system is mounted automatically at start-up if _owfs(1)_ is configured
-to run as a service.
+The file system is mounted automatically at system start-up if _owfs(1)_ is
+configured to run as a service.
 
 Reading a temperature value from the connected sensor:
 
@@ -988,7 +1009,7 @@ Start the logger process:
 $ dmlogger --name dmlogger --database /var/dmpack/log.sqlite
 ....
 
-Start the database server:
+Start the database process:
 
 ....
 $ dmdb --name dmdb --database /var/dmpack/observ.sqlite --node node-1 --logger dmlogger
@@ -1540,7 +1561,7 @@ configuration file. The arguments overwrite settings from file.
 | `block` | `observ`        | ASCII block format (timestamp and response value).
 | `csv`   | `log`, `observ` | CSV format.
 | `jsonl` | `log`, `observ` | JSON Lines format.
-| `nml`   | `log`, `observ` | Fortran 90 Namelist format.
+| `nml`   | `log`, `observ` | Fortran 95 Namelist format.
 |===
 
 ==== Command-Line Options
@@ -1576,6 +1597,15 @@ Output observations in JSON format to _stdout_:
 ....
 $ dmrecv --name dmrecv --type observ --format jsonl
 ....
+
+Write the serialised observations to named pipe `/tmp/dmrecv_pipe`:
+
+....
+$ mkfifo /tmp/dmrecv_pipe
+$ dmrecv --name dmrecv --type observ --format jsonl --output /tmp/dmrecv_pipe
+....
+
+Another process can now read the observations from `/tmp/dmrecv_pipe`.
 
 === dmreport [[dmreport]]
 
@@ -1680,7 +1710,7 @@ $ dmreport --name dmreport --config dmreport.conf --output report.html
 The command-line arguments overwrite the settings of the configuration file.
 
 In order to create monthly reports, we may customise the shell script
-`/usr/local/share/dmpack/mkreport.sh` to determine to timestamps of the last
+`/usr/local/share/dmpack/mkreport.sh` to determine the timestamps of the last
 and the current month, which will then be passed to *dmreport*. Modify the
 script `mkreport.sh` to your set-up:
 
@@ -1786,7 +1816,7 @@ If the RPC server uses HTTP Basic Auth for authentication, the RPC user name
 must match the _node id_ of the transmitted node, sensor, observation, log, or
 beat record. Otherwise, it will be rejected by the RPC server (HTTP 401).
 
-The database records are send in compressed Fortran 90 Namelist format via HTTP
+The database records are send in compressed Fortran 95 Namelist format via HTTP
 to the server. The program uses libcurl for data transfer. The accessed RPC API
 endpoints are expected under URL `[http|https]://<host>:<port>/api/v1/<endpoint>`.
 
@@ -1827,8 +1857,8 @@ Observations are marked as synchronised only if the server returns HTTP 201
 
 ==== Examples
 
-Synchronise nodes, sensors, and targets in the local observation database with a
-remote RPC server:
+Synchronise nodes, sensors, and targets in the local observation database with
+an RPC server:
 
 ....
 $ dmsync --database observ.sqlite --type node --host 192.168.1.100
@@ -2004,9 +2034,8 @@ the _htpasswd_ user file:
 # printf "<user>:`openssl passwd -crypt '<password>'`\n" >> /usr/local/etc/lighttpd/htpasswd
 ....
 
-Replace `<user>` and `<password>` with real values.
-
-It is possible to select a different authentication backend, for example, LDAP.
+Replace `<user>` and `<password>` with real values. Instead of a _htpasswd_
+file for, we may select a different authentication backend, for example, LDAP.
 See the _lighttpd(1)_ auth module documentation for further instructions.
 
 === RPC Server [[rpc-server]]
@@ -3182,7 +3211,7 @@ link:https://jsonlines.org/[JSON Lines] /
 link:http://ndjson.org/[Newline Delimited JSON] format.
 Lua:: Converting observations from and to Lua tables. Import of observations
 from Lua file or stack-based data exchange between Fortran and Lua.
-Namelist:: Import from and export to Fortran 90 Namelist format of single beat,
+Namelist:: Import from and export to Fortran 95 Namelist format of single beat,
 log, node, observation, sensor, and target data. The syntax is
 case-insensitive, line-breaks are optional. Default values are assumed for
 omitted attributes of data in Namelist format.
@@ -3351,7 +3380,7 @@ BEAT%UPTIME=0,
 <id>urn:uuid:a6baaf1a-43b7-4e59-a18c-653e6ee61dfa</id>
 <updated>1970-01-01T00:00:00.000+00:00</updated>
 <entry>
-<title>dummy log message</title>
+<title>DEBUG: dummy log message</title>
 <id>urn:uuid:26462d27-d7ff-4ef1-b10e-0a2e921e638b</id>
 <published>1970-01-01T00:00:00.000+00:00</published>
 <updated>1970-01-01T00:00:00.000+00:00</updated>

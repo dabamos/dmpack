@@ -90,9 +90,9 @@ contains
         !! corresponding solution vectors x are the columns of matrices denoted
         !! B and X, respectively.
         !!
-        !! LAPACK95 interface driver routine (version 3.0)
-        !! UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
-        !! September, 2000
+        !! > LAPACK95 interface driver routine (version 3.0) --
+        !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
+        !! > September, 2000
         character(len=*), parameter :: SRNAME = 'LA_GELS'
         character(len=*), parameter :: VER    = 'D'
 
@@ -151,9 +151,9 @@ contains
     end subroutine dm_la_dgels
 
     subroutine dm_la_dgels1(a, b, trans, info)
-        !! LAPACK95 interface driver routine (version 3.0) --
-        !! UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
-        !! September, 2000
+        !! > LAPACK95 interface driver routine (version 3.0) --
+        !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
+        !! > September, 2000
         character(len=*), parameter :: SRNAME = 'LA_GELS'
         character(len=*), parameter :: VER    = 'D'
 
@@ -225,9 +225,9 @@ contains
         !! conquer technique. For large matrices it is often much faster than
         !! LA_GELSS but uses more workspace.
         !!
-        !! LAPACK95 interface driver routine (version 3.0) --
-        !! UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
-        !! September, 2000
+        !! > LAPACK95 interface driver routine (version 3.0) --
+        !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
+        !! > September, 2000
         character(len=*), parameter :: SRNAME = 'LA_GELSD'
 
         real(kind=r8),         intent(inout)         :: a(:, :)
@@ -457,9 +457,9 @@ contains
     end function la_same
 
     integer function la_ws_gels(ver, m, n, nrhs, trans)
-        !! LAPACK95 interface driver routine (version 3.0)
-        !! UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
-        !! September, 2000
+        !! > LAPACK95 interface driver routine (version 3.0) --
+        !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
+        !! > September, 2000
         character(len=*), parameter :: NAME1 = 'GEQRF'
         character(len=*), parameter :: NAME2 = 'ORMQR'
         character(len=*), parameter :: NAME3 = 'ORMLQ'

@@ -458,7 +458,7 @@ contains
 
         ! Blocking read with 1 byte minimum and timeout in 1/10 seconds.
         termios%c_cc(VMIN)  = 1
-        termios%c_cc(VTIME) = min(255, tty%timeout * 10)
+        termios%c_cc(VTIME) = int(min(255, tty%timeout * 10), kind=c_cc_t)
 
         ! Set attributes.
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return

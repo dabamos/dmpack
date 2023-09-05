@@ -13,9 +13,9 @@ module dm_target
 
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id   = '' !! Target id (-0-9A-Za-z).
-        character(len=TARGET_NAME_LEN) :: name = '' !! Target name.
-        character(len=TARGET_META_LEN) :: meta = '' !! Target meta information.
+        character(len=TARGET_ID_LEN)   :: id   = ' ' !! Target id (-0-9A-Za-z).
+        character(len=TARGET_NAME_LEN) :: name = ' ' !! Target name.
+        character(len=TARGET_META_LEN) :: meta = ' ' !! Target meta information.
     end type target_type
 
     interface operator (==)
@@ -43,7 +43,7 @@ contains
 
     pure elemental logical function dm_target_valid(target) result(valid)
         !! Returns `.true.` if given target type elements are valid.
-        type(target_type), intent(in) :: target
+        type(target_type), intent(in) :: target !! Target type.
 
         valid = .false.
         if (.not. dm_id_valid(target%id)) return
@@ -52,9 +52,10 @@ contains
     end function dm_target_valid
 
     subroutine dm_target_out(target, unit)
-        !! Prints target to standard output or given file unit.
-        type(target_type), intent(inout)        :: target
-        integer,         intent(in), optional :: unit
+        !! Prints target to standard output or given file unit. If not unit is
+        !! passed, the target will be written to standard output.
+        type(target_type), intent(inout)        :: target !! Target type.
+        integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_
 

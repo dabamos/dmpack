@@ -36,15 +36,15 @@ module dm_rpc
     integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60  !! Interval time between TCP keep-alive probes in seconds.
 
     abstract interface
-        function rpc_callback(ptr, size, nmemb, data) bind(c) result(n)
+        function rpc_callback(ptr, size, nmemb, data) bind(c)
             !! Abstract read/write callback for libcurl.
             import :: c_ptr, c_size_t
             implicit none
-            type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
-            integer(kind=c_size_t), intent(in), value :: size  !! Always 1.
-            integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
-            type(c_ptr),            intent(in), value :: data  !! C pointer to client data passed by caller.
-            integer(kind=c_size_t)                    :: n     !! Function return value.
+            type(c_ptr),            intent(in), value :: ptr          !! C pointer to a chunk of the response.
+            integer(kind=c_size_t), intent(in), value :: size         !! Always 1.
+            integer(kind=c_size_t), intent(in), value :: nmemb        !! Size of the response chunk.
+            type(c_ptr),            intent(in), value :: data         !! C pointer to client data passed by caller.
+            integer(kind=c_size_t)                    :: rpc_callback !! Function return value.
         end function rpc_callback
     end interface
 
