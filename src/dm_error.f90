@@ -86,31 +86,18 @@ module dm_error
 
     public :: dm_error_out
     public :: dm_error_str
+    public :: dm_error_valid
     public :: dm_is_error
     public :: dm_is_ok
     public :: dm_perror
     public :: dm_stop
 contains
-    pure elemental logical function dm_is_error(err) result(is_error)
-        !! Returns `.true.` if given code is an error.
-        integer, intent(in) :: err !! Error code.
-
-        is_error = (err /= E_NONE)
-    end function dm_is_error
-
-    pure elemental logical function dm_is_ok(err) result(is_ok)
-        !! Returns `.true.` if given code is not an error.
-        integer, intent(in) :: err !! Error code.
-
-        is_ok = (err == E_NONE)
-    end function dm_is_ok
-
-    pure function dm_error_str(err) result(str)
+    pure function dm_error_str(error) result(str)
         !! Returns error message of given error code `error`.
-        integer, intent(in)           :: err !! Error code.
-        character(len=:), allocatable :: str !! Error string.
+        integer, intent(in)           :: error !! Error code.
+        character(len=:), allocatable :: str   !! Error string.
 
-        select case (err)
+        select case (error)
             ! General errors.
             case (E_NONE)
                 str = 'none'
@@ -243,6 +230,29 @@ contains
                 str = 'unknown error code'
         end select
     end function dm_error_str
+
+    pure elemental logical function dm_error_valid(error) result(valid)
+        !! Returns whether given code is (likely) valid.
+        integer, intent(in) :: error !! Error code.
+
+        valid = .false.
+        if (error < E_NONE .or. error > E_RPC_SERVER) return
+        valid = .true.
+    end function dm_error_valid
+
+    pure elemental logical function dm_is_error(error) result(is_error)
+        !! Returns `.true.` if given code is an error.
+        integer, intent(in) :: error !! Error code.
+
+        is_error = (error /= E_NONE)
+    end function dm_is_error
+
+    pure elemental logical function dm_is_ok(error) result(is_ok)
+        !! Returns `.true.` if given code is not an error.
+        integer, intent(in) :: error !! Error code.
+
+        is_ok = (error == E_NONE)
+    end function dm_is_ok
 
     subroutine dm_error_out(error, message, verbose, extra, quit)
         !! Prints error description to `stderr`. If `verbose` is true, the

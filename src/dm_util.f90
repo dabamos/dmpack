@@ -68,20 +68,22 @@ contains
         !! Converts string to 8-byte real.
         character(len=*),intent(in) :: str
         real(kind=r8)               :: f
-        integer                     :: rc
+
+        integer :: stat
 
         f = 0.0_r8
-        read (str, *, iostat=rc) f
+        read (str, *, iostat=stat) f
     end function dm_atof
 
     pure elemental function dm_atoi(str) result(i)
         !! Converts string to 4-byte integer.
         character(len=*),intent(in) :: str
         integer                     :: i
-        integer                     :: rc
+
+        integer :: stat
 
         i = 0
-        read (str, *, iostat=rc) i
+        read (str, *, iostat=stat) i
     end function dm_atoi
 
     pure elemental function dm_btoi(l) result(i)
@@ -145,8 +147,8 @@ contains
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
         use :: unix, only: c_usleep
-        integer, intent(in)        :: sec !! Delay in sec.
-        integer                    :: rc
+        integer, intent(in) :: sec !! Delay in sec.
+        integer             :: rc
 
         rc = c_usleep(sec * 10**6)
     end subroutine dm_sleep

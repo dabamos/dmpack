@@ -10,6 +10,7 @@ module dm_csv
     use :: dm_log
     use :: dm_node
     use :: dm_observ
+    use :: dm_request
     use :: dm_sensor
     use :: dm_string
     use :: dm_target

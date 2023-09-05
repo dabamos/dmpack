@@ -3,10 +3,11 @@
 module dm_observ
     !! The observation data derived type declaration, and all associated
     !! procedures.
-    use :: dm_ascii
     use :: dm_error
     use :: dm_id
     use :: dm_node
+    use :: dm_request
+    use :: dm_response
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
@@ -15,48 +16,6 @@ module dm_observ
     use :: dm_uuid
     implicit none (type, external)
     private
-
-    ! ******************************************************************
-    ! OBSERVATION RESPONSE.
-    ! ******************************************************************
-    integer, parameter, public :: RESPONSE_NAME_LEN = 8
-    integer, parameter, public :: RESPONSE_UNIT_LEN = 8
-
-    type, public :: response_type
-        !! Response of a sensor.
-        character(len=RESPONSE_NAME_LEN) :: name  = ' '    !! Response name.
-        character(len=RESPONSE_UNIT_LEN) :: unit  = ' '    !! Response unit.
-        integer                          :: error = E_NONE !! Response error.
-        real(kind=r8)                    :: value = 0.0_r8 !! Response value.
-    end type response_type
-
-    ! ******************************************************************
-    ! OBSERVATION REQUEST.
-    ! ******************************************************************
-    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256
-    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256
-    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8
-    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256
-    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16
-
-    integer, parameter, public :: REQUEST_STATE_NONE     = 0
-    integer, parameter, public :: REQUEST_STATE_DISABLED = 1
-
-    type, public :: request_type
-        !! Request to send to a sensor.
-        character(len=TIME_LEN)              :: timestamp  = ' '                  !! ISO 8601 timestamp.
-        character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Request command.
-        character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response.
-        character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter.
-        character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Reg Exp pattern.
-        integer                              :: delay      = 0                    !! Delay in msec.
-        integer                              :: error      = E_NONE               !! Error code.
-        integer                              :: retries    = 0                    !! Number of retries.
-        integer                              :: state      = REQUEST_STATE_NONE   !! State error.
-        integer                              :: timeout    = 0                    !! Timeout in msec.
-        integer                              :: nresponses = 0                    !! Number of responses.
-        type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) !! Responses array.
-    end type request_type
 
     ! ******************************************************************
     ! OBSERVATION.
@@ -88,7 +47,8 @@ module dm_observ
         type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS) !! Array of requests.
     end type observ_type
 
-    integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type(), kind=i8) / 8 !! Size of `observ_type` in bytes.
+    integer, parameter, public :: OBSERV_SIZE = &
+        storage_size(observ_type(), kind=i8) / 8 !! Size of `observ_type` in bytes.
 
     ! ******************************************************************
     ! OBSERVATION VIEW.
@@ -118,18 +78,6 @@ module dm_observ
         module procedure :: dm_observ_view_equals
     end interface
 
-    interface dm_observ_index
-        !! Searches the observation for a response of given name and returns the index.
-        module procedure :: observ_index_observ
-        module procedure :: observ_index_request
-    end interface
-
-    interface dm_observ_valid
-        !! Returns whether observations or observation views are valid.
-        module procedure :: observ_valid_observ
-        module procedure :: observ_valid_request
-    end interface
-
     ! interface write (formatted)
     !     module procedure :: observ_write_formatted
     ! end interface
@@ -139,18 +87,11 @@ module dm_observ
 
     public :: dm_observ_add_receiver
     public :: dm_observ_add_request
-    public :: dm_observ_add_response
     public :: dm_observ_equals
     public :: dm_observ_index
     public :: dm_observ_out
-    public :: dm_observ_set_response_error
     public :: dm_observ_valid
     public :: dm_observ_view_equals
-
-    private :: observ_index_observ
-    private :: observ_index_request
-    private :: observ_valid_observ
-    private :: observ_valid_request
 
     ! private :: observ_write_formatted
 contains
@@ -190,28 +131,12 @@ contains
         rc = E_NONE
     end function dm_observ_add_request
 
-    integer function dm_observ_add_response(request, response) result(rc)
-        !! Appends a response to a request.
-        type(request_type),  intent(inout) :: request  !! Request type.
-        type(response_type), intent(inout) :: response !! Response data.
-
-        rc = E_BOUNDS
-        if (request%nresponses < 0 .or. request%nresponses >= REQUEST_MAX_NRESPONSES) return
-
-        rc = E_INVALID
-        if (len_trim(response%name) == 0) return
-
-        request%nresponses = request%nresponses + 1
-        request%responses(request%nresponses) = response
-
-        rc = E_NONE
-    end function dm_observ_add_response
-
     pure elemental logical function dm_observ_equals(observ1, observ2) result(equals)
         !! Returns `.true.` if given observations are equal.
         type(observ_type), intent(in) :: observ1 !! The first observation.
         type(observ_type), intent(in) :: observ2 !! The second observation.
-        integer                       :: i, j
+
+        integer :: i
 
         equals = .false.
 
@@ -232,31 +157,94 @@ contains
             if (observ1%receivers(i) /= observ2%receivers(i)) return
         end do
 
-        do i = 1, observ1%nrequests
-            if (observ1%requests(i)%timestamp  /= observ2%requests(i)%timestamp)  return
-            if (observ1%requests(i)%request    /= observ2%requests(i)%request)    return
-            if (observ1%requests(i)%response   /= observ2%requests(i)%response)   return
-            if (observ1%requests(i)%delimiter  /= observ2%requests(i)%delimiter)  return
-            if (observ1%requests(i)%pattern    /= observ2%requests(i)%pattern)    return
-            if (observ1%requests(i)%delay      /= observ2%requests(i)%delay)      return
-            if (observ1%requests(i)%retries    /= observ2%requests(i)%retries)    return
-            if (observ1%requests(i)%timeout    /= observ2%requests(i)%timeout)    return
-            if (observ1%requests(i)%error      /= observ2%requests(i)%error)      return
-            if (observ1%requests(i)%nresponses /= observ2%requests(i)%nresponses) return
-            if (observ1%requests(i)%state      /= observ2%requests(i)%state)      return
-
-            do j = 1, observ1%requests(i)%nresponses
-                if (.not. dm_equals(observ1%requests(i)%responses(j)%value, &
-                                    observ2%requests(i)%responses(j)%value)) return
-
-                if (observ1%requests(i)%responses(j)%name  /= observ2%requests(i)%responses(j)%name)  return
-                if (observ1%requests(i)%responses(j)%unit  /= observ2%requests(i)%responses(j)%unit)  return
-                if (observ1%requests(i)%responses(j)%error /= observ2%requests(i)%responses(j)%error) return
-            end do
-        end do
+        if (observ1%nrequests > 0) then
+            if (.not.  all(dm_request_equals(observ1%requests(1:observ1%nrequests), &
+                                             observ2%requests(1:observ2%nrequests)))) return
+        end if
 
         equals = .true.
     end function dm_observ_equals
+
+    integer function dm_observ_index(observ, name, request_index, response_index) result(rc)
+        !! Searches requests array of the observation for responses of passed name
+        !! and returns the index of the first found. If no request of this name
+        !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
+        type(observ_type), intent(inout) :: observ         !! Observation type.
+        character(len=*),  intent(in)    :: name           !! Response name.
+        integer,           intent(out)   :: request_index  !! Position of request in requests array.
+        integer,           intent(out)   :: response_index !! Position of response in responses array.
+
+        integer :: i, j
+
+        rc = E_NONE
+
+        request_index  = 0
+        response_index = 0
+
+        do i = 1, observ%nrequests
+            do j = 1, observ%requests(i)%nresponses
+                if (observ%requests(i)%responses(i)%name == name) then
+                    request_index  = i
+                    response_index = j
+                    return
+                end if
+            end do
+        end do
+
+        rc = E_NOT_FOUND
+    end function dm_observ_index
+
+    pure elemental logical function dm_observ_valid(observ, id, timestamp) result(valid)
+        !! Returns `.true.` if given observation has at least a valid UUID as
+        !! id, and node id, sensor id, target id, and name set. Validating the
+        !! node, observation, sensor, and target id is optional (only if `id`
+        !! is `.true.`).
+        type(observ_type), intent(in)           :: observ    !! Observation type.
+        logical,           intent(in), optional :: id        !! Validate ids.
+        logical,           intent(in), optional :: timestamp !! Validate timestamps.
+
+        integer :: i
+        logical :: id_, timestamp_
+
+        valid = .false.
+
+        id_ = .true.
+        if (present(id)) id_ = id
+
+        timestamp_ = .true.
+        if (present(timestamp)) timestamp_ = timestamp
+
+        if (id_) then
+            if (observ%id == UUID_DEFAULT) return
+            if (.not. dm_uuid4_valid(observ%id)) return
+            if (.not. dm_id_valid(observ%node_id)) return
+            if (.not. dm_id_valid(observ%sensor_id)) return
+            if (.not. dm_id_valid(observ%target_id)) return
+        end if
+
+        if (.not. dm_id_valid(observ%name)) return
+
+        if (timestamp_) then
+            if (.not. dm_time_valid(observ%timestamp)) return
+        end if
+
+        if (observ%priority < 0) return
+        if (observ%error < 0) return
+        if (observ%next < 0 .or. observ%next > OBSERV_MAX_NRECEIVERS) return
+        if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
+        if (observ%nrequests < 0 .or. observ%nrequests > OBSERV_MAX_NREQUESTS) return
+
+        do i = 1, observ%nreceivers
+            if (.not. dm_id_valid(observ%receivers(i))) return
+        end do
+
+        if (observ%nrequests > 0) then
+            if (.not. all(dm_request_valid(observ%requests(1:observ%nrequests), &
+                                           timestamp=timestamp_))) return
+        end if
+
+        valid = .true.
+    end function dm_observ_valid
 
     pure elemental logical function dm_observ_view_equals(view1, view2) result(equals)
         !! Returns `.true.` if given observation views are equal.
@@ -334,159 +322,6 @@ contains
             end do
         end do
     end subroutine dm_observ_out
-
-    subroutine dm_observ_set_response_error(request, error)
-        !! Sets error code to all responses of the given request.
-        type(request_type), intent(inout) :: request !! Request type.
-        integer,            intent(in)    :: error
-
-        integer :: i
-
-        do i = 1, request%nresponses
-            request%responses(i)%error = error
-        end do
-    end subroutine dm_observ_set_response_error
-
-    ! ******************************************************************
-    ! PRIVATE PROCEDURES.
-    ! ******************************************************************
-    integer function observ_index_observ(observ, name, request_index, response_index) result(rc)
-        !! Searches requests array of the observation for responses of passed name
-        !! and returns the index of the first found. If no request of this name
-        !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
-        type(observ_type), intent(inout) :: observ         !! Observation type.
-        character(len=*),  intent(in)    :: name           !! Response name.
-        integer,           intent(out)   :: request_index  !! Position of request in requests array.
-        integer,           intent(out)   :: response_index !! Position of response in responses array.
-
-        integer :: i, j
-
-        rc = E_NONE
-
-        request_index  = 0
-        response_index = 0
-
-        do i = 1, observ%nrequests
-            do j = 1, observ%requests(i)%nresponses
-                if (observ%requests(i)%responses(i)%name == name) then
-                    request_index  = i
-                    response_index = j
-                    return
-                end if
-            end do
-        end do
-
-        rc = E_NOT_FOUND
-    end function observ_index_observ
-
-    integer function observ_index_request(request, name, index) result(rc)
-        !! Searches responses array of the request for the first response of
-        !! passed name and returns the index if found. If no response of this
-        !! name is found, `E_NOT_FOUND` is returned and index is set to 0.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(len=*),   intent(in)    :: name    !! Response name.
-        integer,            intent(out)   :: index   !! Position of response in responses array.
-
-        integer :: i
-
-        rc = E_NONE
-        index = 0
-
-        do i = 1, request%nresponses
-            if (request%responses(i)%name == name) then
-                index = i
-                return
-            end if
-        end do
-
-        rc = E_NOT_FOUND
-    end function observ_index_request
-
-    pure elemental logical function observ_valid_observ(observ, id, timestamp) result(valid)
-        !! Returns `.true.` if given observation has at least a valid UUID as
-        !! id, and node id, sensor id, target id, and name set. Validating the
-        !! node, observation, sensor, and target id is optional (only if `id`
-        !! is `.true.`).
-        type(observ_type), intent(in)           :: observ    !! Observation type.
-        logical,           intent(in), optional :: id        !! Validate ids.
-        logical,           intent(in), optional :: timestamp !! Validate timestamps.
-
-        logical :: id_, ts_
-        integer :: i
-
-        valid = .false.
-
-        id_ = .true.
-        ts_ = .true.
-        if (present(id)) id_ = id
-        if (present(timestamp)) ts_ = timestamp
-
-        if (id_) then
-            if (observ%id == UUID_DEFAULT) return
-            if (.not. dm_uuid4_valid(observ%id)) return
-            if (.not. dm_id_valid(observ%node_id)) return
-            if (.not. dm_id_valid(observ%sensor_id)) return
-            if (.not. dm_id_valid(observ%target_id)) return
-        end if
-
-        if (.not. dm_id_valid(observ%name)) return
-
-        if (ts_) then
-            if (.not. dm_time_valid(observ%timestamp)) return
-        end if
-
-        if (observ%priority < 0) return
-        if (observ%error < 0) return
-        if (observ%next < 0 .or. observ%next > OBSERV_MAX_NRECEIVERS) return
-        if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
-        if (observ%nrequests < 0 .or. observ%nrequests > OBSERV_MAX_NREQUESTS) return
-
-        do i = 1, observ%nreceivers
-            if (.not. dm_id_valid(observ%receivers(i))) return
-        end do
-
-        do i = 1, observ%nrequests
-            if (.not. dm_observ_valid(observ%requests(i), timestamp=ts_)) return
-        end do
-
-        valid = .true.
-    end function observ_valid_observ
-
-    pure elemental logical function observ_valid_request(request, timestamp) result(valid)
-        !! Returns `.true.` if given observation request is valid.
-        type(request_type), intent(in)           :: request   !! Request type.
-        logical,            intent(in), optional :: timestamp !! Validate timestamp.
-
-        integer :: i
-        logical :: ts_
-
-        valid = .false.
-
-        ts_ = .true.
-        if (present(timestamp)) ts_ = timestamp
-
-        if (ts_) then
-            if (.not. dm_time_valid(request%timestamp)) return
-        end if
-
-        do i = 1, len_trim(request%request)
-            if (.not. dm_ascii_is_printable(request%request(i:i))) return
-        end do
-
-        if (request%delay < 0) return
-        if (request%error < 0) return
-        if (request%retries < 0) return
-        if (request%state < 0) return
-        if (request%timeout < 0) return
-        if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return
-
-        do i = 1, request%nresponses
-            if (.not. dm_id_valid(request%responses(i)%name)) return
-            if (request%responses(i)%error < 0) return
-        end do
-
-        valid = .true.
-    end function observ_valid_request
 
 !   subroutine observ_write_formatted(observ, unit, iotype, vlist, iostat, iomsg)
 !       !! User-defined derived type I/O.

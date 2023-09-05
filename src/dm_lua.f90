@@ -9,6 +9,7 @@ module dm_lua
     use :: dm_job
     use :: dm_observ
     use :: dm_report
+    use :: dm_request
     use :: dm_type
     use :: dm_util
     implicit none (type, external)

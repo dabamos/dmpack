@@ -5,8 +5,8 @@ module dm_report
     use :: dm_id
     use :: dm_log
     use :: dm_node
-    use :: dm_observ
     use :: dm_plot
+    use :: dm_response
     use :: dm_sensor
     use :: dm_target
     use :: dm_time

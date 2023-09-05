@@ -144,6 +144,8 @@ SRC = src/dm_version.f90 \
       src/dm_node.f90 \
       src/dm_sensor.f90 \
       src/dm_target.f90 \
+      src/dm_response.f90 \
+      src/dm_request.f90 \
       src/dm_observ.f90 \
       src/dm_log.f90 \
       src/dm_job.f90 \
@@ -217,6 +219,8 @@ OBJ = dm_version.o \
       dm_node.o \
       dm_sensor.o \
       dm_target.o \
+      dm_response.o \
+      dm_request.o \
       dm_observ.o \
       dm_log.o \
       dm_job.o \
@@ -347,6 +351,8 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_node.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_sensor.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_target.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_response.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_request.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_observ.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_log.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_job.f90

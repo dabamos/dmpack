@@ -7,6 +7,8 @@ module dm_dummy
     use :: dm_log
     use :: dm_node
     use :: dm_observ
+    use :: dm_request
+    use :: dm_response
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
@@ -137,7 +139,7 @@ contains
             response = response_type('dummy-' // dm_itoa(i), 'none', E_NONE, 999.999_r8)
             if (present(name)) response%name = name
             if (present(value)) response%value = value
-            rc = dm_observ_add_response(request, response)
+            rc = dm_request_add(request, response)
         end do
     end subroutine dm_dummy_request
 

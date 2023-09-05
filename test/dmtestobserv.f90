@@ -72,7 +72,7 @@ contains
 
         print *, 'Adding response ...'
         response = response_type('a', 'none', 0, 123.45_r8)
-        rc = dm_observ_add_response(request, response)
+        rc = dm_request_add(request, response)
         if (dm_is_error(rc)) return
 
         print *, 'Adding request ...'
@@ -92,7 +92,7 @@ contains
 
         print *, 'Adding response ...'
         response = response_type('b', 'none', 0, 0.99_r8)
-        rc = dm_observ_add_response(request, response)
+        rc = dm_request_add(request, response)
         if (dm_is_error(rc)) return
 
         print *, 'Adding request ...'

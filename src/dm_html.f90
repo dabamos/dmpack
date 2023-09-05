@@ -12,6 +12,8 @@ module dm_html
     use :: dm_log
     use :: dm_node
     use :: dm_observ
+    use :: dm_request
+    use :: dm_response
     use :: dm_sensor
     use :: dm_system
     use :: dm_target
