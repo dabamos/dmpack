@@ -12,20 +12,20 @@
 --      node        -   Sensor node id (required).
 --      password    -   HTTP Basic Auth password
 --      port        -   API port (set to 0 for protocol default).
---      tls         -   Enable TLS encryption (0 or 1).
+--      tls         -   Enable TLS encryption.
 --      username    -   HTTP Basic Auth username.
---      verbose     -   Print log messages to standard output (0 or 1).
+--      verbose     -   Print log messages to standard output.
 --
 
 dmbeat = {
     node = "dummy-node",
     host = "localhost",
     port = 0,
-    tls = 1,
+    tls = false,
     username = "dummy-node",
     password = "secret",
     count = 1,
     interval = 3 * 60,
     logger = "",
-    verbose = 1
+    verbose = true
 }

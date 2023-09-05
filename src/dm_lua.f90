@@ -417,11 +417,16 @@ contains
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Table field name.
         logical,              intent(inout) :: value !! Table field value.
-        integer                             :: v
 
-        value = .false.
-        rc = dm_lua_field(lua, name, v)
-        if (rc == E_NONE) value = (v > 0)
+        rc = E_EMPTY
+        if (lua_getfield(lua%ptr, -1, name) > 0) then
+            rc = E_TYPE
+            if (lua_isboolean(lua%ptr, -1) == 1) then
+                value = lua_toboolean(lua%ptr, -1)
+                rc = E_NONE
+            end if
+        end if
+        call lua_pop(lua%ptr, 1)
     end function lua_field_l
 
     integer function lua_field_r8(lua, name, value) result(rc)

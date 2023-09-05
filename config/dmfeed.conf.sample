@@ -18,7 +18,7 @@
 --      subtitle    -   Subtitle of the feed (optional).
 --      title       -   Title of the feed (optional).
 --      url         -   URL to the feed (optional).
---      xslt        -   Absolute or relative path to XSLT style sheet (optional).
+--      xsl         -   Absolute or relative path to XSLT style sheet (optional).
 --
 
 dmfeed = {

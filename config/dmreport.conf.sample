@@ -27,7 +27,7 @@ dmreport = {
     subtitle = "Project",
     meta = "Report example.",
     plots = {
-        disabled = 0,                           -- Disable plots.
+        disabled = false,                       -- Disable plots.
         database = "/var/dmpack/observ.sqlite", -- Path to observation database.
         title = "Plots",                        -- Overwrite default heading.
         meta = "Plots example.",                -- Optional description.
@@ -48,7 +48,7 @@ dmreport = {
         }
     },
     logs = {
-        disabled = 0,                           -- Disable logs.
+        disabled = false,                       -- Disable logs.
         database = "/var/dmpack/log.sqlite",    -- Path to log database.
         minlevel = 3,                           -- Minimum log level (default: 3).
         maxlevel = 5,                           -- Maximum log level (default: 5).

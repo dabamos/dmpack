@@ -7,12 +7,12 @@
 -- Settings:
 --
 --      format    -   Output format: `block`, `csv`, `jsonl`, `nml` (required).
---      forward   -   Forward observations to the next specified receiver (default: 0).
+--      forward   -   Forward observations to the next specified receiver (disabled by default).
 --      output    -   Path of output file (optional).
---      replace   -   Replace output file instead of appending data (default: 0).
+--      replace   -   Replace output file instead of appending data (disabled by default).
 --      response  -   Name of response in received observation (required for format `block`).
 --      type      -   Data type to receive (`log`, `observ`).
---      verbose   -   Print logs to standard output (0 or 1, optional).
+--      verbose   -   Print logs to standard output.
 --
 
 dmrecv = {
@@ -20,7 +20,7 @@ dmrecv = {
     output = "/tmp/observs.csv",
     type = "observ",
     response = "dummy-1",
-    forward = 0,
-    replace = 0,
-    verbose = 1
+    forward = false,
+    replace = false,
+    verbose = true
 }

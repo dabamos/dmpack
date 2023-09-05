@@ -16,7 +16,7 @@
 --      node        -   Node id.
 --      output      -   Path of output file, or `-` for stdout (optional).
 --      sensor      -   Sensor id.
---      verbose     -   Prints logs to stdout (0 or 1).
+--      verbose     -   Prints logs to stdout.
 --
 
 --
@@ -66,16 +66,16 @@ dmpipe = {
     format = "none",
     jobs = {
         {
-            delay = 2 * 1000,
-            disabled = 0,
-            onetime = 1
+            disabled = false,
+            onetime = true,
+            delay = 2 * 1000
         },
         {
-            delay = 1 * 1000,
-            disabled = 0,
-            onetime = 0,
-            observation = observ
+            disabled = false,
+            onetime = false,
+            observation = observ,
+            delay = 1 * 1000
         }
     },
-    verbose = 1
+    verbose = true
 }

@@ -9,12 +9,12 @@
 --      input     -   Path to input file in Fortran 90 Namelist format.
 --      receiver  -   Name of the process to send the data to.
 --      type      -   Data type (`log`, `observ`).
---      verbose   -   Print logs to standard output (0 or 1, optional).
+--      verbose   -   Print logs to standard output.
 --
 
 dmsend = {
     input = "observ.nml",
     type = "observ",
     receiver = "dmrecv",
-    verbose = 1
+    verbose = true
 }

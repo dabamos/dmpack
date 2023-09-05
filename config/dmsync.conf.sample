@@ -5,7 +5,7 @@
 --
 -- Settings:
 --
---      create      -   Create sync tables in database if they do not exist (0, 1).
+--      create      -   Create sync tables in database if they do not exist.
 --      database    -   Path to SQLite database.
 --      host        -   IP or FQDN of HTTP-RPC API server.
 --      interval    -   Synchronisation interval in seconds (optional).
@@ -13,10 +13,10 @@
 --      node        -   Node id, required for types `sensor`, `observ`.
 --      password    -   HTTP Basic Auth password (optional).
 --      port        -   Port the HTTP-RPC API server is listening to (default: 0, automatic).
---      tls         -   Enable TLS encryption (0 or 1, optional).
+--      tls         -   Enable TLS encryption.
 --      type        -   Database type (`log`, `node`, `observ`, `sensor`, or `target`).
 --      user        -   HTTP Basic Auth user name (optional).
---      verbose     -   Print logs to standard output (0 or 1, optional).
+--      verbose     -   Print logs to standard output.
 --      wait        -   Name of semaphore to wait for, e.g., `dmdb` or `dmlogger` (optional).
 --
 
@@ -26,12 +26,12 @@ dmsync = {
     database = "/var/dmpack/observ.sqlite",
     host = "localhost",
     port = 0,
-    tls = 0,
+    tls = false,
     username = "dummy-node",
     password = "secret",
     interval = 0,
     logger = "",
-    create = 0,
-    verbose = 1,
+    create = false,
+    verbose = true,
     wait = ""
 }

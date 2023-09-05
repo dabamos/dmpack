@@ -16,7 +16,7 @@
 --      node        -   Node id.
 --      output      -   Path of output file, or `-` for stdout (optional).
 --      sensor      -   Sensor id.
---      verbose     -   Prints logs to stdout (0 or 1).
+--      verbose     -   Prints logs to stdout.
 --
 
 --
@@ -57,16 +57,16 @@ dmfs = {
     format = "none",
     jobs = {
         {
-            disabled = 0,
-            onetime = 1,
+            disabled = false,
+            onetime = true,
             delay = 1000
         },
         {
-            disabled = 0,
-            onetime = 0,
+            disabled = false,
+            onetime = false,
             observation = observs[1],
             delay = 10 * 1000
         }
     },
-    verbose = 1
+    verbose = true
 }

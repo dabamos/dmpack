@@ -6,16 +6,16 @@
 -- Settings:
 --
 --      database    -   Path to DMPACK log database.
---      ipc         -   Use POSIX semaphore for process synchronisation (0 or 1).
+--      ipc         -   Use POSIX semaphore for process synchronisation.
 --      minlevel    -   Minimum level for a log to be stored in the database (0 to 5).
 --      node        -   Name of the sensor node.
---      verbose     -   Print received logs to stdout (0 or 1).
+--      verbose     -   Print received logs to stdout.
 --
 
 dmlogger = {
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
     minlevel = 2,
-    ipc = 0,
-    verbose = 1
+    ipc = false,
+    verbose = true
 }

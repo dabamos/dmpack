@@ -6,16 +6,16 @@
 -- Settings:
 --
 --      database    -   Path to DMPACK log database.
---      ipc         -   Use POSIX semaphore for process synchronisation (0 or 1).
+--      ipc         -   Use POSIX semaphore for process synchronisation.
 --      logger      -   Name of logger instance (implies log forwarding).
 --      node        -   Node id.
---      verbose     -   Prints received logs to standard output (0 or 1).
+--      verbose     -   Prints received logs to standard output.
 --
 
 dmdb = {
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
-    ipc = 0,
+    ipc = false,
     logger = "",
-    verbose = 1
+    verbose = true
 }

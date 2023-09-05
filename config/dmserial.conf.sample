@@ -17,19 +17,19 @@
 --
 --      baudrate    -   Baud rate (4800, 9600, 19200, 115200, ...).
 --      bytesize    -   Byte size (5, 6, 7, 8)
---      dtr         -   DTR on/off (0, 1).
+--      dtr         -   DTR on/off.
 --      format      -   Output format, either `csv` or `jsonl`.
 --      jobs        -   List of jobs to perform.
 --      logger      -   Name of logger instance (implies log forwarding).
 --      node        -   Node id.
 --      output      -   Path of output file, or `-` for stdout (optional).
 --      parity      -   Parity (`none`, `even`, `odd`).
---      rts         -   RTS on/off (0, 1).
+--      rts         -   RTS on/off.
 --      sensor      -   Sensor id.
 --      stopbits    -   Number of stop bits (1 or 2).
 --      timeout     -   Read timeout in seconds.
 --      tty         -   Path of TTY/PTY device (for example, `/dev/ttyU0`).
---      verbose     -   Prints logs to stdout (0 or 1).
+--      verbose     -   Prints logs to stdout.
 --
 
 --
@@ -95,15 +95,15 @@ dmserial = {
     parity = "none",
     stopbits = 2,
     timeout = 5,
-    dtr = 1,
-    rts = 1,
+    dtr = true,
+    rts = true,
     jobs = {
         {
             --
             -- Stop "Meter Mode".
             --
-            disabled = 0,
-            onetime = 1,
+            disabled = false,
+            onetime = true,
             observation = observs[1],
             delay = 2000
         },
@@ -111,11 +111,11 @@ dmserial = {
             --
             -- Measure values, wait 5 seconds, repeat.
             --
-            disabled = 0,
-            onetime = 0,
+            disabled = false,
+            onetime = false,
             observation = observs[2],
             delay = 5 * 1000
         }
     },
-    verbose = 1
+    verbose = true
 }

@@ -774,7 +774,7 @@ use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
 If an XSLT style sheet is given, web browsers may be able to display the Atom
-feed in HTML format. Set the option to the (relative) path of the public XSLT on
+feed in HTML format. Set the option to the (relative) path of the public XSL on
 the web server. An example style sheet `feed.xsl` is located in
 `/usr/local/share/dmpack/`.
 
@@ -823,7 +823,7 @@ include a link to the XSLT style sheet `feed.xsl` in the same directory:
 
 ....
 $ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
-  --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xslt feed.xsl
+  --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xsl feed.xsl
 ....
 
 Additionally, we can translate feed and style sheet into HTML document
@@ -951,12 +951,12 @@ dmfs = {
   sensor = "sensor-1",          -- Sensor id (required).
   output = "",                  -- Path to output file or `-` for stdout (optional).
   format = "none",              -- Output format (`csv` or `jsonl`).
-  verbose = 0,                  -- Print messages to standard output (optional).
+  verbose = true,               -- Print messages to standard output (optional).
   jobs = {                      -- List of jobs to perform.
     {
       delay = 10 * 1000,        -- Delay in mseconds to wait afterwards (optional).
-      disabled = 0,             -- Set to 1 to ignore job (optional).
-      onetime = 0,              -- Set to 1 to run job only once (optional).
+      disabled = false,         -- Set to 1 to ignore job (optional).
+      onetime = false,          -- Set to 1 to run job only once (optional).
       observation = {           -- Observation to execute (required).
         name = "observ-1",      -- Observation name (required).
         target_id = "target-1", -- Target id (required).
@@ -1458,12 +1458,12 @@ dmpipe = {
   sensor = "dummy-sensor",          -- Sensor id (required).
   output = "",                      -- Path to output file or `-` for stdout (optional).
   format = "none",                  -- Output format (`csv` or `jsonl`).
-  verbose = 0,                      -- Print messages to standard output (optional).
+  verbose = true,                   -- Print messages to standard output (optional).
   jobs = {                          -- Jobs to perform.
     {
       delay = 60 * 1000,            -- Delay to wait afterwards in mseconds (optional).
-      disabled = 0,                 -- Set to 1 to ignore job (optional).
-      onetime = 0,                  -- Set to 1 to run job only once (optional).
+      disabled = false,             -- Set to true to ignore job (optional).
+      onetime = false,              -- Set to true to run job only once (optional).
       observation = {               -- Observation to execute (optional).
         name = "dummy-observ",      -- Observation name (required).
         target_id = "dummy-target", -- Target id (required).
@@ -1640,7 +1640,7 @@ dmreport = {
   subtitle = "Project",
   meta = "",
   plots = {
-    disabled = 0,                -- Disable plots.
+    disabled = false,            -- Disable plots.
     database = "observ.sqlite",  -- Path to observation database.
     title = "Plots",             -- Overwrite default heading.
     meta = "",                   -- Optional description.
@@ -1661,7 +1661,7 @@ dmreport = {
     }
   },
   logs = {
-    disabled = 0,                -- Disable logs.
+    disabled = false,            -- Disable logs.
     database = "log.sqlite",     -- Path to log database.
     minlevel = 3,                -- Minimum log level (default: 3).
     maxlevel = 5,                -- Maximum log level (default: 5).
@@ -1680,7 +1680,7 @@ $ dmreport --name dmreport --config dmreport.conf --output report.html
 The command-line arguments overwrite the settings of the configuration file.
 
 In order to create monthly reports, we may customise the shell script
-`/usr/local/etc/share/dmpack/mkreport.sh` to determine to timestamps of the last
+`/usr/local/share/dmpack/mkreport.sh` to determine to timestamps of the last
 and the current month, which will then be passed to *dmreport*. Modify the
 script `mkreport.sh` to your set-up:
 
