@@ -271,7 +271,7 @@ contains
         type(rpc_request_type)       :: request
         type(rpc_response_type)      :: response
         type(sync_type), allocatable :: syncs(:)
-        type(timer_type)             :: timer
+        type(timer_type)             :: interval_timer, sync_timer
 
         type(log_type)    :: log
         type(observ_type) :: observ
@@ -309,9 +309,12 @@ contains
         end if
 
         sync_loop: do
+            ! Start synchronisation timer.
+            call dm_timer_start(sync_timer)
+
             if (.not. app%ipc) then
-                ! Start timer.
-                call dm_timer_start(timer)
+                ! Start interval timer.
+                call dm_timer_start(interval_timer)
             else
                 ! Wait for semamphore.
                 call dm_log(LOG_DEBUG, 'waiting for signal from ' // app%wait)
@@ -400,7 +403,8 @@ contains
                                     response%error_message, error=E_RPC_CONNECT)
 
                     case (HTTP_CREATED)
-                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id)
+                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id // ' in ' // &
+                                    dm_itoa(int(dm_timer_stop(sync_timer))) // ' seconds')
 
                     case (HTTP_CONFLICT)
                         call dm_log(LOG_DEBUG, name // ' ' // trim(id) // ' exists', error=E_EXIST)
@@ -461,7 +465,7 @@ contains
             if (.not. app%ipc) then
                 ! Sleep for the given interval in seconds.
                 if (app%interval <= 0) exit sync_loop
-                delay = max(1, nint(app%interval - dm_timer_stop(timer)))
+                delay = max(1, nint(app%interval - dm_timer_stop(interval_timer)))
                 call dm_log(LOG_DEBUG, 'next sync in ' // dm_itoa(delay) // ' seconds')
                 call dm_sleep(delay)
             end if

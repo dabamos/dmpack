@@ -58,11 +58,12 @@ DMPACK covers the following tasks:
 * data synchronisation between client and server
 * distributed logging
 * heartbeats
-* Lua scripting
 * server-side web applications
 * time series plotting
+* Lua scripting
+* HTML5 reports
+* Atom XML web feeds
 * MQTT connectivity
-* HTML5 report and Atom feed generation
 * e-mail
 
 ## Requirements
