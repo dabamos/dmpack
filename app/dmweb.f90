@@ -2045,13 +2045,14 @@ contains
         call dm_cgi_header(MIME_HTML, HTTP_OK)
 
         if (present(title)) then
-            call dm_cgi_out(dm_html_header(title      = APP_TITLE // ' | ' // title, &
+            call dm_cgi_out(dm_html_header(title      = title // ' | ' // APP_TITLE, &
+                                           brand      = APP_TITLE, &
                                            navigation = navigation, &
                                            style      = APP_CSS_PATH))
             return
         end if
 
-        call dm_cgi_out(dm_html_header(title=APP_TITLE, navigation=navigation, style=APP_CSS_PATH))
+        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, navigation=navigation, style=APP_CSS_PATH))
     end subroutine html_header
 
     subroutine set_routes(router, routes, stat)

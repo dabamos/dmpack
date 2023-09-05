@@ -515,7 +515,7 @@ contains
         html = H_MAIN_END // H_BODY_END // H_HTML_END
     end function dm_html_footer
 
-    function dm_html_header(title, subtitle, style, internal_style, navigation) result(html)
+    function dm_html_header(title, subtitle, style, internal_style, brand, navigation) result(html)
         !! Returns HTML header with DOCTYPE and optional CSS. A link to the
         !! style sheet file and internal CSS can be added. The page title
         !! matches the first heading. No heading will be added if a navigation
@@ -524,6 +524,7 @@ contains
         character(len=*),  intent(in),    optional :: subtitle       !! Subtitle.
         character(len=*),  intent(in),    optional :: style          !! Path to CSS file.
         character(len=*),  intent(in),    optional :: internal_style !! Additional CSS (inline).
+        character(len=*),  intent(in),    optional :: brand          !! Brand title.
         type(anchor_type), intent(inout), optional :: navigation(:)  !! Navigation anchors.
         character(len=:), allocatable              :: html           !! HTML.
 
@@ -550,24 +551,27 @@ contains
 
         if (present(navigation)) then
             ! Brand.
-            html = html // H_NAV // H_UL // H_LI // &
-                   dm_html_encode(title) // H_LI_END
+            html = html // H_NAV // H_UL
+
+            if (present(brand)) then
+                html = html // H_LI // dm_html_encode(brand) // H_LI_END
+            end if
 
             ! Navigation elements.
             do i = 1, size(navigation)
                 html = html // H_LI // dm_html_anchor(navigation(i)) // H_LI_END
             end do
 
-            html = html // H_UL_END // H_NAV_END // H_HEADER_END
+            html = html // H_UL_END // H_NAV_END
         else
             if (has_subtitle) then
                 html = html // dm_html_heading(1, title, subtitle)
             else
                 html = html // dm_html_heading(1, title)
             end if
-
-            html = html // H_HEADER_END
         end if
+
+        html = html // H_HEADER_END
     end function dm_html_header
 
     pure function dm_html_heading(level, str, small) result(html)
