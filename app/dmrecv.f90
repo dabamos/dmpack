@@ -89,7 +89,7 @@ contains
 
         if (.not. dm_id_valid(observ%receivers(next))) then
             call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observation ' // observ%name, observ=observ, error=E_INVALID)
+                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
             rc = E_INVALID
             return
         end if
@@ -113,7 +113,7 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
+                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
                             ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
@@ -286,7 +286,7 @@ contains
                 end if
             else if (app%type == TYPE_OBSERV) then
                 if (.not. dm_observ_valid(observ)) then
-                    call dm_log(LOG_ERROR, 'invalid observation received', error=E_INVALID)
+                    call dm_log(LOG_ERROR, 'invalid observ received', error=E_INVALID)
                     cycle ipc_loop
                 end if
             end if
@@ -296,7 +296,7 @@ contains
                 if (app%type == TYPE_LOG) then
                     call dm_log(LOG_DEBUG, 'received log ' // trim(log%id))
                 else if (app%type == TYPE_OBSERV) then
-                    call dm_log(LOG_DEBUG, 'received observation ' // trim(observ%id))
+                    call dm_log(LOG_DEBUG, 'received observ ' // trim(observ%id))
                 end if
 
                 if (app%replace) then
@@ -353,7 +353,7 @@ contains
                 if (app%type == TYPE_LOG) then
                     call dm_log(LOG_DEBUG, 'log ' // trim(log%id) // ' written to ' // app%output)
                 else if (app%type == TYPE_OBSERV) then
-                    call dm_log(LOG_DEBUG, 'observation ' // trim(observ%id) // ' written to ' // app%output)
+                    call dm_log(LOG_DEBUG, 'observ ' // trim(observ%id) // ' written to ' // app%output)
                 end if
             end if
 
@@ -362,7 +362,7 @@ contains
                 if (app%type == TYPE_LOG) then
                     call dm_log(LOG_ERROR, 'failed to write log ' // log%id, error=rc)
                 else if (app%type == TYPE_OBSERV) then
-                    call dm_log(LOG_ERROR, 'failed to write observation ' // observ%id, error=rc)
+                    call dm_log(LOG_ERROR, 'failed to write observ ' // observ%id, error=rc)
                 end if
             end if
 
@@ -371,7 +371,7 @@ contains
                 rc = forward_observ(observ)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to forward observation ' // observ%id, error=rc)
+                    call dm_log(LOG_ERROR, 'failed to forward observ ' // observ%id, error=rc)
                 end if
             end if
         end do ipc_loop

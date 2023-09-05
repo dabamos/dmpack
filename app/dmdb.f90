@@ -182,14 +182,14 @@ contains
 
         ! Validate receiver.
         if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observation ' // observ%name, observ=observ)
+            call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
             rc = E_NONE
             return
         end if
 
         if (.not. dm_id_valid(observ%receivers(next))) then
             call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observation ' // observ%name, observ=observ, error=E_INVALID)
+                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
             rc = E_INVALID
             return
         end if
@@ -213,12 +213,12 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
+                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
                             ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to mqueue /' // &
+            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -273,12 +273,12 @@ contains
             end if
 
             if (.not. dm_observ_valid(observ)) then
-                call dm_log(LOG_ERROR, 'observation ' // trim(observ%id) // ' is invalid', error=E_INVALID)
+                call dm_log(LOG_ERROR, 'invalid observ ' // trim(observ%name), error=E_INVALID)
                 cycle ipc_loop
             end if
 
             if (dm_db_exists_observ(db, observ%id)) then
-                call dm_log(LOG_WARNING, 'observation ' // trim(observ%id) // ' exists', error=E_EXIST)
+                call dm_log(LOG_WARNING, 'observ ' // trim(observ%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -296,11 +296,11 @@ contains
                         cycle db_loop
                     end if
 
-                    call dm_log(LOG_ERROR, 'failed to insert observation ' // observ%id, error=rc)
+                    call dm_log(LOG_ERROR, 'failed to insert observ ' // observ%name, error=rc)
                     exit db_loop
                 end if
 
-                call dm_log(LOG_DEBUG, 'inserted observation ' // observ%id)
+                call dm_log(LOG_DEBUG, 'inserted observ ' // observ%name)
 
                 if (app%ipc) then
                     ! Post semaphore.
@@ -318,7 +318,10 @@ contains
                 ! Optimise database.
                 call dm_log(LOG_DEBUG, 'optimizing database')
                 rc = dm_db_optimize(db)
-                if (dm_is_error(rc)) call dm_log(LOG_ERROR, 'failed to optimize database', error=rc)
+
+                if (dm_is_error(rc)) then
+                    call dm_log(LOG_ERROR, 'failed to optimize database', error=rc)
+                end if
             end if
 
             ! Increase optimise step counter.

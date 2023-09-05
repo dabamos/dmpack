@@ -184,14 +184,14 @@ contains
 
         ! Validate receiver.
         if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observation ' // observ%name, observ=observ)
+            call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
             rc = E_NONE
             return
         end if
 
         if (.not. dm_id_valid(observ%receivers(next))) then
-            call dm_log(LOG_ERROR, 'invalid receiver ' // observ%receivers(next) // &
-                        ' in observation ' // observ%name, observ=observ, error=E_INVALID)
+            call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
+                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
             rc = E_INVALID
             return
         end if
@@ -215,12 +215,12 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
+                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
                             ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to mqueue /' // &
+            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -275,12 +275,12 @@ contains
 
             ! Validate observation.
             if (.not. dm_observ_valid(obs_in)) then
-                call dm_log(LOG_ERROR, 'observation ' // trim(obs_in%id) // ' is invalid', &
+                call dm_log(LOG_ERROR, 'invalid observ ' // trim(obs_in%name), &
                             observ=obs_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call dm_log(LOG_DEBUG, 'passing observation ' // trim(obs_in%name) // &
+            call dm_log(LOG_DEBUG, 'passing observ ' // trim(obs_in%name) // &
                         ' to Lua function ' // trim(app%proc) // '()', observ=obs_in)
 
             ! Pass the observation to the Lua function in read the returned
@@ -305,7 +305,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call dm_log(LOG_ERROR, 'failed to write observation to Lua stack', observ=obs_in, error=rc)
+                    call dm_log(LOG_ERROR, 'failed to write observ to Lua stack', observ=obs_in, error=rc)
                     exit lua_block
                 end if
 
@@ -324,7 +324,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call dm_log(LOG_ERROR, 'failed to read observation from Lua stack', &
+                    call dm_log(LOG_ERROR, 'failed to read observ from Lua stack', &
                                 error=rc, observ=obs_in)
                     exit lua_block
                 end if
@@ -332,7 +332,7 @@ contains
                 ! Validate returned observation.
                 if (.not. dm_observ_valid(obs_out)) then
                     rc = E_INVALID
-                    call dm_log(LOG_ERROR, 'invalid observation returned from Lua function ' // &
+                    call dm_log(LOG_ERROR, 'invalid observ returned from Lua function ' // &
                                 trim(app%proc) // '()', error=rc, observ=obs_in)
                     exit lua_block
                 end if
@@ -342,7 +342,7 @@ contains
             if (dm_is_error(rc)) then
                 obs_out = obs_in
             else
-                call dm_log(LOG_DEBUG, 'finished observation ' // obs_out%name, observ=obs_out)
+                call dm_log(LOG_DEBUG, 'finished observ ' // obs_out%name, observ=obs_out)
             end if
 
             rc = send_observ(obs_out)

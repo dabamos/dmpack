@@ -279,6 +279,8 @@ contains
         type(sensor_type) :: sensor
         type(target_type) :: target
 
+        call dm_log(LOG_INFO, 'starting ' // app%name)
+
         ! Name of database type.
         name = dm_sync_name(app%type)
 
@@ -344,7 +346,12 @@ contains
                 exit sync_loop
             end if
 
-            call dm_log(LOG_DEBUG, 'found ' // dm_itoa(size(syncs)) // ' ' // name // 's to sync')
+            if (size(syncs) > 0) then
+                call dm_log(LOG_DEBUG, 'syncing ' // dm_itoa(size(syncs)) // ' ' // name // &
+                            's from database ' // trim(app%database) // ' with host ' // app%host)
+            else
+                call dm_log(LOG_DEBUG, 'no ' // name // 's to sync found')
+            end if
 
             ! Send each of the data via RPC to the host.
             do i = 1, size(syncs)
@@ -365,9 +372,6 @@ contains
                     call dm_log(LOG_ERROR, 'failed to select ' // name // ' ' // syncs(i)%id, error=rc)
                     cycle
                 end if
-
-                call dm_log(LOG_DEBUG, 'syncing ' // name // 's from database ' // &
-                            trim(app%database) // ' with host ' // app%host)
 
                 ! Start synchronisation timer.
                 call dm_timer_start(rpc_timer)
@@ -403,7 +407,7 @@ contains
                                     response%error_message, error=E_RPC_CONNECT)
 
                     case (HTTP_CREATED)
-                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id // ' in ' // &
+                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // trim(id) // ' in ' // &
                                     dm_itoa(int(dm_timer_stop(rpc_timer))) // ' seconds')
 
                     case (HTTP_CONFLICT)

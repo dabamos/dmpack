@@ -69,14 +69,14 @@ contains
 
         ! Validate receiver.
         if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observation ' // observ%name, observ=observ)
+            call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
             rc = E_NONE
             return
         end if
 
         if (.not. dm_id_valid(observ%receivers(next))) then
             call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observation ' // observ%name, observ=observ, error=E_INVALID)
+                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
             rc = E_INVALID
             return
         end if
@@ -100,12 +100,12 @@ contains
             rc = dm_mqueue_write(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observation ' // trim(observ%name) // &
+                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
                             ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            call dm_log(LOG_DEBUG, 'sent observation ' // trim(observ%name) // ' to mqueue /' // &
+            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
                         observ%receivers(next), observ=observ)
         end block mqueue_block
 
@@ -136,7 +136,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to output observation', error=rc)
+                    call dm_log(LOG_ERROR, 'failed to output observ', error=rc)
                     return
                 end if
 
@@ -154,7 +154,7 @@ contains
                 rc = write_observ(observ, unit=fu, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to write observation to file ' // &
+                    call dm_log(LOG_ERROR, 'failed to write observ to file ' // &
                                 app%output, error=rc)
                 end if
 
@@ -327,7 +327,7 @@ contains
                 ! Get pointer to job observation.
                 observ => job%observ
 
-                call dm_log(LOG_DEBUG, 'starting observation ' // observ%name, observ=observ)
+                call dm_log(LOG_DEBUG, 'starting observ ' // observ%name, observ=observ)
 
                 ! Initialise observation.
                 observ%id        = dm_uuid4()
@@ -336,7 +336,7 @@ contains
                 observ%timestamp = dm_time_now()
 
                 if (observ%nrequests == 0) then
-                    call dm_log(LOG_DEBUG, 'no requests in observation ' // observ%name, observ=observ)
+                    call dm_log(LOG_DEBUG, 'no requests in observ ' // observ%name, observ=observ)
                     exit observ_if
                 end if
 
@@ -400,14 +400,14 @@ contains
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
-                    call dm_log(LOG_DEBUG, 'next request of observation ' // trim(observ%name) // &
+                    call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
                                 ' in ' // dm_itoa(delay / 1000) // ' sec')
                     if (delay <= 0) cycle req_loop
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
                 ! Forward observation.
-                call dm_log(LOG_DEBUG, 'finished observation ' // observ%name, observ=observ)
+                call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
                 rc = forward_observ(observ)
 
                 ! Output observation.
