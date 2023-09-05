@@ -51,9 +51,21 @@ program dmbeat
                         source  = app%name, &
                         ipc     = app%ipc, &
                         verbose = app%verbose)
+
+    ! Initialise RPC backend.
+    rc = dm_rpc_init()
+
+    if (dm_is_error(rc)) then
+        call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
+        call dm_stop(1)
+    end if
+
     ! Run main loop.
     call dm_signal_register(signal_handler)
     call run(app)
+
+    call dm_rpc_destroy()
+    call dm_stop(0)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -177,14 +189,6 @@ contains
 
         call dm_log(LOG_INFO, 'starting ' // app%name)
 
-        ! Initialise RPC backend.
-        rc = dm_rpc_init()
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
-            return
-        end if
-
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &
                          port     = app%port,&
@@ -196,8 +200,7 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
-            call dm_log(LOG_DEBUG, 'emitting beat for node ' // trim(app%node) // &
-                        ' to host ' // app%host)
+            call dm_log(LOG_DEBUG, 'emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
@@ -224,16 +227,24 @@ contains
 
             last_error = rc
 
-            code_block: select case (response%code)
+            code_block: &
+            select case (response%code)
                 case (0)
-                    call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // &
-                                ' failed: ' // response%error_message, error=rc)
+                    call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // ' failed: ' // &
+                                response%error_message, error=rc)
+
                 case (HTTP_CREATED)
                     call dm_log(LOG_DEBUG, 'beat accepted by host ' // app%host)
+
                 case (HTTP_UNAUTHORIZED)
                     call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+
                 case (HTTP_INTERNAL_SERVER_ERROR)
-                    call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=rc)
+                    call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=E_RPC_SERVER)
+
+                case (HTTP_BAD_GATEWAY)
+                    call dm_log(LOG_ERROR, 'bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+
                 case default
                     ! Log response from api message if available.
                     if (response%content_type == MIME_TEXT) then
@@ -245,8 +256,8 @@ contains
                         end if
                     end if
 
-                    call dm_log(LOG_WARNING, 'unknown connection error (HTTP ' // &
-                                dm_itoa(response%code) // ')', error=rc)
+                    call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
+                                dm_itoa(response%code) // ')', error=E_RPC_API)
             end select code_block
 
             if (app%count > 0) then
@@ -260,7 +271,6 @@ contains
         end do emit_loop
 
         call dm_log(LOG_DEBUG, 'finished transmission')
-        call dm_rpc_destroy()
     end subroutine run
 
     subroutine signal_handler(signum) bind(c)
@@ -272,6 +282,7 @@ contains
         select case (signum)
             case default
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_rpc_destroy()
                 call dm_stop(0)
         end select
     end subroutine signal_handler

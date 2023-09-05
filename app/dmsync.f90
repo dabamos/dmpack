@@ -48,8 +48,8 @@ program dmsync
 
     integer        :: rc  ! Return code.
     type(app_type) :: app ! App configuration.
-    type(db_type)  :: db  ! Database handle.
-    type(sem_type) :: sem ! POSIX semaphore handle.
+    type(db_type)  :: db  ! Database type.
+    type(sem_type) :: sem ! POSIX semaphore type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -97,12 +97,19 @@ program dmsync
             end if
         end if
 
+        ! Initialise RPC backend.
+        rc = dm_rpc_init()
+
+        if (dm_is_error(rc)) then
+            call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
+            exit init_block
+        end if
+
         call dm_signal_register(signal_handler)
         call run(app, db, sem)
     end block init_block
 
-    if (dm_is_error(rc)) call halt(1)
-    call halt(0)
+    call halt(min(1, rc))
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -236,11 +243,14 @@ contains
 
     subroutine halt(stat)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: stat
-        integer                       :: rc, stat_
+        integer, intent(in), optional :: stat !! Exit status.
+
+        integer :: rc, stat_
 
         stat_ = 0
         if (present(stat)) stat_ = stat
+
+        call dm_rpc_destroy()
         if (app%ipc) rc = dm_sem_close(sem)
         rc = dm_db_close(db)
         call dm_stop(stat_)
@@ -268,14 +278,6 @@ contains
         type(node_type)   :: node
         type(sensor_type) :: sensor
         type(target_type) :: target
-
-        ! Initialise RPC backend.
-        rc = dm_rpc_init()
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
-            return
-        end if
 
         ! Name of database type.
         name = dm_sync_name(app%type)
@@ -391,18 +393,27 @@ contains
                 end if
 
                 ! Log the HTTP response code.
-                code_block: select case (response%code)
+                code_block: &
+                select case (response%code)
                     case (0)
-                        call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // &
-                                    ' failed: ' // response%error_message, error=rc)
+                        call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // ' failed: ' // &
+                                    response%error_message, error=E_RPC_CONNECT)
+
                     case (HTTP_CREATED)
-                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id, error=E_NONE)
+                        call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // id)
+
                     case (HTTP_CONFLICT)
                         call dm_log(LOG_DEBUG, name // ' ' // trim(id) // ' exists', error=E_EXIST)
+
                     case (HTTP_UNAUTHORIZED)
                         call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+
                     case (HTTP_INTERNAL_SERVER_ERROR)
-                        call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=rc)
+                        call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=E_RPC_SERVER)
+
+                    case (HTTP_BAD_GATEWAY)
+                        call dm_log(LOG_ERROR, 'bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+
                     case default
                         if (response%content_type == MIME_TEXT) then
                             ! Convert response text to API type.
@@ -414,8 +425,8 @@ contains
                             end if
                         end if
 
-                        call dm_log(LOG_WARNING, 'unknown connection error (HTTP ' // &
-                                    dm_itoa(response%code) // ')', error=rc)
+                        call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
+                                    dm_itoa(response%code) // ')', error=E_RPC_API)
                 end select code_block
 
                 ! Update sync data.
@@ -457,7 +468,6 @@ contains
         end do sync_loop
 
         call dm_log(LOG_DEBUG, 'exiting ...')
-        call dm_rpc_destroy()
         if (allocated(syncs)) deallocate (syncs)
     end subroutine run
 
