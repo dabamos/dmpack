@@ -23,7 +23,7 @@
 TESTS="dmtestapi dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp dmtesthash \
 dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue \
 dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex \
-dmtestrouter dmtestrpc dmteststring dmtesttime dmtestunit dmtestuuid"
+dmtestrouter dmtestrpc dmteststring dmtesttime dmtestunit dmtestutil dmtestuuid"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 

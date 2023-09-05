@@ -269,7 +269,7 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
       dmtesthash dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson \
       dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
       dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc dmteststring \
-      dmtesttime dmtesttty dmtestunit dmtestuuid dmtestz
+      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz
 
 #
 # Output directories.
@@ -490,6 +490,9 @@ dmtesttty: test/dmtesttty.f90
 
 dmtestunit: test/dmtestunit.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestunit test/dmtestunit.f90 $(TARGET) $(LDLIBS)
+
+dmtestutil: test/dmtestutil.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestutil test/dmtestutil.f90 $(TARGET) $(LDLIBS)
 
 dmtestuuid: test/dmtestuuid.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid test/dmtestuuid.f90 $(TARGET) $(LDLIBS)
