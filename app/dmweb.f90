@@ -109,6 +109,8 @@ contains
         !!
         !! GET Parameters:
         !!      node_id - Node ID (string).
+        character(len=*), parameter :: TITLE = 'Beat'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -148,8 +150,8 @@ contains
             delta = huge(0_i8)
             rc = dm_time_delta(beat%time_recv, dm_time_now(), delta)
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Beat'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_beat(beat, delta))
             call html_footer()
         end block response_block
@@ -165,6 +167,8 @@ contains
         !!
         !! Methods:
         !!      GET
+        character(len=*), parameter :: TITLE = 'Beats'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -186,8 +190,8 @@ contains
             type(beat_type),  allocatable :: beats(:)
             integer(kind=i8), allocatable :: deltas(:)
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Beats'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
 
             rc = dm_db_select(db, beats, nbeats=n)
 
@@ -218,6 +222,8 @@ contains
         !!
         !! Methods:
         !!      GET
+        character(len=*), parameter :: TITLE = 'Dashboard'
+
         integer(kind=i8), parameter :: NBEATS   = 5
         integer(kind=i8), parameter :: NLOGS    = 5
         integer(kind=i8), parameter :: NOBSERVS = 5
@@ -231,8 +237,8 @@ contains
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
-        call html_header()
-        call dm_cgi_out(dm_html_heading(2, 'Dashboard'))
+        call html_header(TITLE)
+        call dm_cgi_out(dm_html_heading(2, TITLE))
         call dm_cgi_out(dm_html_p('The dashboard lists observations, logs, and ' // &
                                   'heartbeats most recently added to the databases.'))
 
@@ -330,13 +336,15 @@ contains
         !!
         !! Methods:
         !!      GET
+        character(len=*), parameter :: TITLE = 'CGI Environment Variables'
+
         type(cgi_env_type), intent(inout) :: env
 
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
-        call html_header()
-        call dm_cgi_out(dm_html_heading(2, 'CGI Environment Variables'))
+        call html_header(TITLE)
+        call dm_cgi_out(dm_html_heading(2, TITLE))
         call dm_cgi_out(dm_html_cgi_env(env))
         call html_footer()
     end subroutine route_env
@@ -349,13 +357,15 @@ contains
         !!
         !! Methods:
         !!      GET
+        character(len=*), parameter :: TITLE = 'Licence'
+
         type(cgi_env_type), intent(inout) :: env
 
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
-        call html_header()
-        call dm_cgi_out(dm_html_heading(2, 'Licence'))
+        call html_header(TITLE)
+        call dm_cgi_out(dm_html_heading(2, TITLE))
         call dm_cgi_out('<blockquote><p>Copyright &copy; 2023, Philipp Engel</p>')
         call dm_cgi_out('<p>Permission to use, copy, modify, and/or distribute this ' // &
                         'software for any purpose with or without fee is hereby ' // &
@@ -384,6 +394,8 @@ contains
         !!
         !! GET Parameters:
         !!      id - Log ID (UUID4).
+        character(len=*), parameter :: TITLE = 'Log'
+
         type(cgi_env_type), intent(inout) :: env
 
         character(len=LOG_ID_LEN) :: id
@@ -423,8 +435,8 @@ contains
                 exit response_block
             end if
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Log'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_log(log, prefix=APP_BASE_PATH // '/observ?id='))
             call html_footer()
         end block response_block
@@ -450,6 +462,8 @@ contains
         !!      to              -   Time range end (ISO 8601).
         !!      level           -   Log level (integer).
         !!      max_results     -   Maximum number of logs (integer).
+        character(len=*), parameter :: TITLE = 'Logs'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer                     :: rc
@@ -563,8 +577,8 @@ contains
                     exit response_block
                 end if
 
-                call html_header()
-                call dm_cgi_out(dm_html_heading(2, 'Logs'))
+                call html_header(TITLE)
+                call dm_cgi_out(dm_html_heading(2, TITLE))
 
                 if (has_level) then
                     call dm_cgi_out(html_form_logs(nodes, sensors, targets, max_results, &
@@ -589,8 +603,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Logs'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(html_form_logs(nodes, sensors, targets, max_results))
             call html_footer()
         end block response_block
@@ -609,6 +623,8 @@ contains
         !!
         !! GET Parameters:
         !!      id - Node ID (string).
+        character(len=*), parameter :: TITLE = 'Node'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -644,8 +660,8 @@ contains
                 exit response_block
             end if
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Node'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_node(node))
             call html_footer()
         end block response_block
@@ -666,6 +682,8 @@ contains
         !!      id      -   Node ID (string).
         !!      name    -   Node name (string).
         !!      meta    -   Node meta description (string).
+        character(len=*), parameter :: TITLE = 'Nodes'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -725,8 +743,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Nodes'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
 
             rc = dm_db_select(db, nodes)
 
@@ -754,6 +772,8 @@ contains
         !!
         !! GET Parameters:
         !!      id - Observation ID (UUID4).
+        character(len=*), parameter :: TITLE = 'Observation'
+
         type(cgi_env_type), intent(inout) :: env
 
         character(len=OBSERV_ID_LEN) :: id
@@ -808,8 +828,8 @@ contains
 
             rc = dm_db_select_logs_by_observ(db, logs, id, nlogs)
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Observation'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_observ(observ))
             call dm_cgi_out(dm_html_heading(3, 'Logs'))
 
@@ -841,6 +861,8 @@ contains
         !!      from            -   Time range start (ISO 8601).
         !!      to              -   Time range end (ISO 8601).
         !!      max_results     -   Maximum number of points per plot (integer).
+        character(len=*), parameter :: TITLE = 'Observations'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -922,8 +944,8 @@ contains
                 end if
 
                 ! Output table.
-                call html_header()
-                call dm_cgi_out(dm_html_heading(2, 'Observations'))
+                call html_header(TITLE)
+                call dm_cgi_out(dm_html_heading(2, TITLE))
                 call dm_cgi_out(html_form_observs(nodes, sensors, targets, max_results, node_id, &
                                                   sensor_id, target_id, from, to, nresults))
 
@@ -941,8 +963,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Observations'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(html_form_observs(nodes, sensors, targets, MAX_RESULTS))
 
             if (size(nodes) == 0) then
@@ -976,8 +998,9 @@ contains
         !!      from            -   Time range start (ISO 8601).
         !!      to              -   Time range end (ISO 8601).
         !!      max_results     -   Maximum number of data points (integer).
-        integer, parameter :: PLOT_WIDTH  = 1000
-        integer, parameter :: PLOT_HEIGHT = 400
+        character(len=*), parameter :: TITLE       = 'Plots'
+        integer,          parameter :: PLOT_WIDTH  = 1000
+        integer,          parameter :: PLOT_HEIGHT = 400
 
         type(cgi_env_type), intent(inout) :: env
 
@@ -1056,8 +1079,8 @@ contains
                 end if
 
                 ! Output plot.
-                call html_header()
-                call dm_cgi_out(dm_html_heading(2, 'Plots'))
+                call html_header(TITLE)
+                call dm_cgi_out(dm_html_heading(2, TITLE))
                 call dm_cgi_out(html_form_plots(nodes, sensors, targets, max_results, node_id, sensor_id, &
                                                 target_id, response_name, from, to, nresults))
 
@@ -1108,8 +1131,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Plots'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(html_form_plots(nodes, sensors, targets, max_results))
 
             if (size(nodes) == 0) then
@@ -1137,6 +1160,8 @@ contains
         !!
         !! GET Parameters:
         !!      id - Sensor ID (string).
+        character(len=*), parameter :: TITLE = 'Sensor'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1177,8 +1202,8 @@ contains
                 exit response_block
             end if
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Sensor'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_sensor(sensor))
             call html_footer()
         end block response_block
@@ -1194,6 +1219,8 @@ contains
         !!
         !! Methods:
         !!      GET
+        character(len=*), parameter :: TITLE = 'Sensors'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1257,8 +1284,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Sensors'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
 
             rc = dm_db_select(db, sensors)
 
@@ -1291,6 +1318,7 @@ contains
         !! Methods:
         !!      GET
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+        character(len=*), parameter :: TITLE = 'Status'
 
         type(cgi_env_type), intent(inout) :: env
 
@@ -1315,8 +1343,8 @@ contains
         end if
 
         ! Output HTML payload.
-        call html_header()
-        call dm_cgi_out(dm_html_heading(2, 'System Status'))
+        call html_header(TITLE)
+        call dm_cgi_out(dm_html_heading(2, TITLE))
         call dm_cgi_out(H_TABLE // H_TBODY // &
                         H_TR // H_TH // 'DMPACK' // H_TH_END // &
                         H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
@@ -1369,6 +1397,8 @@ contains
         !!
         !! GET Parameters:
         !!      id - Target ID (string).
+        character(len=*), parameter :: TITLE = 'Target'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1409,8 +1439,8 @@ contains
                 exit response_block
             end if
 
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Target'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
             call dm_cgi_out(dm_html_target(target))
             call html_footer()
         end block response_block
@@ -1426,6 +1456,8 @@ contains
         !!
         !! Methods:
         !!      GET, POST
+        character(len=*), parameter :: TITLE = 'Targets'
+
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1485,8 +1517,8 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call html_header()
-            call dm_cgi_out(dm_html_heading(2, 'Targets'))
+            call html_header(TITLE)
+            call dm_cgi_out(dm_html_heading(2, TITLE))
 
             rc = dm_db_select(db, targets)
 
@@ -1943,13 +1975,18 @@ contains
     ! ******************************************************************
     ! UTILITY PROCEDURES.
     ! ******************************************************************
-    subroutine html_error(heading, error, status)
+    subroutine html_error(heading, error, status, title)
         !! Outputs error page (with header and footer).
         character(len=*), intent(in), optional :: heading !! Page heading.
         integer,          intent(in), optional :: error   !! DMPACK error code.
         integer,          intent(in), optional :: status  !! HTTP status code.
+        character(len=*), intent(in), optional :: title   !! Page title.
 
-        call html_header()
+        if (present(title)) then
+            call html_header(title)
+        else
+            call html_header()
+        end if
 
         if (present(status)) then
             call dm_cgi_out(dm_html_heading(2, dm_itoa(status) // ' ' // dm_http_status_string(status)))
@@ -1989,8 +2026,10 @@ contains
                         dm_html_footer())
     end subroutine html_footer
 
-    subroutine html_header()
+    subroutine html_header(title)
         !! Outputs HTTP header, HTML header, and navigation.
+        character(len=*), intent(in), optional :: title
+
         type(anchor_type) :: navigation(8) ! HTML navigation elements.
 
         ! HTML anchors for top navigation.
@@ -2004,6 +2043,14 @@ contains
                        anchor_type(APP_BASE_PATH // '/beats',   'Beats') ]
 
         call dm_cgi_header(MIME_HTML, HTTP_OK)
+
+        if (present(title)) then
+            call dm_cgi_out(dm_html_header(title      = APP_TITLE // ' | ' // title, &
+                                           navigation = navigation, &
+                                           style      = APP_CSS_PATH))
+            return
+        end if
+
         call dm_cgi_out(dm_html_header(title=APP_TITLE, navigation=navigation, style=APP_CSS_PATH))
     end subroutine html_header
 
