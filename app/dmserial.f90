@@ -543,8 +543,14 @@ contains
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
-                    call dm_log(LOG_DEBUG, 'next request in ' // dm_itoa(delay / 1000) // ' sec')
-                    if (delay <= 0) cycle req_loop
+
+                    if (delay > 0) then
+                        call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
+                                    ' in ' // dm_itoa(delay / 1000) // ' sec')
+                    else
+                        cycle req_loop
+                    end if
+
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
@@ -557,8 +563,13 @@ contains
 
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
-            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
-            if (delay <= 0) cycle job_loop
+
+            if (delay > 0) then
+                call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
+            else
+                cycle job_loop
+            end if
+
             call dm_usleep(delay * 1000)
         end do job_loop
 
