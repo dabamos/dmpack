@@ -36,7 +36,7 @@ module dm_sync
     end type sync_type
 
     interface operator (==)
-        !! Returns whether two sync types are equal.
+        !! Returns whether sync types are equal.
         module procedure :: dm_sync_equals
     end interface
 

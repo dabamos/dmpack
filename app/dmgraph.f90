@@ -61,7 +61,7 @@ program dmgraph
 
         ! Create plot.
         path = dm_path_parsed(app%output)
-        rc = create_plot(dps, app%terminal, path, app%background, app%foreground, &
+        rc = create_graph(dps, app%terminal, path, app%background, app%foreground, &
                          app%font, app%title, app%width, app%height, 'Time', app%response)
         call dm_error_out(rc)
     end block plot_block
@@ -69,8 +69,8 @@ program dmgraph
     if (dm_is_error(rc)) call dm_stop(1)
     call dm_stop(0)
 contains
-    integer function create_plot(dps, terminal, output, background, foreground, &
-                                 font, title, width, height, xlabel, ylabel) result(rc)
+    integer function create_graph(dps, terminal, output, background, foreground, &
+                                  font, title, width, height, xlabel, ylabel) result(rc)
         !! Writes plot to file or shows X11 window.
         type(dp_type),    intent(inout)         :: dps(:)     !! Data points array.
         integer,          intent(in)            :: terminal   !! Plot terminal.
@@ -128,7 +128,7 @@ contains
         end if
 
         rc = dm_plot_lines(plot, dps)
-    end function create_plot
+    end function create_graph
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.

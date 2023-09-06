@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_error
     !! Error codes, error messages, and utility routines.
-    use :: unix, only: c_exit
     use :: dm_ascii
     use :: dm_type
     implicit none (type, external)
@@ -78,6 +77,8 @@ module dm_error
     integer, parameter, public :: E_RPC_AUTH       = 94 !! Unauthorised.
     integer, parameter, public :: E_RPC_CONFLICT   = 95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     = 96 !! Internal server error.
+
+    integer, parameter, public :: E_LAST           = 96 !! DO NOT USE.
 
     interface dm_perror
         !! Alias for `dm_error_out()`.
@@ -236,7 +237,7 @@ contains
         integer, intent(in) :: error !! Error code.
 
         valid = .false.
-        if (error < E_NONE .or. error > E_RPC_SERVER) return
+        if (error < E_NONE .or. error > E_LAST) return
         valid = .true.
     end function dm_error_valid
 
@@ -300,6 +301,7 @@ contains
 
     subroutine dm_stop(stat)
         !! Stops program execution and returns optional status.
+        use :: unix, only: c_exit
         integer, intent(in), optional :: stat !! Exit status.
 
         if (.not. present(stat)) call c_exit(0)

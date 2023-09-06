@@ -132,6 +132,7 @@ SRC = src/dm_version.f90 \
       src/dm_unit.f90 \
       src/dm_id.f90 \
       src/dm_uuid.f90 \
+      src/dm_app.f90 \
       src/dm_arg.f90 \
       src/dm_signal.f90 \
       src/dm_system.f90 \
@@ -156,7 +157,6 @@ SRC = src/dm_version.f90 \
       src/dm_config.f90 \
       src/dm_sync.f90 \
       src/dm_beat.f90 \
-      src/dm_app.f90 \
       src/dm_mqueue.f90 \
       src/dm_logger.f90 \
       src/dm_test.f90 \
@@ -207,6 +207,7 @@ OBJ = dm_version.o \
       dm_unit.o \
       dm_id.o \
       dm_uuid.o \
+      dm_app.o \
       dm_arg.o \
       dm_signal.o \
       dm_system.o \
@@ -231,7 +232,6 @@ OBJ = dm_version.o \
       dm_config.o \
       dm_sync.o \
       dm_beat.o \
-      dm_app.o \
       dm_mqueue.o \
       dm_logger.o \
       dm_test.o \
@@ -339,6 +339,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_unit.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_id.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_uuid.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_app.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_arg.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_signal.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_system.f90
@@ -363,7 +364,6 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_config.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_sync.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_beat.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_app.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_mqueue.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_logger.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_test.f90

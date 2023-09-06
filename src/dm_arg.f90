@@ -2,6 +2,7 @@
 ! Licence: ISC
 module dm_arg
     !! Procedures for command-line argument parsing.
+    use :: dm_app
     use :: dm_ascii
     use :: dm_convert
     use :: dm_error
@@ -108,8 +109,7 @@ contains
         if (dm_arg_has('version', 'v')) then
             ! Print program and library version, then stop.
             if (present(app)) then
-                write (stdout, '(a, 1x, i1, ".", i1, " (DMPACK ", a3, ")")') &
-                    app, major_, minor_, DM_VERSION_STRING
+                call dm_app_out(app, major_, minor_)
             else
                 write (stdout, '("DMPACK ", a3)') DM_VERSION_STRING
             end if
