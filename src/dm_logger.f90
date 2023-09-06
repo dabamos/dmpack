@@ -39,6 +39,7 @@ module dm_logger
         character(len=NODE_ID_LEN)     :: node_id  = ' '                 !! Optional node id.
         character(len=LOG_SOURCE_LEN)  :: source   = ' '                 !! Default source of each log message.
         logical                        :: blocking = .true.              !! Blocking message queue access.
+        logical                        :: debug    = .false.             !! Forward debug messages via IPC.
         logical                        :: no_color = .false.             !! Disable ANSI colour output.
         logical                        :: ipc      = .false.             !! Send logs to POSIX message queue.
         logical                        :: verbose  = .true.              !! Print to standard error.
@@ -81,12 +82,13 @@ contains
         call dm_logger_out(log)
     end subroutine dm_logger_fail
 
-    subroutine dm_logger_init(name, node_id, source, ipc, blocking, no_color, verbose)
+    subroutine dm_logger_init(name, node_id, source, debug, ipc, blocking, no_color, verbose)
         !! Initialises the global logger.
         character(len=*), intent(in), optional :: name     !! Logger name.
         character(len=*), intent(in), optional :: node_id  !! Node id.
         character(len=*), intent(in), optional :: source   !! Source (name of calling program).
-        logical,          intent(in), optional :: ipc      !! IPC via POSIX message queues.
+        logical,          intent(in), optional :: debug    !! Forward debug messages via IPC.
+        logical,          intent(in), optional :: ipc      !! IPC through POSIX message queues.
         logical,          intent(in), optional :: blocking !! Blocking IPC.
         logical,          intent(in), optional :: no_color !! Disable ANSI colours.
         logical,          intent(in), optional :: verbose  !! Verbose output.
@@ -97,6 +99,7 @@ contains
 
         if (present(node_id))  LOGGER%node_id  = node_id
         if (present(source))   LOGGER%source   = source
+        if (present(debug))    LOGGER%debug    = debug
         if (present(ipc))      LOGGER%ipc      = ipc
         if (present(blocking)) LOGGER%blocking = blocking
         if (present(no_color)) LOGGER%no_color = no_color
@@ -141,6 +144,7 @@ contains
 
         if (present(error)) log%error = error
 
+        if (LOGGER%verbose) call dm_logger_out(log)
         call dm_logger_send(log)
     end subroutine dm_logger_log_message
 
@@ -151,6 +155,7 @@ contains
         !! invalid.
         type(log_type), intent(inout) :: log !! Log type.
 
+        if (LOGGER%verbose) call dm_logger_out(log)
         call dm_logger_send(log)
     end subroutine dm_logger_log_type
 
@@ -197,8 +202,8 @@ contains
         integer           :: rc
         type(mqueue_type) :: mqueue
 
-        if (LOGGER%verbose) call dm_logger_out(log)
         if (.not. LOGGER%ipc) return
+        if (.not. LOGGER%debug .and. log%level <= LOG_DEBUG) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &

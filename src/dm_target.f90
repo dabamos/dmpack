@@ -19,7 +19,7 @@ module dm_target
     end type target_type
 
     interface operator (==)
-        !! Returns whether two targets are equal.
+        !! Returns whether targets are equal.
         module procedure :: dm_target_equals
     end interface
 

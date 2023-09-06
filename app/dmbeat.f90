@@ -31,8 +31,9 @@ program dmbeat
         character(len=PASSWORD_LEN)    :: password = ' '      !! HTTP Basic Auth password.
         integer                        :: count    = 0        !! Maximum number of heartbeats to send (0 means unlimited).
         integer                        :: interval = 60       !! Emit interval in seconds (>= 0).
-        logical                        :: verbose  = .false.  !! Print debug messages to stderr.
+        logical                        :: debug    = .false.  !! Forward debug messages via IPC.
         logical                        :: ipc      = .false.  !! Send logs via IPC (requires logger name to be set).
+        logical                        :: verbose  = .false.  !! Print debug messages to stderr.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -49,6 +50,7 @@ program dmbeat
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = app%ipc, &
                         verbose = app%verbose)
 
@@ -70,7 +72,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app !! App type.
-        type(arg_type)                :: args(12)
+        type(arg_type)                :: args(13)
 
         rc = E_NONE
 
@@ -86,6 +88,7 @@ contains
             arg_type('password', short='P', type=ARG_TYPE_CHAR),    & ! -P, --password <string>
             arg_type('count',    short='C', type=ARG_TYPE_INTEGER), & ! -C, --count <n>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
+            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),    & ! -D, --debug
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)     & ! -V, --verbose
         ]
 
@@ -110,7 +113,8 @@ contains
         rc = dm_arg_get(args( 9), app%password)
         rc = dm_arg_get(args(10), app%count)
         rc = dm_arg_get(args(11), app%interval)
-        rc = dm_arg_get(args(12), app%verbose)
+        rc = dm_arg_get(args(12), app%debug)
+        rc = dm_arg_get(args(13), app%verbose)
 
         rc = E_INVALID
 
@@ -157,16 +161,17 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if_block: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger);   if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'node',     app%node);     if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'host',     app%host);     if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'port',     app%port);     if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'tls',      app%tls);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'username', app%username); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'password', app%password); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'count',    app%count);    if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'interval', app%interval); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'verbose',  app%verbose);  if (dm_is_error(rc)) exit if_block
+            rc = dm_config_get(config, 'logger',   app%logger)
+            rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'host',     app%host)
+            rc = dm_config_get(config, 'port',     app%port)
+            rc = dm_config_get(config, 'tls',      app%tls)
+            rc = dm_config_get(config, 'username', app%username)
+            rc = dm_config_get(config, 'password', app%password)
+            rc = dm_config_get(config, 'count',    app%count)
+            rc = dm_config_get(config, 'interval', app%interval)
+            rc = dm_config_get(config, 'debug',    app%debug)
+            rc = dm_config_get(config, 'verbose',  app%verbose)
         end if if_block
 
         call dm_config_close(config)

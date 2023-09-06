@@ -16,7 +16,7 @@ dmpipe - reads observations from sub-process
 *dmpipe* --version
 
 *dmpipe* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*verbose*]
+[--*logger* _name_] [--*debug*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -41,6 +41,9 @@ node, sensor, and target of all observations configured.
 
 *--config*, *-c* _file_::
   File path to the configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--format*, *-f* [csv|jsonl]::
   Output format of observations if `--output` is set. Either CSV or JSON Lines.

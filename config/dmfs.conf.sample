@@ -10,6 +10,7 @@
 --
 -- Settings:
 --
+--      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      format      -   Output format, either `csv` or `jsonl`.
 --      jobs        -   List of jobs to perform.
 --      logger      -   Name of logger instance (implies log forwarding).
@@ -68,5 +69,6 @@ dmfs = {
             delay = 10 * 1000
         }
     },
+    debug = true,
     verbose = true
 }

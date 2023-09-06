@@ -11,9 +11,9 @@ program dmsync
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
-    integer, parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer, parameter :: APP_DB_SYNC_LIMIT = 25                 !! Max. number of elements to sync at once.
-    logical, parameter :: APP_RPC_DEFLATE   = .true.             !! Compress RPC data.
+    integer, parameter :: APP_DB_TIMEOUT  = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer, parameter :: APP_SYNC_LIMIT  = 25                 !! Max. number of elements to sync at once.
+    logical, parameter :: APP_RPC_DEFLATE = .true.             !! Compress RPC data.
 
     character(len=*), parameter :: API_ROUTE_LOG    = '/log'     !! Resolves to `/api/v1/log`.
     character(len=*), parameter :: API_ROUTE_OBSERV = '/observ'  !! Resolves to `/api/v1/observ`.
@@ -41,8 +41,9 @@ program dmsync
         integer                        :: type      = SYNC_TYPE_NONE !! Database type.
         integer                        :: interval  = 0              !! Sync interval in seconds.
         logical                        :: create    = .false.        !! Create synchronisation tables.
+        logical                        :: debug     = .false.        !! Forward debug messages via IPC.
         logical                        :: ipc       = .false.        !! Watch named semaphore for synchronisation.
-        logical                        :: tls       = .false.        !! TLS encryption.
+        logical                        :: tls       = .false.        !! Use TLS encryption.
         logical                        :: verbose   = .false.        !! Print debug messages to stderr.
     end type app_type
 
@@ -62,6 +63,7 @@ program dmsync
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
@@ -114,7 +116,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(15)
+        type(arg_type)                :: args(16)
 
         rc = E_NONE
 
@@ -131,8 +133,9 @@ contains
             arg_type('username', short='U', type=ARG_TYPE_CHAR),    & ! -U, --username <string>
             arg_type('password', short='P', type=ARG_TYPE_CHAR),    & ! -P, --password <string>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('tls',      short='X', type=ARG_TYPE_BOOL),    & ! -X, --tls
             arg_type('create',   short='C', type=ARG_TYPE_BOOL),    & ! -C, --create
+            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),    & ! -D, --debug
+            arg_type('tls',      short='X', type=ARG_TYPE_BOOL),    & ! -X, --tls
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)     & ! -V, --verbose
         ]
 
@@ -158,9 +161,10 @@ contains
         rc = dm_arg_get(args(10), app%username)
         rc = dm_arg_get(args(11), app%password)
         rc = dm_arg_get(args(12), app%interval)
-        rc = dm_arg_get(args(13), app%tls)
-        rc = dm_arg_get(args(14), app%create)
-        rc = dm_arg_get(args(15), app%verbose)
+        rc = dm_arg_get(args(13), app%create)
+        rc = dm_arg_get(args(14), app%debug)
+        rc = dm_arg_get(args(15), app%tls)
+        rc = dm_arg_get(args(16), app%verbose)
 
         app%type = dm_sync_type_from_name(app%type_name)
 
@@ -223,19 +227,20 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if_block: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger);    if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'wait',     app%wait);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'node',     app%node);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'database', app%database);  if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'type',     app%type_name); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'host',     app%host);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'port',     app%port);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'username', app%username);  if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'password', app%password);  if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'interval', app%interval);  if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'tls',      app%tls);       if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'create',   app%create);    if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'verbose',  app%verbose);   if (dm_is_error(rc)) exit if_block
+            rc = dm_config_get(config, 'logger',   app%logger)
+            rc = dm_config_get(config, 'wait',     app%wait)
+            rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'database', app%database)
+            rc = dm_config_get(config, 'type',     app%type_name)
+            rc = dm_config_get(config, 'host',     app%host)
+            rc = dm_config_get(config, 'port',     app%port)
+            rc = dm_config_get(config, 'username', app%username)
+            rc = dm_config_get(config, 'password', app%password)
+            rc = dm_config_get(config, 'interval', app%interval)
+            rc = dm_config_get(config, 'create',   app%create)
+            rc = dm_config_get(config, 'debug',    app%debug)
+            rc = dm_config_get(config, 'tls',      app%tls)
+            rc = dm_config_get(config, 'verbose',  app%verbose)
         end if if_block
 
         call dm_config_close(config)
@@ -330,15 +335,15 @@ contains
 
             select case (app%type)
                 case (SYNC_TYPE_LOG)
-                    rc = dm_db_select_sync_logs(db, syncs, limit=int(APP_DB_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_logs(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
                 case (SYNC_TYPE_NODE)
-                    rc = dm_db_select_sync_nodes(db, syncs, limit=int(APP_DB_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_nodes(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
                 case (SYNC_TYPE_OBSERV)
-                    rc = dm_db_select_sync_observs(db, syncs, limit=int(APP_DB_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_observs(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
                 case (SYNC_TYPE_SENSOR)
-                    rc = dm_db_select_sync_sensors(db, syncs, limit=int(APP_DB_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_sensors(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
                 case (SYNC_TYPE_TARGET)
-                    rc = dm_db_select_sync_targets(db, syncs, limit=int(APP_DB_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_targets(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
             end select
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then

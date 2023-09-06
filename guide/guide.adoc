@@ -583,6 +583,7 @@ expected at `[http|https]://<host>:<port>/api/v1/beat`.
 
 | `--config _file_`      | `-c`  | –             | Path to configuration file.
 | `--count _n_`          | `-C`  | 0 (unlimited) | Maximum number of heartbeats to send.
+| `--debug`              | `-D`  | off           | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--help`               | `-h`  | –             | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –             | IP or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
 | `--interval _seconds_` | `-I`  | 60            | Emit interval in seconds.
@@ -625,6 +626,7 @@ equals the *dmdb* name. Only a single process may wait for the semaphore.
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database.
+| `--debug`           | `-D`  | off     | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 
 | `--ipc`
@@ -884,6 +886,7 @@ present in the database.
 | Option              | Short | Default | Description
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
+| `--debug`           | `-D`  | off     | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1370,6 +1373,7 @@ the observation will be discarded.
 | Option               | Short | Default  | Description
 
 | `--config _file_`    | `-c`  | –         | Path to configuration file (optional).
+| `--debug`            | `-D`  | off       | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--help`             | `-h`  | –         | Output available command-line arguments and quit.
 | `--logger _name_`    | `-l`  | –         | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`      | `-n`  | `dmlua`   | Name of instance and table in given configuration file.
@@ -1439,6 +1443,7 @@ database for the observation to be stored.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
+| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1771,6 +1776,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--baudrate _n_`    | `-B`  | 9600       | Number of symbols transmitted per second (4800, 9600, 115200, …).
 | `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
 | `--config _file_`   | `-c`  | –          | Path to configuration file (required).
+| `--debug`           | `-D`  | off        | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--dtr`             | `-D`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –          | Output available command-line arguments and quit.
@@ -1833,6 +1839,7 @@ Observations are marked as synchronised only if the server returns HTTP 201
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--create`             | `-C`  | off      | Create database synchronisation tables if they do not exist.
 | `--database _file_`    | `-d`  | –        | Path to SQLite log or observation database.
+| `--debug`              | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
 | `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds.

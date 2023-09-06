@@ -6,6 +6,7 @@
 -- Settings:
 --
 --      database    -   Path to DMPACK log database.
+--      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      ipc         -   Use POSIX semaphore for process synchronisation.
 --      logger      -   Name of logger instance (implies log forwarding).
 --      node        -   Node id.
@@ -17,5 +18,6 @@ dmdb = {
     node = "dummy-node",
     ipc = false,
     logger = "",
+    debug = true,
     verbose = true
 }

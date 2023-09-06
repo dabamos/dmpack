@@ -16,7 +16,7 @@ dmserial - reads observations from TTY/PTY
 *dmserial* --version
 
 *dmserial* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*verbose*]
+[--*logger* _name_] [--*debug*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -39,20 +39,21 @@ A configuration file is required to configure the jobs to perform. Each
 observation must have a valid target id. The database must contain the specified
 node, sensor, and targets.
 
-The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
-1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
-921600.
-
 == OPTIONS
 
 *--baudrate*, *-B* _n_::
-  Number of symbols transmitted per second (4800, 9600, 115200, ...).
+  Number of symbols transmitted per second. The following baud rates are
+  supported: 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600,
+  19200, 38400, 57600, 115200, 230400, 460800, 921600.
 
 *--bytesize*, *-Z* _n_::
   Byte size (5, 6, 7, 8).
 
 *--config*, *-c* _file_::
   File path to the configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--dtr*, *-D*::
   Enable Data Terminal Ready (DTR).

@@ -24,6 +24,7 @@ program dmdb
         character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
         character(len=FILE_PATH_LEN)   :: database = ' '      !! Path to SQLite database file.
         character(len=NODE_ID_LEN)     :: node     = ' '      !! Node id.
+        logical                        :: debug    = .false.  !! Forward debug messages via IPC.
         logical                        :: ipc      = .false.  !! Use POSIX semaphore for process synchronisation.
         logical                        :: verbose  = .false.  !! Print debug messages to stderr.
     end type app_type
@@ -45,6 +46,7 @@ program dmdb
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
@@ -89,7 +91,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(7)
+        type(arg_type)                :: args(8)
 
         rc = E_NONE
 
@@ -100,6 +102,7 @@ contains
             arg_type('logger',   short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
             arg_type('database', short='d', type=ARG_TYPE_DB),   & ! -d, --database <path>
             arg_type('node',     short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
+            arg_type('debug',    short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
             arg_type('ipc',      short='Q', type=ARG_TYPE_BOOL), & ! -Q, --ipc
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
         ]
@@ -119,8 +122,9 @@ contains
         rc = dm_arg_get(args(3), app%logger)
         rc = dm_arg_get(args(4), app%database)
         rc = dm_arg_get(args(5), app%node)
-        rc = dm_arg_get(args(6), app%ipc)
-        rc = dm_arg_get(args(7), app%verbose)
+        rc = dm_arg_get(args(6), app%debug)
+        rc = dm_arg_get(args(7), app%ipc)
+        rc = dm_arg_get(args(8), app%verbose)
 
         rc = E_INVALID
 
@@ -162,11 +166,12 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         config_if: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger);   if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'database', app%database); if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'node',     app%node);     if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'ipc',      app%ipc);      if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'verbose',  app%verbose);  if (dm_is_error(rc)) exit config_if
+            rc = dm_config_get(config, 'logger',   app%logger)
+            rc = dm_config_get(config, 'database', app%database)
+            rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'debug',    app%debug)
+            rc = dm_config_get(config, 'ipc',      app%ipc)
+            rc = dm_config_get(config, 'verbose',  app%verbose)
         end if config_if
 
         call dm_config_close(config)

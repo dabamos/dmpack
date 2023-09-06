@@ -19,7 +19,7 @@ module dm_node
     end type node_type
 
     interface operator (==)
-        !! Returns whether two nodes are equal.
+        !! Returns whether nodes are equal.
         module procedure :: dm_node_equals
     end interface
 

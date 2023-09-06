@@ -17,7 +17,7 @@ dmbeat - sends status messages to an RPC server
 
 *dmbeat* --*node* _id_ --*host* _host_ [--*port* _port_] [--*tls*]
 [--*username* _user_] [--*password* _password_ [--*count* _n_]
-[--*interval* _seconds_] [--*logger* _name_] [--*verbose*]
+[--*interval* _seconds_] [--*logger* _name_]  [--*debug*] [--*verbose*]
 
 *dmbeat* --*config* _file_ [--*name* _name_]
 
@@ -28,7 +28,7 @@ DMPACK HTTP-RPC API. The status messages include timestamp, system uptime, and
 last connection error. The server may inspect this data to check if a client is
 still running and has network access. The RPC endpoint is expected at
 `[http|https]://<host>:<port>/api/v1/beat`. The heartbeat is transmitted in
-deflate-compressed Namelist format.
+deflate-compressed Fortran 95 Namelist format.
 
 == OPTIONS
 
@@ -37,6 +37,9 @@ deflate-compressed Namelist format.
 
 *--count*, *-C* _n_::
   Maximum number of heartbeats to send. The default is 0 (unlimited).
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

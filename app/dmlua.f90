@@ -24,6 +24,7 @@ program dmlua
         character(len=NODE_ID_LEN)     :: node      = ' '       !! Node id (required).
         character(len=APP_PROC_LEN)    :: proc      = 'process' !! Name of Lua function (required).
         character(len=FILE_PATH_LEN)   :: script    = ' '       !! Path to Lua script file (required).
+        logical                        :: debug     = .false.   !! Forward debug messages via IPC.
         logical                        :: verbose   = .false.   !! Print debug messages to stderr.
     end type app_type
 
@@ -43,6 +44,7 @@ program dmlua
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
@@ -88,7 +90,7 @@ contains
         character(len=*), parameter :: PROC_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(7)
+        type(arg_type)                :: args(8)
 
         rc = E_NONE
 
@@ -99,6 +101,7 @@ contains
             arg_type('node',      short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
             arg_type('procedure', short='p', type=ARG_TYPE_CHAR), & ! -p, --procedure <string>
             arg_type('script',    short='s', type=ARG_TYPE_FILE), & ! -s, --script <path>
+            arg_type('debug',     short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
             arg_type('verbose',   short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
         ]
 
@@ -118,7 +121,8 @@ contains
         rc = dm_arg_get(args(4), app%node)
         rc = dm_arg_get(args(5), app%proc)
         rc = dm_arg_get(args(6), app%script)
-        rc = dm_arg_get(args(7), app%verbose)
+        rc = dm_arg_get(args(7), app%debug)
+        rc = dm_arg_get(args(8), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -166,6 +170,7 @@ contains
             rc = dm_config_get(config, 'node',      app%node)
             rc = dm_config_get(config, 'procedure', app%proc)
             rc = dm_config_get(config, 'script',    app%script)
+            rc = dm_config_get(config, 'debug',     app%debug)
             rc = dm_config_get(config, 'verbose',   app%verbose)
             rc = E_NONE
         end if

@@ -2,12 +2,12 @@
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-02
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2023-09-02" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2023-09-06" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -38,7 +38,7 @@ dmsync \- synchronises databases between client and server
 \fBdmsync\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP]
 [\-\-\fBtls\fP] [\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP] [\-\-\fBnode\fP \fIid\fP]
 [\-\-\fBinterval\fP \fIn\fP] [\-\-\fBwait\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBcreate\fP]
-[\-\-\fBverbose\fP]
+[\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .sp
 \fBdmsync\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
@@ -80,6 +80,11 @@ Create database synchronisation tables if they do not exist.
 \fB\-\-database\fP, \fB\-d\fP \fIfile\fP
 .RS 4
 Path to SQLite log or observation database.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level DEBUG via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

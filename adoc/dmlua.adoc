@@ -16,7 +16,7 @@ dmlua - passes received observations to Lua function
 *dmlua* --version
 
 *dmlua* --*node* _id_ --*script* _file_] [--*procedure* _name_]
-[--*name* _name_] [--*logger* _name_] [--*verbose*]
+[--*name* _name_] [--*logger* _name_] [--*debug*] [--*verbose*]
 
 *dmlua* --*config* _file_ [--*name* _name_]
 
@@ -39,6 +39,9 @@ script.
 
 *--config*, *-c* _file_::
   File path to the optional configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

@@ -33,6 +33,7 @@ program dmpipe
         character(len=FORMAT_NAME_LEN) :: format_name = 'none'      !! Output format name.
         integer                        :: output_type = OUTPUT_NONE !! Output type.
         integer                        :: format      = FORMAT_NONE !! Output format.
+        logical                        :: debug       = .false.     !! Forward debug messages via IPC.
         logical                        :: verbose     = .false.     !! Print debug messages to stderr.
         type(job_list_type)            :: jobs                      !! Job list.
     end type app_type
@@ -51,6 +52,7 @@ program dmpipe
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
@@ -165,7 +167,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(8)
+        type(arg_type)                :: args(9)
 
         rc = E_NONE
 
@@ -177,6 +179,7 @@ contains
             arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <string>
             arg_type('output',  short='o', type=ARG_TYPE_CHAR),                  & ! -o, --output <string>
             arg_type('format',  short='f', type=ARG_TYPE_CHAR),                  & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_BOOL),                  & ! -D, --debug
             arg_type('verbose', short='V', type=ARG_TYPE_BOOL)                   & ! -V, --verbose
         ]
 
@@ -197,7 +200,8 @@ contains
         rc = dm_arg_get(args(5), app%sensor)
         rc = dm_arg_get(args(6), app%output)
         rc = dm_arg_get(args(7), app%format_name)
-        rc = dm_arg_get(args(8), app%verbose)
+        rc = dm_arg_get(args(8), app%debug)
+        rc = dm_arg_get(args(9), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -262,6 +266,7 @@ contains
             rc = dm_config_get(config, 'node',    app%node)
             rc = dm_config_get(config, 'output',  app%output)
             rc = dm_config_get(config, 'sensor',  app%sensor)
+            rc = dm_config_get(config, 'debug',   app%debug)
             rc = dm_config_get(config, 'verbose', app%verbose)
             rc = E_NONE
         end if
@@ -400,14 +405,9 @@ contains
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
-
-                    if (delay > 0) then
-                        call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
-                                    ' in ' // dm_itoa(delay / 1000) // ' sec')
-                    else
-                        cycle req_loop
-                    end if
-
+                    if (delay <= 0) cycle req_loop
+                    call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
+                                ' in ' // dm_itoa(delay / 1000) // ' sec')
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
@@ -421,13 +421,8 @@ contains
 
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
-
-            if (delay > 0) then
-                call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
-            else
-                cycle job_loop
-            end if
-
+            if (delay <= 0) cycle job_loop
+            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run

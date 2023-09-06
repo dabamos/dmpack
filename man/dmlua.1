@@ -2,12 +2,12 @@
 .\"     Title: dmlua
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-06-13
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMLUA
 .\"  Language: English
 .\"
-.TH "DMLUA" "1" "2023-06-13" "DMLUA" "User Commands"
+.TH "DMLUA" "1" "2023-09-06" "DMLUA" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmlua \- passes received observations to Lua function
 \fBdmlua\fP \-\-version
 .sp
 \fBdmlua\fP \-\-\fBnode\fP \fIid\fP \-\-\fBscript\fP \fIfile\fP] [\-\-\fBprocedure\fP \fIname\fP]
-[\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+[\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .sp
 \fBdmlua\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
@@ -58,6 +58,11 @@ script.
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
 .RS 4
 File path to the optional configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level DEBUG via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

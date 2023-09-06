@@ -6,6 +6,7 @@
 -- Settings:
 --
 --      count       -   Maximum number of heartbeats to send (default is 0: unlimited).
+--      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      host        -   IP or FQDN of RPC host (`127.0.0.1`, `example.com`).
 --      interval    -   Emit interval in seconds (optional).
 --      logger      -   Name of logger to send logs to (optional).
@@ -27,5 +28,6 @@ dmbeat = {
     count = 1,
     interval = 3 * 60,
     logger = "",
+    debug = true,
     verbose = true
 }

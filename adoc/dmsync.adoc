@@ -18,7 +18,7 @@ dmsync - synchronises databases between client and server
 *dmsync* --*database* _file_ --*type* _type_ --*host* _host_ [--*port* _port_]
 [--*tls*] [--*username* _user_] [--*password* _password_] [--*node* _id_]
 [--*interval* _n_] [--*wait* _name_] [--*logger* _name_] [--*create*]
-[--*verbose*]
+[--*debug*] [--*verbose*]
 
 *dmsync* --*config* _file_ [--*name* _name_]
 
@@ -57,6 +57,9 @@ Observations are marked as synchronised only if the server returns HTTP 201
 
 *--database*, *-d* _file_::
   Path to SQLite log or observation database.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

@@ -2,12 +2,12 @@
 .\"     Title: dmpipe
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-08-25
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMPIPE
 .\"  Language: English
 .\"
-.TH "DMPIPE" "1" "2023-08-25" "DMPIPE" "User Commands"
+.TH "DMPIPE" "1" "2023-09-06" "DMPIPE" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmpipe \- reads observations from sub\-process
 \fBdmpipe\fP \-\-version
 .sp
 \fBdmpipe\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmpipe\fP program reads responses from a process connected via anonymouse
@@ -60,6 +60,11 @@ node, sensor, and target of all observations configured.
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
 .RS 4
 File path to the configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level DEBUG via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-format\fP, \fB\-f\fP [csv|jsonl]

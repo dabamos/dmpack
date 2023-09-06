@@ -20,25 +20,26 @@ program dmserial
 
     type :: app_type
         !! Application settings.
-        character(len=APP_NAME_LEN)        :: name        = APP_NAME        !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)       :: config      = ' '             !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)     :: logger      = ' '             !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node        = ' '             !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor      = ' '             !! Sensor id (required).
-        character(len=FILE_PATH_LEN)       :: output      = ' '             !! Path of output file.
-        integer                            :: output_type = OUTPUT_NONE     !! Output type.
-        character(len=FORMAT_NAME_LEN)     :: format_name = ' '             !! Output format name.
-        integer                            :: format      = FORMAT_NONE     !! Output format.
-        character(len=FILE_PATH_LEN)       :: tty         = ' '             !! Path of TTY/PTY device (required).
-        integer                            :: baud_rate   = 9600            !! Baud rate (required).
-        integer                            :: byte_size   = 8               !! Byte size (required).
-        character(len=TTY_PARITY_NAME_LEN) :: parity      = 'none'          !! Parity name (required).
-        integer                            :: stop_bits   = 1               !! Stop bits (required).
-        integer                            :: timeout     = 0               !! Timeout in seconds.
-        logical                            :: dtr         = .false.         !! DTR flag.
-        logical                            :: rts         = .false.         !! RTS flag.
-        logical                            :: verbose     = .false.         !! Print debug messages to stderr.
-        type(job_list_type)                :: jobs                          !! Job list.
+        character(len=APP_NAME_LEN)        :: name        = APP_NAME    !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger.
+        character(len=NODE_ID_LEN)         :: node        = ' '         !! Node id (required).
+        character(len=SENSOR_ID_LEN)       :: sensor      = ' '         !! Sensor id (required).
+        character(len=FILE_PATH_LEN)       :: output      = ' '         !! Path of output file.
+        integer                            :: output_type = OUTPUT_NONE !! Output type.
+        character(len=FORMAT_NAME_LEN)     :: format_name = ' '         !! Output format name.
+        integer                            :: format      = FORMAT_NONE !! Output format.
+        character(len=FILE_PATH_LEN)       :: tty         = ' '         !! Path of TTY/PTY device (required).
+        integer                            :: baud_rate   = 9600        !! Baud rate (required).
+        integer                            :: byte_size   = 8           !! Byte size (required).
+        character(len=TTY_PARITY_NAME_LEN) :: parity      = 'none'      !! Parity name (required).
+        integer                            :: stop_bits   = 1           !! Stop bits (required).
+        integer                            :: timeout     = 0           !! Timeout in seconds.
+        logical                            :: dtr         = .false.     !! DTR flag.
+        logical                            :: rts         = .false.     !! RTS flag.
+        logical                            :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                            :: verbose     = .false.     !! Print debug messages to stderr.
+        type(job_list_type)                :: jobs                      !! Job list.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -60,6 +61,7 @@ program dmserial
     call dm_logger_init(name    = app%logger, &
                         node_id = app%node, &
                         source  = app%name, &
+                        debug   = app%debug, &
                         ipc     = (len_trim(app%logger) > 0), &
                         verbose = app%verbose)
 
@@ -230,7 +232,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(16)
+        type(arg_type)                :: args(17)
 
         rc = E_NONE
 
@@ -250,6 +252,7 @@ contains
             arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER),  & ! -T, --timeout <n>
             arg_type('dtr',      short='D', type=ARG_TYPE_BOOL),     & ! -D, --dtr
             arg_type('rts',      short='R', type=ARG_TYPE_BOOL),     & ! -R, --rts
+            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),     & ! -D, --debug
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)      & ! -V, --verbose
         ]
 
@@ -278,7 +281,8 @@ contains
         rc = dm_arg_get(args(13), app%timeout)
         rc = dm_arg_get(args(14), app%dtr)
         rc = dm_arg_get(args(15), app%rts)
-        rc = dm_arg_get(args(16), app%verbose)
+        rc = dm_arg_get(args(16), app%debug)
+        rc = dm_arg_get(args(17), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -382,6 +386,7 @@ contains
             rc = dm_config_get(config, 'stopbits', app%stop_bits)
             rc = dm_config_get(config, 'timeout',  app%timeout)
             rc = dm_config_get(config, 'tty',      app%tty)
+            rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'verbose',  app%verbose)
 
             rc = dm_config_get(config, 'jobs', app%jobs)
@@ -543,14 +548,9 @@ contains
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
-
-                    if (delay > 0) then
-                        call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
-                                    ' in ' // dm_itoa(delay / 1000) // ' sec')
-                    else
-                        cycle req_loop
-                    end if
-
+                    if (delay <= 0) cycle req_loop
+                    call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
+                                ' in ' // dm_itoa(delay / 1000) // ' sec')
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
@@ -563,13 +563,8 @@ contains
 
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
-
-            if (delay > 0) then
-                call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
-            else
-                cycle job_loop
-            end if
-
+            if (delay <= 0) cycle job_loop
+            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
             call dm_usleep(delay * 1000)
         end do job_loop
 

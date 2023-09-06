@@ -2,12 +2,12 @@
 .\"     Title: dmapi
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-08-29
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMAPI
 .\"  Language: English
 .\"
-.TH "DMAPI" "1" "2023-08-29" "DMAPI" "User Commands"
+.TH "DMAPI" "1" "2023-09-06" "DMAPI" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,14 +36,15 @@ dmapi \- FastCGI\-based HTTP\-RPC service for database access
 .sp
 \fBdmapi\fP is an HTTP\-RPC service for remote DMPACK database access. The web
 application has to be executed by a FastCGI\-compatible web server or a FastCGI
-spawner. It is recommended to run \fIlighttpd(1)\fP.
+spawner. It is recommended to run \fBdmapi\fP in \fIlighttpd(1)\fP.
 .sp
-The \fBdmapi\fP service offers endpoints for clients to insert beats, logs, and
-observations into the local SQLite database, and to retrieve data in CSV or JSON
-format. Authentication and encryption are independent from \fBdmapi\fP and have to
-be provided by the environment.
+The \fBdmapi\fP service offers endpoints for clients to insert nodes, sensors,
+targets, observations, logs, and beats into the server SQLite databases, and to
+retrieve the data in CSV, JSON, or JSON Lines format. Authentication and
+encryption are independent from \fBdmapi\fP and have to be provided by the
+environment.
 .sp
-The POST data sent by clients must be serialised in Fortran 90 Namelist format,
+The POST data sent by clients must be serialised in Fortran 95 Namelist format,
 with optional deflate compression. The content type and the content encoding
 have to be passed in the HTTP header of the request.
 .sp

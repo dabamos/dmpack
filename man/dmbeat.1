@@ -2,12 +2,12 @@
 .\"     Title: dmbeat
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-06-13
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMBEAT
 .\"  Language: English
 .\"
-.TH "DMBEAT" "1" "2023-06-13" "DMBEAT" "User Commands"
+.TH "DMBEAT" "1" "2023-09-06" "DMBEAT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -37,7 +37,7 @@ dmbeat \- sends status messages to an RPC server
 .sp
 \fBdmbeat\fP \-\-\fBnode\fP \fIid\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP] [\-\-\fBtls\fP]
 [\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP [\-\-\fBcount\fP \fIn\fP]
-[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBverbose\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBlogger\fP \fIname\fP]  [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .sp
 \fBdmbeat\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
@@ -47,7 +47,7 @@ DMPACK HTTP\-RPC API. The status messages include timestamp, system uptime, and
 last connection error. The server may inspect this data to check if a client is
 still running and has network access. The RPC endpoint is expected at
 \f(CR[http|https]://<host>:<port>/api/v1/beat\fP. The heartbeat is transmitted in
-deflate\-compressed Namelist format.
+deflate\-compressed Fortran 95 Namelist format.
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -58,6 +58,11 @@ Path to Lua\-based configuration file.
 \fB\-\-count\fP, \fB\-C\fP \fIn\fP
 .RS 4
 Maximum number of heartbeats to send. The default is 0 (unlimited).
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level DEBUG via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

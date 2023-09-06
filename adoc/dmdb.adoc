@@ -16,7 +16,7 @@ dmdb - stores observations received from message queue in database
 *dmdb* --version
 
 *dmdb* --*database* _file_ --*node* _id_ [--*ipc*] [--*logger* _name_]
-[--*verbose*]
+[--*debug*] [--*verbose*]
 
 *dmdb* --*config* _file_ [--*name* _name_]
 
@@ -36,6 +36,9 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
 
 *--database*, *-d* _file_::
   Path to SQLite observation database.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

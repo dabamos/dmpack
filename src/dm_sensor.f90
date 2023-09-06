@@ -43,7 +43,7 @@ module dm_sensor
     end type sensor_type
 
     interface operator (==)
-        !! Returns whether two sensors are equal.
+        !! Returns whether sensors are equal.
         module procedure :: dm_sensor_equals
     end interface
 

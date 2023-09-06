@@ -5,6 +5,7 @@
 --
 -- Settings:
 --
+--      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      logger      -   Name of logger instance (implies log forwarding).
 --      node        -   Node id (required).
 --      procedure   -   Name of the Lua procedure (required).
@@ -17,5 +18,6 @@ dmlua = {
     node = "dummy-node",
     script = "/usr/local/share/dmpack/dmlua.lua",
     procedure = "process",
+    debug = true,
     verbose = false
 }

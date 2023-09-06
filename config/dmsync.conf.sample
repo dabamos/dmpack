@@ -7,6 +7,7 @@
 --
 --      create      -   Create sync tables in database if they do not exist.
 --      database    -   Path to SQLite database.
+--      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      host        -   IP or FQDN of HTTP-RPC API server.
 --      interval    -   Synchronisation interval in seconds (optional).
 --      logger      -   Name of logger to send logs to (optional).
@@ -32,6 +33,7 @@ dmsync = {
     interval = 0,
     logger = "",
     create = false,
+    debug = true,
     verbose = true,
     wait = ""
 }
