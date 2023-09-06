@@ -186,7 +186,7 @@ contains
         next = max(0, observ%next) + 1
 
         ! Validate receiver.
-        if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
+        if (next > observ%nreceivers) then
             call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
             rc = E_NONE
             return

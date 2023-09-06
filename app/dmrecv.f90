@@ -82,7 +82,7 @@ contains
         next = max(0, observ%next) + 1
 
         ! Validate receiver.
-        if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
+        if (next > observ%nreceivers) then
             rc = E_NONE
             return
         end if

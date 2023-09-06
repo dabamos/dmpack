@@ -15,7 +15,6 @@ program dmpipe
     integer,          parameter :: APP_MINOR = 9
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
-    integer,   parameter :: APP_BUFFER_LEN    = 4096   !! Input buffer length.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0
@@ -70,7 +69,7 @@ contains
         next = max(0, observ%next) + 1
 
         ! Validate receiver.
-        if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
+        if (next > observ%nreceivers) then
             call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
             rc = E_NONE
             return

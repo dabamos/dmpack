@@ -16,20 +16,19 @@ program dminfo
         character(len=FILE_PATH_LEN) :: database = ' ' !! Path to database (optional).
     end type app_type
 
-    integer        :: rc
-    type(app_type) :: app
+    integer        :: rc  ! Return code.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
 
     ! Read command-line arguments.
     rc = read_args(app)
-    call dm_perror(rc)
+    call dm_error_out(rc)
     if (dm_is_error(rc)) call dm_stop(1)
 
     rc = output_info(app)
     if (dm_is_error(rc)) call dm_stop(1)
-    call dm_stop(0)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
@@ -56,7 +55,7 @@ contains
 
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode
-        integer(kind=i8)              :: n
+        integer(kind=i8)              :: n, sz
         logical                       :: has, has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
@@ -64,6 +63,7 @@ contains
         has_db = (len_trim(app%database) > 0)
 
         if (has_db) then
+            sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
 
             if (dm_is_error(rc)) then
@@ -86,6 +86,7 @@ contains
             print '("db.journal_mode = ", a)', mode_name
 
             print '("db.path = ", a)', trim(app%database)
+            print '("db.size = ", i0)', sz
 
             rc = dm_db_has_table(db, SQL_TABLE_BEATS, has)
             rc = dm_db_count_beats(db, n)

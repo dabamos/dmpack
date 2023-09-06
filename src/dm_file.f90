@@ -57,6 +57,7 @@ contains
         logical                                 :: file_exists
 
         if (present(error)) error = E_NOT_FOUND
+        sz = 0_i8
         inquire (exist=file_exists, file=trim(path), size=sz)
         if (.not. file_exists) return
         if (present(error)) error = E_NONE

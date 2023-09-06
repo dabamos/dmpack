@@ -343,6 +343,46 @@ Then, update the boot loader:
 
 The system has to be rebooted for the changes to take effect.
 
+=== Message Queues
+
+The operating system must have POSIX message queues enabled to run DMPACK
+programs on sensor nodes.
+
+On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
+queue file system is mounted:
+
+....
+# kldstat -m mqueuefs
+Id  Refs Name
+522    1 mqueuefs
+....
+
+Otherwise, we can simply load and mount the file system:
+
+....
+# kldload mqueuefs
+# mkdir -p /mnt/mqueue
+# mount -t mqueuefs null /mnt/mqueue
+....
+
+To load messages queues at system start, add the module `mqueuefs` to
+`/etc/rc.conf`, and the file system to `/etc/fstab`:
+
+....
+# sysrc kld_list+="mqueuefs"
+# echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
+....
+
+Additionally, we may increase the system limits of POSIX message queues with
+_sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
+
+....
+# sysctl kern.mqueue.maxmsg
+kern.mqueue.maxmsg: 100
+# sysctl kern.mqueue.maxmsgsize
+kern.mqueue.maxmsgsize: 16384
+....
+
 == Deformation Monitoring Entities
 
 The data structures used by DMPACK are based on the following entities.
@@ -741,7 +781,7 @@ empty file will be created.
 |===
 | Format  | Supported Types                                           | Description
 
-| `block` | `dp`                                                      | ASCII block format (timestamp and response value).
+| `block` | `dp`                                                      | ASCII block format.
 | `csv`   | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | CSV format.
 | `json`  | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | JSON format.
 | `jsonl` | `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` | JSON Lines format.
@@ -849,7 +889,7 @@ $ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
   --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xsl feed.xsl
 ....
 
-Additionally, we can translate feed and style sheet into HTML document
+Furthermore, we can translate web feed and style sheet into HTML document
 `feed.html`, using an arbitrary XSLT processor, for instance:
 
 ....
@@ -975,6 +1015,7 @@ dmfs = {
   sensor = "sensor-1",          -- Sensor id (required).
   output = "",                  -- Path to output file or `-` for stdout (optional).
   format = "none",              -- Output format (`csv` or `jsonl`).
+  debug = true,                 -- Forward log messages of level DEBUG via IPC.
   verbose = true,               -- Print messages to standard output (optional).
   jobs = {                      -- List of jobs to perform.
     {
@@ -1148,6 +1189,7 @@ db.application_id = 444D31
 db.foreign_keys = T
 db.journal_mode = wal
 db.path = /var/dmpack/observ.sqlite
+db.size = 286720
 db.table.beats = F
 db.table.beats.rows = 0
 ...
@@ -1313,7 +1355,7 @@ The following log levels are accepted:
 | off
 | Use POSIX semaphore for process synchronisation. The name of the semaphore
 matches the instance name (with leading slash). The semaphore is set to 1 each
-time a log message has been received. Only a single process may wait this
+time a log message has been received. Only a single process may wait for this
 semaphore.
 
 | `--minlevel _level_`
@@ -1484,6 +1526,7 @@ dmpipe = {
   sensor = "dummy-sensor",          -- Sensor id (required).
   output = "",                      -- Path to output file or `-` for stdout (optional).
   format = "none",                  -- Output format (`csv` or `jsonl`).
+  debug = true,                     -- Forward log messages of level DEBUG via IPC.
   verbose = true,                   -- Print messages to standard output (optional).
   jobs = {                          -- Jobs to perform.
     {
@@ -3876,11 +3919,9 @@ TARGET%META="Description",
 
 == Databases
 
-The command-line tool _sqlite3(1)_ is the interactive command-line shell for
-SQLite databases that allows the user to execute SQL statements.
-
-For example, to write the schemas of an observation database to `schema.sql`,
-run:
+The command-line tool _sqlite3(1)_ is the interactive -line shell for SQLite
+databases that allows the user to execute SQL statements. For example, to write
+the schemas of an observation database to `schema.sql`, run:
 
 ....
 $ sqlite3 /var/dmpack/observ.sqlite ".schema" > schema.sql
