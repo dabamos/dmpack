@@ -1,27 +1,27 @@
-= dmdbcli(1)
+= dmdbctl(1)
 Philipp Engel
 v1.0.0
 :doctype: manpage
 :manmanual: User Commands
-:mansource: DMDBCLI
+:mansource: DMDBCTL
 
 == NAME
 
-dmdbcli - command-line interface to DMPACK observation databases
+dmdbctl - command-line interface to DMPACK observation databases
 
 == SYNOPSIS
 
-*dmdbcli* --help
+*dmdbctl* --help
 
-*dmdbcli* --version
+*dmdbctl* --version
 
-*dmdbcli* --*database* _file_ --*id* _id_ [--*create* _type_] [--*read* _type_]
+*dmdbctl* --*database* _file_ --*id* _id_ [--*create* _type_] [--*read* _type_]
 [--*update* _type_] [--*delete* _type_] [--*name* _name_] [--*meta* _meta_]
 [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_] [--*verbose*]
 
 == DESCRIPTION
 
-The *dmdbcli* utility program performs create, read, update, or delete
+The *dmdbctl* utility program performs create, read, update, or delete
 operations on the observation databasae. Only nodes, sensors, and targets are
 supported. Data attributes are passed through command-line arguments.
 
@@ -84,19 +84,19 @@ supported. Data attributes are passed through command-line arguments.
 Add a new node of id `dummy-node` to the database:
 
 ....
-$ dmdbcli --database observ.sqlite --create node --id dummy-node --name "Dummy Node"
+$ dmdbctl --database observ.sqlite --create node --id dummy-node --name "Dummy Node"
 ....
 
 Delete target `dummy-target` from database:
 
 ....
-$ dmdbcli --database observ.sqlite --delete target --id dummy-target
+$ dmdbctl --database observ.sqlite --delete target --id dummy-target
 ....
 
 Update the meta description of sensor `dummy-sensor`:
 
 ....
-$ dmdbcli --database observ.sqlite --update sensor --id dummy-sensor --meta "in service"
+$ dmdbctl --database observ.sqlite --update sensor --id dummy-sensor --meta "in service"
 ....
 
 == RESOURCES

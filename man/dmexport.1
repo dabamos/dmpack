@@ -2,12 +2,12 @@
 .\"     Title: dmexport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-08-26
+.\"      Date: 2023-09-06
 .\"    Manual: User Commands
 .\"    Source: DMEXPORT
 .\"  Language: English
 .\"
-.TH "DMEXPORT" "1" "2023-08-26" "DMEXPORT" "User Commands"
+.TH "DMEXPORT" "1" "2023-09-06" "DMEXPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -44,7 +44,8 @@ The \fBdmexport\fP program writes logs, nodes, sensors, targets, and observation
 from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
 ASCII block data format is only available for X/Y data points.
 .sp
-Logs and observations require a given time range in ISO 8601 format.
+The types data point, log, and observation require a given sensor id, target id,
+and time range in ISO 8601 format.
 .sp
 If no output file is given, the data is printed to standard output. The
 output file will be overwritten if it already exists. If no data is found, an

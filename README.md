@@ -104,7 +104,7 @@ The following programs are based on the DMPACK library.
 | [dmbackup](adoc/dmbackup.adoc) | Creates online backups of DMPACK databases.                         |
 | [dmbeat](adoc/dmbeat.adoc)     | Sends status messages (heartbeats) periodically to RPC service.     |
 | [dmdb](adoc/dmdb.adoc)         | Stores observations received from message queue in database.        |
-| [dmdbcli](adoc/dmdbcli.adoc)   | Command-line interface to observation databases.                    |
+| [dmdbctl](adoc/dmdbctl.adoc)   | Command-line interface to observation databases.                    |
 | [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
 | [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |

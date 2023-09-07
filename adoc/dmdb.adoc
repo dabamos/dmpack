@@ -86,7 +86,7 @@ $ dmdb --database /var/dmpack/observ.sqlite --node dummy-node --verbose
 
 == SEE ALSO
 
-_dmsync(1)_
+_dmdbctl(1)_, _dmsync(1)_
 
 == RESOURCES
 

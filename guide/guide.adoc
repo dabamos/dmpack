@@ -434,7 +434,7 @@ processing, and other tasks related to automated control measurements.
 SQLite backup API or `VACUUM INTO`.
 <<dmdb>>:: Stores observations received from POSIX message queue in a SQLite
 database.
-<<dmdbcli>>:: A command-line interface to the DMPACK observation database, to
+<<dmdbctl>>:: A command-line interface to the DMPACK observation database, to
 read, add, update, or delete nodes, sensors, and targets.
 <<dmexport>>:: Exports beats, nodes, sensors, targets, observations, and
 logs from database to file, either in CSV, JSON, or JSON Lines format.
@@ -705,9 +705,9 @@ $ dmdb --node dummy-node --database /var/dmpack/observ.sqlite --verbose
 
 Log messages and observation ids are printed to _stdout_.
 
-=== dmdbcli [[dmdbcli]]
+=== dmdbctl [[dmdbctl]]
 
-The *dmdbcli* utility program performs create, read, update, or delete
+The *dmdbctl* utility program performs create, read, update, or delete
 operations (CRUD) on the observation database. Only nodes, sensors, and targets
 are supported. Data attributes are passed through command-line arguments.
 
@@ -738,21 +738,21 @@ are supported. Data attributes are passed through command-line arguments.
 Add node, sensor, and target to observation database:
 
 ....
-$ dmdbcli --database observ.sqlite --create node --id node-1 --name "Node 1"
-$ dmdbcli --database observ.sqlite --create sensor --id sensor-1 --name "Sensor 1" --node node-1
-$ dmdbcli --database observ.sqlite --create target --id target-1 --name "Target 1"
+$ dmdbctl --database observ.sqlite --create node --id node-1 --name "Node 1"
+$ dmdbctl --database observ.sqlite --create sensor --id sensor-1 --name "Sensor 1" --node node-1
+$ dmdbctl --database observ.sqlite --create target --id target-1 --name "Target 1"
 ....
 
 Delete a target from the database:
 
 ....
-$ dmdbcli --database observ.sqlite --delete target --id target-1
+$ dmdbctl --database observ.sqlite --delete target --id target-1
 ....
 
 Read attributes of sensor `sensor-1`:
 
 ....
-$ dmdbcli --database observ.sqlite --read sensor --id sensor-1
+$ dmdbctl --database observ.sqlite --read sensor --id sensor-1
 sensor%id=sensor-1
 sensor%node_id=node-1
 sensor%type=virtual
@@ -765,11 +765,9 @@ sensor%meta=dummy sensor
 
 The *dmexport* program writes beats, logs, nodes, sensors, targets,
 observations, and data points from database to file, in ASCII block, CSV, JSON,
-or JSON Lines format. The ASCII block format `block` is only available for X/Y
-data points.
-
-Data points, logs, and observations require a given sensor id, target id, and
-time range in ISO 8601 format.
+or JSON Lines format. The ASCII block format is only available for X/Y X/Y data
+points. The types data point, log, and observation require a sensor id, a target
+id, and a time range in ISO 8601 format.
 
 If no output file is given, the data is printed to standard output. The
 output file will be overwritten if it already exists. If no data is found, an
@@ -995,12 +993,12 @@ $ dminit --type log --database /var/dmpack/log.sqlite --wal
 ....
 
 Create node `node-1`, sensor `sensor-1`, and target `target-1` in database
-`/var/dmpack/observ.sqlite` through <<dmweb>> or <<dmdbcli>>:
+`/var/dmpack/observ.sqlite` through <<dmweb>> or <<dmdbctl>>:
 
 ....
-$ dmdbcli -d /var/dmpack/observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbcli -d /var/dmpack/observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
-$ dmdbcli -d /var/dmpack/observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d /var/dmpack/observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d /var/dmpack/observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
+$ dmdbctl -d /var/dmpack/observ.sqlite -C target --id target-1 --name "Target 1"
 ....
 
 Set the program settings in configuration file
@@ -1854,7 +1852,7 @@ server), periodically as a cron job, or by waiting for a POSIX semaphore.
 
 The nodes, sensors, and targets referenced by observations in the local database
 must also exist in the remote server database. They can be created either with
-<<dmdbcli>> or <<dmweb>>, but also synchronised with *dmsync*. Logs do not
+<<dmdbctl>> or <<dmweb>>, but also synchronised with *dmsync*. Logs do not
 require any additional database entries on server-side.
 
 The client databases must contain synchronisation tables. The tables are created
@@ -2051,27 +2049,7 @@ The web server is configured through `/usr/local/etc/lighttpd/lighttpd.conf`.
 
 In the listed examples, the DMPACK executables are assumend to be in
 `/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
-other directory. Set appropriate owner and access rights (min. `chmod 0700`).
-
-=== Databases
-
-The databases are expected to be in directory `/var/dmpack/`. Change the
-environment variables to the actual paths. The observation, log, and beat
-database the web applications will access must be created and initialised:
-
-....
-# dminit --type observ --database /var/dmpack/observ.sqlite --wal
-# dminit --type log --database /var/dmpack/log.sqlite --wal
-# dminit --type beat --database /var/dmpack/beat.sqlite --wal
-....
-
-Make sure the web server has read and write access to the directory:
-
-....
-# chown -R www:www /var/dmpack
-....
-
-Change `www:www` to the user and the group the web server is running as.
+other directory. Set appropriate owner and access rights.
 
 === Authentication
 
@@ -2087,6 +2065,27 @@ the _htpasswd_ user file:
 Replace `<user>` and `<password>` with real values. Instead of a _htpasswd_
 file for, we may select a different authentication backend, for example, LDAP.
 See the _lighttpd(1)_ auth module documentation for further instructions.
+
+=== Databases
+
+The databases are expected to be in directory `/var/dmpack/`. Change the
+environment variables in the web server configuration to the actual paths. The
+observation, log, and beat databases the web applications will access must be
+created and initialised beforehand:
+
+....
+# dminit --type observ --database /var/dmpack/observ.sqlite --wal
+# dminit --type log --database /var/dmpack/log.sqlite --wal
+# dminit --type beat --database /var/dmpack/beat.sqlite --wal
+....
+
+Make sure the web server has read and write access to the directory:
+
+....
+# chown -R www:www /var/dmpack
+....
+
+Change `www:www` to the user and the group the web server is running as.
 
 === RPC Server [[rpc-server]]
 
@@ -2150,8 +2149,8 @@ $HTTP["url"] =^ "/api/v1" {
 
 The FastCGI socket will be written to `/var/run/lighttpd/sockets/dmapi.sock`.
 Change `max-procs` to the desired number of FastCGI processes. Set the
-environment variables to the location of the databases. The databases must
-exist.
+environment variables to the locations of the databases. The databases must
+exist prior start.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
@@ -3249,9 +3248,10 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 DMPACK supports the following data serialisation formats:
 
-Atom (XML):: Export of log messages in Atom Syndication Format (RFC 4287).
+Atom (XML):: Export of log messages in Atom Syndication Format (RFC 4287), with
+optional XSLT style sheet.
 Block:: Export of observation responses as X/Y data points in ASCII block
-format.
+format, consisting of timestamp (ISO 8601) and real value.
 CSV:: Export and import of beat, log, node, observation, sensor, and target
 data, with custom field separator and quote character. A CSV header is added
 optionally.

@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: dmdbcli
+.\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-06-13
+.\"      Date: 2023-09-07
 .\"    Manual: User Commands
-.\"    Source: DMDBCLI
+.\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCLI" "1" "2023-06-13" "DMDBCLI" "User Commands"
+.TH "DMDBCTL" "1" "2023-09-07" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,19 +28,19 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmdbcli \- command\-line interface to DMPACK observation databases
+dmdbctl \- command\-line interface to DMPACK observation databases
 .SH "SYNOPSIS"
 .sp
-\fBdmdbcli\fP \-\-help
+\fBdmdbctl\fP \-\-help
 .sp
-\fBdmdbcli\fP \-\-version
+\fBdmdbctl\fP \-\-version
 .sp
-\fBdmdbcli\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP [\-\-\fBcreate\fP \fItype\fP] [\-\-\fBread\fP \fItype\fP]
+\fBdmdbctl\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP [\-\-\fBcreate\fP \fItype\fP] [\-\-\fBread\fP \fItype\fP]
 [\-\-\fBupdate\fP \fItype\fP] [\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBmeta\fP \fImeta\fP]
 [\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
-The \fBdmdbcli\fP utility program performs create, read, update, or delete
+The \fBdmdbctl\fP utility program performs create, read, update, or delete
 operations on the observation databasae. Only nodes, sensors, and targets are
 supported. Data attributes are passed through command\-line arguments.
 .SH "OPTIONS"
@@ -134,7 +134,7 @@ Add a new node of id \f(CRdummy\-node\fP to the database:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbcli \-\-database observ.sqlite \-\-create node \-\-id dummy\-node \-\-name "Dummy Node"
+$ dmdbctl \-\-database observ.sqlite \-\-create node \-\-id dummy\-node \-\-name "Dummy Node"
 .fam
 .fi
 .if n .RE
@@ -144,7 +144,7 @@ Delete target \f(CRdummy\-target\fP from database:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbcli \-\-database observ.sqlite \-\-delete target \-\-id dummy\-target
+$ dmdbctl \-\-database observ.sqlite \-\-delete target \-\-id dummy\-target
 .fam
 .fi
 .if n .RE
@@ -154,7 +154,7 @@ Update the meta description of sensor \f(CRdummy\-sensor\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbcli \-\-database observ.sqlite \-\-update sensor \-\-id dummy\-sensor \-\-meta "in service"
+$ dmdbctl \-\-database observ.sqlite \-\-update sensor \-\-id dummy\-sensor \-\-meta "in service"
 .fam
 .fi
 .if n .RE

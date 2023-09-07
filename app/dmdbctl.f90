@@ -1,13 +1,13 @@
-! dmdbcli.f90
+! dmdbctl.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmdbcli
+program dmdbctl
     !! Command-line interface to the DMPACK observation database.
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmdbcli'
+    character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
@@ -429,4 +429,4 @@ contains
 
         rc = E_NONE
     end function read_args
-end program dmdbcli
+end program dmdbctl

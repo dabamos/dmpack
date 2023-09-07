@@ -86,7 +86,7 @@ DMAPI    = $(DISTDIR)/dmapi
 DMBACKUP = $(DISTDIR)/dmbackup
 DMBEAT   = $(DISTDIR)/dmbeat
 DMDB     = $(DISTDIR)/dmdb
-DMDBCLI  = $(DISTDIR)/dmdbcli
+DMDBCLI  = $(DISTDIR)/dmdbctl
 DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
@@ -521,8 +521,8 @@ $(DMBEAT): app/dmbeat.f90
 $(DMDB): app/dmdb.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBRT)
 
-$(DMDBCLI): app/dmdbcli.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbcli.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMDBCLI): app/dmdbctl.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbctl.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 $(DMEXPORT): app/dmexport.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
@@ -600,7 +600,7 @@ install:
 	install -m 755 $(DISTDIR)/dmbackup $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmbeat $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmdb $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmdbcli $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmdbctl $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmexport $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmfeed $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmfs $(PREFIX)/bin/
@@ -637,7 +637,7 @@ deinstall:
 	$(RM) -f $(PREFIX)/dmbackup
 	$(RM) -f $(PREFIX)/dmbeat
 	$(RM) -f $(PREFIX)/dmdb
-	$(RM) -f $(PREFIX)/dmdbcli
+	$(RM) -f $(PREFIX)/dmdbctl
 	$(RM) -f $(PREFIX)/dmexport
 	$(RM) -f $(PREFIX)/dmfeed
 	$(RM) -f $(PREFIX)/dmfs
