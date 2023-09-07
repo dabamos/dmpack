@@ -34,6 +34,12 @@
 --
 
 --
+-- Request and response delimiter (carriage return). It may be necessary to
+-- change the delimiter to `\\n` (line feed).
+--
+del = "\\r"
+
+--
 -- Table of observations to be used in jobs list. The attribute `receivers`
 -- contains a list of up to 16 processes to forward the observation to.
 --
@@ -45,14 +51,14 @@ observs = {
         --
         -- Stop "Meter Mode".
         -- The sensor response is not read if the delimiter is empty (as the
-        -- DKRF400 does not always return a response to command `s\r\r`).
+        -- DKRF400 does not always return a response to command `s\r`).
         --
         name = "stop",
         target_id = "meter",
         receivers = { },
         requests = {
             {
-                request = "s\\r",
+                request = "s" .. del,
                 delimiter = "",
                 pattern = "",
                 delay = 0
@@ -68,8 +74,8 @@ observs = {
         receivers = { "dmdb" },
         requests = {
             {
-                request = "Meter\\r",
-                delimiter = "\\r",
+                request = "Meter" .. del,
+                delimiter = del,
                 pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+(?<humrel>[-0-9.]+)\\s%\\s+(?<humabs>[-0-9.]+)\\sg.m3\\s+(?<dew>[-0-9.]+)\\s.C\\s+(?<wetbulb>[-0-9.]+)\\s.C",
                 delay = 0,
                 responses = {
@@ -106,7 +112,7 @@ dmserial = {
             disabled = false,
             onetime = true,
             observation = observs[1],
-            delay = 2000
+            delay = 500
         },
         {
             --
@@ -118,6 +124,6 @@ dmserial = {
             delay = 5 * 1000
         }
     },
-    debug = true,
+    debug = false,
     verbose = true
 }

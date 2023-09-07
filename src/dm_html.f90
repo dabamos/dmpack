@@ -235,7 +235,7 @@ contains
                H_TR // H_TH // 'Uptime' // H_TH_END // &
                H_TD // dm_time_to_string(time) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_str(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Status' // H_TH_END // H_TD
 
         if (delta_ <= int(beat%interval, kind=i8)) then
@@ -487,7 +487,7 @@ contains
             return
         end if
 
-        html = H_P // 'Error: ' // dm_error_str(error_code) // &
+        html = H_P // 'Error: ' // dm_error_message(error_code) // &
                ' (' // dm_itoa(error_code) // ')' // H_P_END
     end function dm_html_error
 
@@ -765,7 +765,7 @@ contains
                H_TR // H_TH // 'Level' // H_TH_END // &
                H_TD // trim(LOG_LEVEL_NAMES(level)) // ' (' // dm_itoa(level) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_str(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
                H_TD // dm_html_encode(log%node_id) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor ID' // H_TH_END // &
@@ -945,7 +945,7 @@ contains
                H_TR // H_TH // 'Priority' // H_TH_END // &
                H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_str(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Next' // H_TH_END // &
                H_TD // dm_itoa(observ%next) // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Receivers' // H_TH_END // &
@@ -1108,7 +1108,7 @@ contains
                H_TR // H_TH // 'Delay' // H_TH_END // &
                H_TD // dm_itoa(request%delay) // ' ms' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_str(request%error) // ' (' // dm_itoa(request%error) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_error_message(request%error) // ' (' // dm_itoa(request%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Retries' // H_TH_END // &
                H_TD // dm_itoa(request%retries) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'State' // H_TH_END // &
@@ -1136,7 +1136,7 @@ contains
                    H_TD // dm_html_encode(responses(i)%name) // H_TD_END // &
                    H_TD // dm_ftoa(responses(i)%value) // H_TD_END // &
                    H_TD // dm_html_encode(responses(i)%unit) // H_TD_END // &
-                   H_TD // dm_error_str(responses(i)%error) // &
+                   H_TD // dm_error_message(responses(i)%error) // &
                            ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // H_TR_END // &
                    H_TR_END
         end do

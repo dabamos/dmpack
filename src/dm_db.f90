@@ -916,7 +916,14 @@ contains
         !! Returns whether given table exists in database. The result code is
         !! `E_NONE` if the table has been found, else `E_DB_NO_ROWS`. The boolean
         !! result is returned in `exists`. Pass the enumerator `SQL_TABLE_*` from
-        !! `dm_sql`.
+        !! `dm_sql`, for instance:
+        !!
+        !! ```fortran
+        !! integer :: rc
+        !! logical :: exists
+        !!
+        !! rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
+        !! ```
         type(db_type), intent(inout)         :: db     !! Database type.
         integer,       intent(in)            :: table  !! Table enum.
         logical,       intent(out), optional :: exists !! Boolean result.

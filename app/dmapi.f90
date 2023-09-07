@@ -95,7 +95,7 @@ program dmapi
         call dm_router_dispatch(router, env, code)
 
         if (code /= HTTP_OK) then
-            call api_error(code, dm_error_str(E_NOT_FOUND), E_NOT_FOUND)
+            call api_error(code, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
         end if
     end do
 
@@ -1256,8 +1256,11 @@ contains
             er = dm_db_close(db)
         end if
 
-        message = 'online'
-        if (dm_is_error(rc)) message = dm_error_str(rc)
+        if (dm_is_error(rc)) then
+            message = dm_error_message(rc)
+        else
+            message = 'online'
+        end if
 
         api = api_status_type(version   = dm_version_to_string(APP_MAJOR, APP_MINOR), &
                               dmpack    = DM_VERSION_STRING, &

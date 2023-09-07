@@ -59,6 +59,7 @@ db.application_id = 444D31
 db.foreign_keys = T
 db.journal_mode = wal
 db.path = /var/dmpack/observ.sqlite
+db.size = 286720
 db.table.beats = F
 db.table.beats.rows = 0
 ...

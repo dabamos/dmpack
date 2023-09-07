@@ -40,8 +40,9 @@ contains
 
         integer          :: er, fu, stat
         integer(kind=i8) :: nrecs, nrows
+        logical          :: table_exists
         real(kind=r8)    :: dt
-        type (db_type)   :: db
+        type(db_type)    :: db
         type(timer_type) :: timer
 
         type(log_type)    :: log
@@ -90,6 +91,26 @@ contains
                 print '("Opened database ", a)', trim(app%database)
             end if
 
+            ! Check for appropriate database table.
+            select case (app%type)
+                case (TYPE_NODE)
+                    rc = dm_db_has_table(db, SQL_TABLE_NODES, table_exists)
+                case (TYPE_SENSOR)
+                    rc = dm_db_has_table(db, SQL_TABLE_SENSORS, table_exists)
+                case (TYPE_TARGET)
+                    rc = dm_db_has_table(db, SQL_TABLE_TARGETS, table_exists)
+                case (TYPE_OBSERV)
+                    rc = dm_db_has_table(db, SQL_TABLE_OBSERVS, table_exists)
+                case (TYPE_LOG)
+                    rc = dm_db_has_table(db, SQL_TABLE_LOGS, table_exists)
+            end select
+
+            if (.not. table_exists) then
+                rc = E_INVALID
+                call dm_error_out(rc, 'database table not found')
+                exit db_block
+            end if
+
             ! Start database transaction.
             call dm_timer_start(timer)
             rc = dm_db_begin(db)
@@ -99,8 +120,8 @@ contains
                 exit db_block
             end if
 
-            nrecs = 0
-            nrows = 0
+            nrecs = 0 ! Number of records written to database.
+            nrows = 0 ! Number of lines in CSV file.
 
             ! Read records from file and insert them into database.
             read_loop: do
@@ -151,7 +172,7 @@ contains
                         rc = dm_db_insert(db, log)
                 end select
 
-                ! Handle return code.
+                ! Handle database result.
                 select case (rc)
                     case (E_NONE)
                         nrecs = nrecs + 1

@@ -520,10 +520,11 @@ client and server. Requires a web server and _gnuplot(1)_.
 
 Some programs read settings from an optional or mandatory configuration file.
 Examples of configuration files are provided in directory
-`/usr/local/etc/dmpack/`. The configuration file format is based on Lua tables,
-and is additionally scriptable. You may want to enable Lua syntax highlighting
-in your editor (for instance, `set syntax=lua` in Vim), or use the file ending
-`.lua` instead of `.conf`.
+`/usr/local/etc/dmpack/`. The configuration file format is based on Lua tables
+and is scriptable. Comments in the configuration file start with `--`.
+
+You may want to enable Lua syntax highlighting in your editor (for instance,
+`set syntax=lua` in Vim), or use the file ending `.lua` instead of `.conf`.
 
 === dmapi [[dmapi]]
 
@@ -770,8 +771,8 @@ points. The types data point, log, and observation require a sensor id, a target
 id, and a time range in ISO 8601 format.
 
 If no output file is given, the data is printed to standard output. The
-output file will be overwritten if it already exists. If no data is found, an
-empty file will be created.
+output file will be overwritten if it already exists. If no records are found,
+an empty file will be created.
 
 .Output file formats
 [[dmexport-output]]
@@ -791,7 +792,7 @@ empty file will be created.
 |===
 | Option               | Short | Default | Description
 
-| `--database _file_`  | `-d`  | –       | Path to SQLite database.
+| `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
 | `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>>: `block`, `csv`, `json`, `jsonl` (required).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
@@ -866,36 +867,35 @@ the web server. An example style sheet `feed.xsl` is located in
 
 ==== Examples
 
-First, copy the rudimentary XSLT style sheet to the www directory:
-
-....
-$ cp /usr/local/share/dmpack/feed.xsl /var/www/
-....
-
-Then, generate a unique feed id:
+First, generate a unique feed id:
 
 ....
 $ dmuuid --hyphens
 19c12109-3e1c-422c-ae36-3ba19281f2e
 ....
 
-Finally, write the last 50 log messages in Atom format to file `feed.xml`,
-include a link to the XSLT style sheet `feed.xsl` in the same directory:
+Then, write the last 50 log messages in Atom format to file `feed.xml`, include
+a link to the XSLT style sheet `feed.xsl`:
 
 ....
 $ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
   --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xsl feed.xsl
 ....
 
-Furthermore, we can translate web feed and style sheet into HTML document
-`feed.html`, using an arbitrary XSLT processor, for instance:
+Copy the XSLT style sheet to the directory of the Atom feed:
 
 ....
+$ cp /usr/local/share/dmpack/feed.xsl /var/www/
+....
+
+If `/var/www/` is served by a web server, feed readers can subscribe to the
+feed. Furthermore, we may translate feed and style sheet into a single HTML
+document `feed.html`, using an arbitrary XSLT processor, for instance:
+
+....
+$ cd /var/www/
 $ xsltproc --output feed.html feed.xsl feed.xml
 ....
-
-If directory `/var/www/` is served by a web server, feed readers can subscribe
-to the feed.
 
 === dmfs [[dmfs]]
 
@@ -1211,9 +1211,9 @@ sensors must exist as well.
 |===
 | Option               | Short | Default | Description
 
-| `--database _file_`  | `-d`  | –       | Path to SQLite database.
+| `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
-| `--input _file_`     | `-i`  | –       | Path of input file in CSV format.
+| `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
 | `--separator _char_` | `-a`  | `,`     | CSV separator character.
 | `--type _type_`      | `-t`  | –       | Type of record to import: `log`, `node`, `observ`, `sensor`, `target` (required).
 | `--verbose`          | `-V`  | off     | Print progress to _stdout_.
@@ -1615,7 +1615,7 @@ block format.
 
 If the JSON Lines output format is selected, logs and observations are written
 as JSON objects to file or _stdout_, separated by new line (`\n`). Use _jq(1)_
-to convert a JSON Lines file `input.jsonl` into a valid JSON array in
+to convert records in JSON Lines file `input.jsonl` into a valid JSON array in
 `output.json`:
 
 ....
@@ -1665,20 +1665,25 @@ Write log messages received from POSIX message queue `/dmrecv` to file
 $ dmrecv --name dmrecv --type log --format csv --output /tmp/logs.csv
 ....
 
-Output observations in JSON format to _stdout_:
+Output observations in JSON Lines format to _stdout_:
 
 ....
 $ dmrecv --name dmrecv --type observ --format jsonl
 ....
 
-Write the serialised observations to named pipe `/tmp/dmrecv_pipe`:
+Write the observations serialised in JSON Lines format to named pipe
+`/tmp/dmrecv_pipe`:
 
 ....
 $ mkfifo /tmp/dmrecv_pipe
 $ dmrecv --name dmrecv --type observ --format jsonl --output /tmp/dmrecv_pipe
 ....
 
-Another process can now read the observations from `/tmp/dmrecv_pipe`.
+Another process can now read the observations from `/tmp/dmrecv_pipe`:
+
+....
+$ tail -f /tmp/dmrecv_pipe
+....
 
 === dmreport [[dmreport]]
 

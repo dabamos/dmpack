@@ -87,15 +87,15 @@ module dm_error
         module procedure :: dm_error_out
     end interface
 
+    public :: dm_error_message
     public :: dm_error_out
-    public :: dm_error_str
     public :: dm_error_valid
     public :: dm_is_error
     public :: dm_is_ok
     public :: dm_perror
     public :: dm_stop
 contains
-    pure function dm_error_str(error) result(str)
+    pure function dm_error_message(error) result(str)
         !! Returns error message of given error code `error`.
         integer, intent(in)           :: error !! Error code.
         character(len=:), allocatable :: str   !! Error string.
@@ -236,7 +236,7 @@ contains
             case default
                 str = 'unknown error code'
         end select
-    end function dm_error_str
+    end function dm_error_message
 
     pure elemental logical function dm_error_valid(error) result(valid)
         !! Returns whether given code is (likely) valid.
@@ -264,8 +264,13 @@ contains
     subroutine dm_error_out(error, message, verbose, extra, quit)
         !! Prints error description to `stderr`. If `verbose` is true, the
         !! routine outputs even if no error occured (`E_NONE`).
-        character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
-        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " [", a, "]")'
+        !!
+        !! If `extra` is `.true.`, the routine outputs the default error
+        !! message for the given error instead of the code. If `quit` is
+        !! `.true.`, the routine terminates with exit code `0` on error
+        !! `E_NONE`, else with `1`.
+        character(len=*), parameter :: FMT_ERROR = '("Error: ", a, " (E", i0.3, ")")'
+        character(len=*), parameter :: FMT_EXTRA = '("Error: ", a, " (", a, ")")'
 
         integer,          intent(in)           :: error   !! Error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
@@ -291,17 +296,16 @@ contains
 
         if (present(message)) then
             if (extra_) then
-                write (stderr, FMT_EXTRA) error, dm_ascii_escape(message), &
-                                          dm_error_str(error)
+                write (stderr, FMT_EXTRA) dm_ascii_escape(message), dm_error_message(error)
             else
-                write (stderr, FMT_ERROR) error, dm_ascii_escape(message)
+                write (stderr, FMT_ERROR) dm_ascii_escape(message), error
             end if
 
             if (.not. quit_) return
             call dm_stop(stat)
         end if
 
-        write (stderr, FMT_ERROR) error, dm_error_str(error)
+        write (stderr, FMT_ERROR) dm_error_message(error), error
         if (quit_) call dm_stop(stat)
     end subroutine dm_error_out
 
