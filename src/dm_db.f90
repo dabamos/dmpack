@@ -54,6 +54,12 @@ module dm_db
         logical     :: read_only = .false.    !! Read-only flag.
     end type db_type
 
+    type, public :: db_stmt_type
+        !! Opaque SQLite database statement type.
+        private
+        type(c_ptr) :: ptr = c_null_ptr
+    end type db_stmt_type
+
     abstract interface
         function dm_db_busy_handler(client_data, n) bind(c)
             !! C-interoperable callback function that is invoked on SQL_BUSY.
@@ -184,6 +190,7 @@ module dm_db
     public :: dm_db_exists_observ
     public :: dm_db_exists_sensor
     public :: dm_db_exists_target
+    public :: dm_db_finalize
     public :: dm_db_has_table
     public :: dm_db_get_application_id
     public :: dm_db_get_data_version
@@ -208,6 +215,7 @@ module dm_db
     public :: dm_db_open
     public :: dm_db_optimize
     public :: dm_db_read_only
+    public :: dm_db_rollback
     public :: dm_db_select
     public :: dm_db_select_beat
     public :: dm_db_select_beats
@@ -390,7 +398,7 @@ contains
 
         rc = db_commit(db)
         if (dm_is_ok(rc)) return
-        if (dm_is_error(db_rollback(db))) rc = E_DB_TRANSACTION
+        if (dm_is_error(db_rollback(db))) rc = E_DB_ROLLBACK
     end function dm_db_commit
 
     integer function dm_db_count_beats(db, n) result(rc)
@@ -654,7 +662,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_delete_beat
 
     integer function dm_db_delete_log(db, log_id) result(rc)
@@ -682,7 +690,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_delete_log
 
     integer function dm_db_delete_node(db, node_id) result(rc)
@@ -710,7 +718,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_delete_node
 
     integer function dm_db_delete_observ(db, observ_id) result(rc)
@@ -746,7 +754,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
 
         ! Commit transaction.
         if (dm_is_ok(rc)) then
@@ -755,7 +763,7 @@ contains
         end if
 
         ! Rollback transaction on error.
-        if (dm_is_error(db_rollback(db))) rc = E_DB_TRANSACTION
+        if (dm_is_error(db_rollback(db))) rc = E_DB_ROLLBACK
     end function dm_db_delete_observ
 
     integer function dm_db_delete_sensor(db, sensor_id) result(rc)
@@ -783,7 +791,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_delete_sensor
 
     integer function dm_db_delete_target(db, target_id) result(rc)
@@ -811,7 +819,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_delete_target
 
     integer function dm_db_error(db, sqlite_error) result(rc)
@@ -895,6 +903,15 @@ contains
         exists = db_exists(db, SQL_TABLE_TARGETS, target_id)
     end function dm_db_exists_target
 
+    integer function dm_db_finalize(statement) result(rc)
+        !! Finalises given database statement.
+        type(db_stmt_type), intent(inout) :: statement !! Database statement type.
+
+        rc = E_NONE
+        if (.not. c_associated(statement%ptr)) return
+        if (sqlite3_finalize(statement%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
+    end function dm_db_finalize
+
     integer function dm_db_has_table(db, table, exists) result(rc)
         !! Returns whether given table exists in database. The result code is
         !! `E_NONE` if the table has been found, else `E_DB_NO_ROWS`. The boolean
@@ -922,7 +939,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (present(exists) .and. rc == E_NONE) exists = .true.
     end function dm_db_has_table
 
@@ -948,7 +965,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_get_application_id
 
     integer function dm_db_get_data_version(db, version) result(rc)
@@ -982,7 +999,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_get_data_version
 
     integer function dm_db_get_foreign_keys(db, enabled) result(rc)
@@ -1011,7 +1028,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_get_foreign_keys
 
     integer function dm_db_get_journal_mode(db, mode, name) result(rc)
@@ -1039,7 +1056,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
 
         select case (str)
             case ('delete')
@@ -1097,7 +1114,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_insert_beat
 
     integer function dm_db_insert_log(db, log) result(rc)
@@ -1134,7 +1151,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_insert_log
 
     integer function dm_db_insert_node(db, node) result(rc)
@@ -1164,7 +1181,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_insert_node
 
     integer function dm_db_insert_observ(db, observ, statement) result(rc)
@@ -1174,11 +1191,11 @@ contains
         !! database on error.
         character(len=*), parameter :: SAVE_POINT = 'observ'
 
-        type(db_type),     intent(inout)           :: db        !! Database type.
-        type(observ_type), intent(inout)           :: observ    !! Observation type.
-        type(c_ptr),       intent(inout), optional :: statement !! SQL query statement.
+        type(db_type),      intent(inout)           :: db        !! Database type.
+        type(observ_type),  intent(inout)           :: observ    !! Observation type.
+        type(db_stmt_type), intent(inout), optional :: statement !! Database statement type.
 
-        integer     :: err, i, n
+        integer     :: i, n
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
@@ -1190,7 +1207,7 @@ contains
 
         ! Set given statement.
         stmt = c_null_ptr
-        if (present(statement)) stmt = statement
+        if (present(statement)) stmt = statement%ptr
 
         ! Begin transaction.
         rc = E_DB_TRANSACTION
@@ -1247,13 +1264,17 @@ contains
         end block sql_block
 
         if (.not. present(statement)) then
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         end if
 
         ! Commit or rollback transaction.
-        if (dm_is_error(rc)) err = db_rollback(db, SAVE_POINT)
+        if (dm_is_error(rc)) then
+            rc = dm_db_error(db)
+            if (db_rollback(db, SAVE_POINT) /= SQLITE_OK) rc = E_DB_ROLLBACK
+        end if
+
         if (dm_is_error(db_release(db, SAVE_POINT))) rc = E_DB_TRANSACTION
-        if (present(statement)) statement = stmt
+        if (present(statement)) statement%ptr = stmt
     end function dm_db_insert_observ
 
     integer function dm_db_insert_observs(db, observs, transaction) result(rc)
@@ -1263,9 +1284,9 @@ contains
         type(observ_type), intent(inout)        :: observs(:)  !! Observation type array.
         logical,           intent(in), optional :: transaction !! Use SQL transaction.
 
-        integer     :: i
-        logical     :: transaction_
-        type(c_ptr) :: stmt
+        integer            :: i
+        logical            :: transaction_
+        type(db_stmt_type) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1273,25 +1294,26 @@ contains
         transaction_ = .true.
         if (present(transaction)) transaction_ = transaction
 
+        ! Start transaction.
         if (transaction_) then
             rc = E_DB_TRANSACTION
             if (dm_is_error(db_begin(db))) return
         end if
 
         ! Re-use statement.
-        stmt = c_null_ptr
-
         do i = 1, size(observs)
             rc = dm_db_insert_observ(db, observs(i), stmt)
             if (dm_is_error(rc)) exit
         end do
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
 
         if (transaction_) then
+            ! Commit transaction.
             if (dm_is_ok(rc)) rc = db_commit(db)
             if (dm_is_ok(rc)) return
-            if (dm_is_error(db_rollback(db))) rc = E_DB_TRANSACTION
+            ! Rollback transaction.
+            if (dm_is_error(db_rollback(db))) rc = E_DB_ROLLBACK
         end if
     end function dm_db_insert_observs
 
@@ -1325,7 +1347,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_insert_sensor
 
     integer function dm_db_insert_sync(db, sync) result(rc)
@@ -1435,7 +1457,7 @@ contains
         end block sql_block
 
         call dm_error_out(rc)
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         call dm_error_out(rc)
     end function dm_db_insert_target
 
@@ -1558,7 +1580,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_optimize
 
     logical function dm_db_read_only(db) result(read_only)
@@ -1567,6 +1589,13 @@ contains
 
         read_only = db%read_only
     end function dm_db_read_only
+
+    integer function dm_db_rollback(db) result(rc)
+        !! Rolls a transaction back.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = db_rollback(db)
+    end function dm_db_rollback
 
     integer function dm_db_select_beat(db, beat, node_id) result(rc)
         !! Returns heartbeat associated with given node id.
@@ -1588,7 +1617,7 @@ contains
             rc = db_next_row(stmt, beat)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_beat
 
     integer function dm_db_select_beats(db, beats, limit, nbeats) result(rc)
@@ -1622,7 +1651,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -1644,7 +1673,7 @@ contains
             if (present(nbeats)) nbeats = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_beats
 
     integer function dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response_name, &
@@ -1684,7 +1713,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -1722,7 +1751,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_data_points
 
     integer function dm_db_select_log(db, log, log_id) result(rc)
@@ -1745,7 +1774,7 @@ contains
             rc = db_next_row(stmt, log)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_log
 
     integer function dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, &
@@ -1923,7 +1952,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -1965,7 +1994,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -2046,7 +2075,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -2072,7 +2101,7 @@ contains
             if (present(nlogs)) nlogs = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_logs_by_observ
 
     integer function dm_db_select_node(db, node, node_id) result(rc)
@@ -2107,7 +2136,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_node
 
     integer function dm_db_select_nodes(db, nodes, nnodes) result(rc)
@@ -2155,7 +2184,7 @@ contains
             if (present(nnodes)) nnodes = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_nodes
 
     integer function dm_db_select_observ(db, observ, observ_id) result(rc)
@@ -2183,7 +2212,7 @@ contains
             rc = db_next_row(stmt, observ)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
 
         ! Get receivers.
@@ -2244,7 +2273,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -2282,7 +2311,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_observ_views
 
     integer function dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
@@ -2424,7 +2453,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             if (present(nobservs)) nobservs = n
@@ -2463,7 +2492,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
         if (stub_view) return
 
@@ -2559,7 +2588,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             nobs = sqlite3_column_int(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -2600,7 +2629,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
         if (stub_) return
 
@@ -2646,7 +2675,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             nobs = sqlite3_column_int(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -2683,7 +2712,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
         if (stub_) return
 
@@ -2713,7 +2742,7 @@ contains
             rc = db_next_row(stmt, sensor)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_sensor
 
     integer function dm_db_select_sensors(db, sensors, nsensors) result(rc)
@@ -2753,7 +2782,7 @@ contains
             if (present(nsensors)) nsensors = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_sensors
 
     integer function dm_db_select_sensors_by_node(db, sensors, node_id, nsensors) result(rc)
@@ -2782,7 +2811,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -2807,7 +2836,7 @@ contains
             if (present(nsensors)) nsensors = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_sensors_by_node
 
     integer function dm_db_select_sync_log(db, sync) result(rc)
@@ -2980,7 +3009,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_tables
 
     integer function dm_db_select_target(db, target, target_id) result(rc)
@@ -3015,7 +3044,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_target
 
     integer function dm_db_select_targets(db, targets, ntargets) result(rc)
@@ -3064,7 +3093,7 @@ contains
             if (present(ntargets)) ntargets = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_select_targets
 
     integer function dm_db_set_application_id(db, id) result(rc)
@@ -3093,7 +3122,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_set_application_id
 
     integer function dm_db_set_auto_vacuum(db, mode) result(rc)
@@ -3146,7 +3175,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_set_auto_vacuum
 
     integer function dm_db_set_busy_handler(db, callback, client_data) result(rc)
@@ -3201,7 +3230,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_set_foreign_keys
 
     integer function dm_db_set_journal_mode(db, mode) result(rc)
@@ -3244,7 +3273,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_set_journal_mode
 
     integer function dm_db_set_log_handler(callback, client_data) result(rc)
@@ -3320,7 +3349,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_update_node
 
     integer function dm_db_update_sensor(db, sensor) result(rc)
@@ -3353,7 +3382,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_update_sensor
 
     integer function dm_db_update_target(db, target) result(rc)
@@ -3383,7 +3412,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_update_target
 
     integer function dm_db_vacuum_into(db, path) result(rc)
@@ -3408,7 +3437,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_vacuum_into
 
     integer function dm_db_valid(db) result(rc)
@@ -3502,7 +3531,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_count
 
     integer function db_delete_receivers(db, observ_id) result(rc)
@@ -3525,7 +3554,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_delete_receivers
 
     integer function db_delete_requests(db, observ_id) result(rc)
@@ -3548,7 +3577,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_delete_requests
 
     integer function db_delete_responses(db, observ_id) result(rc)
@@ -3571,7 +3600,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_delete_responses
 
     integer function db_exec(db, query, err_msg) result(rc)
@@ -3665,7 +3694,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_insert_receivers
 
     integer function db_insert_requests(db, observ_id, requests) result(rc)
@@ -3709,7 +3738,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_insert_requests
 
     integer function db_insert_responses(db, observ_id, request_idx, responses) result(rc)
@@ -3751,7 +3780,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_insert_responses
 
     integer function db_insert_sync(db, sync, query) result(rc)
@@ -3777,7 +3806,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_insert_sync
 
     integer function db_next_row_beat(stmt, beat) result(rc)
@@ -3999,6 +4028,8 @@ contains
         else
             rc = db_exec(db, 'ROLLBACK')
         end if
+
+        if (dm_is_error(rc)) rc = E_DB_ROLLBACK
     end function db_rollback
 
     integer function db_save_point(db, name) result(rc)
@@ -4034,7 +4065,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_select_nrows
 
     integer function db_select_observs_data(db, observs) result(rc)
@@ -4061,7 +4092,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
 
         ! Get requests (re-use statement).
@@ -4071,7 +4102,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_error(rc)) return
 
         ! Get responses (re-use statement).
@@ -4089,7 +4120,7 @@ contains
             end do req_loop
         end do obs_loop
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_select_observs_data
 
     integer function db_select_receivers(db, receivers, observ_id, nreceivers, statement) result(rc)
@@ -4141,7 +4172,7 @@ contains
         end block sql_block
 
         if (.not. present(statement)) then
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
             return
         end if
 
@@ -4218,7 +4249,7 @@ contains
         end block sql_block
 
         if (.not. present(statement)) then
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
             return
         end if
 
@@ -4283,7 +4314,7 @@ contains
         end block sql_block
 
         if (.not. present(statement)) then
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
             return
         end if
 
@@ -4311,7 +4342,7 @@ contains
             rc = db_next_row(stmt, sync)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         if (dm_is_ok(rc)) sync%type = type
     end function db_select_sync
 
@@ -4349,7 +4380,7 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             n = sqlite3_column_int64(stmt, 0)
 
-            rc = E_DB
+            rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
@@ -4375,6 +4406,6 @@ contains
             nsyncs = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function db_select_syncs
 end module dm_db

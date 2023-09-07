@@ -39,14 +39,16 @@ module dm_error
     integer, parameter, public :: E_DB_BUSY        = 33 !! Database is busy.
     integer, parameter, public :: E_DB_LOCKED      = 34 !! Database is locked.
     integer, parameter, public :: E_DB_EXEC        = 35 !! Execution failed.
-    integer, parameter, public :: E_DB_TRANSACTION = 36 !! Transaction failed.
-    integer, parameter, public :: E_DB_PREPARE     = 37 !! Prepare failed.
-    integer, parameter, public :: E_DB_BIND        = 38 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        = 39 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        = 40 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     = 41 !! No rows returned.
-    integer, parameter, public :: E_DB_CONSTRAINT  = 42 !! Contraint error.
-    integer, parameter, public :: E_DB_BACKUP      = 43 !! Backup error.
+    integer, parameter, public :: E_DB_CONSTRAINT  = 36 !! Contraint error.
+    integer, parameter, public :: E_DB_TRANSACTION = 37 !! Transaction failed.
+    integer, parameter, public :: E_DB_ROLLBACK    = 38 !! Transaction rollback error.
+    integer, parameter, public :: E_DB_PREPARE     = 39 !! Prepare failed.
+    integer, parameter, public :: E_DB_FINALIZE    = 40 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        = 41 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        = 42 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        = 43 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     = 44 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      = 45 !! Backup error.
 
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            = 50 !! Generic argument error.
@@ -158,10 +160,16 @@ contains
                 str = 'database locked'
             case (E_DB_EXEC)
                 str = 'database execution failed'
+            case (E_DB_CONSTRAINT)
+                str = 'database contraint error'
             case (E_DB_TRANSACTION)
                 str = 'database transaction failed'
+            case (E_DB_ROLLBACK)
+                str = 'database rollback failed'
             case (E_DB_PREPARE)
                 str = 'database statement preparation failed'
+            case (E_DB_FINALIZE)
+                str = 'database statement finalisation failed'
             case (E_DB_BIND)
                 str = 'database bind failed'
             case (E_DB_TYPE)
@@ -170,8 +178,6 @@ contains
                 str = 'database execution step failed'
             case (E_DB_NO_ROWS)
                 str = 'database returned no rows'
-            case (E_DB_CONSTRAINT)
-                str = 'database contraint error'
             case (E_DB_BACKUP)
                 str = 'database backup error'
 
