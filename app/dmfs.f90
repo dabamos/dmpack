@@ -281,7 +281,7 @@ contains
             rc = dm_config_get(config, 'node',    app%node)
             rc = dm_config_get(config, 'output',  app%output)
             rc = dm_config_get(config, 'sensor',  app%sensor)
-            rc = dm_config_get(config, 'verbose', app%debug)
+            rc = dm_config_get(config, 'debug',   app%debug)
             rc = dm_config_get(config, 'verbose', app%verbose)
             rc = E_NONE
         end if

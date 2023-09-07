@@ -103,7 +103,7 @@ contains
     end function dm_regex_group
 
     integer function dm_regex_match(regex, subject) result(rc)
-        !! Returns `E_NONE` if given subject matches the compiles regular
+        !! Returns `E_NONE` if given subject matches the compiled regular
         !! expression.
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
         character(len=*), intent(in)    :: subject !! Input string to match against.

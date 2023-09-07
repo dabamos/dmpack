@@ -5,6 +5,7 @@ module dm_tty
     use, intrinsic :: iso_c_binding
     use :: dm_error
     use :: dm_file
+    use :: dm_string
     use :: dm_type
     implicit none (type, external)
     private
@@ -249,7 +250,7 @@ contains
 
     logical function dm_tty_connected(tty) result(connected)
         !! Return `.true.` if TTY is connected, else `.false.`.
-        type(tty_type), intent(inout) :: tty
+        type(tty_type), intent(inout) :: tty !! TTY type.
 
         connected = .false.
         if (tty%fd /= -1) connected = .true.
@@ -265,7 +266,7 @@ contains
         parity = 0
         if (present(error)) error = E_INVALID
 
-        select case (name)
+        select case (dm_lower(name))
             case ('none')
                 parity = TTY_PARITY_NONE
             case ('even')
@@ -439,26 +440,37 @@ contains
         if (c_cfsetispeed(termios, baud_rate) /= 0) return
         if (c_cfsetospeed(termios, baud_rate) /= 0) return
 
-        termios%c_cflag = iand(termios%c_cflag, not(CSIZE))                 ! Unset byte size.
-        termios%c_cflag = ior(termios%c_cflag, byte_size)                   ! Set byte size.
-        termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))                ! Unset stop bits.
-        termios%c_cflag = ior(termios%c_cflag, stop_bits)                   ! Set stop bits.
-        termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))       ! Unset parity.
-        termios%c_cflag = ior(termios%c_cflag, parity)                      ! Set parity.
-        termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))          ! Ignore modem controls, enable reading.
-
+        ! Input modes.
         termios%c_iflag = iand(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL)) ! No special handling of received bytes.
         termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))  ! Turn XON/XOFF control off.
 
+        ! Output modes.
+        termios%c_oflag = iand(termios%c_oflag, not(OPOST))                 ! No special interpretation of output bytes.
+
+        ! Control modes.
+        termios%c_cflag = iand(termios%c_cflag, not(CSIZE))                 ! Unset byte size.
+        termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))                ! Unset stop bits.
+        termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))       ! Unset parity.
+        termios%c_cflag = ior(termios%c_cflag, byte_size)                   ! Set byte size.
+        termios%c_cflag = ior(termios%c_cflag, stop_bits)                   ! Set stop bits.
+        termios%c_cflag = ior(termios%c_cflag, parity)                      ! Set parity.
+        termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))          ! Ignore modem controls, enable reading.
+
+        ! Local modes.
         termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL)) ! No echo.
+        termios%c_lflag = iand(termios%c_lflag, not(IEXTEN))                ! No implementation-defined input processing.
         termios%c_lflag = iand(termios%c_lflag, not(ICANON))                ! No canonical processing.
         termios%c_lflag = iand(termios%c_lflag, not(ISIG))                  ! No signal chars.
 
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST + ONLCR))         ! No special interpretation of output bytes.
-
-        ! Blocking read with 1 byte minimum and timeout in 1/10 seconds.
-        termios%c_cc(VMIN)  = 1
-        termios%c_cc(VTIME) = int(min(255, tty%timeout * 10), kind=c_cc_t)
+        if (tty%blocking) then
+            ! Minimum number of characters for non-canonical read.
+            termios%c_cc(VMIN)  = 1
+            termios%c_cc(VTIME) = 0
+        else
+            ! Timeout in deciseconds for non-canonical read.
+            termios%c_cc(VMIN)  = 0
+            termios%c_cc(VTIME) = int(min(255, tty%timeout * 10), kind=c_cc_t)
+        end if
 
         ! Set attributes.
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return

@@ -7,9 +7,9 @@ module dm_la
     implicit none (type, external)
     private
 
-    ! Fortran 90 interfaces to LAPACK.
     interface
         function ilaenv(ispec, name, opts, n1, n2, n3, n4)
+            !! Fortran 90 interface to LAPACK function `ilaenv()`.
             implicit none
             integer,          intent(in) :: ispec
             character(len=*), intent(in) :: name
@@ -22,6 +22,7 @@ module dm_la
         end function ilaenv
 
         subroutine dgels(trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
+            !! Fortran 90 interface to LAPACK subroutine `dgels()`.
             import :: r8
             implicit none
             character,     intent(in)    :: trans
@@ -38,6 +39,7 @@ module dm_la
         end subroutine dgels
 
         subroutine dgelsd(m, n, nrhs, a, lda, b, ldb, s, rcond, rank, work, lwork, iwork, info)
+            !! Fortran 90 interface to LAPACK subroutine `dgelsd()`.
             import :: r8
             implicit none
             integer,       intent(in)    :: m
@@ -58,11 +60,13 @@ module dm_la
     end interface
 
     interface dm_la_gels
+        !! Generic LAPACK `gels()` subroutine for `dgels()` and `dgels1()`.
         module procedure :: dm_la_dgels
         module procedure :: dm_la_dgels1
     end interface
 
     interface dm_la_gelsd
+        !! Generic LAPACK `gelsd()` subroutine for `dgelsd()` and `dgelsd1()`.
         module procedure :: dm_la_dgelsd
         module procedure :: dm_la_dgelsd1
     end interface
