@@ -1,0 +1,85 @@
+= dmimport(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMIMPORT
+
+== NAME
+
+dmimport - imports records from file into database
+
+== SYNOPSIS
+
+*dmimport* --help
+
+*dmimport* --version
+
+*dmimport* --*input* _file_ --*database* _file_ --*type* _type_
+[--*separator* _char_] [--*verbose*]
+
+== DESCRIPTION
+
+The *dmimport* program reads logs, nodes, sensors, targets, and observations
+in CSV format from file and imports them into the database. The database
+inserts are transaction-based. If an error occurs, the transaction is rolled
+back, and no records are written into the database at all.
+
+The database has to be a valid DMPACK database and must contain the tables
+required for the input records. The nodes, sensors, and targets referenced by
+input observations must exist in the database. The nodes referenced by input
+sensors must exist as well.
+
+== OPTIONS
+
+*--database*, *-d* _file_::
+  Path of the SQLite database (required).
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--input*, *-i* _file_::
+  Path of input file in CSV format.
+
+*--separator*, *-a* _char_::
+  CSV separator character.
+
+*--type*, *-t* [log|node|observ|sensor|target]::
+  Type of records to import (required).
+
+*--verbose*, *-V*::
+  Prints progress to standard output.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Records have been imported.
+
+*1*::
+  Failure.
+  Import of records failed.
+
+== EXAMPLE
+
+Import observations from CSV file into database:
+
+....
+$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
+....
+
+== SEE ALSO
+
+_dmexport(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

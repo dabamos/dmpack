@@ -203,7 +203,7 @@ contains
         type(mqueue_type) :: mqueue
 
         if (.not. LOGGER%ipc) return
-        if (.not. LOGGER%debug .and. log%level <= LOG_DEBUG) return
+        if (.not. LOGGER%debug .and. log%level < LOG_INFO) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &

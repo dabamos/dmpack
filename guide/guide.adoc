@@ -791,7 +791,7 @@ empty file will be created.
 |===
 | Option               | Short | Default | Description
 
-| `--database _file_`  | `-d`  | –       | Path to SQLite observation database.
+| `--database _file_`  | `-d`  | –       | Path to SQLite database.
 | `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>>: `block`, `csv`, `json`, `jsonl` (required).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
@@ -1195,11 +1195,38 @@ db.table.beats.rows = 0
 
 === dmimport [[dmimport]]
 
-The *dmimport* program reads nodes, sensors, targets, observations, and logs
-from CSV file and imports them into an SQLite database. The node referenced by a
-sensor must exist in the database, as observations require their attributed
-node, sensor, and target. The data records are imported through a transaction.
-If the insert of a single record fails, no data is written to the database.
+The *dmimport* program reads logs, nodes, sensors, targets, and observations
+in CSV format from file and imports them into the database. The database
+inserts are transaction-based. If an error occurs, the transaction is rolled
+back, and no records are written into the database at all.
+
+The database has to be a valid DMPACK database and must contain the tables
+required for the input records. The nodes, sensors, and targets referenced by
+input observations must exist in the database. The nodes referenced by input
+sensors must exist as well.
+
+==== Command-Line Options
+
+[%autowidth.stretch]
+|===
+| Option               | Short | Default | Description
+
+| `--database _file_`  | `-d`  | –       | Path to SQLite database.
+| `--help`             | `-h`  | –       | Output available command-line arguments and quit.
+| `--input _file_`     | `-i`  | –       | Path of input file in CSV format.
+| `--separator _char_` | `-a`  | `,`     | CSV separator character.
+| `--type _type_`      | `-t`  | –       | Type of record to import: `log`, `node`, `observ`, `sensor`, `target` (required).
+| `--verbose`          | `-V`  | off     | Print progress to _stdout_.
+| `--version`          | `-v`  | –       | Output version information and quit.
+|===
+
+==== Examples
+
+Import observations from CSV file `observ.csv` into database `observ.sqlite`:
+
+....
+$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
+....
 
 === dminit [[dminit]]
 
@@ -3920,8 +3947,13 @@ TARGET%META="Description",
 == Databases
 
 The command-line tool _sqlite3(1)_ is the interactive -line shell for SQLite
-databases that allows the user to execute SQL statements. For example, to write
-the schemas of an observation database to `schema.sql`, run:
+databases that allows the user to execute SQL statements.  The
+link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S) is a
+spreadsheet-like graphical interface. They can be used to perform CRUD
+operations on DMPACK databases.
+
+For example, to write the schemas of an observation database to `schema.sql`,
+run:
 
 ....
 $ sqlite3 /var/dmpack/observ.sqlite ".schema" > schema.sql
@@ -3938,9 +3970,6 @@ Dump only table `logs` of a log database:
 ....
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
-
-The link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S) is a
-spreadsheet-like graphical interface to SQLite databases.
 
 === Schemas
 
@@ -3991,14 +4020,16 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 33   | `E_DB_BUSY`         | Database is busy.
 | 34   | `E_DB_LOCKED`       | Database is locked.
 | 35   | `E_DB_EXEC`         | Database execution failed.
-| 36   | `E_DB_TRANSACTION`  | Database transaction failed.
-| 37   | `E_DB_PREPARE`      | Database prepare failed.
-| 38   | `E_DB_BIND`         | Database binding failed.
-| 39   | `E_DB_TYPE`         | Database type mismatch.
-| 40   | `E_DB_STEP`         | Database step failed.
-| 41   | `E_DB_NO_ROWS`      | Database returned no rows.
-| 42   | `E_DB_CONSTRAINT`   | Database contraint error.
-| 43   | `E_DB_BACKUP`       | Database backup error.
+| 36   | `E_DB_CONSTRAINT`   | Database contraint error.
+| 37   | `E_DB_TRANSACTION`  | Database transaction failed.
+| 38   | `E_DB_ROLLBACK`     | Database rollback failed.
+| 39   | `E_DB_PREPARE`      | Database prepare failed.
+| 40   | `E_DB_FINALIZE`     | Database statement finalisation error.
+| 41   | `E_DB_BIND`         | Database binding failed.
+| 42   | `E_DB_TYPE`         | Database type mismatch.
+| 43   | `E_DB_STEP`         | Database step failed.
+| 44   | `E_DB_NO_ROWS`      | Database returned no rows.
+| 45   | `E_DB_BACKUP`       | Database backup error.
 | 50   | `E_ARG`             | Generic command-line error.
 | 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
 | 52   | `E_ARG_INVALID`     | Argument invalid or missing.

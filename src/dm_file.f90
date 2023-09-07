@@ -30,13 +30,17 @@ contains
         integer,          intent(out), optional :: error !! Error code.
 
         character :: buffer
-        integer   :: fu, stat
+        integer   :: fu, rc, stat
 
-        if (present(error)) error = E_IO
-        n = 0_i8
+        rc = E_IO
+        n  = 0_i8
+
+        if (present(error)) error = rc
 
         open (action='read', file=trim(path), iostat=stat, newunit=fu, status='old')
         if (stat /= 0) return
+
+        rc = E_EMPTY
 
         do
             read (fu, *, iostat=stat) buffer
@@ -44,9 +48,10 @@ contains
             n = n + 1
         end do
 
-        close (fu, iostat=stat)
+        close (fu)
 
-        if (stat == 0 .and. present(error)) error = E_NONE
+        if (n > 0) rc = E_NONE
+        if (present(error)) error = rc
     end function dm_file_line_count
 
     integer(kind=i8) function dm_file_size(path, error) result(sz)

@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmexport - dumps data from database to file
+dmexport - exports records from database to file
 
 == SYNOPSIS
 
@@ -15,9 +15,10 @@ dmexport - dumps data from database to file
 
 *dmexport* --version
 
-*dmexport* --*database* _file_ --type _type_ --format _format_ --*node* _id_
-[--*output* _file_] [--*sensor* _id_] [--*target* _id_] [--*response* _name_]
-[--*from* _timestamp_] [--*to* _timestamp_] [--*header*] [--*separator* _char_]
+*dmexport* --*database* _file_ --*type* _type_ --*format* _format_
+--*node* _id_ [--*output* _file_] [--*sensor* _id_] [--*target* _id_]
+[--*response* _name_] [--*from* _timestamp_] [--*to* _timestamp_] [--*header*]
+[--*separator* _char_]
 
 == DESCRIPTION
 
@@ -29,17 +30,17 @@ The types data point, log, and observation require a given sensor id, target id,
 and time range in ISO 8601 format.
 
 If no output file is given, the data is printed to standard output. The
-output file will be overwritten if it already exists. If no data is found, an
-empty file will be created.
+output file will be overwritten if it already exists. If no records are found,
+an empty file will be created.
 
 == OPTIONS
 
 *--database*, *-d* _file_::
-  Path of the SQLite database to backup (required).
+  Path of the SQLite database (required).
 
 *--format*, *-f* [block|csv|json|jsonl]::
   Output file format, either ASCII block, CSV, JSON, JSON Lines (required).
-  Only data points may be exported in block format.
+  Only data points can be exported in block format.
 
 *--from*, *-B* _timestamp_::
   Start of time range in ISO 8601 (required for types `db`, `log`, `observ`).
@@ -72,20 +73,20 @@ empty file will be created.
   End of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 
 *--type*, *-t* [beat|dp|log|node|observ|sensor|target]::
-  Type of entity to export (required).
+  Type of records to export (required).
 
-*--version*, *-V*::
+*--version*, *-v*::
   Output version information and quit.
 
 == EXIT STATUS
 
 *0*::
   Success.
-  Data has been exported.
+  Records have been exported.
 
 *1*::
   Failure.
-  Data export failed.
+  Export of records failed.
 
 == EXAMPLE
 
@@ -103,6 +104,10 @@ $ dmexport --database observ.sqlite --type observ --format csv --node dummy-node
   --sensor dummy-sensor --target dummy-target --from 2020-01-01 --to 2025-01-01 \
   --output /tmp/observ.csv
 ....
+
+== SEE ALSO
+
+_dmimport(1)_
 
 == RESOURCES
 

@@ -795,9 +795,13 @@ contains
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
-        if (stat /= 0) return
+
+        rc = E_EOF
+        if (is_iostat_end(stat)) return
 
         rc = E_EOR
+        if (is_iostat_eor(stat)) return
+
         n = len_trim(buffer)
         if (n == 0) return
         if (buffer(1:1) == '#') return
@@ -844,9 +848,13 @@ contains
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
-        if (stat /= 0) return
+
+        rc = E_EOF
+        if (is_iostat_end(stat)) return
 
         rc = E_EOR
+        if (is_iostat_eor(stat)) return
+
         n = len_trim(buffer)
         if (n == 0) return
         if (buffer(1:1) == '#') return
@@ -893,10 +901,6 @@ contains
         rc = E_EOR
         if (is_iostat_eor(stat)) return
 
-        rc = E_READ
-        if (stat /= 0) return
-
-        rc = E_EOR
         n = len_trim(buffer)
         if (n == 0) return
         if (buffer(1:1) == '#') return
@@ -999,9 +1003,13 @@ contains
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
-        if (stat /= 0) return
+
+        rc = E_EOF
+        if (is_iostat_end(stat)) return
 
         rc = E_EOR
+        if (is_iostat_eor(stat)) return
+
         n = len_trim(buffer)
         if (n == 0) return
         if (buffer(1:1) == '#') return
@@ -1044,9 +1052,13 @@ contains
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
-        if (stat /= 0) return
+
+        rc = E_EOF
+        if (is_iostat_end(stat)) return
 
         rc = E_EOR
+        if (is_iostat_eor(stat)) return
+
         n = len_trim(buffer)
         if (n == 0) return
         if (buffer(1:1) == '#') return

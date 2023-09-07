@@ -1,0 +1,125 @@
+'\" t
+.\"     Title: dmimport
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.20
+.\"      Date: 2023-09-07
+.\"    Manual: User Commands
+.\"    Source: DMIMPORT
+.\"  Language: English
+.\"
+.TH "DMIMPORT" "1" "2023-09-07" "DMIMPORT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmimport \- imports records from file into database
+.SH "SYNOPSIS"
+.sp
+\fBdmimport\fP \-\-help
+.sp
+\fBdmimport\fP \-\-version
+.sp
+\fBdmimport\fP \-\-\fBinput\fP \fIfile\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP
+[\-\-\fBseparator\fP \fIchar\fP] [\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmimport\fP program reads logs, nodes, sensors, targets, and observations
+in CSV format from file and imports them into the database. The database
+inserts are transaction\-based. If an error occurs, the transaction is rolled
+back, and no records are written into the database at all.
+.sp
+The database has to be a valid DMPACK database and must contain the tables
+required for the input records. The nodes, sensors, and targets referenced by
+input observations must exist in the database. The nodes referenced by input
+sensors must exist as well.
+.SH "OPTIONS"
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path of the SQLite database (required).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-input\fP, \fB\-i\fP \fIfile\fP
+.RS 4
+Path of input file in CSV format.
+.RE
+.sp
+\fB\-\-separator\fP, \fB\-a\fP \fIchar\fP
+.RS 4
+CSV separator character.
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [log|node|observ|sensor|target]
+.RS 4
+Type of records to import (required).
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Prints progress to standard output.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Records have been imported.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Import of records failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Import observations from CSV file into database:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmimport \-\-type observ \-\-input observ.csv \-\-database observ.sqlite \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmexport(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2023 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

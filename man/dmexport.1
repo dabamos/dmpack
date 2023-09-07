@@ -2,12 +2,12 @@
 .\"     Title: dmexport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-06
+.\"      Date: 2023-09-07
 .\"    Manual: User Commands
 .\"    Source: DMEXPORT
 .\"  Language: English
 .\"
-.TH "DMEXPORT" "1" "2023-09-06" "DMEXPORT" "User Commands"
+.TH "DMEXPORT" "1" "2023-09-07" "DMEXPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,16 +28,17 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmexport \- dumps data from database to file
+dmexport \- exports records from database to file
 .SH "SYNOPSIS"
 .sp
 \fBdmexport\fP \-\-help
 .sp
 \fBdmexport\fP \-\-version
 .sp
-\fBdmexport\fP \-\-\fBdatabase\fP \fIfile\fP \-\-type \fItype\fP \-\-format \fIformat\fP \-\-\fBnode\fP \fIid\fP
-[\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP] [\-\-\fBresponse\fP \fIname\fP]
-[\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBheader\fP] [\-\-\fBseparator\fP \fIchar\fP]
+\fBdmexport\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP \-\-\fBformat\fP \fIformat\fP
+\-\-\fBnode\fP \fIid\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP]
+[\-\-\fBresponse\fP \fIname\fP] [\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBheader\fP]
+[\-\-\fBseparator\fP \fIchar\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmexport\fP program writes logs, nodes, sensors, targets, and observations
@@ -48,19 +49,19 @@ The types data point, log, and observation require a given sensor id, target id,
 and time range in ISO 8601 format.
 .sp
 If no output file is given, the data is printed to standard output. The
-output file will be overwritten if it already exists. If no data is found, an
-empty file will be created.
+output file will be overwritten if it already exists. If no records are found,
+an empty file will be created.
 .SH "OPTIONS"
 .sp
 \fB\-\-database\fP, \fB\-d\fP \fIfile\fP
 .RS 4
-Path of the SQLite database to backup (required).
+Path of the SQLite database (required).
 .RE
 .sp
 \fB\-\-format\fP, \fB\-f\fP [block|csv|json|jsonl]
 .RS 4
 Output file format, either ASCII block, CSV, JSON, JSON Lines (required).
-Only data points may be exported in block format.
+Only data points can be exported in block format.
 .RE
 .sp
 \fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
@@ -115,10 +116,10 @@ End of time range in ISO 8601 (required for types \f(CRdp\fP, \f(CRlog\fP, and \
 .sp
 \fB\-\-type\fP, \fB\-t\fP [beat|dp|log|node|observ|sensor|target]
 .RS 4
-Type of entity to export (required).
+Type of records to export (required).
 .RE
 .sp
-\fB\-\-version\fP, \fB\-V\fP
+\fB\-\-version\fP, \fB\-v\fP
 .RS 4
 Output version information and quit.
 .RE
@@ -127,13 +128,13 @@ Output version information and quit.
 \fB0\fP
 .RS 4
 Success.
-Data has been exported.
+Records have been exported.
 .RE
 .sp
 \fB1\fP
 .RS 4
 Failure.
-Data export failed.
+Export of records failed.
 .RE
 .SH "EXAMPLE"
 .sp
@@ -159,6 +160,9 @@ $ dmexport \-\-database observ.sqlite \-\-type observ \-\-format csv \-\-node du
 .fam
 .fi
 .if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmimport(1)\fP
 .SH "RESOURCES"
 .sp
 \fBProject web site:\fP \c

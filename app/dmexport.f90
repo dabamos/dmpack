@@ -41,8 +41,6 @@ program dmexport
     ! Create selected database type.
     rc = export(app)
     if (dm_is_error(rc)) call dm_stop(1)
-
-    call dm_stop(0)
 contains
     integer function export(app) result(rc)
         type(app_type), intent(inout) :: app

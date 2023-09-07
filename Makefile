@@ -91,6 +91,7 @@ DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
 DMGRAPH  = $(DISTDIR)/dmgraph
+DMIMPORT = $(DISTDIR)/dmimport
 DMINFO   = $(DISTDIR)/dminfo
 DMINIT   = $(DISTDIR)/dminit
 DMLOG    = $(DISTDIR)/dmlog
@@ -260,14 +261,15 @@ OBJ = dm_version.o \
       dm_transform.o \
       dmpack.o
 
-.PHONY: all app clean deinstall doc freebsd guide install install_freebsd \
-        install_linux linux man purge setup test
+.PHONY: all app clean deinstall doc freebsd guide html install install_freebsd \
+        install_linux linux man pdf purge setup test
 
 all: $(TARGET) $(SHARED) test app
 
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
-     $(DMFS) $(DMGRAPH) $(DMINFO) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-     $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMWEB)
+     $(DMFS) $(DMGRAPH) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
+     $(DMLUA) $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSERIAL) $(DMSYNC) $(DMUUID) \
+     $(DMWEB)
 
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
       dmtesthash dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson \
@@ -536,6 +538,9 @@ $(DMFS): app/dmfs.f90
 $(DMGRAPH): app/dmgraph.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRAPH) app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
 
+$(DMIMPORT): app/dmimport.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMIMPORT) app/dmimport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+
 $(DMINFO): app/dminfo.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMINFO) app/dminfo.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
@@ -581,6 +586,12 @@ doc:
 man:
 	cd $(ADOCDIR) && $(MAKE) man
 
+html:
+	cd $(ADOCDIR) && $(MAKE) html
+
+pdf:
+	cd $(ADOCDIR) && $(MAKE) pdf
+
 #
 # User's Guide.
 #
@@ -605,6 +616,7 @@ install:
 	install -m 755 $(DISTDIR)/dmfeed $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmfs $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmgraph $(PREFIX)/bin/
+	install -m 755 $(DISTDIR)/dmimport $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dminfo $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dminit $(PREFIX)/bin/
 	install -m 755 $(DISTDIR)/dmlog $(PREFIX)/bin/
@@ -642,6 +654,7 @@ deinstall:
 	$(RM) -f $(PREFIX)/dmfeed
 	$(RM) -f $(PREFIX)/dmfs
 	$(RM) -f $(PREFIX)/dmgraph
+	$(RM) -f $(PREFIX)/dmimport
 	$(RM) -f $(PREFIX)/dminfo
 	$(RM) -f $(PREFIX)/dminit
 	$(RM) -f $(PREFIX)/dmlog
