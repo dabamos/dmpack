@@ -109,7 +109,7 @@ The following programs are based on the DMPACK library.
 | [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
 | [dmgraph](adoc/dmgraph.adoc)   | Generates plots from observations in database.                      |
-| dmimport                       | Imports database records from CSV file.                             |
+| [dmimport](adoc/dmimport.adoc) | Imports database records from CSV file.                             |
 | [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key-value pairs.          |
 | [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |
 | [dmlog](adoc/dmlog.adoc)       | Sends log messages to logger via message queue.                     |
