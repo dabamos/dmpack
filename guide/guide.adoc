@@ -123,12 +123,24 @@ package:
 * zlib
 
 To generate the man pages, the User’s Guide, and the source code documentation,
-you will need furthermore:
+you will also need:
 
 * link:https://asciidoctor.org/[AsciiDoctor],
   link:https://pygments.org/[Pygments], and
   link:https://rubygems.org/gems/pygments.rb/versions/2.2.0[pygments.rb]
 * link:https://github.com/Fortran-FOSS-Programmers/ford[FORD]
+
+DMPACK depends on the following interface libraries:
+
+* link:https://github.com/interkosmos/fortran-curl[fortran-curl]
+* link:https://github.com/interkosmos/fortran-lua54[fortran-lua54]
+* link:https://github.com/interkosmos/fortran-pcre2[fortran-pcre2]
+* link:https://github.com/interkosmos/fortran-sqlite3[fortran-sqlite3]
+* link:https://github.com/interkosmos/fortran-unix[fortran-unix]
+* link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
+
+If the DMPACK repository is cloned recursively, these submodules will be
+downloaded automatically to directory `vendor/`.
 
 == Installation
 
@@ -459,8 +471,6 @@ via POSIX message queue.
 
 <<dmlua>>:: Runs a custom Lua script to process an observation and forward it
 to the next specified receiver.
-<<dmtransform>>:: Transforms observations (Helmert transformation, polar
-transformation).
 
 === Plots & Reports
 
@@ -493,10 +503,9 @@ Observations are forwarded via POSIX message queue and/or written to file.
 pipe and forwards the output via POSIX message queue. Optionally, observations
 are written to file or _stdout_.
 <<dmserial>>:: Connects to a TTY/PTY serial port for sensor communication. The
-program either passively waits for incoming sensor data (_stream mode_), or
-actively sends requests to receive responses (_request mode_). The program
-pre-processes the received observation data using regular expressions and
-forwards them to another process via POSIX message queue.
+program sends requests to a connected sensor to receive responses. The program
+pre-processes the response data using regular expressions and forwards
+observations via POSIX message queue.
 
 === Utilities
 
@@ -1850,7 +1859,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
 | `--config _file_`   | `-c`  | –          | Path to configuration file (required).
 | `--debug`           | `-D`  | off        | Forward log messages of level DEBUG via IPC (if logger is set).
-| `--dtr`             | `-D`  | off        | Enable Data Terminal Ready (DTR).
+| `--dtr`             | `-Q`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –          | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1957,8 +1966,6 @@ Synchronise log messages:
 ....
 $ dmsync --database log.sqlite --type log --host 192.168.1.100
 ....
-
-=== dmtransform [[dmtransform]]
 
 === dmuuid [[dmuuid]]
 
@@ -2095,8 +2102,34 @@ the _htpasswd_ user file:
 ....
 
 Replace `<user>` and `<password>` with real values. Instead of a _htpasswd_
-file for, we may select a different authentication backend, for example, LDAP.
-See the _lighttpd(1)_ auth module documentation for further instructions.
+file for, we may select a different authentication backend, for example, LDAP,
+MySQL/MariaDB, PostgreSQL, or SQLite 3. See the _lighttpd(1)_ auth module
+documentation for further instructions.
+
+=== Cross-Origin Resource Sharing
+
+If the HTTP-RPC API will be accessed by a client-side application running in the
+browser, the web server has to be configured to send the appropriate
+link:https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-Origin Resource Sharing]
+(CORS) headers. By default, asynchronous JavaScript requests are forbidden by
+the same-origin security policy. Refer to the documentation of the web server on
+how to set the `Access-Control-*` headers. For _lighttpd(1)_, load the module
+`mod_setenv` and add response headers for OPTION requests:
+
+[source,lighttpd]
+....
+$HTTP["request-method"] =~ "^(OPTIONS)$" {
+  setenv.add-response-header = (
+    "Access-Control-Allow-Origin"   => "*",
+    "Access-Control-Allow-Headers"  => "accept, origin, x-requested-with, content-type, x-transmission-session-id",
+    "Access-Control-Expose-Headers" => "X-Transmission-Session-Id",
+    "Access-Control-Allow-Methods"  => "GET, POST, OPTIONS"
+  )
+}
+....
+
+If the web server is behind a reverse proxy, CORS headers should be set by the
+proxy instead.
 
 === Databases
 
@@ -2220,7 +2253,7 @@ server.modules += (
 )
 
 # Maximum number of concurrent connections and maximum
-# HTTP request size in bytes (optional).
+# HTTP request size in KiB (optional).
 server.max-connections  = 16
 server.max-request-size = 8192
 
@@ -3198,9 +3231,6 @@ On POST, adds target in Namelist format to database. Optionally, the payload
 may be deflate compressed. The API returns HTTP 201 Created if the target was
 accepted.
 
-If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
-the target, otherwise, the request will be rejected as unauthorised (HTTP 401).
-
 ==== Paths
 
 * `/api/v1/target`
@@ -3280,8 +3310,9 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 DMPACK supports the following data serialisation formats:
 
-Atom (XML):: Export of log messages in Atom Syndication Format (RFC 4287), with
-optional XSLT style sheet.
+Atom (XML):: Export of log messages in
+link:https://en.wikipedia.org/wiki/Atom_(web_standard)[Atom Syndication Format]
+(RFC 4287), with optional XSLT style sheet.
 Block:: Export of observation responses as X/Y data points in ASCII block
 format, consisting of timestamp (ISO 8601) and real value.
 CSV:: Export and import of beat, log, node, observation, sensor, and target
@@ -3737,7 +3768,7 @@ NODE%META="Description",
   "requests": [
     {
       "timestamp": "1970-01-01T00:00:00.000+00:00",
-      "request": "?",
+      "request": "?\\n",
       "response": "10.0\\n",
       "delimiter": "\\n",
       "pattern": "(?<sample>[-+0-9\\.]+)",
@@ -3780,10 +3811,10 @@ NODE%META="Description",
   requests = {
     {
       timestamp = "1970-01-01T00:00:00.000+00:00",
-      request = "?",
+      request = "?\\n",
       response = "10.0\\n",
       pattern = "(?<sample>[-+0-9\\.]+)",
-      delimiter = "",
+      delimiter = "\\n",
       delay = 0,
       error = 0,
       retries = 0,
@@ -3820,7 +3851,7 @@ OBSERV%NRECEIVERS=2,
 OBSERV%NREQUESTS=1,
 OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
 OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.000+00:00",
-OBSERV%REQUESTS(1)%REQUEST="?",
+OBSERV%REQUESTS(1)%REQUEST="?\n",
 OBSERV%REQUESTS(1)%RESPONSE="10.0\n",
 OBSERV%REQUESTS(1)%DELIMITER="\n",
 OBSERV%REQUESTS(1)%PATTERN="(?<sample>[-+0-9\.]+)",
