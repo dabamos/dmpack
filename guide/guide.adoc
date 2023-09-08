@@ -453,7 +453,7 @@ read, add, update, or delete nodes, sensors, and targets.
 <<dmexport>>:: Exports beats, nodes, sensors, targets, observations, and
 logs from database to file, either in CSV, JSON, or JSON Lines format.
 <<dmimport>>:: Imports nodes, sensors, targets, observations, and logs from CSV
-file to database.
+file into database.
 <<dminit>>:: Creates and initialises SQLite observation, log, and beat
 databases.
 <<dmlogger>>:: Stores logs received from POSIX message queue in a SQLite
@@ -1144,7 +1144,7 @@ configuration file.
 | `--terminal _terminal_` | `-M`  | –         | <<dmgraph-format,Plot format>>.
 | `--title _title_`       | `-T`  | –         | Plot title.
 | `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
-| `--version`             | `-V`  | –         | Output version information and quit.
+| `--version`             | `-v`  | –         | Output version information and quit.
 | `--width _n_`           | `-W`  | 1000      | Plot width.
 |===
 
@@ -1164,7 +1164,12 @@ Output the plot directly to terminal, with the configuration loaded from file:
 $ dmgraph --name dmgraph -node --config dmgraph.conf --terminal sixelgd
 ....
 
-The `sixelgd` format requires a terminal emulator with Sixel support.
+The `sixelgd` format requires a terminal emulator with Sixel support (such as
+_xterm(1)_ or _mlterm(1)_).
+
+.Plotting time series directly in XTerm
+[#img-dmgraph]
+image::dmgraph.png[dmgraph,align="center"]
 
 === dminfo [[dminfo]]
 
@@ -2187,7 +2192,8 @@ auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 # extforward.headers = ( "X-Real-IP" )
 # extforward.forwarder = ( "<PROXY IP>" => "trust" )
 
-# FastCGI configuration.
+# FastCGI configuration. Run two worker processes, and pass the database paths
+# through environment variables.
 fastcgi.server = (
   "/api/v1" => ((
     "socket"      => "/var/lighttpd/sockets/dmapi.sock",
@@ -2203,7 +2209,7 @@ fastcgi.server = (
   ))
 )
 
-# Routes.
+# URL routing.
 $HTTP["url"] =^ "/api/v1" {
   # Enable HTTP Basic Auth.
   auth.require = ( "" => (
@@ -2254,8 +2260,8 @@ server.modules += (
   "mod_setenv"
 )
 
-# Maximum number of concurrent connections and maximum
-# HTTP request size in KiB (optional).
+# Set maximum number of concurrent connections and maximum
+# HTTP request size of 8192 KiB (optional).
 server.max-connections  = 16
 server.max-request-size = 8192
 
@@ -2271,7 +2277,7 @@ setenv.add-environment = (
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
-# Routes.
+# URL routing.
 $HTTP["url"] =^ "/dmpack/" {
   # Map URL to CGI executable.
   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
@@ -2283,7 +2289,9 @@ $HTTP["url"] =^ "/dmpack/" {
     "require" => "valid-user"
   ))
 
-  # CGI settings.
+  # CGI settings. Do not assign file endings to script interpreters,
+  # execute only applications with execute bit set, enable write and
+  # read timeouts of 30 seconds.
   cgi.assign = ( "" => "" )
   cgi.execute-x-only = "enable"
   cgi.limits = (
@@ -2295,8 +2303,9 @@ $HTTP["url"] =^ "/dmpack/" {
 ....
 
 Copy the CSS file from `/usr/local/share/dmpack/dmpack.min.css` to the WWW root
-directory, in this case, `/var/www/`, or just create a symlink. The execute bit
-has to be set for all CGI programs.
+directory, in this case, `/var/www/`, or just create a symlink. If the style
+sheet has to be served from a path different from the root path, add a rewrite
+rule or alias to the web server configuration.
 
 On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
 server manually:
@@ -4008,6 +4017,10 @@ Dump only table `logs` of a log database:
 ....
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
+
+.DMPACK observation database in DB4S
+[#img-sqlitebrowser]
+image::sqlitebrowser.png[sqlitebrowser,align="center"]
 
 === Schemas
 
