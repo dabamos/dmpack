@@ -55,7 +55,7 @@ node, sensor, and targets.
 *--debug*, *-D*::
   Forward logs messages of level DEBUG via IPC (if logger is set).
 
-*--dtr*, *-D*::
+*--dtr*, *-Q*::
   Enable Data Terminal Ready (DTR).
 
 *--format*, *-f* [csv|jsonl]::

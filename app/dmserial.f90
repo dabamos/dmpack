@@ -250,7 +250,7 @@ contains
             arg_type('parity',   short='P', type=ARG_TYPE_CHAR),     & ! -P, --parity <string>
             arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER),  & ! -O, --stopbits <n>
             arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER),  & ! -T, --timeout <n>
-            arg_type('dtr',      short='D', type=ARG_TYPE_BOOL),     & ! -D, --dtr
+            arg_type('dtr',      short='Q', type=ARG_TYPE_BOOL),     & ! -Q, --dtr
             arg_type('rts',      short='R', type=ARG_TYPE_BOOL),     & ! -R, --rts
             arg_type('debug',    short='D', type=ARG_TYPE_BOOL),     & ! -D, --debug
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)      & ! -V, --verbose

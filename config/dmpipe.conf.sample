@@ -26,7 +26,7 @@
 observ = {
     name = "dummy-observ",
     target_id = "dummy-target",
-    receivers = { },
+    receivers = { "dmrecv" },
     requests = {
         --
         -- Read CPU temperature.

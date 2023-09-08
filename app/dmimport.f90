@@ -266,7 +266,7 @@ contains
 
         rc = E_INVALID
 
-        ! Data type.
+        ! Validate data type.
         select case (app%type)
             case (TYPE_NODE)
             case (TYPE_SENSOR)

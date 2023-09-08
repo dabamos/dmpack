@@ -31,6 +31,7 @@ module dm_beat
     public :: operator (==)
 
     public :: dm_beat_equals
+    public :: dm_beat_out
     public :: dm_beat_valid
 contains
     pure elemental logical function dm_beat_equals(beat1, beat2) result(equals)
@@ -58,4 +59,23 @@ contains
         if (beat%interval < 0_i8) return
         valid = .true.
     end function dm_beat_valid
+
+    subroutine dm_beat_out(beat, unit)
+        !! Prints beat to standard output or given file unit.
+        type(beat_type), intent(inout)        :: beat
+        integer,         intent(in), optional :: unit
+
+        integer :: unit_
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        write (unit_, '("beat.node_id = ", a)')   trim(beat%node_id)
+        write (unit_, '("beat.address = ", a)')   trim(beat%address)
+        write (unit_, '("beat.time_sent = ", a)') trim(beat%time_sent)
+        write (unit_, '("beat.time_recv = ", a)') trim(beat%time_recv)
+        write (unit_, '("beat.error = ", i0)')    beat%error
+        write (unit_, '("beat.interval = ", i0)') beat%interval
+        write (unit_, '("beat.uptime = ", i0)')   beat%uptime
+    end subroutine dm_beat_out
 end module dm_beat

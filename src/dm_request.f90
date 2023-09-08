@@ -195,26 +195,26 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("request%timestamp=", a)')   trim(request%timestamp)
-        write (unit_, '("request%request=", a)')     trim(request%request)
-        write (unit_, '("request%response=", a)')    trim(request%response)
-        write (unit_, '("request%delimiter=", a)')   trim(request%delimiter)
-        write (unit_, '("request%pattern=", a)')     trim(request%pattern)
-        write (unit_, '("request%delay=", i0)')      request%delay
-        write (unit_, '("request%error=", i0)')      request%error
-        write (unit_, '("request%retries=", i0)')    request%retries
-        write (unit_, '("request%state=", i0)')      request%state
-        write (unit_, '("request%timeout=", i0)')    request%timeout
-        write (unit_, '("request%nresponses=", i0)') request%nresponses
+        write (unit_, '("request.timestamp = ", a)')   trim(request%timestamp)
+        write (unit_, '("request.request = ", a)')     trim(request%request)
+        write (unit_, '("request.response = ", a)')    trim(request%response)
+        write (unit_, '("request.delimiter = ", a)')   trim(request%delimiter)
+        write (unit_, '("request.pattern = ", a)')     trim(request%pattern)
+        write (unit_, '("request.delay = ", i0)')      request%delay
+        write (unit_, '("request.error = ", i0)')      request%error
+        write (unit_, '("request.retries = ", i0)')    request%retries
+        write (unit_, '("request.state = ", i0)')      request%state
+        write (unit_, '("request.timeout = ", i0)')    request%timeout
+        write (unit_, '("request.nresponses = ", i0)') request%nresponses
 
         do i = 1, request%nresponses
-            write (unit_, '("request%responses(", i0, ")%name=", a)') &
+            write (unit_, '("request.responses(", i0, ").name = ", a)') &
                 i, trim(request%responses(i)%name)
-            write (unit_, '("request%responses(", i0, ")%value=", f0.5)') &
+            write (unit_, '("request.responses(", i0, ").value = ", f0.5)') &
                 i, request%responses(i)%value
-            write (unit_, '("request%responses(", i0, ")%unit=", a)') &
+            write (unit_, '("request.responses(", i0, ").unit = ", a)') &
                 i, trim(request%responses(i)%unit)
-            write (unit_, '("request%responses(", i0, ")%error=", i0)') &
+            write (unit_, '("request.responses(", i0, ").error = ", i0)') &
                 i, request%responses(i)%error
         end do
     end subroutine dm_request_out

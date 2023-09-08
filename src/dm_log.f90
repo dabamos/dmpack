@@ -55,6 +55,7 @@ module dm_log
     public :: operator (==)
 
     public :: dm_log_equals
+    public :: dm_log_out
     public :: dm_log_valid
 contains
     pure elemental logical function dm_log_equals(log1, log2) result(equals)
@@ -91,4 +92,26 @@ contains
 
         valid = .true.
     end function dm_log_valid
+
+    subroutine dm_log_out(log, unit)
+        !! Prints log to standard output or given file unit.
+        type(log_type), intent(inout)        :: log
+        integer,        intent(in), optional :: unit
+
+        integer :: unit_
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        write (unit_, '("log.id = ", a)')        trim(log%id)
+        write (unit_, '("log.level = ", i0)')    log%level
+        write (unit_, '("log.error = ", i0)')    log%error
+        write (unit_, '("log.timestamp = ", a)') trim(log%timestamp)
+        write (unit_, '("log.node_id = ", a)')   trim(log%node_id)
+        write (unit_, '("log.sensor_id = ", a)') trim(log%sensor_id)
+        write (unit_, '("log.target_id = ", a)') trim(log%target_id)
+        write (unit_, '("log.observ_id = ", a)') trim(log%observ_id)
+        write (unit_, '("log.source = ", a)')    trim(log%source)
+        write (unit_, '("log.message = ", a)')   trim(log%message)
+    end subroutine dm_log_out
 end module dm_log

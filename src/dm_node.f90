@@ -61,8 +61,8 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("node%id=", a)')   trim(node%id)
-        write (unit_, '("node%name=", a)') trim(node%name)
-        write (unit_, '("node%meta=", a)') trim(node%meta)
+        write (unit_, '("node.id = ", a)')   trim(node%id)
+        write (unit_, '("node.name = ", a)') trim(node%name)
+        write (unit_, '("node.meta = ", a)') trim(node%meta)
     end subroutine dm_node_out
 end module dm_node

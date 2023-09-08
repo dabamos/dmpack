@@ -280,44 +280,44 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("observ%id=", a)')          trim(observ%id)
-        write (unit_, '("observ%node_id=", a)')     trim(observ%node_id)
-        write (unit_, '("observ%sensor_id=", a)')   trim(observ%sensor_id)
-        write (unit_, '("observ%target_id=", a)')   trim(observ%target_id)
-        write (unit_, '("observ%name=", a)')        trim(observ%name)
-        write (unit_, '("observ%timestamp=", a)')   observ%timestamp
-        write (unit_, '("observ%path=", a)')        trim(observ%path)
-        write (unit_, '("observ%priority=", i0)')   observ%priority
-        write (unit_, '("observ%error=", i0)')      observ%error
-        write (unit_, '("observ%next=", i0)')       observ%next
-        write (unit_, '("observ%nreceivers=", i0)') observ%nreceivers
-        write (unit_, '("observ%nrequests=", i0)')  observ%nrequests
+        write (unit_, '("observ.id = ", a)')          trim(observ%id)
+        write (unit_, '("observ.node_id = ", a)')     trim(observ%node_id)
+        write (unit_, '("observ.sensor_id = ", a)')   trim(observ%sensor_id)
+        write (unit_, '("observ.target_id = ", a)')   trim(observ%target_id)
+        write (unit_, '("observ.name = ", a)')        trim(observ%name)
+        write (unit_, '("observ.timestamp = ", a)')   observ%timestamp
+        write (unit_, '("observ.path = ", a)')        trim(observ%path)
+        write (unit_, '("observ.priority = ", i0)')   observ%priority
+        write (unit_, '("observ.error = ", i0)')      observ%error
+        write (unit_, '("observ.next = ", i0)')       observ%next
+        write (unit_, '("observ.nreceivers = ", i0)') observ%nreceivers
+        write (unit_, '("observ.nrequests = ", i0)')  observ%nrequests
 
         do i = 1, observ%nreceivers
-            write (unit_, '("observ%receivers(", i0, ")=", a)') i, trim(observ%receivers(i))
+            write (unit_, '("observ.receivers(", i0, ") = ", a)') i, trim(observ%receivers(i))
         end do
 
         do i = 1, observ%nrequests
-            write (unit_, '("observ%requests(", i0, ")%timestamp=", a)')   i, trim(observ%requests(i)%timestamp)
-            write (unit_, '("observ%requests(", i0, ")%request=", a)')     i, trim(observ%requests(i)%request)
-            write (unit_, '("observ%requests(", i0, ")%response=", a)')    i, trim(observ%requests(i)%response)
-            write (unit_, '("observ%requests(", i0, ")%delimiter=", a)')   i, trim(observ%requests(i)%delimiter)
-            write (unit_, '("observ%requests(", i0, ")%pattern=", a)')     i, trim(observ%requests(i)%pattern)
-            write (unit_, '("observ%requests(", i0, ")%delay=", i0)')      i, observ%requests(i)%delay
-            write (unit_, '("observ%requests(", i0, ")%error=", i0)')      i, observ%requests(i)%error
-            write (unit_, '("observ%requests(", i0, ")%retries=", i0)')    i, observ%requests(i)%retries
-            write (unit_, '("observ%requests(", i0, ")%state=", i0)')      i, observ%requests(i)%state
-            write (unit_, '("observ%requests(", i0, ")%timeout=", i0)')    i, observ%requests(i)%timeout
-            write (unit_, '("observ%requests(", i0, ")%nresponses=", i0)') i, observ%requests(i)%nresponses
+            write (unit_, '("observ.requests(", i0, ").timestamp = ", a)')   i, trim(observ%requests(i)%timestamp)
+            write (unit_, '("observ.requests(", i0, ").request = ", a)')     i, trim(observ%requests(i)%request)
+            write (unit_, '("observ.requests(", i0, ").response = ", a)')    i, trim(observ%requests(i)%response)
+            write (unit_, '("observ.requests(", i0, ").delimiter = ", a)')   i, trim(observ%requests(i)%delimiter)
+            write (unit_, '("observ.requests(", i0, ").pattern = ", a)')     i, trim(observ%requests(i)%pattern)
+            write (unit_, '("observ.requests(", i0, ").delay = ", i0)')      i, observ%requests(i)%delay
+            write (unit_, '("observ.requests(", i0, ").error = ", i0)')      i, observ%requests(i)%error
+            write (unit_, '("observ.requests(", i0, ").retries = ", i0)')    i, observ%requests(i)%retries
+            write (unit_, '("observ.requests(", i0, ").state = ", i0)')      i, observ%requests(i)%state
+            write (unit_, '("observ.requests(", i0, ").timeout = ", i0)')    i, observ%requests(i)%timeout
+            write (unit_, '("observ.requests(", i0, ").nresponses = ", i0)') i, observ%requests(i)%nresponses
 
             do j = 1, observ%requests(i)%nresponses
-                write (unit_, '("observ%requests(", i0, ")%responses(", i0, ")%name=", a)') &
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").name = ", a)') &
                     i, j, trim(observ%requests(i)%responses(j)%name)
-                write (unit_, '("observ%requests(", i0, ")%responses(", i0, ")%value=", f0.5)') &
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").value = ", f0.5)') &
                     i, j, observ%requests(i)%responses(j)%value
-                write (unit_, '("observ%requests(", i0, ")%responses(", i0, ")%unit=", a)') &
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").unit = ", a)') &
                     i, j, trim(observ%requests(i)%responses(j)%unit)
-                write (unit_, '("observ%requests(", i0, ")%responses(", i0, ")%error=", i0)') &
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").error = ", i0)') &
                     i, j, observ%requests(i)%responses(j)%error
             end do
         end do

@@ -60,10 +60,10 @@ DMPACK covers the following tasks:
 * heartbeats
 * server-side web applications
 * time series plotting
+* MQTT connectivity
 * Lua scripting
 * HTML5 reports
 * Atom XML web feeds
-* MQTT connectivity
 * e-mail
 
 ## Requirements
@@ -163,17 +163,6 @@ $ doas make install PREFIX=/usr/local
 The DMPACK programs require the shared library `libgfortran.so` if they have
 been compiled with GNU Fortran.
 
-The following paths are assumed as defaults on FreeBSD:
-
-| Path                       | Description                        |
-|----------------------------|------------------------------------|
-| `/usr/local/bin/`          | DMPACK programs.                   |
-| `/usr/local/etc/dmpack/`   | Configuration files.               |
-| `/usr/local/lib/`          | DMPACK libraries and module files. |
-| `/usr/local/share/dmpack/` | Examples, scripts, style sheets.   |
-| `/var/dmpack/`             | Databases, PID files.              |
-| `/var/www/`                | WWW root directory.                |
-
 ### Linux
 
 On Debian, install GCC, GNU Fortran, and the build environment:
@@ -212,6 +201,9 @@ To install to a custom directory, run:
 ```
 $ sudo make install PREFIX=/opt
 ```
+
+The DMPACK programs require the shared library `libgfortran.so` if they have
+been compiled with GNU Fortran.
 
 ### Updates
 
