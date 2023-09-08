@@ -11,12 +11,12 @@ program dmtestlogger
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestlogger%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestlogger.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=*), parameter   :: JSON = &
             '{ "id": "f5ec2dd3870a47b5be3ae397552706fe", "level": 4, "error": 1, "timestamp": ' // &
             '"1970-01-01T00:00:00.000+00:00", "node_id": "test-node", "sensor_id": "test-sensor", ' // &
@@ -78,5 +78,5 @@ contains
         print *, dm_json_from(logs)
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestlogger

@@ -10,12 +10,12 @@ program dmteststring
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmteststring%dm_test01', dm_test01)
+    tests(1) = test_type('dmteststring.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=:), allocatable :: a, b
         integer                       :: n
 
@@ -36,5 +36,5 @@ contains
         if (n /= 4) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmteststring

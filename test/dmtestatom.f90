@@ -10,12 +10,12 @@ program dmtestatom
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestatom%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestatom.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=:), allocatable :: xml
         type(atom_type)               :: atom
         type(log_type)                :: logs(2)
@@ -35,5 +35,5 @@ contains
         print '(a)', xml
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestatom

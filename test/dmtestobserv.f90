@@ -12,12 +12,12 @@ program dmtestobserv
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestobserv%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestobserv.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=*), parameter :: JSON = &
             '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
             '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000+00:00", "path": ' // &
@@ -116,6 +116,6 @@ contains
         ! print *, str
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestobserv
 

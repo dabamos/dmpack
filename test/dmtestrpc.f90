@@ -48,13 +48,13 @@ program dmtestrpc
         call dm_stop(0)
     end if
 
-    tests(1) = test_type('dmtestrpc%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestrpc%dm_test02', dm_test02)
-    tests(3) = test_type('dmtestrpc%dm_test03', dm_test03)
+    tests(1) = test_type('dmtestrpc.test01', test01)
+    tests(2) = test_type('dmtestrpc.test02', test02)
+    tests(3) = test_type('dmtestrpc.test03', test03)
 
     call dm_test_run(tests, stats, no_color)
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=*), parameter :: URL1 = 'http://example.com:8080/api/v1'
         character(len=*), parameter :: URL2 = 'https://example.com/api/v1'
 
@@ -73,9 +73,9 @@ contains
         if (res /= URL2) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! This test sends multiple observations via HTTP GET request to
         !! an RPC-API.
         integer                 :: i, rc
@@ -148,9 +148,9 @@ contains
 
         call dm_rpc_destroy()
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         !! This test sends a beat via HTTP POST request to an RPC-API.
         integer          :: rc
         integer(kind=i8) :: uptime
@@ -191,5 +191,5 @@ contains
 
         print *, 'beat sent in ', real(dt), ' sec'
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 end program dmtestrpc

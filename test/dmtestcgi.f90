@@ -11,14 +11,14 @@ program dmtestcgi
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestcgi%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestcgi%dm_test02', dm_test02)
-    tests(3) = test_type('dmtestcgi%dm_test03', dm_test03)
+    tests(1) = test_type('dmtestcgi.test01', test01)
+    tests(2) = test_type('dmtestcgi.test02', test02)
+    tests(3) = test_type('dmtestcgi.test03', test03)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Decodes encoded string.
         character(len=*), parameter :: URL = 'https://www.example.com/api/v1/test/?p=1&amp;x="test"'
         character(len=128) :: input, output
@@ -46,9 +46,9 @@ contains
         print *, 'strings match'
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! Reads HTTP POST data.
         character(len=:), allocatable :: content
         integer                       :: rc
@@ -63,9 +63,9 @@ contains
         call dm_cgi_header(MIME_HTML, HTTP_OK)
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         !! Reads `QUERY_STRING` parameters as key-value pairs.
         character(len=32)    :: dummy
         integer              :: i, rc
@@ -85,5 +85,5 @@ contains
         print *, 'dummy: ', trim(dummy)
 
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 end program dmtestcgi

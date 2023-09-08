@@ -346,7 +346,7 @@ Disable coloured output by setting the environment variable `NO_COLOR`:
 
 ```
 $ export NO_COLOR=
-$ sh ./runtests.sh > tests.log
+$ sh ./runtests.sh &> tests.log
 ```
 
 ## Licence

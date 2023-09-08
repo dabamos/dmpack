@@ -10,13 +10,13 @@ program dmtestregex
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestregex%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestregex%dm_test02', dm_test02)
+    tests(1) = test_type('dmtestregex.test01', test01)
+    tests(2) = test_type('dmtestregex.test02', test02)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         integer          :: rc
         type(regex_type) :: regex
 
@@ -40,9 +40,9 @@ contains
         end if
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         character(len=*), parameter :: PATTERN = '--config\s*(?:"(?<config>[^"]*|[^"]+)"(?:\s+|$))?'
         character(len=*), parameter :: SUBJECT = './dmtestregex --config "./config/test.config" --logger "dmlogger" --verbose'
 
@@ -74,5 +74,5 @@ contains
         end if
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 end program dmtestregex

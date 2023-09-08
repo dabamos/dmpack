@@ -53,26 +53,26 @@ program dmtestdb
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests( 1) = test_type('dmtestdb%dm_test01', dm_test01)
-    tests( 2) = test_type('dmtestdb%dm_test02', dm_test02)
-    tests( 3) = test_type('dmtestdb%dm_test03', dm_test03)
-    tests( 4) = test_type('dmtestdb%dm_test04', dm_test04)
-    tests( 5) = test_type('dmtestdb%dm_test05', dm_test05)
-    tests( 6) = test_type('dmtestdb%dm_test06', dm_test06)
-    tests( 7) = test_type('dmtestdb%dm_test07', dm_test07)
-    tests( 8) = test_type('dmtestdb%dm_test08', dm_test08)
-    tests( 9) = test_type('dmtestdb%dm_test09', dm_test09)
-    tests(10) = test_type('dmtestdb%dm_test10', dm_test10)
-    tests(11) = test_type('dmtestdb%dm_test11', dm_test11)
-    tests(12) = test_type('dmtestdb%dm_test12', dm_test12)
-    tests(13) = test_type('dmtestdb%dm_test13', dm_test13)
-    tests(14) = test_type('dmtestdb%dm_test14', dm_test14)
-    tests(15) = test_type('dmtestdb%dm_test15', dm_test15)
+    tests( 1) = test_type('dmtestdb.test01', test01)
+    tests( 2) = test_type('dmtestdb.test02', test02)
+    tests( 3) = test_type('dmtestdb.test03', test03)
+    tests( 4) = test_type('dmtestdb.test04', test04)
+    tests( 5) = test_type('dmtestdb.test05', test05)
+    tests( 6) = test_type('dmtestdb.test06', test06)
+    tests( 7) = test_type('dmtestdb.test07', test07)
+    tests( 8) = test_type('dmtestdb.test08', test08)
+    tests( 9) = test_type('dmtestdb.test09', test09)
+    tests(10) = test_type('dmtestdb.test10', test10)
+    tests(11) = test_type('dmtestdb.test11', test11)
+    tests(12) = test_type('dmtestdb.test12', test12)
+    tests(13) = test_type('dmtestdb.test13', test13)
+    tests(14) = test_type('dmtestdb.test14', test14)
+    tests(15) = test_type('dmtestdb.test15', test15)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Creates observation database.
         character(len=SQL_TABLE_NAME_LEN), allocatable :: tables(:)
 
@@ -121,9 +121,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! Tests writing/reading/deleting of nodes.
         integer                      :: i, rc
         type(db_type)                :: db
@@ -173,9 +173,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         !! Tests writing/reading of nodes and sensors.
         integer           :: rc
         type(db_type)     :: db
@@ -248,9 +248,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 
-    logical function dm_test04() result(stat)
+    logical function test04() result(stat)
         !! Observation sync.
         integer           :: rc
         type(db_type)     :: db
@@ -313,9 +313,9 @@ contains
         if (.not. (sync1 == sync2)) return
 
         stat = TEST_PASSED
-    end function dm_test04
+    end function test04
 
-    logical function dm_test05() result(stat)
+    logical function test05() result(stat)
         !! Tests writing/reading of observation.
         integer           :: rc
         type(db_type)     :: db
@@ -357,9 +357,9 @@ contains
         if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
-    end function dm_test05
+    end function test05
 
-    logical function dm_test06() result(stat)
+    logical function test06() result(stat)
         !! Tests writing of observation.
         character(len=TIME_LEN) :: timestamp
         integer                 :: i, rc
@@ -441,9 +441,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test06
+    end function test06
 
-    logical function dm_test07() result(stat)
+    logical function test07() result(stat)
         !! Tests writing of observation.
         character(len=TIME_LEN) :: timestamp
         integer                 :: i, rc
@@ -539,9 +539,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test07
+    end function test07
 
-    logical function dm_test08() result(stat)
+    logical function test08() result(stat)
         !! Tests creation of log database
         integer       :: rc
         type(db_type) :: db
@@ -576,9 +576,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test08
+    end function test08
 
-    logical function dm_test09() result(stat)
+    logical function test09() result(stat)
         !! Tests writing/reading of log.
         integer          :: i, rc
         real(kind=r8)    :: dt
@@ -631,9 +631,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test09
+    end function test09
 
-    logical function dm_test10() result(stat)
+    logical function test10() result(stat)
         !! Tests reading of logs.
         integer          :: rc
         integer(kind=i8) :: n
@@ -664,9 +664,9 @@ contains
         if (n < NLOGS) return
 
         stat = TEST_PASSED
-    end function dm_test10
+    end function test10
 
-    logical function dm_test11() result(stat)
+    logical function test11() result(stat)
         !! Tests database error handler.
         integer       :: rc
         type(db_type) :: db
@@ -689,9 +689,9 @@ contains
         if (dm_db_close(db) /= E_NONE) return
 
         stat = TEST_PASSED
-    end function dm_test11
+    end function test11
 
-    logical function dm_test12() result(stat)
+    logical function test12() result(stat)
         !! Tests database backup.
         integer       :: rc
         type(db_type) :: db
@@ -722,9 +722,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test12
+    end function test12
 
-    logical function dm_test13() result(stat)
+    logical function test13() result(stat)
         !! Tests VACUUM INTO.
         integer       :: rc
         type(db_type) :: db
@@ -750,9 +750,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test13
+    end function test13
 
-    logical function dm_test14() result(stat)
+    logical function test14() result(stat)
         !! Tests creation of beat database
         integer         :: rc
         type(beat_type) :: beat1, beat2
@@ -801,9 +801,9 @@ contains
         if (.not. (beat1 == beat2)) return
 
         stat = TEST_PASSED
-    end function dm_test14
+    end function test14
 
-    logical function dm_test15() result(stat)
+    logical function test15() result(stat)
         !! Tests conflicts.
         integer           :: rc
         type(db_type)     :: db
@@ -831,5 +831,5 @@ contains
         print *, 'Failed successfully'
 
         stat = TEST_PASSED
-    end function dm_test15
+    end function test15
 end program dmtestdb

@@ -10,14 +10,14 @@ program dmtesttime
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtesttime%dm_test01', dm_test01)
-    tests(2) = test_type('dmtesttime%dm_test02', dm_test02)
-    tests(3) = test_type('dmtesttime%dm_test03', dm_test03)
+    tests(1) = test_type('dmtesttime.test01', test01)
+    tests(2) = test_type('dmtesttime.test02', test02)
+    tests(3) = test_type('dmtesttime.test03', test03)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=TIME_LEN) :: timestamp
         integer                 :: rc
         integer                 :: mseconds, timezone
@@ -36,9 +36,9 @@ contains
         print '(" timezone: ", i0)', timezone
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         integer(kind=i8) :: mseconds
 
         stat = TEST_FAILED
@@ -47,9 +47,9 @@ contains
         print '(" mseconds: ", i0)', mseconds
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         stat = TEST_FAILED
 
         print *, 'Validating timestamp ...'
@@ -68,5 +68,5 @@ contains
         if (dm_time_valid('19')) return
 
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 end program dmtesttime

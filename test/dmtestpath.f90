@@ -11,12 +11,12 @@ program dmtestpath
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestpath%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestpath.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=:), allocatable :: path, parsed
 
         stat = TEST_FAILED
@@ -30,5 +30,5 @@ contains
         if (len(path) /= 34) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestpath

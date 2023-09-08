@@ -11,12 +11,12 @@ program dmtesttty
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtesttty%dm_test01', dm_test01)
+    tests(1) = test_type('dmtesttty.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, no_color=dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=128) :: buf
         integer            :: rc
         integer(kind=i8)   :: n
@@ -62,6 +62,6 @@ contains
         call dm_tty_close(tty)
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtesttty
 

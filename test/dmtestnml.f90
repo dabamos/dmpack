@@ -11,17 +11,17 @@ program dmtestnml
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestnml%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestnml%dm_test02', dm_test02)
-    tests(3) = test_type('dmtestnml%dm_test03', dm_test03)
-    tests(4) = test_type('dmtestnml%dm_test04', dm_test04)
-    tests(5) = test_type('dmtestnml%dm_test05', dm_test05)
-    tests(6) = test_type('dmtestnml%dm_test06', dm_test06)
+    tests(1) = test_type('dmtestnml.test01', test01)
+    tests(2) = test_type('dmtestnml.test02', test02)
+    tests(3) = test_type('dmtestnml.test03', test03)
+    tests(4) = test_type('dmtestnml.test04', test04)
+    tests(5) = test_type('dmtestnml.test05', test05)
+    tests(6) = test_type('dmtestnml.test06', test06)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=NML_OBSERV_LEN) :: str
         integer                       :: rc
         type(observ_type)             :: observ1, observ2
@@ -49,9 +49,9 @@ contains
         if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         character(len=NML_BEAT_LEN) :: str
         integer                     :: rc
         type(beat_type)             :: beat1, beat2
@@ -78,9 +78,9 @@ contains
         print '(a)', trim(str)
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         character(len=NML_LOG_LEN) :: str
         integer                    :: rc
         type(log_type)             :: log1, log2
@@ -106,9 +106,9 @@ contains
         print '(a)', trim(str)
 
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 
-    logical function dm_test04() result(stat)
+    logical function test04() result(stat)
         character(len=NML_NODE_LEN) :: str
         integer                     :: rc
         type(node_type)             :: node1, node2
@@ -134,9 +134,9 @@ contains
         print '(a)', trim(str)
 
         stat = TEST_PASSED
-    end function dm_test04
+    end function test04
 
-    logical function dm_test05() result(stat)
+    logical function test05() result(stat)
         character(len=NML_SENSOR_LEN) :: str
         integer                       :: rc
         type(sensor_type)             :: sensor1, sensor2
@@ -162,9 +162,9 @@ contains
         print '(a)', trim(str)
 
         stat = TEST_PASSED
-    end function dm_test05
+    end function test05
 
-    logical function dm_test06() result(stat)
+    logical function test06() result(stat)
         character(len=NML_TARGET_LEN) :: str
         integer                       :: rc
         type(target_type)             :: target1, target2
@@ -190,5 +190,5 @@ contains
         print '(a)', trim(str)
 
         stat = TEST_PASSED
-    end function dm_test06
+    end function test06
 end program dmtestnml

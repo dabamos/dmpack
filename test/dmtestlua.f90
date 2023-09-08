@@ -13,17 +13,17 @@ program dmtestlua
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestlua%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestlua%dm_test02', dm_test02)
-    tests(3) = test_type('dmtestlua%dm_test03', dm_test03)
-    tests(4) = test_type('dmtestlua%dm_test04', dm_test04)
-    tests(5) = test_type('dmtestlua%dm_test05', dm_test05)
-    tests(6) = test_type('dmtestlua%dm_test06', dm_test06)
+    tests(1) = test_type('dmtestlua.test01', test01)
+    tests(2) = test_type('dmtestlua.test02', test02)
+    tests(3) = test_type('dmtestlua.test03', test03)
+    tests(4) = test_type('dmtestlua.test04', test04)
+    tests(5) = test_type('dmtestlua.test05', test05)
+    tests(6) = test_type('dmtestlua.test06', test06)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Reads Lua global variables from file.
         character(len=*), parameter   :: FOO   = 'bar'
         integer,          parameter   :: VALUE = 420
@@ -77,9 +77,9 @@ contains
         end if
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! Reads Lua table item from file.
         character(len=32)    :: str
         integer              :: i, rc
@@ -139,9 +139,9 @@ contains
         end if
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         !! Reads observation from Lua file.
         integer              :: rc
         type(lua_state_type) :: lua
@@ -173,9 +173,9 @@ contains
 
         if (dm_is_error(rc)) return
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 
-    logical function dm_test04() result(stat)
+    logical function test04() result(stat)
         !! Reads observations from Lua file.
         integer                        :: rc
         type(lua_state_type)           :: lua
@@ -217,9 +217,9 @@ contains
         if (.not. (observs(1) == observs(2))) return
 
         stat = TEST_PASSED
-    end function dm_test04
+    end function test04
 
-    logical function dm_test05() result(stat)
+    logical function test05() result(stat)
         !! Reads jobs from Lua file.
         integer                     :: rc
         type(lua_state_type)        :: lua
@@ -277,9 +277,9 @@ contains
         print *, 'observ..: ', job%observ%name
 
         stat = TEST_PASSED
-    end function dm_test05
+    end function test05
 
-    logical function dm_test06() result(stat)
+    logical function test06() result(stat)
         !! Reads report from Lua file.
         integer              :: rc
         type(lua_state_type) :: lua
@@ -319,5 +319,5 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test06
+    end function test06
 end program dmtestlua

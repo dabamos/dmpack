@@ -16,13 +16,13 @@ program dmtestmqueue
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestmqueue%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestmqueue%dm_test02', dm_test02)
+    tests(1) = test_type('dmtestmqueue.test01', test01)
+    tests(2) = test_type('dmtestmqueue.test02', test02)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Tests observation exchange using a single message queue descriptor.
         integer           :: rc
         integer(kind=i8)  :: flags, max_msg, msg_size, cur_msgs
@@ -86,9 +86,9 @@ contains
         if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! Tests observation exchange using reader/writer functions (two message
         !! queue descriptors).
         integer           :: rc
@@ -138,5 +138,5 @@ contains
         if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 end program dmtestmqueue

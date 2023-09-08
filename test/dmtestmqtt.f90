@@ -23,12 +23,12 @@ program dmtestmqtt
     call dm_init()
 
     no_color = dm_env_has('NO_COLOR')
-    tests(1) = test_type('dmtestmqtt%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestmqtt%dm_test02', dm_test02)
+    tests(1) = test_type('dmtestmqtt.test01', test01)
+    tests(2) = test_type('dmtestmqtt.test02', test02)
 
     call dm_test_run(tests, stats, no_color)
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=*), parameter :: URL1 = 'mqtt://127.0.0.1/dmpack'
         character(len=*), parameter :: URL2 = 'mqtt://127.0.0.1:1883/dmpack'
 
@@ -50,9 +50,9 @@ contains
         if (url /= URL2) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         character(len=:), allocatable :: env_host
         integer                       :: env_port
 
@@ -87,5 +87,5 @@ contains
         end if
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 end program dmtestmqtt

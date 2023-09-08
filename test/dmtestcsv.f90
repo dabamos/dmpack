@@ -11,15 +11,15 @@ program dmtestcsv
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestcsv%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestcsv%dm_test02', dm_test02)
-    tests(3) = test_type('dmtestcsv%dm_test03', dm_test03)
-    tests(4) = test_type('dmtestcsv%dm_test04', dm_test04)
+    tests(1) = test_type('dmtestcsv.test01', test01)
+    tests(2) = test_type('dmtestcsv.test02', test02)
+    tests(3) = test_type('dmtestcsv.test03', test03)
+    tests(4) = test_type('dmtestcsv.test04', test04)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         real(kind=r8)     :: dt
         type(node_type)   :: nodes(2)
         type(observ_type) :: observs(2)
@@ -46,9 +46,9 @@ contains
         print '(a, f8.6)', ' Time: ', dt
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         integer           :: rc
         real(kind=r8)     :: dt
         type(node_type)   :: nodes(2)
@@ -76,9 +76,9 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 
-    logical function dm_test03() result(stat)
+    logical function test03() result(stat)
         integer, parameter :: N = 3
 
         integer             :: i, fu, rc
@@ -122,9 +122,9 @@ contains
         print *, 'Validating observations ...'
         if (.not. all(observs1 == observs2)) return
         stat = TEST_PASSED
-    end function dm_test03
+    end function test03
 
-    logical function dm_test04() result(stat)
+    logical function test04() result(stat)
         integer           :: fu, rc
         type(log_type)    :: log1, log2
         type(node_type)   :: node1, node2
@@ -195,5 +195,5 @@ contains
         if (.not. (target1 == target2)) return
 
         stat = TEST_PASSED
-    end function dm_test04
+    end function test04
 end program dmtestcsv

@@ -13,13 +13,13 @@ program dmtestuuid
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestuuid%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestuuid%dm_test02', dm_test02)
+    tests(1) = test_type('dmtestuuid.test01', test01)
+    tests(2) = test_type('dmtestuuid.test02', test02)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=UUID_LEN) :: uuids(NUUIDS)
         integer                 :: i, j
 
@@ -43,9 +43,9 @@ contains
         end do
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         character(len=UUID_LEN + 4) :: uuid
 
         stat = TEST_FAILED
@@ -55,5 +55,5 @@ contains
         if (uuid /= '00000000-0000-0000-0000-000000000000') return
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 end program dmtestuuid

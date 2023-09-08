@@ -395,6 +395,8 @@ kern.mqueue.maxmsg: 100
 kern.mqueue.maxmsgsize: 16384
 ....
 
+The maximum message size has to be at least 16384 bytes.
+
 == Deformation Monitoring Entities
 
 The data structures used by DMPACK are based on the following entities.

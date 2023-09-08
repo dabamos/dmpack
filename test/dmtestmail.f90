@@ -23,15 +23,15 @@ program dmtestmail
     logical         :: stats(NTESTS)
     logical         :: no_color
 
-    tests(1) = test_type('dmtestmail%dm_test01', dm_test01)
-    tests(2) = test_type('dmtestmail%dm_test02', dm_test02)
+    tests(1) = test_type('dmtestmail.test01', test01)
+    tests(2) = test_type('dmtestmail.test02', test02)
 
     call dm_init()
     no_color = dm_env_has('NO_COLOR')
 
     call dm_test_run(tests, stats, no_color)
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Mock-testing of mail procedures.
         character(len=:), allocatable :: url
         integer                       :: rc
@@ -91,9 +91,9 @@ contains
         call dm_error_out(rc)
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
-    logical function dm_test02() result(stat)
+    logical function test02() result(stat)
         !! Sends e-mail via SMTP, using parameters passed via environment
         !! variables.
         logical,          parameter :: DEBUG   = .true. !! Enable cURL debug output.
@@ -160,5 +160,5 @@ contains
         call dm_error_out(rc)
 
         stat = TEST_PASSED
-    end function dm_test02
+    end function test02
 end program dmtestmail

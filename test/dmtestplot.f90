@@ -10,12 +10,12 @@ program dmtestplot
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestplot%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestplot.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         character(len=:), allocatable :: bytes
         integer                       :: rc
         integer(kind=i8)              :: sz
@@ -48,5 +48,5 @@ contains
         if (sz == 0) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestplot

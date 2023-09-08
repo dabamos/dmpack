@@ -10,12 +10,12 @@ program dmtestrouter
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestrouter%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestrouter.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         integer                    :: rc
         type(cgi_env_type)         :: env
         type(router_type)          :: router
@@ -76,7 +76,7 @@ contains
         if (rc == HTTP_OK) return
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 
     subroutine default_resource(env)
         type(cgi_env_type), intent(inout) :: env

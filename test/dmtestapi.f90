@@ -10,12 +10,12 @@ program dmtestapi
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestapi%dm_test01', dm_test01)
+    tests(1) = test_type('dmtestapi.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
-    logical function dm_test01() result(stat)
+    logical function test01() result(stat)
         !! Tests API status type handling.
         character(len=:), allocatable :: str
         integer                       :: rc
@@ -44,5 +44,5 @@ contains
         print *, str
 
         stat = TEST_PASSED
-    end function dm_test01
+    end function test01
 end program dmtestapi
