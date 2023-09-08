@@ -1,6 +1,33 @@
 # ******************************************************************************
 #
-#                             Makefile for DMPACK
+#                          POSIX Makefile for DMPACK
+#
+# ******************************************************************************
+#
+# DMPACK build targets:
+#
+#   freebsd         - Alias for `freebsd_release`.
+#   freebsd_debug   - FreeBSD debug.
+#   freebsd_release - FreeBSD release.
+#   linux           - Alias for target `linux_release`.
+#   linux_debug     - Linux debug.
+#   linux_release   - Linux release.
+#   test            - Build test programs.
+#
+# Targets for system-wide installation:
+#
+#   install         - Install to `/usr/local` (pass `PREFIX` to overwrite).
+#   install_freebsd - Install to `/usr/local` (pass `PREFIX` to overwrite).
+#   install_linux   - Install to `/usr` (pass `PREFIX` to overwrite).
+#   deinstall       - Remove from `/usr/local` (pass `PREFIX` to overwrite).
+#
+# Targets related to the documentation:
+#
+#   man   - Make man pages (requires AsciiDoctor).
+#   html  - Convert man pages to HTML (requires mandoc).
+#   pdf   - Convert man pages to PDF (requires ps2pdf).
+#   guide - Make User's Guide (requires AsciiDoctor).
+#   doc   - Make source code documentation (requires FORD).
 #
 # ******************************************************************************
 #
@@ -25,8 +52,9 @@
 #   CC      - ANSI C compiler.
 #   AR      - Archiver.
 #   MAKE    - Either: `make`, `bmake`, or `gmake`.
-#   RM      - Remove (`rm`).
-#   SH      - Shell (`sh`).
+#   RM      - Remove command.
+#   SH      - Shell.
+#   STRIP   - Strip utility.
 #
 #   SRCDIR  - Source directory.
 #   INCDIR  - Include directory that contains the Fortran module files.
@@ -44,7 +72,6 @@
 #   FFLAGS  - Fortran compiler flags.
 #   CLAGS   - C compiler flags.
 #   ARFLAGS - Archiver flags.
-#   LPFLAGS - LAPACK95 flags.
 #   LDFLAGS - Linker flags.
 #   LDLIBS  - Linker libraries.
 #
@@ -62,6 +89,7 @@ AR      = ar
 MAKE    = make
 RM      = rm
 SH      = sh
+STRIP   = strip
 
 SRCDIR  = ./src
 INCDIR  = ./include
@@ -74,13 +102,13 @@ THIN    = $(LIBDIR)/libdm.a
 TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
-DEBUG   = -g -O0 -Wall -fmax-errors=1 -fbacktrace #-ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
+DEBUG   = -g -O0 -Wall -fmax-errors=1 #-fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
 RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  = -mtune=native -O2
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib/ -z execstack
-LDLIBS  = #-static-libasan -fsanitize=address -fno-omit-frame-pointer
+LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 
 # Shared libraries to link.
 LIBCURL    = `curl-config --libs`
@@ -281,8 +309,8 @@ OBJ = dm_version.o \
       dm_transform.o \
       dmpack.o
 
-.PHONY: all app clean deinstall doc freebsd guide html install install_freebsd \
-        install_linux linux man pdf purge setup test
+.PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
+        html install install_freebsd install_linux linux man pdf purge setup test
 
 all: $(TARGET) $(SHARED) test app
 
@@ -433,16 +461,30 @@ $(SHARED): $(TARGET)
 # FreeBSD target.
 #
 # ******************************************************************************
-freebsd:
+freebsd_debug:
+	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)" LDLIBS="$(LDLIBS)"
+
+freebsd_release:
 	$(MAKE) all OS=freebsd PREFIX=/usr/local
+	$(STRIP) -s $(DISTDIR)/dm*
+
+freebsd:
+	$(MAKE) freebsd_release
 
 # ******************************************************************************
 #
 # Linux target.
 #
 # ******************************************************************************
-linux:
+linux_debug:
+	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
+
+linux_release:
 	$(MAKE) all OS=linux PREFIX=/usr
+	$(STRIP) -s $(DISTDIR)/dm*
+
+linux:
+	$(MAKE) linux_release
 
 # ******************************************************************************
 #
@@ -721,16 +763,22 @@ install_linux:
 #
 # ******************************************************************************
 clean:
+	@echo "--- deleting libraries ..."
 	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
 	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
 	if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
-	if [ `ls -1 *.mod      2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
-	if [ `ls -1 *.a        2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
-	if [ `ls -1 *.so       2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
-	if [ `ls -1 *.o        2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
-	if [ `ls -1 dmtest*    2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	@echo "--- deleting build files ..."
+	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
+	if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
+	if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
+	if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
+	@echo "--- deleting test programs ..."
+	if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	@echo "--- deleting applications ..."
 	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
+	@echo "--- cleaning man pages ..."
 	cd $(ADOCDIR)  && $(MAKE) clean
+	@echo "--- cleaning guide ..."
 	cd $(GUIDEDIR) && $(MAKE) clean
 
 # ******************************************************************************
@@ -739,11 +787,19 @@ clean:
 #
 # ******************************************************************************
 purge: clean
-	cd vendor/fortran-curl/    && make clean TARGET=../../$(LIBFCURL)
-	cd vendor/fortran-lua54/   && make clean TARGET=../../$(LIBFLUA54)
-	cd vendor/fortran-pcre2/   && make clean TARGET=../../$(LIBFPCRE2)
-	cd vendor/fortran-sqlite3/ && make clean TARGET=../../$(LIBFSQLITE3)
-	cd vendor/fortran-unix/    && make clean TARGET=../../$(LIBFUNIX)
-	cd vendor/fortran-zlib/    && make clean TARGET=../../$(LIBFZ)
+	@echo "--- cleaning fortran-curl ..."
+	cd vendor/fortran-curl/ && make clean TARGET="../../$(LIBFCURL)"
+	@echo "--- cleaning fortran-lua54 ..."
+	cd vendor/fortran-lua54/ && make clean TARGET="../../$(LIBFLUA54)"
+	@echo "--- cleaning fortran-pcre2 ..."
+	cd vendor/fortran-pcre2/ && make clean TARGET="../../$(LIBFPCRE2)"
+	@echo "--- cleaning fortran-sqlite3 ..."
+	cd vendor/fortran-sqlite3/ && make clean TARGET="../../$(LIBFSQLITE3)"
+	@echo "--- cleaning fortran-unix ..."
+	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
+	@echo "--- cleaning fortran-zlib ..."
+	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZ)"
+	@echo "--- deleting module files ..."
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
+	@echo "--- deleting source code documentation ..."
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi

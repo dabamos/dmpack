@@ -163,6 +163,14 @@ $ doas make install PREFIX=/usr/local
 The DMPACK programs require the shared library `libgfortran.so` if they have
 been compiled with GNU Fortran.
 
+For a debug build with _AddressSanitizer_ (ASan) to detect memory errors, run
+instead:
+
+```
+$ make freebsd_debug DEBUG="-g -O0 -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer" \
+  LDLIBS="-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer"
+```
+
 ### Linux
 
 On Debian, install GCC, GNU Fortran, and the build environment:
