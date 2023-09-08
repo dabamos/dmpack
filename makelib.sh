@@ -13,7 +13,7 @@
 
 set -e
 
-TARGET=${1-"libdmpack.a"}
+TARGET=${1-"./dist/libdmpack.a"}
 THIN=${2-"./lib/libdm.a"}
 
 ar -M <<EOF

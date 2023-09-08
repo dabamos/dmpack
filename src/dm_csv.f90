@@ -496,23 +496,25 @@ contains
             csv = csv // 'nrequests'
 
             do i = 1, OBSERV_MAX_NREQUESTS
-                csv = csv // s // 'requests(' // dm_itoa(i) // ')timestamp'  // s // &
-                                  'requests(' // dm_itoa(i) // ')request'    // s // &
-                                  'requests(' // dm_itoa(i) // ')response'   // s // &
-                                  'requests(' // dm_itoa(i) // ')delimiter'  // s // &
-                                  'requests(' // dm_itoa(i) // ')pattern'    // s // &
-                                  'requests(' // dm_itoa(i) // ')delay'      // s // &
-                                  'requests(' // dm_itoa(i) // ')error'      // s // &
-                                  'requests(' // dm_itoa(i) // ')retries'    // s // &
-                                  'requests(' // dm_itoa(i) // ')state'      // s // &
-                                  'requests(' // dm_itoa(i) // ')timeout'    // s // &
-                                  'requests(' // dm_itoa(i) // ')nresponses'
+                csv = csv // s // &
+                      'requests(' // dm_itoa(i) // ').timestamp'  // s // &
+                      'requests(' // dm_itoa(i) // ').request'    // s // &
+                      'requests(' // dm_itoa(i) // ').response'   // s // &
+                      'requests(' // dm_itoa(i) // ').delimiter'  // s // &
+                      'requests(' // dm_itoa(i) // ').pattern'    // s // &
+                      'requests(' // dm_itoa(i) // ').delay'      // s // &
+                      'requests(' // dm_itoa(i) // ').error'      // s // &
+                      'requests(' // dm_itoa(i) // ').retries'    // s // &
+                      'requests(' // dm_itoa(i) // ').state'      // s // &
+                      'requests(' // dm_itoa(i) // ').timeout'    // s // &
+                      'requests(' // dm_itoa(i) // ').nresponses'
 
                 do j = 1, REQUEST_MAX_NRESPONSES
-                    csv = csv // s // 'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')name'  // s // &
-                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')unit'  // s // &
-                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')error' // s // &
-                                      'requests(' // dm_itoa(i) // ')responses(' // dm_itoa(j) // ')value'
+                    csv = csv // s // &
+                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').name'  // s // &
+                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').unit'  // s // &
+                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').error' // s // &
+                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').value'
                 end do
             end do
 
@@ -631,7 +633,7 @@ contains
         character,        intent(in)           :: separator !! CSV field separator.
         integer,          intent(in)           :: limit     !! Total length of input string.
         integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enabled unquoting.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         integer :: old
         logical :: quoted
@@ -657,12 +659,12 @@ contains
 
     integer function csv_next_i4(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 4-byte integer until separator.
-        character(len=*), intent(inout)        :: input
-        integer(kind=i4), intent(out)          :: output
-        character,        intent(in)           :: separator
-        integer,          intent(in)           :: limit
-        integer,          intent(inout)        :: pos
-        character,        intent(in), optional :: quote
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        integer(kind=i4), intent(out)          :: output    !! Output integer.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -677,12 +679,12 @@ contains
 
     integer function csv_next_i8(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 8-byte integer until separator.
-        character(len=*), intent(inout)        :: input
-        integer(kind=i8), intent(out)          :: output
-        character,        intent(in)           :: separator
-        integer,          intent(in)           :: limit
-        integer,          intent(inout)        :: pos
-        character,        intent(in), optional :: quote
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        integer(kind=i8), intent(out)          :: output    !! Output integer.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -697,12 +699,12 @@ contains
 
     integer function csv_next_r4(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 4-byte real until separator.
-        character(len=*), intent(inout)        :: input
-        real(kind=r4),    intent(out)          :: output
-        character,        intent(in)           :: separator
-        integer,          intent(in)           :: limit
-        integer,          intent(inout)        :: pos
-        character,        intent(in), optional :: quote
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        real(kind=r4),    intent(out)          :: output    !! Output real.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -717,12 +719,12 @@ contains
 
     integer function csv_next_r8(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 8-byte real until separator.
-        character(len=*), intent(inout)        :: input
-        real(kind=r8),    intent(out)          :: output
-        character,        intent(in)           :: separator
-        integer,          intent(in)           :: limit
-        integer,          intent(inout)        :: pos
-        character,        intent(in), optional :: quote
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        real(kind=r8),    intent(out)          :: output    !! Output real.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -1666,7 +1668,8 @@ contains
         !! Removes given quote character at start and end from string.
         character(len=*), intent(inout) :: str   !! String to unquote on input, unquoted string on output.
         character,        intent(in)    :: quote !! Quote character.
-        integer                         :: i
+
+        integer :: i
 
         str = adjustl(str)
         if (str(1:1) /= quote) return

@@ -220,7 +220,7 @@ contains
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Client Address' // H_TH_END // &
+               H_TR // H_TH // 'Address' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
                H_TD // dm_html_encode(beat%time_sent) // H_TD_END // H_TR_END // &
@@ -820,7 +820,7 @@ contains
 
         html = html // H_TH // 'Source' // H_TH_END // &
                H_TH // 'Level' // H_TH_END // &
-               H_TH // 'Code' // H_TH_END // &
+               H_TH // 'Error' // H_TH_END // &
                H_TH // 'Message' // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 

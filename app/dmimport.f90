@@ -105,7 +105,7 @@ contains
                     rc = dm_db_has_table(db, SQL_TABLE_LOGS, table_exists)
             end select
 
-            if (.not. table_exists) then
+            if (dm_is_error(rc) .or. .not. table_exists) then
                 rc = E_INVALID
                 call dm_error_out(rc, 'database table not found')
                 exit db_block

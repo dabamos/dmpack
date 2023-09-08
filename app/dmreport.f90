@@ -412,7 +412,7 @@ contains
                                                       report%plot%observs(i)%subtitle)
 
                     plot_block: block
-                        ! Read data points from observations database.
+                        ! Read data points from observation database.
                         rc = read_data_points(data_points, &
                                               database = report%plot%database, &
                                               node     = report%node, &
@@ -452,7 +452,6 @@ contains
                                                     width    = report%plot%observs(i)%width, &
                                                     height   = report%plot%observs(i)%height)
                     end block plot_block
-
                 end do
             end if plot_if
 

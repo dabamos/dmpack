@@ -26,25 +26,25 @@ module dm_db
     private
 
     ! SQLite 3 journal modes.
-    integer, parameter, public :: DB_JOURNAL_OFF      = 0
-    integer, parameter, public :: DB_JOURNAL_DELETE   = 1
-    integer, parameter, public :: DB_JOURNAL_TRUNCATE = 2
-    integer, parameter, public :: DB_JOURNAL_PERSIST  = 3
-    integer, parameter, public :: DB_JOURNAL_MEMORY   = 4
-    integer, parameter, public :: DB_JOURNAL_WAL      = 5
+    integer, parameter, public :: DB_JOURNAL_OFF      = 0 !! No rollback journals.
+    integer, parameter, public :: DB_JOURNAL_DELETE   = 1 !! Delete journal (default).
+    integer, parameter, public :: DB_JOURNAL_TRUNCATE = 2 !! Delete journal by truncating (may be faster than `DB_JOURNAL_DELETE`).
+    integer, parameter, public :: DB_JOURNAL_PERSIST  = 3 !! Overwrite journal instead of deleting (may be faster than deleting or truncating).
+    integer, parameter, public :: DB_JOURNAL_MEMORY   = 4 !! Store journal in memory (fast, volatile).
+    integer, parameter, public :: DB_JOURNAL_WAL      = 5 !! Use Write-Ahead Log (WAL) journal.
 
     ! SQLite 3 auto vacuum modes.
-    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0
-    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1
-    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2
+    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0 !! No auto-vacuum (default).
+    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1 !! Enable auto-vacuum.
+    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2 !! Vacuum requires additional PRAGMA.
 
     ! SQLite 3 transactions.
-    integer, parameter, public :: DB_TRANS_DEFERRED  = 0
-    integer, parameter, public :: DB_TRANS_IMMEDIATE = 1
-    integer, parameter, public :: DB_TRANS_EXCLUSIVE = 2
+    integer, parameter, public :: DB_TRANS_DEFERRED  = 0 !! Deferred transaction (default).
+    integer, parameter, public :: DB_TRANS_IMMEDIATE = 1 !! Start a new write immediately (may fail with `E_DB_BUSY`).
+    integer, parameter, public :: DB_TRANS_EXCLUSIVE = 2 !! No reading while transactions are underway.
 
     ! Additional parameters.
-    integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases ("DM1" in ASCII).
+    integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     type, public :: db_type

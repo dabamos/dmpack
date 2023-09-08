@@ -1,13 +1,28 @@
-.POSIX:
-.SUFFIXES:
-
+# ******************************************************************************
+#
+#                             Makefile for DMPACK
+#
+# ******************************************************************************
+#
+# On FreeBSD, run:
+#
+#   $ make freebsd
+#   $ make install PREFIX=/usr/local
+#
+# On Linux, instead:
+#
+#   $ make linux
+#   $ make install PREFIX=/usr
+#
+# ******************************************************************************
+#
 # DMPACK build flags:
 #
 #   OS      - The operating system, either `freebsd` or `linux`.
 #   PREFIX  - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
 #
 #   FC      - Fortran 2018 compiler.
-#   CC      - C compiler.
+#   CC      - ANSI C compiler.
 #   AR      - Archiver.
 #   MAKE    - Either: `make`, `bmake`, or `gmake`.
 #   RM      - Remove (`rm`).
@@ -32,6 +47,11 @@
 #   LPFLAGS - LAPACK95 flags.
 #   LDFLAGS - Linker flags.
 #   LDLIBS  - Linker libraries.
+#
+# ******************************************************************************
+
+.POSIX:
+.SUFFIXES:
 
 OS      = freebsd
 PREFIX  = /usr/local
@@ -111,7 +131,7 @@ DOCDIR   = ./doc
 ADOCDIR  = ./adoc
 GUIDEDIR = ./guide
 
-# Library sources.
+# Library source files.
 SRC = src/dm_version.f90 \
       src/dm_ascii.f90 \
       src/dm_string.f90 \
@@ -277,17 +297,21 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
       dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc dmteststring \
       dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz
 
+# ******************************************************************************
 #
 # Output directories.
 #
+# ******************************************************************************
 setup:
 	mkdir -p $(INCDIR)
 	mkdir -p $(LIBDIR)
 	mkdir -p $(DISTDIR)
 
+# ******************************************************************************
 #
 # Fortran interface libraries.
 #
+# ******************************************************************************
 $(LIBFCURL): setup
 	cd vendor/fortran-curl/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFCURL)
 	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
@@ -312,9 +336,11 @@ $(LIBFZ): setup
 	cd vendor/fortran-zlib/ && make FC="$(FC) -fPIC" CC="$(CC) -fPIC" DEBUG="$(RELEASE)" PREFIX=$(PREFIX) TARGET=../../$(LIBFZ)
 	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
 
+# ******************************************************************************
 #
 # DMPACK static library.
 #
+# ******************************************************************************
 $(TARGET): $(LIBF) $(OBJ)
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) ./makelib.sh $(TARGET) $(THIN)
@@ -394,27 +420,35 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_transform.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dmpack.f90
 
+# ******************************************************************************
 #
 # DMPACK shared library.
 #
+# ******************************************************************************
 $(SHARED): $(TARGET)
 	$(FC) $(FFLAGS) -fPIC -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive
 
+# ******************************************************************************
 #
-# FreeBSD macro.
+# FreeBSD target.
 #
+# ******************************************************************************
 freebsd:
 	$(MAKE) all OS=freebsd PREFIX=/usr/local
 
+# ******************************************************************************
 #
-# Linux macro.
+# Linux target.
 #
+# ******************************************************************************
 linux:
 	$(MAKE) all OS=linux PREFIX=/usr
 
+# ******************************************************************************
 #
 # DMPACK test programs.
 #
+# ******************************************************************************
 dmtestapi: test/dmtestapi.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestapi test/dmtestapi.f90 $(TARGET) $(LDLIBS)
 
@@ -508,9 +542,11 @@ dmtestuuid: test/dmtestuuid.f90
 dmtestz: test/dmtestz.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestz test/dmtestz.f90 $(TARGET) $(LDLIBS) $(LIBZ)
 
+# ******************************************************************************
 #
 # DMPACK programs.
 #
+# ******************************************************************************
 $(DMAPI): app/dmapi.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMAPI) app/dmapi.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI)
 
@@ -577,9 +613,11 @@ $(DMUUID): app/dmuuid.f90
 $(DMWEB): app/dmweb.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
+# ******************************************************************************
 #
 # Source code documentation, manual pages, and User's Guide.
 #
+# ******************************************************************************
 doc:
 	$(FORD) ford.md -d ./src
 
@@ -592,15 +630,14 @@ html:
 pdf:
 	cd $(ADOCDIR) && $(MAKE) pdf
 
-#
-# User's Guide.
-#
 guide:
 	cd $(GUIDEDIR) && $(MAKE)
 
+# ******************************************************************************
 #
-# Installation.
+# Installation and deinstallation.
 #
+# ******************************************************************************
 install:
 	install -d $(PREFIX)/bin/
 	install -d $(PREFIX)/etc/dmpack/
@@ -677,10 +714,12 @@ install_freebsd:
 install_linux:
 	$(MAKE) install PREFIX=/usr
 
+# ******************************************************************************
 #
-# Remove binaries, libraries, modules and object files in
-# the root directory, clear "dist" and "man" directories.
+# Remove binaries, libraries, modules and object files in, clear "dist" and
+# "man" directories.
 #
+# ******************************************************************************
 clean:
 	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
 	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
@@ -694,9 +733,11 @@ clean:
 	cd $(ADOCDIR)  && $(MAKE) clean
 	cd $(GUIDEDIR) && $(MAKE) clean
 
+# ******************************************************************************
 #
-# Additionally, clean all dependencies.
+# Additionally, clean all dependencies and remove FORD output.
 #
+# ******************************************************************************
 purge: clean
 	cd vendor/fortran-curl/    && make clean TARGET=../../$(LIBFCURL)
 	cd vendor/fortran-lua54/   && make clean TARGET=../../$(LIBFLUA54)

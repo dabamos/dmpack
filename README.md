@@ -339,14 +339,15 @@ If not set, the affected tests will be skipped. You may want to set the
 variables permanently in `runtest.sh`. Run all test programs with:
 
 ```
-$ sh ./runtests.sh
+$ sh runtests.sh
 ```
 
-Disable coloured output by setting the environment variable `NO_COLOR`:
+To write the test protocols to file, disable coloured output first by setting
+the environment variable `NO_COLOR`:
 
 ```
 $ export NO_COLOR=
-$ sh ./runtests.sh &> tests.log
+$ sh runtests.sh &> tests.log
 ```
 
 ## Licence
