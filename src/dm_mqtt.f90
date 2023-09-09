@@ -29,15 +29,15 @@ module dm_mqtt
     !! # mosquitto_sub -h 127.0.0.1 -t /fortran
     !! ```
     !!
-    !! In Fortran, we first have to create the URL of the topic we want to send
-    !! a message to:
+    !! In Fortran, we can then create the URL of the topic, and publish a
+    !! message to it:
     !!
     !! ```fortran
     !! character(len=:), allocatable :: url
     !! integer :: rc
     !!
     !! url = dm_mqtt_url(host='127.0.0.1', port=1883, topic='/fortran')
-    !! rc = dm_mqtt_publish(url, 'Hello, from Fortran!')
+    !! rc  = dm_mqtt_publish(url, 'Hello, from Fortran!')
     !! ```
     !!
     !! Any client that has subscribed topic `/fortran` will receive the

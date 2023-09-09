@@ -2,6 +2,30 @@
 ! Licence: ISC
 module dm_arg
     !! Procedures for command-line argument parsing.
+    !!
+    !! Create an array of argument types, then read and parse the arguments:
+    !!
+    !! ```fortran
+    !! character(len=72) :: input
+    !! integer           :: delay, rc
+    !! type(arg_type)    :: args(3)
+    !!
+    !! args = [ &
+    !!     arg_type('input',   short='i', type=ARG_TYPE_CHAR, required=.true.), &
+    !!     arg_type('delay',   short='x', type=ARG_TYPE_INTEGER), &
+    !!     arg_type('verbose', short='V', type=ARG_TYPE_BOOL) &
+    !! ]
+    !!
+    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0)
+    !! rc = dm_arg_get(args(1), input)
+    !! rc = dm_arg_get(args(2), delay)
+    !! rc = dm_arg_get(args(3), verbose)
+    !! ```
+    !!
+    !! Each argument requires name and type. The default type is
+    !! `ARG_TYPE_BOOL`. Errors are indicated by the return codes. The
+    !! command-line arguments `--help`/-`h` and `--version`/`-v` are processed
+    !! automatically by function `dm_arg_read()`.
     use :: dm_app
     use :: dm_ascii
     use :: dm_convert
@@ -161,11 +185,11 @@ contains
                 case (E_ARG_LENGTH)
                     n = len_trim(args(i)%value)
                     if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // &
-                                          ' too long (max. ' // dm_itoa(args(i)%max_len) // ')')
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too long, max. ' // &
+                                          dm_itoa(args(i)%max_len))
                     else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // &
-                                          ' too short (min. ' // dm_itoa(args(i)%min_len) // ')')
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too short, min. ' // &
+                                          dm_itoa(args(i)%min_len))
                     end if
             end select
 
@@ -258,7 +282,7 @@ contains
 
     subroutine dm_arg_parse(args)
         !! Parses command-line arguments string `command` for arguments.
-        type(arg_type), intent(inout) :: args(:) !! Arguments to search for.
+        type(arg_type), intent(inout) :: args(:) !! Arguments array.
 
         character(len=ARG_VALUE_LEN) :: name, value
         integer                      :: i, j, k, n, stat

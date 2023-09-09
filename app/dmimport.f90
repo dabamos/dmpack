@@ -181,7 +181,7 @@ contains
                     cycle read_loop
                 end if
 
-                ! Validate and insert record into database.
+                ! Validate and insert record.
                 select case (app%type)
                     case (TYPE_NODE)
                         rc = dm_db_insert(db, node)
@@ -200,7 +200,7 @@ contains
                     case (E_NONE)
                         nrecs = nrecs + 1
                         if (.not. app%verbose) cycle read_loop
-                        if (modulo(nrecs, 100_i8) == 0) print '("Imported ", i0, " records")', nrecs
+                        if (modulo(nrecs, 500_i8) == 0) print '("Imported ", i0, " records")', nrecs
                     case (E_INVALID)
                         call dm_error_out(rc, 'invalid record in row ' // dm_itoa(nrows))
                         exit read_loop
@@ -248,7 +248,6 @@ contains
             ! Output statistics.
             if (app%verbose) then
                 dt = dm_timer_stop(timer)
-
                 print '("Read ", i0, " rows from file ", a)', nrows, trim(app%input)
                 print '("Imported ", i0, " records in ", f0.1, " seconds")', nrecs, dt
             end if
@@ -279,7 +278,7 @@ contains
 
         args = [ &
             arg_type('database',  short='d', type=ARG_TYPE_DB), &                     ! -d, --database <path>
-            arg_type('input',     short='o', type=ARG_TYPE_CHAR, required=.true.), &  ! -i, --input <path>
+            arg_type('input',     short='i', type=ARG_TYPE_CHAR, required=.true.), &  ! -i, --input <path>
             arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
             arg_type('separator', short='a', type=ARG_TYPE_CHAR, max_len=1), &        ! -a, --separator <char>
             arg_type('dry',       short='y', type=ARG_TYPE_BOOL), &                   ! -y, --dry

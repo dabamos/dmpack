@@ -12,8 +12,8 @@ summary:         **Deformation Monitoring Package (DMPACK)** – A collections
                  FreeBSD.
 author:          Philipp Engel
 date:            September 8, 2023
-project_website: https://www.dabamos.de/
-project_url:     https://www.dabamos.de/dmpack/doc/
+project_website: https://www.dabamos.de
+project_url:     https://www.dabamos.de/dmpack/doc
 project_github:  https://github.com/dabamos/dmpack
 
 This is the source code documentation of the DMPACK library. Import module
