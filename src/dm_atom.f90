@@ -161,7 +161,8 @@ contains
     ! ******************************************************************
     pure function atom_link(href, rel, type) result(xml)
         !! Returns an Atom link, for example:
-        !! ```
+        !!
+        !! ```html
         !! <link href="http://example.org/feed/" rel="self" />
         !! <link href="http://example.org/" type="text/html" />
         !! ```

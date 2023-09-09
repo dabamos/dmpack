@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_transform
-    !! Coordinate transformations, requires LAPACK95.
+    !! Coordinate transformations (unfinished).
     use :: dm_const
     use :: dm_error
     use :: dm_la
@@ -42,7 +42,7 @@ contains
             a(i + 1, :) = [ cs(i + 1),      cs(i), 0.0_r8, 1.0_r8 ]
         end do
 
-        ! Compute minimum-norm least squares solution to AX = L using LAPACK95.
+        ! Compute minimum-norm least squares solution to AX = L.
         b = a; l = ct
         call dm_la_gels(b, l)
 

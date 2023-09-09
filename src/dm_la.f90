@@ -426,8 +426,8 @@ contains
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     logical function la_same(ca, cb) result(same)
-        !! LAPACK95 auxility routine thats tests if ca is the same letter as cb
-        !! regardless of case.
+        !! LAPACK95 auxility routine thats tests if `ca` is the same letter as
+        !! `cb` regardless of case.
         character, intent(in) :: ca
         character, intent(in) :: cb
 

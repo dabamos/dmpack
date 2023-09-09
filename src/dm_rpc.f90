@@ -110,7 +110,7 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     integer function dm_rpc_error(curl_error) result(rc)
-        !! Converts cURL error code into DMPACK error code.
+        !! Converts cURL error code to DMPACK error code.
         integer, intent(in) :: curl_error !! cURL error code.
 
         select case (curl_error)

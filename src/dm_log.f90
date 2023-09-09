@@ -86,6 +86,7 @@ contains
         valid = .false.
 
         if (log%level < LOG_NONE .or. log%level > LOG_CRITICAL) return
+        if (.not. dm_error_valid(log%error)) return
         if (log%id == UUID_DEFAULT) return
         if (.not. dm_uuid4_valid(log%id)) return
         if (len_trim(log%timestamp) == 0) return

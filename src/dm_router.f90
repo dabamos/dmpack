@@ -48,7 +48,8 @@ contains
         !! Adds route to router.
         type(router_type),        intent(inout) :: router !! Router type.
         type(route_type), target, intent(inout) :: route  !! Route to add to routing table.
-        type(route_type), pointer               :: ptr
+
+        type(route_type), pointer :: ptr
 
         rc = E_INVALID
         if (.not. allocated(route%path)) return
@@ -79,7 +80,8 @@ contains
         type(router_type),  intent(inout) :: router      !! Router type.
         type(cgi_env_type), intent(inout) :: env         !! CGI environment variables.
         integer,            intent(out)   :: http_status !! Optional status.
-        type(route_type), pointer         :: route
+
+        type(route_type), pointer :: route
 
         http_status = HTTP_NOT_FOUND
         if (dm_router_get(router, trim(env%path_info), route) /= E_NONE) return
@@ -99,7 +101,8 @@ contains
         type(router_type),         intent(inout) :: router !! Router type.
         character(len=*),          intent(in)    :: path   !! URI.
         type(route_type), pointer, intent(out)   :: route  !! Associated route.
-        class(*), pointer                        :: ptr
+
+        class(*), pointer :: ptr
 
         route => null()
         ptr   => null()

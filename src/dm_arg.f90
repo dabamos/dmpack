@@ -145,7 +145,7 @@ contains
                         case (ARG_TYPE_INTEGER)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not an integer')
                         case (ARG_TYPE_FLOAT)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a float')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a number')
                         case (ARG_TYPE_ID)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a valid id')
                         case (ARG_TYPE_UUID)
@@ -155,15 +155,17 @@ contains
                         case (ARG_TYPE_FILE)
                             call dm_error_out(rc, 'file ' // trim(args(i)%value) // ' not found')
                         case (ARG_TYPE_DB)
-                            call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' does not exist')
+                            call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' not found')
                     end select
 
                 case (E_ARG_LENGTH)
                     n = len_trim(args(i)%value)
                     if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too long')
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // &
+                                          ' too long (max. ' // dm_itoa(args(i)%max_len) // ')')
                     else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too short')
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // &
+                                          ' too short (min. ' // dm_itoa(args(i)%min_len) // ')')
                     end if
             end select
 
