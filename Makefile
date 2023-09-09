@@ -107,7 +107,7 @@ RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE) -std=f2018
 CFLAGS  = -mtune=native -O2
 ARFLAGS = -rcs
-LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib/ -z execstack
+LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
 LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 
 # Shared libraries to link.
