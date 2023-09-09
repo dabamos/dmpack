@@ -1227,7 +1227,8 @@ sensors must exist as well.
 |===
 | Option               | Short | Default | Description
 
-| `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
+| `--database _file_`  | `-d`  | –       | Path to SQLite database (required, unless in dry mode).
+| `--dry`              | `-y`  | off     | Dry mode. Reads and validates records from file but skips database import.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
 | `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
 | `--separator _char_` | `-a`  | `,`     | CSV separator character.
@@ -1664,7 +1665,7 @@ configuration file. The arguments overwrite settings from file.
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration file and POSIX message queue to subscribe to.
-| `--output _file_`   | `-o`  | _stdout_ | Path of output file. Prints serialised data to _stdout_ if not set (default).
+| `--output _file_`   | `-o`  | _stdout_ | Path of output file. Serialised data is written to _stdout_ if not set (default).
 | `--replace`         | `-r`  | off      | Replace output file instead of appending data.
 | `--response _name_` | `-R`  | –        | Name of observation response to output (required for format `block`).
 | `--type _type_`     | `-t`  | –        | Data type to receive: `log` or `observ`.
@@ -1877,7 +1878,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--rts`             | `-R`  | off        | Enable Request To Send (RTS).
 | `--sensor _id_`     | `-S`  | –          | Sensor id.
 | `--stopbits _n_`    | `-O`  | 1          | Number of stop bits (1, 2).
-| `--timeout _n_`     | `-T`  | 0          | Connection timeout in seconds.
+| `--timeout _n_`     | `-T`  | 0          | Connection timeout in seconds (max. 25).
 | `--tty _path_`      | `-Y`  | –          | Path to TTY/PTY device (for example, `/dev/ttyU0`).
 | `--verbose`         | `-V`  | off        | Print log messages to _stderr_.
 | `--version`         | `-v`  | –          | Output version information and quit.

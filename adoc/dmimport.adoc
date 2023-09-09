@@ -16,7 +16,7 @@ dmimport - imports records from file into database
 *dmimport* --version
 
 *dmimport* --*input* _file_ --*database* _file_ --*type* _type_
-[--*separator* _char_] [--*verbose*]
+[--*separator* _char_] [--*dry*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -33,7 +33,11 @@ sensors must exist as well.
 == OPTIONS
 
 *--database*, *-d* _file_::
-  Path of the SQLite database (required).
+  Path of the SQLite database (required, unless in dry mode).
+
+*--dry*, *-y*::
+  Enable dry mode. Read records from file and validate them without actual
+  database import.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
@@ -48,7 +52,7 @@ sensors must exist as well.
   Type of records to import (required).
 
 *--verbose*, *-V*::
-  Prints progress to standard output.
+  Print progress to standard output.
 
 *--version*, *-v*::
   Output version information and quit.

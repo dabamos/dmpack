@@ -18,6 +18,7 @@ program dmimport
         character(len=FILE_PATH_LEN) :: input     = ' '       !! Input file path.
         integer                      :: type      = TYPE_NONE !! Entity type.
         character                    :: separator = ','       !! CSV separator character.
+        logical                      :: dry       = .false.   !! Dry run.
         logical                      :: verbose   = .false.   !! Print progress to standard output.
     end type app_type
 
@@ -40,7 +41,7 @@ contains
 
         integer          :: er, fu, stat
         integer(kind=i8) :: nrecs, nrows
-        logical          :: table_exists
+        logical          :: exists, valid
         real(kind=r8)    :: dt
         type(db_type)    :: db
         type(timer_type) :: timer
@@ -51,77 +52,74 @@ contains
         type(sensor_type) :: sensor
         type(target_type) :: target
 
-        ! Does the input file exist?
-        rc = E_NOT_FOUND
-
-        if (.not. dm_file_exists(app%input)) then
-            call dm_error_out(rc, 'input file ' // trim(app%input) // ' not found')
-            return
-        end if
-
         ! Try to open input file.
         rc = E_IO
-
         open (action='read', file=trim(app%input), iostat=stat, newunit=fu)
 
         if (stat /= 0) then
-            call dm_error_out(rc, 'failed to open input file ' // trim(app%input))
+            call dm_error_out(rc, 'failed to open file ' // trim(app%input))
             return
         end if
 
         if (app%verbose) then
-            print '("Opened input file ", a)', trim(app%input)
+            print '("Opened file ", a)', trim(app%input)
         end if
 
-        db_block: block
-            ! Try to open database.
-            rc = dm_db_open(db, app%database, validate=.true.)
+        import_block: block
+            if (.not. app%dry) then
+                ! Try to open database.
+                rc = dm_db_open(db, app%database, validate=.true.)
 
-            if (rc == E_INVALID) then
-                call dm_error_out(rc, 'invalid database ' // trim(app%database))
-                exit db_block
+                if (rc == E_INVALID) then
+                    call dm_error_out(rc, 'invalid database ' // trim(app%database))
+                    exit import_block
+                end if
+
+                if (dm_is_error(rc)) then
+                    call dm_error_out(rc, 'failed to open database ' // trim(app%database))
+                    exit import_block
+                end if
+
+                if (app%verbose) then
+                    print '("Opened database ", a)', trim(app%database)
+                end if
+
+                ! Check for appropriate database table.
+                select case (app%type)
+                    case (TYPE_NODE)
+                        rc = dm_db_has_table(db, SQL_TABLE_NODES, exists)
+                    case (TYPE_SENSOR)
+                        rc = dm_db_has_table(db, SQL_TABLE_SENSORS, exists)
+                    case (TYPE_TARGET)
+                        rc = dm_db_has_table(db, SQL_TABLE_TARGETS, exists)
+                    case (TYPE_OBSERV)
+                        rc = dm_db_has_table(db, SQL_TABLE_OBSERVS, exists)
+                    case (TYPE_LOG)
+                        rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
+                end select
+
+                if (dm_is_error(rc) .or. .not. exists) then
+                    rc = E_INVALID
+                    call dm_error_out(rc, 'database table not found')
+                    exit import_block
+                end if
             end if
 
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to open database ' // trim(app%database))
-                exit db_block
-            end if
+            ! Start timer.
+            if (app%verbose) call dm_timer_start(timer)
 
-            if (app%verbose) then
-                print '("Opened database ", a)', trim(app%database)
-            end if
+            if (.not. app%dry) then
+                ! Start database transaction.
+                rc = dm_db_begin(db)
 
-            ! Check for appropriate database table.
-            select case (app%type)
-                case (TYPE_NODE)
-                    rc = dm_db_has_table(db, SQL_TABLE_NODES, table_exists)
-                case (TYPE_SENSOR)
-                    rc = dm_db_has_table(db, SQL_TABLE_SENSORS, table_exists)
-                case (TYPE_TARGET)
-                    rc = dm_db_has_table(db, SQL_TABLE_TARGETS, table_exists)
-                case (TYPE_OBSERV)
-                    rc = dm_db_has_table(db, SQL_TABLE_OBSERVS, table_exists)
-                case (TYPE_LOG)
-                    rc = dm_db_has_table(db, SQL_TABLE_LOGS, table_exists)
-            end select
-
-            if (dm_is_error(rc) .or. .not. table_exists) then
-                rc = E_INVALID
-                call dm_error_out(rc, 'database table not found')
-                exit db_block
-            end if
-
-            ! Start database transaction.
-            call dm_timer_start(timer)
-            rc = dm_db_begin(db)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'database transaction error')
-                exit db_block
+                if (dm_is_error(rc)) then
+                    call dm_error_out(rc, 'database transaction error')
+                    exit import_block
+                end if
             end if
 
             nrecs = 0 ! Number of records written to database.
-            nrows = 0 ! Number of lines in CSV file.
+            nrows = 0 ! Number of rows in CSV file.
 
             ! Read records from file and insert them into database.
             read_loop: do
@@ -141,7 +139,7 @@ contains
                         rc = dm_csv_read(log, fu, app%separator)
                 end select
 
-                ! Ignore comments and empty lines.
+                ! Ignore comments and empty rows.
                 if (rc == E_EOR) then
                     rc = E_NONE
                     cycle read_loop
@@ -158,7 +156,32 @@ contains
                     exit read_loop
                 end if
 
-                ! Insert record into database.
+                if (app%dry) then
+                    ! Validate record.
+                    select case (app%type)
+                        case (TYPE_NODE)
+                            valid = dm_node_valid(node)
+                        case (TYPE_SENSOR)
+                            valid = dm_sensor_valid(sensor)
+                        case (TYPE_TARGET)
+                            valid = dm_target_valid(target)
+                        case (TYPE_OBSERV)
+                            valid = dm_observ_valid(observ)
+                        case (TYPE_LOG)
+                            valid = dm_log_valid(log)
+                    end select
+
+                    if (.not. valid) then
+                        rc = E_INVALID
+                        call dm_error_out(rc, 'invalid record in row ' // dm_itoa(nrows))
+                        exit read_loop
+                    end if
+
+                    ! Skip database insert on dry run.
+                    cycle read_loop
+                end if
+
+                ! Validate and insert record into database.
                 select case (app%type)
                     case (TYPE_NODE)
                         rc = dm_db_insert(db, node)
@@ -176,62 +199,70 @@ contains
                 select case (rc)
                     case (E_NONE)
                         nrecs = nrecs + 1
-                        if (app%verbose) then
-                            if (modulo(nrecs, 100_i8) == 0) then
-                                print '("Imported ", i0, " records")', nrecs
-                            end if
-                        end if
+                        if (.not. app%verbose) cycle read_loop
+                        if (modulo(nrecs, 100_i8) == 0) print '("Imported ", i0, " records")', nrecs
+                    case (E_INVALID)
+                        call dm_error_out(rc, 'invalid record in row ' // dm_itoa(nrows))
+                        exit read_loop
                     case (E_DB_CONSTRAINT)
                         call dm_error_out(rc, 'record in row ' // dm_itoa(nrows) // ' already exists in database')
                         exit read_loop
                     case default
-                        call dm_error_out(rc, 'failed to insert record in line ' // dm_itoa(nrows))
+                        call dm_error_out(rc, 'failed to insert record in row ' // dm_itoa(nrows))
                         exit read_loop
                 end select
             end do read_loop
 
-            ! Rollback transaction on error.
-            if (dm_is_error(rc)) then
-                er = dm_db_rollback(db)
+            if (.not. app%dry) then
+                ! Rollback transaction on error.
+                if (dm_is_error(rc)) then
+                    er = dm_db_rollback(db)
 
-                if (dm_is_error(er)) then
-                    call dm_error_out(er, 'failed to roll back database transaction')
-                    exit db_block
+                    if (dm_is_error(er)) then
+                        call dm_error_out(er, 'failed to roll back database transaction')
+                        exit import_block
+                    end if
+
+                    if (app%verbose) print '("All database changes rolled back")'
+                    exit import_block
                 end if
 
-                if (app%verbose) print '("All database changes rolled back")'
-                exit db_block
-            end if
+                ! Commit transaction to database.
+                rc = dm_db_commit(db)
 
-            ! Commit transaction.
-            rc = dm_db_commit(db)
-            dt = dm_timer_stop(timer)
+                ! Rollback transaction on error.
+                if (dm_is_error(rc)) then
+                    call dm_error_out(rc, 'failed to commit database transaction')
+                    er = dm_db_rollback(db)
 
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to commit database transaction')
-                er = dm_db_rollback(db)
+                    if (dm_is_error(er)) then
+                        call dm_error_out(er, 'failed to roll back database transaction')
+                        exit import_block
+                    end if
 
-                if (dm_is_error(er)) then
-                    call dm_error_out(er, 'failed to roll back database transaction')
-                    exit db_block
+                    if (app%verbose) print '("All database changes rolled back")'
+                    exit import_block
                 end if
-
-                if (app%verbose) print '("All database changes rolled back")'
-                exit db_block
             end if
 
+            ! Output statistics.
             if (app%verbose) then
+                dt = dm_timer_stop(timer)
+
                 print '("Read ", i0, " rows from file ", a)', nrows, trim(app%input)
-                print '("Imported ", i0, " records into database ", a, " in ", f0.1, " seconds")', &
-                    nrecs, trim(app%database), dt
+                print '("Imported ", i0, " records in ", f0.1, " seconds")', nrecs, dt
             end if
-        end block db_block
+        end block import_block
 
-        if (dm_is_error(dm_db_close(db))) rc = E_DB
-        if (app%verbose) print '("Closed database ", a)', trim(app%database)
+        ! Close database.
+        if (.not. app%dry) then
+            if (dm_is_error(dm_db_close(db))) rc = E_DB
+            if (app%verbose) print '("Closed database ", a)', trim(app%database)
+        end if
 
+        ! Close file.
         close (fu)
-        if (app%verbose) print '("Closed input file ", a)', trim(app%input)
+        if (app%verbose) print '("Closed file ", a)', trim(app%input)
 
         if (dm_is_error(rc)) return
         if (app%verbose) print '("Finished")'
@@ -240,16 +271,19 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(5)
 
-        character(len=6) :: type
+        character(len=6) :: type_name
+        type(arg_type)   :: args(6)
+
+        type_name = ' '
 
         args = [ &
-            arg_type('database',  short='d', type=ARG_TYPE_DB, required=.true.), & ! -d, --database <path>
-            arg_type('input',     short='o', type=ARG_TYPE_CHAR), &                ! -i, --input <path>
+            arg_type('database',  short='d', type=ARG_TYPE_DB), &                     ! -d, --database <path>
+            arg_type('input',     short='o', type=ARG_TYPE_CHAR, required=.true.), &  ! -i, --input <path>
             arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
-            arg_type('separator', short='a', type=ARG_TYPE_CHAR, max_len=1), &     ! -a, --separator <char>
-            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL) &                 ! -V, --verbose
+            arg_type('separator', short='a', type=ARG_TYPE_CHAR, max_len=1), &        ! -a, --separator <char>
+            arg_type('dry',       short='y', type=ARG_TYPE_BOOL), &                   ! -y, --dry
+            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL) &                    ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -258,13 +292,19 @@ contains
 
         rc = dm_arg_get(args(1), app%database)
         rc = dm_arg_get(args(2), app%input)
-        rc = dm_arg_get(args(3), type)
+        rc = dm_arg_get(args(3), type_name)
         rc = dm_arg_get(args(4), app%separator)
-        rc = dm_arg_get(args(5), app%verbose)
+        rc = dm_arg_get(args(5), app%dry)
+        rc = dm_arg_get(args(6), app%verbose)
 
-        app%type = dm_type_from_name(type)
+        app%type = dm_type_from_name(type_name)
 
         rc = E_INVALID
+
+        if (.not. app%dry .and. .not. dm_file_exists(app%database)) then
+            call dm_error_out(rc, 'database ' // trim(app%database) // ' not found')
+            return
+        end if
 
         ! Validate data type.
         select case (app%type)
