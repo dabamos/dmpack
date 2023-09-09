@@ -1021,7 +1021,7 @@ contains
             character(len=TARGET_ID_LEN)     :: target_id
             character(len=RESPONSE_NAME_LEN) :: response_name
             character(len=TIME_LEN)          :: from, to
-            integer                          :: max_results(9), nresults
+            integer                          :: max_results(8), nresults
             integer(kind=i8)                 :: npoints
             type(cgi_param_type)             :: param
             type(plot_type)                  :: plot
@@ -1031,7 +1031,7 @@ contains
             type(sensor_type), allocatable :: sensors(:)
             type(target_type), allocatable :: targets(:)
 
-            max_results = [ 5, 25, 50, 100, 250, 500, 1000, 5000, 10000 ]
+            max_results = [ 5, 25, 50, 100, 250, 500, 1000, 2500 ]
 
             rc = dm_db_select(db, nodes)
             rc = dm_db_select(db, sensors)
