@@ -6,7 +6,7 @@ program dmtestnml
     !! Test program that tries Namelist export.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 6
+    integer, parameter :: NTESTS = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -17,6 +17,7 @@ program dmtestnml
     tests(4) = test_type('dmtestnml.test04', test04)
     tests(5) = test_type('dmtestnml.test05', test05)
     tests(6) = test_type('dmtestnml.test06', test06)
+    tests(7) = test_type('dmtestnml.test07', test07)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -191,4 +192,68 @@ contains
 
         stat = TEST_PASSED
     end function test06
+
+    logical function test07() result(stat)
+        character(len=65536) :: buffer
+        integer              :: n, rc
+
+        type(beat_type)   :: beat
+        type(log_type)    :: log
+        type(observ_type) :: observ
+        type(node_type)   :: node
+        type(sensor_type) :: sensor
+        type(target_type) :: target
+
+        stat = TEST_FAILED
+
+        buffer = ' '
+        rc = dm_nml_from(beat, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Beat max. length:   ', NML_BEAT_LEN
+        print *, 'Beat trim length:   ', n
+        if (n > NML_BEAT_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(log, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Log max. length:    ', NML_LOG_LEN
+        print *, 'Log trim length:    ', n
+        if (n > NML_LOG_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(observ, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Observ max. length: ', NML_OBSERV_LEN
+        print *, 'Observ trim length: ', n
+        if (n > NML_OBSERV_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(node, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Node max. length:   ', NML_NODE_LEN
+        print *, 'Node trim length:   ', n
+        if (n > NML_NODE_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(sensor, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Sensor max. length: ', NML_SENSOR_LEN
+        print *, 'Sensor trim length: ', n
+        if (n > NML_SENSOR_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(target, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print *, 'Target max. length: ', NML_TARGET_LEN
+        print *, 'Target trim length: ', n
+        if (n > NML_TARGET_LEN) return
+
+        stat = TEST_PASSED
+    end function test07
 end program dmtestnml
