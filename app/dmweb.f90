@@ -1094,7 +1094,7 @@ contains
                     exit response_block
                 end if
 
-                if (npoints == 0) then
+                if (rc == E_DB_NO_ROWS .or. npoints == 0) then
                     call dm_cgi_out(dm_html_p('No observations found.'))
                     call html_footer()
                     exit response_block
