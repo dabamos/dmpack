@@ -1791,7 +1791,7 @@ contains
             if (sqlite3_bind_text(stmt, 7, trim(to))            /= SQLITE_OK) exit sql_block
 
             if (present(limit)) then
-                if (sqlite3_bind_int64(stmt, 7, limit) /= SQLITE_OK) exit sql_block
+                if (sqlite3_bind_int64(stmt, 8, limit) /= SQLITE_OK) exit sql_block
             end if
 
             do i = 1, n
