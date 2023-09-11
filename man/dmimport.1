@@ -2,12 +2,12 @@
 .\"     Title: dmimport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-09
+.\"      Date: 2023-09-11
 .\"    Manual: User Commands
 .\"    Source: DMIMPORT
 .\"  Language: English
 .\"
-.TH "DMIMPORT" "1" "2023-09-09" "DMIMPORT" "User Commands"
+.TH "DMIMPORT" "1" "2023-09-11" "DMIMPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmimport \- imports records from file into database
 \fBdmimport\fP \-\-version
 .sp
 \fBdmimport\fP \-\-\fBinput\fP \fIfile\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP
-[\-\-\fBseparator\fP \fIchar\fP] [\-\-\fBdry\fP] [\-\-\fBverbose\fP]
+[\-\-\fBquote\fP \fIchar\fP] [\-\-\fBseparator\fP \fIchar\fP] [\-\-\fBdry\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmimport\fP program reads logs, nodes, sensors, targets, and observations
@@ -71,7 +71,12 @@ Output available command\-line arguments and quit.
 Path of input file in CSV format.
 .RE
 .sp
-\fB\-\-separator\fP, \fB\-a\fP \fIchar\fP
+\fB\-\-quote\fP, \fB\-q\fP \fIchar\fP
+.RS 4
+CSV quote character. If not passed, quoting is disabled.
+.RE
+.sp
+\fB\-\-separator\fP, \fB\-s\fP \fIchar\fP
 .RS 4
 CSV separator character.
 .RE

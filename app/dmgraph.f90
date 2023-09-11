@@ -307,7 +307,7 @@ contains
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.)
             if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select(db, dps, node, sensor, target, response, from, to)
+            rc = dm_db_select(db, dps, node, sensor, target, response, from, to, error=E_NONE)
         end block db_block
 
         rc = max(dm_db_close(db), rc)

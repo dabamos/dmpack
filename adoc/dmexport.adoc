@@ -63,7 +63,7 @@ an empty file will be created.
 *--sensor*, *-S* _id_::
   Sensor id (required for types `dp` and `observ`).
 
-*--separator*, *-a* _char_::
+*--separator*, *-s* _char_::
   CSV separator character.
 
 *--target*, *-T* _id_::

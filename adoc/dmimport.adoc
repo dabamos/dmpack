@@ -16,7 +16,7 @@ dmimport - imports records from file into database
 *dmimport* --version
 
 *dmimport* --*input* _file_ --*database* _file_ --*type* _type_
-[--*separator* _char_] [--*dry*] [--*verbose*]
+[--*quote* _char_] [--*separator* _char_] [--*dry*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -45,7 +45,10 @@ sensors must exist as well.
 *--input*, *-i* _file_::
   Path of input file in CSV format.
 
-*--separator*, *-a* _char_::
+*--quote*, *-q* _char_::
+  CSV quote character. If not passed, quoting is disabled.
+
+*--separator*, *-s* _char_::
   CSV separator character.
 
 *--type*, *-t* [log|node|observ|sensor|target]::

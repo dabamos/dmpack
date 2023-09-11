@@ -198,7 +198,7 @@ contains
             arg_type('format',    short='f', type=ARG_TYPE_CHAR, max_len=FORMAT_NAME_LEN, required=.true.), & ! -f, --format <string>
             arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), &   ! -t, --type <string>
             arg_type('header',    short='H', type=ARG_TYPE_BOOL), &                ! -H, --header
-            arg_type('separator', short='a', type=ARG_TYPE_CHAR, max_len=1) &      ! -a, --separator <char>
+            arg_type('separator', short='s', type=ARG_TYPE_CHAR, max_len=1) &      ! -a, --separator <char>
         ]
 
         ! Read all command-line arguments.

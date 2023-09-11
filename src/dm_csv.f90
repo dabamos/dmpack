@@ -641,7 +641,7 @@ contains
         quoted = .false.
 
         if (present(quote)) then
-            if (quote /= achar(0)) quoted = .true.
+            if (quote /= ASCII_NUL) quoted = .true.
         end if
 
         old = pos
@@ -669,7 +669,7 @@ contains
         character :: q
         integer   :: old
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
         old = pos
         rc = csv_parse(input, separator, limit, pos)
@@ -689,7 +689,7 @@ contains
         character :: q
         integer   :: old
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
         old = pos
         rc = csv_parse(input, separator, limit, pos, q)
@@ -709,7 +709,7 @@ contains
         character :: q
         integer   :: old
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
         old = pos
         rc = csv_parse(input, separator, limit, pos, q)
@@ -729,7 +729,7 @@ contains
         character :: q
         integer   :: old
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
         old = pos
         rc = csv_parse(input, separator, limit, pos, q)
@@ -753,12 +753,12 @@ contains
         rc = E_BOUNDS
         if (pos < 0 .or. pos > limit) return
 
-        a = achar(0)
+        a = ASCII_NUL
         f = .false.
 
         if (present(quote)) then
             a = quote
-            if (a /= achar(0)) q = .true.
+            if (a /= ASCII_NUL) q = .true.
         end if
 
         do i = pos + 1, limit + 1
@@ -792,7 +792,7 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
 
         rc = E_READ
@@ -845,7 +845,7 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
 
         rc = E_READ
@@ -892,7 +892,7 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
 
         read (unit_, '(a)', iostat=stat) buffer
@@ -1000,7 +1000,7 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
 
         rc = E_READ
@@ -1049,7 +1049,7 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        q = achar(0)
+        q = ASCII_NUL
         if (present(quote)) q = quote
 
         rc = E_READ

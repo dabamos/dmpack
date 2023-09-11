@@ -87,9 +87,9 @@ FC      = gfortran
 CC      = gcc
 AR      = ar
 MAKE    = make
-RM      = rm
-SH      = sh
 STRIP   = strip
+RM      = /bin/rm
+SH      = /bin/sh
 
 SRCDIR  = ./src
 INCDIR  = ./include
@@ -327,6 +327,36 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
 
 # ******************************************************************************
 #
+# FreeBSD target.
+#
+# ******************************************************************************
+freebsd_debug:
+	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)" LDLIBS="$(LDLIBS)"
+
+freebsd_release:
+	$(MAKE) all OS=freebsd PREFIX=/usr/local
+	$(STRIP) -s $(DISTDIR)/dm*
+
+freebsd:
+	$(MAKE) freebsd_release
+
+# ******************************************************************************
+#
+# Linux target.
+#
+# ******************************************************************************
+linux_debug:
+	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
+
+linux_release:
+	$(MAKE) all OS=linux PREFIX=/usr
+	$(STRIP) -s $(DISTDIR)/dm*
+
+linux:
+	$(MAKE) linux_release
+
+# ******************************************************************************
+#
 # Output directories.
 #
 # ******************************************************************************
@@ -455,36 +485,6 @@ $(OBJ): $(SRC)
 # ******************************************************************************
 $(SHARED): $(TARGET)
 	$(FC) $(FFLAGS) -fPIC -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive
-
-# ******************************************************************************
-#
-# FreeBSD target.
-#
-# ******************************************************************************
-freebsd_debug:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)" LDLIBS="$(LDLIBS)"
-
-freebsd_release:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local
-	$(STRIP) -s $(DISTDIR)/dm*
-
-freebsd:
-	$(MAKE) freebsd_release
-
-# ******************************************************************************
-#
-# Linux target.
-#
-# ******************************************************************************
-linux_debug:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
-
-linux_release:
-	$(MAKE) all OS=linux PREFIX=/usr
-	$(STRIP) -s $(DISTDIR)/dm*
-
-linux:
-	$(MAKE) linux_release
 
 # ******************************************************************************
 #

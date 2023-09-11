@@ -17,6 +17,7 @@ program dmimport
         character(len=FILE_PATH_LEN) :: database  = ' '       !! Path to database.
         character(len=FILE_PATH_LEN) :: input     = ' '       !! Input file path.
         integer                      :: type      = TYPE_NONE !! Entity type.
+        character                    :: quote     = ASCII_NUL !! CSV quote character.
         character                    :: separator = ','       !! CSV separator character.
         logical                      :: dry       = .false.   !! Dry run.
         logical                      :: verbose   = .false.   !! Print progress to standard output.
@@ -128,15 +129,15 @@ contains
                 ! Read record from file.
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_csv_read(node, fu, app%separator)
+                        rc = dm_csv_read(node, fu, app%separator, app%quote)
                     case (TYPE_SENSOR)
-                        rc = dm_csv_read(sensor, fu, app%separator)
+                        rc = dm_csv_read(sensor, fu, app%separator, app%quote)
                     case (TYPE_TARGET)
-                        rc = dm_csv_read(target, fu, app%separator)
+                        rc = dm_csv_read(target, fu, app%separator, app%quote)
                     case (TYPE_OBSERV)
-                        rc = dm_csv_read(observ, fu, app%separator)
+                        rc = dm_csv_read(observ, fu, app%separator, app%quote)
                     case (TYPE_LOG)
-                        rc = dm_csv_read(log, fu, app%separator)
+                        rc = dm_csv_read(log, fu, app%separator, app%quote)
                 end select
 
                 ! Ignore comments and empty rows.
@@ -272,37 +273,46 @@ contains
         type(app_type), intent(inout) :: app
 
         character(len=6) :: type_name
-        type(arg_type)   :: args(6)
+        type(arg_type)   :: args(7)
 
         type_name = ' '
 
         args = [ &
-            arg_type('database',  short='d', type=ARG_TYPE_DB), &                     ! -d, --database <path>
-            arg_type('input',     short='i', type=ARG_TYPE_CHAR, required=.true.), &  ! -i, --input <path>
             arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
-            arg_type('separator', short='a', type=ARG_TYPE_CHAR, max_len=1), &        ! -a, --separator <char>
-            arg_type('dry',       short='y', type=ARG_TYPE_BOOL), &                   ! -y, --dry
-            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL) &                    ! -V, --verbose
+            arg_type('database',  short='d', type=ARG_TYPE_DB), &                    ! -d, --database <path>
+            arg_type('input',     short='i', type=ARG_TYPE_CHAR, required=.true.), & ! -i, --input <path>
+            arg_type('quote',     short='q', type=ARG_TYPE_CHAR, max_len=1), &       ! -q, --quote <char>
+            arg_type('separator', short='s', type=ARG_TYPE_CHAR, max_len=1), &       ! -s, --separator <char>
+            arg_type('dry',       short='y', type=ARG_TYPE_BOOL), &                  ! -y, --dry
+            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL) &                   ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%database)
-        rc = dm_arg_get(args(2), app%input)
-        rc = dm_arg_get(args(3), type_name)
-        rc = dm_arg_get(args(4), app%separator)
-        rc = dm_arg_get(args(5), app%dry)
-        rc = dm_arg_get(args(6), app%verbose)
+        rc = dm_arg_get(args(1), type_name)
+        rc = dm_arg_get(args(2), app%database)
+        rc = dm_arg_get(args(3), app%input)
+        rc = dm_arg_get(args(4), app%quote)
+        rc = dm_arg_get(args(5), app%separator)
+        rc = dm_arg_get(args(6), app%dry)
+        rc = dm_arg_get(args(7), app%verbose)
 
         app%type = dm_type_from_name(type_name)
 
         rc = E_INVALID
 
-        if (.not. app%dry .and. .not. dm_file_exists(app%database)) then
-            call dm_error_out(rc, 'database ' // trim(app%database) // ' not found')
-            return
+        if (.not. app%dry) then
+            if (len_trim(app%database) == 0) then
+                call dm_error_out(rc, 'argument --database required')
+                return
+            end if
+
+            if (.not. dm_file_exists(app%database)) then
+                call dm_error_out(rc, 'database ' // trim(app%database) // ' not found')
+                return
+            end if
         end if
 
         ! Validate data type.

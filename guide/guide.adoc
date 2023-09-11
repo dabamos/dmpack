@@ -812,7 +812,7 @@ an empty file will be created.
 | `--output _file_`    | `-o`  | –       | Path of output file.
 | `--response _name_`  | `-R`  | –       | Response name for type `dp`.
 | `--sensor _id_`      | `-S`  | –       | Sensor id (requied for types `dp` and `observ`).
-| `--separator _char_` | `-a`  | `,`     | CSV separator character.
+| `--separator _char_` | `-s`  | `,`     | CSV separator character.
 | `--target _id_`      | `-T`  | –       | Target id (required for types `dp` and `observ`).
 | `--to _timestamp_`   | `-E`  | –       | End of time range in ISO 8601 (required for types `dp`, `log`, `observ`).
 | `--type _type_`      | `-t`  | –       | Type of record to export: `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` (required).
@@ -1231,7 +1231,8 @@ sensors must exist as well.
 | `--dry`              | `-y`  | off     | Dry mode. Reads and validates records from file but skips database import.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
 | `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
-| `--separator _char_` | `-a`  | `,`     | CSV separator character.
+| `--quote _char_`     | `-q`  | –       | CSV quote character.
+| `--separator _char_` | `-s`  | `,`     | CSV separator character.
 | `--type _type_`      | `-t`  | –       | Type of record to import: `log`, `node`, `observ`, `sensor`, `target` (required).
 | `--verbose`          | `-V`  | off     | Print progress to _stdout_.
 | `--version`          | `-v`  | –       | Output version information and quit.
@@ -3768,9 +3769,9 @@ NODE%META="Description",
   "name": "dummy-observ",
   "timestamp": "1970-01-01T00:00:00.000+00:00",
   "path": "/dev/null",
+  "priority": 0,
   "error": 0,
   "next": 0,
-  "priority": 0,
   "nreceivers": 2,
   "nrequests": 1,
   "receivers": [
