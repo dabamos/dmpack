@@ -9,6 +9,7 @@ module dm_db
     use :: dm_dp
     use :: dm_error
     use :: dm_file
+    use :: dm_id
     use :: dm_log
     use :: dm_node
     use :: dm_observ
@@ -105,6 +106,7 @@ module dm_db
         !! Generic table row access function.
         module procedure :: db_next_row_beat
         module procedure :: db_next_row_data_point
+        module procedure :: db_next_row_id
         module procedure :: db_next_row_log
         module procedure :: db_next_row_observ
         module procedure :: db_next_row_observ_view
@@ -133,6 +135,7 @@ module dm_db
         module procedure :: dm_db_select_node
         module procedure :: dm_db_select_nodes
         module procedure :: dm_db_select_observ
+        module procedure :: dm_db_select_observ_ids
         module procedure :: dm_db_select_observ_views
         module procedure :: dm_db_select_observs_by_id
         module procedure :: dm_db_select_observs_by_time
@@ -226,6 +229,7 @@ module dm_db
     public :: dm_db_select_node
     public :: dm_db_select_nodes
     public :: dm_db_select_observ
+    public :: dm_db_select_observ_ids
     public :: dm_db_select_observ_views
     public :: dm_db_select_observs
     public :: dm_db_select_observs_by_id
@@ -903,13 +907,13 @@ contains
         exists = db_exists(db, SQL_TABLE_TARGETS, target_id)
     end function dm_db_exists_target
 
-    integer function dm_db_finalize(statement) result(rc)
+    integer function dm_db_finalize(db_stmt) result(rc)
         !! Finalises given database statement.
-        type(db_stmt_type), intent(inout) :: statement !! Database statement type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
 
         rc = E_NONE
-        if (.not. c_associated(statement%ptr)) return
-        if (sqlite3_finalize(statement%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
+        if (.not. c_associated(db_stmt%ptr)) return
+        if (sqlite3_finalize(db_stmt%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_finalize
 
     integer function dm_db_has_table(db, table, exists) result(rc)
@@ -1191,16 +1195,16 @@ contains
         if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_insert_node
 
-    integer function dm_db_insert_observ(db, observ, statement) result(rc)
+    integer function dm_db_insert_observ(db, observ, db_stmt) result(rc)
         !! Adds single observation to database, including receivers, requests,
         !! and responses. If the insert query fails, the transaction will be
         !! rolled back, i.e., no part of the observation is written to the
         !! database on error.
         character(len=*), parameter :: SAVE_POINT = 'observ'
 
-        type(db_type),      intent(inout)           :: db        !! Database type.
-        type(observ_type),  intent(inout)           :: observ    !! Observation type.
-        type(db_stmt_type), intent(inout), optional :: statement !! Database statement type.
+        type(db_type),      intent(inout)           :: db      !! Database type.
+        type(observ_type),  intent(inout)           :: observ  !! Observation type.
+        type(db_stmt_type), intent(inout), optional :: db_stmt !! Database statement type.
 
         integer     :: i, n
         type(c_ptr) :: stmt
@@ -1214,7 +1218,7 @@ contains
 
         ! Set given statement.
         stmt = c_null_ptr
-        if (present(statement)) stmt = statement%ptr
+        if (present(db_stmt)) stmt = db_stmt%ptr
 
         ! Begin transaction.
         rc = E_DB_TRANSACTION
@@ -1270,7 +1274,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (.not. present(statement)) then
+        if (.not. present(db_stmt)) then
             if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         end if
 
@@ -1281,7 +1285,7 @@ contains
         end if
 
         if (dm_is_error(db_release(db, SAVE_POINT))) rc = E_DB_TRANSACTION
-        if (present(statement)) statement%ptr = stmt
+        if (present(db_stmt)) db_stmt%ptr = stmt
     end function dm_db_insert_observ
 
     integer function dm_db_insert_observs(db, observs, transaction) result(rc)
@@ -1684,8 +1688,10 @@ contains
     end function dm_db_select_beats
 
     integer function dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response_name, &
-                                              from, to, limit, npoints) result(rc)
-        !! Returns data points from observations database.
+                                              from, to, error, limit, npoints) result(rc)
+        !! Returns data points from observations database. This function
+        !! selects only responses of error `E_NONE`, unless argument `error` is
+        !! passed.
         type(db_type),              intent(inout)         :: db            !! Database type.
         type(dp_type), allocatable, intent(out)           :: dps(:)        !! Returned data points.
         character(len=*),           intent(in)            :: node_id       !! Node id.
@@ -1694,15 +1700,18 @@ contains
         character(len=*),           intent(in)            :: response_name !! Response name.
         character(len=*),           intent(in)            :: from          !! Beginning of time span.
         character(len=*),           intent(in)            :: to            !! End of time span.
+        integer,                    intent(in),  optional :: error         !! Response error code.
         integer(kind=i8),           intent(in),  optional :: limit         !! Max. number of data points.
         integer(kind=i8),           intent(out), optional :: npoints       !! Total number of data points.
 
-        integer          :: stat
+        integer          :: error_, stat
         integer(kind=i8) :: i, n
         type(c_ptr)      :: stmt
 
-        if (present(npoints)) npoints= 0_i8
-        n = 0_i8
+        error_ = E_NONE
+        if (present(error)) error_ = error
+
+        if (present(npoints)) npoints = 0_i8
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1713,8 +1722,9 @@ contains
             if (sqlite3_bind_text(stmt, 2, trim(sensor_id))     /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 3, trim(target_id))     /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 4, trim(response_name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 5, trim(from))          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 6, trim(to))            /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 5, error_)              /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 6, trim(from))          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 7, trim(to))            /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1744,8 +1754,9 @@ contains
             if (sqlite3_bind_text(stmt, 2, trim(sensor_id))     /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 3, trim(target_id))     /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 4, trim(response_name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 5, trim(from))          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 6, trim(to))            /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 5, error_)              /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 6, trim(from))          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 7, trim(to))            /= SQLITE_OK) exit sql_block
 
             if (present(limit)) then
                 if (sqlite3_bind_int64(stmt, 7, limit) /= SQLITE_OK) exit sql_block
@@ -2116,7 +2127,8 @@ contains
         type(db_type),    intent(inout) :: db      !! Database type.
         type(node_type),  intent(out)   :: node    !! Returned node data.
         character(len=*), intent(in)    :: node_id !! Node id.
-        type(c_ptr)                     :: stmt
+
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
@@ -2195,7 +2207,7 @@ contains
     end function dm_db_select_nodes
 
     integer function dm_db_select_observ(db, observ, observ_id) result(rc)
-        !! Returns observation referencing the given id from database.
+        !! Returns observation referenced by the given id from database.
         type(db_type),     intent(inout) :: db        !! Database type.
         type(observ_type), intent(out)   :: observ    !! Selected observation.
         character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
@@ -2243,6 +2255,212 @@ contains
             if (dm_is_error(rc)) exit
         end do
     end function dm_db_select_observ
+
+    integer function dm_db_select_observ_ids(db, ids, node_id, sensor_id, target_id, from, to, &
+                                             desc, limit, nids) result(rc)
+        !! Returns observation ids in `ids`, with optional node id, sensor id,
+        !! target id, from, to. By default, ids are returned ordered by
+        !! ascending observation timestamp, unless `desc` is passed and
+        !! `.true.`. The maximum number of ids may be passed in `limit`.
+        !!
+        !! The total number of ids is returned in optional argument `nids`,
+        !! which may be greater than `limit`.
+        type(db_type),                      intent(inout)         :: db        !! Database type.
+        character(len=ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
+        character(len=*),                   intent(in),  optional :: node_id   !! Node id.
+        character(len=*),                   intent(in),  optional :: sensor_id !! Sensor id.
+        character(len=*),                   intent(in),  optional :: target_id !! Target id.
+        character(len=*),                   intent(in),  optional :: from      !! Beginning of time span.
+        character(len=*),                   intent(in),  optional :: to        !! End of time span.
+        logical,                            intent(in),  optional :: desc      !! Descending order.
+        integer(kind=i8),                   intent(in),  optional :: limit     !! Max. number of observations.
+        integer(kind=i8),                   intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
+
+        character(len=:), allocatable :: query
+        integer                       :: k,stat
+        integer(kind=i8)              :: i, n
+        type(c_ptr)                   :: stmt
+
+        logical :: has_param, has_node_id, has_sensor_id, has_target_id
+        logical :: has_from, has_to, has_limit
+        logical :: desc_order, more
+
+        if (present(nids)) nids = 0_i8
+
+        has_param     = .false.
+        has_node_id   = .false.
+        has_sensor_id = .false.
+        has_target_id = .false.
+        has_from      = .false.
+        has_to        = .false.
+        has_limit     = .false.
+
+        desc_order = .false.
+
+        if (present(node_id)) then
+            if (len_trim(node_id) > 0) then
+                has_param = .true.
+                has_node_id = .true.
+            end if
+        end if
+
+        if (present(sensor_id)) then
+            if (len_trim(sensor_id) > 0) then
+                has_param = .true.
+                has_sensor_id = .true.
+            end if
+        end if
+
+        if (present(target_id)) then
+            if (len_trim(target_id) > 0) then
+                has_param = .true.
+                has_target_id = .true.
+            end if
+        end if
+
+        if (present(from)) then
+            if (len_trim(from) > 0) then
+                has_param = .true.
+                has_from = .true.
+            end if
+        end if
+
+        if (present(to)) then
+            if (len_trim(to) > 0) then
+                has_param = .true.
+                has_to = .true.
+            end if
+        end if
+
+        if (present(limit)) has_limit  = .true.
+        if (present(desc))  desc_order = desc
+
+        ! Build SQL query.
+        query = ''
+
+        if (has_param) then
+            query = ' WHERE'
+            more  = .false.
+
+            if (has_node_id) then
+                if (more) query = query // ' AND'
+                query = query // ' node_id = ?'
+                more  = .true.
+            end if
+
+            if (has_sensor_id) then
+                if (more) query = query // ' AND'
+                query = query // ' sensor_id = ?'
+                more  = .true.
+            end if
+
+            if (has_target_id) then
+                if (more) query = query // ' AND'
+                query = query // ' target_id = ?'
+                more  = .true.
+            end if
+
+            if (has_from) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp >= ?'
+                more  = .true.
+            end if
+
+            if (has_to) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp < ?'
+                more  = .true.
+            end if
+        end if
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            if (has_param) then
+                rc = db_bind_observs(k)
+                if (dm_is_error(rc)) exit sql_block
+            end if
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+            n = sqlite3_column_int64(stmt, 0)
+
+            rc = E_DB_FINALIZE
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+
+            if (present(nids)) nids = n
+            if (has_limit) n = min(n, limit)
+
+            rc = E_ALLOC
+            allocate (ids(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            query = query // ' ORDER BY observs.timestamp'
+            if (desc_order) query = query // ' DESC'
+            if (has_limit)  query = query // ' LIMIT ?'
+
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERV_IDS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            k  = 1
+
+            if (has_param) then
+                if (dm_is_error(db_bind_observs(k))) exit sql_block
+            end if
+
+            if (has_limit) then
+                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
+            end if
+
+            do i = 1, n
+                rc = E_DB_STEP
+                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_next_row(stmt, ids(i))
+                if (dm_is_error(rc)) exit sql_block
+            end do
+        end block sql_block
+
+        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+    contains
+        integer function db_bind_observs(i) result(rc)
+            integer, intent(out) :: i
+
+            rc = E_DB_BIND
+            i = 1
+
+            if (has_node_id) then
+                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_sensor_id) then
+                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_target_id) then
+                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_from) then
+                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_to) then
+                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            rc = E_NONE
+        end function db_bind_observs
+    end function dm_db_select_observ_ids
 
     integer function dm_db_select_observ_views(db, views, node_id, sensor_id, target_id, response_name, &
                                                from, to, limit, nviews) result(rc)
@@ -3857,6 +4075,19 @@ contains
 
         rc = E_NONE
     end function db_next_row_data_point
+
+    integer function db_next_row_id(stmt, id) result(rc)
+        !! Reads id from table row.
+        type(c_ptr),           intent(inout) :: stmt !! SQLite statement.
+        character(len=ID_LEN), intent(inout) :: id   !! ID.
+
+        rc = E_DB_TYPE
+
+        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) return
+        id = sqlite3_column_text(stmt, 0)
+
+        rc = E_NONE
+    end function db_next_row_id
 
     integer function db_next_row_log(stmt, log) result(rc)
         !! Reads log data from table row.

@@ -504,7 +504,7 @@ module dm_sql
         'FROM beats ORDER BY node_id ASC'
 
     ! Query to select data points (time series) by response name and time range.
-    ! Values: nodes.id, sensors.id, targets.id, responses.name,
+    ! Values: nodes.id, sensors.id, targets.id, responses.name, responses.error,
     !         observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_DATA_POINTS = &
         'SELECT ' // &
@@ -521,6 +521,7 @@ module dm_sql
         'sensors.id = ? AND ' // &
         'targets.id = ? AND ' // &
         'responses.name = ? AND ' // &
+        'responses.error = ? AND ' // &
         'requests.timestamp >= ? AND ' // &
         'requests.timestamp < ? ' // &
         'ORDER BY requests.timestamp ASC'
@@ -599,7 +600,7 @@ module dm_sql
         'FROM nodes ORDER BY nodes.node_id ASC'
 
     ! Query to select number of time series by time range.
-    ! Values: nodes.id, sensors.id, targets.id, responses.name,
+    ! Values: nodes.id, sensors.id, targets.id, responses.name, responses.error,
     !         observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
         'SELECT COUNT(*) FROM observs ' // &
@@ -613,6 +614,7 @@ module dm_sql
         'sensors.id = ? AND ' // &
         'targets.id = ? AND ' // &
         'responses.name = ? AND ' // &
+        'responses.error = ? AND ' // &
         'requests.timestamp >= ? AND ' // &
         'requests.timestamp < ?'
 
@@ -706,7 +708,15 @@ module dm_sql
         'INNER JOIN targets ON targets.target_id = observs.target_id ' // &
         'WHERE observs.id = ?'
 
-    ! Query to select the number of observations.
+    ! Query to select of observation ids.
+    ! Values: nodes.id, sensors.id, targets.id
+    character(len=*), parameter, public :: SQL_SELECT_OBSERV_IDS = &
+        'SELECT observs.id FROM observs ' // &
+        'INNER JOIN nodes ON nodes.node_id = observs.node_id ' // &
+        'INNER JOIN sensors ON sensors.sensor_id = observs.sensor_id ' // &
+        'INNER JOIN targets ON targets.target_id = observs.target_id'
+
+    ! Query to select observations.
     ! Values: nodes.id, sensors.id, targets.id
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS = &
         'SELECT ' // &
@@ -727,7 +737,7 @@ module dm_sql
         'INNER JOIN sensors ON sensors.sensor_id = observs.sensor_id ' // &
         'INNER JOIN targets ON targets.target_id = observs.target_id'
 
-    ! Query to select the number of observations by id range.
+    ! Query to select observations by id range.
     ! Values: nodes.id, sensors.id, targets.id, observs.id (after), observs.id (before)
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_ID = &
         SQL_SELECT_OBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
@@ -738,7 +748,7 @@ module dm_sql
         'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''2300-01-01T00:00:00.000+00:00'') ' // &
         'ORDER BY observs.timestamp ASC'
 
-    ! Query to select the number of observations by time range.
+    ! Query to select observations by time range.
     ! Values: nodes.id, sensors.id, targets.id,
     !         observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_TIME = &
