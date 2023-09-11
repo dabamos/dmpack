@@ -645,7 +645,9 @@ contains
         !! Deletes heartbeat from database.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -666,14 +668,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_delete_beat
 
     integer function dm_db_delete_log(db, log_id) result(rc)
         !! Deletes log from database.
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -694,14 +698,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_delete_log
 
     integer function dm_db_delete_node(db, node_id) result(rc)
         !! Deletes node from database.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -722,7 +728,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_delete_node
 
     integer function dm_db_delete_observ(db, observ_id) result(rc)
@@ -732,7 +738,9 @@ contains
         !! responses automatically.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -758,7 +766,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
 
         ! Commit transaction.
         if (dm_is_ok(rc)) then
@@ -774,7 +782,9 @@ contains
         !! Deletes sensor from database.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -795,14 +805,17 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_delete_sensor
 
     integer function dm_db_delete_target(db, target_id) result(rc)
         !! Deletes target from database.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -823,7 +836,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_delete_target
 
     integer function dm_db_error(db, sqlite_error) result(rc)
@@ -931,7 +944,9 @@ contains
         type(db_type), intent(inout)         :: db     !! Database type.
         integer,       intent(in)            :: table  !! Table enum.
         logical,       intent(out), optional :: exists !! Boolean result.
-        type(c_ptr)                          :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (present(exists)) exists = .false.
@@ -950,7 +965,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
         if (present(exists) .and. rc == E_NONE) exists = .true.
     end function dm_db_has_table
 
@@ -958,7 +973,9 @@ contains
         !! Returns application id of database.
         type(db_type), intent(inout) :: db !! Database type.
         integer,       intent(out)   :: id !! Database application id.
-        type(c_ptr)                  :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         id = 0
 
@@ -976,7 +993,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_get_application_id
 
     integer function dm_db_get_data_version(db, version) result(rc)
@@ -992,7 +1009,9 @@ contains
         !! database connections.
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(out)   :: version !! Data version.
-        type(c_ptr)                  :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         version = 0
 
@@ -1010,7 +1029,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_get_data_version
 
     integer function dm_db_get_foreign_keys(db, enabled) result(rc)
@@ -1018,7 +1037,7 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(out)   :: enabled !! Foreign keys constraint is enabled.
 
-        integer     :: i
+        integer     :: i, stat
         type(c_ptr) :: stmt
 
         enabled = .false.
@@ -1039,7 +1058,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_get_foreign_keys
 
     integer function dm_db_get_journal_mode(db, mode, name) result(rc)
@@ -1048,8 +1067,9 @@ contains
         integer,                       intent(out)           :: mode !! Journal mode.
         character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        type(c_ptr)                   :: stmt
         character(len=:), allocatable :: str
+        integer                       :: stat
+        type(c_ptr)                   :: stmt
 
         mode = DB_JOURNAL_OFF
 
@@ -1067,7 +1087,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
 
         select case (str)
             case ('delete')
@@ -1098,7 +1118,9 @@ contains
         !! Adds the given heartbeat to database.
         type(db_type),   intent(inout) :: db   !! Database type.
         type(beat_type), intent(inout) :: beat !! Beat to insert.
-        type(c_ptr)                    :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1125,14 +1147,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_insert_beat
 
     integer function dm_db_insert_log(db, log) result(rc)
         !! Adds the given log to database.
         type(db_type),  intent(inout) :: db  !! Database type.
         type(log_type), intent(inout) :: log !! Log message to insert.
-        type(c_ptr)                   :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1162,14 +1186,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_insert_log
 
     integer function dm_db_insert_node(db, node) result(rc)
         !! Adds the given node to database.
         type(db_type),   intent(inout) :: db   !! Database type.
         type(node_type), intent(inout) :: node !! Node to insert.
-        type(c_ptr)                    :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1192,7 +1218,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_insert_node
 
     integer function dm_db_insert_observ(db, observ, db_stmt) result(rc)
@@ -1332,7 +1358,9 @@ contains
         !! Adds given sensor to database.
         type(db_type),     intent(inout) :: db     !! Database type.
         type(sensor_type), intent(inout) :: sensor !! Sensor to insert.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1358,7 +1386,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_insert_sensor
 
     integer function dm_db_insert_sync(db, sync) result(rc)
@@ -1442,7 +1470,9 @@ contains
         !! Adds given target to database.
         type(db_type),     intent(inout) :: db     !! Database type.
         type(target_type), intent(inout) :: target !! Target to insert.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -1467,9 +1497,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_error_out(rc)
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
-        call dm_error_out(rc)
+        stat = sqlite3_finalize(stmt)
     end function dm_db_insert_target
 
     integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
@@ -1581,7 +1609,9 @@ contains
         !! Long-running applications might also benefit from setting a timer to
         !! run `PRAGMA optimize` every few hours.
         type(db_type), intent(inout) :: db !! Database type.
-        type(c_ptr)                  :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1591,7 +1621,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_optimize
 
     logical function dm_db_read_only(db) result(read_only)
@@ -1613,7 +1643,9 @@ contains
         type(db_type),    intent(inout) :: db      !! Database type.
         type(beat_type),  intent(out)   :: beat    !! Returned beat type.
         character(len=*), intent(in)    :: node_id !! Node id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1628,7 +1660,7 @@ contains
             rc = db_next_row(stmt, beat)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_beat
 
     integer function dm_db_select_beats(db, beats, limit, nbeats) result(rc)
@@ -1684,7 +1716,7 @@ contains
             if (present(nbeats)) nbeats = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_beats
 
     integer function dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response_name, &
@@ -1769,7 +1801,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_data_points
 
     integer function dm_db_select_log(db, log, log_id) result(rc)
@@ -1777,7 +1809,9 @@ contains
         type(db_type),    intent(inout) :: db     !! Database type.
         type(log_type),   intent(out)   :: log    !! Returned log data.
         character(len=*), intent(in)    :: log_id !! Log id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1792,7 +1826,7 @@ contains
             rc = db_next_row(stmt, log)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_log
 
     integer function dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, &
@@ -2012,7 +2046,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -2119,7 +2153,7 @@ contains
             if (present(nlogs)) nlogs = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_logs_by_observ
 
     integer function dm_db_select_node(db, node, node_id) result(rc)
@@ -2128,6 +2162,7 @@ contains
         type(node_type),  intent(out)   :: node    !! Returned node data.
         character(len=*), intent(in)    :: node_id !! Node id.
 
+        integer     :: stat
         type(c_ptr) :: stmt
 
         rc = E_INVALID
@@ -2155,7 +2190,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_node
 
     integer function dm_db_select_nodes(db, nodes, nnodes) result(rc)
@@ -2203,7 +2238,7 @@ contains
             if (present(nnodes)) nnodes = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_nodes
 
     integer function dm_db_select_observ(db, observ, observ_id) result(rc)
@@ -2425,7 +2460,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     contains
         integer function db_bind_observs(i) result(rc)
             integer, intent(out) :: i
@@ -2536,7 +2571,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_observ_views
 
     integer function dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
@@ -2717,7 +2752,8 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
+
         if (dm_is_error(rc)) return
         if (stub_view) return
 
@@ -2854,7 +2890,8 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
+
         if (dm_is_error(rc)) return
         if (stub_) return
 
@@ -2937,7 +2974,8 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
+
         if (dm_is_error(rc)) return
         if (stub_) return
 
@@ -2949,7 +2987,9 @@ contains
         type(db_type),     intent(inout) :: db        !! Database type.
         type(sensor_type), intent(out)   :: sensor    !! Returned sensor data.
         character(len=*),  intent(in)    :: sensor_id !! Sensor id.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (len_trim(sensor_id) == 0) return
@@ -2967,7 +3007,7 @@ contains
             rc = db_next_row(stmt, sensor)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_sensor
 
     integer function dm_db_select_sensors(db, sensors, nsensors) result(rc)
@@ -3007,7 +3047,7 @@ contains
             if (present(nsensors)) nsensors = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_sensors
 
     integer function dm_db_select_sensors_by_node(db, sensors, node_id, nsensors) result(rc)
@@ -3061,7 +3101,7 @@ contains
             if (present(nsensors)) nsensors = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_sensors_by_node
 
     integer function dm_db_select_sync_log(db, sync) result(rc)
@@ -3234,7 +3274,7 @@ contains
             end do
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_tables
 
     integer function dm_db_select_target(db, target, target_id) result(rc)
@@ -3242,7 +3282,9 @@ contains
         type(db_type),     intent(inout) :: db        !! Database type.
         type(target_type), intent(out)   :: target    !! Returned target data.
         character(len=*),  intent(in)    :: target_id !! Target id.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (len_trim(target_id) == 0) return
@@ -3269,7 +3311,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_target
 
     integer function dm_db_select_targets(db, targets, ntargets) result(rc)
@@ -3318,7 +3360,7 @@ contains
             if (present(ntargets)) ntargets = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_select_targets
 
     integer function dm_db_set_application_id(db, id) result(rc)
@@ -3335,7 +3377,9 @@ contains
 
         type(db_type), intent(inout) :: db !! Database type.
         integer,       intent(in)    :: id !! Application id.
-        type(c_ptr)                  :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3347,7 +3391,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_set_application_id
 
     integer function dm_db_set_auto_vacuum(db, mode) result(rc)
@@ -3373,7 +3417,9 @@ contains
 
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Database auto vacuum mode.
-        type(c_ptr)                  :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (mode < DB_AUTO_VACUUM_NONE .or. mode > DB_AUTO_VACUUM_INCREMENTAL) return
@@ -3400,7 +3446,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_set_auto_vacuum
 
     integer function dm_db_set_busy_handler(db, callback, client_data) result(rc)
@@ -3436,6 +3482,7 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(in)    :: enabled !! Enable foreign keys constraint.
 
+        integer     :: stat
         type(c_ptr) :: stmt
 
         sql_block: block
@@ -3455,7 +3502,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_set_foreign_keys
 
     integer function dm_db_set_journal_mode(db, mode) result(rc)
@@ -3465,6 +3512,7 @@ contains
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Journal mode.
 
+        integer     :: stat
         type(c_ptr) :: stmt
 
         rc = E_INVALID
@@ -3498,7 +3546,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_set_journal_mode
 
     integer function dm_db_set_log_handler(callback, client_data) result(rc)
@@ -3551,7 +3599,9 @@ contains
         !! Updates the given node in database.
         type(db_type),   intent(inout) :: db   !! Database type.
         type(node_type), intent(inout) :: node !! Node to update.
-        type(c_ptr)                    :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -3574,14 +3624,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_update_node
 
     integer function dm_db_update_sensor(db, sensor) result(rc)
         !! Updates given sensor in database.
         type(db_type),     intent(inout) :: db     !! Database type.
         type(sensor_type), intent(inout) :: sensor !! Sensor to update.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -3607,14 +3659,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_update_sensor
 
     integer function dm_db_update_target(db, target) result(rc)
         !! Updates the given target in database.
         type(db_type),     intent(inout) :: db     !! Database type.
         type(target_type), intent(inout) :: target !! Target to update.
-        type(c_ptr)                      :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -3637,14 +3691,16 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_update_target
 
     integer function dm_db_vacuum_into(db, path) result(rc)
         !! Creates online backup of given database using the VACUUM command.
         type(db_type),    intent(inout) :: db   !! Database type.
         character(len=*), intent(in)    :: path !! File path to backup database.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_EXIST
         if (dm_file_exists(path)) return
@@ -3662,7 +3718,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function dm_db_vacuum_into
 
     integer function dm_db_valid(db) result(rc)
@@ -3736,7 +3792,9 @@ contains
         type(db_type),    intent(inout) :: db    !! Database type.
         integer,          intent(in)    :: table !! Table type from `dm_sql`.
         integer(kind=i8), intent(out)   :: n     !! Number of rows in table.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         n = 0_i8
         rc = E_INVALID
@@ -3756,7 +3814,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_count
 
     integer function db_delete_receivers(db, observ_id) result(rc)
@@ -3764,7 +3822,9 @@ contains
         !! strictly necessary, as receivers are deleted by a SQL trigger.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3779,7 +3839,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_delete_receivers
 
     integer function db_delete_requests(db, observ_id) result(rc)
@@ -3787,7 +3847,9 @@ contains
         !! strictly necessary, as receivers are deleted by a SQL trigger.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3802,7 +3864,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_delete_requests
 
     integer function db_delete_responses(db, observ_id) result(rc)
@@ -3810,7 +3872,9 @@ contains
         !! strictly necessary, as receivers are deleted by a SQL trigger.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3825,7 +3889,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_delete_responses
 
     integer function db_exec(db, query, err_msg) result(rc)
@@ -3891,8 +3955,10 @@ contains
         type(db_type),    intent(inout) :: db           !! Database type.
         character(len=*), intent(in)    :: observ_id    !! Observation id.
         character(len=*), intent(inout) :: receivers(:) !! Array of receivers to insert.
-        integer                         :: i, n
-        type(c_ptr)                     :: stmt
+
+
+        integer     :: i, n, stat
+        type(c_ptr) :: stmt
 
         rc = E_BOUNDS
         n = size(receivers)
@@ -3919,7 +3985,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_insert_receivers
 
     integer function db_insert_requests(db, observ_id, requests) result(rc)
@@ -3928,7 +3994,7 @@ contains
         character(len=*),   intent(in)    :: observ_id   !! Observation id.
         type(request_type), intent(inout) :: requests(:) !! Array of requests to insert.
 
-        integer     :: i, nreq
+        integer     :: i, nreq, stat
         type(c_ptr) :: stmt
 
         rc = E_BOUNDS
@@ -3963,7 +4029,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_insert_requests
 
     integer function db_insert_responses(db, observ_id, request_idx, responses) result(rc)
@@ -3974,7 +4040,7 @@ contains
         integer,             intent(in)    :: request_idx  !! Request index.
         type(response_type), intent(inout) :: responses(:) !! Array of responses to insert.
 
-        integer     :: i, nres
+        integer     :: i, nres, stat
         type(c_ptr) :: stmt
 
         rc = E_BOUNDS
@@ -4005,7 +4071,7 @@ contains
             end do row_loop
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_insert_responses
 
     integer function db_insert_sync(db, sync, query) result(rc)
@@ -4013,7 +4079,9 @@ contains
         type(db_type),    intent(inout) :: db    !! Database type.
         type(sync_type),  intent(inout) :: sync  !! Sync data to insert.
         character(len=*), intent(in)    :: query !! SQL query to perform.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -4031,7 +4099,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_insert_sync
 
     integer function db_next_row_beat(stmt, beat) result(rc)
@@ -4285,7 +4353,9 @@ contains
         type(db_type),    intent(inout) :: db    !! Database type.
         integer,          intent(in)    :: table !! Table to count (`SQL_TABLE_*`).
         integer(kind=i8), intent(out)   :: n     !! Number of rows.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         n = 0_i8
         rc = E_INVALID
@@ -4303,7 +4373,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_select_nrows
 
     integer function db_select_observs_data(db, observs) result(rc)
@@ -4565,7 +4635,9 @@ contains
         integer,          intent(in)    :: type  !! Sync data type.
         character(len=*), intent(in)    :: query !! Select query.
         type(sync_type),  intent(out)   :: sync  !! Returned sync data.
-        type(c_ptr)                     :: stmt
+
+        integer     :: stat
+        type(c_ptr) :: stmt
 
         rc = E_INVALID
         if (type <= SYNC_TYPE_NONE .or. type >= SYNC_NTYPES) return
@@ -4580,7 +4652,7 @@ contains
             rc = db_next_row(stmt, sync)
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
         if (dm_is_ok(rc)) sync%type = type
     end function db_select_sync
 
@@ -4644,6 +4716,6 @@ contains
             nsyncs = n
         end block sql_block
 
-        if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = sqlite3_finalize(stmt)
     end function db_select_syncs
 end module dm_db
