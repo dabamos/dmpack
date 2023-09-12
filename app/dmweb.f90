@@ -148,7 +148,7 @@ contains
             end if
 
             delta = huge(0_i8)
-            rc = dm_time_delta(beat%time_recv, dm_time_now(), delta)
+            rc = dm_time_diff(beat%time_recv, dm_time_now(), delta)
 
             call html_header(TITLE)
             call dm_cgi_out(dm_html_heading(2, TITLE))
@@ -200,7 +200,7 @@ contains
                 now = dm_time_now()
 
                 do i = 1, n
-                    rc = dm_time_delta(beats(i)%time_recv, now, deltas(i))
+                    rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
                 end do
 
                 call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
@@ -318,7 +318,7 @@ contains
             now = dm_time_now()
 
             do i = 1, n
-                rc = dm_time_delta(beats(i)%time_recv, now, deltas(i))
+                rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
             end do
 
             call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
@@ -1324,7 +1324,7 @@ contains
 
         character(len=3)             :: mode
         character(len=FILE_PATH_LEN) :: path
-        integer(kind=i8)             :: unix
+        integer(kind=i8)             :: seconds
         type(uname_type)             :: uname
         type(time_delta_type)        :: uptime
 
@@ -1333,8 +1333,8 @@ contains
         ! ------------------------------------------------------------------
         call dm_system_path(path)
         call dm_system_uname(uname)
-        call dm_system_uptime(unix)
-        call dm_time_from_seconds(uptime, unix)
+        call dm_system_uptime(seconds)
+        call dm_time_delta_from_seconds(uptime, seconds)
 
         if (read_only) then
             mode = 'yes'
@@ -1351,7 +1351,7 @@ contains
                         H_TR // H_TH // 'Local Time' // H_TH_END // &
                         H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Uptime' // H_TH_END // &
-                        H_TD // dm_time_to_string(uptime) // H_TD_END // H_TR_END // &
+                        H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Hostname' // H_TH_END // &
                         H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Remote Address' // H_TH_END // &
@@ -1575,7 +1575,7 @@ contains
         type(select_type) :: select_level
         type(select_type) :: select_result
 
-        call dm_time_string(year, month, day)
+        call dm_time_strings(year, month, day)
 
         node_id_   = ' '
         sensor_id_ = ' '
@@ -1721,7 +1721,7 @@ contains
         type(select_type) :: select_sensor
         type(select_type) :: select_target
 
-        call dm_time_string(year, month, day)
+        call dm_time_strings(year, month, day)
 
         from_     = year // '-' // month // '-' // day // 'T00:00:00'
         to_       = '2100-01-01T00:00:00'
@@ -1821,7 +1821,7 @@ contains
         type(select_type) :: select_sensor
         type(select_type) :: select_target
 
-        call dm_time_string(year, month, day)
+        call dm_time_strings(year, month, day)
 
         node_id_       = ' '
         sensor_id_     = ' '

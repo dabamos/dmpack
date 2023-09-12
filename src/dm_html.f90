@@ -207,15 +207,24 @@ contains
         integer(kind=i8), intent(in), optional :: delta !! Time delta.
         character(len=:), allocatable          :: html  !! HTML.
 
-        integer(kind=i8)      :: delta_
-        type(time_delta_type) :: time, time_delta, time_inter
+        character(len=8)        :: beats_now, beats_sent, beats_recv
+        character(len=TIME_LEN) :: now
+        integer                 :: rc
+        integer(kind=i8)        :: delta_
+        type(time_delta_type)   :: time, time_delta, time_inter
 
         delta_ = huge(0_i8)
         if (present(delta)) delta_ = delta
 
-        call dm_time_from_seconds(time,       int(beat%uptime, kind=i8))
-        call dm_time_from_seconds(time_inter, int(beat%interval, kind=i8))
-        call dm_time_from_seconds(time_delta, delta_)
+        call dm_time_delta_from_seconds(time, int(beat%uptime, kind=i8))
+        call dm_time_delta_from_seconds(time_inter, int(beat%interval, kind=i8))
+        call dm_time_delta_from_seconds(time_delta, delta_)
+
+        rc = dm_time_to_beats(beat%time_sent, beats_sent)
+        rc = dm_time_to_beats(beat%time_recv, beats_recv)
+
+        now = dm_time_now()
+        rc = dm_time_to_beats(now, beats_now)
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
@@ -223,17 +232,17 @@ contains
                H_TR // H_TH // 'Address' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
-               H_TD // dm_html_encode(beat%time_sent) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(beat%time_sent // ' (' // trim(beats_sent) // ')') // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &
-               H_TD // dm_html_encode(beat%time_recv) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(beat%time_recv // ' (' // trim(beats_recv) // ')') // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Now' // H_TH_END // &
-               H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(now // ' (' // trim(beats_now) // ')') // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Delta' // H_TH_END // &
-               H_TD // dm_time_to_string(time_delta) // H_TD_END // H_TR_END // &
+               H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Interval' // H_TH_END // &
-               H_TD // dm_time_to_string(time_inter) // H_TD_END // H_TR_END // &
+               H_TD // dm_time_delta_to_string(time_inter) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Uptime' // H_TH_END // &
-               H_TD // dm_time_to_string(time) // H_TD_END // H_TR_END // &
+               H_TD // dm_time_delta_to_string(time) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
                H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Status' // H_TH_END // H_TD
@@ -281,7 +290,7 @@ contains
                 if (i <= size(deltas)) delta = deltas(i)
             end if
 
-            call dm_time_from_seconds(time_delta, int(beats(i)%uptime, kind=i8))
+            call dm_time_delta_from_seconds(time_delta, int(beats(i)%uptime, kind=i8))
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
 
             if (is_anchor) then
@@ -298,7 +307,7 @@ contains
                    H_TD // dm_html_encode(beats(i)%time_recv) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%error) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%interval) // ' secs' // H_TD_END // &
-                   H_TD // dm_time_to_string(time_delta, hrs=.false., mins=.false., secs=.false.) // H_TD_END // &
+                   H_TD // dm_time_delta_to_string(time_delta, hours=.false., minutes=.false., seconds=.false.) // H_TD_END // &
                    H_TD
 
             if (delta <= int(beats(i)%interval, kind=i8)) then
