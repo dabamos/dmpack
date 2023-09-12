@@ -6,6 +6,7 @@ module dm_plot
     use :: dm_dp
     use :: dm_error
     use :: dm_pipe
+    use :: dm_string
     use :: dm_time
     use :: dm_type
     implicit none (type, external)

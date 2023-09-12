@@ -6,7 +6,7 @@ program dmweb
     !! Server-side web application for DMPACK database access. A CGI-
     !! compatible web server, such as lighttpd, is required to run this
     !! program. If served locally, access the web interface at
-    !! http://127.0.0.1/dmpack/.
+    !! `http://127.0.0.1/dmpack/`.
     !!
     !! Make sure that the URL is redirected to the CGI program in your web
     !! server configuration.

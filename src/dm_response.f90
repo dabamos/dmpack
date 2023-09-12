@@ -73,9 +73,9 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("response.name = ", a)')     trim(response%name)
-        write (unit_, '("response.value = ", f0.5)') response%value
-        write (unit_, '("response.unit = ", a)')     trim(response%unit)
-        write (unit_, '("response.error = ", i0)')   response%error
+        write (unit_, '("response.name: ", a)')     trim(response%name)
+        write (unit_, '("response.value: ", f0.5)') response%value
+        write (unit_, '("response.unit: ", a)')     trim(response%unit)
+        write (unit_, '("response.error: ", i0)')   response%error
     end subroutine dm_response_out
 end module dm_response

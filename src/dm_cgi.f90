@@ -8,6 +8,7 @@ module dm_cgi
     use :: dm_hash
     use :: dm_http
     use :: dm_mime
+    use :: dm_string
     use :: dm_time
     use :: dm_type
     use :: dm_util

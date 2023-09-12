@@ -1197,15 +1197,15 @@ Print build, database, and system information:
 
 ....
 $ dminfo --database /var/dmpack/observ.sqlite
-build.compiler = GCC version 13.1.0
-build.options = -mtune=generic -march=x86-64 -std=f2018
-db.application_id = 444D31
-db.foreign_keys = T
-db.journal_mode = wal
-db.path = /var/dmpack/observ.sqlite
-db.size = 286720
-db.table.beats = F
-db.table.beats.rows = 0
+build.compiler: GCC version 13.1.0
+build.options: -mtune=generic -march=x86-64 -std=f2018
+db.application_id: 444D31
+db.foreign_keys: T
+db.journal_mode: wal
+db.path: /var/dmpack/observ.sqlite
+db.size: 286720
+db.table.beats: F
+db.table.beats.rows: 0
 ...
 ....
 

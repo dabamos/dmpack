@@ -136,9 +136,9 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("sensor.id = ", a)')      trim(sensor%id)
-        write (unit_, '("sensor.node_id = ", a)') trim(sensor%node_id)
-        write (unit_, '("sensor.type = ")', advance='no')
+        write (unit_, '("sensor.id: ", a)')      trim(sensor%id)
+        write (unit_, '("sensor.node_id: ", a)') trim(sensor%node_id)
+        write (unit_, '("sensor.type: ")', advance='no')
 
         if (dm_sensor_type_valid(sensor%type)) then
             write (unit_, '(a)') trim(SENSOR_TYPE_NAMES(sensor%type))
@@ -146,8 +146,8 @@ contains
             write (unit_, '("invalid")')
         end if
 
-        write (unit_, '("sensor.name = ", a)') trim(sensor%name)
-        write (unit_, '("sensor.sn = ", a)')   trim(sensor%sn)
-        write (unit_, '("sensor.meta = ", a)') trim(sensor%meta)
+        write (unit_, '("sensor.name: ", a)') trim(sensor%name)
+        write (unit_, '("sensor.sn: ", a)')   trim(sensor%sn)
+        write (unit_, '("sensor.meta: ", a)') trim(sensor%meta)
     end subroutine dm_sensor_out
 end module dm_sensor

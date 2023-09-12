@@ -3,7 +3,6 @@
 module dm_time
     !! Date and time functions. ISO 8601/RFC 3339 is used as the universal
     !! datetime format.
-    use :: dm_ascii
     use :: dm_error
     use :: dm_util
     use :: dm_type
@@ -14,7 +13,7 @@ module dm_time
     character(len=*), parameter, public :: TIME_DEFAULT = '1970-01-01T00:00:00.000+00:00' !! Default ISO 8601.
 
     type, public :: time_delta_type
-        !! Time delta type.
+        !! Time delta type to store elapsed time.
         integer :: days    = 0 !! Bygone days.
         integer :: hours   = 0 !! Bygone hours.
         integer :: minutes = 0 !! Bygone minutes.
@@ -98,10 +97,10 @@ contains
         !! Converts `time_delta_type` to string of format
         !! `[d days ][h hours ][m mins ][s secs]`.
         type(time_delta_type), intent(inout)        :: time_delta !! Time delta type.
-        logical,               intent(in), optional :: days       !! Write days (default: true).
-        logical,               intent(in), optional :: hours      !! Write hours (default: true).
-        logical,               intent(in), optional :: minutes    !! Write minutes (default: true).
-        logical,               intent(in), optional :: seconds    !! Write seconds (default: true).
+        logical,               intent(in), optional :: days       !! Write days (`.true.` by default).
+        logical,               intent(in), optional :: hours      !! Write hours (`.true.` by default).
+        logical,               intent(in), optional :: minutes    !! Write minutes (`.true.` by default).
+        logical,               intent(in), optional :: seconds    !! Write seconds (`.true.` by default).
 
         character(len=:), allocatable :: str
         logical                       :: days_, hours_, minutes_, seconds_
@@ -144,14 +143,14 @@ contains
         diff = abs(t2 - t1) + int((m2 - m1) / 1000.0, kind=i8)
     end function dm_time_diff
 
-    integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
+    impure elemental integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the calendar time `epoch` in UTC to broken-down time
         !! representation.
         !!
         !! The argument `epoch` is the number of seconds elapsed since the
         !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
         !!
-        !! The function internally calls `gmtime_r()` (SUSv2).
+        !! The function calls `gmtime_r()` internally (SUSv2).
         use :: unix
         integer(kind=i8), intent(in)            :: epoch  !! Unix timestamp in seconds (UTC).
         integer,          intent(out), optional :: year   !! Year part of timestamp.
@@ -179,14 +178,14 @@ contains
         rc = E_NONE
     end function dm_time_from_unix
 
-    integer(kind=i8) function dm_time_mseconds() result(t)
+    integer(kind=i8) function dm_time_mseconds() result(mseconds)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch).
         use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
         type(c_timespec) :: tp
 
-        t = 0
+        mseconds = 0
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
-        t = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
+        mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
     end function dm_time_mseconds
 
     character(len=TIME_LEN) function dm_time_now() result(str)
@@ -224,9 +223,11 @@ contains
     impure elemental integer function dm_time_to_beats(time, beats) result(rc)
         !! Converts ISO 8601 timestamp `time` into
         !! [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
-        !! (.beats) in the form `@1000.00` in `beats`.
+        !! (_.beat time_) in the form `@1000.00` in `beats`. One beat is
+        !! equivalent to one decimal minute in the French decimal time (1 min
+        !! 26.4 secs in Solar time).
         character(len=*), intent(in)  :: time  !! ISO 8601 timestamp.
-        character(len=8), intent(out) :: beats !! Timestamp converted to .beats.
+        character(len=8), intent(out) :: beats !! Timestamp converted to _.beat_.
 
         integer          :: hour, minute, second
         integer(kind=i8) :: bmt, utc
@@ -291,6 +292,8 @@ contains
         !! Returns `.true.` if given timestamp follows the form of ISO 8601. The
         !! timestamp does not have to be complete to be valid. The minimum
         !! length of a timestamp to be valid is 4.
+        use :: dm_ascii, only: dm_ascii_is_digit
+
         character(len=*), intent(in) :: time !! ISO 8601 timestamp to validate.
 
         character :: a
@@ -335,7 +338,7 @@ contains
     end function dm_time_valid
 
     character(len=5) function dm_time_zone() result(zone)
-        !! Returns current time zone.
+        !! Returns current time zone as five characters long string.
         call date_and_time(zone=zone)
     end function dm_time_zone
 

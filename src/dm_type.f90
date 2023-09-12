@@ -9,7 +9,6 @@ module dm_type
                                              stderr => error_unit, &
                                              stdin  => input_unit, &
                                              stdout => output_unit
-    use :: dm_string
     implicit none (type, external)
     public
 
@@ -38,8 +37,8 @@ module dm_type
 contains
     integer function dm_type_from_name(name) result(type)
         !! Returns type from given name.
+        use :: dm_string
         character(len=*), intent(in) :: name !! Derived type name.
-
         character(len=TYPE_NAME_LEN) :: name_
 
         ! Normalise name.

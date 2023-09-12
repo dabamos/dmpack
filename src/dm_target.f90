@@ -62,8 +62,8 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("target.id = ", a)')   trim(target%id)
-        write (unit_, '("target.name = ", a)') trim(target%name)
-        write (unit_, '("target.meta = ", a)') trim(target%meta)
+        write (unit_, '("target.id: ", a)')   trim(target%id)
+        write (unit_, '("target.name: ", a)') trim(target%name)
+        write (unit_, '("target.meta: ", a)') trim(target%meta)
     end subroutine dm_target_out
 end module dm_target
