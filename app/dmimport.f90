@@ -17,7 +17,7 @@ program dmimport
         character(len=FILE_PATH_LEN) :: database  = ' '       !! Path to database.
         character(len=FILE_PATH_LEN) :: input     = ' '       !! Input file path.
         integer                      :: type      = TYPE_NONE !! Entity type.
-        character                    :: quote     = ASCII_NUL !! CSV quote character.
+        character                    :: quote     = ASCII_NUL !! CSV quote character (disabled by default).
         character                    :: separator = ','       !! CSV separator character.
         logical                      :: dry       = .false.   !! Dry run.
         logical                      :: verbose   = .false.   !! Print progress to standard output.

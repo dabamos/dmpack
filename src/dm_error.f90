@@ -72,6 +72,7 @@ module dm_error
     ! Sensor errors.
     integer, parameter, public :: E_SENSOR         = 80 !! Generic sensor error.
 
+    ! RPC errors.
     integer, parameter, public :: E_RPC            = 90 !! Generic RPC error.
     integer, parameter, public :: E_RPC_CONNECT    = 91 !! RPC connection error.
     integer, parameter, public :: E_RPC_SSL        = 92 !! RPC SSL/TLS error.
@@ -227,7 +228,7 @@ contains
             case (E_RPC_API)
                 str = 'RPC API error'
             case (E_RPC_AUTH)
-                str = 'RPC unauthorized'
+                str = 'RPC unauthorised'
             case (E_RPC_CONFLICT)
                 str = 'RPC conflict'
             case (E_RPC_SERVER)

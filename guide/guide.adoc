@@ -765,12 +765,12 @@ Read attributes of sensor `sensor-1`:
 
 ....
 $ dmdbctl --database observ.sqlite --read sensor --id sensor-1
-sensor%id=sensor-1
-sensor%node_id=node-1
-sensor%type=virtual
-sensor%name=Sensor 1
-sensor%sn=12345
-sensor%meta=dummy sensor
+sensor.id: sensor-1
+sensor.node_id: node-1
+sensor.type: virtual
+sensor.name: Sensor 1
+sensor.sn: 12345
+sensor.meta: dummy sensor
 ....
 
 === dmexport [[dmexport]]

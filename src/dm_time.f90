@@ -238,6 +238,7 @@ contains
         if (dm_is_error(rc)) return
         bmt = utc + 3600_i8
         rc = dm_time_from_unix(bmt, hour=hour, minute=minute, second=second)
+        if (dm_is_error(rc)) return
         b = (hour * 3600.0 + minute * 60.0 + second) * (1000.0 / 86400.0)
         write (beats, '("@", f0.2)') b
     end function dm_time_to_beats

@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_job
-    !! Observation job and job list.
+    !! Observation job and job list. Access to job lists is not thread-safe.
     use :: dm_error
     use :: dm_id
     use :: dm_observ

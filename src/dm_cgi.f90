@@ -101,8 +101,8 @@ contains
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on `c_read()`
         !! as Fortran cannot read unformatted content from standard input.
-        use :: unix, only: STDIN_FILENO, c_read
         use, intrinsic :: iso_c_binding, only: c_loc, c_size_t
+        use :: unix, only: STDIN_FILENO, c_read
 
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment type.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.

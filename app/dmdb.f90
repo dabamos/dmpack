@@ -165,14 +165,15 @@ contains
 
         rc = dm_config_open(config, app%config, app%name)
 
-        config_if: if (dm_is_ok(rc)) then
+        if (dm_is_ok(rc)) then
             rc = dm_config_get(config, 'logger',   app%logger)
             rc = dm_config_get(config, 'database', app%database)
             rc = dm_config_get(config, 'node',     app%node)
             rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'ipc',      app%ipc)
             rc = dm_config_get(config, 'verbose',  app%verbose)
-        end if config_if
+            rc = E_NONE
+        end if
 
         call dm_config_close(config)
     end function read_config

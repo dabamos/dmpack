@@ -18,7 +18,7 @@ module dm_sync
     integer, parameter, public :: SYNC_TYPE_TARGET = 3 !! Target.
     integer, parameter, public :: SYNC_TYPE_OBSERV = 4 !! Observation.
     integer, parameter, public :: SYNC_TYPE_LOG    = 5 !! Log.
-    integer, parameter, public :: SYNC_NTYPES      = 6
+    integer, parameter, public :: SYNC_NTYPES      = 6 !! Number of types.
 
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6
 

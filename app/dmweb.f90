@@ -1641,7 +1641,7 @@ contains
                H_DIV_END // H_DIV_COL // &
                dm_html_label('Source', for='source') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='source', name='source', &
-                             max_length=LOG_SOURCE_LEN, pattern='[-0-9A-Za-z]+', &
+                             max_length=LOG_SOURCE_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter log source (optional)', value=source_) // &
                dm_html_label('From', for='from') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
@@ -1673,7 +1673,7 @@ contains
                H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
-                             max_length=NODE_ID_LEN, pattern='[-0-9A-Za-z]+', &
+                             max_length=NODE_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique node id', required=.true.) // &
                dm_html_label('Name', for='name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &
@@ -1876,7 +1876,7 @@ contains
                H_DIV_END // H_DIV_COL // &
                dm_html_label('Response Name', for='response_name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='response_name', name='response_name', &
-                             max_length=RESPONSE_NAME_LEN, pattern='[-0-9A-Za-z]+', &
+                             max_length=RESPONSE_NAME_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter response name', required=.true., &
                              value=response_name_) // &
                dm_html_label('From', for='from') // &
@@ -1924,7 +1924,7 @@ contains
                dm_html_select(select_node, 'node_id', 'node_id', '') // &
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
-                             max_length=SENSOR_ID_LEN, pattern='[-0-9A-Za-z]+', &
+                             max_length=SENSOR_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique sensor id', required=.true.) // &
                dm_html_label('Name', for='name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &
@@ -1957,7 +1957,7 @@ contains
                H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
-                             max_length=TARGET_ID_LEN, pattern='[-0-9A-Za-z]+', &
+                             max_length=TARGET_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique target id', required=.true.) // &
                dm_html_label('Name', for='name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &

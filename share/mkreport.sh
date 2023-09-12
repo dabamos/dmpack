@@ -35,7 +35,7 @@ create_report () {
   ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"
 }
 
-last_month_first=`date -v -1m "+%Y-%m-01"`
+last_month_first=`date -v -1m +"%Y-%m-01"`
 this_month_first=`date +"%Y-%m-01"`
 next_month_first=`date -v +1m +"%Y-%m-01"`
 

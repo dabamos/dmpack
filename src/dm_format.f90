@@ -11,7 +11,7 @@ module dm_format
     integer, parameter, public :: FORMAT_CSV      = 2 !! CSV.
     integer, parameter, public :: FORMAT_JSON     = 3 !! JSON.
     integer, parameter, public :: FORMAT_JSONL    = 4 !! JSON Lines, NDJSON.
-    integer, parameter, public :: FORMAT_NML      = 5 !! Fortran 90 Namelist.
+    integer, parameter, public :: FORMAT_NML      = 5 !! Fortran 95 Namelist.
     integer, parameter, public :: FORMAT_NFORMATS = 6 !! Number of formats.
 
     integer, parameter, public :: FORMAT_NAME_LEN = 5 !! Max. length of format name.

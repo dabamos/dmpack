@@ -34,15 +34,15 @@ module dm_log
     type, public :: log_type
         !! Log message type.
         character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
-        integer                        :: level     = LOG_WARNING   !! Log level (mandatory).
-        integer                        :: error     = E_NONE        !! Error code (optional).
-        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT  !! Timestamp, should be in ISO 8601 plus milliseconds and time zone (mandatory).
-        character(len=NODE_ID_LEN)     :: node_id   = ' '           !! Sensor node ID (optional).
-        character(len=SENSOR_ID_LEN)   :: sensor_id = ' '           !! Sensor ID (optional).
-        character(len=TARGET_ID_LEN)   :: target_id = ' '           !! Target ID (optional).
-        character(len=OBSERV_ID_LEN)   :: observ_id = ' '           !! Observation ID (optional).
-        character(len=LOG_SOURCE_LEN)  :: source    = ' '           !! Log message source (optional).
-        character(len=LOG_MESSAGE_LEN) :: message   = ' '           !! Log message (mandatory).
+        integer                        :: level     = LOG_WARNING  !! Log level (mandatory).
+        integer                        :: error     = E_NONE       !! Error code (optional).
+        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
+        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node ID (optional).
+        character(len=SENSOR_ID_LEN)   :: sensor_id = ' '          !! Sensor ID (optional).
+        character(len=TARGET_ID_LEN)   :: target_id = ' '          !! Target ID (optional).
+        character(len=OBSERV_ID_LEN)   :: observ_id = ' '          !! Observation ID (optional).
+        character(len=LOG_SOURCE_LEN)  :: source    = ' '          !! Log message source (optional).
+        character(len=LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
     end type log_type
 
     integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Log type size in bytes.

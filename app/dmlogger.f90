@@ -159,13 +159,14 @@ contains
 
         rc = dm_config_open(config, app%config, app%name)
 
-        if_block: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'database', app%database); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'node',     app%node);     if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'minlevel', app%minlevel); if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'ipc',      app%ipc);      if (dm_is_error(rc)) exit if_block
-            rc = dm_config_get(config, 'verbose',  app%verbose);  if (dm_is_error(rc)) exit if_block
-        end if if_block
+        if (dm_is_ok(rc)) then
+            rc = dm_config_get(config, 'database', app%database)
+            rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'minlevel', app%minlevel)
+            rc = dm_config_get(config, 'ipc',      app%ipc)
+            rc = dm_config_get(config, 'verbose',  app%verbose)
+            rc = E_NONE
+        end if
 
         call dm_config_close(config)
     end function read_config
