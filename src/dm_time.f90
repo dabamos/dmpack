@@ -10,15 +10,15 @@ module dm_time
     implicit none (type, external)
     private
 
-    integer,          parameter, public :: TIME_LEN     = 29
-    character(len=*), parameter, public :: TIME_DEFAULT = '1970-01-01T00:00:00.000+00:00'
+    integer,          parameter, public :: TIME_LEN     = 29                              !! ISO 8601 length.
+    character(len=*), parameter, public :: TIME_DEFAULT = '1970-01-01T00:00:00.000+00:00' !! Default ISO 8601.
 
     type, public :: time_delta_type
         !! Time delta type.
-        integer :: days    = 0
-        integer :: hours   = 0
-        integer :: minutes = 0
-        integer :: seconds = 0
+        integer :: days    = 0 !! Bygone days.
+        integer :: hours   = 0 !! Bygone hours.
+        integer :: minutes = 0 !! Bygone minutes.
+        integer :: seconds = 0 !! Bygone seconds.
     end type time_delta_type
 
     public :: dm_time_create
@@ -145,11 +145,13 @@ contains
     end function dm_time_diff
 
     integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
-        !! Converts the calendar time `timestamp` in UTC to broken-down time
+        !! Converts the calendar time `epoch` in UTC to broken-down time
         !! representation.
         !!
-        !! The argument `timestamp` is the number of seconds elapsed since the
+        !! The argument `epoch` is the number of seconds elapsed since the
         !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
+        !!
+        !! The function internally calls `gmtime_r()` (SUSv2).
         use :: unix
         integer(kind=i8), intent(in)            :: epoch  !! Unix timestamp in seconds (UTC).
         integer,          intent(out), optional :: year   !! Year part of timestamp.
@@ -179,7 +181,7 @@ contains
 
     integer(kind=i8) function dm_time_mseconds() result(t)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch).
-        use :: unix
+        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
         type(c_timespec) :: tp
 
         t = 0
@@ -188,8 +190,8 @@ contains
     end function dm_time_mseconds
 
     character(len=TIME_LEN) function dm_time_now() result(str)
-        !! Returns a timestamp in ISO 8601/RFC 3339 of the form
-        !! `1970-01-01T00:00:00.000+00:00`.
+        !! Returns current date and time in ISO 8601/RFC 3339 format
+        !! (`1970-01-01T00:00:00.000+00:00`).
         character(len=*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a, ":", a)'
 
@@ -202,14 +204,14 @@ contains
     end function dm_time_now
 
     character(len=31) function dm_time_rfc2822() result(str)
-        !! Returns current date and time in RFC 2822 format:
-        !!     https://www.ietf.org/rfc/rfc2822.txt
-        character(len=3), parameter :: DAYS(7) = &
-            [ 'Sun', 'Mon', 'Thu', 'Wed', 'Thu', 'Fri', 'Sat' ]
-        character(len=3), parameter :: MONTHS(12)  = &
-            [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
-        character(len=*), parameter :: RFC2822 = &
-            '(a, ", " , i0.2, 1x, a, 1x, i4, 1x, i0.2, ":", i0.2, ":", i0.2, 1x, a)'
+        !! Returns current date and time in
+        !! [RFC 2822](https://www.ietf.org/rfc/rfc2822.txt) format.
+        character(len=3), parameter :: &
+            DAYS(7) = [ 'Sun', 'Mon', 'Thu', 'Wed', 'Thu', 'Fri', 'Sat' ]
+        character(len=3), parameter :: &
+            MONTHS(12) = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+        character(len=*), parameter :: &
+            RFC2822 = '(a, ", " , i0.2, 1x, a, 1x, i4, 1x, i0.2, ":", i0.2, ":", i0.2, 1x, a)'
 
         character(len=5) :: z
         integer(kind=i8) :: d, dt(8)
@@ -220,10 +222,11 @@ contains
     end function dm_time_rfc2822
 
     impure elemental integer function dm_time_to_beats(time, beats) result(rc)
-        !! Converts timestamp `time` into Swatch Internet Time (@beats) in
-        !! the form `@1000.00` in `beats`.
-        character(len=*), intent(in)  :: time  !! Timestamp.
-        character(len=8), intent(out) :: beats !! Beats.
+        !! Converts ISO 8601 timestamp `time` into
+        !! [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
+        !! (.beats) in the form `@1000.00` in `beats`.
+        character(len=*), intent(in)  :: time  !! ISO 8601 timestamp.
+        character(len=8), intent(out) :: beats !! Timestamp converted to .beats.
 
         integer          :: hour, minute, second
         integer(kind=i8) :: bmt, utc
@@ -240,13 +243,13 @@ contains
 
     impure elemental integer function dm_time_to_unix(time, epoch, mseconds) result(rc)
         !! Converts ISO 8601/RFC 3339 timestamp to Unix timestamp (Epoch). The
-        !! function calls `timgm()` internally (not in POSIX, but available
+        !! function calls `timegm()` internally (not in POSIX, but available
         !! since 4.3BSD), and then removes the time zone offset. The returned
         !! Epoch is always in UTC.
         !!
         !! The function returns `E_INVALID` if the passed ISO 8601 timestamp is
         !! invalid. If the call to `timegm()` fails, `E_SYSTEM` is returned.
-        use :: unix
+        use :: unix, only: c_timegm, c_tm
         character(len=*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i3, i3, 1x, i2)'
 
         character(len=*), intent(in)            :: time     !! ISO 8601 timestamp.
@@ -288,7 +291,7 @@ contains
         !! Returns `.true.` if given timestamp follows the form of ISO 8601. The
         !! timestamp does not have to be complete to be valid. The minimum
         !! length of a timestamp to be valid is 4.
-        character(len=*), intent(in) :: time !! Time to validate.
+        character(len=*), intent(in) :: time !! ISO 8601 timestamp to validate.
 
         character :: a
         integer   :: i, n
