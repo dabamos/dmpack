@@ -70,6 +70,7 @@ module dm_csv
     end interface
 
     interface csv_next
+        !! Generic CSV record reader.
         module procedure :: csv_next_a
         module procedure :: csv_next_i4
         module procedure :: csv_next_i8
@@ -77,10 +78,21 @@ module dm_csv
         module procedure :: csv_next_r8
     end interface
 
+    ! Public procedures.
     public :: dm_csv_from
     public :: dm_csv_read
     public :: dm_csv_write
 
+    public :: dm_csv_header_beat
+    public :: dm_csv_header_data_point
+    public :: dm_csv_header_log
+    public :: dm_csv_header_node
+    public :: dm_csv_header_observ
+    public :: dm_csv_header_observ_view
+    public :: dm_csv_header_sensor
+    public :: dm_csv_header_target
+
+    ! Private procedures.
     private :: csv_from_beat
     private :: csv_from_beats
     private :: csv_from_data_point
@@ -129,6 +141,194 @@ module dm_csv
     private :: csv_write_targets
 contains
     ! ******************************************************************
+    ! PUBLIC PROCEDURES.
+    ! ******************************************************************
+    function dm_csv_header_beat(separator) result(header)
+        !! Returns header string of CSV representation of the beat type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#node_id'  // s // &
+                 'address'   // s // &
+                 'time_sent' // s // &
+                 'time_recv' // s // &
+                 'error'     // s // &
+                 'interval'  // s // &
+                 'uptime'
+    end function dm_csv_header_beat
+
+    function dm_csv_header_data_point(separator) result(header)
+        !! Returns header string of CSV representation of the data point type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+        header = '#x' // s // 'y'
+    end function dm_csv_header_data_point
+
+    function dm_csv_header_log(separator) result(header)
+        !! Returns header string of CSV representation of the log type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#id'       // s // &
+                 'level'     // s // &
+                 'error'     // s // &
+                 'timestamp' // s // &
+                 'node_id'   // s // &
+                 'sensor_id' // s // &
+                 'target_id' // s // &
+                 'observ_id' // s // &
+                 'message'
+    end function dm_csv_header_log
+
+    function dm_csv_header_node(separator) result(header)
+        !! Returns header string of CSV representation of the node type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#id'  // s // &
+                 'name' // s // &
+                 'meta'
+    end function dm_csv_header_node
+
+    function dm_csv_header_observ(separator) result(header)
+        !! Returns CSV header string of CSV representation of the observation
+        !! type as allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+        integer   :: i, j
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#id'        // s // &
+                 'node_id'    // s // &
+                 'sensor_id'  // s // &
+                 'target_id'  // s // &
+                 'name'       // s // &
+                 'timestamp'  // s // &
+                 'tty'        // s // &
+                 'priority'   // s // &
+                 'error'      // s // &
+                 'next'       // s // &
+                 'nreceivers' // s
+
+        do i = 1, OBSERV_MAX_NRECEIVERS
+            header = header // 'receivers(' // dm_itoa(i) // ')' // s
+        end do
+
+        header = header // 'nrequests'
+
+        do i = 1, OBSERV_MAX_NREQUESTS
+            header = header // s // &
+                     'requests(' // dm_itoa(i) // ').timestamp'  // s // &
+                     'requests(' // dm_itoa(i) // ').request'    // s // &
+                     'requests(' // dm_itoa(i) // ').response'   // s // &
+                     'requests(' // dm_itoa(i) // ').delimiter'  // s // &
+                     'requests(' // dm_itoa(i) // ').pattern'    // s // &
+                     'requests(' // dm_itoa(i) // ').delay'      // s // &
+                     'requests(' // dm_itoa(i) // ').error'      // s // &
+                     'requests(' // dm_itoa(i) // ').retries'    // s // &
+                     'requests(' // dm_itoa(i) // ').state'      // s // &
+                     'requests(' // dm_itoa(i) // ').timeout'    // s // &
+                     'requests(' // dm_itoa(i) // ').nresponses'
+
+            do j = 1, REQUEST_MAX_NRESPONSES
+                header = header // s // &
+                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').name'  // s // &
+                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').unit'  // s // &
+                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').error' // s // &
+                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').value'
+            end do
+        end do
+    end function dm_csv_header_observ
+
+    function dm_csv_header_observ_view(separator) result(header)
+        !! Returns CSV header string of CSV representation of the observation
+        !! view type as allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#node_id'          // s // &
+                 'sensor_id'         // s // &
+                 'target_id'         // s // &
+                 'observ_id'         // s // &
+                 'observ_name'       // s // &
+                 'observ_error'      // s // &
+                 'request_timestamp' // s // &
+                 'request_error'     // s // &
+                 'response_name'     // s // &
+                 'response_unit'     // s // &
+                 'response_error'    // s // &
+                 'response_value'
+    end function dm_csv_header_observ_view
+
+    function dm_csv_header_sensor(separator) result(header)
+        !! Returns header string of CSV representation of the sensor type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#id'     // s // &
+                 'node_id' // s // &
+                 'type'    // s // &
+                 'name'    // s // &
+                 'sn'      // s // &
+                 'meta'
+    end function dm_csv_header_sensor
+
+    function dm_csv_header_target(separator) result(header)
+        !! Returns header string of CSV representation of the target type as
+        !! allocatable string.
+        character, intent(in), optional :: separator !! CSV separator.
+        character(len=:), allocatable   :: header    !! CSV header string.
+
+        character :: s
+
+        s = CSV_SEPARATOR_DEFAULT
+        if (present(separator)) s = separator
+
+        header = '#id'  // s // &
+                 'name' // s // &
+                 'meta'
+    end function dm_csv_header_target
+
+    ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     function csv_from_beat(beat, separator) result(csv)
@@ -169,13 +369,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#node_id'  // s // &
-                  'address'   // s // &
-                  'time_sent' // s // &
-                  'time_recv' // s // &
-                  'error'     // s // &
-                  'interval'  // s // &
-                  'uptime'    // ASCII_LF
+            csv = dm_csv_header_beat(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -195,7 +389,6 @@ contains
 
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
-
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
     end function csv_from_data_point
 
@@ -217,7 +410,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#x' // s // 'y'  // ASCII_LF
+            csv = dm_csv_header_data_point(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -268,15 +461,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#id'       // s // &
-                  'level'     // s // &
-                  'error'     // s // &
-                  'timestamp' // s // &
-                  'node_id'   // s // &
-                  'sensor_id' // s // &
-                  'target_id' // s // &
-                  'observ_id' // s // &
-                  'message'   // ASCII_LF
+            csv = dm_csv_header_log(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -320,9 +505,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#id'  // s // &
-                  'name' // s // &
-                  'meta' // ASCII_LF
+            csv = dm_csv_header_node(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -438,18 +621,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#node_id'          // s // &
-                  'sensor_id'         // s // &
-                  'target_id'         // s // &
-                  'observ_id'         // s // &
-                  'observ_name'       // s // &
-                  'observ_error'      // s // &
-                  'request_timestamp' // s // &
-                  'request_error'     // s // &
-                  'response_name'     // s // &
-                  'response_unit'     // s // &
-                  'response_error'    // s // &
-                  'response_value'    // ASCII_LF
+            csv = dm_csv_header_observ_view(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -467,7 +639,7 @@ contains
         character(len=:), allocatable           :: csv        !! Allocatable CSV string.
 
         character :: s
-        integer   :: i, j
+        integer   :: i
         logical   :: header_
 
         header_ = .false.
@@ -477,48 +649,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#id'        // s // &
-                  'node_id'    // s // &
-                  'sensor_id'  // s // &
-                  'target_id'  // s // &
-                  'name'       // s // &
-                  'timestamp'  // s // &
-                  'tty'        // s // &
-                  'priority'   // s // &
-                  'error'      // s // &
-                  'next'       // s // &
-                  'nreceivers' // s
-
-            do i = 1, OBSERV_MAX_NRECEIVERS
-                csv = csv // 'receivers(' // dm_itoa(i) // ')' // s
-            end do
-
-            csv = csv // 'nrequests'
-
-            do i = 1, OBSERV_MAX_NREQUESTS
-                csv = csv // s // &
-                      'requests(' // dm_itoa(i) // ').timestamp'  // s // &
-                      'requests(' // dm_itoa(i) // ').request'    // s // &
-                      'requests(' // dm_itoa(i) // ').response'   // s // &
-                      'requests(' // dm_itoa(i) // ').delimiter'  // s // &
-                      'requests(' // dm_itoa(i) // ').pattern'    // s // &
-                      'requests(' // dm_itoa(i) // ').delay'      // s // &
-                      'requests(' // dm_itoa(i) // ').error'      // s // &
-                      'requests(' // dm_itoa(i) // ').retries'    // s // &
-                      'requests(' // dm_itoa(i) // ').state'      // s // &
-                      'requests(' // dm_itoa(i) // ').timeout'    // s // &
-                      'requests(' // dm_itoa(i) // ').nresponses'
-
-                do j = 1, REQUEST_MAX_NRESPONSES
-                    csv = csv // s // &
-                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').name'  // s // &
-                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').unit'  // s // &
-                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').error' // s // &
-                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').value'
-                end do
-            end do
-
-            csv = csv // ASCII_LF
+            csv = dm_csv_header_observ(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -565,12 +696,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#id'     // s // &
-                  'node_id' // s // &
-                  'type'    // s // &
-                  'name'    // s // &
-                  'sn'      // s // &
-                  'meta'    // ASCII_LF
+            csv = dm_csv_header_sensor(s) // ASCII_LF
         else
             csv = ''
         end if
@@ -614,9 +740,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            csv = '#id'  // s // &
-                  'name' // s // &
-                  'meta' // ASCII_LF
+            csv = dm_csv_header_target(s) // ASCII_LF
         else
             csv = ''
         end if

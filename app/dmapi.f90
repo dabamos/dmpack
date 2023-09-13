@@ -613,7 +613,7 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    if (header) call dm_fcgi_out(dm_csv_from(logs(0:0), header=header))
+                    if (header) call dm_fcgi_out(dm_csv_header_log())
 
                     do i = 1, size(logs)
                         call dm_fcgi_out(dm_csv_from(logs(i)))
@@ -1187,7 +1187,7 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    if (header) call dm_fcgi_out(dm_csv_from(observs(0:0), header=header))
+                    if (header) call dm_fcgi_out(dm_csv_header_observ())
 
                     do i = 1, size(observs)
                         call dm_fcgi_out(dm_csv_from(observs(i)))
@@ -1895,13 +1895,13 @@ contains
             call dm_fcgi_header(MIME_CSV)
 
             if (view) then
-                if (header) call dm_fcgi_out(dm_csv_from(views(0:0), header=header))
+                if (header) call dm_fcgi_out(dm_csv_header_observ_view())
 
                 do i = 1, size(views)
                     call dm_fcgi_out(dm_csv_from(views(i)))
                 end do
             else
-                if (header) call dm_fcgi_out(dm_csv_from(dps(0:0), header=header))
+                if (header) call dm_fcgi_out(dm_csv_header_data_point())
 
                 do i = 1, size(dps)
                     call dm_fcgi_out(dm_csv_from(dps(i)))

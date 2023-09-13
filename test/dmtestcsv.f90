@@ -6,7 +6,7 @@ program dmtestcsv
     !! Test program that tries CSV writing/reading.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 4
+    integer, parameter :: NTESTS = 5
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -15,6 +15,7 @@ program dmtestcsv
     tests(2) = test_type('dmtestcsv.test02', test02)
     tests(3) = test_type('dmtestcsv.test03', test03)
     tests(4) = test_type('dmtestcsv.test04', test04)
+    tests(5) = test_type('dmtestcsv.test05', test05)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -196,4 +197,31 @@ contains
 
         stat = TEST_PASSED
     end function test04
+
+    logical function test05() result(stat)
+        integer :: n
+
+        stat = TEST_FAILED
+
+        print *, 'Testing CSV header lengths ...'
+
+        n = len(dm_csv_header_beat())
+        if (n /= 58) return
+        n = len(dm_csv_header_data_point())
+        if (n /= 4) return
+        n = len(dm_csv_header_log())
+        if (n /= 71) return
+        n = len(dm_csv_header_node())
+        if (n /= 13) return
+        n = len(dm_csv_header_observ())
+        if (n /= 17922) return
+        n = len(dm_csv_header_observ_view())
+        if (n /= 153) return
+        n = len(dm_csv_header_sensor())
+        if (n /= 29) return
+        n = len(dm_csv_header_target())
+        if (n /= 13) return
+
+        stat = TEST_PASSED
+    end function test05
 end program dmtestcsv

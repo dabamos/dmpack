@@ -99,7 +99,7 @@ contains
     end function dm_cgi_auth
 
     integer function dm_cgi_content(env, content) result(rc)
-        !! Reads HTTP request body (POST method). We have to rely on `c_read()`
+        !! Reads HTTP request body (POST method). We have to rely on _read(2)_
         !! as Fortran cannot read unformatted content from standard input.
         use, intrinsic :: iso_c_binding, only: c_loc, c_size_t
         use :: unix, only: STDIN_FILENO, c_read
