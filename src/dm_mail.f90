@@ -13,16 +13,16 @@ module dm_mail
     !!
     !! rc = dm_mail_create(server, 'example.com', 'username', 'password')
     !! rc = dm_mail_create(mail, from=person_type(mail='alice@example.com'), &
-    !!                     to=[person_type(mail='bob@example.com')], &
+    !!                     to=[ person_type(mail='bob@example.com') ], &
     !!                     subject='Subject', message='Message')
     !! rc = dm_mail_send(mail, server)
     !! ```
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
+    use :: dm_kind
     use :: dm_person
     use :: dm_time
-    use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private

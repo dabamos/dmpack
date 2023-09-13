@@ -4,7 +4,7 @@ module dm_block
     !! Module to serialise derived types into ASCII block format.
     use :: dm_dp
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

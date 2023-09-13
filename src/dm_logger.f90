@@ -12,6 +12,7 @@ module dm_logger
     use :: dm_ascii
     use :: dm_error
     use :: dm_id
+    use :: dm_kind
     use :: dm_log
     use :: dm_mqueue
     use :: dm_node

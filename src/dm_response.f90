@@ -4,7 +4,7 @@ module dm_response
     !! The observation response data derived type declaration.
     use :: dm_error
     use :: dm_id
-    use :: dm_type
+    use :: dm_kind
     use :: dm_util
     implicit none (type, external)
     private

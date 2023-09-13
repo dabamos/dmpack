@@ -32,8 +32,8 @@ module dm_arg
     use :: dm_error
     use :: dm_file
     use :: dm_id
+    use :: dm_kind
     use :: dm_time
-    use :: dm_type
     use :: dm_util
     use :: dm_uuid
     use :: dm_version

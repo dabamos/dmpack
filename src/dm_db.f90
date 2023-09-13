@@ -10,6 +10,7 @@ module dm_db
     use :: dm_error
     use :: dm_file
     use :: dm_id
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
@@ -20,7 +21,6 @@ module dm_db
     use :: dm_sync
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     use :: dm_uuid
     use :: dm_util
     implicit none (type, external)

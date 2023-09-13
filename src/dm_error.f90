@@ -3,7 +3,7 @@
 module dm_error
     !! Error codes, error messages, and utility routines.
     use :: dm_ascii
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

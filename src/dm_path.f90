@@ -4,6 +4,7 @@ module dm_path
     !! File system path utility routines.
     implicit none (type, external)
     private
+
     public :: dm_path_parsed
 contains
     function dm_path_parsed(path) result(parsed)

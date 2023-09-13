@@ -3,7 +3,7 @@
 module dm_target
     !! Observation target declaration.
     use :: dm_id
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

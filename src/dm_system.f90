@@ -5,8 +5,8 @@ module dm_system
     use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
+    use :: dm_kind
     use :: dm_time
-    use :: dm_type
     implicit none (type, external)
     private
 

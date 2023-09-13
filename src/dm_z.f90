@@ -5,7 +5,7 @@ module dm_z
     use, intrinsic :: iso_c_binding, only: c_loc
     use :: zlib
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

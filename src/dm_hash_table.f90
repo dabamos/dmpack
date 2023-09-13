@@ -5,7 +5,7 @@ module dm_hash_table
     !! stores only pointers to values.
     use :: dm_error
     use :: dm_hash
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

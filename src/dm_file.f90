@@ -3,7 +3,7 @@
 module dm_file
     !! File access utility routines.
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

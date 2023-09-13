@@ -5,8 +5,8 @@ module dm_tty
     use, intrinsic :: iso_c_binding
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     use :: dm_string
-    use :: dm_type
     implicit none (type, external)
     private
 

@@ -6,8 +6,8 @@ module dm_dp
     !! and writing to file.
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     use :: dm_time
-    use :: dm_type
     implicit none (type, external)
     private
 

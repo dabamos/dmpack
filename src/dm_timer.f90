@@ -3,7 +3,7 @@
 module dm_timer
     !! Basic timer to measure the seconds between start and stop by counting
     !! clock cycles.
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

@@ -45,7 +45,7 @@ module dm_mqtt
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     use :: dm_util
     implicit none (type, external)
     private

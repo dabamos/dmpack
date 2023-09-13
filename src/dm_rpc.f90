@@ -8,6 +8,7 @@ module dm_rpc
     use :: dm_beat
     use :: dm_error
     use :: dm_http
+    use :: dm_kind
     use :: dm_log
     use :: dm_mime
     use :: dm_nml
@@ -15,7 +16,6 @@ module dm_rpc
     use :: dm_observ
     use :: dm_sensor
     use :: dm_target
-    use :: dm_type
     use :: dm_util
     use :: dm_version
     use :: dm_z

@@ -7,6 +7,7 @@ module dm_mqueue
     use :: unix
     use :: dm_error
     use :: dm_id
+    use :: dm_kind
     use :: dm_log
     use :: dm_observ
     use :: dm_type

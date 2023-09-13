@@ -6,9 +6,9 @@ module dm_fcgi
     use :: dm_ascii
     use :: dm_cgi
     use :: dm_error
+    use :: dm_kind
     use :: dm_http
     use :: dm_util
-    use :: dm_type
     implicit none (type, external)
     private
 

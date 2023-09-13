@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_const
     !! Definitions of mathematical constants.
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
 
     real(kind=r8), parameter, public :: PI  = acos(-1.0_r8) !! Pi.

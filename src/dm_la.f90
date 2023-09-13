@@ -3,7 +3,7 @@
 module dm_la
     !! Fortran 95 wrapper routines around LAPACK (double precision), ported from
     !! LAPACK95.
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

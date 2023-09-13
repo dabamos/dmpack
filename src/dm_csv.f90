@@ -7,6 +7,7 @@ module dm_csv
     use :: dm_convert
     use :: dm_dp
     use :: dm_error
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
@@ -14,7 +15,6 @@ module dm_csv
     use :: dm_sensor
     use :: dm_string
     use :: dm_target
-    use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private

@@ -4,8 +4,8 @@ module dm_time
     !! Date and time functions. ISO 8601/RFC 3339 is used as the universal
     !! datetime format.
     use :: dm_error
+    use :: dm_kind
     use :: dm_util
-    use :: dm_type
     implicit none (type, external)
     private
 

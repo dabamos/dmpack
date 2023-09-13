@@ -7,7 +7,7 @@ module dm_pipe
     use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

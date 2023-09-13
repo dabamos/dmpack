@@ -4,6 +4,7 @@ module dm_dummy
     !! Dummy type generators.
     use :: dm_ascii
     use :: dm_error
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
@@ -12,7 +13,6 @@ module dm_dummy
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     use :: dm_uuid
     use :: dm_util
     implicit none (type, external)

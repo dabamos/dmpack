@@ -3,8 +3,8 @@
 module dm_unit
     !! Unit definitions and conversion functions.
     use :: dm_error
+    use :: dm_kind
     use :: dm_util
-    use :: dm_type
     implicit none (type, external)
     private
 

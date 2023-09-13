@@ -4,9 +4,9 @@ module dm_test
     !! Basic testing framework.
     use :: dm_ansi
     use :: dm_error
+    use :: dm_kind
     use :: dm_time
     use :: dm_timer
-    use :: dm_type
     use :: dm_version
     implicit none (type, external)
     private

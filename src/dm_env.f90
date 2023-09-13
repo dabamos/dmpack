@@ -4,7 +4,7 @@ module dm_env
     !! Environment variable access.
     use :: dm_convert
     use :: dm_error
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

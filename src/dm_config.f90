@@ -7,9 +7,9 @@ module dm_config
     use :: dm_file
     use :: dm_id
     use :: dm_job
+    use :: dm_kind
     use :: dm_lua
     use :: dm_report
-    use :: dm_type
     implicit none (type, external)
     private
 

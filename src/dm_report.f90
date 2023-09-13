@@ -3,6 +3,7 @@
 module dm_report
     !! Derived types for report generation.
     use :: dm_id
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_plot
@@ -10,7 +11,6 @@ module dm_report
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     implicit none (type, external)
     private
 

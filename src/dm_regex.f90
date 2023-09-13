@@ -6,8 +6,8 @@ module dm_regex
     use :: pcre2
     use :: dm_convert
     use :: dm_error
+    use :: dm_kind
     use :: dm_request
-    use :: dm_type
     implicit none (type, external)
     private
 

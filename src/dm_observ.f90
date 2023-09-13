@@ -5,13 +5,13 @@ module dm_observ
     !! procedures.
     use :: dm_error
     use :: dm_id
+    use :: dm_kind
     use :: dm_node
     use :: dm_request
     use :: dm_response
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     use :: dm_util
     use :: dm_uuid
     implicit none (type, external)

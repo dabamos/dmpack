@@ -5,12 +5,12 @@ module dm_nml
     use :: dm_beat
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
     use :: dm_sensor
     use :: dm_target
-    use :: dm_type
     implicit none (type, external)
     private
 

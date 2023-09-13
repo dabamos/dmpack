@@ -4,8 +4,8 @@ module dm_transform
     !! Coordinate transformations (unfinished).
     use :: dm_const
     use :: dm_error
+    use :: dm_kind
     use :: dm_la
-    use :: dm_type
     implicit none (type, external)
     private
 

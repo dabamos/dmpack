@@ -9,6 +9,7 @@ module dm_html
     use :: dm_cgi
     use :: dm_error
     use :: dm_http
+    use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
@@ -18,7 +19,6 @@ module dm_html
     use :: dm_system
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     use :: dm_util
     use :: dm_version
     implicit none (type, external)

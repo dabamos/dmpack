@@ -5,9 +5,9 @@ module dm_request
     use :: dm_ascii
     use :: dm_error
     use :: dm_id
+    use :: dm_kind
     use :: dm_response
     use :: dm_time
-    use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private

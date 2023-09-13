@@ -5,10 +5,10 @@ module dm_router
     !! variable `PATH_INFO`, a callback is invoked that returns the response of
     !! that URI.
     use :: dm_cgi
-    use :: dm_html
-    use :: dm_http
     use :: dm_error
     use :: dm_hash_table
+    use :: dm_html
+    use :: dm_http
     implicit none (type, external)
     private
 

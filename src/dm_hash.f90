@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_hash
     !! Hashing algorithms
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

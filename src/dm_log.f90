@@ -4,12 +4,12 @@ module dm_log
     !! Log type and log level declaration.
     use :: dm_error
     use :: dm_id
+    use :: dm_kind
     use :: dm_node
     use :: dm_observ
     use :: dm_sensor
     use :: dm_target
     use :: dm_time
-    use :: dm_type
     use :: dm_uuid
     implicit none (type, external)
     private

@@ -6,12 +6,12 @@ module dm_lua
     use :: lua
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     use :: dm_job
     use :: dm_observ
     use :: dm_report
     use :: dm_request
     use :: dm_string
-    use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private
@@ -78,6 +78,7 @@ module dm_lua
         module procedure :: lua_to_report
     end interface dm_lua_to
 
+    ! Public procedures.
     public :: dm_lua_call
     public :: dm_lua_callback
     public :: dm_lua_destroy
@@ -101,6 +102,7 @@ module dm_lua
     public :: dm_lua_to
     public :: dm_lua_version
 
+    ! Private procedures.
     private :: lua_field_
     private :: lua_field_a
     private :: lua_field_i4

@@ -3,7 +3,7 @@
 module dm_base64
     !! Base64 encoding for poor people.
     use :: dm_ascii
-    use :: dm_type
+    use :: dm_kind
     implicit none (type, external)
     private
 

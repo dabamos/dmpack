@@ -3,9 +3,9 @@
 module dm_sensor
     !! Sensor type declaration.
     use :: dm_id
+    use :: dm_kind
     use :: dm_node
     use :: dm_string
-    use :: dm_type
     implicit none (type, external)
     private
 
