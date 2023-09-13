@@ -2,12 +2,12 @@
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-06
+.\"      Date: 2023-09-13
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2023-09-06" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2023-09-13" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -65,6 +65,10 @@ HTTP\-RPC API endpoints are expected under base URI
 The result of each synchronisation attempt is stored in the local database.
 Observations are marked as synchronised only if the server returns HTTP 201
 (Created).
+.sp
+Passing the server credentials via the command\-line arguments \f(CR\-\-username\fP and
+\f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
+for testing.
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -119,7 +123,8 @@ Node id, required for types \f(CRsensor\fP and \f(CRobserv\fP.
 .sp
 \fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
 .RS 4
-RPC API password.
+RPC API password. Be aware that passing the credentials via command\-line
+arguments is insecure and only recommended for testing.
 .RE
 .sp
 \fB\-\-port\fP, \fB\-p\fP \fIport\fP

@@ -46,7 +46,7 @@ sensors must exist as well.
   Path of input file in CSV format.
 
 *--quote*, *-q* _char_::
-  CSV quote character. If not passed, quoting is disabled.
+  CSV quote character. If not passed, quoting is disabled by default.
 
 *--separator*, *-s* _char_::
   CSV separator character.

@@ -627,6 +627,10 @@ system uptime, and last connection error. The server may inspect this data to
 check if a client is still running and has network access. The RPC endpoint is
 expected at `[http|https]://<host>:<port>/api/v1/beat`.
 
+Passing the server credentials via the command-line arguments `--username` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
+  
 ==== Command-Line Options
 
 [%autowidth.stretch]
@@ -1920,6 +1924,10 @@ endpoints are expected under URL `[http|https]://<host>:<port>/api/v1/<endpoint>
 The result of each synchronisation attempt is stored in the local database.
 Observations are marked as synchronised only if the server returns HTTP 201
 (Created).
+
+Passing the server credentials via the command-line arguments `--username` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
 
 ==== Command-Line Options
 

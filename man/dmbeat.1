@@ -2,12 +2,12 @@
 .\"     Title: dmbeat
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-06
+.\"      Date: 2023-09-13
 .\"    Manual: User Commands
 .\"    Source: DMBEAT
 .\"  Language: English
 .\"
-.TH "DMBEAT" "1" "2023-09-06" "DMBEAT" "User Commands"
+.TH "DMBEAT" "1" "2023-09-13" "DMBEAT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -48,6 +48,10 @@ last connection error. The server may inspect this data to check if a client is
 still running and has network access. The RPC endpoint is expected at
 \f(CR[http|https]://<host>:<port>/api/v1/beat\fP. The heartbeat is transmitted in
 deflate\-compressed Fortran 95 Namelist format.
+.sp
+Passing the server credentials via the command\-line arguments \f(CR\-\-username\fP and
+\f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
+for testing.
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -97,7 +101,8 @@ Sensor node id.
 .sp
 \fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
 .RS 4
-RPC API password.
+RPC API password. Be aware that passing the credentials via command\-line
+arguments is insecure and only recommended for testing.
 .RE
 .sp
 \fB\-\-port\fP, \fB\-p\fP \fIport\fP
