@@ -272,7 +272,7 @@ module dm_db
     private :: db_begin
     private :: db_commit
     private :: db_count
-    private :: db_delete_receivers
+    private :: db_delete_receivers ! obsolete
     private :: db_delete_requests  ! obsolete
     private :: db_delete_responses ! obsolete
     private :: db_exec

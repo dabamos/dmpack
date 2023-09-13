@@ -8,80 +8,83 @@ module dm_error
     private
 
     ! Generic errors.
-    integer, parameter, public :: E_NONE           =  0 !! No error.
-    integer, parameter, public :: E_ERROR          =  1 !! Generic error.
-    integer, parameter, public :: E_DUMMY          =  2 !! Dummy error.
-    integer, parameter, public :: E_INVALID        =  3 !! Invalid input/argument.
-    integer, parameter, public :: E_INCOMPLETE     =  4 !! Input/argument missing.
-    integer, parameter, public :: E_TYPE           =  5 !! Type error.
-    integer, parameter, public :: E_IO             =  6 !! I/O operation failed.
-    integer, parameter, public :: E_READ           =  7 !! Read operation failed.
-    integer, parameter, public :: E_WRITE          =  8 !! Write operation failed.
-    integer, parameter, public :: E_EOF            =  9 !! I/O end of file.
-    integer, parameter, public :: E_EOR            = 10 !! I/O end of record.
-    integer, parameter, public :: E_ALLOC          = 11 !! Memory allocation failed.
-    integer, parameter, public :: E_BOUNDS         = 12 !! Out of bounds error.
-    integer, parameter, public :: E_EXIST          = 13 !! Resource exists.
-    integer, parameter, public :: E_SYSTEM         = 14 !! System call failed.
-    integer, parameter, public :: E_TIMEOUT        = 15 !! Timeout occured.
-    integer, parameter, public :: E_EMPTY          = 16 !! No data.
-    integer, parameter, public :: E_LIMIT          = 17 !! Memory limit reached.
-    integer, parameter, public :: E_FORMAT         = 18 !! Format error.
-    integer, parameter, public :: E_NOT_FOUND      = 19 !! Resource not found.
-    integer, parameter, public :: E_READ_ONLY      = 20 !! Read-only access.
-    integer, parameter, public :: E_LUA            = 21 !! Lua error.
-    integer, parameter, public :: E_CONFIG         = 22 !! Invalid configuration error.
+    integer, parameter, public :: E_NONE           =   0 !! No error.
+    integer, parameter, public :: E_ERROR          =   1 !! Generic error.
+    integer, parameter, public :: E_DUMMY          =   2 !! Dummy error.
+    integer, parameter, public :: E_INVALID        =   3 !! Invalid input/argument.
+    integer, parameter, public :: E_INCOMPLETE     =   4 !! Input/argument missing.
+    integer, parameter, public :: E_TYPE           =   5 !! Type error.
+    integer, parameter, public :: E_IO             =   6 !! I/O operation failed.
+    integer, parameter, public :: E_READ           =   7 !! Read operation failed.
+    integer, parameter, public :: E_WRITE          =   8 !! Write operation failed.
+    integer, parameter, public :: E_EOF            =   9 !! I/O end of file.
+    integer, parameter, public :: E_EOR            =  10 !! I/O end of record.
+    integer, parameter, public :: E_ALLOC          =  11 !! Memory allocation failed.
+    integer, parameter, public :: E_BOUNDS         =  12 !! Out of bounds error.
+    integer, parameter, public :: E_EXIST          =  13 !! Resource exists.
+    integer, parameter, public :: E_SYSTEM         =  14 !! System call failed.
+    integer, parameter, public :: E_TIMEOUT        =  15 !! Timeout occured.
+    integer, parameter, public :: E_EMPTY          =  16 !! No data.
+    integer, parameter, public :: E_LIMIT          =  17 !! Memory limit reached.
+    integer, parameter, public :: E_FORMAT         =  18 !! Format error.
+    integer, parameter, public :: E_NOT_FOUND      =  19 !! Resource not found.
+    integer, parameter, public :: E_READ_ONLY      =  20 !! Read-only access.
+    integer, parameter, public :: E_LUA            =  21 !! Lua error.
+    integer, parameter, public :: E_CONFIG         =  22 !! Invalid configuration error.
 
     ! Database errors.
-    integer, parameter, public :: E_DB             = 30 !! Generic database error.
-    integer, parameter, public :: E_DB_ID          = 31 !! Invalid database application id.
-    integer, parameter, public :: E_DB_MEM         = 32 !! No memory or disk full.
-    integer, parameter, public :: E_DB_BUSY        = 33 !! Database is busy.
-    integer, parameter, public :: E_DB_LOCKED      = 34 !! Database is locked.
-    integer, parameter, public :: E_DB_EXEC        = 35 !! Execution failed.
-    integer, parameter, public :: E_DB_CONSTRAINT  = 36 !! Contraint error.
-    integer, parameter, public :: E_DB_TRANSACTION = 37 !! Transaction failed.
-    integer, parameter, public :: E_DB_ROLLBACK    = 38 !! Transaction rollback error.
-    integer, parameter, public :: E_DB_PREPARE     = 39 !! Prepare failed.
-    integer, parameter, public :: E_DB_FINALIZE    = 40 !! Statement error.
-    integer, parameter, public :: E_DB_BIND        = 41 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        = 42 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        = 43 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     = 44 !! No rows returned.
-    integer, parameter, public :: E_DB_BACKUP      = 45 !! Backup error.
+    integer, parameter, public :: E_DB             =  30 !! Generic database error.
+    integer, parameter, public :: E_DB_ID          =  31 !! Invalid database application id.
+    integer, parameter, public :: E_DB_MEM         =  32 !! No memory or disk full.
+    integer, parameter, public :: E_DB_BUSY        =  33 !! Database is busy.
+    integer, parameter, public :: E_DB_LOCKED      =  34 !! Database is locked.
+    integer, parameter, public :: E_DB_EXEC        =  35 !! Execution failed.
+    integer, parameter, public :: E_DB_CONSTRAINT  =  36 !! Contraint error.
+    integer, parameter, public :: E_DB_TRANSACTION =  37 !! Transaction failed.
+    integer, parameter, public :: E_DB_ROLLBACK    =  38 !! Transaction rollback error.
+    integer, parameter, public :: E_DB_PREPARE     =  39 !! Prepare failed.
+    integer, parameter, public :: E_DB_FINALIZE    =  40 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        =  41 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        =  42 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        =  43 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     =  44 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      =  45 !! Backup error.
 
     ! Command-line argument errors.
-    integer, parameter, public :: E_ARG            = 50 !! Generic argument error.
-    integer, parameter, public :: E_ARG_NOT_FOUND  = 51 !! Option not passed.
-    integer, parameter, public :: E_ARG_INVALID    = 52 !! Invalid option or argument missing.
-    integer, parameter, public :: E_ARG_NO_VALUE   = 53 !! Argument given but no value.
-    integer, parameter, public :: E_ARG_TYPE       = 54 !! Type mismatch.
-    integer, parameter, public :: E_ARG_LENGTH     = 55 !! Wrong value length.
+    integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
+    integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
+    integer, parameter, public :: E_ARG_INVALID    =  52 !! Invalid option or argument missing.
+    integer, parameter, public :: E_ARG_NO_VALUE   =  53 !! Argument given but no value.
+    integer, parameter, public :: E_ARG_TYPE       =  54 !! Type mismatch.
+    integer, parameter, public :: E_ARG_LENGTH     =  55 !! Wrong value length.
 
     ! Message queue errors.
-    integer, parameter, public :: E_MQUEUE         = 60 !! Generic message queue error.
-    integer, parameter, public :: E_MQUEUE_EMPTY   = 61 !! Empty message.
+    integer, parameter, public :: E_MQUEUE         =  60 !! Generic message queue error.
+    integer, parameter, public :: E_MQUEUE_EMPTY   =  61 !! Empty message.
 
     ! Matching errors.
-    integer, parameter, public :: E_REGEX          = 70 !! Generic regular expression error.
-    integer, parameter, public :: E_REGEX_COMPILE  = 71 !! Failed to compile regular expression.
-    integer, parameter, public :: E_REGEX_EXCEEDED = 72 !! Number of matches exceeds array size.
-    integer, parameter, public :: E_REGEX_NO_MATCH = 73 !! No match.
-    integer, parameter, public :: E_REGEX_NO_GROUP = 74 !! No group.
+    integer, parameter, public :: E_REGEX          =  70 !! Generic regular expression error.
+    integer, parameter, public :: E_REGEX_COMPILE  =  71 !! Failed to compile regular expression.
+    integer, parameter, public :: E_REGEX_EXCEEDED =  72 !! Number of matches exceeds array size.
+    integer, parameter, public :: E_REGEX_NO_MATCH =  73 !! No match.
+    integer, parameter, public :: E_REGEX_NO_GROUP =  74 !! No group.
 
     ! Sensor errors.
-    integer, parameter, public :: E_SENSOR         = 80 !! Generic sensor error.
+    integer, parameter, public :: E_SENSOR         =  80 !! Generic sensor error.
 
     ! RPC errors.
-    integer, parameter, public :: E_RPC            = 90 !! Generic RPC error.
-    integer, parameter, public :: E_RPC_CONNECT    = 91 !! RPC connection error.
-    integer, parameter, public :: E_RPC_SSL        = 92 !! RPC SSL/TLS error.
-    integer, parameter, public :: E_RPC_API        = 93 !! RPC API call failed.
-    integer, parameter, public :: E_RPC_AUTH       = 94 !! Unauthorised.
-    integer, parameter, public :: E_RPC_CONFLICT   = 95 !! Resource exists.
-    integer, parameter, public :: E_RPC_SERVER     = 96 !! Internal server error.
+    integer, parameter, public :: E_RPC            =  90 !! Generic RPC error.
+    integer, parameter, public :: E_RPC_CONNECT    =  91 !! RPC connection error.
+    integer, parameter, public :: E_RPC_SSL        =  92 !! RPC SSL/TLS error.
+    integer, parameter, public :: E_RPC_API        =  93 !! RPC API call failed.
+    integer, parameter, public :: E_RPC_AUTH       =  94 !! Unauthorised.
+    integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
+    integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
 
-    integer, parameter, public :: E_LAST           = 96 !! DO NOT USE.
+    integer, parameter, public :: E_MAIL           = 100 !! Generic SMTP error.
+    integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
+
+    integer, parameter, public :: E_LAST           = 110 !! DO NOT USE.
 
     interface dm_perror
         !! Alias for `dm_error_out()`.
@@ -233,6 +236,14 @@ contains
                 str = 'RPC conflict'
             case (E_RPC_SERVER)
                 str = 'RPC server error'
+
+            ! Mail.
+            case (E_MAIL)
+                str = 'SMTP error'
+
+            ! MQTT.
+            case (E_MQTT)
+                str = 'MQTT error'
 
             case default
                 str = 'unknown error code'

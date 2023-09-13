@@ -4112,4 +4112,6 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 94   | `E_RPC_AUTH`        | RPC API call unauthorised.
 | 95   | `E_RPC_CONFLICT`    | RPC resource exists.
 | 96   | `E_RPC_SERVER`      | RPC internal server error.
+| 100  | `E_MAIL`            | Generic SMTP error.
+| 110  | `E_MQTT`            | Generic MQTT error.
 |===

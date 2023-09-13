@@ -36,12 +36,18 @@ module dm_mqtt
     !! character(len=:), allocatable :: url
     !! integer :: rc
     !!
+    !! rc  = dm_mqtt_init()
     !! url = dm_mqtt_url(host='127.0.0.1', port=1883, topic='/fortran')
     !! rc  = dm_mqtt_publish(url, 'Hello, from Fortran!')
+    !! call dm_mqtt_destroy()
     !! ```
     !!
     !! Any client that has subscribed topic `/fortran` will receive the
     !! message.
+    !!
+    !! The procedures `dm_mqtt_init()` and `dm_mqtt_destroy()` have to be called
+    !! only once per process and if the RPC or Mail backend was not initialised
+    !! already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -50,9 +56,18 @@ module dm_mqtt
     implicit none (type, external)
     private
 
+    public :: dm_mqtt_destroy
+    public :: dm_mqtt_init
     public :: dm_mqtt_publish
     public :: dm_mqtt_url
 contains
+    integer function dm_mqtt_init() result(rc)
+        !! Initialises libcurl backend.
+        rc = E_MQTT
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
+        rc = E_NONE
+    end function dm_mqtt_init
+
     integer function dm_mqtt_publish(url, message, timeout, error_message, error_curl) result(rc)
         !! Sends HTTP request by calling libcurl.
         character(len=*),              intent(in)            :: url           !! URL to MQTT server/topic.
@@ -105,6 +120,7 @@ contains
             if (er /= CURLE_OK) exit curl_block
 
             ! Send request.
+            rc = E_MQTT
             er = curl_easy_perform(curl_ptr)
             if (er /= CURLE_OK) exit curl_block
 
@@ -144,4 +160,10 @@ contains
         if (host(n:n) /= '/' .and. topic(1:1) /= '/') url = url // '/'
         url = url // topic(1:m)
     end function dm_mqtt_url
+
+    subroutine dm_mqtt_destroy()
+        !! Cleans-up libcurl.
+
+        call curl_global_cleanup()
+    end subroutine dm_mqtt_destroy
 end module dm_mqtt

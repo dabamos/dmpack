@@ -241,6 +241,7 @@ contains
             rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'tls',      app%tls)
             rc = dm_config_get(config, 'verbose',  app%verbose)
+            rc = E_NONE
         end if if_block
 
         call dm_config_close(config)

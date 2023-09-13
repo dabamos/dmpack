@@ -6,10 +6,9 @@ incl_src:        false
 graph:           true
 search:          false
 favicon:         favicon.png
-summary:         **Deformation Monitoring Package (DMPACK)** – A collections
-                 of programs for automatic deformation monitoring in the
-                 Internet of Things, written in Fortran 2018, for Linux and
-                 FreeBSD.
+summary:         **Deformation Monitoring Package (DMPACK)** – A software
+                 library in Fortran 2018 for automatic deformation monitoring in
+                 the Internet of Things on Linux and FreeBSD.
 author:          Philipp Engel
 date:            September 8, 2023
 project_website: https://www.dabamos.de

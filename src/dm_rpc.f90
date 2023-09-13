@@ -3,6 +3,28 @@
 module dm_rpc
     !! Abstraction layer for Remote Procedure Calls (RPCs) over HTTP,
     !! using cURL.
+    !!
+    !! To send an observation to an HTTP-RPC API on `localhost`:
+    !!
+    !! ```fortran
+    !! character(len=:), allocatable :: url
+    !! integer                       :: rc
+    !! type(observ_type)             :: observ
+    !! type(rpc_request_type)        :: request
+    !! type(rpc_response_type)       :: response
+    !!
+    !! rc = dm_rpc_init()
+    !! url = dm_rpc_url('localhost', port=80, endpoint='/observ')
+    !! rc = dm_rpc_send(request, response, observ, url)
+    !! call dm_rpc_destroy()
+    !! ```
+    !!
+    !! The URL returned by `dm_rpc_url()` will equal
+    !! `http://localhost:80/api/v1/observ` in this case.
+    !!
+    !! The procedures `dm_rpc_init()` and `dm_rpc_destroy()` have to be called
+    !! only once per process and if the MQTT or Mail backend was not initialised
+    !! already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_beat
@@ -25,12 +47,15 @@ module dm_rpc
     character(len=*), parameter, public :: RPC_BASE_DEFAULT = '/api/v1'                      !! Base path of dmapi service.
     character(len=*), parameter, public :: RPC_USER_AGENT   = 'DMPACK ' // DM_VERSION_STRING !! User agent of RPC client.
 
+    ! HTTP Auth.
     integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
     integer, parameter, public :: RPC_AUTH_BASIC = 1 !! HTTP Basic Auth.
 
+    ! HTTP Method.
     integer, parameter, public :: RPC_METHOD_GET  = 0 !! HTTP GET method.
     integer, parameter, public :: RPC_METHOD_POST = 1 !! HTTP POST method.
 
+    ! TCP Keep-Alive.
     integer, parameter, public :: RPC_KEEP_ALIVE          = 1   !! Enable TCP keep-alive.
     integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120 !! TCP keep-alive idle time in seconds.
     integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60  !! Interval time between TCP keep-alive probes in seconds.
@@ -258,7 +283,7 @@ contains
     end function dm_rpc_url
 
     subroutine dm_rpc_destroy()
-        !! Cleans-up libcurl handle.
+        !! Cleans-up libcurl.
 
         call curl_global_cleanup()
     end subroutine dm_rpc_destroy
@@ -278,7 +303,7 @@ contains
         type(rpc_request_type),          intent(in)  :: request  !! Request type.
         type(rpc_response_type), target, intent(out) :: response !! Response type.
 
-        integer     :: er ! cURL error.
+        integer     :: ec, er ! cURL errors.
         type(c_ptr) :: curl_ptr, list_ptr
 
         rc = E_IO
@@ -402,23 +427,24 @@ contains
             if (er /= CURLE_OK) exit curl_block
 
             ! Send request.
+            rc = E_RPC
+
             er = curl_easy_perform(curl_ptr)
-            ! if (er /= CURLE_OK) exit curl_block
-
-            ! Get HTTP response code.
-            er = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
-            if (er /= CURLE_OK) exit curl_block
-
-            ! Get connection info.
-            er = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
-            if (er /= CURLE_OK) exit curl_block
-
-            ! Get transmission time.
-            er = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
             if (er /= CURLE_OK) exit curl_block
 
             rc = E_NONE
         end block curl_block
+
+        if (rc /= E_INVALID) then
+            ! Get HTTP response code.
+            ec = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
+
+            ! Get connection info.
+            ec = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
+
+            ! Get transmission time.
+            ec = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
+        end if
 
         ! Set error code and message.
         if (er /= CURLE_OK) then
@@ -442,13 +468,13 @@ contains
         !! authentication and deflate compression. The URL has to be the API
         !! endpoint that accepts HTTP POST requests. For `dmapi`, this could be,
         !! for example: `http://localhost/api/v1/beat`.
-        type(rpc_request_type),        intent(inout)         :: request       !! RPC request type.
-        type(rpc_response_type),       intent(out)           :: response      !! RPC response type.
-        type(beat_type),               intent(inout)         :: beat          !! Beat type.
-        character(len=*),              intent(in),  optional :: url           !! URL of RPC API (may include port).
-        character(len=*),              intent(in),  optional :: username      !! HTTP Basic Auth user name.
-        character(len=*),              intent(in),  optional :: password      !! HTTP Basic Auth password.
-        logical,                       intent(in),  optional :: deflate       !! Deflate compression.
+        type(rpc_request_type),  intent(inout)         :: request  !! RPC request type.
+        type(rpc_response_type), intent(out)           :: response !! RPC response type.
+        type(beat_type),         intent(inout)         :: beat     !! Beat type.
+        character(len=*),        intent(in),  optional :: url      !! URL of RPC API (may include port).
+        character(len=*),        intent(in),  optional :: username !! HTTP Basic Auth user name.
+        character(len=*),        intent(in),  optional :: password !! HTTP Basic Auth password.
+        logical,                 intent(in),  optional :: deflate  !! Deflate compression.
 
         character(len=NML_BEAT_LEN)   :: payload
         character(len=:), allocatable :: compressed
@@ -698,7 +724,6 @@ contains
 
     integer(kind=c_size_t) function rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl.
-        use :: curl
         type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
         integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
         integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.

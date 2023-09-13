@@ -11,12 +11,18 @@ module dm_mail
     !! type(mail_type)   :: mail
     !! type(server_type) :: server
     !!
+    !! rc = dm_mail_init()
     !! rc = dm_mail_create(server, 'example.com', 'username', 'password')
     !! rc = dm_mail_create(mail, from=person_type(mail='alice@example.com'), &
     !!                     to=[ person_type(mail='bob@example.com') ], &
     !!                     subject='Subject', message='Message')
     !! rc = dm_mail_send(mail, server)
+    !! call dm_mail_destroy()
     !! ```
+    !!
+    !! The procedures `dm_mail_init()` and `dm_mail_destroy()` have to be called
+    !! only once per process and if the RPC or MQTT backend was not initialised
+    !! already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -92,6 +98,8 @@ module dm_mail
     public :: dm_mail_create
     public :: dm_mail_create_mail
     public :: dm_mail_create_server
+    public :: dm_mail_destroy
+    public :: dm_mail_init
     public :: dm_mail_send
     public :: dm_mail_url
     public :: dm_mail_write
@@ -176,6 +184,13 @@ contains
 
         rc = E_NONE
     end function dm_mail_create_server
+
+    integer function dm_mail_init() result(rc)
+        !! Initialises libcurl backend.
+        rc = E_MAIL
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
+        rc = E_NONE
+    end function dm_mail_init
 
     integer function dm_mail_send(mail, server, error_message, error_curl, debug) result(rc)
         !! Sends SMTP request by calling libcurl.
@@ -293,7 +308,7 @@ contains
             end if
 
             ! Send request.
-            rc = E_IO
+            rc = E_MAIL
             er = curl_easy_perform(curl_ptr)
             if (er /= CURLE_OK) exit curl_block
             rc = E_NONE
@@ -357,6 +372,12 @@ contains
         payload = payload // 'Subject: ' // mail%subject // CR_LF // &
                   CR_LF // mail%message // CR_LF
     end function dm_mail_write
+
+    subroutine dm_mail_destroy()
+        !! Cleans-up libcurl.
+
+        call curl_global_cleanup()
+    end subroutine dm_mail_destroy
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
