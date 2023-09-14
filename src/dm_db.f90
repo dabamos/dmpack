@@ -145,6 +145,11 @@ module dm_db
         module procedure :: dm_db_select_targets
     end interface
 
+    interface dm_db_select_json
+        module procedure :: dm_db_select_json_log
+        module procedure :: dm_db_select_json_logs
+    end interface
+
     interface dm_db_update
         !! Generic database update function.
         module procedure :: dm_db_update_node
@@ -223,6 +228,9 @@ module dm_db
     public :: dm_db_select_beat
     public :: dm_db_select_beats
     public :: dm_db_select_data_points
+    public :: dm_db_select_json
+    public :: dm_db_select_json_log
+    public :: dm_db_select_json_logs
     public :: dm_db_select_log
     public :: dm_db_select_logs
     public :: dm_db_select_logs_by_observ
@@ -1804,6 +1812,322 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_data_points
 
+    integer function dm_db_select_json_log(db, json_log, log_id) result(rc)
+        !! Returns log associated with given id as allocatable character in
+        !! JSON format in `json_log`. If no log has been found, the string is
+        !! empty and the function returns `E_DB_NO_ROWS`.
+        type(db_type),                 intent(inout) :: db       !! Database type.
+        character(len=:), allocatable, intent(out)   :: json_log !! Returned JSON.
+        character(len=*),              intent(in)    :: log_id   !! Log id.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOG, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            if (sqlite3_bind_text(stmt, 1, trim(log_id)) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
+
+            json_log = sqlite3_column_text(stmt, 0)
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+        if (.not. allocated(json_log)) json_log = ''
+    end function dm_db_select_json_log
+
+    integer function dm_db_select_json_logs(db, json_logs, node_id, sensor_id, target_id, source, &
+                                            from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
+        !! Returns logs in JSON format in allocatable character array
+        !! `json_logs`, each of length 1024. The actual length of the JSON
+        !! object may be less than the maximum character length.
+        type(db_type),                    intent(inout)         :: db           !! Database type.
+        character(len=1024), allocatable, intent(out)           :: json_logs(:) !! Returned JSON array.
+        character(len=*),                 intent(in),  optional :: node_id      !! Node id.
+        character(len=*),                 intent(in),  optional :: sensor_id    !! Sensor id.
+        character(len=*),                 intent(in),  optional :: target_id    !! Target id.
+        character(len=*),                 intent(in),  optional :: source       !! Source name.
+        character(len=*),                 intent(in),  optional :: from         !! Begin of time range.
+        character(len=*),                 intent(in),  optional :: to           !! End of time range.
+        integer,                          intent(in),  optional :: min_level    !! Minimum log level.
+        integer,                          intent(in),  optional :: max_level    !! Maximum log level.
+        integer,                          intent(in),  optional :: error        !! Error code.
+        logical,                          intent(in),  optional :: desc         !! Descending order.
+        integer(kind=i8),                 intent(in),  optional :: limit        !! Max. numbers of logs.
+        integer(kind=i8),                 intent(out), optional :: nlogs        !! Total number of logs.
+
+        character(len=:), allocatable :: query
+        integer                       :: k, stat
+        integer(kind=i8)              :: i, n
+        type(c_ptr)                   :: stmt
+
+        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
+        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
+        logical :: desc_order, more
+
+        has_param     = .false.
+        has_node_id   = .false.
+        has_sensor_id = .false.
+        has_target_id = .false.
+        has_source    = .false.
+        has_from      = .false.
+        has_to        = .false.
+        has_min_level = .false.
+        has_max_level = .false.
+        has_error     = .false.
+        has_limit     = .false.
+
+        desc_order = .false.
+
+        if (present(node_id)) then
+            if (len_trim(node_id) > 0) then
+                has_param = .true.
+                has_node_id = .true.
+            end if
+        end if
+
+        if (present(sensor_id)) then
+            if (len_trim(sensor_id) > 0) then
+                has_param = .true.
+                has_sensor_id = .true.
+            end if
+        end if
+
+        if (present(target_id)) then
+            if (len_trim(target_id) > 0) then
+                has_param = .true.
+                has_target_id = .true.
+            end if
+        end if
+
+        if (present(source)) then
+            if (len_trim(source) > 0) then
+                has_param = .true.
+                has_source = .true.
+            end if
+        end if
+
+        if (present(from)) then
+            if (len_trim(from) > 0) then
+                has_param = .true.
+                has_from = .true.
+            end if
+        end if
+
+        if (present(to)) then
+            if (len_trim(to) > 0) then
+                has_param = .true.
+                has_to = .true.
+            end if
+        end if
+
+        if (present(min_level)) then
+            has_param = .true.
+            has_min_level = .true.
+        end if
+
+        if (present(max_level)) then
+            has_param = .true.
+            has_max_level = .true.
+        end if
+
+        if (present(error)) then
+            has_param = .true.
+            has_error = .true.
+        end if
+
+        if (present(desc)) desc_order = desc
+        if (present(limit)) has_limit = .true.
+        if (present(nlogs)) nlogs = 0_i8
+
+        ! Build SQL query.
+        query = ''
+
+        if (has_param) then
+            query = ' WHERE'
+            more  = .false.
+
+            if (has_min_level) then
+                query = query // ' level >= ?'
+                more  = .true.
+            end if
+
+            if (has_max_level) then
+                if (more) query = query // ' AND'
+                query = query // ' level <= ?'
+                more  = .true.
+            end if
+
+            if (has_error) then
+                if (more) query = query // ' AND'
+                query = query // ' error = ?'
+                more  = .true.
+            end if
+
+            if (has_from) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp >= ?'
+                more  = .true.
+            end if
+
+            if (has_to) then
+                if (more) query = query // ' AND'
+                query = query // ' timestamp < ?'
+                more  = .true.
+            end if
+
+            if (has_node_id) then
+                if (more) query = query // ' AND'
+                query = query // ' node_id = ?'
+                more  = .true.
+            end if
+
+            if (has_sensor_id) then
+                if (more) query = query // ' AND'
+                query = query // ' sensor_id = ?'
+                more  = .true.
+            end if
+
+            if (has_target_id) then
+                if (more) query = query // ' AND'
+                query = query // ' target_id = ?'
+                more  = .true.
+            end if
+
+            if (has_source) then
+                if (more) query = query // ' AND'
+                query = query // ' source = ?'
+            end if
+        end if
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            if (has_param) then
+                rc = db_bind_logs(k)
+                if (dm_is_error(rc)) exit sql_block
+            end if
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+            n = sqlite3_column_int64(stmt, 0)
+
+            rc = E_DB_FINALIZE
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_ALLOC
+            if (present(nlogs)) nlogs = n
+            if (has_limit) n = min(n, limit)
+            allocate (json_logs(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            if (desc_order) then
+                query = query // ' ORDER BY timestamp DESC'
+            else
+                query = query // ' ORDER BY timestamp ASC'
+            end if
+
+            if (has_limit) query = query // ' LIMIT ?'
+
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            k  = 1
+
+            if (has_param) then
+                if (dm_is_error(db_bind_logs(k))) exit sql_block
+            end if
+
+            if (has_limit) then
+                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
+            end if
+
+            do i = 1, n
+                rc = E_DB_STEP
+                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+                if (i == 1) then
+                    rc = E_DB_TYPE
+                    if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
+                end if
+
+                json_logs(i) = sqlite3_column_text(stmt, 0)
+            end do
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+        if (.not. allocated(json_logs)) allocate (json_logs(0))
+    contains
+        integer function db_bind_logs(i) result(rc)
+            integer, intent(out) :: i
+
+            rc = E_DB_BIND
+            i = 1
+
+            if (has_min_level) then
+                if (sqlite3_bind_int(stmt, i, min_level) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_max_level) then
+                if (sqlite3_bind_int(stmt, i, max_level) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_error) then
+                if (sqlite3_bind_int(stmt, i, error) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_from) then
+                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_to) then
+                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_node_id) then
+                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_sensor_id) then
+                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_target_id) then
+                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_source) then
+                if (sqlite3_bind_text(stmt, i, trim(source)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            rc = E_NONE
+        end function db_bind_logs
+    end function dm_db_select_json_logs
+
     integer function dm_db_select_log(db, log, log_id) result(rc)
         !! Returns log associated with given id in `log`.
         type(db_type),    intent(inout) :: db     !! Database type.
@@ -2047,6 +2371,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(logs)) allocate (logs(0))
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -2154,6 +2479,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(logs)) allocate (logs(0))
     end function dm_db_select_logs_by_observ
 
     integer function dm_db_select_node(db, node, node_id) result(rc)

@@ -48,7 +48,7 @@ program dmtestdb
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 15
+    integer, parameter :: NTESTS   = 16
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -68,6 +68,7 @@ program dmtestdb
     tests(13) = test_type('dmtestdb.test13', test13)
     tests(14) = test_type('dmtestdb.test14', test14)
     tests(15) = test_type('dmtestdb.test15', test15)
+    tests(16) = test_type('dmtestdb.test16', test16)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -832,4 +833,38 @@ contains
 
         stat = TEST_PASSED
     end function test15
+
+    logical function test16() result(stat)
+        !! Tests JSON output of SQLite.
+        character(len=1024), allocatable :: json_logs(:)
+        integer                          :: rc
+        integer(kind=i8)                 :: nlogs
+        type(db_type)                    :: db
+
+        stat = TEST_FAILED
+
+        print *, 'Opening database "' // DB_LOG // '" ...'
+        if (dm_db_open(db, DB_LOG) /= E_NONE) return
+
+        test_block: block
+            print *, 'Selecting logs in JSON format ...'
+            rc = dm_db_select_json_logs(db, json_logs, limit=1_i8, nlogs=nlogs)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = E_ERROR
+            if (.not. allocated(json_logs)) exit test_block
+            if (size(json_logs) /= 1) exit test_block
+
+            print *, 'Length: ', len_trim(json_logs(1))
+            print *, 'JSON..: ', trim(json_logs(1))
+
+            rc = E_NONE
+        end block test_block
+
+        print *, 'Closing database "' // DB_LOG // '" ...'
+        if (dm_db_close(db) /= E_NONE) return
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test16
 end program dmtestdb
