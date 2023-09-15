@@ -146,6 +146,7 @@ module dm_db
     end interface
 
     interface dm_db_select_json
+        !! Generic database select function with JSON result.
         module procedure :: dm_db_select_json_log
         module procedure :: dm_db_select_json_logs
     end interface
@@ -564,14 +565,17 @@ contains
         sync_ = .false.
         if (present(sync)) sync_ = sync
 
+        ! Create logs table.
         rc = db_exec(db, SQL_CREATE_LOGS)
         if (dm_is_error(rc)) return
 
+        ! Create sync logs table.
         if (sync_) then
             rc = db_exec(db, SQL_CREATE_SYNC_LOGS)
             if (dm_is_error(rc)) return
         end if
 
+        ! Create indices.
         do i = 1, size(SQL_CREATE_LOGS_INDICES)
             rc = db_exec(db, trim(SQL_CREATE_LOGS_INDICES(i)))
             if (dm_is_error(rc)) return
@@ -1816,6 +1820,8 @@ contains
         !! Returns log associated with given id as allocatable character in
         !! JSON format in `json_log`. If no log has been found, the string is
         !! empty and the function returns `E_DB_NO_ROWS`.
+        character(len=*), parameter :: QUERY = ' WHERE id = ?'
+
         type(db_type),                 intent(inout) :: db       !! Database type.
         character(len=:), allocatable, intent(out)   :: json_log !! Returned JSON.
         character(len=*),              intent(in)    :: log_id   !! Log id.
@@ -1825,7 +1831,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOG, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // QUERY, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(log_id)) /= SQLITE_OK) exit sql_block

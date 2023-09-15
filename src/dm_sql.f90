@@ -526,19 +526,6 @@ module dm_sql
         'requests.timestamp < ? ' // &
         'ORDER BY requests.timestamp ASC'
 
-    ! Query to select log in JSON format by id.
-    ! Values: logs.id
-    character(len=*), parameter, public :: SQL_SELECT_JSON_LOG = &
-        'SELECT json_object(''id'', id, ''level'', level, ''error'', error, ''timestamp'', timestamp, ' // &
-        '''node_id'', node_id, ''sensor_id'', sensor_id, ''target_id'', target_id, ''observ_id'', observ_id, ' // &
-        '''source'', source, ''message'', message) FROM logs WHERE id = ?'
-
-    ! Query to select all logs in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_LOGS = &
-        'SELECT json_object(''id'', id, ''level'', level, ''error'', error, ''timestamp'', timestamp, ' // &
-        '''node_id'', node_id, ''sensor_id'', sensor_id, ''target_id'', target_id, ''observ_id'', observ_id, ' // &
-        '''source'', source, ''message'', message) FROM logs'
-
     ! Query to select log by id.
     ! Values: logs.id
     character(len=*), parameter, public :: SQL_SELECT_LOG = &
@@ -987,4 +974,13 @@ module dm_sql
     ! Query to select all targets.
     character(len=*), parameter, public :: SQL_SELECT_TARGETS = &
         'SELECT targets.id, targets.name, targets.meta FROM targets ORDER BY targets.id ASC'
+
+    ! ******************************************************************
+    ! JSON SELECT QUERIES.
+    ! ****************************************************************** 
+    ! Query to select all logs in JSON format.
+    character(len=*), parameter, public :: SQL_SELECT_JSON_LOGS = &
+        'SELECT json_object(''id'', id, ''level'', level, ''error'', error, ''timestamp'', timestamp, ' // &
+        '''node_id'', node_id, ''sensor_id'', sensor_id, ''target_id'', target_id, ''observ_id'', observ_id, ' // &
+        '''source'', source, ''message'', message) FROM logs'
 end module dm_sql
