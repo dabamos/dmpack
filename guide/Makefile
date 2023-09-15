@@ -11,7 +11,7 @@ TARGET   = index.html
 all: guide
 
 guide:
-	$(ADOC) -a webfonts! -a stylesheet=$(CSSDIR)/adoc-rubygems.css -D $(GUIDEDIR) $(ADOCDIR)/guide.adoc -o $(TARGET)
+	$(ADOC) -a webfonts! -a stylesheet=$(CSSDIR)/adoc.css -D $(GUIDEDIR) $(ADOCDIR)/guide.adoc -o $(TARGET)
 
 clean:
 	if [ `ls -1 $(GUIDEDIR)/$(TARGET) 2>/dev/null | wc -l` -gt 0 ]; then rm $(GUIDEDIR)/$(TARGET); fi
