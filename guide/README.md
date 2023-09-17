@@ -10,7 +10,7 @@ On FreeBSD, install the packages with:
 Convert the User’s Guide from AsciiDoc to HTML:
 
 ```
-$ asciidoctor -a webfonts! -a stylesheet=../share/adoc-rubygems.css guide.adoc
+$ asciidoctor -a webfonts! -a stylesheet=../share/adoc.css guide.adoc
 ```
 
 Or, run `make guide` in the parent directory.

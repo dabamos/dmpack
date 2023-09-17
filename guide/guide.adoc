@@ -75,15 +75,23 @@ image::schema.png[schema,align="center"]
 There are similar open source projects that provide middleware for autonomous
 sensor networks:
 
+link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
+monitoring and alerting solution built with MariaDB, Node.js and React. (MIT)
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
 SensorThings (FROST) is the reference implementation of the OGC SensorThings API
-in Java. The project provides a HTTP- and MQTT-based message bus for data
+in Java. The project provides an HTTP- and MQTT-based message bus for data
 transmission between client and server. Developed by Fraunhofer-Institut für
 Optronik, Systemtechnik und Bildauswertung (IOSB). (LGPLv3)
 link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
 (GPLv3)
+link:https://github.com/istSOS/istsos2[istSOS]:: A server implementation of the
+OGC Sensor Observation Service in Python, for managing and dispatching
+observations from monitoring sensors. The project also provides a graphical user
+interface and a RESTful web API to automate administration procedures. Developed
+by Istituto Scienze della Terra, University of Applied Sciences and Arts of
+Southern Switzerland. (GPLv2)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
@@ -743,7 +751,7 @@ are supported. Data attributes are passed through command-line arguments.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Z`  | –       | Serial number of sensor (optional).
-| `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `tps`, `gnss`, … (optional).
+| `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `rts`, `gnss`, … (optional).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
 | `--version`         | `-v`  | –       | Output version information and quit.
@@ -781,7 +789,7 @@ sensor.meta: dummy sensor
 
 The *dmexport* program writes beats, logs, nodes, sensors, targets,
 observations, and data points from database to file, in ASCII block, CSV, JSON,
-or JSON Lines format. The ASCII block format is only available for X/Y X/Y data
+or JSON Lines format. The ASCII block format is only available for X/Y data
 points. The types data point, log, and observation require a sensor id, a target
 id, and a time range in ISO 8601 format.
 
@@ -3916,7 +3924,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 2 | `fs`      | File system.
 | 3 | `process` | Process or service.
 | 4 | `meteo`   | Meteorological sensor.
-| 5 | `tps`     | TPS or total station.
+| 5 | `rts`     | Robotic total station.
 | 6 | `gnss`    | GNSS receiver.
 | 7 | `level`   | Level sensor.
 | 8 | `mems`    | MEMS sensor.
