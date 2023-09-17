@@ -18,5 +18,7 @@ man/pdf/
 *.o
 *.pdf
 *.so
+*.sql
+*.sqlite
 *.swp
 *.*~
