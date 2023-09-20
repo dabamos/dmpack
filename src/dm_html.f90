@@ -909,6 +909,7 @@ contains
                H_TH // '#'    // H_TH_END // &
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
+               H_TH // 'Meta' // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(nodes)
@@ -923,7 +924,8 @@ contains
                 html = html // H_TD // dm_html_encode(nodes(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(nodes(i)%name) // H_TD_END // H_TR_END
+            html = html // H_TD // dm_html_encode(nodes(i)%name) // H_TD_END // &
+                           H_TD // dm_html_encode(nodes(i)%meta) // H_TD_END //H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1224,6 +1226,8 @@ contains
                H_TH // 'Node ID' // H_TH_END // &
                H_TH // 'Name'    // H_TH_END // &
                H_TH // 'Type'    // H_TH_END // &
+               H_TH // 'S/N'     // H_TH_END // &
+               H_TH // 'Meta'    // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)
@@ -1243,7 +1247,9 @@ contains
 
             html = html // H_TD // dm_html_encode(sensors(i)%node_id) // H_TD_END // &
                    H_TD // dm_html_encode(sensors(i)%name) // H_TD_END // &
-                   H_TD // trim(SENSOR_TYPE_NAMES(t)) // H_TD_END // H_TR_END
+                   H_TD // trim(SENSOR_TYPE_NAMES(t)) // H_TD_END // &
+                   H_TD // dm_html_encode(sensors(i)%sn) // H_TD_END // &
+                   H_TD // dm_html_encode(sensors(i)%meta) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1291,6 +1297,7 @@ contains
                H_TH // '#'    // H_TH_END // &
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
+               H_TH // 'Meta' // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(targets)
@@ -1305,7 +1312,8 @@ contains
                 html = html // H_TD // dm_html_encode(targets(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(targets(i)%name) // H_TD_END // H_TR_END
+            html = html // H_TD // dm_html_encode(targets(i)%name) // H_TD_END // &
+                           H_TD // dm_html_encode(targets(i)%meta) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
