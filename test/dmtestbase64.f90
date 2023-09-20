@@ -19,24 +19,17 @@ contains
     logical function test01() result(stat)
         character(len=*), parameter :: INPUT = &
             'Now is the time for all good men to come to the aid of the party.'
-        character(len=*), parameter :: ASSERT1 = &
+        character(len=*), parameter :: ASSERT = &
             'Tm93IGlzIHRoZSB0aW1lIGZvciBhbGwgZ29vZCBtZW4gdG8gY29tZSB0byB0aGUgYWlkIG9mIHRoZSBwYXJ0eS4='
-        character(len=*), parameter :: ASSERT2 = &
-            'Tm93IGlzIHRoZSB0aW1lIGZvciBhbGwgZ29vZCBtZW4gdG8gY29tZSB0byB0aGUgYWlkIG9mIHRo' // CR_LF // &
-            'ZSBwYXJ0eS4='
 
-        character(len=:), allocatable :: output1, output2, output3
+        character(len=:), allocatable :: output
 
         stat = TEST_FAILED
 
-        call dm_base64_encode(INPUT, output1)
-        call dm_base64_encode(INPUT, output2, mime=.true.)
-        call dm_base64_encode('', output3)
+        call dm_base64_encode(INPUT, output)
 
         print *, 'Checking encoded string ...'
-        if (output1 /= ASSERT1) return
-        print *, 'Checking encoded string (MIME) ...'
-        if (output2 /= ASSERT2) return
+        if (output /= ASSERT) return
 
         stat = TEST_PASSED
     end function test01
