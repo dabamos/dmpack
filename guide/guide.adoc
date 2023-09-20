@@ -405,6 +405,31 @@ kern.mqueue.maxmsgsize: 16384
 
 The maximum message size has to be at least 16384 bytes.
 
+=== Cron
+
+On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
+usually used to run jobs periodically. For example, in order to update an XML
+feed, or to generate HTML reports, add a schedule of the task to perform to the
+local _crontab(5)_ file.
+
+We can update the cron jobs of the current user with _crontab(1)_:
+
+....
+$ crontab -e
+....
+
+The following _crontab(5)_ file adds a task to generate reports every hour:
+
+[source,crontab]
+....
+SHELL=/bin/sh
+MAILTO=/dev/null
+# Create reports every hour, suppress logging.
+@hourly -q /usr/local/share/dmpack/mkreport.sh
+....
+
+The shell script `mkreport.sh` must have the execution bits set.
+
 == Deformation Monitoring Entities
 
 The data structures used by DMPACK are based on the following entities.
