@@ -22,8 +22,9 @@ contains
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
         character(len=UUID_LEN) :: uuid
-        integer                 :: b(32), i, j
-        real                    :: r(32)
+
+        integer :: b(32), i, j
+        real    :: r(32)
 
         call random_number(r)
 
@@ -41,8 +42,10 @@ contains
         !! Returns UUID4 with hyphens (36 characters long). The PRNG has to be
         !! seeded before the first invocation by calling `dm_init()` once.
         character(len=UUID_FULL_LEN) :: uuid
-        integer                      :: b(32), i, j, k
-        real                         :: r(32)
+
+        integer :: i, j, k
+        integer :: b(32)
+        real    :: r(32)
 
         call random_number(r)
 
@@ -70,7 +73,8 @@ contains
         !! `00000000-0000-0000-0000-000000000000`.
         character(len=UUID_LEN), intent(in) :: uuid
         character(len=UUID_FULL_LEN)        :: str
-        integer                             :: stat
+
+        integer :: stat
 
         write (str, '(a8, "-", 3(a4, "-"), a12)', iostat=stat) &
             uuid(1:8), uuid(9:12), uuid(13:16), uuid(17:20), uuid(21:32)
@@ -79,7 +83,8 @@ contains
     pure elemental logical function dm_uuid4_valid(uuid) result(valid)
         !! Returns `.true.` if given UUID in hex format is a valid UUID4.
         character(len=*), intent(in) :: uuid !! UUID to validate.
-        integer                      :: i
+
+        integer :: i
 
         valid = .false.
 

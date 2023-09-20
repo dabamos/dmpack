@@ -72,6 +72,7 @@ module dmpack
     use :: dm_path
     use :: dm_person
     use :: dm_pipe
+    use :: dm_platform
     use :: dm_plot
     use :: dm_regex
     use :: dm_report

@@ -10,8 +10,6 @@ module dm_system
     implicit none (type, external)
     private
 
-    logical, parameter, public :: SYSTEM_BIG_ENDIAN = (iachar(transfer(1, mold='a')) == 0) !! Big Endian or Little Endian platform.
-
     integer, parameter :: UNAME_LEN = 256
 
     type, public :: uname_type

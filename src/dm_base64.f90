@@ -17,7 +17,7 @@ contains
         !! that is compatible to little endian and big endian alike (and quite
         !! fast, too!).
         character, parameter :: b64(0:63) = &
-            transfer('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', 'A', size=64)
+            transfer('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', 'a', size=64)
 
         character(len=*),              intent(in)  :: input  !! Input string.
         character(len=:), allocatable, intent(out) :: output !! Base64-encoded output string.

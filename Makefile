@@ -162,6 +162,7 @@ GUIDEDIR = ./guide
 # Library source files.
 SRC = src/dm_version.f90 \
       src/dm_kind.f90 \
+      src/dm_platform.f90 \
       src/dm_ascii.f90 \
       src/dm_string.f90 \
       src/dm_type.f90 \
@@ -238,6 +239,7 @@ SRC = src/dm_version.f90 \
 # Library object files.
 OBJ = dm_version.o \
       dm_kind.o \
+      dm_platform.o \
       dm_ascii.o \
       dm_string.o \
       dm_type.o \
@@ -408,6 +410,7 @@ $(TARGET): $(LIBF) $(OBJ)
 $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_version.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_kind.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_platform.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_string.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_type.f90
