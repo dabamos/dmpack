@@ -1599,7 +1599,7 @@ contains
         call dm_html_select_create(select_node,   1 + size(nodes))
         call dm_html_select_create(select_sensor, 1 + size(sensors))
         call dm_html_select_create(select_target, 1 + size(targets))
-        call dm_html_select_create(select_level,  LOG_NLEVEL)
+        call dm_html_select_create(select_level,  1 + LOG_NLEVEL)
         call dm_html_select_create(select_result, size(max_results))
 
         ! Add empty select elements.
@@ -1621,8 +1621,8 @@ contains
             call dm_html_select_set(select_target,  i + 1, targets(i)%name, targets(i)%id)
         end do
 
-        do i = 1, LOG_NLEVEL - 1
-            call dm_html_select_set(select_level, i, LOG_LEVEL_NAMES(i), dm_itoa(i))
+        do i = 1, LOG_NLEVEL
+            call dm_html_select_set(select_level, i + 1, LOG_LEVEL_NAMES(i - 1), dm_itoa(i - 1))
         end do
 
         do i = 1, size(max_results)
