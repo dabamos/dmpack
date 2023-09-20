@@ -30,7 +30,7 @@ program dmsync
         character(len=APP_NAME_LEN)    :: name      = APP_NAME       !! Name of instance/configuration.
         character(len=FILE_PATH_LEN)   :: config    = ' '            !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger    = ' '            !! Name of logger.
-        character(len=SEM_NAME_LEN)    :: wait      = ' '            !! Name of POSIX semaphore to wait for.
+        character(len=SEM_NAME_LEN)    :: wait      = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
         character(len=NODE_ID_LEN)     :: node      = ' '            !! Node id.
         character(len=FILE_PATH_LEN)   :: database  = ' '            !! Path to database.
         character(len=HOST_LEN)        :: host      = ' '            !! IP or FQDN of API.
@@ -94,7 +94,7 @@ program dmsync
             rc = dm_sem_open(sem, app%wait)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open semaphore /' // dm_sem_name(sem), error=rc)
+                call dm_log(LOG_ERROR, 'failed to open semaphore /' // app%wait, error=rc)
                 exit init_block
             end if
         end if
@@ -402,14 +402,14 @@ contains
                 end select
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_WARNING, 'failed to sync with host ' // app%host, error=rc)
+                    call dm_log(LOG_DEBUG, 'failed to sync with host ' // app%host, error=rc)
                 end if
 
                 ! Log the HTTP response code.
                 code_block: &
                 select case (response%code)
                     case (0)
-                        call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // ' failed: ' // &
+                        call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
                                     response%error_message, error=E_RPC_CONNECT)
 
                     case (HTTP_CREATED)
@@ -417,7 +417,7 @@ contains
                                     dm_itoa(int(dm_timer_stop(rpc_timer))) // ' seconds')
 
                     case (HTTP_CONFLICT)
-                        call dm_log(LOG_DEBUG, name // ' ' // trim(id) // ' exists', error=E_EXIST)
+                        call dm_log(LOG_INFO, name // ' ' // trim(id) // ' exists', error=E_EXIST)
 
                     case (HTTP_UNAUTHORIZED)
                         call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)

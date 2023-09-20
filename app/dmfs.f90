@@ -11,7 +11,7 @@ program dmfs
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
-    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
+    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV separator character.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0

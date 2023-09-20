@@ -3,7 +3,7 @@
 #
 #   mkreport.sh - creates monthly reports
 #
-#   A auxiliary shell script that runs dmreport(1) to create a report of the
+#   An auxiliary shell script that runs dmreport(1) to create a report of the
 #   previous and the current month.
 #
 #   Example:

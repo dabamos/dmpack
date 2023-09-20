@@ -59,7 +59,7 @@ message passing is based on POSIX message queues and POSIX semaphores.
 
 Currently, only 64-bit Linux and FreeBSD are supported as operating systems.
 
-* link:https://www.dabamos.de/software/dmpack/[Project Website]
+* link:https://www.dabamos.de/[Project Website]
 * link:https://www.dabamos.de/dmpack/guide/[User’s Guide]
 * link:https://www.dabamos.de/dmpack/doc/[Source Code Documentation]
 * link:https://github.com/dabamos/dmpack[Source Code Repository]
@@ -427,28 +427,30 @@ ordered by index. A request can contain up to 16 _responses_.
 Response:: Floating-point values in the raw response of a _sensor_ can be
 matched by regular expression groups. Each matched group is stored as a
 response. Responses reference a _request_, and are ordered by index. They
-contain name, value, unit, and an additional status flag.
+contain name, value, unit, and an optional error code.
 
 === Log Entities
 
-Log:: Log message of a sensor node, either of level DEBUG, INFO, WARNING, ERROR,
-or CRITICAL, and optionally related to a _sensor_, a _target_, and an
+Log:: Log message of a sensor node, either of level _debug_, _info_, _warning_,
+_error_, or _critical_, and optionally related to a _sensor_, a _target_, or an
 _observation_.
 
 === Beat Entities
 
-Beat:: Short status message (heartbeat) that contains node id, timestamp,
-system uptime, and last connection error.
+Beat:: Short status message (heartbeat, handshake) that contains node id,
+timestamp, system uptime, and last connection error, sent periodically from
+client to server.
 
 === RPC Entities
 
-API Status:: Short key–value response of the HTTP-RPC API server in plain-text
+API Status:: Short key–value response of the HTTP-RPC API service in plain-text
 format.
 
 == Program Overview
 
 DMPACK includes programs for sensor I/O, database management, observation
-processing, and other tasks related to automated control measurements.
+processing, and other tasks related to automated control measurements. The
+programs may be classified into the following categories.
 
 === Databases
 
@@ -616,7 +618,7 @@ $ sqlite3 <database> ".backup '<output>'"
 | `--vacuum`          | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite backup API.
 | `--verbose`         | `-V`  | off     | Print backup progess (not in vacuum mode).
 | `--version`         | `-v`  | –       | Output version information and quit.
-| `--wal`             | `-W`  | off     | Enable WAL mode for backup database.
+| `--wal`             | `-W`  | off     | Enable WAL journal for backup database.
 |===
 
 ==== Examples
@@ -629,11 +631,12 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 
 === dmbeat [[dmbeat]]
 
-The *dmbeat* program is a heartbeat emitter that sends status messages via HTTP
-POST to a remote <<dmapi>> service. The status messages include timestamp,
-system uptime, and last connection error. The server may inspect this data to
-check if a client is still running and has network access. The RPC endpoint is
-expected at `[http|https]://<host>:<port>/api/v1/beat`.
+The *dmbeat* program is a heartbeat emitter that sends
+<<data-beat,status messages>> via HTTP POST to a remote <<dmapi>> service. The
+status messages include timestamp, system uptime, and last connection error.
+The server may inspect this data to check if a client is still running and has
+network access. The RPC endpoint is expected at
+`[http|https]://<host>:<port>/api/v1/beat`.
 
 Passing the server credentials via the command-line arguments `--username` and
 `--password` is insecure on multi-user operating systems and only recommended
@@ -897,8 +900,8 @@ $ dmuuid --hyphens
 19c12109-3e1c-422c-ae36-3ba19281f2e
 ....
 
-Then, write the last 50 log messages in Atom format to file `feed.xml`, include
-a link to the XSLT style sheet `feed.xsl`:
+Then, write the last 50 log messages in Atom format to file `feed.xml`, and
+include a link to the XSLT style sheet `feed.xsl`:
 
 ....
 $ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
@@ -916,8 +919,7 @@ feed. Furthermore, we may translate feed and style sheet into a single HTML
 document `feed.html`, using an arbitrary XSLT processor, for instance:
 
 ....
-$ cd /var/www/
-$ xsltproc --output feed.html feed.xsl feed.xml
+$ xsltproc --output feed.html /var/www/feed.xsl /var/wwwfeed.xml
 ....
 
 === dmfs [[dmfs]]
@@ -1267,8 +1269,8 @@ A synchronisation table is required for observation and log synchronisation with
 an <<dmapi>> server. The argument can be omitted if this functionality is not
 used.
 
-Write-Ahead Logging (WAL) should be enabled for databases with multiple
-readers.
+The journal mode Write-Ahead Logging (WAL) should be enabled for databases with
+multiple readers.
 
 ==== Command-Line Options
 
@@ -3659,7 +3661,7 @@ NODE%META="Description",
 | `path`      | string  | 32   | Path of TTY/PTY device.
 | `priority`  | integer | 4    | Message queue priority (>= 0).
 | `error`     | integer | 4    | Observation <<error-codes,error code>>.
-| `next`      | integer | 4    | Index of receiver list (0 to 16).
+| `next`      | integer | 4    | Cursor of receiver list (0 to 16).
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
@@ -3679,7 +3681,7 @@ NODE%META="Description",
 | `delay`      | integer | 4    | Delay in mseconds to wait after the request.
 | `error`      | integer | 4    | Request <<error-codes,error code>>.
 | `retries`    | integer | 4    | Number of performed retries.
-| `state`      | integer | 4    | Request state.
+| `state`      | integer | 4    | Request state (unused, for future additions).
 | `timeout`    | integer | 4    | Request timeout in mseconds.
 | `nresponses` | integer | 4    | Number of responses (0 to 16).
 | `responses`  | array   | 16{nbsp}×{nbsp}28 | Extracted values from the raw response (16).
@@ -3710,7 +3712,7 @@ NODE%META="Description",
 | 7         | `path`       | Path of TTY/PTY device.
 | 8         | `priority`   | Message queue priority.
 | 9         | `error`      | Error code.
-| 10        | `next`       | Index of receiver list (0 to 16).
+| 10        | `next`       | Cursor of receiver list (0 to 16).
 | 11        | `nreceivers` | Number of receivers (0 to 16).
 | 12        | `nrequests`  | Number of sensor requests (0 to 8).
 | 13 – 28   | `receivers`  | Array of receiver names (16).
@@ -4011,8 +4013,8 @@ TARGET%META="Description",
 
 == Databases
 
-The command-line tool _sqlite3(1)_ is the interactive -line shell for SQLite
-databases that allows the user to execute SQL statements.  The
+The command-line tool _sqlite3(1)_ provides an interactive access to SQLite
+databases and allows the user to execute SQL statements. The
 link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S) is a
 spreadsheet-like graphical interface. They can be used to perform CRUD
 operations on DMPACK databases.

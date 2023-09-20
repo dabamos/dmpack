@@ -227,7 +227,7 @@ contains
                              url      = url)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_WARNING, 'failed to send beat to host ' // app%host, error=rc)
+                call dm_log(LOG_DEBUG, 'failed to send beat to host ' // app%host, error=rc)
             end if
 
             last_error = rc
@@ -235,7 +235,7 @@ contains
             code_block: &
             select case (response%code)
                 case (0)
-                    call dm_log(LOG_DEBUG, 'connection to host ' // trim(app%host) // ' failed: ' // &
+                    call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
                                 response%error_message, error=rc)
 
                 case (HTTP_CREATED)

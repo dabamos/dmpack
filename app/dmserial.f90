@@ -162,8 +162,8 @@ contains
     end function forward_observ
 
     integer function output_observ(observ, type) result(rc)
-        !! Outputs observation to file or _stdout_ if `type` is not
-        !! `OUTPUT_NONE`.
+        !! Outputs observation to file or _stdout_ if `type` is `OUTPUT_STDOUT`
+        !! or `OUTPUT_FILE`.
         type(observ_type), intent(inout) :: observ !! Observation type.
         integer,           intent(in)    :: type   !! Output I/O type.
 
