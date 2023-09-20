@@ -11,9 +11,9 @@ program dmsync
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
-    integer, parameter :: APP_DB_TIMEOUT  = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer, parameter :: APP_SYNC_LIMIT  = 25                 !! Max. number of elements to sync at once.
-    logical, parameter :: APP_RPC_DEFLATE = .true.             !! Compress RPC data.
+    integer,          parameter :: APP_DB_TIMEOUT  = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer(kind=i8), parameter :: APP_SYNC_LIMIT  = 25_i8              !! Max. number of elements to sync at once.
+    logical,          parameter :: APP_RPC_DEFLATE = .true.             !! Compress RPC data.
 
     character(len=*), parameter :: API_ROUTE_LOG    = '/log'     !! Resolves to `/api/v1/log`.
     character(len=*), parameter :: API_ROUTE_OBSERV = '/observ'  !! Resolves to `/api/v1/observ`.
@@ -272,6 +272,7 @@ contains
         character(len=:), allocatable :: name
         integer                       :: delay
         integer                       :: i, j, rc
+        integer(kind=i8)              :: nsyncs
 
         type(api_status_type)        :: api
         type(rpc_request_type)       :: request
@@ -316,7 +317,8 @@ contains
             request%password = trim(app%password)
         end if
 
-        sync_loop: do
+        sync_loop: &
+        do
             if (.not. app%ipc) then
                 ! Start interval timer.
                 call dm_timer_start(sync_timer)
@@ -336,15 +338,15 @@ contains
 
             select case (app%type)
                 case (SYNC_TYPE_LOG)
-                    rc = dm_db_select_sync_logs(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_logs(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
                 case (SYNC_TYPE_NODE)
-                    rc = dm_db_select_sync_nodes(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_nodes(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
                 case (SYNC_TYPE_OBSERV)
-                    rc = dm_db_select_sync_observs(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_observs(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
                 case (SYNC_TYPE_SENSOR)
-                    rc = dm_db_select_sync_sensors(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_sensors(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
                 case (SYNC_TYPE_TARGET)
-                    rc = dm_db_select_sync_targets(db, syncs, limit=int(APP_SYNC_LIMIT, kind=i8))
+                    rc = dm_db_select_sync_targets(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
             end select
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -360,6 +362,7 @@ contains
             end if
 
             ! Send each of the data via RPC to the host.
+            rpc_loop: &
             do i = 1, size(syncs)
                 select case (syncs(i)%type)
                     case (SYNC_TYPE_LOG)
@@ -406,7 +409,7 @@ contains
                 end if
 
                 ! Log the HTTP response code.
-                code_block: &
+                code_select: &
                 select case (response%code)
                     case (0)
                         call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
@@ -435,13 +438,13 @@ contains
                                 call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
                                             ' (HTTP ' // dm_itoa(response%code) // '): ' // &
                                             api%message, error=api%error)
-                                exit code_block
+                                exit code_select
                             end if
                         end if
 
                         call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
                                     dm_itoa(response%code) // ')', error=E_RPC_API)
-                end select code_block
+                end select code_select
 
                 ! Update sync data.
                 syncs(i)%timestamp = dm_time_now()          ! Last sync attempt.
@@ -450,7 +453,8 @@ contains
 
                 ! Insert or replace the sync data in database. If the database
                 ! is busy, try up to 10 times.
-                db_loop: do j = 1, 10
+                db_loop: &
+                do j = 1, 10
                     rc = dm_db_insert_sync(db, syncs(i))
 
                     if (dm_is_error(rc)) then
@@ -470,7 +474,10 @@ contains
 
                     exit
                 end do db_loop
-            end do
+            end do rpc_loop
+
+            ! Synchronise pending data.
+            if (nsyncs > APP_SYNC_LIMIT) cycle sync_loop
 
             if (.not. app%ipc) then
                 ! Sleep for the given interval in seconds.

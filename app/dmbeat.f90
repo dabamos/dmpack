@@ -232,7 +232,7 @@ contains
 
             last_error = rc
 
-            code_block: &
+            code_select: &
             select case (response%code)
                 case (0)
                     call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
@@ -257,13 +257,13 @@ contains
                             call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
                                         ' (HTTP ' // dm_itoa(response%code) // '): ' // &
                                         api%message, error=api%error)
-                            exit code_block
+                            exit code_select
                         end if
                     end if
 
                     call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
                                 dm_itoa(response%code) // ')', error=E_RPC_API)
-            end select code_block
+            end select code_select
 
             if (app%count > 0) then
                 i = i + 1
