@@ -489,7 +489,9 @@ contains
                             call dm_db_sleep(APP_DB_TIMEOUT)
 
                             cycle db_loop
-                        else
+                        end if
+
+                        if (dm_is_error(rc)) then
                             call dm_log(LOG_ERROR, 'failed to update sync status: ' // dm_db_error_message(db), error=rc)
                         end if
 
