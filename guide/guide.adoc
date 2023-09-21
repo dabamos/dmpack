@@ -412,10 +412,10 @@ usually used to run jobs periodically. For example, in order to update an XML
 feed, or to generate HTML reports, add a schedule of the task to perform to the
 local _crontab(5)_ file.
 
-We can update the cron jobs of the current user with _crontab(1)_:
+We can edit the cron jobs of user `www` with _crontab(1)_:
 
 ....
-$ crontab -e
+# crontab -u www -e
 ....
 
 The following _crontab(5)_ file adds a task to generate reports every hour:
@@ -428,7 +428,8 @@ MAILTO=/dev/null
 @hourly -q /usr/local/share/dmpack/mkreport.sh
 ....
 
-The shell script `mkreport.sh` must have the execution bits set.
+The shell script `mkreport.sh` must have the execution bits set. Update the
+script to your configuration.
 
 == Deformation Monitoring Entities
 
@@ -944,7 +945,7 @@ feed. Furthermore, we may translate feed and style sheet into a single HTML
 document `feed.html`, using an arbitrary XSLT processor, for instance:
 
 ....
-$ xsltproc --output feed.html /var/www/feed.xsl /var/wwwfeed.xml
+$ xsltproc --output feed.html /var/www/feed.xsl /var/www/feed.xml
 ....
 
 === dmfs [[dmfs]]
@@ -1868,7 +1869,7 @@ $ sh /usr/local/share/dmpack/mkreport.sh
 ....
 
 To run the report generation periodically, simply add the script to your
-_crontab(1)_.
+<<Cron,crontab>>.
 
 === dmsend [[dmsend]]
 

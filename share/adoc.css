@@ -120,7 +120,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 
 html, body { font-size: 100%; }
 
-body { background: #e5e5e5; color: #222222; padding: 0; margin: 0; font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif; font-weight: normal; font-style: normal; line-height: 1; position: relative; cursor: auto; }
+body { background: #e5e5e5; color: #222222; padding: 0; margin: 0; font-family: 'Open Sans', sans-serif; font-weight: normal; font-style: normal; line-height: 1; position: relative; cursor: auto; }
 
 a:hover { cursor: pointer; }
 
@@ -169,11 +169,11 @@ a:hover, a:focus { color: #ea0011; }
 a img { border: none; }
 
 /* Default paragraph styles */
-p { font-family: "Helvetica Neue", Helvetica, "Liberation Sans", Arial, sans-serif; font-weight: normal; font-size: 0.9375em; line-height: 1.4; margin-bottom: 1.375em; text-rendering: optimizeLegibility; }
+p { font-family: 'Open Sans', sans-serif; font-weight: normal; font-size: 0.9375em; line-height: 1.4; margin-bottom: 1.375em; text-rendering: optimizeLegibility; }
 p aside { font-size: 0.875em; line-height: 1.35; font-style: italic; }
 
 /* Default header styles */
-h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { font-family: Overpass, "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: normal; font-style: normal; color: black; text-rendering: optimizeLegibility; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2125em; }
+h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { font-family: Overpass, 'Open Sans', sans-serif; font-weight: normal; font-style: normal; color: black; text-rendering: optimizeLegibility; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2125em; }
 h1 small, h2 small, h3 small, #toctitle small, .sidebarblock > .content > .title small, h4 small, h5 small, h6 small { font-size: 60%; color: #4d4d4d; line-height: 0; }
 
 h1 { font-size: 2.125em; }
@@ -197,12 +197,14 @@ strong, b { font-weight: bold; line-height: inherit; }
 
 small { font-size: 60%; line-height: inherit; }
 
-code { font-family: Menlo, Monaco, "Liberation Mono", Consolas, monospace; font-weight: normal; color: #3b3b3b; }
+code { font-family: 'Berkeley Mono', 'IBM Plex Mono', "Liberation Mono", monospace; font-weight: normal; color: #3b3b3b; }
 
 /* Lists */
-ul, ol, dl { font-size: 0.9375em; line-height: 1.4; margin-bottom: 1.375em; list-style-position: outside; font-family: "Helvetica Neue", Helvetica, "Liberation Sans", Arial, sans-serif; }
+ul, ol, dl { line-height: 1.4; margin-bottom: 1.375em; list-style-position: outside; font-family: 'Open Sans', sans-serif; }
 
 ul, ol { margin-left: 1.625em; }
+
+dl dt { font-size: 0.9375em; }
 
 /* Unordered Lists */
 ul li ul, ul li ol { margin-left: 1.25em; margin-bottom: 0; font-size: 1em; /* Override nested font-size change */ }
@@ -280,7 +282,7 @@ a:hover, a:focus { text-decoration: underline; }
 
 *:not(pre) > code { font-size: 0.9375em; padding: 1px 4px; white-space: nowrap; background-color: #f5f5f5; border: 1px solid #d4d9d9; -webkit-border-radius: 0; border-radius: 0; text-shadow: none; }
 
-pre, pre > code { line-height: 1.6; color: #3b3b3b; font-family: Menlo, Monaco, "Liberation Mono", Consolas, monospace; font-weight: normal; }
+pre, pre > code { line-height: 1.6; color: #3b3b3b; font-family: 'Berkeley Mono', 'IBM Plex Mono', "Liberation Mono", monospace; font-weight: normal; }
 
 kbd.keyseq { color: #737373; }
 
@@ -328,9 +330,9 @@ kbd kbd:last-child { margin-right: 0; }
 #content #toc > :last-child { margin-bottom: 0; }
 #content #toc a { text-decoration: none; }
 
-#content #toctitle { font-weight: bold; font-family: "Helvetica Neue", Helvetica, "Liberation Sans", Arial, sans-serif; font-size: 1em; padding-left: 0.125em; }
+#content #toctitle { font-weight: bold; font-family: 'Open Sans', sans-serif; font-size: 1em; padding-left: 0.125em; }
 
-#footer { max-width: 100%; background-color: white; padding: 1.25em; }
+#footer { padding-bottom: 1.25em; padding-top: 1.25em; }
 
 #footer-text { color: #666666; line-height: 1.26; }
 
@@ -622,7 +624,7 @@ span.icon > [class^="icon-"], span.icon > [class*=" icon-"] { cursor: default; }
 .conum:after { content: attr(data-value); }
 .conum:not([data-value]):empty { display: none; }
 
-#header, #content, #footnotes { background: white; padding-left: 2.5em; padding-right: 2.5em; }
+#header, #content, #footnotes, #footer { background: white; padding-left: 2.5em; padding-right: 2.5em; }
 
 #header { margin-bottom: 0; }
 #header > h1 { border-bottom: none; }
