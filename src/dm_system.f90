@@ -6,7 +6,6 @@ module dm_system
     use :: unix
     use :: dm_error
     use :: dm_kind
-    use :: dm_time
     implicit none (type, external)
     private
 

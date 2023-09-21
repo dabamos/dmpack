@@ -4989,17 +4989,19 @@ contains
     end function db_select_sync
 
     integer function db_select_syncs(db, type, count_query, query, syncs, nsyncs, limit) result(rc)
-        !! Returns synchronisation data.
+        !! Returns synchronisation data. The number of sync records `nsyncs` may
+        !! be greater than `limit`. However, the size of array `syncs` is always
+        !! less equal than `limit`.
         type(db_type),                intent(inout)        :: db          !! Database type.
         integer,                      intent(in)           :: type        !! Sync data type.
         character(len=*),             intent(in)           :: count_query !! Select count query.
         character(len=*),             intent(in)           :: query       !! Select query.
         type(sync_type), allocatable, intent(out)          :: syncs(:)    !! Returned sync data.
-        integer(kind=i8),             intent(out)          :: nsyncs      !! Array size.
+        integer(kind=i8),             intent(out)          :: nsyncs      !! Total number of sync records.
         integer(kind=i8),             intent(in), optional :: limit       !! Max. number of rows to fetch.
 
         integer          :: stat
-        integer(kind=i8) :: i, n
+        integer(kind=i8) :: i
         type(c_ptr)      :: stmt
 
         nsyncs = 0_i8
@@ -5020,32 +5022,36 @@ contains
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
+            nsyncs = sqlite3_column_int64(stmt, 0)
 
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            allocate (syncs(n), stat=stat)
+            allocate (syncs(nsyncs), stat=stat)
             if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
-            if (n == 0) exit sql_block
+            if (nsyncs == 0) exit sql_block
 
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, trim(query) // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+            if (present(limit)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, trim(query) // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            if (sqlite3_bind_int64(stmt, 1, n) /= SQLITE_OK) exit sql_block
+                rc = E_DB_BIND
+                if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, trim(query), stmt) /= SQLITE_OK) exit sql_block
+            end if
 
-            do i = 1, n
+            do i = 1, nsyncs
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, syncs(i))
                 syncs(i)%type = type
+                if (dm_is_error(rc)) exit
             end do
-
-            nsyncs = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
