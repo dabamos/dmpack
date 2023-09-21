@@ -347,15 +347,15 @@ contains
             ! pending for synchronisation.
             select case (app%type)
                 case (SYNC_TYPE_LOG)
-                    rc = dm_db_select_sync_logs(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
+                    rc = dm_db_select_sync_logs(db, syncs, nsyncs, APP_SYNC_LIMIT)
                 case (SYNC_TYPE_NODE)
-                    rc = dm_db_select_sync_nodes(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
+                    rc = dm_db_select_sync_nodes(db, syncs, nsyncs, APP_SYNC_LIMIT)
                 case (SYNC_TYPE_OBSERV)
-                    rc = dm_db_select_sync_observs(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
+                    rc = dm_db_select_sync_observs(db, syncs, nsyncs, APP_SYNC_LIMIT)
                 case (SYNC_TYPE_SENSOR)
-                    rc = dm_db_select_sync_sensors(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
+                    rc = dm_db_select_sync_sensors(db, syncs, nsyncs, APP_SYNC_LIMIT)
                 case (SYNC_TYPE_TARGET)
-                    rc = dm_db_select_sync_targets(db, syncs, nsyncs=nsyncs, limit=APP_SYNC_LIMIT)
+                    rc = dm_db_select_sync_targets(db, syncs, nsyncs, APP_SYNC_LIMIT)
             end select
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -399,20 +399,20 @@ contains
                 ! Send log to HTTP-RPC API. Reuse the RPC request.
                 select case (syncs(i)%type)
                     case (SYNC_TYPE_LOG)
-                        rc = dm_rpc_send(request, response, log)
                         id = log%id
+                        rc = dm_rpc_send(request, response, log)
                     case (SYNC_TYPE_NODE)
-                        rc = dm_rpc_send(request, response, node)
                         id = node%id
+                        rc = dm_rpc_send(request, response, node)
                     case (SYNC_TYPE_OBSERV)
-                        rc = dm_rpc_send(request, response, observ)
                         id = observ%id
+                        rc = dm_rpc_send(request, response, observ)
                     case (SYNC_TYPE_SENSOR)
-                        rc = dm_rpc_send(request, response, sensor)
                         id = sensor%id
+                        rc = dm_rpc_send(request, response, sensor)
                     case (SYNC_TYPE_TARGET)
-                        rc = dm_rpc_send(request, response, target)
                         id = target%id
+                        rc = dm_rpc_send(request, response, target)
                 end select
 
                 if (dm_is_error(rc)) then
@@ -479,23 +479,19 @@ contains
                     ! Try to insert sync data.
                     rc = dm_db_insert_sync(db, syncs(i))
 
+                    if (rc == E_DB_BUSY) then
+                        ! Re-try database insert.
+                        call dm_log(LOG_WARNING, 'database busy (attempt ' // dm_itoa(i) // ' of 10)', error=rc)
+                        call dm_db_sleep(APP_DB_TIMEOUT)
+
+                        cycle db_loop
+                    end if
+
                     if (dm_is_error(rc)) then
-                        ! Get more precise database error code.
-                        rc = dm_db_error(db)
-
-                        if (rc == E_DB_BUSY) then
-                            ! Re-try database insert.
-                            call dm_log(LOG_WARNING, 'database busy (attempt ' // dm_itoa(i) // ' of 10)', error=rc)
-                            call dm_db_sleep(APP_DB_TIMEOUT)
-
-                            cycle db_loop
-                        end if
-
-                        if (dm_is_error(rc)) then
-                            call dm_log(LOG_ERROR, 'failed to update sync status: ' // dm_db_error_message(db), error=rc)
-                        end if
-
+                        call dm_log(LOG_ERROR, 'failed to update sync status: ' // dm_db_error_message(db), error=dm_db_error(db))
                         if (j == 10) call dm_log(LOG_INFO, 'sync database update aborted')
+
+                        cycle db_loop
                     end if
 
                     exit

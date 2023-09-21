@@ -3,6 +3,7 @@
 module dm_sync
     !! Module for keeping track of observation and log data synchronisation
     !! status.
+    use :: dm_kind
     use :: dm_observ
     use :: dm_string
     use :: dm_time
@@ -44,6 +45,7 @@ module dm_sync
 
     public :: dm_sync_equals
     public :: dm_sync_name
+    public :: dm_sync_out
     public :: dm_sync_type_from_name
     public :: dm_sync_valid
 contains
@@ -106,4 +108,21 @@ contains
         if (type >= 0 .and. type < SYNC_NTYPES) type_ = type
         name = trim(SYNC_TYPE_NAMES(type_))
     end function dm_sync_name
+
+    subroutine dm_sync_out(sync, unit)
+        !! Prints sync type to standard output or given file unit.
+        type(sync_type), intent(inout)        :: sync !! Sync type.
+        integer,         intent(in), optional :: unit !! File unit.
+
+        integer :: unit_
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        write (unit_, '("sync.type: ", a)')       dm_sync_name(sync%type)
+        write (unit_, '("sync.id: ", a)')         trim(sync%id)
+        write (unit_, '("sync.timestamp: ", a)')  sync%timestamp
+        write (unit_, '("sync.code: ", i0)')      sync%code
+        write (unit_, '("sync.nattempts: ", i0)') sync%code
+    end subroutine dm_sync_out
 end module dm_sync
