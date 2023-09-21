@@ -128,8 +128,8 @@ contains
 
     subroutine dm_sensor_out(sensor, unit)
         !! Prints sensor to standard output or given file unit.
-        type(sensor_type), intent(inout)        :: sensor
-        integer,           intent(in), optional :: unit
+        type(sensor_type), intent(inout)        :: sensor !! Sensor type.
+        integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_
 

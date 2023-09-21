@@ -13,7 +13,7 @@ module dm_sync
 
     integer, parameter, public :: SYNC_ID_LEN = UUID_LEN !! Synchronisation id length (must equal UUID4 length).
 
-    integer, parameter, public :: SYNC_TYPE_NONE   = 0 !! No type.
+    integer, parameter, public :: SYNC_TYPE_NONE   = 0 !! No type (invalid).
     integer, parameter, public :: SYNC_TYPE_NODE   = 1 !! Node.
     integer, parameter, public :: SYNC_TYPE_SENSOR = 2 !! Sensor.
     integer, parameter, public :: SYNC_TYPE_TARGET = 3 !! Target.

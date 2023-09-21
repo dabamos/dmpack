@@ -11,15 +11,16 @@ program dmsync
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
-    integer,          parameter :: APP_DB_TIMEOUT  = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer(kind=i8), parameter :: APP_SYNC_LIMIT  = 25_i8              !! Max. number of records to sync at once.
-    logical,          parameter :: APP_RPC_DEFLATE = .true.             !! Compress RPC payload.
+    integer,          parameter :: APP_DB_NATTEMPTS = 10                 !! Max. number of database insert attempts.
+    integer,          parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer(kind=i8), parameter :: APP_SYNC_LIMIT   = 25_i8              !! Max. number of records to sync at once.
+    logical,          parameter :: APP_RPC_DEFLATE  = .true.             !! Compress RPC payload.
 
-    character(len=*), parameter :: API_ROUTE_LOG    = '/log'     !! Resolves to `/api/v1/log`.
-    character(len=*), parameter :: API_ROUTE_OBSERV = '/observ'  !! Resolves to `/api/v1/observ`.
-    character(len=*), parameter :: API_ROUTE_NODE   = '/node'    !! Resolves to `/api/v1/node`.
-    character(len=*), parameter :: API_ROUTE_SENSOR = '/sensor'  !! Resolves to `/api/v1/sensor`.
-    character(len=*), parameter :: API_ROUTE_TARGET = '/target'  !! Resolves to `/api/v1/target`.
+    character(len=*), parameter :: API_ROUTE_LOG    = '/log'             !! Resolves to `/api/v1/log`.
+    character(len=*), parameter :: API_ROUTE_OBSERV = '/observ'          !! Resolves to `/api/v1/observ`.
+    character(len=*), parameter :: API_ROUTE_NODE   = '/node'            !! Resolves to `/api/v1/node`.
+    character(len=*), parameter :: API_ROUTE_SENSOR = '/sensor'          !! Resolves to `/api/v1/sensor`.
+    character(len=*), parameter :: API_ROUTE_TARGET = '/target'          !! Resolves to `/api/v1/target`.
 
     integer, parameter :: HOST_LEN      = 80
     integer, parameter :: USERNAME_LEN  = 32
@@ -344,7 +345,7 @@ contains
 
             ! Fetch sync records up to the limit `APP_SYNC_LIMIT`. Argument
             ! `nsyncs` will store the total number of records in database
-            ! pending for synchronisation.
+            ! pending for synchronisation, and may be greater than the limit.
             select case (app%type)
                 case (SYNC_TYPE_LOG)
                     rc = dm_db_select_sync_logs(db, syncs, nsyncs, APP_SYNC_LIMIT)
@@ -365,8 +366,9 @@ contains
             end if
 
             if (size(syncs) > 0) then
-                call dm_log(LOG_DEBUG, 'syncing ' // dm_itoa(size(syncs)) // ' ' // name // &
-                            's from database ' // trim(app%database) // ' with host ' // app%host)
+                call dm_log(LOG_DEBUG, 'syncing ' // dm_itoa(size(syncs)) // ' of ' // &
+                            dm_itoa(nsyncs) // ' ' // name // 's from database ' // &
+                            trim(app%database) // ' with host ' // app%host)
             else
                 call dm_log(LOG_DEBUG, 'no ' // name // 's to sync found')
             end if
@@ -473,25 +475,29 @@ contains
                 syncs(i)%nattempts = syncs(i)%nattempts + 1 ! Number of sync attempts.
 
                 ! Insert or replace the sync data in database. If the database
-                ! is busy, try up to 10 times, then abort.
+                ! is busy, try up to `APP_DB_NATTEMPTS` times, then abort.
                 db_loop: &
-                do j = 1, 10
+                do j = 1, APP_DB_NATTEMPTS
                     ! Try to insert sync data.
                     rc = dm_db_insert_sync(db, syncs(i))
 
+                    ! Re-try insert if database is busy.
                     if (rc == E_DB_BUSY) then
-                        ! Re-try database insert.
-                        call dm_log(LOG_WARNING, 'database busy (attempt ' // dm_itoa(i) // ' of 10)', error=rc)
-                        call dm_db_sleep(APP_DB_TIMEOUT)
+                        call dm_log(LOG_WARNING, 'database busy (attempt ' // dm_itoa(i) // &
+                                    ' of ' // dm_itoa(APP_DB_NATTEMPTS) // ')', error=rc)
+
+                        if (j < APP_DB_NATTEMPTS) then
+                            call dm_db_sleep(APP_DB_TIMEOUT)
+                        else
+                            call dm_log(LOG_INFO, 'sync database update aborted')
+                        end if
 
                         cycle db_loop
                     end if
 
                     if (dm_is_error(rc)) then
-                        call dm_log(LOG_ERROR, 'failed to update sync status: ' // dm_db_error_message(db), error=dm_db_error(db))
-                        if (j == 10) call dm_log(LOG_INFO, 'sync database update aborted')
-
-                        cycle db_loop
+                        call dm_log(LOG_ERROR, 'failed to update sync status: ' // &
+                                    dm_db_error_message(db), error=rc)
                     end if
 
                     exit
