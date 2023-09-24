@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_rpc
     !! Abstraction layer for Remote Procedure Calls (RPCs) over HTTP,
-    !! using cURL.
+    !! using libcurl.
     !!
     !! To send an observation to an HTTP-RPC API on `localhost`:
     !!
@@ -303,7 +303,7 @@ contains
         type(rpc_request_type),          intent(in)  :: request  !! Request type.
         type(rpc_response_type), target, intent(out) :: response !! Response type.
 
-        integer     :: ec, er ! cURL errors.
+        integer     :: er, stat ! cURL errors.
         type(c_ptr) :: curl_ptr, list_ptr
 
         rc = E_IO
@@ -437,13 +437,13 @@ contains
 
         if (rc /= E_INVALID) then
             ! Get HTTP response code.
-            ec = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
+            stat = curl_easy_getinfo(curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
 
             ! Get connection info.
-            ec = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
+            stat = curl_easy_getinfo(curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
 
             ! Get transmission time.
-            ec = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
+            stat = curl_easy_getinfo(curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
         end if
 
         ! Set error code and message.

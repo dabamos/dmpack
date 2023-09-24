@@ -1171,7 +1171,7 @@ configuration file.
 | `--config _file_`       | `-c`  | –         | Path to configuration file.
 | `--database _file_`     | `-d`  | –         | Path to SQLite observation database.
 | `--font _name_`         | `-A`  | –         | Font name or file name (for example, `Open Sans`, `arial.ttf`, `monospace`).
-| `--foreground _color_`  | `-P`  | –         | Foreground colour (for example, `#ff0000` or `red`).
+| `--foreground _color_`  | `-P`  | '#3b4cc0' | Foreground colour (for example, `#ff0000` or `red`).
 | `--from _timestamp_`    | `-B`  | –         | Start of time range in ISO 8601.
 | `--height _n_`          | `-H`  | 400       | Plot height.
 | `--help`                | `-h`  | –         | Output available command-line arguments and quit.

@@ -4991,7 +4991,7 @@ contains
     integer function db_select_syncs(db, type, count_query, query, syncs, nsyncs, limit) result(rc)
         !! Returns synchronisation data. The number of sync records `nsyncs` may
         !! be greater than `limit`. However, the size of array `syncs` is always
-        !! less equal than `limit`.
+        !! less-equal `limit`.
         type(db_type),                intent(inout)        :: db          !! Database type.
         integer,                      intent(in)           :: type        !! Sync data type.
         character(len=*),             intent(in)           :: count_query !! Select count query.

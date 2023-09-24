@@ -141,8 +141,8 @@ module dm_html
 
     type, public :: anchor_type
         !! HTML anchor type.
-        character(len=256) :: link
-        character(len=256) :: text
+        character(len=256) :: link = ' ' !! URL.
+        character(len=256) :: text = ' ' !! Link text.
     end type anchor_type
 
     type, public :: select_type
