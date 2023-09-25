@@ -164,15 +164,17 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but neither includes raster graphic terminals).  To
-generate the man pages and the User’s Guide, install Pygments and AsciiDoctor:
+does not depend on X11 (but neither includes raster graphic terminals).
+
+Optionally, install Pygments and AsciiDoctor to generate the man pages and the
+User’s Guide:
 
 ....
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ....
 
 Then, clone the repository recursively. Run the provided POSIX Makefile to build
-the source:
+from source:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -199,14 +201,15 @@ been compiled with GNU Fortran.
 .Default paths on FreeBSD
 [%autowidth]
 |===
-| Path                       | Description
+| Path                         | Description
 
-| `/usr/local/bin/`          | DMPACK programs.
-| `/usr/local/etc/dmpack/`   | DMPACK configuration files.
-| `/usr/local/lib/dmpack/`   | DMPACK libraries and module files.
-| `/usr/local/share/dmpack/` | DMPACK examples, scripts, style sheets.
-| `/var/dmpack/`             | DMPACK databases.
-| `/var/www/`                | WWW root directory.
+| `/usr/local/bin/`            | DMPACK programs.
+| `/usr/local/etc/dmpack/`     | DMPACK configuration files.
+| `/usr/local/include/dmpack/` | DMPACK module files.
+| `/usr/local/lib/dmpack/`     | DMPACK libraries.
+| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
+| `/var/dmpack/`               | DMPACK databases.
+| `/var/www/`                  | WWW root directory.
 |===
 
 === Linux
@@ -250,8 +253,8 @@ $ sudo make install PREFIX=/opt
 
 == System Configuration
 
-Additional changes to the system should be considered to prevent issues while
-conducting a long-term monitoring.
+Additional changes to the system configuration should be considered to prevent
+issues while conducting a long-term monitoring.
 
 === Time Zone
 
@@ -431,7 +434,7 @@ MAILTO=/dev/null
 The shell script `mkreport.sh` must have the execution bits set. Update the
 script to your configuration.
 
-== Deformation Monitoring Entities
+== Deformation Monitoring Entities [[entities]]
 
 The data structures used by DMPACK are based on the following entities.
 
@@ -775,7 +778,7 @@ are supported. Data attributes are passed through command-line arguments.
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
-| `--meta _name_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
+| `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
@@ -2074,11 +2077,20 @@ server. It is recommended to run _lighttpd(1)_. Any other server must be able to
 pass environment variables to the CGI application. _gnuplot(1)_ is required for
 the plotting backend (no-X11 flavour is sufficient).
 
-The web application allows the user to:
+The web application provides the following pages:
 
-* add and view nodes, sensors, targets;
-* view observations, logs, heartbeats;
-* plot observations.
+Dashboard:: Lists the observations, logs, and heartbeats that have been added to
+the databases most recently.
+Nodes:: Lists all sensor nodes, and allows to add new ones.
+Sensors:: Lists all sensors, and allows to add new ones.
+Targets:: Lists all targets, and allows to add new ones.
+Observations:: Lists observations in database, selected by filter.
+Plots:: Creates plots in SVG format from observation responses in database.
+Logs:: Lists log messages stored in database, with optional filter.
+Beats:: Lists received heartbeat messages, sorted by node id. The beat view
+shows the time the heartbeat was sent and received, as well as the time passed
+since then, additionally in
+link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time].
 
 The style sheet of *dmweb* is based on link:http://classless.de/[Classless.css].
 It may be replaced with any other
@@ -4039,14 +4051,37 @@ TARGET%META="Description",
 
 == Databases
 
-The command-line tool _sqlite3(1)_ provides an interactive access to SQLite
-databases and allows the user to execute SQL statements. The
-link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S) is a
-spreadsheet-like graphical interface. They can be used to perform CRUD
-operations on DMPACK databases.
+The DMPACK programs use three distinct databases to store
+<<entities,deformation monitoring entity>> records:
 
-For example, to write the schemas of an observation database to `schema.sql`,
-run:
+Observation Database:: Stores nodes, sensors, targets, observations, observation
+receivers, observation requests, and observation responses, with optional
+synchronisation tables for all record types.
+Log Database:: Stores all log messages in single table.
+Heartbeat Database:: Stores heartbeat messages by unique node id. Records are added
+via the SQL query `REPLACE INTO`.
+
+The databases are usually located in directory `/var/dmpack/`.
+
+=== Administration
+
+The _sqlite3(1)_ program is stand-alone command-line shell for SQLite database
+access that allows the user to execute arbitrary SQL statements. Third-party
+programs provide an additional graphical user interface:
+
+link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S):: A
+spreadsheet-like graphical interface for Linux, Unix, macOS, and Windows.
+(MPLv2, GPLv3)
+link:https://www.heidisql.com/[HeidiSQL]:: A free database administration tool
+for MariaDB, MySQL, MS SQL Server, PostgreSQL, and SQLite. For Windows only.
+(GPLv2)
+link:https://www.phpliteadmin.org/[phpLiteAdmin]:: A web front-end for SQLite
+database administration, written in PHP. (GPLv3)
+
+=== Examples
+
+Write all schemas of an observation database to file `schema.sql`, using the
+_sqlite3(1)_ command-line tool:
 
 ....
 $ sqlite3 /var/dmpack/observ.sqlite ".schema" > schema.sql
@@ -4063,10 +4098,6 @@ Dump only table `logs` of a log database:
 ....
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
-
-.DMPACK observation database in DB4S
-[#img-sqlitebrowser]
-image::sqlitebrowser.png[sqlitebrowser,align="center"]
 
 === Schemas
 
