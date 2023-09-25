@@ -41,7 +41,7 @@ program dmrecv
         logical                          :: verbose     = .false.     !! Print debug messages to stderr.
     end type app_type
 
-    integer           :: rc, type
+    integer           :: rc
     type(app_type)    :: app
     type(mqueue_type) :: mqueue
 
@@ -261,7 +261,7 @@ contains
 
         fu = stdout
         is_file = .false.
-        if (len_trim(app%output) > 0) is_file = .true.
+        if (len_trim(app%output) > 0 .or. app%output == '-') is_file = .true.
 
         ipc_loop: do
             ! Read log or observation from POSIX message queue.

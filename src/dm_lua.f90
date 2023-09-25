@@ -25,7 +25,7 @@ module dm_lua
     abstract interface
         ! int *lua_CFunction(lua_State *L)
         function dm_lua_callback(ptr) bind(c)
-            !! Abstract Lua callback function.
+            !! C-interoperable Lua callback function.
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: ptr

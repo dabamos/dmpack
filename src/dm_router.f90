@@ -14,7 +14,7 @@ module dm_router
 
     abstract interface
         subroutine dm_router_callback(env)
-            !! Callback routine to be invoked by router.
+            !! Route callback routine to be invoked by router.
             import :: cgi_env_type
             implicit none
             type(cgi_env_type), intent(inout) :: env !! CGI environment variables.

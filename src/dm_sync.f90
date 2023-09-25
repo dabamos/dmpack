@@ -1,8 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_sync
-    !! Module for keeping track of observation and log data synchronisation
-    !! status.
+    !! Module for keeping track of data record synchronisation status.
     use :: dm_kind
     use :: dm_observ
     use :: dm_string

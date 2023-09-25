@@ -289,7 +289,7 @@ contains
         rc = E_NONE
     end function dm_time_to_unix
 
-    pure logical function dm_time_valid(time) result(valid)
+    pure elemental logical function dm_time_valid(time) result(valid)
         !! Returns `.true.` if given timestamp follows the form of ISO 8601. The
         !! timestamp does not have to be complete to be valid. The minimum
         !! length of a timestamp to be valid is 4.

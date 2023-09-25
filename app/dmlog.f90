@@ -76,7 +76,7 @@ contains
 
         rc = E_INVALID
 
-        if (log%level < LOG_DEBUG .or. log%level > LOG_CRITICAL) then
+        if (.not. dm_log_valid(log%level)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if

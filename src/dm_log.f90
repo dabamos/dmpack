@@ -15,18 +15,18 @@ module dm_log
     private
 
     ! Log level.
-    integer, parameter, public :: LOG_NONE     = 0
-    integer, parameter, public :: LOG_DEBUG    = 1
-    integer, parameter, public :: LOG_INFO     = 2
-    integer, parameter, public :: LOG_WARNING  = 3
-    integer, parameter, public :: LOG_ERROR    = 4
-    integer, parameter, public :: LOG_CRITICAL = 5
-    integer, parameter, public :: LOG_NLEVEL   = 6
+    integer, parameter, public :: LOG_NONE     = 0 !! Invalid log level, not used by DMPACK.
+    integer, parameter, public :: LOG_DEBUG    = 1 !! For debugging purposes.
+    integer, parameter, public :: LOG_INFO     = 2 !! For information regarding normal system behaviour.
+    integer, parameter, public :: LOG_WARNING  = 3 !! For events requiring the attention of the system operator.
+    integer, parameter, public :: LOG_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
+    integer, parameter, public :: LOG_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
+    integer, parameter, public :: LOG_NLEVEL   = 6 !! Number of log level.
 
     ! Log parameters.
-    integer, parameter, public :: LOG_ID_LEN      = ID_LEN
-    integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN
-    integer, parameter, public :: LOG_MESSAGE_LEN = 512
+    integer, parameter, public :: LOG_ID_LEN      = UUID_LEN !! Max. log id length.
+    integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN   !! Max. log source length.
+    integer, parameter, public :: LOG_MESSAGE_LEN = 512      !! Max. log message length.
 
     character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LOG_NLEVEL - 1) = [ &
         character(len=8) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' ] !! Log level strings.
@@ -47,6 +47,12 @@ module dm_log
 
     integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Log type size in bytes.
 
+    interface dm_log_valid
+        !! Generic log validation function.
+        module procedure :: dm_log_valid_level
+        module procedure :: dm_log_valid_log
+    end interface
+
     interface operator (==)
         !! Returns whether logs are equal.
         module procedure :: dm_log_equals
@@ -57,7 +63,13 @@ module dm_log
     public :: dm_log_equals
     public :: dm_log_out
     public :: dm_log_valid
+
+    private :: dm_log_valid_level
+    private :: dm_log_valid_log
 contains
+    ! ******************************************************************
+    ! PUBLIC PROCEDURES.
+    ! ******************************************************************
     pure elemental logical function dm_log_equals(log1, log2) result(equals)
         !! Returns `.true.` if given logs are equal.
         type(log_type), intent(in) :: log1 !! The first log.
@@ -78,21 +90,6 @@ contains
 
         equals = .true.
     end function dm_log_equals
-
-    pure elemental logical function dm_log_valid(log) result(valid)
-        !! Returns `.true.` if given log is valid.
-        type(log_type), intent(in) :: log !! Log to validate.
-
-        valid = .false.
-
-        if (log%level < LOG_NONE .or. log%level > LOG_CRITICAL) return
-        if (.not. dm_error_valid(log%error)) return
-        if (log%id == UUID_DEFAULT) return
-        if (.not. dm_uuid4_valid(log%id)) return
-        if (len_trim(log%timestamp) == 0) return
-
-        valid = .true.
-    end function dm_log_valid
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
@@ -115,4 +112,34 @@ contains
         write (unit_, '("log.source: ", a)')    trim(log%source)
         write (unit_, '("log.message: ", a)')   trim(log%message)
     end subroutine dm_log_out
+
+    ! ******************************************************************
+    ! PRIVATE PROCEDURES.
+    ! ******************************************************************
+    pure elemental logical function dm_log_valid_level(level) result(valid)
+        !! Returns `.true.` if given log level is valid, i.e., either
+        !! `LOG_DEBUG`, `LOG_WARNING`, `LOG_ERROR`, or `LOG_CRITICAL`.
+        !!
+        !! The level `LOG_NONE` is invalid.
+        integer, intent(in) :: level !! Log level.
+
+        valid = .false.
+        if (level < LOG_DEBUG .or. level > LOG_CRITICAL) return
+        valid = .true.
+    end function dm_log_valid_level
+
+    pure elemental logical function dm_log_valid_log(log) result(valid)
+        !! Returns `.true.` if given log is valid.
+        type(log_type), intent(in) :: log !! Log to validate.
+
+        valid = .false.
+
+        if (.not. dm_log_valid(log%level)) return
+        if (.not. dm_error_valid(log%error)) return
+        if (log%id == UUID_DEFAULT) return
+        if (.not. dm_uuid4_valid(log%id)) return
+        if (.not. dm_time_valid(log%timestamp)) return
+
+        valid = .true.
+    end function dm_log_valid_log
 end module dm_log

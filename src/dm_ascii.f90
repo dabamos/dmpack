@@ -106,7 +106,7 @@ contains
                        (a >= 'a' .and. a <= 'z')
     end function dm_ascii_is_alpha_num
 
-    pure logical function dm_ascii_is_blank(a) result(is_blank)
+    pure elemental logical function dm_ascii_is_blank(a) result(is_blank)
         !! Returns whether character is space or tabular.
         character, intent(in) :: a !! Character to check.
         integer               :: i

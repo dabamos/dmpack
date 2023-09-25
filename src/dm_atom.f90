@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_atom
     !! Generator for the Atom Syndication Format (RFC 4287), to create a
-    !! web feed of log messages.
+    !! web feed of log messages in XML format, with optional XSLT style sheet.
     use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_html
     use :: dm_log

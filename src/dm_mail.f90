@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_mail
-    !! Module for sending plain-text e-mails via SMTP, using cURL.
+    !! Module for sending plain-text e-mails via SMTP, using libcurl.
     !!
     !! To send an e-mail, create an SMTP server configuration and a mail type
     !! first:

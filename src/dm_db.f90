@@ -63,8 +63,9 @@ module dm_db
 
     abstract interface
         function dm_db_busy_handler(client_data, n) bind(c)
-            !! C-interoperable callback function that is invoked on SQL_BUSY.
-            !! Return 0 to signal that no more invocations are desired.
+            !! C-interoperable callback function that is invoked on error
+            !! `SQL_BUSY`. May return 0 to signal that no more invocations are
+            !! desired.
             import :: c_int, c_ptr
             implicit none
             type(c_ptr),         intent(in), value :: client_data

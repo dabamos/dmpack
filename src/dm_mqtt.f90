@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_mqtt
-    !! Module for publishing messages via MQTT, using cURL.
+    !! Module for publishing messages via MQTT, using libcurl.
     !!
     !! Limitations of cURL:
     !!

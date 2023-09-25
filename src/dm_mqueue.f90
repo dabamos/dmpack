@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_mqueue
     !! Module for inter-process communication (IPC) and message passing through
-    !! POSIX message queues.
+    !! POSIX message queues. Has to be linked with `-lrt`.
     use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error

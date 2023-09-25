@@ -251,10 +251,10 @@ applications, additional shared libraries have to be linked.
 | `dm_mail`      | libcurl       | `pkg-config --libs libcurl`                           |
 | `dm_mqtt`      | libcurl       | `pkg-config --libs libcurl`                           |
 | `dm_mqueue`    | POSIX         | `-lrt`                                                |
+| `dm_mutex`     | POSIX         | `-lpthread`                                           |
 | `dm_regex`     | PCRE2         | `pkg-config --libs libpcre2-8`                        |
 | `dm_rpc`       | libcurl, zlib | `pkg-config --libs libcurl`, `pkg-config --libs zlib` |
 | `dm_sem`       | POSIX         | `-lpthread`                                           |
-| `dm_transform` | BLAS, LAPACK  | `-llapack -lblas`                                     |
 | `dm_z`         | zlib          | `pkg-config --libs zlib`                              |
 
 ## Source Code Structure

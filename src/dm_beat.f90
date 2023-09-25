@@ -56,6 +56,8 @@ contains
 
         valid = .false.
         if (.not. dm_id_valid(beat%node_id)) return
+        if (.not. dm_time_valid(beat%time_sent)) return
+        if (.not. dm_time_valid(beat%time_recv)) return
         if (beat%interval < 0_i8) return
         valid = .true.
     end function dm_beat_valid

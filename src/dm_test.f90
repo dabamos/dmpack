@@ -30,7 +30,8 @@ module dm_test
 
     abstract interface
         logical function dm_test_function()
-            !! Abstract test function that either returns `TEST_PASSED` or `TEST_FAILED`.
+            !! Logical test function that either returns `TEST_PASSED` or
+            !! `TEST_FAILED`.
         end function dm_test_function
     end interface
 

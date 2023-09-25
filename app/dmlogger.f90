@@ -141,7 +141,7 @@ contains
             return
         end if
 
-        if (app%minlevel < LOG_DEBUG .or. app%minlevel > LOG_CRITICAL) then
+        if (.not. dm_log_valid(app%minlevel)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if

@@ -8,8 +8,8 @@ module dm_signal
 
     abstract interface
         subroutine dm_signal_handler(signum) bind(c)
-            !! Abstract C-interoperable signal handler routine interface, to be
-            !! passed as argument to `dm_signal_register()`.
+            !! C-interoperable signal handler routine interface, to be passed as
+            !! argument to `dm_signal_register()`.
             import :: c_int
             implicit none
             integer(kind=c_int), intent(in), value :: signum !! Signal number.
