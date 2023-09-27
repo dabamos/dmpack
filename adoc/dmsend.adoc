@@ -1,0 +1,117 @@
+= dmsend(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMSEND
+
+== NAME
+
+dmsend - sends observations and logs to POSIX message queues
+
+== SYNOPSIS
+
+*dmsend* --help
+
+*dmsend* --version
+
+*dmsend* --*type* [log|observ] --*format* [csv|nml] --*input* _file_
+[--*receiver* _name_] [--*name* _name_] [--*node* _id_] [--*logger* _name_]
+[--*debug*] [--*forward*] [--*verbose*]
+
+*dmsend* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmsend* program reads observations or logs in CSV or Fortran 95 Namelist
+format, and sends them sequentially to the POSIX message queue of the given
+receiver. The data is either read from file or from standard input. If the input
+data is of type `observ` and the argument `--forward` is passed, each
+observation will be sent to its next specified receiver in the receivers list.
+If no receivers are declared, or if the end of the receivers list is reached,
+the observation will not be forwarded.
+
+The program settings are passed through command-line arguments or an optional
+configuration file. The arguments overwrite settings from file.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
+
+*--format*, *-f* [csv|nml]::
+  Input format, either CSV or Fortran 95 Namelist.
+
+*--forward*, *-F*::
+  Forward observations to the next specified receiver in the receivers list. Not
+  allowed in combination with argument `--receiver`.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--input*, *-i*::
+  Path to input file, either in CSV or Namelist format. Reads records from
+  _stdin_ if not passed or set to `-`.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmsend`).
+
+*--node*, *-N* _id_::
+  Optional node id.
+
+*--receiver*, *-r* _name_::
+  Name of the observation or log receiver, without leading `/`. Not allowed in
+  combination with argument `--forward`.
+
+*--type*, *-t* [log|observ]::
+  Data type to send, either log or observation.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Program terminated normally.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Read observation from Namelist file `observ.nml` and send it to the next
+specified receiver:
+
+....
+$ dmsend --type observ --format nml --input observ.nml --forward
+....
+
+Send logs in CSV file `logs.csv` sequentially to process `dmrecv`:
+
+....
+$ dmsend --receiver dmrecv --type log --format csv --input logs.csv
+....
+
+== SEE ALSO
+
+_dmrecv(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2023 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

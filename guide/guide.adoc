@@ -505,8 +505,8 @@ shell script to the POSIX message queue of a <<dmlogger>> process, to be stored
 in the log database.
 <<dmrecv>>:: Receives logs or observations from POSIX message queue and writes
 them to _stdout_, file, or named pipe.
-<<dmsend>>:: Sends observations from _stdin_ or file to a DMPACK application
-via POSIX message queue.
+<<dmsend>>:: Sends observations or logs from file to a DMPACK application via
+POSIX message queue.
 
 === Observation Processing
 
@@ -746,7 +746,7 @@ name.
 POSIX semaphore.
 
 | `--node _id_`       | `-N`  | –       | Node id.
-| `--verbose`         | `-V`  | off     | Print status to _stderr_.
+| `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
 | `--version`         | `-v`  | –       | Output version information and quit.
 |===
 
@@ -756,7 +756,7 @@ Create a message queue `/dmdb`, wait for incoming observations, and store them
 in the given database:
 
 ....
-$ dmdb --node dummy-node --database /var/dmpack/observ.sqlite --verbose
+$ dmdb --name dmdb --node dummy-node --database /var/dmpack/observ.sqlite --verbose
 ....
 
 Log messages and observation ids are printed to _stdout_.
@@ -1705,11 +1705,14 @@ configuration file. The arguments overwrite settings from file.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
+| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>>: `block`, `csv`, `jsonl`, `nml`.
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
+| `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration file and POSIX message queue to subscribe to.
-| `--output _file_`   | `-o`  | _stdout_ | Path of output file. Serialised data is written to _stdout_ if not set (default).
+| `--node _id_`       | `-N`  | –        | Optional node id.
+| `--output _file_`   | `-o`  | _stdout_ | Output file to append observations to (or `-` for _stdout_).
 | `--replace`         | `-r`  | off      | Replace output file instead of appending data.
 | `--response _name_` | `-R`  | –        | Name of observation response to output (required for format `block`).
 | `--type _type_`     | `-t`  | –        | Data type to receive: `log` or `observ`.
@@ -1875,6 +1878,53 @@ To run the report generation periodically, simply add the script to your
 <<Cron,crontab>>.
 
 === dmsend [[dmsend]]
+
+The *dmsend* program reads observations or logs in CSV or Fortran 95 Namelist
+format, and sends them sequentially to the POSIX message queue of the given
+receiver. The data is either read from file or from standard input. If the input
+data is of type `observ` and the argument `--forward` is passed, each
+observation will be sent to its next specified receiver in the receivers list.
+If no receivers are declared, or if the end of the receivers list is reached,
+the observation will not be forwarded.
+
+The program settings are passed through command-line arguments or an optional
+configuration file. The arguments overwrite settings from file.
+
+==== Command-Line Options
+
+[%autowidth.stretch]
+|===
+| Option              | Short | Default  | Description
+
+| `--config _file_`   | `-c`  | –        | Path to configuration file.
+| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--format _format_` | `-f`  | –        | Input format: `csv` or `nml`.
+| `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
+| `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
+| `--help`            | `-h`  | –        | Output available command-line arguments and quit.
+| `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmsend` | Name of instance and table in configuration file.
+| `--node _id_`       | `-N`  | –        | Optional node id.
+| `--receiver _name_` | `-r`  | –        | Name of receiver/message queue.
+| `--type _type_`     | `-t`  | –        | Input data type: `log` or `observ`.
+| `--verbose`         | `-V`  | off      | Print log messages to _stderr_.
+| `--version`         | `-v`  | –        | Output version information and quit.
+|===
+
+==== Examples
+
+Read observation from Namelist file `observ.nml` and send it to the next
+specified receiver:
+
+....
+$ dmsend --type observ --format nml --input observ.nml --forward
+....
+
+Send logs in CSV file `logs.csv` sequentially to process `dmrecv`:
+
+....
+$ dmsend --receiver dmrecv --type log --format csv --input logs.csv
+....
 
 === dmserial [[dmserial]]
 
