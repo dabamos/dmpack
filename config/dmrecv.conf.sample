@@ -10,6 +10,7 @@
 --      format    -   Output format: `block`, `csv`, `jsonl`, `nml` (required).
 --      forward   -   Forward observations to the next specified receiver (disabled by default).
 --      logger    -   Name of logger instance (implies log forwarding).
+--      node      -   Optional node id.
 --      output    -   Path of output file (standard output if empty or `-`).
 --      replace   -   Replace output file instead of appending data (disabled by default).
 --      response  -   Name of response in received observation (required for format `block`).
@@ -20,6 +21,7 @@
 dmrecv = {
     format = "csv",
     logger = "",
+    node = "",
     output = "-",
     type = "observ",
     response = "",
