@@ -108,7 +108,8 @@ contains
     end subroutine dm_logger_init
 
     subroutine dm_logger_log_message(level, message, source, observ, timestamp, error)
-        !! Sends a log message to the message queue (fire & forget).
+        !! Sends a log message to the message queue (fire & forget). Only the
+        !! log level is validated.
         integer,           intent(in)              :: level     !! Log level.
         character(len=*),  intent(in)              :: message   !! Log message.
         character(len=*),  intent(in),    optional :: source    !! Optional source of log.
@@ -118,8 +119,15 @@ contains
 
         type(log_type) :: log
 
+        ! Ignore debug messages if forwarding and output are both disabled.
+        if (level == LOG_DEBUG .and. .not. LOGGER%debug .and. .not. LOGGER%verbose) return
+
+        ! Replace invalid log level with `LOG_ERROR`.
+        log%level = LOG_ERROR
+        if (dm_log_valid(level)) log%level = level
+
+        ! Set log data.
         log%id      = dm_uuid4()
-        log%level   = level
         log%message = dm_ascii_escape(message)
 
         if (present(source)) then
@@ -145,8 +153,9 @@ contains
 
         if (present(error)) log%error = error
 
+        ! Output and send log.
         if (LOGGER%verbose) call dm_logger_out(log)
-        call dm_logger_send(log)
+        if (LOGGER%ipc)     call dm_logger_send(log)
     end subroutine dm_logger_log_message
 
     subroutine dm_logger_log_type(log)
@@ -157,21 +166,21 @@ contains
         type(log_type), intent(inout) :: log !! Log type.
 
         if (LOGGER%verbose) call dm_logger_out(log)
-        call dm_logger_send(log)
+        if (LOGGER%ipc)     call dm_logger_send(log)
     end subroutine dm_logger_log_type
 
     subroutine dm_logger_out(log, unit)
         !! Prints log message to standard error.
-        character(len=*), parameter :: FMT_ERROR = '(a," [",a,"] ",a," - ",a," (",i0,")")'
-        character(len=*), parameter :: FMT_NONE  = '(a," [",a,"] ",a," - ",a)'
+        character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " (", i0, ")")'
+        character(len=*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
 
-        type(log_type), intent(inout)        :: log  !! Log to print.
-        integer,        intent(in), optional :: unit !! Fortran output unit.
+        type(log_type), intent(inout)        :: log  !! Log to output.
+        integer,        intent(in), optional :: unit !! File unit.
 
         integer :: level, unit_
 
         level = LOG_ERROR
-        if (log%level >= 0 .and. log%level < LOG_NLEVEL) level = log%level
+        if (dm_log_valid(log%level)) level = log%level
 
         unit_ = stderr
         if (present(unit)) unit_ = unit
@@ -180,13 +189,13 @@ contains
 
         if (log%error /= E_NONE) then
             write (unit_, FMT_ERROR) log%timestamp, &
-                                     LOG_LEVEL_NAMES(level), &
+                                     trim(LOG_LEVEL_NAMES(level)), &
                                      trim(log%source), &
                                      trim(log%message), &
                                      log%error
         else
             write (unit_, FMT_NONE) log%timestamp, &
-                                    LOG_LEVEL_NAMES(level), &
+                                    trim(LOG_LEVEL_NAMES(level)), &
                                     trim(log%source), &
                                     trim(log%message)
         end if
@@ -204,7 +213,7 @@ contains
         type(mqueue_type) :: mqueue
 
         if (.not. LOGGER%ipc) return
-        if (.not. LOGGER%debug .and. log%level < LOG_INFO) return
+        if (.not. LOGGER%debug .and. log%level <= LOG_DEBUG) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &
@@ -213,7 +222,7 @@ contains
                             access   = MQUEUE_WRONLY, &
                             blocking = logger%blocking)
 
-        if (rc /= E_NONE) then
+        if (dm_is_error(rc)) then
             call dm_logger_fail('failed to open mqueue /' // LOGGER%name, rc)
             return
         end if
@@ -221,14 +230,14 @@ contains
         ! Write log message to queue.
         rc = dm_mqueue_write(mqueue, log)
 
-        if (rc /= E_NONE) then
+        if (dm_is_error(rc)) then
             call dm_logger_fail('failed to write to mqueue /' // LOGGER%name, rc)
         end if
 
         ! Close message queue.
         rc = dm_mqueue_close(mqueue)
 
-        if (rc /= E_NONE) then
+        if (dm_is_error(rc)) then
             call dm_logger_fail('failed to close mqueue /' // LOGGER%name, rc)
         end if
     end subroutine dm_logger_send

@@ -10,7 +10,7 @@
 --      node        -   Node id (required).
 --      procedure   -   Name of the Lua procedure (required).
 --      script      -   Path to the Lua script file (required).
---      verbose     -   Prints received logs to stdout.
+--      verbose     -   Print logs to standard error.
 --
 
 dmlua = {
@@ -18,6 +18,6 @@ dmlua = {
     node = "dummy-node",
     script = "/usr/local/share/dmpack/dmlua.lua",
     procedure = "process",
-    debug = true,
-    verbose = false
+    debug = false,
+    verbose = true
 }

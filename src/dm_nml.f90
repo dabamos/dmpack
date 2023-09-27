@@ -24,16 +24,6 @@ module dm_nml
     integer, parameter, public :: NML_SENSOR_LEN = 288       !! Max. size of `sensor_type` namelist in bytes.
     integer, parameter, public :: NML_TARGET_LEN = 160       !! Max. size of `target_type` namelist in bytes.
 
-    interface dm_nml_to
-        !! Converts string to type.
-        module procedure :: nml_to_beat
-        module procedure :: nml_to_log
-        module procedure :: nml_to_node
-        module procedure :: nml_to_observ
-        module procedure :: nml_to_sensor
-        module procedure :: nml_to_target
-    end interface
-
     interface dm_nml_from
         !! Converts type to string.
         module procedure :: nml_from_beat
@@ -44,16 +34,35 @@ module dm_nml
         module procedure :: nml_from_target
     end interface
 
+    interface dm_nml_to
+        !! Converts string to type.
+        module procedure :: nml_to_beat
+        module procedure :: nml_to_log
+        module procedure :: nml_to_node
+        module procedure :: nml_to_observ
+        module procedure :: nml_to_sensor
+        module procedure :: nml_to_target
+    end interface
+
+    interface dm_nml_read
+        !! Reads type from file or standard input.
+        module procedure :: nml_read_log
+        module procedure :: nml_read_observ
+    end interface
+
     interface dm_nml_write
         !! Writes type to file or standard output.
         module procedure :: nml_write_log
         module procedure :: nml_write_observ
     end interface
 
+    ! Public procedures.
     public :: dm_nml_from
+    public :: dm_nml_read
     public :: dm_nml_to
     public :: dm_nml_write
 
+    ! Private procedures.
     private :: nml_from_beat
     private :: nml_from_log
     private :: nml_from_node
@@ -67,6 +76,9 @@ module dm_nml
     private :: nml_to_observ
     private :: nml_to_sensor
     private :: nml_to_target
+
+    private :: nml_read_log
+    private :: nml_read_observ
 
     private :: nml_write_log
     private :: nml_write_observ
@@ -169,6 +181,38 @@ contains
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_target
+
+    integer function nml_read_log(log, unit) result(rc)
+        !! Reads log from file or standard input.
+        type(log_type), intent(inout)        :: log  !! Log type.
+        integer,        intent(in), optional :: unit !! File unit.
+
+        integer :: stat, unit_
+        namelist /DMLOG/ log
+
+        rc = E_READ
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+        read (unit_, nml=DMLOG, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_read_log
+
+    integer function nml_read_observ(observ, unit) result(rc)
+        !! Reads observation from file or standard input.
+        type(observ_type), intent(inout)        :: observ !! Observation type.
+        integer,           intent(in), optional :: unit   !! File unit.
+
+        integer :: stat, unit_
+        namelist /DMOBSERV/ observ
+
+        rc = E_READ
+        unit_ = stdin
+        if (present(unit)) unit_ = unit
+        read (unit_, nml=DMOBSERV, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_read_observ
 
     impure elemental integer function nml_to_beat(str, beat) result(rc)
         !! Reads beat from namelist string.

@@ -62,7 +62,7 @@ program dmgraph
         ! Create plot.
         path = dm_path_parsed(app%output)
         rc = create_graph(dps, app%terminal, path, app%background, app%foreground, &
-                         app%font, app%title, app%width, app%height, 'Time', app%response)
+                          app%font, app%title, app%width, app%height, 'Time', app%response)
         call dm_error_out(rc)
     end block plot_block
 

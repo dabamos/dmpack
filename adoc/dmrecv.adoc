@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmrecv - receives logs and observations from POSIX message queue
+dmrecv - receives observations and logs from POSIX message queue
 
 == SYNOPSIS
 
@@ -24,8 +24,8 @@ dmrecv - receives logs and observations from POSIX message queue
 == DESCRIPTION
 
 The *dmrecv* program listens to the POSIX message queue of its name and writes
-received logs or observations to _stdout_, file, or named pipe; in ASCII block,
-CSV, JSON, or Fortran 90 Namelist format. By default, the serialised data is
+received observations and logs to _stdout_, file, or named pipe; in ASCII block,
+CSV, JSON, or Fortran 95 Namelist format. By default, the serialised data is
 appended to the end of the output file. If argument `--replace` is passed, the
 file will be replaced consecutively.
 
@@ -38,7 +38,7 @@ a valid response name. Received observation will be searched for this response
 and converted to data point type if found. The data point is printed in
 ASCII block format.
 
-If JSON Lines output format is selected, logs and observations are written
+If JSON Lines output format is selected, observations and logs are written
 sequentially as JSON objects to file or _stdout_, separated by new line. Use
 _jq(1)_ to convert a file `input.jsonl` of JSON objects to a JSON array in
 `output.json`:
@@ -55,21 +55,30 @@ configuration file. The arguments overwrite settings from file.
 *--config*, *-c* _file_::
   Path to configuration file.
 
+*--debug*, *-D*::
+  Forward logs messages of level DEBUG via IPC (if logger is set).
+
 *--format*, *-f* [block|csv|jsonl|nml]::
   Output format, either ASCII block, CSV, JSON Lines, or Namelist. Format
   `block` is allowed for type `observ` only.
 
 *--forward*, *-F*::
-  Forward observations to the next specified receiver.
+  Forward each observation to its next specified receiver.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
 *--name*, *-n* _name_::
   Name of configuration and POSIX message queue (default is `dmrecv`).
 
+*--node*, *-N* _id_::
+  Optional node id.
+
 *--output*, *-o* _file_::
-  Path of output file. Prints serialised data to _stdout_ if not set (default).
+  Path of output file. Prints serialised data to _stdout_ if not set.
 
 *--replace*, *-r*::
   Replace output file instead of appending data.

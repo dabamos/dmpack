@@ -2,12 +2,12 @@
 .\"     Title: dmrecv
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-06
+.\"      Date: 2023-09-27
 .\"    Manual: User Commands
 .\"    Source: DMRECV
 .\"  Language: English
 .\"
-.TH "DMRECV" "1" "2023-09-06" "DMRECV" "User Commands"
+.TH "DMRECV" "1" "2023-09-27" "DMRECV" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmrecv \- receives logs and observations from POSIX message queue
+dmrecv \- receives observations and logs from POSIX message queue
 .SH "SYNOPSIS"
 .sp
 \fBdmrecv\fP \-\-help
@@ -43,8 +43,8 @@ dmrecv \- receives logs and observations from POSIX message queue
 .SH "DESCRIPTION"
 .sp
 The \fBdmrecv\fP program listens to the POSIX message queue of its name and writes
-received logs or observations to \fIstdout\fP, file, or named pipe; in ASCII block,
-CSV, JSON, or Fortran 90 Namelist format. By default, the serialised data is
+received observations and logs to \fIstdout\fP, file, or named pipe; in ASCII block,
+CSV, JSON, or Fortran 95 Namelist format. By default, the serialised data is
 appended to the end of the output file. If argument \f(CR\-\-replace\fP is passed, the
 file will be replaced consecutively.
 .sp
@@ -57,7 +57,7 @@ a valid response name. Received observation will be searched for this response
 and converted to data point type if found. The data point is printed in
 ASCII block format.
 .sp
-If JSON Lines output format is selected, logs and observations are written
+If JSON Lines output format is selected, observations and logs are written
 sequentially as JSON objects to file or \fIstdout\fP, separated by new line. Use
 \fIjq(1)\fP to convert a file \f(CRinput.jsonl\fP of JSON objects to a JSON array in
 \f(CRoutput.json\fP:
@@ -79,6 +79,11 @@ configuration file. The arguments overwrite settings from file.
 Path to configuration file.
 .RE
 .sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level DEBUG via IPC (if logger is set).
+.RE
+.sp
 \fB\-\-format\fP, \fB\-f\fP [block|csv|jsonl|nml]
 .RS 4
 Output format, either ASCII block, CSV, JSON Lines, or Namelist. Format
@@ -87,7 +92,7 @@ Output format, either ASCII block, CSV, JSON Lines, or Namelist. Format
 .sp
 \fB\-\-forward\fP, \fB\-F\fP
 .RS 4
-Forward observations to the next specified receiver.
+Forward each observation to its next specified receiver.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP
@@ -95,14 +100,24 @@ Forward observations to the next specified receiver.
 Output available command\-line arguments and quit.
 .RE
 .sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
 Name of configuration and POSIX message queue (default is \f(CRdmrecv\fP).
 .RE
 .sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Optional node id.
+.RE
+.sp
 \fB\-\-output\fP, \fB\-o\fP \fIfile\fP
 .RS 4
-Path of output file. Prints serialised data to \fIstdout\fP if not set (default).
+Path of output file. Prints serialised data to \fIstdout\fP if not set.
 .RE
 .sp
 \fB\-\-replace\fP, \fB\-r\fP

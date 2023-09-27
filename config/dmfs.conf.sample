@@ -17,7 +17,7 @@
 --      node        -   Node id.
 --      output      -   Path of output file, or `-` for stdout (optional).
 --      sensor      -   Sensor id.
---      verbose     -   Prints logs to stdout.
+--      verbose     -   Print logs to standard error.
 --
 
 --

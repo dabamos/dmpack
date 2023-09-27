@@ -30,12 +30,15 @@ program dmrecv
         !! Application settings.
         character(len=LOGGER_NAME_LEN)   :: name        = APP_NAME    !! Name of process and POSIX message queue.
         character(len=FILE_PATH_LEN)     :: config      = ' '         !! Path to configuration file.
-        character(len=FILE_PATH_LEN)     :: output      = ' '         !! Path of output file (stdout if empty).
+        character(len=LOGGER_NAME_LEN)   :: logger      = ' '         !! Name of logger (name implies IPC).
+        character(len=NODE_ID_LEN)       :: node        = ' '         !! Node id (optional).
+        character(len=FILE_PATH_LEN)     :: output      = ' '         !! Path of output file (stdout if empty or `-`).
         character(len=FORMAT_NAME_LEN)   :: format_name = ' '         !! Format name.
         character(len=TYPE_NAME_LEN)     :: type_name   = ' '         !! Type name.
         character(len=RESPONSE_NAME_LEN) :: response    = ' '         !! Response name for block output of observations.
         integer                          :: format      = FORMAT_NONE !! Data output format.
         integer                          :: type        = TYPE_NONE   !! Data type.
+        logical                          :: debug       = .false.     !! Forward debug messages via IPC.
         logical                          :: forward     = .false.     !! Observation forwarding.
         logical                          :: replace     = .false.     !! Replace output file.
         logical                          :: verbose     = .false.     !! Print debug messages to stderr.
@@ -54,7 +57,12 @@ program dmrecv
 
     init_block: block
         ! Initialise logger.
-        call dm_logger_init(source=app%name, ipc=.false., verbose=app%verbose)
+        call dm_logger_init(name    = app%logger, &
+                            node_id = app%node, &
+                            source  = app%name, &
+                            debug   = app%debug, &
+                            ipc     = (len_trim(app%logger) > 0), &
+                            verbose = app%verbose)
 
         ! Open log message queue for reading.
         rc = dm_mqueue_open(mqueue=mqueue, type=app%type, name=app%name, access=MQUEUE_RDONLY)
@@ -131,7 +139,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(9)
+        type(arg_type)                :: args(12)
 
         rc = E_NONE
 
@@ -139,10 +147,13 @@ contains
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),   & ! -N, --name <string>
             arg_type('config',   short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
             arg_type('output',   short='o', type=ARG_TYPE_CHAR), & ! -o, --output <path>
             arg_type('format',   short='f', type=ARG_TYPE_CHAR), & ! -f, --format <string>
             arg_type('type',     short='t', type=ARG_TYPE_CHAR), & ! -t, --type <string>
             arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <string>
+            arg_type('debug',    short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
             arg_type('forward',  short='F', type=ARG_TYPE_BOOL), & ! -F, --forward
             arg_type('replace',  short='r', type=ARG_TYPE_BOOL), & ! -r, --replace
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
@@ -160,13 +171,16 @@ contains
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        rc = dm_arg_get(args(3), app%output)
-        rc = dm_arg_get(args(4), app%format_name)
-        rc = dm_arg_get(args(5), app%type_name)
-        rc = dm_arg_get(args(6), app%response)
-        rc = dm_arg_get(args(7), app%forward)
-        rc = dm_arg_get(args(8), app%replace)
-        rc = dm_arg_get(args(9), app%verbose)
+        rc = dm_arg_get(args( 3), app%logger)
+        rc = dm_arg_get(args( 4), app%node)
+        rc = dm_arg_get(args( 5), app%output)
+        rc = dm_arg_get(args( 6), app%format_name)
+        rc = dm_arg_get(args( 7), app%type_name)
+        rc = dm_arg_get(args( 8), app%response)
+        rc = dm_arg_get(args( 9), app%debug)
+        rc = dm_arg_get(args(10), app%forward)
+        rc = dm_arg_get(args(11), app%replace)
+        rc = dm_arg_get(args(12), app%verbose)
 
         app%format = dm_format_from_name(app%format_name)
         app%type   = dm_type_from_name(app%type_name)
@@ -176,6 +190,16 @@ contains
 
         if (.not. dm_id_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (len_trim(app%node) > 0 .and. .not. dm_id_valid(app%node)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger name')
             return
         end if
 
@@ -226,10 +250,13 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
+            rc = dm_config_get(config, 'logger',   app%logger)
+            rc = dm_config_get(config, 'node',     app%node)
             rc = dm_config_get(config, 'output',   app%output)
             rc = dm_config_get(config, 'format',   app%format_name)
             rc = dm_config_get(config, 'response', app%response)
             rc = dm_config_get(config, 'type',     app%type_name)
+            rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'forward',  app%forward)
             rc = dm_config_get(config, 'verbose',  app%verbose)
             rc = E_NONE
@@ -253,22 +280,32 @@ contains
         type(app_type),    intent(inout) :: app
         type(mqueue_type), intent(inout) :: mqueue
 
-        integer           :: fu, i, j, rc, stat
-        logical           :: is_file
+        character(len=NML_LOG_LEN)    :: log_nml
+        character(len=NML_OBSERV_LEN) :: observ_nml
+
+        integer :: file_unit
+        integer :: i, j, rc, stat
+        logical :: is_file
+
         type(dp_type)     :: dp
         type(log_type)    :: log
         type(observ_type) :: observ
 
-        fu = stdout
-        is_file = .false.
+        file_unit = stdout
+        is_file   = .false.
+
         if (len_trim(app%output) > 0 .or. app%output == '-') is_file = .true.
 
+        call dm_log(LOG_INFO, 'starting ' // app%name)
+
         ipc_loop: do
-            ! Read log or observation from POSIX message queue.
-            if (app%type == TYPE_LOG) then
-                rc = dm_mqueue_read(mqueue, log)
-            else if (app%type == TYPE_OBSERV) then
+            ! Read observation or log from POSIX message queue (blocking).
+            if (app%type == TYPE_OBSERV) then
+                call dm_log(LOG_DEBUG, 'waiting for observ on mqueue /' // app%name, error=rc)
                 rc = dm_mqueue_read(mqueue, observ)
+            else if (app%type == TYPE_LOG) then
+                call dm_log(LOG_DEBUG, 'waiting for log on mqueue /' // app%name, error=rc)
+                rc = dm_mqueue_read(mqueue, log)
             end if
 
             ! Handle message queue error.
@@ -278,35 +315,33 @@ contains
                 cycle ipc_loop
             end if
 
-            ! Validate log or observation.
-            if (app%type == TYPE_LOG) then
-                if (.not. dm_log_valid(log)) then
-                    call dm_log(LOG_ERROR, 'invalid log received', error=E_INVALID)
-                    cycle ipc_loop
-                end if
-            else if (app%type == TYPE_OBSERV) then
+            ! Validate observation or log.
+            if (app%type == TYPE_OBSERV) then
                 if (.not. dm_observ_valid(observ)) then
                     call dm_log(LOG_ERROR, 'invalid observ received', error=E_INVALID)
                     cycle ipc_loop
                 end if
+
+                call dm_log(LOG_DEBUG, 'received observ ' // trim(observ%id))
+            else if (app%type == TYPE_LOG) then
+                if (.not. dm_log_valid(log)) then
+                    call dm_log(LOG_ERROR, 'invalid log received', error=E_INVALID)
+                    cycle ipc_loop
+                end if
+
+                call dm_log(LOG_DEBUG, 'received log ' // trim(log%id))
             end if
 
             ! Open output file.
             if (is_file) then
-                if (app%type == TYPE_LOG) then
-                    call dm_log(LOG_DEBUG, 'received log ' // trim(log%id))
-                else if (app%type == TYPE_OBSERV) then
-                    call dm_log(LOG_DEBUG, 'received observ ' // trim(observ%id))
-                end if
-
                 if (app%replace) then
                     ! Replace file.
                     open (action='write', file=trim(app%output), iostat=stat, &
-                          newunit=fu, position='rewind', status='replace')
+                          newunit=file_unit, position='rewind', status='replace')
                 else
                     ! Append data.
                     open (action='write', file=trim(app%output), iostat=stat, &
-                          newunit=fu, position='append', status='unknown')
+                          newunit=file_unit, position='append', status='unknown')
                 end if
 
                 if (stat /= 0) then
@@ -315,59 +350,78 @@ contains
                 end if
             end if
 
-            ! Write serialised log or observation to file/stdout.
-            if (app%type == TYPE_LOG) then
-                select case (app%format)
-                    case (FORMAT_CSV)
-                        rc = dm_csv_write(log, unit=fu)
-                    case (FORMAT_JSONL)
-                        rc = dm_json_write(log, unit=fu)
-                    case (FORMAT_NML)
-                        rc = dm_nml_write(log, unit=fu)
-                end select
-            else if (app%type == TYPE_OBSERV) then
+            ! Write serialised observation or log to file/stdout.
+            if (app%type == TYPE_OBSERV) then
                 select case (app%format)
                     case (FORMAT_BLOCK)
-                        ! Search for response of configured name and convert the
-                        ! observation's response into a data point type.
+                        ! ASCII block format. Search for response of configured
+                        ! name and convert the observation's response into a
+                        ! data point type.
                         if (dm_is_ok(dm_observ_index(observ, app%response, i, j))) then
                             dp = dp_type(x = observ%requests(i)%timestamp, &
                                          y = observ%requests(i)%responses(j)%value)
-                            rc = dm_block_write(dp, unit=fu)
+                            rc = dm_block_write(dp, unit=file_unit)
                         else
                             call dm_log(LOG_DEBUG, 'no response of name ' // app%response, error=E_NOT_FOUND)
                         end if
                     case (FORMAT_CSV)
-                        rc = dm_csv_write(observ, unit=fu)
+                        ! CSV format.
+                        rc = dm_csv_write(observ, unit=file_unit)
                     case (FORMAT_JSONL)
-                        rc = dm_json_write(observ, unit=fu)
+                        ! JSON Lines format.
+                        rc = dm_json_write(observ, unit=file_unit)
                     case (FORMAT_NML)
-                        rc = dm_nml_write(observ, unit=fu)
+                        ! Namelist format. Write Namelist to a string first, to
+                        ! avoid newline characters.
+                        rc = dm_nml_from(observ, observ_nml)
+
+                        if (dm_is_ok(rc)) then
+                            write (file_unit, '(a)', iostat=stat) trim(observ_nml)
+                            if (stat /= 0) rc = E_WRITE
+                        end if
                 end select
-            end if
+            else if (app%type == TYPE_LOG) then
+                select case (app%format)
+                    case (FORMAT_CSV)
+                        ! CSV format.
+                        rc = dm_csv_write(log, unit=file_unit)
+                    case (FORMAT_JSONL)
+                        ! JSON Lines format.
+                        rc = dm_json_write(log, unit=file_unit)
+                    case (FORMAT_NML)
+                        ! Namelist format. Write Namelist to a string first, to
+                        ! avoid newline characters.
+                        rc = dm_nml_from(log, log_nml)
 
-            ! Close file.
-            if (is_file) then
-                close (fu)
-
-                if (app%type == TYPE_LOG) then
-                    call dm_log(LOG_DEBUG, 'log ' // trim(log%id) // ' written to ' // app%output)
-                else if (app%type == TYPE_OBSERV) then
-                    call dm_log(LOG_DEBUG, 'observ ' // trim(observ%id) // ' written to ' // app%output)
-                end if
+                        if (dm_is_ok(rc)) then
+                            write (file_unit, '(a)', iostat=stat) trim(log_nml)
+                            if (stat /= 0) rc = E_WRITE
+                        end if
+                end select
             end if
 
             ! Handle write errors.
             if (dm_is_error(rc)) then
-                if (app%type == TYPE_LOG) then
-                    call dm_log(LOG_ERROR, 'failed to write log ' // log%id, error=rc)
-                else if (app%type == TYPE_OBSERV) then
+                if (app%type == TYPE_OBSERV) then
                     call dm_log(LOG_ERROR, 'failed to write observ ' // observ%id, error=rc)
+                else if (app%type == TYPE_LOG) then
+                    call dm_log(LOG_ERROR, 'failed to write log ' // log%id, error=rc)
                 end if
             end if
 
+            ! Close file.
+            if (is_file) then
+                if (app%type == TYPE_OBSERV) then
+                    call dm_log(LOG_DEBUG, 'observ ' // trim(observ%id) // ' written to ' // app%output)
+                else if (app%type == TYPE_LOG) then
+                    call dm_log(LOG_DEBUG, 'log ' // trim(log%id) // ' written to ' // app%output)
+                end if
+
+                close (file_unit)
+            end if
+
             ! Forward observation to next receiver.
-            if (app%forward .and. app%type == TYPE_OBSERV) then
+            if (app%forward) then
                 rc = forward_observ(observ)
 
                 if (dm_is_error(rc)) then

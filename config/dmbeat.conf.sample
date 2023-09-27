@@ -15,7 +15,7 @@
 --      port        -   API port (set to 0 for protocol default).
 --      tls         -   Enable TLS encryption.
 --      username    -   HTTP Basic Auth username.
---      verbose     -   Print log messages to standard output.
+--      verbose     -   Print logs to standard error.
 --
 
 dmbeat = {

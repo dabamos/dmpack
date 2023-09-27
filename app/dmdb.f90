@@ -292,24 +292,24 @@ contains
                 ! Add observation to database.
                 rc = dm_db_insert(db, observ)
 
+                ! Retry if database is busy.
+                if (rc == E_DB_BUSY) then
+                    call dm_log(LOG_DEBUG, 'database busy', error=rc)
+                    call dm_db_sleep(APP_DB_TIMEOUT)
+                    cycle db_loop
+                end if
+
+                ! Get more precise database error.
                 if (dm_is_error(rc)) then
-                    ! Get more precise database error.
                     rc = dm_db_error(db)
-
-                    if (rc == E_DB_BUSY) then
-                        call dm_log(LOG_DEBUG, 'database busy', error=rc)
-                        call dm_db_sleep(APP_DB_TIMEOUT)
-                        cycle db_loop
-                    end if
-
                     call dm_log(LOG_ERROR, 'failed to insert observ ' // observ%name, error=rc)
                     exit db_loop
                 end if
 
                 call dm_log(LOG_DEBUG, 'inserted observ ' // observ%name)
 
+                ! Post semaphore.
                 if (app%ipc) then
-                    ! Post semaphore.
                     rc = dm_sem_value(sem, value)
                     if (value == 0) rc = dm_sem_post(sem)
                 end if

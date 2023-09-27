@@ -631,7 +631,7 @@ contains
                         if (i == 1) then
                             call dm_fcgi_out('[ ' // dm_json_from(logs(i)))
                         else if (i < size(logs)) then
-                            call dm_fcgi_out(dm_json_from(logs(i)) // ', ')
+                            call dm_fcgi_out(dm_json_from(logs(i)) // ',')
                         else
                             call dm_fcgi_out(dm_json_from(logs(i)) // ' ]')
                         end if
@@ -1203,9 +1203,9 @@ contains
 
                     do i = 1, size(observs)
                         if (i == 1) then
-                            call dm_fcgi_out('[ ' // dm_json_from(observs(i)) // ', ')
+                            call dm_fcgi_out('[ ' // dm_json_from(observs(i)) // ',')
                         else if (i < size(observs)) then
-                            call dm_fcgi_out(dm_json_from(observs(i)) // ', ')
+                            call dm_fcgi_out(dm_json_from(observs(i)) // ',')
                         else
                             call dm_fcgi_out(dm_json_from(observs(i)) // ' ]')
                         end if

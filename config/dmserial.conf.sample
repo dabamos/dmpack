@@ -30,7 +30,7 @@
 --      stopbits    -   Number of stop bits (1 or 2).
 --      timeout     -   Read timeout in seconds.
 --      tty         -   Path of TTY/PTY device (for example, `/dev/ttyU0`).
---      verbose     -   Prints logs to stdout.
+--      verbose     -   Print logs to standard error.
 --
 
 --

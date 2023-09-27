@@ -3,7 +3,7 @@
 module dm_mqtt
     !! Module for publishing messages via MQTT, using libcurl.
     !!
-    !! Limitations of cURL:
+    !! Limitations of libcurl:
     !!
     !! * Only QoS level 0 is implemented for publish.
     !! * No way to set retain flag for publish.

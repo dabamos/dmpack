@@ -10,7 +10,7 @@
 --      ipc         -   Use POSIX semaphore for process synchronisation.
 --      logger      -   Name of logger instance (implies log forwarding).
 --      node        -   Node id.
---      verbose     -   Prints received logs to standard output.
+--      verbose     -   Print received logs to standard error.
 --
 
 dmdb = {

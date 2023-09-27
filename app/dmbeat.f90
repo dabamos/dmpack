@@ -160,7 +160,7 @@ contains
 
         rc = dm_config_open(config, app%config, app%name)
 
-        if_block: if (dm_is_ok(rc)) then
+        if (dm_is_ok(rc)) then
             rc = dm_config_get(config, 'logger',   app%logger)
             rc = dm_config_get(config, 'node',     app%node)
             rc = dm_config_get(config, 'host',     app%host)
@@ -172,7 +172,8 @@ contains
             rc = dm_config_get(config, 'interval', app%interval)
             rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'verbose',  app%verbose)
-        end if if_block
+            rc = E_NONE
+        end if
 
         call dm_config_close(config)
     end function read_config

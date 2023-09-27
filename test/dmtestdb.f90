@@ -597,6 +597,11 @@ contains
         test_block: block
             call dm_dummy_log(log1)
 
+            if (.not. dm_log_valid(log1)) then
+                print *, 'Error: invalid dummy log'
+                exit test_block
+            end if
+
             print *, 'Adding log ...'
             rc = dm_db_insert_log(db, log1)
             if (dm_is_error(rc)) exit test_block

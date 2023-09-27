@@ -89,6 +89,7 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         character(len=*), parameter :: PROC_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
+
         type(app_type), intent(inout) :: app
         type(arg_type)                :: args(8)
 

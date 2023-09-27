@@ -6,20 +6,24 @@
 --
 -- Settings:
 --
+--      debug     -   Forward log messages of level DEBUG via IPC (if logger is set).
 --      format    -   Output format: `block`, `csv`, `jsonl`, `nml` (required).
 --      forward   -   Forward observations to the next specified receiver (disabled by default).
---      output    -   Path of output file (optional).
+--      logger    -   Name of logger instance (implies log forwarding).
+--      output    -   Path of output file (standard output if empty or `-`).
 --      replace   -   Replace output file instead of appending data (disabled by default).
 --      response  -   Name of response in received observation (required for format `block`).
 --      type      -   Data type to receive (`log`, `observ`).
---      verbose   -   Print logs to standard output.
+--      verbose   -   Print logs to standard error.
 --
 
 dmrecv = {
     format = "csv",
-    output = "/tmp/observs.csv",
+    logger = "",
+    output = "-",
     type = "observ",
-    response = "dummy-1",
+    response = "",
+    debug = false,
     forward = false,
     replace = false,
     verbose = true

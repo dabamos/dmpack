@@ -17,7 +17,7 @@
 --      tls         -   Enable TLS encryption.
 --      type        -   Database type (`log`, `node`, `observ`, `sensor`, or `target`).
 --      user        -   HTTP Basic Auth user name (optional).
---      verbose     -   Print logs to standard output.
+--      verbose     -   Print logs to standard error.
 --      wait        -   Name of semaphore to wait for, e.g., `dmdb` or `dmlogger` (optional).
 --
 
