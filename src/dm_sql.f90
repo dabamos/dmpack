@@ -338,12 +338,20 @@ module dm_sql
     ! ******************************************************************
     ! INSERT QUERIES.
     ! ******************************************************************
-    ! Query to insert/replace beat.
+    ! Query to upsert beat.
     ! Values: beats.node_id, beats.address, beats.time_sent,
     !         beats.time_recv, beats.interval, beats.error
     character(len=*), parameter, public :: SQL_INSERT_BEAT = &
-        'REPLACE INTO beats(node_id, address, time_sent, time_recv, error, interval, uptime) ' // &
-        'VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO beats(node_id, address, time_sent, time_recv, error, interval, uptime) ' // &
+        'VALUES (?, ?, ?, ?, ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'node_id = excluded.node_id, ' // &
+        'address = excluded.address, ' // &
+        'time_sent = excluded.time_sent, ' // &
+        'time_recv = excluded.time_recv, ' // &
+        'error = excluded.error, ' // &
+        'interval = excluded.interval, ' // &
+        'uptime = excluded.uptime'
 
     ! Query to insert log.
     ! Values: logs.level, logs.error, logs.timestamp, logs.node_id,
@@ -411,35 +419,60 @@ module dm_sql
         'INNER JOIN observs ON observs.observ_id = requests.observ_id ' // &
         'WHERE observs.id = ? AND requests.idx = ?), ?, ?, ?, ?, ?)'
 
-    ! Query to insert sync_logs data.
+    ! Query to upsert sync_logs data.
     ! Values: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
-        'REPLACE INTO sync_logs(log_id, timestamp, code, nattempts) VALUES (' // &
-        '(SELECT log_id FROM logs WHERE id = ?), ?, ?, ?)'
+        'INSERT INTO sync_logs(log_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT log_id FROM logs WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'log_id = excluded.log_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
 
-    ! Query to insert sync_nodes data.
+    ! Query to upsert sync_nodes data.
     ! Values: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.nattempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_NODE = &
-        'REPLACE INTO sync_nodes(node_id, timestamp, code, nattempts) VALUES (' // &
-        '(SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?)'
+        'INSERT INTO sync_nodes(node_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'node_id = excluded.node_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
 
-    ! Query to insert sync_observs data.
+    ! Query to upsert sync_observs data.
     ! Values: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
-        'REPLACE INTO sync_observs(observ_id, timestamp, code, nattempts) VALUES (' // &
-        '(SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?)'
+        'INSERT INTO sync_observs(observ_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'observ_id = excluded.observ_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
 
-    ! Query to insert sync_sensors data.
+    ! Query to upsert sync_sensors data.
     ! Values: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.nattempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
-        'REPLACE INTO sync_sensors(sensor_id, timestamp, code, nattempts) VALUES (' // &
-        '(SELECT sensor_id FROM sensors WHERE id = ?), ?, ?, ?)'
+        'INSERT INTO sync_sensors(sensor_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT sensor_id FROM sensors WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'sensor_id = excluded.sensor_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
 
-    ! Query to insert sync_targets data.
+    ! Query to upsert sync_targets data.
     ! Values: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.nattempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
-        'REPLACE INTO sync_targets(target_id, timestamp, code, nattempts) VALUES (' // &
-        '(SELECT target_id FROM targets WHERE id = ?), ?, ?, ?)'
+        'INSERT INTO sync_targets(target_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT target_id FROM targets WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'target_id = excluded.target_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
 
     ! ******************************************************************
     ! UPDATE QUERIES.
