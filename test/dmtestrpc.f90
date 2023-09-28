@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestrpc
-    !! Test program for the HTTP-based RPC-API of DMPACK. 
+    !! Test program for the HTTP-based RPC-API of DMPACK.
     !!
     !! To run this program, set the following environment variables
     !! beforehand:
@@ -16,8 +16,7 @@ program dmtestrpc
     use :: dmpack
     implicit none (type, external)
 
-    integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 3
+    integer, parameter :: NTESTS = 5
 
     character(len=:), allocatable :: host, username, password
     type(test_type)               :: tests(NTESTS)
@@ -51,6 +50,8 @@ program dmtestrpc
     tests(1) = test_type('dmtestrpc.test01', test01)
     tests(2) = test_type('dmtestrpc.test02', test02)
     tests(3) = test_type('dmtestrpc.test03', test03)
+    tests(4) = test_type('dmtestrpc.test04', test04)
+    tests(5) = test_type('dmtestrpc.test05', test05)
 
     call dm_test_run(tests, stats, no_color)
 contains
@@ -76,8 +77,10 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        !! This test sends multiple observations via HTTP GET request to
+        !! This test sends multiple observations via HTTP POST request to
         !! an RPC-API.
+        integer, parameter :: NOBSERVS = 100
+
         integer                 :: i, rc
         real(kind=r8)           :: dt
         type(rpc_request_type)  :: request
@@ -125,7 +128,7 @@ contains
 
             rc = dm_rpc_send(request  = request, &
                              response = response, &
-                             observ   = observs(i), &
+                             type     = observs(i), &
                              username = username, &
                              password = password, &
                              deflate  = .true., &
@@ -151,6 +154,114 @@ contains
     end function test02
 
     logical function test03() result(stat)
+        !! This test sends multiple observations concurrently via HTTP POST
+        !! request to an RPC-API.
+        integer, parameter :: NOBSERVS = 10
+
+        integer          :: i, rc
+        logical          :: error
+        real(kind=r8)    :: dt
+        type(timer_type) :: timer
+
+        type(observ_type),       allocatable :: observs(:)
+        type(rpc_request_type),  allocatable :: requests(:)
+        type(rpc_response_type), allocatable :: responses(:)
+
+        stat = TEST_FAILED
+
+        rc = dm_rpc_init()
+
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
+        allocate (observs(NOBSERVS))
+        allocate (requests(NOBSERVS))
+
+        call dm_dummy_observ(observs)
+
+        print *, 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
+
+        call dm_timer_start(timer)
+        rc = dm_rpc_send(requests, responses, observs, &
+                         dm_rpc_url(host, endpoint='/observ'), &
+                         username, password, deflate=.true.)
+        dt = dm_timer_stop(timer)
+
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
+        error = .false.
+
+        do i = 1, size(responses)
+            if (responses(i)%code /= HTTP_CREATED) then
+                error = .true.
+                print '(" Request: ", i0, " HTTP: ", i0, " Error: ", i0, " cURL: ", i0)', &
+                    i, responses(i)%code, responses(i)%error, responses(i)%error_curl
+            end if
+        end do
+
+        print *, NOBSERVS, ' observations sent in ', real(dt), ' sec'
+        call dm_rpc_destroy()
+
+        if (error) return
+        stat = TEST_PASSED
+    end function test03
+
+    logical function test04() result(stat)
+        !! This test sends multiple observations sequentially via HTTP POST
+        !! request to an RPC-API.
+        integer, parameter :: NOBSERVS = 10
+
+        integer          :: i, rc
+        logical          :: error
+        real(kind=r8)    :: dt
+        type(timer_type) :: timer
+
+        type(observ_type),       allocatable :: observs(:)
+        type(rpc_request_type),  allocatable :: requests(:)
+        type(rpc_response_type), allocatable :: responses(:)
+
+        stat = TEST_FAILED
+
+        rc = dm_rpc_init()
+
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
+        allocate (observs(NOBSERVS))
+        allocate (requests(NOBSERVS))
+
+        call dm_dummy_observ(observs)
+
+        print *, 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
+
+        call dm_timer_start(timer)
+        rc = dm_rpc_send(requests, responses, observs, &
+                         dm_rpc_url(host, endpoint='/observ'), &
+                         username, password, deflate=.true., sequential=.true.)
+        dt = dm_timer_stop(timer)
+
+        call dm_perror(rc)
+        if (dm_is_error(rc)) return
+
+        error = .false.
+
+        do i = 1, size(responses)
+            if (responses(i)%code /= HTTP_CREATED) then
+                error = .true.
+                print '(" Request: ", i0, " HTTP: ", i0, " Error: ", i0, " cURL: ", i0)', &
+                    i, responses(i)%code, responses(i)%error, responses(i)%error_curl
+            end if
+        end do
+
+        print *, NOBSERVS, ' observations sent in ', real(dt), ' sec'
+        call dm_rpc_destroy()
+
+        if (error) return
+        stat = TEST_PASSED
+    end function test04
+
+    logical function test05() result(stat)
         !! This test sends a beat via HTTP POST request to an RPC-API.
         integer          :: rc
         integer(kind=i8) :: uptime
@@ -175,7 +286,7 @@ contains
         call dm_timer_start(timer)
         rc = dm_rpc_send(request  = request, &
                          response = response, &
-                         beat   = beat, &
+                         type     = beat, &
                          username = username, &
                          password = password, &
                          deflate  = .true., &
@@ -191,5 +302,5 @@ contains
 
         print *, 'beat sent in ', real(dt), ' sec'
         stat = TEST_PASSED
-    end function test03
+    end function test05
 end program dmtestrpc

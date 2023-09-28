@@ -221,7 +221,7 @@ contains
             ! Send RPC request to API.
             rc = dm_rpc_send(request  = request, &
                              response = response, &
-                             beat     = beat, &
+                             type     = beat, &
                              username = app%username, &
                              password = app%password, &
                              deflate  = APP_RPC_DEFLATE, &

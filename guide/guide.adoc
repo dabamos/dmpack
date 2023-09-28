@@ -1988,15 +1988,16 @@ $ dmserial --name dmserial --config /usr/local/etc/dmpack/dmserial.conf --verbos
 
 === dmsync [[dmsync]]
 
-The *dmsync* program sends logs, nodes, observations, sensors, and
-targets from local database to a remote <<dmapi>> server. The synchronisation
-may be started only once (to transfer nodes, sensors, and targets from client to
-server), periodically as a cron job, or by waiting for a POSIX semaphore.
+The *dmsync* program synchronises logs, nodes, observations, sensors, and
+targets from local database concurrently with a remote <<dmapi>> server. The
+synchronisation may be started only once if no interval is set (to transfer
+nodes, sensors, and targets from client to server), periodically as a cron job,
+or by waiting for a POSIX semaphore.
 
 The nodes, sensors, and targets referenced by observations in the local database
 must also exist in the remote server database. They can be created either with
-<<dmdbctl>> or <<dmweb>>, but also synchronised with *dmsync*. Logs do not
-require any additional database entries on server-side.
+<<dmdbctl>> or <<dmweb>>, but also synchronised with *dmsync*. Logs and targets
+do not require any additional database entries on server-side.
 
 The client databases must contain synchronisation tables. The tables are created
 automatically by <<dminit>> if command-line argument `--sync` is passed.
@@ -2030,7 +2031,7 @@ for testing.
 | `--debug`              | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
-| `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds.
+| `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds. If `0`, syncronisation is done only once.
 | `--logger _name_`      | `-l`  | –        | Name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmsync` | Name of program instance and configuration.
 | `--node _id_`          | `-N`  | –        | Node id, required for types `sensor` and `observ`.

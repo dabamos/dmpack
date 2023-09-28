@@ -2,12 +2,12 @@
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-13
+.\"      Date: 2023-09-28
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2023-09-13" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2023-09-28" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -44,20 +44,21 @@ dmsync \- synchronises databases between client and server
 .SH "DESCRIPTION"
 .sp
 The \fBdmsync\fP program synchronises logs, nodes, observations, sensors, and
-targets of a local database with an HTTP\-RPC server. The synchronisation may be
-started only once (to transfer nodes, sensors, and targets from client to
-server), periodically as a cron job, or by waiting for a POSIX semaphore.
+targets of a local database concurrently with an HTTP\-RPC server. The
+synchronisation may be started only once if no interval is set (to transfer
+nodes, sensors, and targets from client to server), periodically as a cron job,
+or by waiting for a POSIX semaphore.
 .sp
 The nodes, sensors, and targets referenced by observations in the local database
 must also exist in the remote server database. They can be created either with
-\fIdmdbcli(1)\fP or \fIdmweb(1)\fP, but also synchronised with \fBdmsync\fP. Logs do not
-require any additional database entries on server\-side.
+\fIdmdbcli(1)\fP or \fIdmweb(1)\fP, but also synchronised with \fBdmsync\fP. Logs and
+targets do not require any additional database entries on server\-side.
 .sp
-The client databases must contain synchronisation tables. The tables are created
-automatically by \fIdminit(1)\fP if command\-line argument \f(CR\-\-sync\fP is passed.
-Alternatively, start \fBdmsync\fP with argument \f(CR\-\-create\fP once.
+The client databases must contain synchronisation tables. The tables are
+created automatically by \fIdminit(1)\fP if command\-line argument \f(CR\-\-sync\fP is
+passed.  Alternatively, start \fBdmsync\fP with argument \f(CR\-\-create\fP once.
 .sp
-Database records are sent deflate\-compressed in Fortran 90 Namelist format via
+Database records are sent deflate\-compressed in Fortran 95 Namelist format via
 HTTP to the server. The program uses libcurl for data transfer. The called
 HTTP\-RPC API endpoints are expected under base URI
 \f(CR[http|https]://<host>:<port>/api/v1/\fP.
@@ -103,7 +104,8 @@ IP address or FQDN of RPC API server.
 .sp
 \fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
 .RS 4
-Synchronisation interval in seconds.
+Synchronisation interval in seconds. If set to \f(CR0\fP, only a single attempt is
+made.
 .RE
 .sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP
@@ -129,8 +131,8 @@ arguments is insecure and only recommended for testing.
 .sp
 \fB\-\-port\fP, \fB\-p\fP \fIport\fP
 .RS 4
-Port of RPC API server. The default is 0 (automatic selection depending on
-protocol).
+Port of RPC API server. The default is \f(CR0\fP, which selects the port
+automatically depending on the protocol.
 .RE
 .sp
 \fB\-\-tls\fP, \fB\-X\fP

@@ -25,13 +25,20 @@ module dm_nml
     integer, parameter, public :: NML_TARGET_LEN = 160       !! Max. size of `target_type` namelist in bytes.
 
     interface dm_nml_from
-        !! Converts type to string.
+        !! Converts type to static or allocatable string.
         module procedure :: nml_from_beat
         module procedure :: nml_from_log
         module procedure :: nml_from_node
         module procedure :: nml_from_observ
         module procedure :: nml_from_sensor
         module procedure :: nml_from_target
+
+        module procedure :: nml_from_beat_alloc
+        module procedure :: nml_from_log_alloc
+        module procedure :: nml_from_node_alloc
+        module procedure :: nml_from_observ_alloc
+        module procedure :: nml_from_sensor_alloc
+        module procedure :: nml_from_target_alloc
     end interface
 
     interface dm_nml_to
@@ -70,6 +77,13 @@ module dm_nml
     private :: nml_from_sensor
     private :: nml_from_target
 
+    private :: nml_from_beat_alloc
+    private :: nml_from_log_alloc
+    private :: nml_from_node_alloc
+    private :: nml_from_observ_alloc
+    private :: nml_from_sensor_alloc
+    private :: nml_from_target_alloc
+
     private :: nml_to_beat
     private :: nml_to_log
     private :: nml_to_node
@@ -91,7 +105,8 @@ contains
         !! must have a minimum length of `NML_BEAT_LEN`.
         type(beat_type),  intent(inout) :: beat !! Beat type.
         character(len=*), intent(inout) :: str  !! Output string.
-        integer                         :: stat
+
+        integer :: stat
 
         namelist /DMBEAT/ beat
 
@@ -102,12 +117,34 @@ contains
         rc = E_NONE
     end function nml_from_beat
 
+    integer function nml_from_beat_alloc(beat, str, n) result(rc)
+        !! Writes beat namelist to allocatable string of given length.
+        type(beat_type),               intent(inout) :: beat !! Beat type.
+        character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
+        integer,                       intent(in)    :: n    !! String length.
+
+        integer :: stat
+
+        namelist /DMBEAT/ beat
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMBEAT, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_beat_alloc
+
     integer function nml_from_log(log, str) result(rc)
         !! Writes log namelist to string. The passed character string
         !! must have a minimum length of `NML_LOG_LEN`.
         type(log_type),   intent(inout) :: log !! Log type.
         character(len=*), intent(inout) :: str !! Output string.
-        integer                         :: stat
+
+        integer :: stat
 
         namelist /DMLOG/ log
 
@@ -118,12 +155,34 @@ contains
         rc = E_NONE
     end function nml_from_log
 
+    integer function nml_from_log_alloc(log, str, n) result(rc)
+        !! Writes log namelist to allocatable string of given length.
+        type(log_type),                intent(inout) :: log !! Log type.
+        character(len=:), allocatable, intent(out)   :: str !! Allocatable output string.
+        integer,                       intent(in)    :: n   !! String length.
+
+        integer :: stat
+
+        namelist /DMLOG/ log
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMLOG, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_log_alloc
+
     integer function nml_from_node(node, str) result(rc)
         !! Writes node namelist to string. The passed character string
         !! must have a minimum length of `NML_NODE_LEN`.
-        type(node_type),  intent(inout) :: node  !! Node type.
-        character(len=*), intent(inout) :: str   !! Output string.
-        integer                         :: stat
+        type(node_type),  intent(inout) :: node !! Node type.
+        character(len=*), intent(inout) :: str  !! Output string.
+
+        integer :: stat
 
         namelist /DMNODE/ node
 
@@ -134,12 +193,34 @@ contains
         rc = E_NONE
     end function nml_from_node
 
+    integer function nml_from_node_alloc(node, str, n) result(rc)
+        !! Writes node namelist to allocatable string of given length.
+        type(node_type),               intent(inout) :: node !! Node type.
+        character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
+        integer,                       intent(in)    :: n    !! String length.
+
+        integer :: stat
+
+        namelist /DMNODE/ node
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMNODE, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_node_alloc
+
     integer function nml_from_observ(observ, str) result(rc)
         !! Writes observation namelist to string. The passed character string
         !! must have a minimum length of `NML_OBSERV_LEN`.
         type(observ_type), intent(inout) :: observ !! Observation type.
         character(len=*),  intent(inout) :: str    !! Output string.
-        integer                          :: stat
+
+        integer :: stat
 
         namelist /DMOBSERV/ observ
 
@@ -150,12 +231,34 @@ contains
         rc = E_NONE
     end function nml_from_observ
 
+    integer function nml_from_observ_alloc(observ, str, n) result(rc)
+        !! Writes observation namelist to allocatable string of given length.
+        type(observ_type),             intent(inout) :: observ !! Observation type.
+        character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
+        integer,                       intent(in)    :: n      !! String length.
+
+        integer :: stat
+
+        namelist /DMOBSERV/ observ
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMOBSERV, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_observ_alloc
+
     integer function nml_from_sensor(sensor, str) result(rc)
         !! Writes sensor namelist to string. The passed character string
         !! must have a minimum length of `NML_SENSOR_LEN`.
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=*),  intent(inout) :: str    !! Output string.
-        integer                          :: stat
+
+        integer :: stat
 
         namelist /DMSENSOR/ sensor
 
@@ -166,12 +269,34 @@ contains
         rc = E_NONE
     end function nml_from_sensor
 
+    integer function nml_from_sensor_alloc(sensor, str, n) result(rc)
+        !! Writes sensor namelist to allocatable string of given length.
+        type(sensor_type),             intent(inout) :: sensor !! Sensor type.
+        character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
+        integer,                       intent(in)    :: n      !! String length.
+
+        integer :: stat
+
+        namelist /DMSENSOR/ sensor
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMSENSOR, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_sensor_alloc
+
     integer function nml_from_target(target, str) result(rc)
         !! Writes target namelist to string. The passed character string
         !! must have a minimum length of `NML_TARGET_LEN`.
         type(target_type), intent(inout) :: target !! Target type.
         character(len=*),  intent(inout) :: str    !! Output string.
-        integer                          :: stat
+
+        integer :: stat
 
         namelist /DMTARGET/ target
 
@@ -181,6 +306,27 @@ contains
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_target
+
+    integer function nml_from_target_alloc(target, str, n) result(rc)
+        !! Writes target namelist to allocatable string of given length.
+        type(target_type),             intent(inout) :: target !! Target type.
+        character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
+        integer,                       intent(in)    :: n      !! String length.
+
+        integer :: stat
+
+        namelist /DMTARGET/ target
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: str, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        str = ' '
+        write (str, nml=DMTARGET, iostat=stat)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function nml_from_target_alloc
 
     integer function nml_read_log(log, unit) result(rc)
         !! Reads log from file or standard input.
