@@ -55,7 +55,7 @@ DMPACK covers the following tasks:
 * SQLite database access
 * data serialisation (ASCII, CSV, JSON, JSON Lines, Namelist)
 * remote procedure calls
-* data synchronisation between client and server
+* concurrent data synchronisation between client and server
 * distributed logging
 * heartbeats
 * server-side web applications

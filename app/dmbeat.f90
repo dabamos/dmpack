@@ -11,8 +11,7 @@ program dmbeat
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
 
-    character(len=*), parameter :: API_ROUTE_BEAT  = '/beat' !! Resolves to route `/api/v1/beat`.
-    logical,          parameter :: APP_RPC_DEFLATE = .true.  !! Compress RPC data.
+    logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
 
     integer, parameter :: HOST_LEN     = 80
     integer, parameter :: USERNAME_LEN = 32
@@ -198,7 +197,7 @@ contains
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &
                          port     = app%port,&
-                         endpoint = API_ROUTE_BEAT, &
+                         endpoint = RPC_ROUTE_BEAT, &
                          tls      = app%tls)
 
         last_error = E_NONE

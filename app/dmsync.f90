@@ -16,12 +16,6 @@ program dmsync
     integer, parameter :: APP_SYNC_LIMIT   = 10                 !! Max. number of records to sync at once.
     logical, parameter :: APP_RPC_DEFLATE  = .true.             !! Compress RPC payload.
 
-    character(len=*), parameter :: API_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
-    character(len=*), parameter :: API_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
-    character(len=*), parameter :: API_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
-    character(len=*), parameter :: API_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
-    character(len=*), parameter :: API_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
-
     integer, parameter :: HOST_LEN      = 80
     integer, parameter :: USERNAME_LEN  = 32
     integer, parameter :: PASSWORD_LEN  = 32
@@ -288,19 +282,19 @@ contains
         select case (app%type)
             case (SYNC_TYPE_LOG)
                 allocate (logs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=API_ROUTE_LOG, tls=app%tls)
+                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_LOG, tls=app%tls)
             case (SYNC_TYPE_NODE)
                 allocate (nodes(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=API_ROUTE_NODE, tls=app%tls)
+                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_NODE, tls=app%tls)
             case (SYNC_TYPE_OBSERV)
                 allocate (observs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=API_ROUTE_OBSERV, tls=app%tls)
+                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_OBSERV, tls=app%tls)
             case (SYNC_TYPE_SENSOR)
                 allocate (sensors(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=API_ROUTE_SENSOR, tls=app%tls)
+                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
             case (SYNC_TYPE_TARGET)
                 allocate (targets(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=API_ROUTE_TARGET, tls=app%tls)
+                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
             case default
                 ! Fail-safe, should never occur.
                 rc = E_TYPE

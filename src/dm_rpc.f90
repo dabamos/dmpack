@@ -44,8 +44,15 @@ module dm_rpc
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: RPC_BASE_DEFAULT = '/api/v1'                      !! Base path of dmapi service.
-    character(len=*), parameter, public :: RPC_USER_AGENT   = 'DMPACK ' // DM_VERSION_STRING !! User agent of RPC client.
+    character(len=*), parameter, public :: RPC_BASE       = '/api/v1'                      !! Base path of dmapi service.
+    character(len=*), parameter, public :: RPC_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
+
+    character(len=*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
+    character(len=*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
+    character(len=*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
+    character(len=*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
+    character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
+    character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
     ! HTTP Auth.
     integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
@@ -98,6 +105,7 @@ module dm_rpc
         character(len=:), allocatable               :: username                         !! HTTP Basic Auth user name.
         character(len=:), allocatable               :: password                         !! HTTP Basic Auth password.
         character(len=:), allocatable               :: url                              !! Request URL.
+        character(len=:), allocatable               :: user_agent                       !! User Agent.
         procedure(dm_rpc_callback), pointer, nopass :: callback        => dm_rpc_write_callback !! C-interoperable write callback function.
         type(c_ptr), private                        :: curl_ptr        = c_null_ptr     !! cURL handle.
         type(c_ptr), private                        :: list_ptr        = c_null_ptr     !! cURL list handle.
@@ -246,13 +254,13 @@ contains
 
     integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password) result(rc)
         !! Sends multiple HTTP requests by GET or POST method.
-        type(rpc_request_type),               intent(inout)           :: requests(:)  !! RPC request type array.
-        type(rpc_response_type), allocatable, intent(inout)           :: responses(:) !! RPC response type array.
-        character(len=*),                     intent(in),    optional :: url          !! URL of RPC API (may include port).
-        integer,                              intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),                     intent(in),    optional :: accept       !! HTTP accept header.
-        character(len=*),                     intent(in),    optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),                     intent(in),    optional :: password     !! HTTP Basic Auth password.
+        type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
+        type(rpc_response_type), allocatable, intent(inout)        :: responses(:) !! RPC response type array.
+        character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
+        integer,                              intent(in), optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
+        character(len=*),                     intent(in), optional :: accept       !! HTTP accept header.
+        character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
+        character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
 
         integer :: i
 
@@ -540,7 +548,7 @@ contains
         if (present(base)) then
             url = url // trim(base)
         else
-            url = url // RPC_BASE_DEFAULT
+            url = url // RPC_BASE
         end if
 
         if (present(endpoint)) url = url // trim(endpoint)
@@ -840,7 +848,17 @@ contains
         end if
 
         ! Set User Agent.
-        stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
+        ua_block: block
+            if (allocated(request%user_agent)) then
+                if (len_trim(request%user_agent) > 0) then
+                    stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, request%user_agent)
+                    exit ua_block
+                end if
+            end if
+
+            stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
+        end block ua_block
+
         if (stat /= CURLE_OK) return
 
         rc = E_NONE
