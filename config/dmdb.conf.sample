@@ -18,6 +18,6 @@ dmdb = {
     node = "dummy-node",
     ipc = false,
     logger = "",
-    debug = true,
+    debug = false,
     verbose = true
 }

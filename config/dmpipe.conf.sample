@@ -78,6 +78,6 @@ dmpipe = {
             delay = 1 * 1000
         }
     },
-    debug = true,
+    debug = false,
     verbose = true
 }

@@ -69,6 +69,6 @@ dmfs = {
             delay = 10 * 1000
         }
     },
-    debug = true,
+    debug = false,
     verbose = true
 }

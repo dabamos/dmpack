@@ -28,6 +28,6 @@ dmbeat = {
     count = 1,
     interval = 3 * 60,
     logger = "",
-    debug = true,
+    debug = false,
     verbose = true
 }
