@@ -89,7 +89,7 @@ configuration file.
   Output terminal, either ANSI, ASCII, GIF, PNG, PNG (using Cairo), Sixel, SVG,
   or X11. The terminal must be supported by _gnuplot(1)_.
 
-*--title*, *-H* _title_::
+*--title*, *-C* _title_::
   Plot title.
 
 *--to*, *-E* _timestamp_::

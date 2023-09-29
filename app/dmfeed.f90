@@ -61,7 +61,7 @@ contains
             arg_type('author',   short='A', type=ARG_TYPE_CHAR),    & ! -A, --author <string>
             arg_type('email',    short='M', type=ARG_TYPE_CHAR),    & ! -M, --email <string>
             arg_type('id',       short='I', type=ARG_TYPE_CHAR),    & ! -I, --id <string>
-            arg_type('title',    short='T', type=ARG_TYPE_CHAR),    & ! -T, --title <string>
+            arg_type('title',    short='C', type=ARG_TYPE_CHAR),    & ! -C, --title <string>
             arg_type('subtitle', short='G', type=ARG_TYPE_CHAR),    & ! -G, --subtitle <string>
             arg_type('url',      short='U', type=ARG_TYPE_CHAR),    & ! -U, --url <string>
             arg_type('xsl',      short='X', type=ARG_TYPE_CHAR)     & ! -X, --xsl <string>

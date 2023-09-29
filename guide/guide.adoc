@@ -943,7 +943,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--node _id_`         | `-N`  | –        | Select log messages of the given node id.
 | `--output _file_`     | `-o`  | _stdout_ | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
 | `--subtitle _string_` | `-G`  | –        | Sub-title of feed.
-| `--title _string_`    | `-T`  | –        | Title of feed.
+| `--title _string_`    | `-C`  | –        | Title of feed.
 | `--url _url_`         | `-U`  | –        | Public URL of the feed.
 | `--version`           | `-v`  | –        | Output version information and quit.
 | `--xsl`               | `-X`  | –        | Path to XSLT style sheet.
@@ -1214,7 +1214,7 @@ configuration file.
 | `--sensor _id_`         | `-S`  | –         | Sensor id.
 | `--target _id_`         | `-T`  | –         | Target id.
 | `--terminal _terminal_` | `-m`  | –         | <<dmgraph-format,Plot format>>.
-| `--title _title_`       | `-H`  | –         | Plot title.
+| `--title _title_`       | `-C`  | –         | Plot title.
 | `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
 | `--version`             | `-v`  | –         | Output version information and quit.
 | `--width _n_`           | `-W`  | 1000      | Plot width.

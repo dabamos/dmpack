@@ -76,7 +76,7 @@ different feeds. Run _dmuuid(1)_ to generate a valid UUID4.
 *--subtitle*, *-G* _title_::
   Sub-title of feed.
 
-*--title*, *-T* _title_::
+*--title*, *-C* _title_::
   Title of feed.
 
 *--url*, *-U* _url_::

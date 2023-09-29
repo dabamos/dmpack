@@ -154,7 +154,7 @@ contains
             arg_type('background', short='G', type=ARG_TYPE_CHAR), &    ! -G, --background <color>
             arg_type('foreground', short='P', type=ARG_TYPE_CHAR), &    ! -P, --foreground <color>
             arg_type('font',       short='A', type=ARG_TYPE_CHAR), &    ! -A, --font <name>
-            arg_type('title',      short='H', type=ARG_TYPE_CHAR), &    ! -H, --title <title>
+            arg_type('title',      short='C', type=ARG_TYPE_CHAR), &    ! -C, --title <title>
             arg_type('width',      short='W', type=ARG_TYPE_INTEGER), & ! -W, --width <n>
             arg_type('height',     short='H', type=ARG_TYPE_INTEGER)  & ! -H, --height <n>
         ]
