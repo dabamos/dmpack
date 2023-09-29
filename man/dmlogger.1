@@ -2,12 +2,12 @@
 .\"     Title: dmlogger
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-06-13
+.\"      Date: 2023-09-29
 .\"    Manual: User Commands
 .\"    Source: DMLOGGER
 .\"  Language: English
 .\"
-.TH "DMLOGGER" "1" "2023-06-13" "DMLOGGER" "User Commands"
+.TH "DMLOGGER" "1" "2023-09-29" "DMLOGGER" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -50,13 +50,13 @@ minimum are stored in the database. Log messages with lower level are
 discarded.
 .sp
 The IPC option enabled process synchronisation via POSIX semaphores. The
-semaphore value is incremented from 0 to 1 each time a new log has been
-received. The name of the semaphore equals the \fBdmlogger\fP name with leading
-\f(CR/\fP. Only a single process shall wait for the semaphore unless round\-robin IPC
-is desired. This option may be used to synchronise incoming log messages
-automatically with a remote RPC API server. For example, pass the \fBdmlogger\fP
-name through command\-line argument \f(CR\-\-wait\fP to \fIdmsync(1)\fP. The log
-synchronisation is be trigged by incoming logs.
+semaphore value is incremented from 0 to 1 whenever a new log was received. The
+name of the semaphore equals the \fBdmlogger\fP name with leading \f(CR/\fP. Only a
+single process shall wait for the semaphore unless round\-robin IPC is desired.
+This option may be used to synchronise incoming log messages automatically with
+a remote RPC API server. For example, pass the \fBdmlogger\fP name through
+command\-line argument \f(CR\-\-wait\fP to \fIdmsync(1)\fP. The log synchronisation is be
+trigged by incoming logs.
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP

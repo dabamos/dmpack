@@ -114,7 +114,7 @@ and Surveying of the Budapest University of Technology and Economics. (GPLv2)
 
 DMPACK has the following requirements:
 
-* Linux (_glibc_) or FreeBSD operating system (64-bit)
+* Linux (_glibc_) or FreeBSD operating system (x86-64, AArch64)
 * Fortran 2018 and ANSI C compiler
 
 Additional dependencies have to be present to build and run the software of this
@@ -124,10 +124,10 @@ package:
 * FastCGI
 * Gnuplot
 * LAPACK
-* libcurl
+* libcurl (≥ 8.3.0)
 * Lua 5.4
 * PCRE2
-* SQLite 3
+* SQLite 3 (≥ 3.39.0)
 * zlib
 
 To generate the man pages, the User’s Guide, and the source code documentation,
@@ -217,21 +217,24 @@ been compiled with GNU Fortran.
 On Debian, install GCC, GNU Fortran, and the build environment:
 
 ....
-$ sudo apt-get install gcc gfortran git make pkg-config
+$ sudo apt install gcc gfortran git make pkg-config
 ....
 
 The third-party dependencies have to be installed with development headers:
 
 ....
-$ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
+$ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
-Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox`,
-if raster image formats are not needed (SVG output only). Clone the DMPACK
-repository, and then execute the Makefile with build target `linux`:
+Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`,
+if raster image formats are not needed (SVG output only). Depending on the
+package repository, the names of the Lua packages may differ.
+
+Clone the DMPACK repository, and then execute the Makefile with build target
+`linux`:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -264,11 +267,15 @@ European Summer Time (CEST), which is usually not desired for long-term
 observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
 in this case.
 
+==== FreeBSD
+
 On FreeBSD, configure the time zone using:
 
 ....
 # tzsetup
 ....
+
+==== Linux
 
 On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
 
@@ -319,7 +326,7 @@ Start the _ntpd(8)_ service:
 On Debian Linux, install the NTP package:
 
 ....
-# apt-get install ntp
+# apt install ntp
 ....
 
 Query the NTP servers to synchronise with:
@@ -371,6 +378,8 @@ The system has to be rebooted for the changes to take effect.
 The operating system must have POSIX message queues enabled to run DMPACK
 programs on sensor nodes.
 
+==== FreeBSD
+
 On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
 queue file system is mounted:
 
@@ -404,6 +413,26 @@ _sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
 kern.mqueue.maxmsg: 100
 # sysctl kern.mqueue.maxmsgsize
 kern.mqueue.maxmsgsize: 16384
+....
+
+The maximum message size has to be at least 16384 bytes.
+
+==== Linux
+
+The POSIX message queue file system should be mounted by default on Linux. If
+not, run:
+
+....
+# mkdir -p /dev/mqueue
+# mount -t mqueue none /dev/mqueue
+....
+
+Set the maximum number of messages and the maximum message size to some
+reasonable values:
+
+....
+# sysctl fs.mqueue.msg_max=100
+# sysctl fs.mqueue.msgsize_max=16384
 ....
 
 The maximum message size has to be at least 16384 bytes.
@@ -675,23 +704,23 @@ for testing.
 
 [%autowidth.stretch]
 |===
-| Option                 | Short | Default       | Description
+| Option                 | Short | Default  | Description
 
-| `--config _file_`      | `-c`  | –             | Path to configuration file.
-| `--count _n_`          | `-C`  | 0 (unlimited) | Maximum number of heartbeats to send.
-| `--debug`              | `-D`  | off           | Forward log messages of level DEBUG via IPC (if logger is set).
-| `--help`               | `-h`  | –             | Output available command-line arguments and quit.
-| `--host _host_`        | `-H`  | –             | IP or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
-| `--interval _seconds_` | `-I`  | 60            | Emit interval in seconds.
-| `--logger _name_`      | `-l`  | –             | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
-| `--name _name_`        | `-n`  | `dmbeat`      | Optional name of instance and table in given configuration file.
-| `--node _id_`          | `-N`  | –             | Node id.
-| `--password _string_`  | `-P`  | –             | HTTP-RPC API password.
-| `--port _port_`        | `-p`  | 0 (automatic) | Port of HTTP-RPC API server.
-| `--tls`                | `-X`  | off           | Use TLS encryption.
-| `--username _string_`  | `-U`  | –             | HTTP-RPC API user name. If set, implies HTTP Basic Auth.
-| `--verbose`            | `-V`  | off           | Print log messages to _stderr_.
-| `--version`            | `-v`  | –             | Output version information and quit.
+| `--config _file_`      | `-c`  | –        | Path to configuration file.
+| `--count _n_`          | `-C`  | 0        | Maximum number of heartbeats to send (unlimited if `0`).
+| `--debug`              | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--help`               | `-h`  | –        | Output available command-line arguments and quit.
+| `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
+| `--interval _seconds_` | `-I`  | 60       | Emit interval in seconds.
+| `--logger _name_`      | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`        | `-n`  | `dmbeat` | Optional name of instance and table in given configuration file.
+| `--node _id_`          | `-N`  | –        | Node id.
+| `--password _string_`  | `-P`  | –        | HTTP-RPC API password.
+| `--port _port_`        | `-p`  | 0        | Port of HTTP-RPC API server. The default `0` selects the port automatically.
+| `--tls`                | `-X`  | off      | Use TLS encryption.
+| `--username _string_`  | `-U`  | –        | HTTP-RPC API user name. If set, implies HTTP Basic Auth.
+| `--verbose`            | `-V`  | off      | Print log messages to _stderr_.
+| `--version`            | `-v`  | –        | Output version information and quit.
 |===
 
 ==== Examples
@@ -912,7 +941,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--name _name_`       | `-n`  | `dmfeed` | Name of instance and table in given configuration file.
 | `--nentries _count_`  | `-E`  | 50       | Maximum number of entries in feed (max. 500).
 | `--node _id_`         | `-N`  | –        | Select log messages of the given node id.
-| `--output _file_`     | `-o`  | _stdout_ | Path of the output file. If empty, the Atom feed will be printed to standard output.
+| `--output _file_`     | `-o`  | _stdout_ | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
 | `--subtitle _string_` | `-G`  | –        | Sub-title of feed.
 | `--title _string_`    | `-T`  | –        | Title of feed.
 | `--url _url_`         | `-U`  | –        | Public URL of the feed.
@@ -984,7 +1013,7 @@ present in the database.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmfs`  | Name of instance and table in given configuration file.
 | `--node _id_`       | `-N`  | –       | Node id.
-| `--output _file_`   | `-o`  | –       | Output file to append observations to (or `-` for _stdout_).
+| `--output _file_`   | `-o`  | –       | Output file to append observations to (`-` for _stdout_).
 | `--sensor _id_`     | `-S`  | –       | Sensor id.
 | `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
 | `--version`         | `-v`  | –       | Output version information and quit.
@@ -1001,7 +1030,7 @@ First, install the 1-Wire file system package. On FreeBSD, run:
 On Linux, install the package instead with:
 
 ....
-# apt-get install owfs
+# apt install owfs
 ....
 
 Connect a 1-Wire temperature sensor through USB (device `/dev/ttyU0`), and mount
@@ -1065,15 +1094,13 @@ dmfs = {
   logger = "dmlogger",          -- Logger to send logs to (optional).
   node = "node-1",              -- Node id (required).
   sensor = "sensor-1",          -- Sensor id (required).
-  output = "",                  -- Path to output file or `-` for stdout (optional).
+  output = "",                  -- Path to output file, empty or `-` for stdout (optional).
   format = "none",              -- Output format (`csv` or `jsonl`).
-  debug = true,                 -- Forward log messages of level DEBUG via IPC.
-  verbose = true,               -- Print messages to standard output (optional).
   jobs = {                      -- List of jobs to perform.
     {
       delay = 10 * 1000,        -- Delay in mseconds to wait afterwards (optional).
-      disabled = false,         -- Set to 1 to ignore job (optional).
-      onetime = false,          -- Set to 1 to run job only once (optional).
+      disabled = false,         -- Disable to ignore job (optional).
+      onetime = false,          -- Run job only once (optional).
       observation = {           -- Observation to execute (required).
         name = "observ-1",      -- Observation name (required).
         target_id = "target-1", -- Target id (required).
@@ -1093,7 +1120,9 @@ dmfs = {
         }
       }
     }
-  }
+  },
+  debug = false,                -- Forward log messages of level DEBUG via IPC.
+  verbose = true                -- Print messages to standard output (optional).
 }
 ....
 
@@ -1173,8 +1202,8 @@ configuration file.
 | `--background _color_`  | `-G`  | –         | Background colour (for example, `#ffffff` or `white`).
 | `--config _file_`       | `-c`  | –         | Path to configuration file.
 | `--database _file_`     | `-d`  | –         | Path to SQLite observation database.
-| `--font _name_`         | `-A`  | –         | Font name or file name (for example, `Open Sans`, `arial.ttf`, `monospace`).
-| `--foreground _color_`  | `-P`  | '#3b4cc0' | Foreground colour (for example, `#ff0000` or `red`).
+| `--font _name_`         | `-A`  | –         | Font name or file path (for example, `Open Sans`, `arial.ttf`, `monospace`).
+| `--foreground _color_`  | `-P`  | `#3b4cc0` | Foreground colour (for example, `#ff0000` or `red`).
 | `--from _timestamp_`    | `-B`  | –         | Start of time range in ISO 8601.
 | `--height _n_`          | `-H`  | 400       | Plot height.
 | `--help`                | `-h`  | –         | Output available command-line arguments and quit.
@@ -1403,8 +1432,8 @@ minimum are stored in the database. Log messages with lower level are printed to
 standard output before being discarded (if verbose mode is enabled).
 
 The IPC option allows process synchronisation via POSIX semaphores. The value of
-the semaphore is changed from `0` to `1` each time a new log has been received.
-The name of the semaphore equals the *dmlogger* name with leading `/`. Only a
+the semaphore is changed from `0` to `1` whenever a new log was received. The
+name of the semaphore equals the *dmlogger* name with leading `/`. Only a
 single process should wait for the semaphore unless round-robin passing is
 desired.
 
@@ -1440,9 +1469,9 @@ The following log levels are accepted:
 | `-Q`
 | off
 | Use POSIX semaphore for process synchronisation. The name of the semaphore
-matches the instance name (with leading slash). The semaphore is set to 1 each
-time a log message has been received. Only a single process may wait for this
-semaphore.
+matches the instance name (with leading slash). The semaphore is set to 1
+whenever a new log message was received. Only a single process may wait for
+this semaphore.
 
 | `--minlevel _level_`
 | `-L`
@@ -1577,7 +1606,7 @@ database for the observation to be stored.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmpipe` | Name of instance and table in given configuration file.
 | `--node _id_`       | `-N`  | –        | Node id.
-| `--output _file_`   | `-o`  | –        | Output file to append observations to (or `-` for _stdout_).
+| `--output _file_`   | `-o`  | –        | Output file to append observations to (`-` for _stdout_).
 | `--sensor _id_`     | `-S`  | –        | Sensor id.
 | `--verbose`         | `-V`  | off      | Print log messages to _stderr_.
 | `--version`         | `-v`  | –        | Output version information and quit.
@@ -1610,15 +1639,13 @@ dmpipe = {
   logger = "dmlogger",              -- Logger to send logs to (optional).
   node = "dummy-node",              -- Node id (required).
   sensor = "dummy-sensor",          -- Sensor id (required).
-  output = "",                      -- Path to output file or `-` for stdout (optional).
+  output = "",                      -- Path to output file, empty or `-` for stdout (optional).
   format = "none",                  -- Output format (`csv` or `jsonl`).
-  debug = true,                     -- Forward log messages of level DEBUG via IPC.
-  verbose = true,                   -- Print messages to standard output (optional).
   jobs = {                          -- Jobs to perform.
     {
       delay = 60 * 1000,            -- Delay to wait afterwards in mseconds (optional).
-      disabled = false,             -- Set to true to ignore job (optional).
-      onetime = false,              -- Set to true to run job only once (optional).
+      disabled = false,             -- Disable to ignore job (optional).
+      onetime = false,              -- Run job only once (optional).
       observation = {               -- Observation to execute (optional).
         name = "dummy-observ",      -- Observation name (required).
         target_id = "dummy-target", -- Target id (required).
@@ -1638,7 +1665,9 @@ dmpipe = {
         }
       }
     }
-  }
+  },
+  debug = false,                    -- Forward log messages of level DEBUG via IPC.
+  verbose = true                    -- Print messages to standard output (optional).
 }
 ....
 
@@ -1712,7 +1741,7 @@ configuration file. The arguments overwrite settings from file.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration file and POSIX message queue to subscribe to.
 | `--node _id_`       | `-N`  | –        | Optional node id.
-| `--output _file_`   | `-o`  | _stdout_ | Output file to append observations to (or `-` for _stdout_).
+| `--output _file_`   | `-o`  | _stdout_ | Output file to append observations to (empty or `-` for _stdout_).
 | `--replace`         | `-r`  | off      | Replace output file instead of appending data.
 | `--response _name_` | `-R`  | –        | Name of observation response to output (required for format `block`).
 | `--type _type_`     | `-t`  | –        | Data type to receive: `log` or `observ`.
@@ -1967,7 +1996,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmserial` | Name of instance and table in given configuration file.
 | `--node _id_`       | `-N`  | –          | Node id.
-| `--output _file_`   | `-o`  | –          | Output file to append observations to (or `-` for _stdout_).
+| `--output _file_`   | `-o`  | –          | Output file to append observations to (`-` for _stdout_).
 | `--parity _name_`   | `-P`  | `none`     | Parity bits (`none`, `even`, or `odd`).
 | `--rts`             | `-R`  | off        | Enable Request To Send (RTS).
 | `--sensor _id_`     | `-S`  | –          | Sensor id.
@@ -2012,7 +2041,7 @@ to the server. The program uses libcurl for data transfer. The accessed RPC API
 endpoints are expected under URL `[http|https]://<host>:<port>/api/v1/<endpoint>`.
 
 The result of each synchronisation attempt is stored in the local database.
-Observations are marked as synchronised only if the server returns HTTP 201
+Records are marked as synchronised only if the server returns HTTP 201
 (Created).
 
 Passing the server credentials via the command-line arguments `--username` and

@@ -45,7 +45,7 @@ HTTP-RPC API endpoints are expected under base URI
 `[http|https]://<host>:<port>/api/v1/`.
 
 The result of each synchronisation attempt is stored in the local database.
-Observations are marked as synchronised only if the server returns HTTP 201
+Records are marked as synchronised only if the server returns HTTP 201
 (Created).
 
 Passing the server credentials via the command-line arguments `--username` and

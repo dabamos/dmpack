@@ -16,9 +16,9 @@ program dmsync
     integer, parameter :: APP_SYNC_LIMIT   = 10                 !! Max. number of records to sync at once.
     logical, parameter :: APP_RPC_DEFLATE  = .true.             !! Compress RPC payload.
 
-    integer, parameter :: HOST_LEN      = 80
-    integer, parameter :: USERNAME_LEN  = 32
-    integer, parameter :: PASSWORD_LEN  = 32
+    integer, parameter :: HOST_LEN     = 80
+    integer, parameter :: USERNAME_LEN = 32
+    integer, parameter :: PASSWORD_LEN = 32
 
     type :: app_type
         !! Global application settings.

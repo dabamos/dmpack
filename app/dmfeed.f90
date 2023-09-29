@@ -144,7 +144,7 @@ contains
 
         rc = dm_config_open(config, app%config, app%name)
 
-        if_block: if (dm_is_ok(rc)) then
+        if (dm_is_ok(rc)) then
             rc = dm_config_get(config, 'database', app%database)
             rc = dm_config_get(config, 'output',   app%output)
             rc = dm_config_get(config, 'node',     app%node)
@@ -158,7 +158,8 @@ contains
             rc = dm_config_get(config, 'subtitle', app%atom%subtitle)
             rc = dm_config_get(config, 'url',      app%atom%url)
             rc = dm_config_get(config, 'xsl',      app%atom%xsl)
-        end if if_block
+            rc = E_NONE
+        end if
 
         call dm_config_close(config)
     end function read_config
@@ -209,7 +210,7 @@ contains
             call dm_atom_from_logs(app%atom, logs, xml)
 
             ! Write to file.
-            if (len_trim(app%output) > 0) then
+            if (len_trim(app%output) > 0 .and. app%output /= '-') then
                 call dm_file_write(app%output, xml, raw=.true., error=rc)
                 if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
                 exit feed_block

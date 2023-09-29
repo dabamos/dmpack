@@ -176,13 +176,13 @@ $ make freebsd_debug DEBUG="-g -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-
 On Debian, install GCC, GNU Fortran, and the build environment:
 
 ```
-$ sudo apt-get install gcc gfortran git make pkg-config
+$ sudo apt install gcc gfortran git make pkg-config
 ```
 
 The third-party dependencies have to be installed with development headers:
 
 ```
-$ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
+$ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
   gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev

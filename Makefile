@@ -606,7 +606,7 @@ $(DMBEAT): app/dmbeat.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT)
 
 $(DMDB): app/dmdb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT)
 
 $(DMDBCLI): app/dmdbctl.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbctl.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
@@ -636,7 +636,7 @@ $(DMLOG): app/dmlog.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOG) app/dmlog.f90 $(TARGET) $(LDLIBS) $(LIBRT)
 
 $(DMLOGGER): app/dmlogger.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT)
 
 $(DMLUA): app/dmlua.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBRT)
@@ -657,7 +657,7 @@ $(DMSERIAL): app/dmserial.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
 
 $(DMSYNC): app/dmsync.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBRT)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT)
 
 $(DMUUID): app/dmuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)

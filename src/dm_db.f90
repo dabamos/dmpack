@@ -1121,7 +1121,7 @@ contains
     end function dm_db_get_journal_mode
 
     integer function dm_db_init() result(rc)
-        !! Initialises SQLite.
+        !! Initialises SQLite backend.
         rc = E_DB
         if (sqlite3_initialize() /= SQLITE_OK) return
         rc = E_NONE

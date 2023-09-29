@@ -17,9 +17,9 @@ program dmpipe
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
-    integer, parameter :: OUTPUT_NONE   = 0
-    integer, parameter :: OUTPUT_STDOUT = 1
-    integer, parameter :: OUTPUT_FILE   = 2
+    integer, parameter :: OUTPUT_NONE   = 0 !! No output.
+    integer, parameter :: OUTPUT_STDOUT = 1 !! Standard output.
+    integer, parameter :: OUTPUT_FILE   = 2 !! File.
 
     type :: app_type
         !! Global application settings.
@@ -237,7 +237,7 @@ contains
             end select
 
             app%output_type = OUTPUT_FILE
-            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
+            if (app%output == '-') app%output_type = OUTPUT_STDOUT
         end if
 
         if (dm_job_list_count(app%jobs) == 0) then

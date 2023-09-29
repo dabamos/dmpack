@@ -14,7 +14,7 @@ module dm_rpc
     !! type(rpc_response_type)       :: response
     !!
     !! rc = dm_rpc_init()
-    !! url = dm_rpc_url('localhost', port=80, endpoint='/observ')
+    !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
     !! rc = dm_rpc_send(request, response, observ, url)
     !! call dm_rpc_destroy()
     !! ```
@@ -23,8 +23,8 @@ module dm_rpc
     !! `http://localhost:80/api/v1/observ` in this case.
     !!
     !! The procedures `dm_rpc_init()` and `dm_rpc_destroy()` have to be called
-    !! only once per process and if the MQTT or Mail backend was not initialised
-    !! already.
+    !! once per process, and only if neither the MQTT nor the mail backend was
+    !! not initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_beat
@@ -317,10 +317,16 @@ contains
     end function dm_rpc_request_single
 
     integer function dm_rpc_send_type(request, response, type, url, username, password, deflate) result(rc)
-        !! Sends an observation to a given URL in Namelist format, with optional
-        !! authentication and deflate compression. The URL has to be the API
-        !! endpoint that accepts HTTP POST requests. For `dmapi`, this could be,
-        !! for example: `http://localhost/api/v1/observ`.
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and deflate compression. The URL has to be
+        !! the API endpoint that accepts HTTP POST requests.
+        !!
+        !! The dummy argument `array` may be of type `beat_type`, `log_type`,
+        !! `node_type`, `observ_type`, `sensor_type`, or `target_type`. The
+        !! function returns `E_INVALID` on any other type.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
