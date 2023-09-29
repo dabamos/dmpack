@@ -92,13 +92,13 @@ module dm_lua
     public :: dm_lua_get
     public :: dm_lua_global
     public :: dm_lua_init
-    public :: dm_lua_inject
     public :: dm_lua_is_function
     public :: dm_lua_is_nil
     public :: dm_lua_is_table
     public :: dm_lua_last_error
     public :: dm_lua_open
     public :: dm_lua_pop
+    public :: dm_lua_prepare
     public :: dm_lua_register
     public :: dm_lua_table
     public :: dm_lua_table_size
@@ -221,25 +221,6 @@ contains
         rc = E_NONE
     end function dm_lua_init
 
-    integer function dm_lua_inject(lua) result(rc)
-        !! Injects DMPACK parameters and functions into Lua state.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-
-        rc = dm_lua_eval(lua, 'LOG_NONE = ' // dm_itoa(LOG_NONE))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_DEBUG = ' // dm_itoa(LOG_DEBUG))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_INFO = ' // dm_itoa(LOG_INFO))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_WARNING = ' // dm_itoa(LOG_WARNING))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_ERROR = ' // dm_itoa(LOG_ERROR))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL))
-
-        rc = E_NONE
-    end function dm_lua_inject
-
     logical function dm_lua_is_function(lua) result(is_function)
         !! Returns `.true.` if element on top of stack is of type function.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
@@ -274,14 +255,14 @@ contains
         str = ''
     end function dm_lua_last_error
 
-    integer function dm_lua_open(lua, file_path, eval, inject) result(rc)
+    integer function dm_lua_open(lua, file_path, eval, prepare) result(rc)
         !! Opens Lua script and executes it by default.
         type(lua_state_type), intent(inout)        :: lua       !! Lua type.
         character(len=*),     intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
-        logical,              intent(in), optional :: inject    !! Inject DMPACK parameters into Lua state.
+        logical,              intent(in), optional :: prepare   !! Inject DMPACK parameters into Lua state.
 
-        logical :: eval_, inject_
+        logical :: eval_, prepare_
 
         rc = E_INVALID
         if (.not. c_associated(lua%ptr)) return
@@ -292,11 +273,11 @@ contains
         eval_ = .true.
         if (present(eval)) eval_ = eval
 
-        inject_ = .false.
-        if (present(inject)) inject_ = inject
+        prepare_ = .false.
+        if (present(prepare)) prepare_ = prepare
 
-        if (inject_) then
-            rc = dm_lua_inject(lua)
+        if (prepare_) then
+            rc = dm_lua_prepare(lua)
             if (dm_is_error(rc)) return
         end if
 
@@ -307,6 +288,25 @@ contains
 
         rc = dm_lua_error(lual_loadfile(lua%ptr, trim(file_path)))
     end function dm_lua_open
+
+    integer function dm_lua_prepare(lua) result(rc)
+        !! Prepares Lua environment by injecting DMPACK parameters.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+
+        rc = dm_lua_eval(lua, 'LOG_NONE = ' // dm_itoa(LOG_NONE))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_DEBUG = ' // dm_itoa(LOG_DEBUG))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_INFO = ' // dm_itoa(LOG_INFO))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_WARNING = ' // dm_itoa(LOG_WARNING))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_ERROR = ' // dm_itoa(LOG_ERROR))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL))
+
+        rc = E_NONE
+    end function dm_lua_prepare
 
     integer function dm_lua_register(lua, name, proc) result(rc)
         !! Registers a new Lua command.

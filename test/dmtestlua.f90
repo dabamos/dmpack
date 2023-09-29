@@ -72,7 +72,7 @@ contains
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc, dm_lua_error(lua))
+            call dm_perror(rc, dm_lua_last_error(lua))
             return
         end if
 
@@ -168,7 +168,7 @@ contains
         end block test_block
 
         call dm_observ_out(observ)
-        call dm_perror(rc, dm_lua_error(lua))
+        call dm_perror(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) return
@@ -207,7 +207,7 @@ contains
             call dm_lua_dump_stack(lua)
         end block test_block
 
-        call dm_perror(rc, dm_lua_error(lua))
+        call dm_perror(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         print *, 'Validating observations ...'
@@ -259,7 +259,7 @@ contains
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
-        call dm_perror(rc, dm_lua_error(lua))
+        call dm_perror(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         print *, 'Validating jobs ...'
@@ -314,7 +314,7 @@ contains
             rc = E_NONE
         end block test_block
 
-        call dm_perror(rc, dm_lua_error(lua))
+        call dm_perror(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 

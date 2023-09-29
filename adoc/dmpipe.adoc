@@ -20,7 +20,7 @@ dmpipe - reads observations from sub-process
 
 == DESCRIPTION
 
-The *dmpipe* program reads responses from a process connected via anonymouse
+The *dmpipe* program reads responses from a process connected via anonymous
 pipe.
 
 Each request of an observation must contain the process to execute in attribute

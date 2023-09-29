@@ -149,12 +149,12 @@ contains
             arg_type('response',   short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <name>
             arg_type('from',       short='B', type=ARG_TYPE_TIME), &    ! -B, --from <timestamp>
             arg_type('to',         short='E', type=ARG_TYPE_TIME), &    ! -E, --to <timestamp>
-            arg_type('terminal',   short='M', type=ARG_TYPE_CHAR, max_len=PLOT_TERM_NAME_LEN), & ! -M, --terminal <name>
+            arg_type('terminal',   short='m', type=ARG_TYPE_CHAR, max_len=PLOT_TERM_NAME_LEN), & ! -m, --terminal <name>
             arg_type('output',     short='o', type=ARG_TYPE_CHAR), &    ! -o, --output <file>
             arg_type('background', short='G', type=ARG_TYPE_CHAR), &    ! -G, --background <color>
             arg_type('foreground', short='P', type=ARG_TYPE_CHAR), &    ! -P, --foreground <color>
             arg_type('font',       short='A', type=ARG_TYPE_CHAR), &    ! -A, --font <name>
-            arg_type('title',      short='T', type=ARG_TYPE_CHAR), &    ! -T, --title <title>
+            arg_type('title',      short='H', type=ARG_TYPE_CHAR), &    ! -H, --title <title>
             arg_type('width',      short='W', type=ARG_TYPE_INTEGER), & ! -W, --width <n>
             arg_type('height',     short='H', type=ARG_TYPE_INTEGER)  & ! -H, --height <n>
         ]

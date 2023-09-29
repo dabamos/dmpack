@@ -200,6 +200,8 @@ contains
         type(log_type) :: log
 
         steps = 0
+        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_DEBUG, 'minimum log level is ' // LOG_LEVEL_NAMES(app%minlevel))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.

@@ -182,14 +182,14 @@ $ cd dmpack/
 $ make freebsd
 ....
 
-Install the library and all programs system-wide:
+Install the library and all programs system-wide to `/usr/local`:
 
 ....
 $ doas make install_freebsd
 ....
 
-You can change the installation prefix with argument `PREFIX` (by default,
-`/usr/local`). To install to a custom directory, run:
+You can change the installation prefix with argument `PREFIX`. To install to a
+custom directory, run:
 
 ....
 $ doas make install PREFIX=/opt
@@ -242,7 +242,7 @@ $ cd dmpack/
 $ make linux
 ....
 
-Install the library and all programs system-wide:
+Install the library and all programs system-wide to `/usr`:
 
 ....
 $ sudo make install_linux
@@ -444,7 +444,7 @@ usually used to run jobs periodically. For example, in order to update an XML
 feed, or to generate HTML reports, add a schedule of the task to perform to the
 local _crontab(5)_ file.
 
-We can edit the cron jobs of user `www` with _crontab(1)_:
+For example, we can edit the cron jobs of user `www` with _crontab(1)_:
 
 ....
 # crontab -u www -e
@@ -758,8 +758,8 @@ equals the *dmdb* name. Only a single process may wait for the semaphore.
 | `-Q`
 | off
 | Uses a POSIX semaphore for process synchronisation. The name of the semaphore
-matches the instance name (with leading `/`). The semaphore is set to 1 each
-time an observation has been received. Only a single process may wait for this
+matches the instance name (with leading `/`). The semaphore is set to 1 whenever
+a new observation was received. Only a single process may wait for this
 semaphore, otherwise, reading occurs in round-robin fashion.
 
 | `--logger _name_`
@@ -1213,8 +1213,8 @@ configuration file.
 | `--response _name_`     | `-R`  | –         | Response name.
 | `--sensor _id_`         | `-S`  | –         | Sensor id.
 | `--target _id_`         | `-T`  | –         | Target id.
-| `--terminal _terminal_` | `-M`  | –         | <<dmgraph-format,Plot format>>.
-| `--title _title_`       | `-T`  | –         | Plot title.
+| `--terminal _terminal_` | `-m`  | –         | <<dmgraph-format,Plot format>>.
+| `--title _title_`       | `-H`  | –         | Plot title.
 | `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
 | `--version`             | `-v`  | –         | Output version information and quit.
 | `--width _n_`           | `-W`  | 1000      | Plot width.
@@ -1864,8 +1864,8 @@ dmreport = {
   logs = {
     disabled = false,            -- Disable logs.
     database = "log.sqlite",     -- Path to log database.
-    minlevel = 3,                -- Minimum log level (default: 3).
-    maxlevel = 5,                -- Maximum log level (default: 5).
+    minlevel = LOG_WARNING,      -- Minimum log level (default: LOG_WARNING).
+    maxlevel = LOG_CRITICAL,     -- Maximum log level (default: LOG_CRITICAL).
     title = "Logs",              -- Overwrite default heading.
     meta = "",                   -- Optional description.
   }
@@ -4220,8 +4220,7 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 18   | `E_FORMAT`          | Format error.
 | 19   | `E_NOT_FOUND`       | Resource not found.
 | 20   | `E_READ_ONLY`       | Read-only access.
-| 21   | `E_LUA`             | Lua error.
-| 22   | `E_CONFIG`          | Invalid configuration.
+| 21   | `E_CONFIG`          | Invalid configuration.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_MEM`          | No memory or disk full.
@@ -4259,6 +4258,13 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 94   | `E_RPC_AUTH`        | RPC API call unauthorised.
 | 95   | `E_RPC_CONFLICT`    | RPC resource exists.
 | 96   | `E_RPC_SERVER`      | RPC internal server error.
-| 100  | `E_MAIL`            | Generic SMTP error.
-| 110  | `E_MQTT`            | Generic MQTT error.
+| 100  | `E_LUA`             | Generic Lua error.
+| 101  | `E_LUA_YIELD`       | Lua thread (coroutine) yields.
+| 102  | `E_LUA_RUNTIME`     | Lua runtime error.
+| 103  | `E_LUA_SYNTAX`      | Lua syntax error.
+| 104  | `E_LUA_MEM`         | Lua memory allocation error.
+| 105  | `E_LUA_ERROR`       | Lua message handling error.
+| 106  | `E_LUA_FILE`        | Lua file I/O error.
+| 110  | `E_MAIL`            | Generic SMTP error.
+| 120  | `E_MQTT`            | Generic MQTT error.
 |===
