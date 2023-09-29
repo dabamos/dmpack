@@ -29,8 +29,7 @@ module dm_error
     integer, parameter, public :: E_FORMAT         =  18 !! Format error.
     integer, parameter, public :: E_NOT_FOUND      =  19 !! Resource not found.
     integer, parameter, public :: E_READ_ONLY      =  20 !! Read-only access.
-    integer, parameter, public :: E_LUA            =  21 !! Lua error.
-    integer, parameter, public :: E_CONFIG         =  22 !! Invalid configuration error.
+    integer, parameter, public :: E_CONFIG         =  21 !! Invalid configuration error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -81,10 +80,18 @@ module dm_error
     integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
 
-    integer, parameter, public :: E_MAIL           = 100 !! Generic SMTP error.
-    integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
+    integer, parameter, public :: E_LUA            = 100 !! Generic Lua error.
+    integer, parameter, public :: E_LUA_YIELD      = 101 !! Lua thread (coroutine) yields.
+    integer, parameter, public :: E_LUA_RUNTIME    = 102 !! Lua runtime error.
+    integer, parameter, public :: E_LUA_SYNTAX     = 103 !! Lua syntax error.
+    integer, parameter, public :: E_LUA_MEM        = 104 !! Lua memory allocation error.
+    integer, parameter, public :: E_LUA_ERROR      = 105 !! Lua message handling error.
+    integer, parameter, public :: E_LUA_FILE       = 106 !! Lua file I/O error.
 
-    integer, parameter, public :: E_LAST           = 110 !! DO NOT USE.
+    integer, parameter, public :: E_MAIL           = 110 !! Generic SMTP error.
+    integer, parameter, public :: E_MQTT           = 120 !! Generic MQTT error.
+
+    integer, parameter, public :: E_LAST           = 120 !! DO NOT USE.
 
     interface dm_perror
         !! Alias for `dm_error_out()`.
@@ -148,8 +155,6 @@ contains
                 str = 'resource not found'
             case (E_READ_ONLY)
                 str = 'read only'
-            case (E_LUA)
-                str = 'Lua error'
             case (E_CONFIG)
                 str = 'configuration error'
 
@@ -158,6 +163,8 @@ contains
                 str = 'database error'
             case (E_DB_ID)
                 str = 'database application id invalid'
+            case (E_DB_MEM)
+                str = 'database memory error'
             case (E_DB_BUSY)
                 str = 'database busy'
             case (E_DB_LOCKED)
@@ -199,7 +206,7 @@ contains
             case (E_ARG_LENGTH)
                 str = 'argument length invalid'
 
-            ! Message queue.
+            ! POSIX message queue.
             case (E_MQUEUE)
                 str = 'message queue operation failed'
             case (E_MQUEUE_EMPTY)
@@ -236,6 +243,22 @@ contains
                 str = 'RPC conflict'
             case (E_RPC_SERVER)
                 str = 'RPC server error'
+
+            ! Lua.
+            case (E_LUA)
+                str = 'Lua error'
+            case (E_LUA_YIELD)
+                str = 'Lua thread yields'
+            case (E_LUA_RUNTIME)
+                str = 'Lua runtime error'
+            case (E_LUA_SYNTAX)
+                str = 'Lua syntax error'
+            case (E_LUA_MEM)
+                str = 'Lua memory error'
+            case (E_LUA_ERROR)
+                str = 'Lua message handling error'
+            case (E_LUA_FILE)
+                str = 'Lua file I/O error'
 
             ! Mail.
             case (E_MAIL)

@@ -401,6 +401,7 @@ contains
             end select
         end if
 
+        if (dm_is_error(rc)) return
         rc = rpc_request(request, response)
     end function dm_rpc_send_type
 
@@ -517,13 +518,13 @@ contains
             if (dm_is_error(rc)) return
         end do
 
-        ! Send all requests concurrently.
+        ! Send requests concurrently.
         if (.not. sequential_) then
             rc = rpc_request(requests, responses)
             return
         end if
 
-        ! Send request sequentially.
+        ! Send requests sequentially.
         do i = 1, n
             rc = rpc_request(requests(i), responses(i))
         end do

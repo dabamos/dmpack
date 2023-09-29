@@ -1,8 +1,19 @@
 --
 -- Example configuration file for dmfeed.
 --
--- Rename table "dmfeed" to the instance name (parameter `--name`).
 -- Run `dmuuid --hyphens` to generate a valid feed id.
+--
+-- The options `minlevel` and `maxlevel` may be set to one of the following
+-- named constants:
+--
+--      LOG_NONE     - 0
+--      LOG_DEBUG    - 1
+--      LOG_INFO     - 2
+--      LOG_WARNING  - 3
+--      LOG_ERROR    - 4
+--      LOG_CRITICAL - 5
+--
+-- Rename table "dmfeed" to the instance name (parameter `--name`).
 --
 -- Settings:
 --
@@ -30,8 +41,8 @@ dmfeed = {
     url = "https://example.com/feed.xml",
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
-    minlevel = 3,
-    maxlevel = 5,
+    minlevel = LOG_WARNING,
+    maxlevel = LOG_CRITICAL,
     nentries = 100,
     xslt = "feed.xls",
     output = "/tmp/feed.xml"

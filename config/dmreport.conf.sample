@@ -1,6 +1,16 @@
 --
 -- Example configuration file for dmreport.
 --
+-- The options `minlevel` and `maxlevel` may be set to one of the following
+-- named constants:
+--
+--      LOG_NONE     - 0
+--      LOG_DEBUG    - 1
+--      LOG_INFO     - 2
+--      LOG_WARNING  - 3
+--      LOG_ERROR    - 4
+--      LOG_CRITICAL - 5
+--
 -- Rename table "dmreport" to the instance name (parameter `--name`).
 --
 -- Settings:
@@ -50,8 +60,8 @@ dmreport = {
     logs = {
         disabled = false,                       -- Disable logs.
         database = "/var/dmpack/log.sqlite",    -- Path to log database.
-        minlevel = 3,                           -- Minimum log level (default: 3).
-        maxlevel = 5,                           -- Maximum log level (default: 5).
+        minlevel = LOG_WARNING,                 -- Minimum log level (default: 3).
+        maxlevel = LOG_CRITICAL,                -- Maximum log level (default: 5).
         title = "Logs",                         -- Overwrite default heading.
         meta = "Logs example.",                 -- Optional description.
     }

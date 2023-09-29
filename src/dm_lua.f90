@@ -8,6 +8,7 @@ module dm_lua
     use :: dm_file
     use :: dm_kind
     use :: dm_job
+    use :: dm_log
     use :: dm_observ
     use :: dm_report
     use :: dm_request
@@ -91,9 +92,11 @@ module dm_lua
     public :: dm_lua_get
     public :: dm_lua_global
     public :: dm_lua_init
+    public :: dm_lua_inject
     public :: dm_lua_is_function
     public :: dm_lua_is_nil
     public :: dm_lua_is_table
+    public :: dm_lua_last_error
     public :: dm_lua_open
     public :: dm_lua_pop
     public :: dm_lua_register
@@ -142,22 +145,31 @@ contains
         integer,              intent(in)    :: nargs    !! Number of arguments.
         integer,              intent(in)    :: nresults !! Number of results.
 
-        rc = E_LUA
-        if (lua_pcall(lua%ptr, nargs, nresults, 0) /= 0) return
-        rc = E_NONE
+        rc = dm_lua_error(lua_pcall(lua%ptr, nargs, nresults, 0))
     end function dm_lua_call
 
-    function dm_lua_error(lua) result(str)
-        !! Returns last error message as allocatable character string.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-        character(len=:), allocatable       :: str !! Last error message.
+    integer function dm_lua_error(lua_error) result(rc)
+        !! Converts Lua error code to DMPACK error code.
+        integer, intent(in) :: lua_error !! Lua error code.
 
-        if (lua_isstring(lua%ptr, -1) == 1) then
-            str = lua_tostring(lua%ptr, -1)
-            return
-        end if
-
-        str = ''
+        select case (lua_error)
+            case (LUA_OK)
+                rc = E_NONE
+            case (LUA_YIELD)
+                rc = E_LUA_YIELD
+            case (LUA_ERRRUN)
+                rc = E_LUA_RUNTIME
+            case (LUA_ERRSYNTAX)
+                rc = E_LUA_SYNTAX
+            case (LUA_ERRMEM)
+                rc = E_LUA_MEM
+            case (LUA_ERRERR)
+                rc = E_LUA_ERROR
+            case (LUA_ERRFILE)
+                rc = E_LUA_FILE
+            case default
+                rc = E_LUA
+        end select
     end function dm_lua_error
 
     function dm_lua_escape(str) result(esc)
@@ -178,15 +190,55 @@ contains
         end do
     end function dm_lua_escape
 
+    integer function dm_lua_eval(lua, cmd) result(rc)
+        !! Executes Lua command passed in character string `cmd`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        character(len=*),     intent(in)    :: cmd !! Lua command to evaluate.
+
+        rc = dm_lua_error(lual_dostring(lua%ptr, cmd))
+    end function dm_lua_eval
+
     integer function dm_lua_exec(lua, file_path) result(rc)
         !! Executes Lua script.
         type(lua_state_type), intent(inout) :: lua       !! Lua type.
         character(len=*),     intent(in)    :: file_path !! Path to Lua script file.
 
-        rc = E_LUA
-        if (lual_dofile(lua%ptr, trim(file_path)) /= 0) return
-        rc = E_NONE
+        rc = dm_lua_error(lual_dofile(lua%ptr, trim(file_path)))
     end function dm_lua_exec
+
+    integer function dm_lua_init(lua) result(rc)
+        !! Initialises Lua interpreter.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+
+        rc = E_INVALID
+        if (c_associated(lua%ptr)) return
+
+        rc = E_LUA
+        lua%ptr = lual_newstate()
+        if (.not. c_associated(lua%ptr)) return
+        call lual_openlibs(lua%ptr)
+
+        rc = E_NONE
+    end function dm_lua_init
+
+    integer function dm_lua_inject(lua) result(rc)
+        !! Injects DMPACK parameters and functions into Lua state.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+
+        rc = dm_lua_eval(lua, 'LOG_NONE = ' // dm_itoa(LOG_NONE))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_DEBUG = ' // dm_itoa(LOG_DEBUG))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_INFO = ' // dm_itoa(LOG_INFO))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_WARNING = ' // dm_itoa(LOG_WARNING))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_ERROR = ' // dm_itoa(LOG_ERROR))
+        if (dm_is_error(rc)) return
+        rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL))
+
+        rc = E_NONE
+    end function dm_lua_inject
 
     logical function dm_lua_is_function(lua) result(is_function)
         !! Returns `.true.` if element on top of stack is of type function.
@@ -209,28 +261,27 @@ contains
         is_table = (lua_istable(lua%ptr, -1) == 1)
     end function dm_lua_is_table
 
-    integer function dm_lua_init(lua) result(rc)
-        !! Initialises Lua interpreter.
+    function dm_lua_last_error(lua) result(str)
+        !! Returns last error message as allocatable character string.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
+        character(len=:), allocatable       :: str !! Last error message.
 
-        rc = E_INVALID
-        if (c_associated(lua%ptr)) return
+        if (lua_isstring(lua%ptr, -1) == 1) then
+            str = lua_tostring(lua%ptr, -1)
+            return
+        end if
 
-        rc = E_LUA
-        lua%ptr = lual_newstate()
-        if (.not. c_associated(lua%ptr)) return
-        call lual_openlibs(lua%ptr)
+        str = ''
+    end function dm_lua_last_error
 
-        rc = E_NONE
-    end function dm_lua_init
-
-    integer function dm_lua_open(lua, file_path, eval) result(rc)
+    integer function dm_lua_open(lua, file_path, eval, inject) result(rc)
         !! Opens Lua script and executes it by default.
         type(lua_state_type), intent(inout)        :: lua       !! Lua type.
         character(len=*),     intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
+        logical,              intent(in), optional :: inject    !! Inject DMPACK parameters into Lua state.
 
-        logical :: eval_
+        logical :: eval_, inject_
 
         rc = E_INVALID
         if (.not. c_associated(lua%ptr)) return
@@ -238,18 +289,23 @@ contains
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(file_path)) return
 
-        rc = E_LUA
         eval_ = .true.
         if (present(eval)) eval_ = eval
 
+        inject_ = .false.
+        if (present(inject)) inject_ = inject
+
+        if (inject_) then
+            rc = dm_lua_inject(lua)
+            if (dm_is_error(rc)) return
+        end if
+
         if (eval_) then
-            if (lual_dofile(lua%ptr, trim(file_path)) /= 0) return
-            rc = E_NONE
+            rc = dm_lua_error(lual_dofile(lua%ptr, trim(file_path)))
             return
         end if
 
-        if (lual_loadfile(lua%ptr, trim(file_path)) /= 0) return
-        rc = E_NONE
+        rc = dm_lua_error(lual_loadfile(lua%ptr, trim(file_path)))
     end function dm_lua_open
 
     integer function dm_lua_register(lua, name, proc) result(rc)

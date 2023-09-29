@@ -69,7 +69,7 @@ contains
             rc = dm_lua_init(config%lua)
             if (dm_is_error(rc)) exit open_block
 
-            rc = dm_lua_open(config%lua, path, eval=.true.)
+            rc = dm_lua_open(config%lua, path, eval=.true., inject=.true.)
             if (dm_is_error(rc)) exit open_block
 
             if (present(name)) then
