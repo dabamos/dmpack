@@ -54,7 +54,7 @@ DMPACK covers the following tasks:
 * inter-process communication via POSIX semaphores
 * SQLite database access
 * data serialisation (ASCII, CSV, JSON, JSON Lines, Namelist)
-* remote procedure calls
+* HTTP-RPC API for remote procedure calls
 * concurrent data synchronisation between client and server
 * distributed logging
 * heartbeats
@@ -70,7 +70,7 @@ DMPACK covers the following tasks:
 
 DMPACK has the following requirements:
 
-* Linux or FreeBSD operating system (64-bit)
+* Linux or FreeBSD operating system (x86-64, AArch64)
 * Fortran 2018 and ANSI C compiler
 
 Third-party dependencies have to be present to build and run the software of
@@ -80,10 +80,10 @@ this package:
 * FastCGI
 * Gnuplot
 * LAPACK
-* libcurl
+* libcurl (≥ 8.3.0)
 * Lua 5.4
 * PCRE2
-* SQLite 3
+* SQLite 3 (≥ 3.39.0)
 * zlib
 
 On Linux, additional development headers are required for the build step. To

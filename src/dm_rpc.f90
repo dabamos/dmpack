@@ -24,7 +24,7 @@ module dm_rpc
     !!
     !! The procedures `dm_rpc_init()` and `dm_rpc_destroy()` have to be called
     !! once per process, and only if neither the MQTT nor the mail backend was
-    !! not initialised already.
+    !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_beat
@@ -281,8 +281,8 @@ contains
         rc = rpc_request_multi(requests, responses)
     end function dm_rpc_request_multi
 
-    integer function dm_rpc_request_single(request, response, url, method, payload, content_type, deflate, &
-                                           accept, username, password) result(rc)
+    integer function dm_rpc_request_single(request, response, url, method, payload, content_type, &
+                                           accept, username, password, deflate) result(rc)
         !! Sends single HTTP request by GET or POST method, and with optional
         !! deflate compression.
         type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
@@ -291,10 +291,10 @@ contains
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
         character(len=*),        intent(inout), optional :: payload      !! For POST only.
         character(len=*),        intent(in),    optional :: content_type !! For POST only.
-        logical,                 intent(in),    optional :: deflate      !! For POST only.
         character(len=*),        intent(in),    optional :: accept       !! HTTP accept header.
         character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
         character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
+        logical,                 intent(in),    optional :: deflate      !! For POST only.
 
         ! Set request parameters.
         if (present(url))     request%url     = trim(url)
@@ -321,12 +321,9 @@ contains
         !! optional authentication and deflate compression. The URL has to be
         !! the API endpoint that accepts HTTP POST requests.
         !!
-        !! The dummy argument `array` may be of type `beat_type`, `log_type`,
-        !! `node_type`, `observ_type`, `sensor_type`, or `target_type`. The
-        !! function returns `E_INVALID` on any other type.
-        !!
-        !! If `sequential` is `.true.`, the transfer will be sequentially
-        !! instead of concurrently.
+        !! The dummy argument `type` may be of derived type `beat_type`,
+        !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
+        !! `target_type`. The function returns `E_INVALID` on any other type.
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
@@ -412,9 +409,9 @@ contains
         !! given URL, with optional authentication and deflate compression.
         !! The URL has to be the API endpoint that accepts HTTP POST requests.
         !!
-        !! The dummy argument `array` may be of type `beat_type`, `log_type`,
-        !! `node_type`, `observ_type`, `sensor_type`, or `target_type`. The
-        !! function returns `E_INVALID` on any other type.
+        !! The dummy argument `types` may be of derived type `beat_type`,
+        !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
+        !! `target_type`. The function returns `E_INVALID` on any other type.
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
@@ -451,6 +448,7 @@ contains
             if (stat /= 0) return
         end if
 
+        ! Prepare all requests.
         do i = 1, n
             requests(i)%accept       = MIME_TEXT
             requests(i)%content_type = MIME_NML
@@ -467,6 +465,7 @@ contains
 
             ! Convert derived type to Namelist representation.
             if (requests(i)%deflate) then
+                ! Set compressed payload.
                 select type (t => types(i))
                     type is (beat_type)
                         rc = dm_nml_from(t, payload_beat)
@@ -496,6 +495,7 @@ contains
                         rc = E_TYPE
                 end select
             else
+                ! Set uncompressed payload.
                 select type (t => types(i))
                     type is (beat_type)
                         rc = dm_nml_from(t, requests(i)%payload, len(payload_beat))
@@ -515,16 +515,18 @@ contains
             end if
 
             if (dm_is_error(rc)) return
-            if (.not. sequential_) cycle
-
-            ! Send request sequentially.
-            rc = rpc_request(requests(i), responses(i))
         end do
 
-        if (sequential_) return
-
         ! Send all requests concurrently.
-        rc = rpc_request(requests, responses)
+        if (.not. sequential_) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send request sequentially.
+        do i = 1, n
+            rc = rpc_request(requests(i), responses(i))
+        end do
     end function dm_rpc_send_types
 
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
@@ -561,7 +563,9 @@ contains
     end function dm_rpc_url
 
     integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
-        !! C-interoperable write callback function for libcurl.
+        !! C-interoperable write callback function for libcurl. Writes the
+        !! received response chunks to `rpc_response_type` pointer that has to
+        !! be passed through C pointer `data`.
         type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
         integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
         integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
@@ -590,7 +594,8 @@ contains
 
     impure elemental subroutine dm_rpc_reset(request)
         !! Auxiliary destructor routine to free allocated request memory.
-        type(rpc_request_type), intent(inout) :: request
+        !! Cleans-up the cURL handles of the request.
+        type(rpc_request_type), intent(inout) :: request !! Request type.
 
         if (c_associated(request%list_ptr)) call curl_slist_free_all(request%list_ptr)
         if (c_associated(request%curl_ptr)) call curl_easy_cleanup(request%curl_ptr)
