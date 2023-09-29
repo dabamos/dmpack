@@ -24,9 +24,6 @@ program dminfo
 
     ! Read command-line arguments.
     rc = read_args(app)
-    call dm_error_out(rc)
-    if (dm_is_error(rc)) call dm_stop(1)
-
     rc = output_info(app)
     if (dm_is_error(rc)) call dm_stop(1)
 contains
@@ -44,7 +41,6 @@ contains
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%database)
-        if (dm_is_error(rc)) return
     end function read_args
 
     integer function output_info(app) result(rc)
@@ -71,6 +67,8 @@ contains
                 return
             end if
         end if
+
+        call dm_system_uname(uname)
 
         print '("build.compiler: ", a)', compiler_version()
         print '("build.args: ", a)', compiler_options()
@@ -136,9 +134,16 @@ contains
             rc = dm_db_close(db)
         end if
 
-        call dm_system_uname(uname)
-
         print '("dmpack.version: ", a)', DM_VERSION_STRING
+
+        write (*, '("system.byte_order: ")', advance='no')
+
+        if (LITTLE_ENDIAN) then
+            print '("little-endian")'
+        else
+            print '("big-endian")'
+        end if
+
         print '("system.host: ", a)', trim(uname%node_name)
         print '("system.machine: ", a)', trim(uname%machine)
         print '("system.name: ", a)', trim(uname%system_name)

@@ -95,14 +95,13 @@ contains
         character(len=*), intent(in)           :: name  !! Name of command-line argument.
         character,        intent(in), optional :: short !! Short name.
 
-        integer        :: rc
         type(arg_type) :: args(1)
 
         has = .false.
         args(1) = arg_type(name=name, type=ARG_TYPE_BOOL)
         if (present(short)) args(1)%short = short
         call dm_arg_parse(args)
-        rc = dm_arg_get(args(1), has)
+        has = (args(1)%error == E_NONE)
     end function dm_arg_has
 
     integer function dm_arg_read(args, app, major, minor) result(rc)
@@ -235,7 +234,7 @@ contains
                     if (.not. dm_time_valid(arg%value)) exit validate_block
 
                 case (ARG_TYPE_FILE, ARG_TYPE_DB)
-                    if (.not. dm_file_exists(arg%value)) exit validate_block
+                    if (.not. dm_file_exists(arg%value) .and. arg%required) exit validate_block
             end select
 
             rc = E_NONE
