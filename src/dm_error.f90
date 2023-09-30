@@ -116,13 +116,13 @@ contains
             case (E_NONE)
                 str = 'none'
             case (E_ERROR)
-                str = 'generic error'
+                str = 'error'
             case (E_DUMMY)
                 str = 'dummy error'
             case (E_INVALID)
-                str = 'invalid argument or input'
+                str = 'invalid'
             case (E_INCOMPLETE)
-                str = 'argument missing or incomplete'
+                str = 'missing or incomplete'
             case (E_TYPE)
                 str = 'type error'
             case (E_IO)
@@ -180,7 +180,7 @@ contains
             case (E_DB_PREPARE)
                 str = 'database statement preparation failed'
             case (E_DB_FINALIZE)
-                str = 'database statement finalisation failed'
+                str = 'database statement finalization failed'
             case (E_DB_BIND)
                 str = 'database bind failed'
             case (E_DB_TYPE)
@@ -210,7 +210,7 @@ contains
             case (E_MQUEUE)
                 str = 'message queue operation failed'
             case (E_MQUEUE_EMPTY)
-                str = 'empty message from message queue'
+                str = 'message empty'
 
             ! Regular expressions.
             case (E_REGEX)
@@ -238,7 +238,7 @@ contains
             case (E_RPC_API)
                 str = 'RPC API error'
             case (E_RPC_AUTH)
-                str = 'RPC unauthorised'
+                str = 'RPC unauthorized'
             case (E_RPC_CONFLICT)
                 str = 'RPC conflict'
             case (E_RPC_SERVER)
@@ -269,7 +269,7 @@ contains
                 str = 'MQTT error'
 
             case default
-                str = 'unknown error code'
+                str = 'unknown'
         end select
     end function dm_error_message
 
@@ -277,9 +277,7 @@ contains
         !! Returns whether given code is (likely) valid.
         integer, intent(in) :: error !! Error code.
 
-        valid = .false.
-        if (error < E_NONE .or. error > E_LAST) return
-        valid = .true.
+        valid = (error >= E_NONE .and. error <= E_LAST)
     end function dm_error_valid
 
     pure elemental logical function dm_is_error(error) result(is_error)
