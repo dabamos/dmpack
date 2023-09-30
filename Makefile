@@ -6,7 +6,7 @@
 #
 # DMPACK build targets:
 #
-#   freebsd         - Alias for `freebsd_release`.
+#   freebsd         - Alias for target `freebsd_release`.
 #   freebsd_debug   - FreeBSD debug.
 #   freebsd_release - FreeBSD release.
 #   linux           - Alias for target `linux_release`.
@@ -56,12 +56,18 @@
 #   SH      - Shell.
 #   STRIP   - Strip utility.
 #
-#   SRCDIR  - Source directory.
-#   INCDIR  - Include directory that contains the Fortran module files.
-#   LIBDIR  - Library directory that contains the static libraries.
-#   DISTDIR - Distribution file directory (libraries and programs).
-#   CONFDIR - Configuration file directory.
-#   SHARDIR - Shared data directory.
+#   SRCDIR  - Directory of source files.
+#   INCDIR  - Directory of Fortran module files.
+#   LIBDIR  - Directory of static libraries.
+#   SHRDIR  - Directory of shared files.
+#   DISTDIR - Directory of distribution files (libraries and programs).
+#   CONFDIR - Directory of configuration files.
+#
+#   IBINDIR - Installation directory of DMPACK binaries.
+#   IETCDIR - Installation directory of DMPACK configuration files.
+#   IINCDIR - Installation directory of DMPACK modules.
+#   ILIBDIR - Installation directory of DMPACK libraries.
+#   ISHRDIR - Installation directory of DMPACK shared files.
 #
 #   THIN    - Thin DMPACK library (without interface bindings).
 #   TARGET  - Path to the full DMPACK library (with interface bindings).
@@ -94,9 +100,16 @@ SH      = /bin/sh
 SRCDIR  = ./src
 INCDIR  = ./include
 LIBDIR  = ./lib
+SHRDIR  = ./share
+
 DISTDIR = ./dist
 CONFDIR = ./config
-SHARDIR = ./share
+
+IBINDIR = $(PREFIX)/bin/
+IETCDIR = $(PREFIX)/etc/dmpack/
+IINCDIR = $(PREFIX)/include/dmpack/
+ILIBDIR = $(PREFIX)/lib/
+ISHRDIR = $(PREFIX)/share/dmpack/
 
 THIN    = $(LIBDIR)/libdm.a
 TARGET  = $(DISTDIR)/libdmpack.a
@@ -161,159 +174,44 @@ ADOCDIR  = ./adoc
 GUIDEDIR = ./guide
 
 # Library source files.
-SRC = src/dm_version.f90 \
-      src/dm_kind.f90 \
-      src/dm_platform.f90 \
-      src/dm_ascii.f90 \
-      src/dm_string.f90 \
-      src/dm_type.f90 \
-      src/dm_format.f90 \
-      src/dm_const.f90 \
-      src/dm_error.f90 \
-      src/dm_ansi.f90 \
-      src/dm_convert.f90 \
-      src/dm_env.f90 \
-      src/dm_util.f90 \
-      src/dm_time.f90 \
-      src/dm_timer.f90 \
-      src/dm_base64.f90 \
-      src/dm_path.f90 \
-      src/dm_file.f90 \
-      src/dm_hash.f90 \
-      src/dm_hash_table.f90 \
-      src/dm_unit.f90 \
-      src/dm_id.f90 \
-      src/dm_uuid.f90 \
-      src/dm_app.f90 \
-      src/dm_arg.f90 \
-      src/dm_signal.f90 \
-      src/dm_system.f90 \
-      src/dm_pipe.f90 \
-      src/dm_tty.f90 \
-      src/dm_sem.f90 \
-      src/dm_mutex.f90 \
-      src/dm_dp.f90 \
-      src/dm_fifo.f90 \
-      src/dm_node.f90 \
-      src/dm_sensor.f90 \
-      src/dm_target.f90 \
-      src/dm_response.f90 \
-      src/dm_request.f90 \
-      src/dm_observ.f90 \
-      src/dm_log.f90 \
-      src/dm_job.f90 \
-      src/dm_plot.f90 \
-      src/dm_report.f90 \
-      src/dm_regex.f90 \
-      src/dm_lua.f90 \
-      src/dm_config.f90 \
-      src/dm_sync.f90 \
-      src/dm_beat.f90 \
-      src/dm_mqueue.f90 \
-      src/dm_logger.f90 \
-      src/dm_test.f90 \
-      src/dm_dummy.f90 \
-      src/dm_nml.f90 \
-      src/dm_sql.f90 \
-      src/dm_db.f90 \
-      src/dm_z.f90 \
-      src/dm_person.f90 \
-      src/dm_mail.f90 \
-      src/dm_http.f90 \
-      src/dm_mime.f90 \
-      src/dm_api.f90 \
-      src/dm_rpc.f90 \
-      src/dm_mqtt.f90 \
-      src/dm_cgi.f90 \
-      src/dm_fcgi.f90 \
-      src/dm_block.f90 \
-      src/dm_csv.f90 \
-      src/dm_json.f90 \
-      src/dm_jsonl.f90 \
-      src/dm_html.f90 \
-      src/dm_atom.f90 \
-      src/dm_router.f90 \
-      src/dm_la.f90 \
-      src/dm_transform.f90 \
-      src/dmpack.f90
+SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
+      src/dm_string.f90 src/dm_type.f90 src/dm_format.f90 src/dm_const.f90 \
+      src/dm_error.f90 src/dm_ansi.f90 src/dm_convert.f90 src/dm_env.f90 \
+      src/dm_util.f90 src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 \
+      src/dm_path.f90 src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 \
+      src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_app.f90 \
+      src/dm_arg.f90 src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 \
+      src/dm_tty.f90 src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 \
+      src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 \
+      src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 src/dm_log.f90 \
+      src/dm_job.f90 src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 \
+      src/dm_lua.f90 src/dm_config.f90 src/dm_sync.f90 src/dm_beat.f90 \
+      src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 src/dm_dummy.f90 \
+      src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
+      src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 \
+      src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 \
+      src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 \
+      src/dm_html.f90 src/dm_atom.f90 src/dm_router.f90 src/dm_la.f90 \
+      src/dm_transform.f90 src/dmpack.f90
 
 # Library object files.
-OBJ = dm_version.o \
-      dm_kind.o \
-      dm_platform.o \
-      dm_ascii.o \
-      dm_string.o \
-      dm_type.o \
-      dm_format.o \
-      dm_const.o \
-      dm_error.o \
-      dm_ansi.o \
-      dm_convert.o \
-      dm_env.o \
-      dm_util.o \
-      dm_time.o \
-      dm_timer.o \
-      dm_base64.o \
-      dm_path.o \
-      dm_file.o \
-      dm_hash.o \
-      dm_hash_table.o \
-      dm_unit.o \
-      dm_id.o \
-      dm_uuid.o \
-      dm_app.o \
-      dm_arg.o \
-      dm_signal.o \
-      dm_system.o \
-      dm_pipe.o \
-      dm_tty.o \
-      dm_sem.o \
-      dm_mutex.o \
-      dm_dp.o \
-      dm_fifo.o \
-      dm_node.o \
-      dm_sensor.o \
-      dm_target.o \
-      dm_response.o \
-      dm_request.o \
-      dm_observ.o \
-      dm_log.o \
-      dm_job.o \
-      dm_plot.o \
-      dm_report.o \
-      dm_regex.o \
-      dm_lua.o \
-      dm_config.o \
-      dm_sync.o \
-      dm_beat.o \
-      dm_mqueue.o \
-      dm_logger.o \
-      dm_test.o \
-      dm_dummy.o \
-      dm_nml.o \
-      dm_sql.o \
-      dm_db.o \
-      dm_z.o \
-      dm_person.o \
-      dm_mail.o \
-      dm_http.o \
-      dm_mime.o \
-      dm_api.o \
-      dm_rpc.o \
-      dm_mqtt.o \
-      dm_cgi.o \
-      dm_fcgi.o \
-      dm_block.o \
-      dm_csv.o \
-      dm_json.o \
-      dm_jsonl.o \
-      dm_html.o \
-      dm_atom.o \
-      dm_router.o \
-      dm_la.o \
-      dm_transform.o \
-      dmpack.o
+OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
+      dm_format.o dm_const.o dm_error.o dm_ansi.o dm_convert.o dm_env.o \
+      dm_util.o dm_time.o dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o \
+      dm_hash_table.o dm_unit.o dm_id.o dm_uuid.o dm_app.o dm_arg.o dm_signal.o \
+      dm_system.o dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o \
+      dm_node.o dm_sensor.o dm_target.o dm_response.o dm_request.o dm_observ.o \
+      dm_log.o dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o dm_config.o \
+      dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o dm_test.o dm_dummy.o dm_nml.o \
+      dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o dm_http.o dm_mime.o dm_api.o \
+      dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o dm_csv.o dm_json.o \
+      dm_jsonl.o dm_html.o dm_atom.o dm_router.o dm_la.o dm_transform.o dmpack.o
 
+# ******************************************************************************
+#
+# Build targets.
+#
+# ******************************************************************************
 .PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
         html install install_freebsd install_linux linux man pdf purge setup test
 
@@ -406,7 +304,7 @@ $(LIBFZ): setup
 # ******************************************************************************
 $(TARGET): $(LIBF) $(OBJ)
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
-	$(SH) ./makelib.sh $(TARGET) $(THIN)
+	$(SH) makelib.sh $(TARGET) $(THIN)
 
 $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -fPIC -c src/dm_version.f90
@@ -691,43 +589,43 @@ guide:
 #
 # ******************************************************************************
 install:
-	install -d $(PREFIX)/bin/
-	install -d $(PREFIX)/etc/dmpack/
-	install -d $(PREFIX)/include/dmpack/
-	install -d $(PREFIX)/lib/
-	install -d $(PREFIX)/share/dmpack/
-	install -m 755 $(DISTDIR)/dmapi $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmbackup $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmbeat $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmdb $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmdbctl $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmexport $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmfeed $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmfs $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmgraph $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmimport $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dminfo $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dminit $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmlog $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmlogger $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmlua $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmpipe $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmrecv $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmreport $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmsend $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmserial $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmsync $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmuuid $(PREFIX)/bin/
-	install -m 755 $(DISTDIR)/dmweb $(PREFIX)/bin/
-	install -m 644 $(INCDIR)/*.mod $(PREFIX)/include/dmpack/
-	install -m 644 $(TARGET) $(PREFIX)/lib/
-	install -m 644 $(SHARED) $(PREFIX)/lib/
-	install -m 644 $(CONFDIR)/*.conf.sample $(PREFIX)/etc/dmpack/
-	install -m 644 $(SHARDIR)/dmpack.css $(PREFIX)/share/dmpack/
-	install -m 644 $(SHARDIR)/dmpack.min.css $(PREFIX)/share/dmpack/
-	install -m 644 $(SHARDIR)/dmlua.lua $(PREFIX)/share/dmpack/
-	install -m 644 $(SHARDIR)/feed.xsl $(PREFIX)/share/dmpack/
-	install -m 755 $(SHARDIR)/mkreport.sh $(PREFIX)/share/dmpack/
+	install -d $(IBINDIR)
+	install -d $(IETCDIR)
+	install -d $(IINCDIR)
+	install -d $(ILIBDIR)
+	install -d $(ISHRDIR)
+	install -m 755 $(DISTDIR)/dmapi $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmbackup $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmbeat $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmdb $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmdbctl $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmexport $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmfeed $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmfs $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmgraph $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmimport $(IBINDIR)
+	install -m 755 $(DISTDIR)/dminfo $(IBINDIR)
+	install -m 755 $(DISTDIR)/dminit $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmlog $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmlogger $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmlua $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmpipe $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmrecv $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmreport $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmsend $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmserial $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmsync $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmuuid $(IBINDIR)
+	install -m 755 $(DISTDIR)/dmweb $(IBINDIR)
+	install -m 644 $(INCDIR)/*.mod $(IINCDIR)
+	install -m 644 $(TARGET) $(ILIBDIR)
+	install -m 644 $(SHARED) $(ILIBDIR)
+	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)
+	install -m 644 $(SHRDIR)/dmpack.css $(ISHRDIR)
+	install -m 644 $(SHRDIR)/dmpack.min.css $(ISHRDIR)
+	install -m 644 $(SHRDIR)/dmlua.lua $(ISHRDIR)
+	install -m 644 $(SHRDIR)/feed.xsl $(ISHRDIR)
+	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)
 
 deinstall:
 	$(RM) -rf $(PREFIX)/include/dmpack

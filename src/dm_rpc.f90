@@ -531,36 +531,76 @@ contains
     end function dm_rpc_send_types
 
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
-        !! Returns allocatable string of URL to RPC-API service.
+        !! Returns allocatable string of URL to HTTP-RPC API endpoint. Uses the
+        !! URL API of libcurl to create the URL. The base path must start with
+        !! a `/`.
+        !!
+        !! On error, returns an empty string.
         character(len=*), intent(in)           :: host     !! IP or FQDN of remote host.
         integer,          intent(in), optional :: port     !! API port.
         character(len=*), intent(in), optional :: base     !! API base path.
         character(len=*), intent(in), optional :: endpoint !! API endpoint.
         logical,          intent(in), optional :: tls      !! TLS encryption (HTTPS).
+        character(len=:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
 
-        character(len=:), allocatable :: url
-        logical                       :: tls_
+        character(len=:), allocatable :: path
+        character(len=5)              :: str
+
+        integer     :: stat
+        integer     :: port_
+        logical     :: tls_
+        type(c_ptr) :: ptr
 
         tls_ = .false.
         if (present(tls)) tls_ = tls
 
-        if (tls_) then
-            url = 'https://' // trim(host)
-        else
-            url = 'http://' // trim(host)
-        end if
+        port_ = 0
+        if (present(port)) port_ = port
 
-        if (present(port)) then
-            if (port > 0) url = url // ':' // dm_itoa(port)
-        end if
+        url_block: block
+            ptr = curl_url()
+            if (.not. c_associated(ptr)) exit url_block
 
-        if (present(base)) then
-            url = url // trim(base)
-        else
-            url = url // RPC_BASE
-        end if
+            ! URL scheme.
+            if (tls_) then
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'https')
+                if (stat /= CURLUE_OK) exit url_block
+            else
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'http')
+                if (stat /= CURLUE_OK) exit url_block
+            end if
 
-        if (present(endpoint)) url = url // trim(endpoint)
+            ! URL host.
+            stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))
+            if (stat /= CURLUE_OK) exit url_block
+
+            ! URL port.
+            if (port_ > 0) then
+                write (str, '(i0)', iostat=stat) port_
+                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                if (stat /= CURLUE_OK) exit url_block
+            end if
+
+            ! URL path.
+            if (present(base)) then
+                path = trim(base)
+            else
+                path = RPC_BASE
+            end if
+
+            if (present(endpoint)) then
+                path = path // trim(endpoint)
+            end if
+
+            stat = curl_url_set(ptr, CURLUPART_PATH, path)
+            if (stat /= CURLUE_OK) exit url_block
+
+            ! Get full URL.
+            stat = curl_url_get(ptr, CURLUPART_URL, url)
+        end block url_block
+
+        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        if (.not. allocated(url)) url = ''
     end function dm_rpc_url
 
     integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)

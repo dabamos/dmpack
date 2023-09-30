@@ -37,7 +37,7 @@ module dm_mqtt
     !! integer :: rc
     !!
     !! rc  = dm_mqtt_init()
-    !! url = dm_mqtt_url(host='127.0.0.1', port=1883, topic='/fortran')
+    !! url = dm_mqtt_url(host='127.0.0.1', topic='/fortran', port=1883)
     !! rc  = dm_mqtt_publish(url, 'Hello, from Fortran!')
     !! call dm_mqtt_destroy()
     !! ```
@@ -46,8 +46,8 @@ module dm_mqtt
     !! message.
     !!
     !! The procedures `dm_mqtt_init()` and `dm_mqtt_destroy()` have to be called
-    !! only once per process and if the RPC or Mail backend was not initialised
-    !! already.
+    !! once per process and only if either the RPC or the mail backend was not
+    !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -137,33 +137,58 @@ contains
         call curl_easy_cleanup(curl_ptr)
     end function dm_mqtt_publish
 
-    pure function dm_mqtt_url(host, port, topic) result(url)
-        !! Returns allocatable string of URL to MQTT server.
-        !! If `port` is `0`, the default port will be used.
-        character(len=*), intent(in)  :: host  !! IP or FQDN of MQTT server.
-        integer,          intent(in)  :: port  !! MQTT server port (1883 by default).
-        character(len=*), intent(in)  :: topic !! MQTT topic.
-        character(len=:), allocatable :: url   !! Created URL.
+    function dm_mqtt_url(host, topic, port) result(url)
+        !! Returns allocatable string of URL to MQTT server. Uses the URL API
+        !! of libcurl to create the URL. If `port` is `0`, the default port
+        !! will be used. The topic must start with a `/`.
+        !!
+        !! On error, an empty string is returned.
+        character(len=*), intent(in)           :: host  !! IP or FQDN of MQTT server.
+        character(len=*), intent(in)           :: topic !! MQTT topic.
+        integer,          intent(in), optional :: port  !! MQTT server port (1883 by default).
+        character(len=:), allocatable          :: url   !! Created URL.
 
-        integer :: n, m
+        character(len=5) :: str
+        integer          :: port_
+        integer          :: stat
+        type(c_ptr)      :: ptr
 
-        url = 'mqtt://'
-        n = len_trim(host)
-        if (n == 0) return
+        port_ = 0
+        if (present(port)) port_ = port
 
-        url = 'mqtt://' // host(1:n)
-        if (port > 0) url = url // ':' // dm_itoa(port)
+        url_block: block
+            ptr = curl_url()
+            if (.not. c_associated(ptr)) exit url_block
 
-        m = len_trim(topic)
-        if (m == 0) return
+            ! URL scheme.
+            stat = curl_url_set(ptr, CURLUPART_SCHEME, 'mqtt')
+            if (stat /= CURLUE_OK) exit url_block
 
-        if (host(n:n) /= '/' .and. topic(1:1) /= '/') url = url // '/'
-        url = url // topic(1:m)
+            ! URL host.
+            stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))
+            if (stat /= CURLUE_OK) exit url_block
+
+            ! URL port.
+            if (port_ > 0) then
+                write (str, '(i0)', iostat=stat) port_
+                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                if (stat /= CURLUE_OK) exit url_block
+            end if
+
+            ! URL topic.
+            stat = curl_url_set(ptr, CURLUPART_PATH, trim(topic))
+            if (stat /= CURLUE_OK) exit url_block
+
+            ! Get full URL.
+            stat = curl_url_get(ptr, CURLUPART_URL, url)
+        end block url_block
+
+        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        if (.not. allocated(url)) url = ''
     end function dm_mqtt_url
 
     subroutine dm_mqtt_destroy()
         !! Cleans-up libcurl.
-
         call curl_global_cleanup()
     end subroutine dm_mqtt_destroy
 end module dm_mqtt

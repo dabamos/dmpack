@@ -19,12 +19,16 @@ program dmtestrpc
     integer, parameter :: NTESTS = 5
 
     character(len=:), allocatable :: host, username, password
-    type(test_type)               :: tests(NTESTS)
-    logical                       :: stats(NTESTS)
-    logical                       :: no_color
+
+    logical         :: has_env
+    logical         :: no_color
+    logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
 
     call dm_init()
+
     no_color = dm_env_has('NO_COLOR')
+    has_env  = .true.
 
     if (dm_is_error(dm_env_get('DM_API_HOST',     host))     .or. &
         dm_is_error(dm_env_get('DM_API_USERNAME', username)) .or. &
@@ -34,17 +38,12 @@ program dmtestrpc
         call dm_ansi_color(COLOR_RED, no_color)
         print '("dmtestrpc:", /)'
         print '("    Set environment variables DM_API_HOST, DM_API_USERNAME, and")'
-        print '("    DM_API_PASSWORD of the DMPACK RPC API. Otherwise, the tests")'
+        print '("    DM_API_PASSWORD of the DMPACK RPC API. Otherwise, some tests")'
         print '("    of this program will be skipped.")'
         call dm_ansi_reset(no_color)
         print '(72("-"))'
 
-        call dm_stop(0)
-    end if
-
-    if (len(host) == 0) then
-        call dm_error_out(E_INVALID, 'invalid host')
-        call dm_stop(0)
+        has_env = .false.
     end if
 
     tests(1) = test_type('dmtestrpc.test01', test01)
@@ -57,21 +56,21 @@ program dmtestrpc
 contains
     logical function test01() result(stat)
         character(len=*), parameter :: URL1 = 'http://example.com:8080/api/v1'
-        character(len=*), parameter :: URL2 = 'https://example.com/api/v1'
+        character(len=*), parameter :: URL2 = 'https://example.com/api/v1/observ'
 
-        character(len=:), allocatable :: res
+        character(len=:), allocatable :: url
 
         stat = TEST_FAILED
 
         print *, 'Validating URLs ...'
 
-        res = dm_rpc_url('example.com', 8080, '/api/v1')
-        print *, res
-        if (res /= URL1) return
+        url = dm_rpc_url('example.com', 8080, '/api/v1')
+        print *, url
+        if (url /= URL1) return
 
-        res = dm_rpc_url('example.com', base='/api/v1', tls=.true.)
-        print *, res
-        if (res /= URL2) return
+        url = dm_rpc_url('example.com', base='/api/v1', endpoint='/observ', tls=.true.)
+        print *, url
+        if (url /= URL2) return
 
         stat = TEST_PASSED
     end function test01
@@ -88,6 +87,12 @@ contains
         type(timer_type)        :: timer
 
         type(observ_type), allocatable :: observs(:)
+
+        if (.not. has_env) then
+            stat = TEST_PASSED
+            print *, 'Skipping test ...'
+            return
+        end if
 
         stat = TEST_FAILED
 
@@ -167,6 +172,12 @@ contains
         type(rpc_request_type),  allocatable :: requests(:)
         type(rpc_response_type), allocatable :: responses(:)
 
+        if (.not. has_env) then
+            stat = TEST_PASSED
+            print *, 'Skipping test ...'
+            return
+        end if
+
         stat = TEST_FAILED
 
         rc = dm_rpc_init()
@@ -221,6 +232,12 @@ contains
         type(rpc_request_type),  allocatable :: requests(:)
         type(rpc_response_type), allocatable :: responses(:)
 
+        if (.not. has_env) then
+            stat = TEST_PASSED
+            print *, 'Skipping test ...'
+            return
+        end if
+
         stat = TEST_FAILED
 
         rc = dm_rpc_init()
@@ -271,6 +288,12 @@ contains
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
+
+        if (.not. has_env) then
+            stat = TEST_PASSED
+            print *, 'Skipping test ...'
+            return
+        end if
 
         stat = TEST_FAILED
 
