@@ -21,8 +21,8 @@ module dm_mail
     !! ```
     !!
     !! The procedures `dm_mail_init()` and `dm_mail_destroy()` have to be called
-    !! only once per process and if the RPC or MQTT backend was not initialised
-    !! already.
+    !! once per process and only if neither the RPC nor MQTT backend was not
+    !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -163,6 +163,7 @@ contains
         logical,                intent(in), optional :: verify_ssl      !! Verify SSL cert.
 
         integer :: port_
+        logical :: tls_
 
         rc = E_INVALID
 
@@ -170,14 +171,16 @@ contains
         if (present(port)) port_ = port
         if (len_trim(host) == 0 .or. port_ < 0) return
 
+        tls_ = .false.
         if (present(tls)) server%tls = tls
         if (server%tls < MAIL_PLAIN .or. server%tls > MAIL_TLS) return
+        if (server%tls /= MAIL_PLAIN) tls_ = .true.
 
         if (present(verify_ssl))      server%verify_ssl      = verify_ssl
         if (present(timeout))         server%timeout         = timeout
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
 
-        server%url       = dm_mail_url(host, port=port_, tls=server%tls)
+        server%url       = dm_mail_url(host, port=port_, tls=tls_)
         server%username  = trim(username)
         server%password  = trim(password)
         server%allocated = .true.
@@ -200,7 +203,7 @@ contains
         integer,                       intent(out), optional :: error_curl
         logical,                       intent(in),  optional :: debug
 
-        integer                    :: er, i
+        integer                    :: i, stat
         logical                    :: debug_
         type(c_ptr)                :: curl_ptr, list_ptr
         type(payload_type), target :: payload
@@ -230,39 +233,39 @@ contains
             rc = E_INVALID
 
             ! SMTP server URL.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_URL, server%url)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_URL, server%url)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! SMTP user name.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_USERNAME, server%username)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_USERNAME, server%username)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! SMTP password.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_PASSWORD, server%password)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_PASSWORD, server%password)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Transport-Layer Security.
             if (server%tls /= MAIL_PLAIN) then
                 ! StartTLS.
                 if (server%tls == MAIL_TLS) then
-                    er = curl_easy_setopt(curl_ptr, CURLOPT_USE_SSL, CURLUSESSL_ALL)
-                    if (er /= CURLE_OK) exit curl_block
+                    stat = curl_easy_setopt(curl_ptr, CURLOPT_USE_SSL, CURLUSESSL_ALL)
+                    if (stat /= CURLE_OK) exit curl_block
                 end if
 
                 if (.not. server%verify_ssl) then
                     ! Skip peer verification.
-                    er = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYPEER, 0)
-                    if (er /= CURLE_OK) exit curl_block
+                    stat = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYPEER, 0)
+                    if (stat /= CURLE_OK) exit curl_block
 
                     ! Skip host verification.
-                    er = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYHOST, 0)
-                    if (er /= CURLE_OK) exit curl_block
+                    stat = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYHOST, 0)
+                    if (stat /= CURLE_OK) exit curl_block
                 end if
             end if
 
             ! Set MAIL FROM.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_FROM, dm_mail_address(mail%from))
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_FROM, dm_mail_address(mail%from))
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Set recipients.
             do i = 1, size(mail%to)
@@ -277,80 +280,106 @@ contains
                 list_ptr = curl_slist_append(list_ptr, dm_mail_address(mail%bcc(i)))
             end do
 
-            er = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_RCPT, list_ptr)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_RCPT, list_ptr)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Set timeout.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_TIMEOUT, server%timeout)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_TIMEOUT, server%timeout)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Set connection timeout.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, server%connect_timeout)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, server%connect_timeout)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Set callback function.
-            er = curl_easy_setopt(curl_ptr, CURLOPT_READFUNCTION, c_funloc(mail_read_callback))
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_READFUNCTION, c_funloc(mail_read_callback))
+            if (stat /= CURLE_OK) exit curl_block
 
-            er = curl_easy_setopt(curl_ptr, CURLOPT_READDATA, c_loc(payload))
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_READDATA, c_loc(payload))
+            if (stat /= CURLE_OK) exit curl_block
 
-            er = curl_easy_setopt(curl_ptr, CURLOPT_UPLOAD, 1)
-            if (er /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_UPLOAD, 1)
+            if (stat /= CURLE_OK) exit curl_block
 
             ! Enable or disable debug messages.
             if (debug_) then
-                er = curl_easy_setopt(curl_ptr, CURLOPT_VERBOSE, 1)
-                if (er /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(curl_ptr, CURLOPT_VERBOSE, 1)
+                if (stat /= CURLE_OK) exit curl_block
             else
-                er = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
-                if (er /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
+                if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! Send request.
             rc = E_MAIL
-            er = curl_easy_perform(curl_ptr)
-            if (er /= CURLE_OK) exit curl_block
+
+            stat = curl_easy_perform(curl_ptr)
+            if (stat /= CURLE_OK) exit curl_block
+
             rc = E_NONE
         end block curl_block
 
-        if (present(error_message) .and. er /= CURLE_OK) then
-            error_message = curl_easy_strerror(er)
+        if (present(error_message) .and. stat /= CURLE_OK) then
+            error_message = curl_easy_strerror(stat)
         end if
 
-        if (present(error_curl)) error_curl = er
+        if (present(error_curl)) error_curl = stat
 
         call curl_slist_free_all(list_ptr)
         call curl_easy_cleanup(curl_ptr)
     end function dm_mail_send
 
-    pure function dm_mail_url(host, port, tls) result(url)
+    function dm_mail_url(host, port, tls) result(url)
         !! Returns allocatable string of SMTP server URL in the form
-        !! `smtp[s]://host[:port]`.
+        !! `smtp[s]://host[:port]`. Uses the URL API of libcurl to create the
+        !! URL. By default, Transport Layer Security is disabled.
         character(len=*), intent(in)           :: host !! SMTP server host name.
         integer,          intent(in), optional :: port !! SMTP server port.
-        integer,          intent(in), optional :: tls  !! Transport-layer security.
-        character(len=:), allocatable          :: url
+        logical,          intent(in), optional :: tls  !! Transport-layer security.
+        character(len=:), allocatable          :: url  !! URL to SMTP server.
 
-        integer :: port_, tls_
+        character(len=5) :: str
+        integer          :: port_
+        integer          :: stat
+        logical          :: tls_
+        type(c_ptr)      :: ptr
 
         port_ = 0
         if (present(port)) port_ = port
 
-        tls_ = MAIL_PLAIN
+        tls_ = .false.
         if (present(tls)) tls_ = tls
 
-        if (tls_ == MAIL_SSL) then
-            url = 'smtps://'
-        else
-            url = 'smtp://'
-        end if
+        url_block: block
+            ptr = curl_url()
+            if (.not. c_associated(ptr)) exit url_block
 
-        if (port > 0) then
-            url = url // trim(host) // ':' // dm_itoa(port)
-        else
-            url = url // trim(host)
-        end if
+            ! URL scheme.
+            if (tls_) then
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtps')
+                if (stat /= CURLUE_OK) exit url_block
+            else
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtp')
+                if (stat /= CURLUE_OK) exit url_block
+            end if
+
+            ! URL host.
+            stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))
+            if (stat /= CURLUE_OK) exit url_block
+
+            ! URL port.
+            if (port_ > 0) then
+                write (str, '(i0)', iostat=stat) port_
+                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                if (stat /= CURLUE_OK) exit url_block
+            end if
+
+            ! Get full URL.
+            stat = curl_url_get(ptr, CURLUPART_URL, url)
+        end block url_block
+
+        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        if (.not. allocated(url)) url = ''
     end function dm_mail_url
 
     function dm_mail_write(mail) result(payload)
