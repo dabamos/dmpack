@@ -1396,27 +1396,25 @@ contains
                         H_TBODY_END // H_TABLE_END)
 
         call dm_cgi_out(dm_html_heading(3, 'Databases'))
-        call dm_cgi_out(H_TABLE // H_THEAD // H_TR // &
-                        H_TH // 'Type' // H_TH_END // &
-                        H_TH // 'Path' // H_TH_END // &
-                        H_TH // 'Size' // H_TH_END // &
-                        H_TH // 'Read-Only' // H_TH_END // &
-                        H_TR_END // H_THEAD_END // H_TBODY // H_TR // &
-                        H_TD // 'Beat' // H_TD_END // &
-                        H_TD // dm_html_encode(db_beat) // H_TD_END // &
-                        H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
-                        H_TD // trim(mode) // H_TD_END // &
-                        H_TR_END // H_TR // &
-                        H_TD // 'Log' // H_TD_END // &
-                        H_TD // dm_html_encode(db_log) // H_TD_END // &
-                        H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
-                        H_TD // trim(mode) // H_TD_END // &
-                        H_TR_END // H_TR // &
-                        H_TD // 'Observation' // H_TD_END // &
-                        H_TD // dm_html_encode(db_observ) // H_TD_END // &
-                        H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
-                        H_TD // trim(mode) // H_TD_END // &
-                        H_TR_END // H_TR // H_TBODY_END // H_TABLE_END)
+        call dm_cgi_out(H_TABLE // H_THEAD // &
+                        H_TR // H_TH // 'Type' // H_TH_END // &
+                                H_TH // 'Path' // H_TH_END // &
+                                H_TH // 'Size' // H_TH_END // &
+                                H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
+                        H_THEAD_END // H_TBODY // &
+                        H_TR // H_TD // 'Beat' // H_TD_END // &
+                                H_TD // dm_html_encode(db_beat) // H_TD_END // &
+                                H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
+                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                        H_TR // H_TD // 'Log' // H_TD_END // &
+                                H_TD // dm_html_encode(db_log) // H_TD_END // &
+                                H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
+                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                        H_TR // H_TD // 'Observation' // H_TD_END // &
+                                H_TD // dm_html_encode(db_observ) // H_TD_END // &
+                                H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
+                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                        H_TBODY_END // H_TABLE_END)
         call html_footer()
     end subroutine route_status
 
