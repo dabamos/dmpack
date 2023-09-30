@@ -1323,13 +1323,16 @@ contains
         !! Methods:
         !!      GET
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+
         character(len=*), parameter :: TITLE = 'Status'
+        integer(kind=i8), parameter :: FSIZE = 1024_i8**2
 
         type(cgi_env_type), intent(inout) :: env
 
         character(len=3)             :: mode
         character(len=FILE_PATH_LEN) :: path
         integer(kind=i8)             :: seconds
+        integer(kind=i8)             :: db_beat_sz, db_log_sz, db_observ_sz
         type(uname_type)             :: uname
         type(time_delta_type)        :: uptime
 
@@ -1341,53 +1344,79 @@ contains
         call dm_system_uptime(seconds)
         call dm_time_delta_from_seconds(uptime, seconds)
 
+        ! Database access mode.
         if (read_only) then
             mode = 'yes'
         else
             mode = 'no'
         end if
 
+        ! Database sizes.
+        db_beat_sz   = 0_i8
+        db_log_sz    = 0_i8
+        db_observ_sz = 0_i8
+
+        if (dm_file_exists(db_beat))   db_beat_sz   = max(1_i8, dm_file_size(db_beat)   / FSIZE)
+        if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
+        if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
+
         ! Output HTML payload.
         call html_header(TITLE)
+
         call dm_cgi_out(dm_html_heading(2, TITLE))
         call dm_cgi_out(H_TABLE // H_TBODY // &
                         H_TR // H_TH // 'DMPACK' // H_TH_END // &
-                        H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
+                                H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Local Time' // H_TH_END // &
-                        H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Uptime' // H_TH_END // &
-                        H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
+                                H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Hostname' // H_TH_END // &
-                        H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Remote Address' // H_TH_END // &
-                        H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Remote User' // H_TH_END // &
-                        H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Name' // H_TH_END // &
-                        H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Release' // H_TH_END // &
-                        H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Version' // H_TH_END // &
-                        H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'OS Platform' // H_TH_END // &
-                        H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Compiler' // H_TH_END // &
-                        H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Compiler Options' // H_TH_END // &
-                        H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Executable Path' // H_TH_END // &
-                        H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
+                                H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Executable Version' // H_TH_END // &
-                        H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'DB Path (Beat)' // H_TH_END // &
-                        H_TD // dm_html_encode(db_beat) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'DB Path (Log)' // H_TH_END // &
-                        H_TD // dm_html_encode(db_log) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'DB Path (Observ.)' // H_TH_END // &
-                        H_TD // dm_html_encode(db_observ) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'DB Read Only' // H_TH_END // &
-                        H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                                H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR) // H_TD_END // H_TR_END // &
                         H_TBODY_END // H_TABLE_END)
+
+        call dm_cgi_out(dm_html_heading(3, 'Databases'))
+        call dm_cgi_out(H_TABLE // H_THEAD // H_TR // &
+                        H_TH // 'Type' // H_TH_END // &
+                        H_TH // 'Path' // H_TH_END // &
+                        H_TH // 'Size' // H_TH_END // &
+                        H_TH // 'Read-Only' // H_TH_END // &
+                        H_TR_END // H_THEAD_END // H_TBODY // H_TR // &
+                        H_TD // 'Beat' // H_TD_END // &
+                        H_TD // dm_html_encode(db_beat) // H_TD_END // &
+                        H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
+                        H_TD // trim(mode) // H_TD_END // &
+                        H_TR_END // H_TR // &
+                        H_TD // 'Log' // H_TD_END // &
+                        H_TD // dm_html_encode(db_log) // H_TD_END // &
+                        H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
+                        H_TD // trim(mode) // H_TD_END // &
+                        H_TR_END // H_TR // &
+                        H_TD // 'Observation' // H_TD_END // &
+                        H_TD // dm_html_encode(db_observ) // H_TD_END // &
+                        H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
+                        H_TD // trim(mode) // H_TD_END // &
+                        H_TR_END // H_TR // H_TBODY_END // H_TABLE_END)
         call html_footer()
     end subroutine route_status
 
