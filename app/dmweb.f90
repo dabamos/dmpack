@@ -833,7 +833,9 @@ contains
 
             call html_header(TITLE)
             call dm_cgi_out(dm_html_heading(2, TITLE))
-            call dm_cgi_out(dm_html_observ(observ))
+            call dm_cgi_out(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                                   prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                                   prefix_target = APP_BASE_PATH // '/target?id='))
             call dm_cgi_out(dm_html_heading(3, 'Logs'))
 
             if (nlogs > 0) then

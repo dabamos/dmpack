@@ -965,22 +965,57 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_nodes
 
-    function dm_html_observ(observ) result(html)
+    function dm_html_observ(observ, prefix_node, prefix_sensor, prefix_target) result(html)
         !! Returns observation as HTML table.
-        type(observ_type), intent(inout) :: observ !! Observation type.
-        character(len=:), allocatable    :: html   !! HTML.
+        type(observ_type), intent(inout)        :: observ        !! Observation type.
+        character(len=*),  intent(in), optional :: prefix_node   !! Node link prefix.
+        character(len=*),  intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(len=*),  intent(in), optional :: prefix_target !! Target link prefix.
+        character(len=:), allocatable           :: html          !! HTML.
 
-        integer :: i, n
+        character(len=:), allocatable :: nid
+        character(len=:), allocatable :: sid
+        character(len=:), allocatable :: tid
+
+        integer           :: i, n
+        type(anchor_type) :: anchor
+
+        ! Node id.
+        if (present(prefix_node) .and. len_trim(observ%node_id) > 0) then
+            anchor%link = prefix_node // dm_html_encode(observ%node_id)
+            anchor%text = dm_html_encode(observ%node_id)
+            nid = dm_html_anchor(anchor)
+        else
+            nid = dm_html_encode(observ%node_id)
+        end if
+
+        ! Sensor id.
+        if (present(prefix_sensor) .and. len_trim(observ%sensor_id) > 0) then
+            anchor%link = prefix_sensor // dm_html_encode(observ%sensor_id)
+            anchor%text = dm_html_encode(observ%sensor_id)
+            sid = dm_html_anchor(anchor)
+        else
+            sid = dm_html_encode(observ%sensor_id)
+        end if
+
+        ! Target id.
+        if (present(prefix_target) .and. len_trim(observ%target_id) > 0) then
+            anchor%link = prefix_target // dm_html_encode(observ%target_id)
+            anchor%text = dm_html_encode(observ%target_id)
+            tid = dm_html_anchor(anchor)
+        else
+            tid = dm_html_encode(observ%target_id)
+        end if
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%sensor_id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TD // sid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%target_id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%name) // H_CODE_END //  H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
