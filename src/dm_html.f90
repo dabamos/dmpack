@@ -755,16 +755,60 @@ contains
         html = '<link rel="' // dm_html_encode(rel) // '" href="' // dm_html_encode(href) // '">'
     end function dm_html_link
 
-    function dm_html_log(log, prefix) result(html)
+    function dm_html_log(log, prefix_node, prefix_sensor, prefix_target, prefix_observ) result(html)
         !! Returns log as HTML table.
-        type(log_type),   intent(inout)        :: log    !! Log type.
-        character(len=*), intent(in), optional :: prefix !! Link address prefix.
-        character(len=:), allocatable          :: html   !! HTML.
+        type(log_type),   intent(inout)        :: log           !! Log type.
+        character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
+        character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
+        character(len=*), intent(in), optional :: prefix_observ !! Observation link prefix.
+        character(len=:), allocatable          :: html          !! HTML.
+
+        character(len=:), allocatable :: nid
+        character(len=:), allocatable :: sid
+        character(len=:), allocatable :: tid
+        character(len=:), allocatable :: oid
 
         integer           :: level
         type(anchor_type) :: anchor
 
         level = max(min(LOG_NLEVEL, log%level), LOG_NONE)
+
+        ! Node id.
+        if (present(prefix_node) .and. len_trim(log%node_id) > 0) then
+            anchor%link = prefix_node // dm_html_encode(log%node_id)
+            anchor%text = dm_html_encode(log%node_id)
+            nid = dm_html_anchor(anchor)
+        else
+            nid = dm_html_encode(log%node_id)
+        end if
+
+        ! Sensor id.
+        if (present(prefix_sensor) .and. len_trim(log%sensor_id) > 0) then
+            anchor%link = prefix_sensor // dm_html_encode(log%sensor_id)
+            anchor%text = dm_html_encode(log%sensor_id)
+            sid = dm_html_anchor(anchor)
+        else
+            sid = dm_html_encode(log%sensor_id)
+        end if
+
+        ! Target id.
+        if (present(prefix_target) .and. len_trim(log%target_id) > 0) then
+            anchor%link = prefix_target // dm_html_encode(log%target_id)
+            anchor%text = dm_html_encode(log%target_id)
+            tid = dm_html_anchor(anchor)
+        else
+            tid = dm_html_encode(log%target_id)
+        end if
+
+        ! Observation id.
+        if (present(prefix_observ) .and. len_trim(log%observ_id) > 0) then
+            anchor%link = prefix_observ // dm_html_encode(log%observ_id)
+            anchor%text = dm_html_encode(log%observ_id)
+            oid = dm_html_anchor(anchor)
+        else
+            oid = dm_html_encode(log%observ_id)
+        end if
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -776,24 +820,14 @@ contains
                H_TR // H_TH // 'Error' // H_TH_END // &
                H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
-               H_TD // dm_html_encode(log%node_id) // H_TD_END // H_TR_END // &
+               H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor ID' // H_TH_END // &
-               H_TD // dm_html_encode(log%sensor_id) // H_TD_END // H_TR_END // &
+               H_TD // sid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target ID' // H_TH_END // &
-               H_TD // dm_html_encode(log%target_id) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Observation ID' // H_TH_END // H_TD
-
-        if (len_trim(log%observ_id) > 0) then
-            if (present(prefix)) then
-                anchor%link = prefix // dm_html_encode(log%observ_id)
-                anchor%text = dm_html_encode(log%observ_id)
-                html = html // H_CODE // dm_html_anchor(anchor) // H_CODE_END
-            else
-                html = html // H_CODE // dm_html_encode(log%observ_id) // H_CODE_END
-            end if
-        end if
-
-        html = html // H_TD_END // H_TR_END // H_TR // H_TH // 'Source' // H_TH_END // &
+               H_TD // tid // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Observation ID' // H_TH_END // &
+               H_TD // oid // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Source' // H_TH_END // &
                H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Message' // H_TH_END // &
                H_TD // dm_html_encode(log%message) // H_TD_END // H_TR_END // &

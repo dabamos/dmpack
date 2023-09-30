@@ -437,7 +437,10 @@ contains
 
             call html_header(TITLE)
             call dm_cgi_out(dm_html_heading(2, TITLE))
-            call dm_cgi_out(dm_html_log(log, prefix=APP_BASE_PATH // '/observ?id='))
+            call dm_cgi_out(dm_html_log(log, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                             prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                             prefix_target = APP_BASE_PATH // '/target?id=', &
+                                             prefix_observ = APP_BASE_PATH // '/observ?id='))
             call html_footer()
         end block response_block
 
@@ -834,7 +837,7 @@ contains
             call dm_cgi_out(dm_html_heading(3, 'Logs'))
 
             if (nlogs > 0) then
-                call dm_cgi_out(dm_html_logs(logs, max_len=32))
+                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
             else
                 call dm_cgi_out(dm_html_p('No associated logs found.'))
             end if

@@ -334,7 +334,7 @@ contains
         !! `smtp[s]://host[:port]`. Uses the URL API of libcurl to create the
         !! URL. By default, Transport Layer Security is disabled.
         character(len=*), intent(in)           :: host !! SMTP server host name.
-        integer,          intent(in), optional :: port !! SMTP server port.
+        integer,          intent(in), optional :: port !! SMTP server port (up to 5 digits).
         logical,          intent(in), optional :: tls  !! Transport-layer security.
         character(len=:), allocatable          :: url  !! URL to SMTP server.
 
@@ -378,7 +378,7 @@ contains
             stat = curl_url_get(ptr, CURLUPART_URL, url)
         end block url_block
 
-        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        call curl_url_cleanup(ptr)
         if (.not. allocated(url)) url = ''
     end function dm_mail_url
 

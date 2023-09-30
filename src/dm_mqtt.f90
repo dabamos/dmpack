@@ -183,7 +183,7 @@ contains
             stat = curl_url_get(ptr, CURLUPART_URL, url)
         end block url_block
 
-        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        call curl_url_cleanup(ptr)
         if (.not. allocated(url)) url = ''
     end function dm_mqtt_url
 

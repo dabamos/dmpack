@@ -532,14 +532,14 @@ contains
 
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
         !! Returns allocatable string of URL to HTTP-RPC API endpoint. Uses the
-        !! URL API of libcurl to create the URL. The base path must start with
-        !! a `/`.
+        !! URL API of libcurl to create the URL. The base path and the endpoint
+        !! must both start with a `/`.
         !!
         !! On error, returns an empty string.
         character(len=*), intent(in)           :: host     !! IP or FQDN of remote host.
-        integer,          intent(in), optional :: port     !! API port.
-        character(len=*), intent(in), optional :: base     !! API base path.
-        character(len=*), intent(in), optional :: endpoint !! API endpoint.
+        integer,          intent(in), optional :: port     !! API port (up to 5 digits).
+        character(len=*), intent(in), optional :: base     !! API base path (for example, `/api/v1`).
+        character(len=*), intent(in), optional :: endpoint !! API endpoint (for example, `/observ`).
         logical,          intent(in), optional :: tls      !! TLS encryption (HTTPS).
         character(len=:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
 
@@ -583,12 +583,16 @@ contains
 
             ! URL path.
             if (present(base)) then
+                if (len_trim(base) == 0) exit url_block
+                if (base(1:1) /= '/') exit url_block
                 path = trim(base)
             else
                 path = RPC_BASE
             end if
 
             if (present(endpoint)) then
+                if (len_trim(endpoint) == 0) exit url_block
+                if (endpoint(1:1) /= '/') exit url_block
                 path = path // trim(endpoint)
             end if
 
@@ -599,7 +603,7 @@ contains
             stat = curl_url_get(ptr, CURLUPART_URL, url)
         end block url_block
 
-        if (c_associated(ptr)) call curl_url_cleanup(ptr)
+        call curl_url_cleanup(ptr)
         if (.not. allocated(url)) url = ''
     end function dm_rpc_url
 
