@@ -29,7 +29,7 @@ program dmweb
     use :: dmpack
     implicit none (type, external)
 
-    ! Program version number.
+    ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
     integer, parameter :: APP_PATCH = 1
@@ -73,15 +73,16 @@ program dmweb
     ! Initialise DMPACK.
     call dm_init()
 
+    ! Dispatch requests and output response.
     route_block: block
         integer            :: code, n, rc
         type(cgi_env_type) :: env
 
         ! Read environment variables.
-        rc = dm_env_get('DM_DB_BEAT', db_beat, n)
-        rc = dm_env_get('DM_DB_LOG', db_log, n)
-        rc = dm_env_get('DM_DB_OBSERV', db_observ, n)
-        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
+        rc = dm_env_get('DM_DB_BEAT',   db_beat,   n)             ! Path to beat database.
+        rc = dm_env_get('DM_DB_LOG',    db_log,    n)             ! Path to log database.
+        rc = dm_env_get('DM_DB_OBSERV', db_observ, n)             ! Path to observ database.
+        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Read-only mode for web UI.
 
         ! Set-up router.
         call set_routes(router, routes, rc)
@@ -109,7 +110,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * node_id - Node ID (string).
+        !! * **node_id** - Node ID (string).
         character(len=*), parameter :: TITLE = 'Beat' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -225,6 +226,8 @@ contains
         !! GET
         character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
 
+        ! To avoid some unnecessary function calls, the number of database
+        ! records has to be manually altered in the page headings.
         integer(kind=i8), parameter :: NBEATS   = 10 !! Max. number of beats to show.
         integer(kind=i8), parameter :: NLOGS    = 10 !! Max. number of logs to show.
         integer(kind=i8), parameter :: NOBSERVS = 10 !! Max. number of observations to show.
@@ -329,7 +332,8 @@ contains
     end subroutine route_dashboard
 
     subroutine route_env(env)
-        !! CGI environment variables page.
+        !! CGI environment variables page. This page is intentionally hidden
+        !! (not linked in the navigation), and only implemented for testing.
         !!
         !! ## Path
         !! /dmpack/env
@@ -366,12 +370,13 @@ contains
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out('<blockquote><p>' // dm_html_encode(DM_COPYRIGHT) // '</p>')
-        call dm_cgi_out('<p>Permission to use, copy, modify, and/or distribute this ' // &
+        call dm_cgi_out(H_BLOCKQUOTE)
+        call dm_cgi_out(dm_html_p(DM_COPYRIGHT, encode=.true.))
+        call dm_cgi_out(H_P // 'Permission to use, copy, modify, and/or distribute this ' // &
                         'software for any purpose with or without fee is hereby ' // &
                         'granted, provided that the above copyright notice and this ' // &
-                        'permission notice appear in all copies.</p>')
-        call dm_cgi_out('<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
+                        'permission notice appear in all copies.' // H_P_END)
+        call dm_cgi_out(H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
                         'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ' // &
                         'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO ' // &
                         'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, ' // &
@@ -379,7 +384,8 @@ contains
                         'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ' // &
                         'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ' // &
                         'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE ' // &
-                        'OF THIS SOFTWARE.</p></blockquote>')
+                        'OF THIS SOFTWARE.' // H_P_END)
+        call dm_cgi_out(H_BLOCKQUOTE_END)
         call html_footer()
     end subroutine route_licence
 
@@ -393,7 +399,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * id - Log ID (UUID4).
+        !! * **id** - Log ID (UUID4).
         character(len=*), parameter :: TITLE = 'Log' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -457,14 +463,14 @@ contains
         !! GET, POST
         !!
         !! ## POST Parameters
-        !! * node_id     - Node ID (string).
-        !! * sensor_id   - Sensor ID (string).
-        !! * target_id   - Target ID (string).
-        !! * source      - Log source (string).
-        !! * from        - Time range start (ISO 8601).
-        !! * to          - Time range end (ISO 8601).
-        !! * level       - Log level (integer).
-        !! * max_results - Maximum number of logs (integer).
+        !! * **node_id**     - Node ID (string).
+        !! * **sensor_id**   - Sensor ID (string).
+        !! * **target_id**   - Target ID (string).
+        !! * **source**      - Log source (string).
+        !! * **from**        - Time range start (ISO 8601).
+        !! * **to**          - Time range end (ISO 8601).
+        !! * **level**       - Log level (integer).
+        !! * **max_results** - Maximum number of logs (integer).
         character(len=*), parameter :: TITLE = 'Logs' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -523,6 +529,7 @@ contains
                 end if
 
                 valid = .true.
+
                 ! Timestamps.
                 if (.not. dm_time_valid(from)) valid = .false.
                 if (.not. dm_time_valid(to))   valid = .false.
@@ -625,7 +632,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * id - Node ID (string).
+        !! * **id** - Node ID (string).
         character(len=*), parameter :: TITLE = 'Node' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -682,9 +689,9 @@ contains
         !! GET, POST
         !!
         !! ## POST Parameters
-        !! * id   - Node ID (string).
-        !! * name - Node name (string).
-        !! * meta - Node meta description (string).
+        !! * **id**   - Node ID (string).
+        !! * **name** - Node name (string).
+        !! * **meta** - Node meta description (string).
         character(len=*), parameter :: TITLE = 'Nodes' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -774,7 +781,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * id - Observation ID (UUID4).
+        !! * **id** - Observation ID (UUID4).
         character(len=*), parameter :: TITLE = 'Observation' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -860,12 +867,12 @@ contains
         !! GET, POST
         !!
         !! ## POST Parameters
-        !! * node_id     - Node ID (string).
-        !! * sensor_id   - Sensor ID (string).
-        !! * target_id   - Target ID (string).
-        !! * from        - Time range start (ISO 8601).
-        !! * to          - Time range end (ISO 8601).
-        !! * max_results - Maximum number of points per plot (integer).
+        !! * **node_id**     - Node ID (string).
+        !! * **sensor_id**   - Sensor ID (string).
+        !! * **target_id**   - Target ID (string).
+        !! * **from**        - Time range start (ISO 8601).
+        !! * **to**          - Time range end (ISO 8601).
+        !! * **max_results** - Maximum number of points per plot (integer).
         character(len=*), parameter :: TITLE = 'Observations' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -996,13 +1003,13 @@ contains
         !! GET, POST
         !!
         !! ## POST Parameters
-        !! * node_id       - Node ID (string).
-        !! * sensor_id     - Sensor ID (string).
-        !! * target_id     - Target ID (string).
-        !! * response_name - Observation response name (string).
-        !! * from          - Time range start (ISO 8601).
-        !! * to            - Time range end (ISO 8601).
-        !! * max_results   - Maximum number of data points (integer).
+        !! * **node_id**       - Node ID (string).
+        !! * **sensor_id**     - Sensor ID (string).
+        !! * **target_id**     - Target ID (string).
+        !! * **response_name** - Observation response name (string).
+        !! * **from**          - Time range start (ISO 8601).
+        !! * **to**            - Time range end (ISO 8601).
+        !! * **max_results**   - Maximum number of data points (integer).
         character(len=*), parameter :: TITLE       = 'Plots' !! Page title.
         integer,          parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
         integer,          parameter :: PLOT_HEIGHT = 400     !! Default plot height.
@@ -1167,7 +1174,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * id - Sensor ID (string).
+        !! * **id** - Sensor ID (string).
         character(len=*), parameter :: TITLE = 'Sensor' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1318,7 +1325,9 @@ contains
     end subroutine route_sensors
 
     subroutine route_status(env)
-        !! Status page.
+        !! Status page. Shows system status (time, uptime, host name, ...) and
+        !! database status. The database table includes paths, sizes, and access
+        !! mode.
         !!
         !! ## Path
         !! /dmpack/status
@@ -1360,6 +1369,8 @@ contains
         db_observ_sz = 0_i8
 
         ! The sizes will be at least 1 MiB, even if a file is actually smaller.
+        ! This way, it is easier to distinguish between non-existing and small
+        ! databases, as non-existing ones will always be of size zero.
         if (dm_file_exists(db_beat))   db_beat_sz   = max(1_i8, dm_file_size(db_beat)   / FSIZE)
         if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
         if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
@@ -1435,7 +1446,7 @@ contains
         !! GET
         !!
         !! ## GET Parameters
-        !! * id - Target ID (string).
+        !! * **id** - Target ID (string).
         character(len=*), parameter :: TITLE = 'Target' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1634,7 +1645,7 @@ contains
         if (present(to))        to_        = dm_html_encode(to)
         if (present(nresults))  nresults_  = nresults
 
-        ! Create HTML select elements for form.
+        ! Create HTML select elements for form. Add 1 due to empty element.
         call dm_html_select_create(select_node,   1 + size(nodes))
         call dm_html_select_create(select_sensor, 1 + size(sensors))
         call dm_html_select_create(select_target, 1 + size(targets))
@@ -2093,7 +2104,8 @@ contains
             return
         end if
 
-        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, navigation=navigation, style=APP_CSS_PATH))
+        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, navigation=navigation, &
+                                       style=APP_CSS_PATH))
     end subroutine html_header
 
     subroutine set_routes(router, routes, stat)
