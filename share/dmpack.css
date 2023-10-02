@@ -411,7 +411,7 @@ main:first-child {
   body {
     bottom: 0;
     display: grid;
-    grid-template-columns: 25ch auto;
+    grid-template-columns: 20ch auto;
     left: 0;
     right: 0;
     top: 0;
