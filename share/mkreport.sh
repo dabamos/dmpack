@@ -1,17 +1,15 @@
 #!/bin/sh
 
+# mkreport.sh - creates monthly reports
 #
-#   mkreport.sh - creates monthly reports
+# An auxiliary shell script that runs dmreport(1) to create a report of the
+# previous and the current month.
 #
-#   An auxiliary shell script that runs dmreport(1) to create a report of the
-#   previous and the current month.
+# Example:
 #
-#   Example:
-#
-#   $ sh mkreport.sh
-#   --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
-#   --- Writing report if 2023-09 to file /var/www/reports/2023-09_report.html ...
-#
+# $ sh mkreport.sh
+# --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
+# --- Writing report if 2023-09 to file /var/www/reports/2023-09_report.html ...
 
 set -e
 
