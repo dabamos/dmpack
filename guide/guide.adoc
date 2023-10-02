@@ -1836,7 +1836,7 @@ dmreport = {
   from = "1970-01-01T00:00:00.000+00:00",
   to = "2070-01-01T00:00:00.000+00:00",
   output = "%Y-%M-%D_dummy-report.html",
-  style = "share/dmpack.min.css",
+  style = "/usr/local/share/dmpack/dmreport.min.css",
   title = "Monitoring Report",
   subtitle = "Project",
   meta = "",
@@ -2172,9 +2172,10 @@ shows the time the heartbeat was sent and received, as well as the time passed
 since then, additionally in
 link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time].
 
-The style sheet of *dmweb* is based on link:http://classless.de/[Classless.css].
-It may be replaced with any other
-link:https://github.com/dbohdan/classless-css[classless CSS theme].
+The style sheet of *dmweb* is based on https://missing.style/[missing.css].
+It may be replaced with any other classless CSS theme. For best experience, the
+link:https://github.com/IBM/plex/releases[IBM Plex] font family should be
+installed locally.
 
 .Plotting of time series through the *dmweb* user interface
 [#img-dmweb]
