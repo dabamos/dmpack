@@ -295,7 +295,7 @@ contains
                 exit log_block
             end if
 
-            call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+            call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
         end block log_block
 
         rc = dm_db_close(db)
@@ -594,7 +594,7 @@ contains
                 end if
 
                 if (nlogs > 0) then
-                    call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+                    call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
                 else
                     call dm_cgi_out(dm_html_p('No logs found.'))
                 end if
@@ -839,7 +839,7 @@ contains
             call dm_cgi_out(dm_html_heading(2, 'Logs'))
 
             if (nlogs > 0) then
-                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
             else
                 call dm_cgi_out(dm_html_p('No associated logs found.'))
             end if
@@ -1371,8 +1371,6 @@ contains
         call dm_cgi_out(dm_html_heading(1, TITLE))
         call dm_cgi_out(dm_html_heading(2, 'System Status'))
         call dm_cgi_out(H_TABLE // H_TBODY // &
-                        H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
-                                H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Local Time' // H_TH_END // &
                                 H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Uptime' // H_TH_END // &
@@ -1399,6 +1397,8 @@ contains
                                 H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
                         H_TR // H_TH // 'Executable Version' // H_TH_END // &
                                 H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
+                        H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
+                                H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
                         H_TBODY_END // H_TABLE_END)
 
         ! Database information.

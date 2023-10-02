@@ -689,6 +689,7 @@ mark {
   font-family: var(--secondary-font);
   font-size: .8em;
   padding-inline: calc(var(--rhythm) / 4);
+  white-space: nowrap;
 }
 
 nav a {
