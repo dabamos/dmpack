@@ -67,6 +67,12 @@ contains
 
     logical function test03() result(stat)
         !! Reads `QUERY_STRING` parameters as key-value pairs.
+        !!
+        !! Set the environment variable first:
+        !! ```
+        !! $ export QUERY_STRING="dummy=fortran"
+        !! $ ./dmtestcgi
+        !! ```
         character(len=32)    :: dummy
         integer              :: i, rc
         type(cgi_env_type)   :: env
@@ -77,8 +83,8 @@ contains
         call dm_cgi_env(env)
         call dm_cgi_query(env, param)
 
-        do i = 1, param%N
-            print *, trim(param%keys(i)), ': ', trim(param%values(i))
+        do i = 1, dm_cgi_size(param)
+            print *, dm_cgi_key(param, i), ': ', dm_cgi_value(param, i)
         end do
 
         rc = dm_cgi_get(param, 'dummy', dummy)

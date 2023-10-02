@@ -16,7 +16,7 @@ module dm_arg
     !!     arg_type('verbose', short='V', type=ARG_TYPE_BOOL) &
     !! ]
     !!
-    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0)
+    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=2)
     !! rc = dm_arg_get(args(1), input)
     !! rc = dm_arg_get(args(2), delay)
     !! rc = dm_arg_get(args(3), verbose)
@@ -104,7 +104,7 @@ contains
         has = (args(1)%error == E_NONE)
     end function dm_arg_has
 
-    integer function dm_arg_read(args, app, major, minor) result(rc)
+    integer function dm_arg_read(args, app, major, minor, patch) result(rc)
         !! Reads all arguments from command-line and prints error message if one
         !! is missing. Returns the error code of the first invalid argument.
         !!
@@ -117,22 +117,25 @@ contains
         character(len=*), intent(in), optional :: app     !! App name (for `-v`).
         integer,          intent(in), optional :: major   !! Major version number (for `-v`).
         integer,          intent(in), optional :: minor   !! Minor version number (for `-v`).
+        integer,          intent(in), optional :: patch   !! Patch level (for `-v`).
 
         integer :: i, n
-        integer :: major_, minor_
+        integer :: major_, minor_, patch_
 
         rc = E_NONE
 
         major_ = 0
         minor_ = 0
+        patch_ = 0
 
         if (present(major)) major_ = major
         if (present(minor)) minor_ = minor
+        if (present(patch)) patch_ = patch
 
         if (dm_arg_has('version', 'v')) then
             ! Print program and library version, then stop.
             if (present(app)) then
-                call dm_app_out(app, major_, minor_)
+                call dm_app_out(app, major_, minor_, patch_)
             else
                 write (stdout, '("DMPACK ", a3)') DM_VERSION_STRING
             end if

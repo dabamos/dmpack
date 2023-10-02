@@ -33,6 +33,7 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
+    integer, parameter :: APP_PATCH = 0
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -1262,7 +1263,7 @@ contains
             message = 'online'
         end if
 
-        api = api_status_type(version   = dm_version_to_string(APP_MAJOR, APP_MINOR), &
+        api = api_status_type(version   = dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH), &
                               dmpack    = DM_VERSION_STRING, &
                               host      = env%server_name, &
                               server    = env%server_software, &

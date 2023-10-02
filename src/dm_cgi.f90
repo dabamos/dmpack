@@ -49,11 +49,13 @@ module dm_cgi
     end type cgi_env_type
 
     type, public :: cgi_param_type
-        !! CGI parameter type.
-        character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '
-        character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '
-        integer(kind=i8)             :: hashes(CGI_MAX_PARAMS) = 0_i8
-        integer                      :: n                      = 0
+        !! Opaque CGI parameter type. Stores GET and POST parameters as
+        !! key-value pairs.
+        private
+        character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '  !! Array of keys.
+        character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '  !! Array of values.
+        integer(kind=i8)             :: hashes(CGI_MAX_PARAMS) = 0_i8 !! Array of hashes.
+        integer                      :: cursor                 = 0    !! Number of elements.
     end type cgi_param_type
 
     interface dm_cgi_get
@@ -75,9 +77,12 @@ module dm_cgi
     public :: dm_cgi_has
     public :: dm_cgi_has_value
     public :: dm_cgi_header
+    public :: dm_cgi_key
     public :: dm_cgi_out
     public :: dm_cgi_parse
     public :: dm_cgi_query
+    public :: dm_cgi_size
+    public :: dm_cgi_value
 
     private :: cgi_get_a
     private :: cgi_get_i4
@@ -198,7 +203,7 @@ contains
 
     function dm_cgi_has_value(param, key) result(has)
         !! Returns whether key exists in `param` and has value.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameters.
+        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         logical          :: has
@@ -213,8 +218,45 @@ contains
         has = .true.
     end function dm_cgi_has_value
 
+    function dm_cgi_key(param, i) result(str)
+        !! Returns key at index `i` in keys array of `param`.
+        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+        integer,              intent(in)    :: i     !! Array index.
+        character(len=:), allocatable       :: str   !! Key or empty.
+
+        if ((param%cursor == 0) .or. (i < 1) .or. (i > param%cursor)) then
+            str = ''
+            return
+        end if
+
+        str = trim(param%keys(i))
+    end function dm_cgi_key
+
+    function dm_cgi_size(param) result(sz)
+        !! Returns the current number of elements in the given (opaque) CGI
+        !! parameter type.
+        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+        integer                             :: sz    !! Number of parameters.
+
+        sz = param%cursor
+    end function dm_cgi_size
+
+    function dm_cgi_value(param, i) result(str)
+        !! Returns value at index `i` in values array of `param`.
+        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+        integer,              intent(in)    :: i     !! Array index.
+        character(len=:), allocatable       :: str   !! Value or empty.
+
+        if ((param%cursor == 0) .or. (i < 1) .or. (i > param%cursor)) then
+            str = ''
+            return
+        end if
+
+        str = trim(param%values(i))
+    end function dm_cgi_value
+
     subroutine dm_cgi_env(env)
-        !! Returns CGI environment variables.
+        !! Reads CGI environment variables and writes values into `env`.
         type(cgi_env_type), intent(out) :: env !! CGI environment type.
 
         character(len=32) :: content_length, server_port
@@ -256,7 +298,8 @@ contains
         !! (`application/x-www-form-urlencoded`).
         type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
         type(cgi_param_type), intent(out)   :: param !! CGI parameter type.
-        character(len=:), allocatable       :: content
+
+        character(len=:), allocatable :: content
 
         if (env%content_type /= MIME_FORM) return
         if (dm_cgi_content(env, content) /= E_NONE) return
@@ -271,7 +314,8 @@ contains
         character(len=*), intent(in)           :: content_type !! MIME type.
         integer,          intent(in), optional :: http_status  !! HTTP status code.
         character(len=*), intent(in), optional :: location     !! Optional redirect.
-        integer                                :: code
+
+        integer :: code ! HTTP code.
 
         code = 200
         if (present(http_status)) code = http_status
@@ -294,8 +338,8 @@ contains
     end subroutine dm_cgi_out
 
     subroutine dm_cgi_parse(str, param)
-        !! Decodes and parses given character string and returns key-value
-        !! pairs in `param`.
+        !! Decodes and parses given character string containing new-line
+        !! separated key-values pairs, and returns CGI parameters in `param`.
         character(len=*),     intent(in)  :: str   !! Input string.
         type(cgi_param_type), intent(out) :: param !! CGI parameter type.
 
@@ -324,7 +368,7 @@ contains
             end if
 
             param%hashes(i) = dm_hash_fnv1a(trim(param%keys(i)))
-            param%n = param%n + 1
+            param%cursor = param%cursor + 1
         end do
     end subroutine dm_cgi_parse
 
@@ -349,7 +393,8 @@ contains
         character(len=*),     intent(inout)        :: value    !! Parameter value.
         character(len=*),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i
+
+        integer :: i
 
         rc = E_EMPTY
         if (present(required)) then
@@ -378,7 +423,8 @@ contains
         integer(kind=i4),     intent(out)          :: value    !! Parameter value.
         integer(kind=i4),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i
+
+        integer :: i
 
         rc = E_EMPTY
         if (present(required)) then
@@ -403,7 +449,8 @@ contains
         integer(kind=i8),     intent(out)          :: value    !! Parameter value.
         integer(kind=i8),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i
+
+        integer :: i
 
         rc = E_EMPTY
         if (present(required)) then
@@ -428,7 +475,8 @@ contains
         logical,              intent(out)          :: value    !! Parameter value.
         logical,              intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i, j, stat
+
+        integer :: i, j, stat
 
         rc = E_EMPTY
         if (present(required)) then
@@ -457,7 +505,8 @@ contains
         real(kind=r4),        intent(out)          :: value    !! Parameter value.
         real(kind=r4),        intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i
+
+        integer :: i
 
         rc = E_EMPTY
         if (present(required)) then
@@ -482,7 +531,8 @@ contains
         real(kind=r8),        intent(out)          :: value    !! Parameter value.
         real(kind=r8),        intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
-        integer                                    :: i
+
+        integer :: i
 
         rc = E_EMPTY
         if (present(required)) then
@@ -502,7 +552,8 @@ contains
         !! Returns location of key in parameter keys array, or 0 if not found.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
-        integer(kind=i8)                    :: hash
+
+        integer(kind=i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
         i = findloc(param%hashes, hash, dim=1, back=.true.)

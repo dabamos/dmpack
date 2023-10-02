@@ -11,6 +11,7 @@ program dmimport
     character(len=*), parameter :: APP_NAME  = 'dmimport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
+    integer,          parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -288,7 +289,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), type_name)

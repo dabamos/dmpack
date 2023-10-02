@@ -19,7 +19,7 @@ module dm_file
 contains
     logical function dm_file_exists(path) result(file_exists)
         !! Returns `.true.` if file at given file path exists.
-        character(len=*), intent(in) :: path
+        character(len=*), intent(in) :: path !! File path.
 
         inquire (exist=file_exists, file=trim(path))
     end function dm_file_exists
@@ -56,10 +56,12 @@ contains
 
     integer(kind=i8) function dm_file_size(path, error) result(sz)
         !! Returns file size in file storage units (usually, bytes). On error,
-        !! size is -1.
-        character(len=*), intent(in)            :: path  !! Path to file.
+        !! size is 0 and the error code `E_NOT_FOUND` is returned in dummy
+        !! argument `error`.
+        character(len=*), intent(in)            :: path  !! File path.
         integer,          intent(out), optional :: error !! Error code.
-        logical                                 :: file_exists
+
+        logical :: file_exists
 
         if (present(error)) error = E_NOT_FOUND
         sz = 0_i8
@@ -70,9 +72,10 @@ contains
 
     subroutine dm_file_delete(path, error)
         !! Deletes file at given file path.
-        character(len=*), intent(in)            :: path
-        integer,          intent(out), optional :: error
-        integer                                 :: fu, stat
+        character(len=*), intent(in)            :: path  !! File to delete.
+        integer,          intent(out), optional :: error !! Error code.
+
+        integer :: fu, stat
 
         if (present(error)) error = E_IO
         open (action='write', file=trim(path), iostat=stat, newunit=fu, status='old')
@@ -83,9 +86,10 @@ contains
 
     subroutine dm_file_touch(path, error)
         !! Creates empty file at given file path.
-        character(len=*), intent(in)            :: path
-        integer,          intent(out), optional :: error
-        integer                                 :: fu, stat
+        character(len=*), intent(in)            :: path  !! File to create.
+        integer,          intent(out), optional :: error !! Error code.
+
+        integer :: fu, stat
 
         if (present(error)) error = E_IO
         open (action='write', file=trim(path), iostat=stat, newunit=fu, status='unknown')

@@ -12,6 +12,7 @@ program dmlua
     character(len=*), parameter :: APP_NAME  = 'dmlua'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
+    integer,          parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_PROC_LEN    = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
@@ -107,7 +108,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)

@@ -10,6 +10,7 @@ program dmreport
     character(len=*), parameter :: APP_NAME  = 'dmreport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
+    integer,          parameter :: APP_PATCH = 0
 
     character(len=*), parameter :: APP_FONT        = 'Open Sans' !! Default font name.
     integer,          parameter :: APP_PLOT_WIDTH  = 1000        !! Default plot width.
@@ -43,7 +44,7 @@ contains
 
         html = H_FOOTER // H_HR // H_P // H_SMALL // &
                'This page was generated ' // dm_time_now() // &
-               ' by ' // APP_NAME // ' ' // dm_version_to_string(APP_MAJOR, APP_MINOR) // &
+               ' by ' // APP_NAME // ' ' // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // &
                ' (DMPACK ' // DM_VERSION_STRING // ') ' // &
                H_SMALL_END // H_P_END // H_FOOTER_END // dm_html_footer()
     end function html_footer
@@ -171,7 +172,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)

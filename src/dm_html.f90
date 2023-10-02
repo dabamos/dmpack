@@ -16,6 +16,7 @@ module dm_html
     use :: dm_request
     use :: dm_response
     use :: dm_sensor
+    use :: dm_string
     use :: dm_system
     use :: dm_target
     use :: dm_time
@@ -63,6 +64,7 @@ module dm_html
     character(len=*), parameter, public :: H_COMMENT_END    = ' //-->'
     character(len=*), parameter, public :: H_DETAILS        = '<details>' // NL
     character(len=*), parameter, public :: H_DETAILS_END    = '</details>' // NL
+    character(len=*), parameter, public :: H_DIV            = '<div>' // NL
     character(len=*), parameter, public :: H_DIV_CARD       = '<div class="card">' // NL
     character(len=*), parameter, public :: H_DIV_COL        = '<div class="col">' // NL
     character(len=*), parameter, public :: H_DIV_END        = '</div>' // NL
@@ -100,6 +102,8 @@ module dm_html
     character(len=*), parameter, public :: H_LI_END         = '</li>' // NL
     character(len=*), parameter, public :: H_MAIN           = '<main>' // NL
     character(len=*), parameter, public :: H_MAIN_END       = '</main>' // NL
+    character(len=*), parameter, public :: H_MARK           = '<mark>'
+    character(len=*), parameter, public :: H_MARK_END       = '</mark>'
     character(len=*), parameter, public :: H_META_CHARSET   = '<meta charset="utf-8">' // NL
     character(len=*), parameter, public :: H_META_GENERATOR = '<meta name="generator" content="DMPACK">' // NL
     character(len=*), parameter, public :: H_META_VIEWPORT  = &
@@ -116,6 +120,8 @@ module dm_html
     character(len=*), parameter, public :: H_SECTION_END    = '</section>' // NL
     character(len=*), parameter, public :: H_SMALL          = '<small>'
     character(len=*), parameter, public :: H_SMALL_END      = '</small>'
+    character(len=*), parameter, public :: H_SPAN           = '<small>'
+    character(len=*), parameter, public :: H_SPAN_END       = '</span>'
     character(len=*), parameter, public :: H_STRONG         = '<strong>'
     character(len=*), parameter, public :: H_STRONG_END     = '</strong>'
     character(len=*), parameter, public :: H_SUMMARY        = '<summary>'
@@ -187,6 +193,7 @@ module dm_html
     public :: dm_html_sensor
     public :: dm_html_sensors
     public :: dm_html_small
+    public :: dm_html_span
     public :: dm_html_target
     public :: dm_html_targets
     public :: dm_html_td
@@ -243,14 +250,14 @@ contains
                H_TD // dm_time_delta_to_string(time_inter) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Uptime' // H_TH_END // &
                H_TD // dm_time_delta_to_string(time) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Error' // H_TH_END // &
+               H_TR // H_TH // 'Last Error' // H_TH_END // &
                H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Status' // H_TH_END // H_TD
 
         if (delta_ <= int(beat%interval, kind=i8)) then
-            html = html // H_EM // 'on-time' // H_EM_END
+            html = html // dm_html_mark('on-time', class='debug')
         else
-            html = html // H_STRONG // 'overdue' // H_STRONG_END
+            html = html // dm_html_mark('overdue', class='warning')
         end if
 
         html = html // H_TD_END // H_TR_END // H_TBODY_END // H_TABLE_END
@@ -311,9 +318,9 @@ contains
                    H_TD
 
             if (delta <= int(beats(i)%interval, kind=i8)) then
-                html = html // H_EM // 'on-time' // H_EM_END
+                html = html // dm_html_mark('on-time', class='debug')
             else
-                html = html // H_STRONG // 'overdue' // H_STRONG_END
+                html = html // dm_html_mark('overdue', class='warning')
             end if
 
             html = html // H_TD_END // H_TR_END
@@ -517,11 +524,18 @@ contains
         html = html // H_FIGURE_END
     end function dm_html_figure
 
-    pure function dm_html_footer() result(html)
+    pure function dm_html_footer(content) result(html)
         !! Returns HTML footer.
-        character(len=:), allocatable :: html !! HTML.
+        character(len=*), intent(in), optional :: content !! Optional footer content.
+        character(len=:), allocatable          :: html    !! HTML.
 
-        html = H_MAIN_END // H_BODY_END // H_HTML_END
+        if (present(content)) then
+            html = H_MAIN_END // H_FOOTER // trim(content) // H_FOOTER_END // &
+                   H_DIV_END // H_BODY_END // H_HTML_END
+            return
+        end if
+
+        html = H_MAIN_END // H_DIV_END // H_BODY_END // H_HTML_END
     end function dm_html_footer
 
     function dm_html_header(title, subtitle, style, internal_style, brand, navigation) result(html)
@@ -556,15 +570,16 @@ contains
         if (has_style)    html = html // dm_html_link('stylesheet', style) // NL
         if (has_internal) html = html // H_STYLE // internal_style // H_STYLE_END
 
-        html = html // H_HEAD_END // H_BODY // H_MAIN // H_HEADER
+        html = html // H_HEAD_END // H_BODY // H_HEADER
 
+        ! Brand title.
+        if (present(brand)) then
+            html = html // dm_html_heading(3, brand)
+        end if
+
+        ! Sidebar navigation.
         if (present(navigation)) then
-            ! Brand.
             html = html // H_NAV // H_UL
-
-            if (present(brand)) then
-                html = html // H_LI // dm_html_encode(brand) // H_LI_END
-            end if
 
             ! Navigation elements.
             do i = 1, size(navigation)
@@ -580,7 +595,7 @@ contains
             end if
         end if
 
-        html = html // H_HEADER_END
+        html = html // H_HEADER_END // H_DIV // H_MAIN
     end function dm_html_header
 
     pure function dm_html_heading(level, str, small) result(html)
@@ -621,9 +636,9 @@ contains
             case default
                 ! H1
                 if (has_small) then
-                    html = H_H1 // dm_html_encode(str) // dm_html_small(small) // H_H1_END // H_HR
+                    html = H_H1 // dm_html_encode(str) // dm_html_small(small) // H_H1_END
                 else
-                    html = H_H1 // dm_html_encode(str) // H_H1_END // H_HR
+                    html = H_H1 // dm_html_encode(str) // H_H1_END
                 end if
         end select
     end function dm_html_heading
@@ -816,7 +831,7 @@ contains
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Level' // H_TH_END // &
-               H_TD // trim(LOG_LEVEL_NAMES(level)) // ' (' // dm_itoa(level) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=dm_lower(LOG_LEVEL_NAMES(level))) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
                H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
@@ -887,13 +902,27 @@ contains
             if (present(max_len)) max_len_ = min(max_len_, max_len)
 
             html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
-                   H_TD // trim(LOG_LEVEL_NAMES(level)) // H_TD_END // &
+                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=dm_lower(LOG_LEVEL_NAMES(level))) // H_TD_END // &
                    H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
                    H_TD // dm_html_encode(logs(i)%message(1:max_len_)) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_logs
+
+    pure function dm_html_mark(str, class) result(html)
+        !! Returns `<mark>` element of optional class, with encoded `str`
+        !! enclosed.
+        character(len=*), intent(in)           :: str   !! Element content.
+        character(len=*), intent(in), optional :: class !! Element class.
+        character(len=:), allocatable          :: html  !! HTML.
+
+        if (present(class)) then
+            html = '<mark class="' // trim(class) // '">' // dm_html_encode(str) // H_MARK_END
+        else
+            html = H_MARK // dm_html_encode(str) // H_MARK_END
+        end if
+    end function dm_html_mark
 
     function dm_html_nav(anchors) result(html)
         !! Returns HTML navigation element with unordered list of links.
@@ -1017,7 +1046,7 @@ contains
                H_TR // H_TH // 'Target ID' // H_TH_END // &
                H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%name) // H_CODE_END //  H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &
@@ -1048,7 +1077,7 @@ contains
             end do
         end if
 
-        html = html // H_TBODY_END // H_TABLE_END // dm_html_heading(3, 'Requests')
+        html = html // H_TBODY_END // H_TABLE_END // dm_html_heading(2, 'Requests')
 
         ! Requests.
         if (observ%nrequests == 0) then
@@ -1217,7 +1246,7 @@ contains
                    H_TD // dm_ftoa(responses(i)%value) // H_TD_END // &
                    H_TD // dm_html_encode(responses(i)%unit) // H_TD_END // &
                    H_TD // dm_error_message(responses(i)%error) // &
-                           ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // H_TR_END // &
+                           ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // &
                    H_TR_END
         end do
 
@@ -1325,12 +1354,26 @@ contains
     end function dm_html_sensors
 
     pure function dm_html_small(str) result(html)
-        !! Returns `<small>` element with given string.
+        !! Returns `<small>` element with encoded `str` enclosed.
         character(len=*), intent(in)  :: str  !! Element content.
         character(len=:), allocatable :: html !! HTML.
 
         html = H_SMALL // dm_html_encode(str) // H_SMALL_END
     end function dm_html_small
+
+    pure function dm_html_span(str, class) result(html)
+        !! Returns `<span>` element of optional class, with encoded `str`
+        !! enclosed.
+        character(len=*), intent(in)           :: str   !! Element content.
+        character(len=*), intent(in), optional :: class !! Element class.
+        character(len=:), allocatable          :: html  !! HTML.
+
+        if (present(class)) then
+            html = '<span class="' // trim(class) // '">' // dm_html_encode(str) // H_SPAN_END
+        else
+            html = H_SPAN // dm_html_encode(str) // H_SPAN_END
+        end if
+    end function dm_html_span
 
     function dm_html_target(target) result(html)
         !! Returns target as HTML table.
