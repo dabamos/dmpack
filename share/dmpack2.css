@@ -338,7 +338,6 @@ body {
   left: 50%;
   margin: 0;
   position: relative;
-  transform: translateX(-50vw);
   width: 100vw;
 }
 
@@ -408,15 +407,14 @@ main:first-child {
   padding-top: var(--gap);
 }
 
-@media (min-width: 80ch) {
+@media (min-width: 75ch) {
   body {
     bottom: 0;
     display: grid;
-    grid-template-columns: 20ch auto;
+    grid-template-columns: 25ch auto;
     left: 0;
     right: 0;
     top: 0;
-    transform: translateX(0);
   }
 
   body > header {
@@ -427,7 +425,7 @@ main:first-child {
   }
 
   body > :nth-child(2) {
-    --full-width: calc(100vw - 20ch);
+    --full-width: calc(100vw - 25ch);
     margin-top: var(--gap);
     overflow: auto;
   }
@@ -1003,8 +1001,10 @@ button {
 }
 
 fieldset {
+/*
   border-radius: var(--border-radius);
   border: 1px solid var(--graphical-fg);
+*/
   margin: var(--gap) 0;
   padding: var(--gap);
   position: relative;
