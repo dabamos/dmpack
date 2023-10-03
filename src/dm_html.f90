@@ -908,7 +908,7 @@ contains
             if (present(max_len)) max_len_ = min(max_len_, max_len)
 
             html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
-                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES(level)) // H_TD_END // &
+                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // &
                    H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
                    H_TD // dm_html_encode(logs(i)%message(1:max_len_)) // H_TD_END // H_TR_END
         end do
