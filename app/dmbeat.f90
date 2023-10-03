@@ -193,7 +193,7 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &

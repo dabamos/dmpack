@@ -242,7 +242,7 @@ contains
 
         if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
 
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then

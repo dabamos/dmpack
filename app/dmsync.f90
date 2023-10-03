@@ -272,7 +272,7 @@ contains
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
 
         name  = dm_sync_name(app%type)
         limit = APP_SYNC_LIMIT

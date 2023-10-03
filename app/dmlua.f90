@@ -268,7 +268,7 @@ contains
         integer           :: rc
         type(observ_type) :: obs_in, obs_out
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.

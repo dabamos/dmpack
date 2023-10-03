@@ -297,7 +297,7 @@ contains
 
         if (len_trim(app%output) > 0 .or. app%output == '-') is_file = .true.
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
 
         ipc_loop: do
             ! Read observation or log from POSIX message queue (blocking).

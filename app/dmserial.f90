@@ -412,7 +412,7 @@ contains
         type(request_type),  pointer :: request  ! Next request to execute.
         type(response_type), pointer :: response ! Response in request.
 
-        call dm_log(LOG_INFO, 'starting ' // app%name)
+        call dm_log(LOG_INFO, 'started ' // app%name)
         call dm_log(LOG_DEBUG, 'opening TTY '  // trim(app%tty) // ' to sensor ' // trim(app%sensor) // &
                     ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
                     dm_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
