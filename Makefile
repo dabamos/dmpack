@@ -629,6 +629,7 @@ install:
 	install -m 644 $(SHRDIR)/dmreport.min.css $(ISHRDIR)
 	install -m 644 $(SHRDIR)/dmlua.lua $(ISHRDIR)
 	install -m 644 $(SHRDIR)/feed.xsl $(ISHRDIR)
+	install -m 755 $(SHRDIR)/diskfree.sh $(ISHRDIR)
 	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)
 
 deinstall:

@@ -148,7 +148,8 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 
 If the DMPACK repository is cloned recursively, these submodules will be
-downloaded automatically to directory `vendor/`.
+downloaded automatically to directory `vendor/`. Otherwise, they have to be
+cloned or downloaded manually.
 
 == Installation
 
@@ -4259,13 +4260,14 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 94   | `E_RPC_AUTH`        | RPC API call unauthorised.
 | 95   | `E_RPC_CONFLICT`    | RPC resource exists.
 | 96   | `E_RPC_SERVER`      | RPC internal server error.
-| 100  | `E_LUA`             | Generic Lua error.
-| 101  | `E_LUA_YIELD`       | Lua thread (coroutine) yields.
-| 102  | `E_LUA_RUNTIME`     | Lua runtime error.
-| 103  | `E_LUA_SYNTAX`      | Lua syntax error.
-| 104  | `E_LUA_MEM`         | Lua memory allocation error.
-| 105  | `E_LUA_ERROR`       | Lua message handling error.
-| 106  | `E_LUA_FILE`        | Lua file I/O error.
-| 110  | `E_MAIL`            | Generic SMTP error.
-| 120  | `E_MQTT`            | Generic MQTT error.
+| 100  | `E_MAIL`            | Generic SMTP error.
+| 110  | `E_MQTT`            | Generic MQTT error.
+| 120  | `E_LUA`             | Generic Lua error.
+| 121  | `E_LUA_YIELD`       | Lua thread (coroutine) yields.
+| 122  | `E_LUA_RUNTIME`     | Lua runtime error.
+| 123  | `E_LUA_SYNTAX`      | Lua syntax error.
+| 124  | `E_LUA_MEM`         | Lua memory allocation error.
+| 125  | `E_LUA_ERROR`       | Lua message handling error.
+| 126  | `E_LUA_FILE`        | Lua file I/O error.
+
 |===

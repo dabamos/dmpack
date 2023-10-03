@@ -23,8 +23,8 @@ DMPACK is a scientific monitoring system developed for automated control
 measurements of buildings, infrastructure, terrain, geodetic nets, and other
 objects. The software runs on sensor nodes, usually industrial embedded systems
 or single-board computers, and obtains observation data from arbitrary sensors,
-like total stations, digital levels, inclinometers, weather stations, or GNSS
-receivers.  The raw sensor data is then processed, stored, and optionally
+like robotic total stations, digital levels, inclinometers, weather stations, or
+GNSS receivers. The raw sensor data is then processed, stored, and optionally
 transmitted to a server. The software package may be used to monitor objects
 like:
 
@@ -36,7 +36,8 @@ like:
 DMPACK is built around the relational SQLite database for time series and log
 storage on client and server. The server component is optional. It is possible
 to run DMPACK on clients only, without data distribution. The client-side
-message passing is based on POSIX message queues and POSIX semaphores.
+inter-process communications are based on POSIX message queues and POSIX
+semaphores.
 
 ## System Architecture
 
