@@ -35,6 +35,8 @@ module dm_sync
         integer                    :: nattempts = 0              !! Number of (unsuccessful) attempts to transfer.
     end type sync_type
 
+    integer, parameter, public :: SYNC_SIZE = storage_size(sync_type(), kind=i8) / 8 !! Size of `sync_type` in bytes.
+
     interface operator (==)
         !! Returns whether sync types are equal.
         module procedure :: dm_sync_equals

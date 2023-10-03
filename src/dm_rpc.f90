@@ -246,7 +246,7 @@ contains
     end function dm_rpc_error_multi
 
     integer function dm_rpc_init() result(rc)
-        !! Initialises libcurl backend.
+        !! Initialises RPC backend.
         rc = E_RPC
         if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
         rc = E_NONE
@@ -633,7 +633,7 @@ contains
     end function dm_rpc_write_callback
 
     subroutine dm_rpc_destroy()
-        !! Cleans-up libcurl.
+        !! Cleans-up RPC backend.
         call curl_global_cleanup()
     end subroutine dm_rpc_destroy
 

@@ -31,6 +31,9 @@ module dm_log
     character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LOG_NLEVEL - 1) = [ &
         character(len=8) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' ] !! Log level strings.
 
+    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LOG_NLEVEL - 1) = [ &
+        character(len=8) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' ] !! Log level strings in lower-case.
+
     type, public :: log_type
         !! Log message type.
         character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
@@ -45,7 +48,7 @@ module dm_log
         character(len=LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
     end type log_type
 
-    integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Log type size in bytes.
+    integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Size of `log_type` in bytes.
 
     interface dm_log_valid
         !! Generic log validation function.

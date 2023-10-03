@@ -23,6 +23,8 @@ module dm_beat
         integer                    :: uptime    = 0            !! System uptime in seconds.
     end type beat_type
 
+    integer, parameter, public :: BEAT_SIZE = storage_size(beat_type(), kind=i8) / 8 !! Size of `beat_type` in bytes.
+
     interface operator (==)
         !! Returns whether heartbeats are equal.
         module procedure :: dm_beat_equals

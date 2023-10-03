@@ -173,8 +173,8 @@ contains
     end function dm_ascii_is_upper
 
     pure elemental logical function dm_ascii_is_white_space(a) result(is_white)
-        !! Returns whether character is white space (either SPACE, TAB, LF,
-        !! VT, FF, or CR).
+        !! Returns whether character is white space (either `SPACE`, `TAB`,
+        !! `LF`, `VT`, `FF`, or `CR`).
         character, intent(in) :: a !! Character to check.
         integer               :: i
 

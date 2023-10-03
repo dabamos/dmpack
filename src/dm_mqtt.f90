@@ -62,7 +62,7 @@ module dm_mqtt
     public :: dm_mqtt_url
 contains
     integer function dm_mqtt_init() result(rc)
-        !! Initialises libcurl backend.
+        !! Initialises MQTT backend.
         rc = E_MQTT
         if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
         rc = E_NONE
@@ -188,7 +188,7 @@ contains
     end function dm_mqtt_url
 
     subroutine dm_mqtt_destroy()
-        !! Cleans-up libcurl.
+        !! Cleans-up MQTT backend.
         call curl_global_cleanup()
     end subroutine dm_mqtt_destroy
 end module dm_mqtt

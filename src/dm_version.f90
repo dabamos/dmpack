@@ -16,6 +16,7 @@ module dm_version
                                                                achar(DM_VERSION_PATCH + 48) !! DMPACK version as string.
 
     interface dm_version_to_string
+        !! Generic DMPACK version formatters.
         module procedure :: dm_version_to_string_long
         module procedure :: dm_version_to_string_short
     end interface

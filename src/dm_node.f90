@@ -18,6 +18,8 @@ module dm_node
         character(len=NODE_META_LEN) :: meta = ' ' !! Additional description text.
     end type node_type
 
+    integer, parameter, public :: NODE_SIZE = storage_size(node_type(), kind=i8) / 8 !! Size of `node_type` in bytes.
+
     interface operator (==)
         !! Returns whether nodes are equal.
         module procedure :: dm_node_equals

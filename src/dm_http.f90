@@ -36,7 +36,7 @@ contains
     pure function dm_http_status_string(http_status) result(str)
         !! Returns allocatable string of HTTP status.
         integer, intent(in)           :: http_status !! HTTP code.
-        character(len=:), allocatable :: str         !! Output string.
+        character(len=:), allocatable :: str         !! Status string.
 
         select case (http_status)
             ! 20X

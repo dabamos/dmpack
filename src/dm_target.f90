@@ -18,6 +18,8 @@ module dm_target
         character(len=TARGET_META_LEN) :: meta = ' ' !! Target meta information.
     end type target_type
 
+    integer, parameter, public :: TARGET_SIZE = storage_size(target_type(), kind=i8) / 8 !! Size of `target_type` in bytes.
+
     interface operator (==)
         !! Returns whether targets are equal.
         module procedure :: dm_target_equals

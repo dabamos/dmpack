@@ -80,18 +80,18 @@ module dm_error
     integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
 
-    integer, parameter, public :: E_LUA            = 100 !! Generic Lua error.
-    integer, parameter, public :: E_LUA_YIELD      = 101 !! Lua thread (coroutine) yields.
-    integer, parameter, public :: E_LUA_RUNTIME    = 102 !! Lua runtime error.
-    integer, parameter, public :: E_LUA_SYNTAX     = 103 !! Lua syntax error.
-    integer, parameter, public :: E_LUA_MEM        = 104 !! Lua memory allocation error.
-    integer, parameter, public :: E_LUA_ERROR      = 105 !! Lua message handling error.
-    integer, parameter, public :: E_LUA_FILE       = 106 !! Lua file I/O error.
+    integer, parameter, public :: E_MAIL           = 100 !! Generic SMTP error.
+    integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
 
-    integer, parameter, public :: E_MAIL           = 110 !! Generic SMTP error.
-    integer, parameter, public :: E_MQTT           = 120 !! Generic MQTT error.
+    integer, parameter, public :: E_LUA            = 120 !! Generic Lua error.
+    integer, parameter, public :: E_LUA_YIELD      = 121 !! Lua thread (coroutine) yields.
+    integer, parameter, public :: E_LUA_RUNTIME    = 122 !! Lua runtime error.
+    integer, parameter, public :: E_LUA_SYNTAX     = 123 !! Lua syntax error.
+    integer, parameter, public :: E_LUA_MEM        = 124 !! Lua memory allocation error.
+    integer, parameter, public :: E_LUA_ERROR      = 125 !! Lua message handling error.
+    integer, parameter, public :: E_LUA_FILE       = 126 !! Lua file I/O error.
 
-    integer, parameter, public :: E_LAST           = 120 !! DO NOT USE.
+    integer, parameter, public :: E_LAST           = 126 !! DO NOT USE.
 
     interface dm_perror
         !! Alias for `dm_error_out()`.
@@ -244,6 +244,14 @@ contains
             case (E_RPC_SERVER)
                 str = 'RPC server error'
 
+            ! Mail.
+            case (E_MAIL)
+                str = 'SMTP error'
+
+            ! MQTT.
+            case (E_MQTT)
+                str = 'MQTT error'
+
             ! Lua.
             case (E_LUA)
                 str = 'Lua error'
@@ -259,14 +267,6 @@ contains
                 str = 'Lua message handling error'
             case (E_LUA_FILE)
                 str = 'Lua file I/O error'
-
-            ! Mail.
-            case (E_MAIL)
-                str = 'SMTP error'
-
-            ! MQTT.
-            case (E_MQTT)
-                str = 'MQTT error'
 
             case default
                 str = 'unknown'

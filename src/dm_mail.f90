@@ -189,7 +189,7 @@ contains
     end function dm_mail_create_server
 
     integer function dm_mail_init() result(rc)
-        !! Initialises libcurl backend.
+        !! Initialises SMTP backend.
         rc = E_MAIL
         if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
         rc = E_NONE
@@ -331,7 +331,7 @@ contains
 
     function dm_mail_url(host, port, tls) result(url)
         !! Returns allocatable string of SMTP server URL in the form
-        !! `smtp[s]://host[:port]`. Uses the URL API of libcurl to create the
+        !! `smtp[s]://host[:port]/`. Uses the URL API of libcurl to create the
         !! URL. By default, Transport Layer Security is disabled.
         character(len=*), intent(in)           :: host !! SMTP server host name.
         integer,          intent(in), optional :: port !! SMTP server port (up to 5 digits).
@@ -403,7 +403,7 @@ contains
     end function dm_mail_write
 
     subroutine dm_mail_destroy()
-        !! Cleans-up libcurl.
+        !! Cleans-up SMTP backend.
 
         call curl_global_cleanup()
     end subroutine dm_mail_destroy

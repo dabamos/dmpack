@@ -19,6 +19,8 @@ module dm_dp
         real(kind=r8)           :: y = 0.0_r8       !! Response value.
     end type dp_type
 
+    integer, parameter, public :: DP_SIZE = storage_size(dp_type(), kind=i8) / 8 !! Size of `dp_type` in bytes.
+
     public :: dm_dp_from_file
     public :: dm_dp_to_string
 contains
