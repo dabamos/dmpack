@@ -15,7 +15,6 @@ module dm_html
     use :: dm_request
     use :: dm_response
     use :: dm_sensor
-    use :: dm_string
     use :: dm_target
     use :: dm_util
     use :: dm_version
@@ -469,7 +468,7 @@ contains
 
     pure function dm_html_encode(input) result(output)
         !! Returns encoded input string, with some HTML special characters
-        !! replaced (", &, <, >).
+        !! replaced (`"`, `&`, `'`, `<`, `>`).
         character(len=*), intent(in)  :: input  !! Input string.
         character(len=:), allocatable :: output !! Encoded string.
 
@@ -603,8 +602,10 @@ contains
     end function dm_html_header
 
     pure function dm_html_heading(level, str, small) result(html)
-        !! Returns HTML heading of given level. Adds horizontal line
-        !! after H1 and H2.
+        !! Returns HTML heading of given level `level` and string `str`, with
+        !! optional `<small>` child in `small`.
+        !!
+        !! Valid levels are 1, 2, 3, and 4. Any other is replaced by level 1.
         integer,          intent(in)           :: level !! Heading level.
         character(len=*), intent(in)           :: str   !! Heading string.
         character(len=*), intent(in), optional :: small !! Sub-heading string.
@@ -836,7 +837,7 @@ contains
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Level' // H_TH_END // &
-               H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=dm_lower(LOG_LEVEL_NAMES(level))) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
                H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
@@ -907,7 +908,7 @@ contains
             if (present(max_len)) max_len_ = min(max_len_, max_len)
 
             html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
-                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=dm_lower(LOG_LEVEL_NAMES(level))) // H_TD_END // &
+                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES(level)) // H_TD_END // &
                    H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
                    H_TD // dm_html_encode(logs(i)%message(1:max_len_)) // H_TD_END // H_TR_END
         end do

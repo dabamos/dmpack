@@ -1734,7 +1734,7 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
                              max_length=NODE_META_LEN, placeholder='Enter node description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_nodes
 
@@ -1990,7 +1990,7 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
                              max_length=SENSOR_META_LEN, placeholder='Enter sensor description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
 
         call dm_html_select_destroy(select_node)
@@ -2018,7 +2018,7 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_targets
 
