@@ -280,7 +280,7 @@ a:hover, a:focus { text-decoration: underline; }
 .clearfix:before, .clearfix:after, .float-group:before, .float-group:after { content: " "; display: table; }
 .clearfix:after, .float-group:after { clear: both; }
 
-*:not(pre) > code { font-size: 1em; padding: 1px 4px; white-space: nowrap; background-color: #f5f5f5; border: 1px solid #d4d9d9; -webkit-border-radius: 0; border-radius: 0; text-shadow: none; }
+*:not(pre) > code { font-size: .9em; padding: 1px 4px; white-space: nowrap; background-color: #f5f5f5; border: 1px solid #d4d9d9; -webkit-border-radius: 0; border-radius: 0; text-shadow: none; }
 
 pre, pre > code { line-height: 1.6; color: #3b3b3b; font-family: 'IBM Plex Mono', 'Berkeley Mono', monospace; font-weight: normal; }
 

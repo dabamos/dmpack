@@ -12,6 +12,8 @@
  *      6. Input Style
  *      7. Role Style
  *      8. Classes
+ *
+ * Styles currently not in use are commented out.
  */
 
 /* ************************************************************************** */
@@ -428,7 +430,7 @@ main:first-child {
 
   body > :nth-child(2) {
     --full-width: calc(100vw - 20ch);
-    margin-top: var(--gap);
+/*  margin-top: var(--gap); */
     overflow: auto;
   }
 }
@@ -665,6 +667,7 @@ hr {
   margin-right: 0;
 }
 
+/*
 ins {
   background: var(--none-bg);
   color: var(--none-fg);
@@ -680,6 +683,7 @@ kbd kbd {
   line-height: 1.1em;
   padding: 0 .3em;
 }
+*/
 
 mark {
   background: var(--box-bg);
@@ -1413,6 +1417,7 @@ input[type="submit"]:disabled {
   color: var(--muted-accent);
 }
 
+/*
 input[type="search"] {
   background: var(--bg);
   border-radius: var(--border-radius);
@@ -1454,6 +1459,7 @@ input[type="tel"]::placeholder {
   color: var(--muted-fg);
   opacity: 1;
 }
+*/
 
 input[type="text"] {
   background: var(--bg);
@@ -1539,12 +1545,12 @@ input[type="week"]::placeholder {
   opacity: 1;
 }
 
+/*
 input::file-selector-button {
   align-items: center;
   background: var(--interactive-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--muted-fg);
-/*  box-shadow: 0 2px 4px -2px var(--fg); */
   box-sizing: border-box;
   color: var(--fg);
   display: inline-flex;
@@ -1559,19 +1565,13 @@ input::file-selector-button {
 }
 
 input::file-selector-button:hover {
-/*  box-shadow: 0 3px 6px -2px var(--fg); */
   filter: brightness(1.1);
   text-decoration: none;
 }
 
 input::file-selector-button:focus-visible {
-/*  box-shadow: 0 3px 6px -2px var(--fg); */
   filter: brightness(1.1);
   text-decoration: none;
-}
-
-input::file-selector-button:active {
-/*  box-shadow: none; */
 }
 
 :is(strong > :is(input::file-selector-button)) {
@@ -1584,6 +1584,7 @@ input::file-selector-button:active {
 :is(strong > :is(input::file-selector-button))[disabled] {
   color: var(--muted-accent);
 }
+*/
 
 input:not([type]), select, textarea {
   background: var(--bg);
@@ -1629,6 +1630,7 @@ select[multiple] {
 /* ************************************************************************** */
 /* 7. Role Style                                                              */
 /* ************************************************************************** */
+/*
 [role="tablist"] {
   display: flex;
   gap: .5ch;
@@ -1712,7 +1714,6 @@ select[multiple] {
   color: var(--bg);
 }
 
-/*
 [role="listbox"] {
   list-style: none;
 }
@@ -1742,7 +1743,6 @@ select[multiple] {
   --fg: var(--temporary-fg);
   --muted-accent: var(--temporary-muted-accent);
 }
-*/
 
 [role="toolbar"] {
   display: flex;
@@ -1759,6 +1759,7 @@ select[multiple] {
   text-align: center;
   width: fit-content;
 }
+*/
 
 /* ************************************************************************** */
 /* 8. Classes                                                                 */
