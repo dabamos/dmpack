@@ -42,10 +42,14 @@ program dmweb
     logical,          parameter :: APP_READ_ONLY  = .false.            !! Read-only mode.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: db_beat   = ' '           ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: db_log    = ' '           ! Path to log database.
-    character(len=FILE_PATH_LEN) :: db_observ = ' '           ! Path to observation database.
-    logical                      :: read_only = APP_READ_ONLY ! Open databases in read-only mode.
+    character(len=FILE_PATH_LEN) :: db_beat   = ' ' ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: db_log    = ' ' ! Path to log database.
+    character(len=FILE_PATH_LEN) :: db_observ = ' ' ! Path to observation database.
+
+    logical :: read_only     = APP_READ_ONLY ! Open databases in read-only mode.
+    logical :: has_db_beat   = .false.       ! Beat database passed.
+    logical :: has_db_log    = .false.       ! Log database passed.
+    logical :: has_db_observ = .false.       ! Observation database passed.
 
     type(route_type)  :: routes(18)
     type(router_type) :: router
@@ -79,9 +83,10 @@ program dmweb
         type(cgi_env_type) :: env
 
         ! Read environment variables.
-        rc = dm_env_get('DM_DB_BEAT',   db_beat,   n)             ! Path to beat database.
-        rc = dm_env_get('DM_DB_LOG',    db_log,    n)             ! Path to log database.
-        rc = dm_env_get('DM_DB_OBSERV', db_observ, n)             ! Path to observ database.
+        has_db_beat   = (dm_env_get('DM_DB_BEAT',   db_beat,   n) == E_NONE) ! Path to beat database.
+        has_db_log    = (dm_env_get('DM_DB_LOG',    db_log,    n) == E_NONE) ! Path to log database.
+        has_db_observ = (dm_env_get('DM_DB_OBSERV', db_observ, n) == E_NONE) ! Path to observ database.
+
         rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Read-only mode for web UI.
 
         ! Set-up router.
@@ -2104,32 +2109,44 @@ contains
 
     subroutine html_header(title)
         !! Outputs HTTP header, HTML header, and navigation.
+        integer, parameter :: NANCHORS = 8
+
         character(len=*), intent(in), optional :: title !! Page title.
 
-        type(anchor_type) :: navigation(8) ! HTML navigation elements.
+        logical           :: mask(NANCHORS)
+        type(anchor_type) :: nav(NANCHORS)
+
+        mask = [ .true., &        ! Dashboard.
+                 has_db_observ, & ! Nodes.
+                 has_db_observ, & ! Sensors.
+                 has_db_observ, & ! Targets.
+                 has_db_observ, & ! Observations.
+                 has_db_observ, & ! Plots.
+                 has_db_log, &    ! Logs.
+                 has_db_beat ]    ! Beats.
 
         ! HTML anchors for top navigation.
-        navigation = [ anchor_type(APP_BASE_PATH // '/',        'Dashboard'), &
-                       anchor_type(APP_BASE_PATH // '/nodes',   'Nodes'), &
-                       anchor_type(APP_BASE_PATH // '/sensors', 'Sensors'), &
-                       anchor_type(APP_BASE_PATH // '/targets', 'Targets'), &
-                       anchor_type(APP_BASE_PATH // '/observs', 'Observations'), &
-                       anchor_type(APP_BASE_PATH // '/plots',   'Plots'), &
-                       anchor_type(APP_BASE_PATH // '/logs',    'Logs'), &
-                       anchor_type(APP_BASE_PATH // '/beats',   'Beats') ]
+        nav = [ anchor_type(APP_BASE_PATH // '/',        'Dashboard'), &
+                anchor_type(APP_BASE_PATH // '/nodes',   'Nodes'), &
+                anchor_type(APP_BASE_PATH // '/sensors', 'Sensors'), &
+                anchor_type(APP_BASE_PATH // '/targets', 'Targets'), &
+                anchor_type(APP_BASE_PATH // '/observs', 'Observations'), &
+                anchor_type(APP_BASE_PATH // '/plots',   'Plots'), &
+                anchor_type(APP_BASE_PATH // '/logs',    'Logs'), &
+                anchor_type(APP_BASE_PATH // '/beats',   'Beats') ]
 
         call dm_cgi_header(MIME_HTML, HTTP_OK)
 
         if (present(title)) then
-            call dm_cgi_out(dm_html_header(title      = title // ' | ' // APP_TITLE, &
-                                           brand      = APP_TITLE, &
-                                           navigation = navigation, &
-                                           style      = APP_CSS_PATH))
+            call dm_cgi_out(dm_html_header(title = title // ' | ' // APP_TITLE, &
+                                           brand = APP_TITLE, &
+                                           nav   = nav, &
+                                           mask  = mask, &
+                                           style = APP_CSS_PATH))
             return
         end if
 
-        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, navigation=navigation, &
-                                       style=APP_CSS_PATH))
+        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, nav=nav, style=APP_CSS_PATH))
     end subroutine html_header
 
     subroutine set_routes(router, routes, stat)

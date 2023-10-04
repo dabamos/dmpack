@@ -541,7 +541,7 @@ contains
         html = H_MAIN_END // H_DIV_END // H_BODY_END // H_HTML_END
     end function dm_html_footer
 
-    function dm_html_header(title, subtitle, style, internal_style, brand, navigation) result(html)
+    function dm_html_header(title, subtitle, style, internal_style, brand, nav, mask) result(html)
         !! Returns HTML header with DOCTYPE and optional CSS. A link to the
         !! style sheet file and internal CSS can be added. The page title
         !! matches the first heading. No heading will be added if a navigation
@@ -551,10 +551,10 @@ contains
         character(len=*),  intent(in),    optional :: style          !! Path to CSS file.
         character(len=*),  intent(in),    optional :: internal_style !! Additional CSS (inline).
         character(len=*),  intent(in),    optional :: brand          !! Brand title.
-        type(anchor_type), intent(inout), optional :: navigation(:)  !! Navigation anchors.
+        type(anchor_type), intent(inout), optional :: nav(:)         !! Navigation anchors.
+        logical,           intent(inout), optional :: mask(:)        !! Navigation anchors mask.
         character(len=:), allocatable              :: html           !! Generated HTML.
 
-        integer :: i
         logical :: has_internal, has_style, has_subtitle
 
         has_subtitle = .false.
@@ -581,15 +581,10 @@ contains
         end if
 
         ! Sidebar navigation.
-        if (present(navigation)) then
-            html = html // H_NAV // H_UL
-
-            ! Navigation elements.
-            do i = 1, size(navigation)
-                html = html // H_LI // dm_html_anchor(navigation(i)) // H_LI_END
-            end do
-
-            html = html // H_UL_END // H_NAV_END
+        if (present(nav) .and. present(mask)) then
+            html = html // dm_html_nav(nav, mask)
+        else if (present(nav)) then
+            html = html // dm_html_nav(nav)
         else
             if (has_subtitle) then
                 html = html // dm_html_heading(1, title, subtitle)
@@ -930,16 +925,26 @@ contains
         end if
     end function dm_html_mark
 
-    function dm_html_nav(anchors) result(html)
+    function dm_html_nav(anchors, mask) result(html)
         !! Returns HTML navigation element with unordered list of links.
-        type(anchor_type), intent(inout) :: anchors(:) !! Anchor types.
-        character(len=:), allocatable    :: html       !! Generated HTML.
+        !! If optional array `mask` is passed, anchors are added according to
+        !! their mask state.
+        type(anchor_type), intent(inout)           :: anchors(:) !! Anchor types.
+        logical,           intent(inout), optional :: mask(:)    !! Mask.
+        character(len=:), allocatable              :: html       !! Generated HTML.
 
-        integer :: i
+        integer :: i, n
+
+        n = 0
+        if (present(mask)) n = size(mask)
 
         html = H_NAV // H_UL
 
         do i = 1, size(anchors)
+            if (n > 0 .and. i <= n) then
+                if (.not. mask(i)) cycle
+            end if
+
             html = html // H_LI // dm_html_anchor(anchors(i)) // H_LI_END
         end do
 

@@ -46,7 +46,7 @@ contains
         rc = E_EMPTY
         value = ' '
         call get_environment_variable(name, value, length=n, status=stat)
-        if (stat /= 0) return
+        if (stat /= 0 .or. n == 0) return
         rc = E_NONE
     end function env_get_a
 
@@ -58,13 +58,13 @@ contains
         character(len=*),              intent(in),  optional :: default !! Default value.
 
         character(len=ENV_BUFFER_LEN) :: buffer
-        integer                       :: stat
+        integer                       :: n, stat
 
         rc = E_EMPTY
         buffer = ' '
-        call get_environment_variable(name, buffer, status=stat)
+        call get_environment_variable(name, buffer, length=n, status=stat)
 
-        if (stat /= 0) then
+        if (stat /= 0 .or. n == 0) then
             if (present(default)) then
                 value = trim(default)
             else
@@ -86,14 +86,14 @@ contains
         integer(kind=i4), intent(in), optional :: default !! Default value.
 
         character(len=20) :: buffer
-        integer           :: i, stat
+        integer           :: i, n, stat
 
         rc = E_EMPTY
         value = 0
         if (present(default)) value = default
 
-        call get_environment_variable(name, buffer, status=stat)
-        if (stat /= 0) return
+        call get_environment_variable(name, buffer, length=n, status=stat)
+        if (stat /= 0 .or. n == 0) return
         call dm_convert_to(buffer, i, rc)
         if (rc /= E_NONE) return
 
@@ -109,15 +109,15 @@ contains
         integer(kind=i8), intent(in), optional :: default !! Default value.
 
         character(len=20) :: buffer
-        integer           :: stat
+        integer           :: n, stat
         integer(kind=i8)  :: i
 
         rc = E_EMPTY
         value = 0
         if (present(default)) value = default
 
-        call get_environment_variable(name, buffer, status=stat)
-        if (stat /= 0) return
+        call get_environment_variable(name, buffer, length=n, status=stat)
+        if (stat /= 0 .or. n == 0) return
         call dm_convert_to(buffer, i, rc)
         if (rc /= E_NONE) return
 
@@ -132,7 +132,8 @@ contains
         character(len=*), intent(in)           :: name    !! Variable name.
         logical,          intent(out)          :: value   !! Variable value.
         logical,          intent(in), optional :: default !! Default value.
-        integer                                :: i
+
+        integer :: i
 
         value = default
         rc = dm_env_get(name, i)
@@ -149,15 +150,15 @@ contains
         real(kind=r4),    intent(in), optional :: default !! Default value.
 
         character(len=20) :: buffer
-        integer           :: stat
+        integer           :: n, stat
         real(kind=r4)     :: f
 
         rc = E_EMPTY
         value = 0
         if (present(default)) value = default
 
-        call get_environment_variable(name, buffer, status=stat)
-        if (stat /= 0) return
+        call get_environment_variable(name, buffer, length=n, status=stat)
+        if (stat /= 0 .or. n == 0) return
         call dm_convert_to(buffer, f, rc)
         if (rc /= E_NONE) return
 
@@ -173,15 +174,15 @@ contains
         real(kind=r8),    intent(in), optional :: default !! Default value.
 
         character(len=20) :: buffer
-        integer           :: stat
+        integer           :: n, stat
         real(kind=r8)     :: f
 
         rc = E_EMPTY
         value = 0
         if (present(default)) value = default
 
-        call get_environment_variable(name, buffer, status=stat)
-        if (stat /= 0) return
+        call get_environment_variable(name, buffer, length=n, status=stat)
+        if (stat /= 0 .or. n == 0) return
         call dm_convert_to(buffer, f, rc)
         if (rc /= E_NONE) return
 
@@ -191,15 +192,13 @@ contains
 
     logical function dm_env_has(name) result(has)
         !! Returns `.true.` if the environment variable of the given name
-        !! exists.
-        character(len=*), intent(in) :: name  !! Variable name.
+        !! exists and has a value.
+        character(len=*), intent(in) :: name !! Variable name.
 
         character :: a
-        integer   :: stat
+        integer   :: n, stat
 
-        has = .false.
-        call get_environment_variable(name, a, status=stat)
-        if (stat /= 0) return
-        has = .true.
+        call get_environment_variable(name, a, length=n, status=stat)
+        has = (stat == 0 .and. n > 0)
     end function dm_env_has
 end module dm_env
