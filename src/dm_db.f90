@@ -206,6 +206,8 @@ module dm_db
     public :: dm_db_get_data_version
     public :: dm_db_get_foreign_keys
     public :: dm_db_get_journal_mode
+    public :: dm_db_get_query_only
+    public :: dm_db_get_user_version
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
@@ -267,7 +269,9 @@ module dm_db
     public :: dm_db_set_foreign_keys
     public :: dm_db_set_journal_mode
     public :: dm_db_set_log_handler
+    public :: dm_db_set_query_only
     public :: dm_db_set_update_handler
+    public :: dm_db_set_user_version
     public :: dm_db_shutdown
     public :: dm_db_sleep
     public :: dm_db_threadsafe
@@ -392,7 +396,8 @@ contains
         !! default.
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
-        logical                             :: optimize_
+
+        logical :: optimize_
 
         optimize_ = .true.
         if (present(optimize)) optimize_ = optimize
@@ -530,7 +535,8 @@ contains
     integer function dm_db_create_beats(db) result(rc)
         !! Creates logs table in given database.
         type(db_type), intent(inout) :: db !! Database type.
-        integer                      :: i
+
+        integer :: i
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -857,7 +863,8 @@ contains
         !! error code.
         type(db_type), intent(inout)         :: db           !! Database type.
         integer,       intent(out), optional :: sqlite_error !! SQLite error code.
-        integer                              :: error
+
+        integer :: error
 
         error = sqlite3_errcode(db%ptr)
         if (present(sqlite_error)) sqlite_error = error
@@ -940,46 +947,6 @@ contains
         if (.not. c_associated(db_stmt%ptr)) return
         if (sqlite3_finalize(db_stmt%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_finalize
-
-    integer function dm_db_has_table(db, table, exists) result(rc)
-        !! Returns whether given table exists in database. The result code is
-        !! `E_NONE` if the table has been found, else `E_DB_NO_ROWS`. The boolean
-        !! result is returned in `exists`. Pass the enumerator `SQL_TABLE_*` from
-        !! `dm_sql`, for instance:
-        !!
-        !! ```fortran
-        !! integer :: rc
-        !! logical :: exists
-        !!
-        !! rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
-        !! ```
-        type(db_type), intent(inout)         :: db     !! Database type.
-        integer,       intent(in)            :: table  !! Table enum.
-        logical,       intent(out), optional :: exists !! Boolean result.
-
-        integer     :: stat
-        type(c_ptr) :: stmt
-
-        rc = E_INVALID
-        if (present(exists)) exists = .false.
-        if (table < SQL_TABLE_NODES .or. table > SQL_NTABLES) return
-
-        sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
-
-            rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(SQL_TABLE_NAMES(table))) /= SQLITE_OK) exit sql_block
-
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-
-            rc = E_NONE
-        end block sql_block
-
-        stat = sqlite3_finalize(stmt)
-        if (present(exists) .and. rc == E_NONE) exists = .true.
-    end function dm_db_has_table
 
     integer function dm_db_get_application_id(db, id) result(rc)
         !! Returns application id of database.
@@ -1065,7 +1032,7 @@ contains
             if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
 
             i = sqlite3_column_int(stmt, 0)
-            if (i == 1) enabled = .true.
+            enabled = (i == 1)
 
             rc = E_NONE
         end block sql_block
@@ -1118,6 +1085,102 @@ contains
 
         if (present(name)) name = str
     end function dm_db_get_journal_mode
+
+    integer function dm_db_get_query_only(db, enabled) result(rc)
+        !! Returns status of query-only pragma.
+        type(db_type), intent(inout) :: db      !! Database type.
+        logical,       intent(out)   :: enabled !! Query-only mode is enabled.
+
+        integer     :: i, stat
+        type(c_ptr) :: stmt
+
+        enabled = .false.
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA query_only', stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_STEP
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
+
+            i = sqlite3_column_int(stmt, 0)
+            enabled = (i == 1)
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_get_query_only
+
+    integer function dm_db_get_user_version(db, version) result(rc)
+        !! Returns user version of database.
+        type(db_type), intent(inout) :: db      !! Database type.
+        integer,       intent(out)   :: version !! Database user version.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        version = 0
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA user_version', stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_STEP
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
+
+            version = sqlite3_column_int(stmt, 0)
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_get_user_version
+
+    integer function dm_db_has_table(db, table, exists) result(rc)
+        !! Returns whether given table exists in database. The result code is
+        !! `E_NONE` if the table has been found, else `E_DB_NO_ROWS`. The boolean
+        !! result is returned in `exists`. Pass the enumerator `SQL_TABLE_*` from
+        !! `dm_sql`, for instance:
+        !!
+        !! ```fortran
+        !! integer :: rc
+        !! logical :: exists
+        !!
+        !! rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
+        !! ```
+        type(db_type), intent(inout)         :: db     !! Database type.
+        integer,       intent(in)            :: table  !! Table enum.
+        logical,       intent(out), optional :: exists !! Boolean result.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        rc = E_INVALID
+        if (present(exists)) exists = .false.
+        if (table < SQL_TABLE_NODES .or. table > SQL_NTABLES) return
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            if (sqlite3_bind_text(stmt, 1, trim(SQL_TABLE_NAMES(table))) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+        if (present(exists) .and. rc == E_NONE) exists = .true.
+    end function dm_db_has_table
 
     integer function dm_db_init() result(rc)
         !! Initialises SQLite backend.
@@ -1521,7 +1584,7 @@ contains
         character(len=*), intent(in)           :: path         !! File path of database.
         logical,          intent(in), optional :: create       !! Create flag.
         logical,          intent(in), optional :: foreign_keys !! Foreign keys contraint flag.
-        logical,          intent(in), optional :: read_only    !! WAL mode flag.
+        logical,          intent(in), optional :: read_only    !! Read-only mode.
         logical,          intent(in), optional :: threaded     !! Create flag.
         integer,          intent(in), optional :: timeout      !! Busy timeout in mseconds.
         logical,          intent(in), optional :: validate     !! Validate application id.
@@ -1637,7 +1700,11 @@ contains
     end function dm_db_optimize
 
     logical function dm_db_read_only(db) result(read_only)
-        !! Returns `.true.` if database is in read-only mode.
+        !! Returns `.true.` if database is in read-only mode. This function
+        !! checks only the opaque database type for the read-only flag. It is
+        !! still possible to enable ready-only access by calling
+        !! `dm_db_set_query_only()`. The function `dm_db_get_query_only()`
+        !! returns the status of the `query_only` pragma.
         type(db_type), intent(inout) :: db !! Database type.
 
         read_only = db%read_only
@@ -2159,8 +2226,8 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_log
 
-    integer function dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, &
-            from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
+    integer function dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, from, to, &
+                                       min_level, max_level, error, desc, limit, nlogs) result(rc)
         !! Returns logs in allocatable array `logs`.
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
@@ -3896,13 +3963,53 @@ contains
         rc = E_NONE
     end function dm_db_set_log_handler
 
+    integer function dm_db_set_query_only(db, enabled) result(rc)
+        !! Sets query-only pragma.
+        !!
+        !! The `query_only` pragma prevents data changes on database files when
+        !! enabled. When this pragma is enabled, any attempt to `CREATE`,
+        !! `DELETE`, `DROP`, `INSERT`, or `UPDATE` will result in an
+        !! `E_READ_ONLY` error.
+        !!
+        !! However, the database is not truly read-only. You can still run a
+        !! checkpoint or a COMMIT and the return value of the
+        !! `sqlite3_db_readonly()` routine is not affected.
+        character(len=*), parameter :: QUERY = 'PRAGMA query_only = '
+
+        type(db_type), intent(inout) :: db      !! Database type.
+        logical,       intent(in)    :: enabled !! Enable query-only mode.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        sql_block: block
+            integer :: stat
+
+            rc = E_DB_PREPARE
+            if (enabled) then
+                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'ON', stmt)
+            else
+                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'OFF', stmt)
+            end if
+            if (stat /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_STEP
+            if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_set_query_only
+
     integer function dm_db_set_update_handler(db, callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine.
         type(db_type), intent(inout)        :: db          !! Database type.
         procedure(dm_db_update_handler)     :: callback    !! Callback routine.
         type(c_ptr),   intent(in), optional :: client_data !! C pointer to client data.
-        type(c_ptr)                         :: udp
+
+        type(c_ptr) :: udp
 
         rc = E_DB
 
@@ -3914,6 +4021,34 @@ contains
 
         rc = E_NONE
     end function dm_db_set_update_handler
+
+    integer function dm_db_set_user_version(db, version) result(rc)
+        !! Sets database user version.
+        !!
+        !! The `user_version` pragma will get or set the value of the
+        !! user-version integer at offset 60 in the database header. The
+        !! user-version is an integer that is available to applications to use
+        !! however they want. SQLite makes no use of the user-version itself.
+        character(len=*), parameter :: QUERY = 'PRAGMA user_version = '
+
+        type(db_type), intent(inout) :: db      !! Database type.
+        integer,       intent(in)    :: version !! Database user version.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, QUERY // dm_itoa(version), stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_STEP
+            if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_set_user_version
 
     integer function dm_db_shutdown() result(rc)
         !! Finalises SQLite handle.
@@ -4058,7 +4193,8 @@ contains
         !! matches the constant `DB_APPLICATION_ID`, else `E_DB_ID` or any database
         !! error that has occured.
         type(db_type), intent(inout) :: db !! Database type.
-        integer                      :: id
+
+        integer :: id
 
         rc = dm_db_get_application_id(db, id)
         if (dm_is_error(rc)) return
@@ -4079,7 +4215,8 @@ contains
     subroutine dm_db_sleep(msec)
         !! Delays execution for given duration in msec.
         integer, intent(in) :: msec !! Time in msec.
-        integer             :: n
+
+        integer :: n
 
         n = sqlite3_sleep(msec)
     end subroutine dm_db_sleep
@@ -4093,12 +4230,13 @@ contains
         !! Default is `DB_TRANS_IMMEDIATE`.
         type(db_type), intent(inout)        :: db   !! Database type.
         integer,       intent(in), optional :: mode !! Transaction mode.
-        integer                             :: m
 
-        m = DB_TRANS_IMMEDIATE
-        if (present(mode)) m = mode
+        integer :: mode_
 
-        select case (m)
+        mode_ = DB_TRANS_IMMEDIATE
+        if (present(mode)) mode_ = mode
+
+        select case (mode_)
             case (DB_TRANS_DEFERRED)
                 rc = db_exec(db, 'BEGIN')
             case (DB_TRANS_IMMEDIATE)
@@ -4230,7 +4368,8 @@ contains
         type(db_type),                 intent(inout)         :: db      !! Database type.
         character(len=*),              intent(in)            :: query   !! SQL query.
         character(len=:), allocatable, intent(out), optional :: err_msg !! Optional error message.
-        integer                                              :: stat
+
+        integer :: stat
 
         rc = E_DB_EXEC
 
@@ -4287,7 +4426,6 @@ contains
         type(db_type),    intent(inout) :: db           !! Database type.
         character(len=*), intent(in)    :: observ_id    !! Observation id.
         character(len=*), intent(inout) :: receivers(:) !! Array of receivers to insert.
-
 
         integer     :: i, n, stat
         type(c_ptr) :: stmt
@@ -4653,7 +4791,7 @@ contains
         type(db_type),    intent(inout) :: db   !! Database type.
         character(len=*), intent(in)    :: name !! Save point name.
 
-        rc = db_exec(db, 'RELEASE "' // name // '"')
+        rc = db_exec(db, 'RELEASE "' // trim(name) // '"')
     end function db_release
 
     integer function db_rollback(db, name) result(rc)
@@ -4662,7 +4800,7 @@ contains
         character(len=*), intent(in), optional :: name !! Save point name.
 
         if (present(name)) then
-            rc = db_exec(db, 'ROLLBACK TO "' // name // '"')
+            rc = db_exec(db, 'ROLLBACK TO "' // trim(name) // '"')
         else
             rc = db_exec(db, 'ROLLBACK')
         end if
@@ -4675,7 +4813,7 @@ contains
         type(db_type),    intent(inout) :: db   !! Database type.
         character(len=*), intent(in)    :: name !! Save point name.
 
-        rc = db_exec(db, 'SAVEPOINT "' // name // '"')
+        rc = db_exec(db, 'SAVEPOINT "' // trim(name) // '"')
     end function db_save_point
 
     integer function db_select_nrows(db, table, n) result(rc)

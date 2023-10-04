@@ -48,7 +48,7 @@ program dmtestdb
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 16
+    integer, parameter :: NTESTS   = 17
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -69,6 +69,7 @@ program dmtestdb
     tests(14) = test_type('dmtestdb.test14', test14)
     tests(15) = test_type('dmtestdb.test15', test15)
     tests(16) = test_type('dmtestdb.test16', test16)
+    tests(17) = test_type('dmtestdb.test17', test17)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -872,4 +873,56 @@ contains
 
         stat = TEST_PASSED
     end function test16
+
+    logical function test17() result(stat)
+        !! Tests PRAGMAs.
+        integer, parameter :: USER_VERSION = 1
+
+        integer       :: n, rc
+        logical       :: enabled
+        type(db_type) :: db
+
+        stat = TEST_FAILED
+
+        print *, 'Opening database "' // DB_OBSERV // '" ...'
+        if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
+
+        test_block: block
+            print *, 'Testing foreign keys ...'
+            rc = dm_db_set_foreign_keys(db, .true.)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_foreign_keys(db, enabled)
+            if (dm_is_error(rc)) exit test_block
+            if (.not. enabled) exit test_block
+
+            print *, 'Testing application id ...'
+            rc = dm_db_set_application_id(db, DB_APPLICATION_ID)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_application_id(db, n)
+            if (dm_is_error(rc)) exit test_block
+            if (n /= DB_APPLICATION_ID) exit test_block
+
+            print *, 'Testing user version ...'
+            rc = dm_db_set_user_version(db, USER_VERSION)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_user_version(db, n)
+            if (dm_is_error(rc)) exit test_block
+            if (n /= USER_VERSION) exit test_block
+
+            print *, 'Testing query-only ...'
+            rc = dm_db_set_query_only(db, .true.)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_query_only(db, enabled)
+            if (dm_is_error(rc)) exit test_block
+            if (.not. enabled) exit test_block
+
+            rc = E_NONE
+        end block test_block
+
+        print *, 'Closing database "' // DB_LOG // '" ...'
+        if (dm_db_close(db) /= E_NONE) return
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test17
 end program dmtestdb
