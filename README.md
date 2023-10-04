@@ -71,7 +71,8 @@ DMPACK covers the following tasks:
 
 DMPACK has the following requirements:
 
-* Linux or FreeBSD operating system (x86-64, AArch64)
+* Linux or FreeBSD operating system
+* 64-bit platform (x86-64, AArch64)
 * Fortran 2018 and ANSI C compiler
 
 Third-party dependencies have to be present to build and run the software of

@@ -114,7 +114,8 @@ and Surveying of the Budapest University of Technology and Economics. (GPLv2)
 
 DMPACK has the following requirements:
 
-* Linux (_glibc_) or FreeBSD operating system (x86-64, AArch64)
+* Linux (_glibc_) or FreeBSD operating system
+* 64-bit platform (x86-64, AArch64)
 * Fortran 2018 and ANSI C compiler
 
 Additional dependencies have to be present to build and run the software of this

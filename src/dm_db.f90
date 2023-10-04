@@ -829,7 +829,6 @@ contains
         integer     :: stat
         type(c_ptr) :: stmt
 
-
         rc = E_READ_ONLY
         if (db%read_only) return
 

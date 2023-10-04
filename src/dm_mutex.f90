@@ -20,7 +20,7 @@ module dm_mutex
     public :: dm_mutex_unlock
 contains
     integer function dm_mutex_create(mutex) result(rc)
-        !! Creates a new mutex mutex.
+        !! Creates a new mutex.
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         rc = E_SYSTEM

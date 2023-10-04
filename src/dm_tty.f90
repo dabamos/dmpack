@@ -53,7 +53,6 @@ module dm_tty
     ! Serial port type (default: 9600 baud, 8N1).
     type, public :: tty_type
         !! TTY/PTY data type.
-        integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
         character(len=FILE_PATH_LEN) :: path      = ' '             !! TTY/PTY path.
         integer                      :: access    = TTY_RDWR        !! Access mode (read/write).
         integer                      :: baud_rate = TTY_B9600       !! Baud rate (9600).
@@ -64,6 +63,7 @@ module dm_tty
         logical                      :: dtr       = .false.         !! Data Terminal Ready.
         logical                      :: rts       = .false.         !! Request To Send.
         logical                      :: blocking  = .true.          !! Blocking read.
+        integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
     end type tty_type
 
     public :: dm_tty_baud_rate_from_value
