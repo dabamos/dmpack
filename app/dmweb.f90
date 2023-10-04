@@ -46,10 +46,10 @@ program dmweb
     character(len=FILE_PATH_LEN) :: db_log    = ' ' ! Path to log database.
     character(len=FILE_PATH_LEN) :: db_observ = ' ' ! Path to observation database.
 
-    logical :: read_only     = APP_READ_ONLY ! Open databases in read-only mode.
-    logical :: has_db_beat   = .false.       ! Beat database passed.
-    logical :: has_db_log    = .false.       ! Log database passed.
-    logical :: has_db_observ = .false.       ! Observation database passed.
+    logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
+    logical :: has_db_beat   = .false.              ! Beat database passed.
+    logical :: has_db_log    = .false.              ! Log database passed.
+    logical :: has_db_observ = .false.              ! Observation database passed.
 
     type(route_type)  :: routes(18)
     type(router_type) :: router
@@ -77,15 +77,15 @@ program dmweb
     ! Initialise DMPACK.
     call dm_init()
 
-    ! Dispatch requests and output response.
+    ! Dispatch request and output response.
     route_block: block
         integer            :: code, n, rc
         type(cgi_env_type) :: env
 
         ! Read environment variables.
-        has_db_beat   = (dm_env_get('DM_DB_BEAT',   db_beat,   n) == E_NONE) ! Path to beat database.
-        has_db_log    = (dm_env_get('DM_DB_LOG',    db_log,    n) == E_NONE) ! Path to log database.
-        has_db_observ = (dm_env_get('DM_DB_OBSERV', db_observ, n) == E_NONE) ! Path to observ database.
+        has_db_beat   = dm_is_ok(dm_env_get('DM_DB_BEAT',   db_beat,   n)) ! Path to beat database.
+        has_db_log    = dm_is_ok(dm_env_get('DM_DB_LOG',    db_log,    n)) ! Path to log database.
+        has_db_observ = dm_is_ok(dm_env_get('DM_DB_OBSERV', db_observ, n)) ! Path to observ database.
 
         rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Read-only mode for web UI.
 
@@ -239,8 +239,15 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        integer       :: rc
-        type(db_type) :: db
+        character(len=TIME_LEN) :: now
+        integer                 :: rc
+        integer(kind=i8)        :: i, n
+        type(db_type)           :: db
+
+        integer(kind=i8),  allocatable :: deltas(:)
+        type(beat_type),   allocatable :: beats(:)
+        type(log_type),    allocatable :: logs(:)
+        type(observ_type), allocatable :: observs(:)
 
         ! ------------------------------------------------------------------
         ! GET REQUEST.
@@ -250,26 +257,30 @@ contains
         call dm_cgi_out(dm_html_p('The dashboard lists heartbeat, logs, and observations ' // &
                                   'most recently added to the databases.'))
 
-        ! Heatbeats.
-        call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 10 Beats'))
-        rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        if (.not. has_db_beat .and. .not. has_db_log .and. .not. has_db_observ) then
+            call dm_cgi_out(dm_html_p('No databases configured.'))
+            call html_footer()
+            return
+        end if
 
-        beat_block: block
-            character(len=TIME_LEN)       :: now
-            integer(kind=i8)              :: i, n
-            integer(kind=i8), allocatable :: deltas(:)
-            type(beat_type),  allocatable :: beats(:)
+        ! ------------------------------------------------------------------
+        ! Heatbeats.
+        ! ------------------------------------------------------------------
+        beat_if: &
+        if (has_db_beat) then
+            call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 10 Beats'))
+            rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
-                exit beat_block
+                exit beat_if
             end if
 
             rc = dm_db_select(db, beats, limit=NBEATS, nbeats=n)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('No beats found.'))
-                exit beat_block
+                exit beat_if
             end if
 
             allocate (deltas(n), source=huge(0_i8))
@@ -280,59 +291,62 @@ contains
             end do
 
             call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
-        end block beat_block
+        end if beat_if
 
-        rc = dm_db_close(db)
+        if (has_db_beat) rc = dm_db_close(db)
 
+        ! ------------------------------------------------------------------
         ! Logs.
-        call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 10 Logs'))
-        rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
-
-        log_block: block
-            type(log_type), allocatable :: logs(:)
+        ! ------------------------------------------------------------------
+        log_if: &
+        if (has_db_log) then
+            call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 10 Logs'))
+            rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
-                exit log_block
+                exit log_if
             end if
 
             rc = dm_db_select(db, logs, limit=NLOGS, desc=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('No logs found.'))
-                exit log_block
+                exit log_if
             end if
 
             call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
-        end block log_block
+        end if log_if
 
-        rc = dm_db_close(db)
+        if (has_db_log) rc = dm_db_close(db)
 
+        ! ------------------------------------------------------------------
         ! Observations.
-        call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 10 Observations'))
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
-
-        observ_block: block
-            type(observ_type), allocatable :: observs(:)
+        ! ------------------------------------------------------------------
+        observ_if: &
+        if (has_db_observ) then
+            call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 10 Observations'))
+            rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
-                exit observ_block
+                exit observ_if
             end if
 
             rc = dm_db_select_observs(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('No observations found.'))
-                exit observ_block
+                exit observ_if
             end if
 
             call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
                                             node_id=.true., sensor_id=.true., target_id=.true., &
                                             name=.true., error=.true.))
-        end block observ_block
+        end if observ_if
 
-        rc = dm_db_close(db)
+        if (has_db_observ) rc = dm_db_close(db)
+
         call html_footer()
     end subroutine route_dashboard
 
@@ -527,9 +541,9 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_cgi_get(param, 'from', from)            /= E_NONE .or. &
-                    dm_cgi_get(param, 'to', to)                /= E_NONE .or. &
-                    dm_cgi_get(param, 'max_results', nresults) /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'max_results', nresults))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
@@ -541,17 +555,17 @@ contains
                 if (.not. dm_time_valid(to))   valid = .false.
 
                 ! Node id.
-                if (dm_cgi_get(param, 'node_id', node_id) == E_NONE) then
+                if (dm_is_ok(dm_cgi_get(param, 'node_id', node_id))) then
                     if (.not. dm_id_valid(node_id)) valid = .false.
                 end if
 
                 ! Sensor id.
-                if (dm_cgi_get(param, 'sensor_id', sensor_id) == E_NONE) then
+                if (dm_is_ok(dm_cgi_get(param, 'sensor_id', sensor_id))) then
                     if (.not. dm_id_valid(sensor_id)) valid = .false.
                 end if
 
                 ! Target id.
-                if (dm_cgi_get(param, 'target_id', target_id) == E_NONE) then
+                if (dm_is_ok(dm_cgi_get(param, 'target_id', target_id))) then
                     if (.not. dm_id_valid(target_id)) valid = .false.
                 end if
 
@@ -565,7 +579,7 @@ contains
 
                 ! Log level.
                 has_level = .false.
-                if (dm_cgi_get(param, 'level', level) == E_NONE) has_level = .true.
+                if (dm_is_ok(dm_cgi_get(param, 'level', level))) has_level = .true.
 
                 ! Log source.
                 rc = dm_cgi_get(param, 'source', source)
@@ -732,8 +746,8 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_cgi_get(param, 'id',   node%id)   /= E_NONE .or. &
-                    dm_cgi_get(param, 'name', node%name) /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'id', node%id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'name', node%name))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
@@ -929,21 +943,21 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get parameters.
-                if (dm_cgi_get(param, 'node_id',     node_id)   /= E_NONE .or. &
-                    dm_cgi_get(param, 'sensor_id',   sensor_id) /= E_NONE .or. &
-                    dm_cgi_get(param, 'target_id',   target_id) /= E_NONE .or. &
-                    dm_cgi_get(param, 'from',        from)      /= E_NONE .or. &
-                    dm_cgi_get(param, 'to',          to)        /= E_NONE .or. &
-                    dm_cgi_get(param, 'max_results', nresults)  /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'node_id', node_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'sensor_id', sensor_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'target_id', target_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'max_results', nresults) )) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id)   .or. &
+                if (.not. dm_id_valid(node_id) .or. &
                     .not. dm_id_valid(sensor_id) .or. &
                     .not. dm_id_valid(target_id) .or. &
-                    .not. dm_time_valid(from)    .or. &
+                    .not. dm_time_valid(from) .or. &
                     .not. dm_time_valid(to)) then
                     call html_error('Invalid Parameters', E_INVALID)
                     exit response_block
@@ -1072,23 +1086,23 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get request parameters.
-                if (dm_cgi_get(param, 'node_id',       node_id)       /= E_NONE .or. &
-                    dm_cgi_get(param, 'sensor_id',     sensor_id)     /= E_NONE .or. &
-                    dm_cgi_get(param, 'target_id',     target_id)     /= E_NONE .or. &
-                    dm_cgi_get(param, 'response_name', response_name) /= E_NONE .or. &
-                    dm_cgi_get(param, 'from',          from)          /= E_NONE .or. &
-                    dm_cgi_get(param, 'to',            to)            /= E_NONE .or. &
-                    dm_cgi_get(param, 'max_results',   nresults)      /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'node_id', node_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'sensor_id', sensor_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'target_id', target_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'response_name', response_name)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'max_results', nresults))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id)       .or. &
-                    .not. dm_id_valid(sensor_id)     .or. &
-                    .not. dm_id_valid(target_id)     .or. &
+                if (.not. dm_id_valid(node_id) .or. &
+                    .not. dm_id_valid(sensor_id) .or. &
+                    .not. dm_id_valid(target_id) .or. &
                     .not. dm_id_valid(response_name) .or. &
-                    .not. dm_time_valid(from)        .or. &
+                    .not. dm_time_valid(from) .or. &
                     .not. dm_time_valid(to)) then
                     call html_error('Invalid Parameters', E_INVALID)
                     exit response_block
@@ -1277,10 +1291,10 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_cgi_get(param, 'id',      sensor%id)      /= E_NONE .or. &
-                    dm_cgi_get(param, 'node_id', sensor%node_id) /= E_NONE .or. &
-                    dm_cgi_get(param, 'type',    sensor%type)    /= E_NONE .or. &
-                    dm_cgi_get(param, 'name',    sensor%name)    /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'id', sensor%id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'node_id', sensor%node_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'type', sensor%type)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'name', sensor%name))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
@@ -1357,7 +1371,7 @@ contains
         call dm_cgi_out(dm_html_heading(1, TITLE))
 
         ! System information.
-        system_block: block
+        block
             character(len=FILE_PATH_LEN) :: path
             integer(kind=i8)             :: seconds
             type(uname_type)             :: uname
@@ -1399,10 +1413,10 @@ contains
                             H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
                                     H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
                             H_TBODY_END // H_TABLE_END)
-        end block system_block
+        end block
 
         ! Database information.
-        db_block: block
+        block
             character(len=3) :: mode
             integer(kind=i8) :: db_beat_sz, db_log_sz, db_observ_sz
 
@@ -1443,7 +1457,7 @@ contains
                                     H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
                                     H_TD // trim(mode) // H_TD_END // H_TR_END // &
                             H_TBODY_END // H_TABLE_END)
-        end block db_block
+        end block
 
         call html_footer()
     end subroutine route_status
@@ -1551,8 +1565,8 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_cgi_get(param, 'id',   target%id)   /= E_NONE .or. &
-                    dm_cgi_get(param, 'name', target%name) /= E_NONE) then
+                if (dm_is_error(dm_cgi_get(param, 'id', target%id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'name', target%name))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
@@ -1861,13 +1875,13 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
         type(target_type), intent(inout)        :: targets(:)     !! Target types.
         integer,           intent(inout)        :: max_results(:) !! Max. results to show.
-        character(len=*),  intent(in), optional :: node_id        !! Selected node .
-        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor .
-        character(len=*),  intent(in), optional :: target_id      !! Selected target .
-        character(len=*),  intent(in), optional :: response_name  !! Selected response name .
-        character(len=*),  intent(in), optional :: from           !! Start time .
-        character(len=*),  intent(in), optional :: to             !! End time .
-        integer,           intent(in), optional :: nresults       !! Selected number of results .
+        character(len=*),  intent(in), optional :: node_id        !! Selected node.
+        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
+        character(len=*),  intent(in), optional :: target_id      !! Selected target.
+        character(len=*),  intent(in), optional :: response_name  !! Selected response name.
+        character(len=*),  intent(in), optional :: from           !! Start time.
+        character(len=*),  intent(in), optional :: to             !! End time.
+        integer,           intent(in), optional :: nresults       !! Selected number of results.
         character(len=:), allocatable           :: html           !! HTML form.
 
         character(len=NODE_ID_LEN)       :: node_id_
@@ -2109,21 +2123,12 @@ contains
 
     subroutine html_header(title)
         !! Outputs HTTP header, HTML header, and navigation.
-        integer, parameter :: NANCHORS = 8
+        integer, parameter :: NANCHORS = 8 !! Number of elements in navigation.
 
         character(len=*), intent(in), optional :: title !! Page title.
 
         logical           :: mask(NANCHORS)
         type(anchor_type) :: nav(NANCHORS)
-
-        mask = [ .true., &        ! Dashboard.
-                 has_db_observ, & ! Nodes.
-                 has_db_observ, & ! Sensors.
-                 has_db_observ, & ! Targets.
-                 has_db_observ, & ! Observations.
-                 has_db_observ, & ! Plots.
-                 has_db_log, &    ! Logs.
-                 has_db_beat ]    ! Beats.
 
         ! HTML anchors for top navigation.
         nav = [ anchor_type(APP_BASE_PATH // '/',        'Dashboard'), &
@@ -2135,18 +2140,31 @@ contains
                 anchor_type(APP_BASE_PATH // '/logs',    'Logs'), &
                 anchor_type(APP_BASE_PATH // '/beats',   'Beats') ]
 
+        mask = [ .true., &        ! Dashboard.
+                 has_db_observ, & ! Nodes.
+                 has_db_observ, & ! Sensors.
+                 has_db_observ, & ! Targets.
+                 has_db_observ, & ! Observations.
+                 has_db_observ, & ! Plots.
+                 has_db_log, &    ! Logs.
+                 has_db_beat ]    ! Beats.
+
         call dm_cgi_header(MIME_HTML, HTTP_OK)
 
         if (present(title)) then
             call dm_cgi_out(dm_html_header(title = title // ' | ' // APP_TITLE, &
+                                           style = APP_CSS_PATH, &
                                            brand = APP_TITLE, &
                                            nav   = nav, &
-                                           mask  = mask, &
-                                           style = APP_CSS_PATH))
+                                           mask  = mask))
             return
         end if
 
-        call dm_cgi_out(dm_html_header(title=APP_TITLE, brand=APP_TITLE, nav=nav, style=APP_CSS_PATH))
+        call dm_cgi_out(dm_html_header(title = APP_TITLE, &
+                                       style = APP_CSS_PATH, &
+                                       brand = APP_TITLE, &
+                                       nav   = nav, &
+                                       mask  = mask))
     end subroutine html_header
 
     subroutine set_routes(router, routes, stat)
@@ -2155,18 +2173,22 @@ contains
         type(route_type),  intent(inout)         :: routes(:) !! Endpoints.
         integer,           intent(out), optional :: stat      !! Error code.
 
-        integer :: i
+        integer :: i, rc
 
         if (present(stat)) stat = E_ERROR
 
-        if (dm_router_create(router, max_routes=size(ROUTES)) /= E_NONE) then
-            call html_error(status=HTTP_SERVICE_UNAVAILABLE)
+        rc = dm_router_create(router, max_routes=size(ROUTES))
+
+        if (dm_is_error(rc)) then
+            call html_error(error=rc, status=HTTP_SERVICE_UNAVAILABLE)
             return
         end if
 
         do i = 1, size(routes)
-            if (dm_router_add(router, ROUTES(i)) /= E_NONE) then
-                call html_error(status=HTTP_SERVICE_UNAVAILABLE)
+            rc = dm_router_add(router, ROUTES(i))
+
+            if (dm_is_error(rc)) then
+                call html_error(error=rc, status=HTTP_SERVICE_UNAVAILABLE)
                 return
             end if
         end do
