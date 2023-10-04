@@ -1270,16 +1270,21 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_responses
 
-    function dm_html_select(select, id, name, selected) result(html)
-        !! Returns HTML select element with option values.  This function does
+    function dm_html_select(select, id, name, selected, disabled) result(html)
+        !! Returns HTML select element with option values. This function does
         !! not encode the arguments.
-        type(select_type), intent(inout) :: select   !! HTML select type.
-        character(len=*),  intent(in)    :: id       !! Select id.
-        character(len=*),  intent(in)    :: name     !! Select name.
-        character(len=*),  intent(in)    :: selected !! Selected element.
-        character(len=:), allocatable    :: html     !! Generated HTML.
+        type(select_type), intent(inout)        :: select   !! HTML select type.
+        character(len=*),  intent(in)           :: id       !! Select id.
+        character(len=*),  intent(in)           :: name     !! Select name.
+        character(len=*),  intent(in)           :: selected !! Element selected by default.
+        logical,           intent(in), optional :: disabled !! Disable element.
+        character(len=:), allocatable           :: html     !! Generated HTML.
 
         integer :: i, n
+        logical :: disabled_
+
+        disabled_ = .false.
+        if (present(disabled)) disabled_ = disabled
 
         html = '<select id="' // id // '" name="' // name // '">' // NL
 
@@ -1287,6 +1292,7 @@ contains
 
         do i = 1, n
             html = html // '<option value="' // trim(select%values(i)) // '"'
+            if (disabled_)                    html = html // ' disabled="disabled"'
             if (select%values(i) == selected) html = html // ' selected="selected"'
             html = html // '>' // trim(select%options(i)) // '</option>' // NL
         end do

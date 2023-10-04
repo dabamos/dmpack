@@ -104,10 +104,10 @@ contains
         !! Beat page.
         !!
         !! ## Path
-        !! /dmpack/beat
+        !! * `/dmpack/beat`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **node_id** - Node ID (string).
@@ -165,10 +165,10 @@ contains
         !! Beats page.
         !!
         !! ## Path
-        !! /dmpack/beats
+        !! * `/dmpack/beats`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         character(len=*), parameter :: TITLE = 'Beats' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -220,10 +220,10 @@ contains
         !! Dashboard page, shows last observations, logs, and heartbeats.
         !!
         !! ## Path
-        !! /dmpack/
+        !! * `/dmpack/`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
 
         ! To avoid some unnecessary function calls, the number of database
@@ -336,10 +336,10 @@ contains
         !! (not linked in the navigation), and only implemented for testing.
         !!
         !! ## Path
-        !! /dmpack/env
+        !! * `/dmpack/env`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         character(len=*), parameter :: TITLE = 'CGI Environment Variables' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -357,10 +357,10 @@ contains
         !! Licence page.
         !!
         !! ## Path
-        !! /dmpack/licence
+        !! * `/dmpack/licence`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         character(len=*), parameter :: TITLE = 'Licence' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -393,10 +393,10 @@ contains
         !! Log page.
         !!
         !! ## Path
-        !! /dmpack/log
+        !! * `/dmpack/log`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **id** - Log ID (UUID4).
@@ -457,10 +457,11 @@ contains
         !! Logs page.
         !!
         !! ## Path
-        !! /dmpack/logs
+        !! * `/dmpack/logs`
         !!
         !! ## Methods
-        !! GET, POST
+        !! * GET
+        !! * POST
         !!
         !! ## POST Parameters
         !! * **node_id**     - Node ID (string).
@@ -626,10 +627,10 @@ contains
         !! Node page.
         !!
         !! ## Path
-        !! /dmpack/node?id=<id>
+        !! * `/dmpack/node?id=<id>`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **id** - Node ID (string).
@@ -683,10 +684,11 @@ contains
         !! Nodes page.
         !!
         !! ## Path
-        !! /dmpack/nodes
+        !! * `/dmpack/nodes`
         !!
         !! ## Methods
-        !! GET, POST
+        !! * GET
+        !! * POST
         !!
         !! ## POST Parameters
         !! * **id**   - Node ID (string).
@@ -764,7 +766,7 @@ contains
                 call dm_cgi_out(dm_html_p('No nodes found.'))
             end if
 
-            call dm_cgi_out(html_form_nodes())
+            call dm_cgi_out(html_form_nodes(disabled=read_only))
             call html_footer()
         end block response_block
 
@@ -775,10 +777,10 @@ contains
         !! Observation page.
         !!
         !! ## Path
-        !! /dmpack/observ
+        !! * `/dmpack/observ`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **id** - Observation ID (UUID4).
@@ -861,10 +863,11 @@ contains
         !! Observations page.
         !!
         !! ## Path
-        !! /dmpack/observs
+        !! * `/dmpack/observs`
         !!
         !! ## Methods
-        !! GET, POST
+        !! * GET
+        !! * POST
         !!
         !! ## POST Parameters
         !! * **node_id**     - Node ID (string).
@@ -997,10 +1000,11 @@ contains
         !! Plotting page.
         !!
         !! ## Path
-        !! /dmpack/plots
+        !! * `/dmpack/plots`
         !!
         !! ## Methods
-        !! GET, POST
+        !! * GET
+        !! * POST
         !!
         !! ## POST Parameters
         !! * **node_id**       - Node ID (string).
@@ -1114,7 +1118,7 @@ contains
 
                 ! Plotting via Gnuplot.
                 plot%term     = PLOT_TERM_SVG
-                plot%font     = 'IBM Plex Sans'
+                plot%font     = 'sans'
                 plot%graph    = '#ffffff'
                 plot%bidirect = .true.
                 plot%width    = PLOT_WIDTH
@@ -1168,10 +1172,10 @@ contains
         !! Sensor page.
         !!
         !! ## Path
-        !! /dmpack/sensor
+        !! * `/dmpack/sensor`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **id** - Sensor ID (string).
@@ -1230,10 +1234,10 @@ contains
         !! Sensors page.
         !!
         !! ## Path
-        !! /dmpack/sensors
+        !! * `/dmpack/sensors`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         character(len=*), parameter :: TITLE = 'Sensors' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1313,7 +1317,7 @@ contains
             rc = dm_db_select(db, nodes)
 
             if (size(nodes) > 0) then
-                call dm_cgi_out(html_form_sensors(nodes))
+                call dm_cgi_out(html_form_sensors(nodes, disabled=read_only))
             else
                 call dm_cgi_out(dm_html_p('At least one node is required to add a sensor.'))
             end if
@@ -1330,10 +1334,10 @@ contains
         !! mode.
         !!
         !! ## Path
-        !! /dmpack/status
+        !! * `/dmpack/status`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
 
         character(len=*), parameter :: TITLE = 'Status'   !! Page title.
@@ -1341,98 +1345,101 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        character(len=3)             :: mode
-        character(len=FILE_PATH_LEN) :: path
-        integer(kind=i8)             :: seconds
-        integer(kind=i8)             :: db_beat_sz, db_log_sz, db_observ_sz
-        type(uname_type)             :: uname
-        type(time_delta_type)        :: uptime
-
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
-        call dm_system_path(path)
-        call dm_system_uname(uname)
-        call dm_system_uptime(seconds)
-        call dm_time_delta_from_seconds(uptime, seconds)
-
-        ! Database access mode.
-        if (read_only) then
-            mode = 'yes'
-        else
-            mode = 'no'
-        end if
-
-        ! Database sizes.
-        db_beat_sz   = 0_i8
-        db_log_sz    = 0_i8
-        db_observ_sz = 0_i8
-
-        ! The sizes will be at least 1 MiB, even if a file is actually smaller.
-        ! This way, it is easier to distinguish between non-existing and small
-        ! databases, as non-existing ones will always be of size zero.
-        if (dm_file_exists(db_beat))   db_beat_sz   = max(1_i8, dm_file_size(db_beat)   / FSIZE)
-        if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
-        if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
-
-        ! Output HTML payload.
         call html_header(TITLE)
+        call dm_cgi_out(dm_html_heading(1, TITLE))
 
         ! System information.
-        call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out(dm_html_heading(2, 'System Status'))
-        call dm_cgi_out(H_TABLE // H_TBODY // &
-                        H_TR // H_TH // 'Local Time' // H_TH_END // &
-                                H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Uptime' // H_TH_END // &
-                                H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Hostname' // H_TH_END // &
-                                H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Remote Address' // H_TH_END // &
-                                H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Remote User' // H_TH_END // &
-                                H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'OS Name' // H_TH_END // &
-                                H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'OS Release' // H_TH_END // &
-                                H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'OS Version' // H_TH_END // &
-                                H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'OS Platform' // H_TH_END // &
-                                H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Compiler' // H_TH_END // &
-                                H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Compiler Options' // H_TH_END // &
-                                H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Executable Path' // H_TH_END // &
-                                H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'Executable Version' // H_TH_END // &
-                                H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
-                        H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
-                                H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
-                        H_TBODY_END // H_TABLE_END)
+        system_block: block
+            character(len=FILE_PATH_LEN) :: path
+            integer(kind=i8)             :: seconds
+            type(uname_type)             :: uname
+            type(time_delta_type)        :: uptime
+
+            call dm_system_path(path)
+            call dm_system_uname(uname)
+            call dm_system_uptime(seconds)
+            call dm_time_delta_from_seconds(uptime, seconds)
+
+            call dm_cgi_out(dm_html_heading(2, 'System Status'))
+            call dm_cgi_out(H_TABLE // H_TBODY // &
+                            H_TR // H_TH // 'Local Time' // H_TH_END // &
+                                    H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Uptime' // H_TH_END // &
+                                    H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Hostname' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Remote Address' // H_TH_END // &
+                                    H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Remote User' // H_TH_END // &
+                                    H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'OS Name' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'OS Release' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'OS Version' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'OS Platform' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Compiler' // H_TH_END // &
+                                    H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Compiler Options' // H_TH_END // &
+                                    H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Executable Path' // H_TH_END // &
+                                    H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Executable Version' // H_TH_END // &
+                                    H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
+                                    H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
+                            H_TBODY_END // H_TABLE_END)
+        end block system_block
 
         ! Database information.
-        call dm_cgi_out(dm_html_heading(2, 'Database Status'))
-        call dm_cgi_out(H_TABLE // H_THEAD // &
-                        H_TR // H_TH // 'Type' // H_TH_END // &
-                                H_TH // 'Path' // H_TH_END // &
-                                H_TH // 'Size' // H_TH_END // &
-                                H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
-                        H_THEAD_END // H_TBODY // &
-                        H_TR // H_TD // 'Beat' // H_TD_END // &
-                                H_TD // dm_html_encode(db_beat) // H_TD_END // &
-                                H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
-                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                        H_TR // H_TD // 'Log' // H_TD_END // &
-                                H_TD // dm_html_encode(db_log) // H_TD_END // &
-                                H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
-                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                        H_TR // H_TD // 'Observation' // H_TD_END // &
-                                H_TD // dm_html_encode(db_observ) // H_TD_END // &
-                                H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
-                                H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                        H_TBODY_END // H_TABLE_END)
+        db_block: block
+            character(len=3) :: mode
+            integer(kind=i8) :: db_beat_sz, db_log_sz, db_observ_sz
+
+            if (read_only) then
+                mode = 'yes'
+            else
+                mode = 'no'
+            end if
+
+            db_beat_sz   = 0_i8
+            db_log_sz    = 0_i8
+            db_observ_sz = 0_i8
+
+            ! The sizes will be at least 1 MiB, even if a file is actually smaller.
+            ! This way, it is easier to distinguish between non-existing and small
+            ! databases, as non-existing ones will always be of size zero.
+            if (dm_file_exists(db_beat))   db_beat_sz   = max(1_i8, dm_file_size(db_beat)   / FSIZE)
+            if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
+            if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
+
+            call dm_cgi_out(dm_html_heading(2, 'Database Status'))
+            call dm_cgi_out(H_TABLE // H_THEAD // &
+                            H_TR // H_TH // 'Type'      // H_TH_END // &
+                                    H_TH // 'Path'      // H_TH_END // &
+                                    H_TH // 'Size'      // H_TH_END // &
+                                    H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
+                            H_THEAD_END // H_TBODY // &
+                            H_TR // H_TD // 'Beat' // H_TD_END // &
+                                    H_TD // dm_html_encode(db_beat) // H_TD_END // &
+                                    H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
+                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                            H_TR // H_TD // 'Log' // H_TD_END // &
+                                    H_TD // dm_html_encode(db_log) // H_TD_END // &
+                                    H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
+                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                            H_TR // H_TD // 'Observation' // H_TD_END // &
+                                    H_TD // dm_html_encode(db_observ) // H_TD_END // &
+                                    H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
+                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
+                            H_TBODY_END // H_TABLE_END)
+        end block db_block
+
         call html_footer()
     end subroutine route_status
 
@@ -1440,10 +1447,10 @@ contains
         !! Target page.
         !!
         !! ## Path
-        !! /dmpack/target
+        !! * `/dmpack/target`
         !!
         !! ## Methods
-        !! GET
+        !! * GET
         !!
         !! ## GET Parameters
         !! * **id** - Target ID (string).
@@ -1578,7 +1585,7 @@ contains
                 call dm_cgi_out(dm_html_p('No targets found.'))
             end if
 
-            call dm_cgi_out(html_form_targets())
+            call dm_cgi_out(html_form_targets(disabled=read_only))
             call html_footer()
         end block response_block
 
@@ -1588,8 +1595,8 @@ contains
     ! ******************************************************************
     ! HTML FORM GENERATORS.
     ! ******************************************************************
-    function html_form_logs(nodes, sensors, targets, max_results, node_id, sensor_id, &
-            target_id, source, from, to, level, nresults) result(html)
+    function html_form_logs(nodes, sensors, targets, max_results, node_id, sensor_id, target_id, &
+                            source, from, to, level, nresults) result(html)
         !! Returns HTML form for log selection.
         type(node_type),   intent(inout)        :: nodes(:)       !! Node types.
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
@@ -1713,33 +1720,39 @@ contains
         call dm_html_select_destroy(select_result)
     end function html_form_logs
 
-    function html_form_nodes() result(html)
+    function html_form_nodes(disabled) result(html)
         !! Returns HTML form for node creation.
-        character(len=:), allocatable :: html !! HTML form.
+        logical, intent(in), optional :: disabled !! Form elements are disabled.
+        character(len=:), allocatable :: html     !! HTML form.
+
+        logical :: disabled_
+
+        disabled_ = .false.
+        if (present(disabled)) disabled_ = disabled
 
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Node' // H_SUMMARY_END // &
                H_P // 'Add a new sensor node to the database.' // H_P_END // &
                H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
                dm_html_label('ID', for='id') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=NODE_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique node id', required=.true.) // &
                dm_html_label('Name', for='name') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=NODE_NAME_LEN, placeholder='Enter node name', &
                              required=.true.) // &
                H_DIV_END // H_DIV_COL // &
                dm_html_label('Meta', for='meta') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=NODE_META_LEN, placeholder='Enter node description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_nodes
 
-    function html_form_observs(nodes, sensors, targets, max_results, &
-            node_id, sensor_id, target_id, from, to, nresults) result(html)
+    function html_form_observs(nodes, sensors, targets, max_results, node_id, sensor_id, &
+                               target_id, from, to, nresults) result(html)
         !! Returns HTML form for time series selection.
         type(node_type),   intent(inout)        :: nodes(:)       !! Node types.
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
@@ -1946,14 +1959,19 @@ contains
         call dm_html_select_destroy(select_result)
     end function html_form_plots
 
-    function html_form_sensors(nodes) result(html)
+    function html_form_sensors(nodes, disabled) result(html)
         !! Returns HTML form for sensor creation.
-        type(node_type), intent(inout) :: nodes(:) !! Node types.
-        character(len=:), allocatable  :: html     !! HTML form.
+        type(node_type), intent(inout)        :: nodes(:) !! Node types.
+        logical,         intent(in), optional :: disabled !! Form elements are disabled.
+        character(len=:), allocatable         :: html     !! HTML form.
 
         integer           :: i
+        logical           :: disabled_
         type(select_type) :: select_node
         type(select_type) :: select_sensor_type
+
+        disabled_ = .false.
+        if (present(disabled)) disabled_ = disabled
 
         call dm_html_select_create(select_node, size(nodes))
         call dm_html_select_create(select_sensor_type, SENSOR_NTYPES)
@@ -1971,54 +1989,60 @@ contains
                H_P // 'Add a new sensor to the database.' // H_P_END // &
                H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
                dm_html_label('Node Name', for='node_id') // &
-               dm_html_select(select_node, 'node_id', 'node_id', '') // &
+               dm_html_select(select_node, 'node_id', 'node_id', '', disabled=disabled_) // &
                dm_html_label('ID', for='id') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=SENSOR_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique sensor id', required=.true.) // &
                dm_html_label('Name', for='name') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=SENSOR_NAME_LEN, placeholder='Enter sensor name', &
                              required=.true.) // &
                H_DIV_END // H_DIV_COL // &
                dm_html_label('Type', for='type') // &
-               dm_html_select(select_sensor_type, 'type', 'type', dm_itoa(SENSOR_TYPE_NONE)) // &
+               dm_html_select(select_sensor_type, 'type', 'type', dm_itoa(SENSOR_TYPE_NONE), disabled=disabled_) // &
                dm_html_label('Serial Number', for='sn') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='sn', name='sn', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='sn', name='sn', &
                              max_length=SENSOR_SN_LEN, placeholder='Enter sensor serial number (optional)') // &
                dm_html_label('Meta', for='meta') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=SENSOR_META_LEN, placeholder='Enter sensor description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
 
         call dm_html_select_destroy(select_node)
         call dm_html_select_destroy(select_sensor_type)
     end function html_form_sensors
 
-    function html_form_targets() result(html)
+    function html_form_targets(disabled) result(html)
         !! Returns HTML form for target creation.
-        character(len=:), allocatable :: html !! HTML form.
+        logical, intent(in), optional :: disabled !! Form elements are disabled.
+        character(len=:), allocatable :: html     !! HTML form.
+
+        logical :: disabled_
+
+        disabled_ = .false.
+        if (present(disabled)) disabled_ = disabled
 
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Target' // H_SUMMARY_END // &
                H_P // 'Add a new target to the database.' // H_P_END // &
                H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
                dm_html_label('ID', for='id') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='id', name='id', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=TARGET_ID_LEN, pattern='[\-0-9A-Za-z]+', &
                              placeholder='Enter unique target id', required=.true.) // &
                dm_html_label('Name', for='name') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='name', name='name', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=TARGET_NAME_LEN, placeholder='Enter target name', &
                              required=.true.) // &
                H_DIV_END // H_DIV_COL // &
                dm_html_label('Meta', for='meta') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, id='meta', name='meta', &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
                H_DIV_END // H_DIV_END // &
-               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=read_only, name='submit', value='Submit') // &
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_targets
 
