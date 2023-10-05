@@ -3,6 +3,21 @@
 module dm_db
     !! Database abstraction layer over SQLite 3. The SQL statements are stored in
     !! module `dm_sql`.
+    !!
+    !! Load the last 10 observations into allocatable array `observs`:
+    !!
+    !! ```fortran
+    !! integer                        :: rc
+    !! type(db_type)                  :: db
+    !! type(observ_type), allocatable :: observs(:)
+    !!
+    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! rc = dm_db_select_observs(db, observs, desc=.true., limit=10)
+    !! rc = dm_db_close(db)
+    !! ```
+    !!
+    !! The database function returns `E_NONE` if the respective operation was
+    !! successful.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
     use :: dm_beat

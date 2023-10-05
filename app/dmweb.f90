@@ -46,10 +46,10 @@ program dmweb
     character(len=FILE_PATH_LEN) :: db_log    = ' ' ! Path to log database.
     character(len=FILE_PATH_LEN) :: db_observ = ' ' ! Path to observation database.
 
-    logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
     logical :: has_db_beat   = .false.              ! Beat database passed.
     logical :: has_db_log    = .false.              ! Log database passed.
     logical :: has_db_observ = .false.              ! Observation database passed.
+    logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
 
     type(route_type)  :: routes(18)
     type(router_type) :: router
@@ -254,7 +254,7 @@ contains
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out(dm_html_p('The dashboard lists heartbeat, logs, and observations ' // &
+        call dm_cgi_out(dm_html_p('The dashboard lists heartbeats, logs, and observations ' // &
                                   'most recently added to the databases.'))
 
         if (.not. has_db_beat .and. .not. has_db_log .and. .not. has_db_observ) then
