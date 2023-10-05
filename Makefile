@@ -126,12 +126,12 @@ LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
 LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 
 # Additional include search directories.
-INCHDF5 = `pkg-config --cflags hdf5_fortran`
+INCHDF5 = `pkg-config --cflags hdf5`
 
 # Shared libraries to link.
 LIBCURL    = `curl-config --libs`
 LIBFASTCGI = -lfcgi
-LIBHDF5    = `pkg-config --libs-only-l hdf5_fortran`
+LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread

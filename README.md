@@ -270,15 +270,15 @@ applications, additional shared libraries have to be linked.
 | `dm_config`    | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_db`        | SQLite 3      | `pkg-config --libs sqlite3`                           |
 | `dm_fcgi`      | FastCGI       | `-lfcgi`                                              |
-| `dm_hdf5`      | HDF5          | `pkg-config hdf5_fortran`                             |
+| `dm_hdf5`      | HDF5          | `pkg-config --libs hdf5`, `-lhdf5_fortran`            |
 | `dm_la`        | BLAS, LAPACK  | `-llapack -lblas`                                     |
 | `dm_lua`       | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
-| `dm_mail`      | libcurl       | `pkg-config --libs libcurl`                           |
-| `dm_mqtt`      | libcurl       | `pkg-config --libs libcurl`                           |
+| `dm_mail`      | libcurl       | `curl-config --libs`                                  |
+| `dm_mqtt`      | libcurl       | `curl-config --libs`                                  |
 | `dm_mqueue`    | POSIX         | `-lrt`                                                |
 | `dm_mutex`     | POSIX         | `-lpthread`                                           |
 | `dm_regex`     | PCRE2         | `pkg-config --libs libpcre2-8`                        |
-| `dm_rpc`       | libcurl, zlib | `pkg-config --libs libcurl`, `pkg-config --libs zlib` |
+| `dm_rpc`       | libcurl, zlib | `curl-config --libs`, `pkg-config --libs zlib`        |
 | `dm_sem`       | POSIX         | `-lpthread`                                           |
 | `dm_z`         | zlib          | `pkg-config --libs zlib`                              |
 
