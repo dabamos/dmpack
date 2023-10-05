@@ -154,7 +154,11 @@ cloned or downloaded manually.
 
 == Installation
 
-This section describes how to build the DMPACK library and programs from source.
+This section describes how to build the DMPACK library and programs from source,
+with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager].
+
+The DMPACK programs require the shared library `libgfortran.so` if they have
+been compiled with GNU Fortran.
 
 === FreeBSD
 
@@ -175,8 +179,10 @@ User’s Guide:
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ....
 
-Then, clone the repository recursively. Run the provided POSIX Makefile to build
-from source:
+==== Make
+
+The Git repository has to be cloned recursively. Otherwise, the required
+sub-modules will be missing. Then, run the Makefile with build target `freebsd`:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -197,8 +203,21 @@ custom directory, run:
 $ doas make install PREFIX=/opt
 ....
 
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
+==== Fortran Package Manager
+
+Either clone the repository with Git, or download the archive of the
+link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[master branch].
+Then, run:
+
+....
+$ cd dmpack/
+$ fpm build --flag "-D__FreeBSD__" --profile "release"
+$ doas fpm install --prefix "/usr/local"
+....
+
+The Fortran Package Manager will fetch all third-party dependencies
+automatically, but the configuration and shared files have to be installed
+manually.
 
 .Default paths on FreeBSD
 [%autowidth]

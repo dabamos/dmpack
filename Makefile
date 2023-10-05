@@ -417,7 +417,7 @@ dmtestdb: test/dmtestdb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdb test/dmtestdb.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 dmtestdp: test/dmtestdp.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp test/dmtestdp.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp test/dmtestdp.f90 $(TARGET) $(LDLIBS)
 
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)

@@ -7,20 +7,32 @@ program dmtesttty
     use :: dmpack
     implicit none (type, external)
     integer, parameter :: NTESTS = 1
+    logical, parameter :: SKIP   = .true.
 
-    type(test_type) :: tests(NTESTS)
+    logical         :: no_color
     logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
 
+    no_color = dm_env_has('NO_COLOR')
     tests(1) = test_type('dmtesttty.test01', test01)
 
     call dm_init()
-    call dm_test_run(tests, stats, no_color=dm_env_has('NO_COLOR'))
+    call dm_test_run(tests, stats, no_color=no_color)
 contains
     logical function test01() result(stat)
         character(len=128) :: buf
         integer            :: rc
         integer(kind=i8)   :: n
         type(tty_type)     :: tty
+
+        if (skip) then
+            call dm_ansi_color(COLOR_RED, no_color)
+            print '(/, "This test will be skipped by default!", /)'
+            call dm_ansi_reset(no_color)
+
+            stat = TEST_PASSED
+            return
+        end if
 
         stat = TEST_FAILED
 

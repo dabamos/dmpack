@@ -1,0 +1,274 @@
+name        = "dmpack"
+version     = "0.9.0"
+license     = "ISC"
+author      = "Philipp Engel"
+maintainer  = "@interkosmos"
+copyright   = "Copyright (c) 2023, Philipp Engel"
+description = "Deformation Monitoring Package (DMPACK) for automated control measurements in engineering geodesy"
+keywords    = [ "geodesy", "monitoring", "engineering", "sensor", "iot" ]
+
+[build]
+auto-examples    = false
+auto-executables = false
+auto-tests       = false
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[dependencies]
+fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
+fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
+fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
+fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
+fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
+fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
+
+[[executable]]
+name = "dmapi"
+main = "dmapi.f90"
+link = [ "fcgi", "sqlite3", "z" ]
+
+[[executable]]
+name = "dmbackup"
+main = "dmbackup.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dmbeat"
+main = "dmbeat.f90"
+link = [ "curl", "lua-5.4", "rt", "z" ]
+
+[[executable]]
+name = "dmdb"
+main = "dmdb.f90"
+link = [ "lua-5.4", "pthread", "rt", "sqlite3" ]
+
+[[executable]]
+name = "dmdbctl"
+main = "dmdbctl.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dmexport"
+main = "dmexport.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dmfeed"
+main = "dmfeed.f90"
+link = [ "lua-5.4", "sqlite3" ]
+
+[[executable]]
+name = "dmfs"
+main = "dmfs.f90"
+link = [ "lua-5.4", "pcre2-8", "rt" ]
+
+[[executable]]
+name = "dmgraph"
+main = "dmgraph.f90"
+link = [ "lua-5.4", "sqlite3" ]
+
+[[executable]]
+name = "dmimport"
+main = "dmimport.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dminfo"
+main = "dminfo.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dminit"
+main = "dminit.f90"
+link = [ "sqlite3" ]
+
+[[executable]]
+name = "dmlog"
+main = "dmlog.f90"
+link = [ "rt" ]
+
+[[executable]]
+name = "dmlogger"
+main = "dmlogger.f90"
+link = [ "lua-5.4", "pthread", "rt", "sqlite3" ]
+
+[[executable]]
+name = "dmlua"
+main = "dmlua.f90"
+link = [ "lua-5.4", "rt" ]
+
+[[executable]]
+name = "dmpipe"
+main = "dmpipe.f90"
+link = [ "lua-5.4", "pcre2-8", "rt" ]
+
+[[executable]]
+name = "dmrecv"
+main = "dmrecv.f90"
+link = [ "lua-5.4", "rt" ]
+
+[[executable]]
+name = "dmreport"
+main = "dmreport.f90"
+link = [ "lua-5.4", "sqlite3" ]
+
+[[executable]]
+name = "dmsend"
+main = "dmsend.f90"
+link = [ "lua-5.4", "rt" ]
+
+[[executable]]
+name = "dmserial"
+main = "dmserial.f90"
+link = [ "lua-5.4", "pcre2-8", "rt" ]
+
+[[executable]]
+name = "dmsync"
+main = "dmsync.f90"
+link = [ "curl", "lua-5.4", "pthread", "rt", "sqlite3", "z" ]
+
+[[executable]]
+name = "dmuuid"
+main = "dmuuid.f90"
+
+[[executable]]
+name = "dmweb"
+main = "dmweb.f90"
+link = [ "sqlite3" ]
+
+[[test]]
+name = "dmtestapi"
+main = "dmtestapi.f90"
+
+[[test]]
+name = "dmtestatom"
+main = "dmtestatom.f90"
+
+[[test]]
+name = "dmtestbase64"
+main = "dmtestbase64.f90"
+
+[[test]]
+name = "dmtestcgi"
+main = "dmtestcgi.f90"
+
+[[test]]
+name = "dmtestcsv"
+main = "dmtestcsv.f90"
+
+[[test]]
+name = "dmtestdb"
+main = "dmtestdb.f90"
+link = [ "sqlite3" ]
+
+[[test]]
+name = "dmtestdp"
+main = "dmtestdp.f90"
+
+[[test]]
+name = "dmtesthash"
+main = "dmtesthash.f90"
+
+[[test]]
+name = "dmtesthtml"
+main = "dmtesthtml.f90"
+
+[[test]]
+name = "dmtestlogger"
+main = "dmtestlogger.f90"
+link = [ "rt" ]
+
+[[test]]
+name = "dmtestlua"
+main = "dmtestlua.f90"
+link = [ "lua-5.4" ]
+
+[[test]]
+name = "dmtestjob"
+main = "dmtestjob.f90"
+
+[[test]]
+name = "dmtestjson"
+main = "dmtestjson.f90"
+
+[[test]]
+name = "dmtestmail"
+main = "dmtestmail.f90"
+link = [ "curl" ]
+
+[[test]]
+name = "dmtestmqtt"
+main = "dmtestmqtt.f90"
+link = [ "curl" ]
+
+[[test]]
+name = "dmtestmqueue"
+main = "dmtestmqueue.f90"
+link = [ "rt" ]
+
+[[test]]
+name = "dmtestnml"
+main = "dmtestnml.f90"
+
+[[test]]
+name = "dmtestobserv"
+main = "dmtestobserv.f90"
+
+[[test]]
+name = "dmtestpath"
+main = "dmtestpath.f90"
+
+[[test]]
+name = "dmtestpipe"
+main = "dmtestpipe.f90"
+
+[[test]]
+name = "dmtestplot"
+main = "dmtestplot.f90"
+
+[[test]]
+name = "dmtestregex"
+main = "dmtestregex.f90"
+link = [ "pcre2-8" ]
+
+[[test]]
+name = "dmtestrouter"
+main = "dmtestrouter.f90"
+
+[[test]]
+name = "dmtestrpc"
+main = "dmtestrpc.f90"
+link = [ "curl", "z" ]
+
+[[test]]
+name = "dmteststring"
+main = "dmteststring.f90"
+
+[[test]]
+name = "dmtesttime"
+main = "dmtesttime.f90"
+
+[[test]]
+name = "dmtesttty"
+main = "dmtesttty.f90"
+
+[[test]]
+name = "dmtestunit"
+main = "dmtestunit.f90"
+
+[[test]]
+name = "dmtestutil"
+main = "dmtestutil.f90"
+
+[[test]]
+name = "dmtestuuid"
+main = "dmtestuuid.f90"
+
+[[test]]
+name = "dmtestz"
+main = "dmtestz.f90"
+link = [ "z" ]

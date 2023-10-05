@@ -128,7 +128,12 @@ The following programs are based on the DMPACK library.
 
 ## Installation
 
-The DMPACK library and programs have to be built from source.
+The DMPACK library and programs have to be built from source by either executing
+the provided Makefile, or by using the
+[Fortran Package Manager](https://fpm.fortran-lang.org/).
+
+The DMPACK programs require the shared library `libgfortran.so` if they have
+been compiled with GNU Fortran.
 
 ### FreeBSD
 
@@ -140,21 +145,26 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but does not include raster graphic terminals). To
-generate the man pages and the User’s Guide, install Pygments and AsciiDoctor:
+does not depend on X11 (but does not include raster graphic terminals).
+
+In order to generate the man pages and the User’s Guide, install Pygments and
+AsciiDoctor:
 
 ```
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ```
 
-Then, clone the repository recursively. Run the provided POSIX Makefile to build
-the source:
+#### Make
+
+The Git repository has to be cloned recursively. Otherwise, the required
+sub-modules will be missing. Then, run the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make freebsd
 ```
+
 You can change the installation prefix with argument `PREFIX` (by default,
 `/usr/local`). To install the library and all programs system-wide, run:
 
@@ -162,16 +172,29 @@ You can change the installation prefix with argument `PREFIX` (by default,
 $ doas make install PREFIX=/usr/local
 ```
 
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
-
-For a debug build with _AddressSanitizer_ (ASan) to detect memory errors, run
+For a debug build with AddressSanitizer (ASan) to detect memory errors, run
 instead:
 
 ```
 $ make freebsd_debug DEBUG="-g -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer" \
   LDLIBS="-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer"
 ```
+
+#### Fortran Package Manager
+
+Either clone the repository with Git, or download the archive of the
+[master branch](https://github.com/dabamos/dmpack/archive/refs/heads/master.zip).
+Then, run:
+
+```
+$ cd dmpack/
+$ fpm build --flag "-D__FreeBSD__" --profile "release"
+$ doas fpm install --prefix "/usr/local"
+```
+
+The Fortran Package Manager will fetch all third-party dependencies
+automatically, but the configuration and shared files have to be installed
+manually.
 
 ### Linux
 
@@ -191,8 +214,9 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 ```
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
-alternatively, if raster image formats are not desired (SVG output only). Clone
-the DMPACK repository, and execute the Makefile:
+alternatively, if raster image formats are not desired (SVG output only).
+
+Clone the DMPACK repository, and execute the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -211,9 +235,6 @@ To install to a custom directory, run:
 ```
 $ sudo make install PREFIX=/opt
 ```
-
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
 
 ### Updates
 
