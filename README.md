@@ -54,7 +54,7 @@ DMPACK covers the following tasks:
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
 * SQLite database access
-* data serialisation (ASCII, CSV, JSON, JSON Lines, Namelist)
+* data serialisation (ASCII, CSV, JSON, JSON Lines, HDF5, Fortran 95 Namelist)
 * HTTP-RPC API for remote procedure calls
 * concurrent data synchronisation between client and server
 * distributed logging
@@ -81,6 +81,7 @@ this package:
 * BLAS
 * FastCGI
 * Gnuplot
+* HDF5
 * LAPACK
 * libcurl (≥ 8.3.0)
 * Lua 5.4
@@ -141,7 +142,7 @@ First, install the build and run-time dependencies:
 
 ```
 $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua54 math/gnuplot math/lapack www/fcgi
+  lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -188,8 +189,8 @@ Then, run:
 
 ```
 $ cd dmpack/
-$ fpm build --flag "-D__FreeBSD__" --profile "release"
-$ doas fpm install --prefix "/usr/local"
+$ fpm build --flag "-I/usr/local/include -D__FreeBSD__" --profile release
+$ doas fpm install --prefix /usr/local
 ```
 
 The Fortran Package Manager will fetch all third-party dependencies
@@ -208,8 +209,8 @@ The third-party dependencies have to be installed with development headers:
 
 ```
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
-  gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
+  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
+  libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ```
 
@@ -269,6 +270,7 @@ applications, additional shared libraries have to be linked.
 | `dm_config`    | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_db`        | SQLite 3      | `pkg-config --libs sqlite3`                           |
 | `dm_fcgi`      | FastCGI       | `-lfcgi`                                              |
+| `dm_hdf5`      | HDF5          | `pkg-config --libs hdf5_fortran`                      |
 | `dm_la`        | BLAS, LAPACK  | `-llapack -lblas`                                     |
 | `dm_lua`       | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_mail`      | libcurl       | `pkg-config --libs libcurl`                           |

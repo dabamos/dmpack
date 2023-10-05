@@ -50,6 +50,7 @@ module dmpack
     use :: dm_format
     use :: dm_hash
     use :: dm_hash_table
+    use :: dm_hdf5
     use :: dm_html
     use :: dm_http
     use :: dm_id

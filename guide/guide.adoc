@@ -124,6 +124,7 @@ package:
 * BLAS
 * FastCGI
 * Gnuplot
+* HDF5
 * LAPACK
 * libcurl (≥ 8.3.0)
 * Lua 5.4
@@ -139,6 +140,13 @@ you will also need:
   link:https://rubygems.org/gems/pygments.rb/versions/2.2.0[pygments.rb]
 * link:https://github.com/Fortran-FOSS-Programmers/ford[FORD]
 
+== Installation
+
+This section describes how to build the DMPACK library and programs from source,
+with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager].
+The shared library `libgfortran.so` must be present on the target system if the
+DMPACK programs have been compiled with GNU Fortran.
+
 DMPACK depends on the following interface libraries:
 
 * link:https://github.com/interkosmos/fortran-curl[fortran-curl]
@@ -148,17 +156,8 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-unix[fortran-unix]
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 
-If the DMPACK repository is cloned recursively, these submodules will be
-downloaded automatically to directory `vendor/`. Otherwise, they have to be
-cloned or downloaded manually.
-
-== Installation
-
-This section describes how to build the DMPACK library and programs from source,
-with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager].
-
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
+If the repository is cloned recursively, the submodules will be downloaded
+automatically to directory `vendor/`.
 
 === FreeBSD
 
@@ -166,7 +165,7 @@ First, install the build and run-time dependencies:
 
 ....
 $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua54 math/gnuplot math/lapack www/fcgi
+  lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -181,8 +180,8 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 
 ==== Make
 
-The Git repository has to be cloned recursively. Otherwise, the required
-sub-modules will be missing. Then, run the Makefile with build target `freebsd`:
+The repository has to be cloned recursively. Execute the Makefile with build
+target `freebsd`:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -211,13 +210,13 @@ Then, run:
 
 ....
 $ cd dmpack/
-$ fpm build --flag "-D__FreeBSD__" --profile "release"
+$ fpm build --flag "-I/usr/local/include -D__FreeBSD__" --profile release
 $ doas fpm install --prefix "/usr/local"
 ....
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually.
+manually. You can install DMPACK locally by changing the prefix to `~/.local`.
 
 .Default paths on FreeBSD
 [%autowidth]
@@ -245,8 +244,8 @@ The third-party dependencies have to be installed with development headers:
 
 ....
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev \
-  gnuplot lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
+  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
+  libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
@@ -641,7 +640,7 @@ All POST data has to be serialised in Fortran 95 Namelist format, with optional
 deflate compression.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
-and observation sent to the RPC service must match the name of the
+and observation sent to the HTTP-RPC service must match the name of the
 authenticated user. For example, to store an observation of a node with the id
 `node-1`, the HTTP Basic Auth user name must equal the node id. If the
 observation is sent by any other user, it will be rejected (HTTP 401).
@@ -746,7 +745,7 @@ for testing.
 
 ==== Examples
 
-Send a single heartbeat to a <<dmapi>> RPC service on `localhost`:
+Send a single heartbeat to a <<dmapi>> service on `localhost`:
 
 ....
 $ dmbeat --node dummy-node --host 127.0.0.1 --count 1 --verbose
@@ -2104,7 +2103,7 @@ for testing.
 ==== Examples
 
 Synchronise nodes, sensors, and targets in the local observation database with
-an RPC server:
+an HTTP-RPC server:
 
 ....
 $ dmsync --database observ.sqlite --type node --host 192.168.1.100
@@ -2180,8 +2179,8 @@ the plotting backend (no-X11 flavour is sufficient).
 
 The web application provides the following pages:
 
-Dashboard:: Lists the observations, logs, and heartbeats that have been added to
-the databases most recently.
+Dashboard:: Lists heartbeats, logs, and observations that have been added to the
+databases most recently.
 Nodes:: Lists all sensor nodes, and allows to add new ones.
 Sensors:: Lists all sensors, and allows to add new ones.
 Targets:: Lists all targets, and allows to add new ones.
@@ -2237,7 +2236,7 @@ See section <<web-ui>> for an example configuration.
 | Read-Only Mode | Yes                                   | Yes
 |===
 
-The following web applications are part of DMPACK (<<web-services-comp,comparison>>):
+The following web applications are part of DMPACK:
 
 <<dmapi>>:: HTTP-RPC API for data synchronisation, timeseries access, and
 heartbeat collection.
@@ -2529,7 +2528,7 @@ Returns <<data-api-text,service status>> in API status format as `text/plain`.
 
 ==== Example
 
-Return the RPC service status:
+Return the HTTP-RPC service status:
 
 ....
 $ curl -s -u <username>:<password> --header "Accept: text/plain" \

@@ -21,9 +21,10 @@
 # export DM_MAIL_PASSWORD=secret
 #
 TESTS="dmtestapi dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp dmtesthash \
-dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue \
-dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex \
-dmtestrouter dmtestrpc dmteststring dmtesttime dmtestunit dmtestutil dmtestuuid"
+dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
+dmtestmqueue dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
+dmtestregex dmtestrouter dmtestrpc dmteststring dmtesttime dmtesttty dmtestunit \
+dmtestutil dmtestuuid"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 

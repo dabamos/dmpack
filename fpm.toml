@@ -7,11 +7,6 @@ copyright   = "Copyright (c) 2023, Philipp Engel"
 description = "Deformation Monitoring Package (DMPACK) for automated control measurements in engineering geodesy"
 keywords    = [ "geodesy", "monitoring", "engineering", "sensor", "iot" ]
 
-[build]
-auto-examples    = false
-auto-executables = false
-auto-tests       = false
-
 [library]
 source-dir = "src"
 
@@ -25,6 +20,12 @@ fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
 fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
+
+[build]
+auto-examples    = false
+auto-executables = false
+auto-tests       = false
+external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
 [[executable]]
 name = "dmapi"
@@ -172,6 +173,11 @@ main = "dmtestdp.f90"
 [[test]]
 name = "dmtesthash"
 main = "dmtesthash.f90"
+
+[[test]]
+name = "dmtesthdf5"
+main = "dmtesthdf5.f90"
+link = [ "hdf5_fortran", "hdf5" ]
 
 [[test]]
 name = "dmtesthtml"

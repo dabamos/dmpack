@@ -22,4 +22,3 @@ contains
             name, major, minor, patch, DM_VERSION_STRING
     end subroutine dm_app_out
 end module dm_app
-

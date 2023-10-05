@@ -16,7 +16,7 @@ module dm_db
     !! rc = dm_db_close(db)
     !! ```
     !!
-    !! The database function returns `E_NONE` if the respective operation was
+    !! The database functions returns `E_NONE` if the respective operation was
     !! successful.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
