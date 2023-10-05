@@ -35,15 +35,15 @@ module dm_hdf5
 
     interface dm_hdf5_close
         !! Generic HDF5 close function.
-        module procedure :: hdf5_file_close
-        module procedure :: hdf5_group_close
-        module procedure :: hdf5_set_close
+        module procedure :: hdf5_close_file
+        module procedure :: hdf5_close_group
+        module procedure :: hdf5_close_set
     end interface
 
     interface dm_hdf5_open
         !! Generic HDF5 open function.
-        module procedure :: hdf5_file_open
-        module procedure :: hdf5_group_open
+        module procedure :: hdf5_open_file
+        module procedure :: hdf5_open_group
     end interface
 
     public :: dm_hdf5_close
@@ -55,11 +55,11 @@ module dm_hdf5
     public :: dm_hdf5_open
     public :: dm_hdf5_version
 
-    private :: hdf5_file_close
-    private :: hdf5_file_open
-    private :: hdf5_group_close
-    private :: hdf5_group_open
-    private :: hdf5_set_close
+    private :: hdf5_close_file
+    private :: hdf5_close_group
+    private :: hdf5_close_set
+    private :: hdf5_open_file
+    private :: hdf5_open_group
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -181,7 +181,7 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function hdf5_file_close(file) result(rc)
+    integer function hdf5_close_file(file) result(rc)
         !! Closes HDF5 file. Returns `E_INVALID` if the passed HDF5 file is not
         !! opened. Returns `E_IO` if closing the file failed.
         type(hdf5_file_type), intent(inout) :: file !! HDF5 file type.
@@ -197,9 +197,45 @@ contains
 
         file = hdf5_file_type()
         rc = E_NONE
-    end function hdf5_file_close
+    end function hdf5_close_file
 
-    integer function hdf5_file_open(file, path, mode, create) result(rc)
+    integer function hdf5_close_group(group) result(rc)
+        !! Closes HDF5 group. Returns `E_INVALID` if the passed HDF5 group
+        !! is not opened. Returns `E_IO` if closing the group failed.
+        type(hdf5_group_type), intent(inout) :: group !! HDF5 group type.
+
+        integer :: stat
+
+        rc = E_INVALID
+        if (group%id < 0) return
+
+        rc = E_IO
+        call h5gclose_f(group%id, stat)
+        if (stat /= 0) return
+
+        group = hdf5_group_type()
+        rc = E_NONE
+    end function hdf5_close_group
+
+    integer function hdf5_close_set(set) result(rc)
+        !! Closes HDF5 data set. Returns `E_INVALID` if the passed HDF5 data
+        !! set is not opened. Returns `E_IO` if closing the data set failed.
+        type(hdf5_set_type), intent(inout) :: set !! HDF5 data set type.
+
+        integer :: stat
+
+        rc = E_INVALID
+        if (set%id < 0) return
+
+        rc = E_IO
+        call h5dclose_f(set%id, stat)
+        if (stat /= 0) return
+
+        set = hdf5_set_type()
+        rc = E_NONE
+    end function hdf5_close_set
+
+    integer function hdf5_open_file(file, path, mode, create) result(rc)
         !! Opens HDF5 file, by default in read/write access mode, unless `mode`
         !! is passed.
         !!
@@ -261,27 +297,9 @@ contains
         if (stat /= 0) return
 
         rc = E_NONE
-    end function hdf5_file_open
+    end function hdf5_open_file
 
-    integer function hdf5_group_close(group) result(rc)
-        !! Closes HDF5 group. Returns `E_INVALID` if the passed HDF5 group
-        !! is not opened. Returns `E_IO` if closing the group failed.
-        type(hdf5_group_type), intent(inout) :: group !! HDF5 group type.
-
-        integer :: stat
-
-        rc = E_INVALID
-        if (group%id < 0) return
-
-        rc = E_IO
-        call h5gclose_f(group%id, stat)
-        if (stat /= 0) return
-
-        group = hdf5_group_type()
-        rc = E_NONE
-    end function hdf5_group_close
-
-    integer function hdf5_group_open(file, group, name, create) result(rc)
+    integer function hdf5_open_group(file, group, name, create) result(rc)
         !! Opens or creates group of name `name`. The function return
         !! `E_INVALID` if the file is not opened, and `E_IO` if the group
         !! operation failed.
@@ -311,23 +329,5 @@ contains
 
         if (stat /= 0) return
         rc = E_NONE
-    end function hdf5_group_open
-
-    integer function hdf5_set_close(set) result(rc)
-        !! Closes HDF5 data set. Returns `E_INVALID` if the passed HDF5 data
-        !! set is not opened. Returns `E_IO` if closing the data set failed.
-        type(hdf5_set_type), intent(inout) :: set !! HDF5 data set type.
-
-        integer :: stat
-
-        rc = E_INVALID
-        if (set%id < 0) return
-
-        rc = E_IO
-        call h5dclose_f(set%id, stat)
-        if (stat /= 0) return
-
-        set = hdf5_set_type()
-        rc = E_NONE
-    end function hdf5_set_close
+    end function hdf5_open_group
 end module dm_hdf5

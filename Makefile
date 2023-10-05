@@ -122,8 +122,11 @@ RELEASE = -mtune=native -O2
 FFLAGS  = $(RELEASE)
 CFLAGS  = $(RELEASE)
 ARFLAGS = -rcs
-LDFLAGS = -I$(INCDIR) -I/usr/local/include -J$(INCDIR) -L/usr/local/lib -z execstack
+LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
 LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
+
+# Additional include search directories.
+INCHDF5 = `pkg-config --cflags hdf5_fortran`
 
 # Shared libraries to link.
 LIBCURL    = `curl-config --libs`
@@ -238,7 +241,7 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
 #
 # ******************************************************************************
 freebsd_debug:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)" LDLIBS="$(LDLIBS)"
+	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 freebsd_release:
 	$(MAKE) all OS=freebsd PREFIX=/usr/local
@@ -364,7 +367,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_dummy.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_hdf5.f90
+	$(FC) -fPIC $(FFLAGS) $(INCHDF5) $(LDFLAGS) -c src/dm_hdf5.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90
@@ -426,7 +429,7 @@ dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LDLIBS) $(LIBHDF5)
+	$(FC) $(FFLAGS) $(INCHDF5) $(LDFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LDLIBS) $(LIBHDF5)
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)
