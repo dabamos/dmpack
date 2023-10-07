@@ -144,7 +144,8 @@ you will also need:
 
 This section describes how to build the DMPACK library and programs from source,
 with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager].
-The shared library `libgfortran.so` must be present on the target system if the
+At the moment, support for the Fortran Package Manager is experimental. The
+shared library `libgfortran.so` must be present on the target system if the
 DMPACK programs have been compiled with GNU Fortran.
 
 DMPACK depends on the following interface libraries:
@@ -210,13 +211,13 @@ Then, run:
 
 ....
 $ cd dmpack/
-$ fpm build --flag "-I/usr/local/include -D__FreeBSD__" --profile release
-$ doas fpm install --prefix "/usr/local"
+$ fpm build --profile release --flag "-D__FreeBSD__ -I/usr/local/include"
+$ fpm install
 ....
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually. You can install DMPACK locally by changing the prefix to `~/.local`.
+manually. The library and programs will be installed to `~/.local` by default.
 
 .Default paths on FreeBSD
 [%autowidth]
@@ -253,8 +254,10 @@ Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`,
 if raster image formats are not needed (SVG output only). Depending on the
 package repository, the names of the Lua packages may differ.
 
-Clone the DMPACK repository, and then execute the Makefile with build target
-`linux`:
+==== Make
+
+Clone the DMPACK repository recursively, and execute the Makefile with build
+target `linux`:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -272,6 +275,25 @@ To install to a custom directory, run:
 
 ....
 $ sudo make install PREFIX=/opt
+....
+
+==== Fortran Package Manager
+
+Change to the cloned or fetched repository, then run:
+
+....
+$ cd dmpack/
+$ fpm build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5`"
+$ fpm install
+....
+
+The library and programs will be installed to `~/.local` by default. If the
+compilation fails with an error message that `-llua-5.4` cannot be found, update
+the build manifests first:
+
+....
+$ sed -i "s/lua-5/lua5/g" fpm.toml
+$ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 ....
 
 == System Configuration
@@ -4242,6 +4264,7 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 19   | `E_NOT_FOUND`       | Resource not found.
 | 20   | `E_READ_ONLY`       | Read-only access.
 | 21   | `E_CONFIG`          | Invalid configuration.
+| 22   | `E_HDF5`            | HDF5 library error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_MEM`          | No memory or disk full.

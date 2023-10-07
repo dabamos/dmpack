@@ -30,6 +30,7 @@ module dm_error
     integer, parameter, public :: E_NOT_FOUND      =  19 !! Resource not found.
     integer, parameter, public :: E_READ_ONLY      =  20 !! Read-only access.
     integer, parameter, public :: E_CONFIG         =  21 !! Invalid configuration error.
+    integer, parameter, public :: E_HDF5           =  22 !! HDF5 error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -157,6 +158,8 @@ contains
                 str = 'read only'
             case (E_CONFIG)
                 str = 'configuration error'
+            case (E_HDF5)
+                str = 'HDF5 error'
 
             ! Database.
             case (E_DB)
