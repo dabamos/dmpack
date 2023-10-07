@@ -10,7 +10,7 @@ program dmtesthdf5
     character(len=*), parameter :: FILE_PATH  = 'test.hdf5'
     character(len=*), parameter :: GROUP_NAME = 'timeseries'
 
-    integer, parameter :: NTESTS = 5
+    integer, parameter :: NTESTS = 6
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -20,6 +20,7 @@ program dmtesthdf5
     tests(3) = test_type('dmtesthdf5.test03', test03)
     tests(4) = test_type('dmtesthdf5.test04', test04)
     tests(5) = test_type('dmtesthdf5.test05', test05)
+    tests(6) = test_type('dmtesthdf5.test06', test06)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -109,6 +110,12 @@ contains
 
         allocate (input(N))
 
+        call dm_dummy_node(input)
+
+        do i = 1, N
+            write (input(i)%id, '("node-", i0)') i
+        end do
+
         if (dm_file_exists(FILE_PATH)) then
             print *, 'Deleting ...'
             call dm_file_delete(FILE_PATH)
@@ -130,13 +137,7 @@ contains
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            call dm_dummy_node(input)
-
-            do i = 1, N
-                write (input(i)%id, '("node-", i0)') i
-            end do
-
-            print *, 'Inserting nodes ...'
+            print *, 'Writing nodes ...'
             rc = dm_hdf5_write(group, input)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
@@ -177,6 +178,12 @@ contains
 
         allocate (input(N))
 
+        call dm_dummy_sensor(input)
+
+        do i = 1, N
+            write (input(i)%id, '("sensor-", i0)') i
+        end do
+
         print *, 'Initialising ...'
         rc = dm_hdf5_init()
         call dm_error_out(rc)
@@ -193,13 +200,7 @@ contains
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            call dm_dummy_sensor(input)
-
-            do i = 1, N
-                write (input(i)%id, '("sensor-", i0)') i
-            end do
-
-            print *, 'Inserting sensors ...'
+            print *, 'Writing sensors ...'
             rc = dm_hdf5_write(group, input)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
@@ -240,6 +241,12 @@ contains
 
         allocate (input(N))
 
+        call dm_dummy_target(input)
+
+        do i = 1, N
+            write (input(i)%id, '("target-", i0)') i
+        end do
+
         print *, 'Initialising ...'
         rc = dm_hdf5_init()
         call dm_error_out(rc)
@@ -256,13 +263,7 @@ contains
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            call dm_dummy_target(input)
-
-            do i = 1, N
-                write (input(i)%id, '("target-", i0)') i
-            end do
-
-            print *, 'Inserting targets ...'
+            print *, 'Writing targets ...'
             rc = dm_hdf5_write(group, input)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
@@ -289,4 +290,67 @@ contains
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
     end function test05
+
+    logical function test06() result(stat)
+        !! Tests writing of targets to HDF5 file.
+        integer, parameter :: N = 8
+
+        integer                        :: i, rc
+        type(hdf5_file_type)           :: file
+        type(hdf5_group_type)          :: group
+        type(observ_type), allocatable :: input(:), output(:)
+
+        stat = TEST_FAILED
+
+        allocate (input(N))
+
+        call dm_dummy_observ(input)
+
+        do i = 1, N
+            write (input(i)%name, '("observ-", i0)') i
+        end do
+
+        print *, 'Initialising ...'
+        rc = dm_hdf5_init()
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
+            rc = dm_hdf5_open(file, FILE_PATH)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Opening group ...'
+            rc = dm_hdf5_open(file, group, GROUP_NAME)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Writing observations ...'
+            rc = dm_hdf5_write(group, input)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading observations ...'
+            rc = dm_hdf5_read(group, output)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating observations ...'
+            if (.not. allocated(output)) exit test_block
+            if (size(input) /= size(output)) exit test_block
+            if (.not. all(dm_observ_equals(input, output))) exit test_block
+
+            stat = TEST_PASSED
+        end block test_block
+
+        print *, 'Closing group ...'
+        rc = dm_hdf5_close(group)
+
+        print *, 'Closing file ...'
+        rc = dm_hdf5_close(file)
+
+        print *, 'Clean-up ...'
+        rc = dm_hdf5_destroy()
+    end function test06
 end program dmtesthdf5
