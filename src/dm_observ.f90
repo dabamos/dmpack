@@ -29,8 +29,8 @@ module dm_observ
 
     type, public :: observ_type
         !! Observation with receivers, requests, and responses. Modifying this
-        !! type requires changes in `dm_db`, `dm_html`, `dm_json`, and other
-        !! modules (you probably don't want that!).
+        !! type requires changes in `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`,
+        !! `dm_json`, and several other modules (you probably don’t want that!).
         character(len=OBSERV_ID_LEN)       :: id         = UUID_DEFAULT !! Observation id.
         character(len=NODE_ID_LEN)         :: node_id    = ' '          !! Node id.
         character(len=SENSOR_ID_LEN)       :: sensor_id  = ' '          !! Sensor id.

@@ -3510,6 +3510,8 @@ format, consisting of timestamp (ISO 8601) and real value.
 CSV:: Export and import of beat, log, node, observation, sensor, and target
 data, with custom field separator and quote character. A CSV header is added
 optionally.
+HDF5:: Export and import of node, observation, sensor, and target data as HDF5
+compound data types.
 JSON:: Export of beat, log, node, observation, sensor, and target data as
 JSON objects or JSON arrays.
 JSON Lines:: Export of beat, log, node, observation, sensor, and target data in
@@ -4311,5 +4313,4 @@ image::db_schema_beat.png[beat database schema,align="center"]
 | 124  | `E_LUA_MEM`         | Lua memory allocation error.
 | 125  | `E_LUA_ERROR`       | Lua message handling error.
 | 126  | `E_LUA_FILE`        | Lua file I/O error.
-
 |===
