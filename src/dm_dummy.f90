@@ -143,7 +143,7 @@ contains
         end do
     end subroutine dm_dummy_request
 
-    pure subroutine dm_dummy_sensor(sensor, node_id, id, name)
+    pure elemental subroutine dm_dummy_sensor(sensor, node_id, id, name)
         !! Generates dummy sensor data type.
         type(sensor_type), intent(out)          :: sensor  !! Sensor type.
         character(len=*),  intent(in), optional :: node_id !! Node id.
@@ -173,7 +173,7 @@ contains
         sensor%meta = 'a dummy sensor'
     end subroutine dm_dummy_sensor
 
-    pure subroutine dm_dummy_target(target, id, name)
+    pure elemental subroutine dm_dummy_target(target, id, name)
         !! Generates dummy target data type.
         type(target_type), intent(out)          :: target !! Target type.
         character(len=*),  intent(in), optional :: id     !! Target id.

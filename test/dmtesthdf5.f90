@@ -7,9 +7,9 @@ program dmtesthdf5
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: FILE_PATH_NODE = 'test_nodes.hdf5'
+    character(len=*), parameter :: FILE_PATH = 'test.hdf5'
 
-    integer, parameter :: NTESTS = 4
+    integer, parameter :: NTESTS = 5
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,6 +18,7 @@ program dmtesthdf5
     tests(2) = test_type('dmtesthdf5.test02', test02)
     tests(3) = test_type('dmtesthdf5.test03', test03)
     tests(4) = test_type('dmtesthdf5.test04', test04)
+    tests(5) = test_type('dmtesthdf5.test05', test05)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -58,9 +59,9 @@ contains
 
         stat = TEST_FAILED
 
-        if (dm_file_exists(FILE_PATH_NODE)) then
+        if (dm_file_exists(FILE_PATH)) then
             print *, 'Deleting ...'
-            call dm_file_delete(FILE_PATH_NODE)
+            call dm_file_delete(FILE_PATH)
         end if
 
         print *, 'Initialising ...'
@@ -68,13 +69,13 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'Creating HDF5 file ' // FILE_PATH_NODE // ' ...'
-        rc = dm_hdf5_open(file, FILE_PATH_NODE, create=.true.)
+        print *, 'Creating HDF5 file ' // FILE_PATH // ' ...'
+        rc = dm_hdf5_open(file, FILE_PATH, create=.true.)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Validating ...'
-        rc = dm_hdf5_file_valid(FILE_PATH_NODE)
+        rc = dm_hdf5_file_valid(FILE_PATH)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
@@ -89,23 +90,27 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Deleting ...'
-        if (dm_file_exists(FILE_PATH_NODE)) call dm_file_delete(FILE_PATH_NODE)
+        if (dm_file_exists(FILE_PATH)) call dm_file_delete(FILE_PATH)
 
         stat = TEST_PASSED
     end function test02
 
     logical function test03() result(stat)
         !! Tests writing of nodes to HDF5 file.
-        integer               :: i, rc
-        type(hdf5_file_type)  :: file
-        type(hdf5_group_type) :: group
-        type(node_type)       :: nodes(10)
+        integer, parameter :: N = 8
+
+        integer                      :: i, rc
+        type(hdf5_file_type)         :: file
+        type(hdf5_group_type)        :: group
+        type(node_type), allocatable :: input(:), output(:)
 
         stat = TEST_FAILED
 
-        if (dm_file_exists(FILE_PATH_NODE)) then
+        allocate (input(N))
+
+        if (dm_file_exists(FILE_PATH)) then
             print *, 'Deleting ...'
-            call dm_file_delete(FILE_PATH_NODE)
+            call dm_file_delete(FILE_PATH)
         end if
 
         print *, 'Initialising ...'
@@ -113,52 +118,63 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'Creating HDF5 file ' // FILE_PATH_NODE // ' ...'
-        rc = dm_hdf5_open(file, FILE_PATH_NODE, create=.true.)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
+        test_block: block
+            print *, 'Creating HDF5 file ' // FILE_PATH // ' ...'
+            rc = dm_hdf5_open(file, FILE_PATH, create=.true.)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
 
-        print *, 'Creating group ...'
-        rc = dm_hdf5_open(file, group, 'nodes', create=.true.)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
+            print *, 'Creating group ...'
+            rc = dm_hdf5_open(file, group, 'nodes', create=.true.)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
 
-        call dm_dummy_node(nodes)
+            call dm_dummy_node(input)
 
-        do i = 1, size(nodes)
-            write (nodes(i)%id, '("dummy-node-", i0)') i
-        end do
+            do i = 1, N
+                write (input(i)%id, '("node-", i0)') i
+            end do
 
-        rc = dm_hdf5_insert(group, nodes)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
+            print *, 'Inserting nodes ...'
+            rc = dm_hdf5_write(group, input)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading nodes ...'
+            rc = dm_hdf5_read(group, output)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating nodes ...'
+            if (.not. allocated(output)) exit test_block
+            if (size(input) /= size(output)) exit test_block
+            if (.not. all(dm_node_equals(input, output))) exit test_block
+
+            stat = TEST_PASSED
+        end block test_block
 
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
-
-        stat = TEST_PASSED
     end function test03
 
     logical function test04() result(stat)
-        !! Tests reading of nodes from HDF5 file.
-        integer                      :: i, rc
-        type(hdf5_file_type)         :: file
-        type(hdf5_group_type)        :: group
-        type(node_type), allocatable :: nodes(:)
+        !! Tests writing of sensors to HDF5 file.
+        integer, parameter :: N = 8
+
+        integer                        :: i, rc
+        type(hdf5_file_type)           :: file
+        type(hdf5_group_type)          :: group
+        type(sensor_type), allocatable :: input(:), output(:)
 
         stat = TEST_FAILED
+
+        allocate (input(N))
 
         print *, 'Initialising ...'
         rc = dm_hdf5_init()
@@ -166,41 +182,110 @@ contains
         if (dm_is_error(rc)) return
 
         test_block: block
-            print *, 'Opening HDF5 file ' // FILE_PATH_NODE // ' ...'
-            rc = dm_hdf5_open(file, FILE_PATH_NODE)
+            print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
+            rc = dm_hdf5_open(file, FILE_PATH)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Opening group ...'
-            rc = dm_hdf5_open(file, group, 'nodes')
+            print *, 'Creating group ...'
+            rc = dm_hdf5_open(file, group, 'sensors', create=.true.)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading nodes ...'
-            rc = dm_hdf5_read(group, nodes)
-            call dm_error_out(rc)
-            if (dm_is_error(rc)) exit test_block
+            call dm_dummy_sensor(input)
 
-            do i = 1, size(nodes)
-                print *, i, nodes(i)%id
+            do i = 1, N
+                write (input(i)%id, '("sensor-", i0)') i
             end do
+
+            print *, 'Inserting sensors ...'
+            rc = dm_hdf5_write(group, input)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading sensors ...'
+            rc = dm_hdf5_read(group, output)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating sensors ...'
+            if (.not. allocated(output)) exit test_block
+            if (size(input) /= size(output)) exit test_block
+            if (.not. all(dm_sensor_equals(input, output))) exit test_block
 
             stat = TEST_PASSED
         end block test_block
 
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) stat = TEST_FAILED
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) stat = TEST_FAILED
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) stat = TEST_FAILED
     end function test04
+
+    logical function test05() result(stat)
+        !! Tests writing of targets to HDF5 file.
+        integer, parameter :: N = 8
+
+        integer                        :: i, rc
+        type(hdf5_file_type)           :: file
+        type(hdf5_group_type)          :: group
+        type(target_type), allocatable :: input(:), output(:)
+
+        stat = TEST_FAILED
+
+        allocate (input(N))
+
+        print *, 'Initialising ...'
+        rc = dm_hdf5_init()
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
+            rc = dm_hdf5_open(file, FILE_PATH)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Creating group ...'
+            rc = dm_hdf5_open(file, group, 'targets', create=.true.)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            call dm_dummy_target(input)
+
+            do i = 1, N
+                write (input(i)%id, '("target-", i0)') i
+            end do
+
+            print *, 'Inserting targets ...'
+            rc = dm_hdf5_write(group, input)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading targets ...'
+            rc = dm_hdf5_read(group, output)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating targets ...'
+            if (.not. allocated(output)) exit test_block
+            if (size(input) /= size(output)) exit test_block
+            if (.not. all(dm_target_equals(input, output))) exit test_block
+
+            stat = TEST_PASSED
+        end block test_block
+
+        print *, 'Closing group ...'
+        rc = dm_hdf5_close(group)
+
+        print *, 'Closing file ...'
+        rc = dm_hdf5_close(file)
+
+        print *, 'Clean-up ...'
+        rc = dm_hdf5_destroy()
+    end function test05
 end program dmtesthdf5
