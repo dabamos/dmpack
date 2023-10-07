@@ -189,13 +189,13 @@ Then, run:
 
 ```
 $ cd dmpack/
-$ fpm build --flag "-I/usr/local/include -D__FreeBSD__" --profile release
-$ doas fpm install --prefix /usr/local
+$ fpm build --profile release --flag "-D__FreeBSD__ -I/usr/local/include"
+$ fpm install
 ```
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually.
+manually. The library and programs will be installed to `~/.local` by default.
 
 ### Linux
 
@@ -217,6 +217,8 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 alternatively, if raster image formats are not desired (SVG output only).
 
+#### Make
+
 Clone the DMPACK repository, and execute the Makefile:
 
 ```
@@ -235,6 +237,26 @@ To install to a custom directory, run:
 
 ```
 $ sudo make install PREFIX=/opt
+```
+
+#### Fortran Package Manager
+
+Support for the Fortran Package Manager is experimental. Change to the cloned or
+fetched repository, then run:
+
+```
+$ cd dmpack/
+$ fpm build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5`"
+$ fpm install
+```
+
+The library and programs will be installed to `~/.local` by default. If the
+compilation fails with an error message that `-llua-5.4` cannot be found, update
+the build manifests first:
+
+```
+$ sed -i "s/lua-5/lua5/g" fpm.toml
+$ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 ```
 
 ### Updates

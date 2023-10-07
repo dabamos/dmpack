@@ -72,7 +72,7 @@ contains
         call dm_system_uname(uname)
 
         print '("build.compiler: ", a)', compiler_version()
-        print '("build.args: ", a)', compiler_options()
+        print '("build.options: ", a)', compiler_options()
 
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
