@@ -788,7 +788,7 @@ contains
         integer           :: level
         type(anchor_type) :: anchor
 
-        level = max(min(LOG_NLEVEL, log%level), LOG_NONE)
+        level = max(LOG_NONE, min(LOG_NLEVEL, log%level))
 
         ! Node id.
         if (present(prefix_node) .and. len_trim(log%node_id) > 0) then
@@ -861,9 +861,10 @@ contains
         integer,          intent(in), optional :: max_len !! Max. log message length.
         character(len=:), allocatable          :: html    !! Generated HTML.
 
-        integer           :: i, level, max_len_
-        logical           :: is_anchor, node_
-        type(anchor_type) :: anchor
+        character(len=LOG_MESSAGE_LEN) :: message
+        integer                        :: i, level, max_len_, min_len
+        logical                        :: is_anchor, node_
+        type(anchor_type)              :: anchor
 
         node_ = .true.
         if (present(node)) node_ = node
@@ -897,15 +898,22 @@ contains
 
             if (node_) html = html // H_TD // dm_html_encode(logs(i)%node_id) // H_TD_END
 
-            level = max(min(LOG_NLEVEL, logs(i)%level), LOG_NONE)
+            level = max(LOG_NONE, min(LOG_NLEVEL, logs(i)%level))
 
-            max_len_ = len_trim(logs(i)%message)
-            if (present(max_len)) max_len_ = min(max_len_, max_len)
+            min_len  = len_trim(logs(i)%message)
+            max_len_ = min_len
+            if (present(max_len)) max_len_ = max(3, max_len)
+
+            if (min_len > max_len_) then
+                message = logs(i)%message(1:max_len_ - 3) // '...'
+            else
+                message = logs(i)%message
+            end if
 
             html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
                    H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // &
                    H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
-                   H_TD // dm_html_encode(logs(i)%message(1:max_len_)) // H_TD_END // H_TR_END
+                   H_TD // dm_html_encode(message) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END

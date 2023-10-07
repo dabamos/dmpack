@@ -315,7 +315,7 @@ contains
                 exit log_if
             end if
 
-            call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
+            call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
         end if log_if
 
         if (has_db_log) rc = dm_db_close(db)
@@ -621,7 +621,7 @@ contains
                 end if
 
                 if (nlogs > 0) then
-                    call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
+                    call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
                 else
                     call dm_cgi_out(dm_html_p('No logs found.'))
                 end if
@@ -867,7 +867,7 @@ contains
             call dm_cgi_out(dm_html_heading(2, 'Logs'))
 
             if (nlogs > 0) then
-                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id='))
+                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
             else
                 call dm_cgi_out(dm_html_p('No associated logs found.'))
             end if
