@@ -48,7 +48,7 @@ module dm_log
         character(len=LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
     end type log_type
 
-    integer, parameter, public :: LOG_SIZE = storage_size(log_type(), kind=i8) / 8 !! Size of `log_type` in bytes.
+    integer, parameter, public :: LOG_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
 
     interface dm_log_valid
         !! Generic log validation function.

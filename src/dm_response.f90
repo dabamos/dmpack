@@ -20,7 +20,7 @@ module dm_response
         real(kind=r8)                    :: value = 0.0_r8 !! Response value.
     end type response_type
 
-    integer, parameter, public :: RESPONSE_SIZE = storage_size(response_type(), kind=i8) / 8 !! Size of `response_type` in bytes.
+    integer, parameter, public :: RESPONSE_SIZE = storage_size(response_type()) / 8 !! Size of `response_type` in bytes.
 
     interface operator (==)
         !! Returns whether requests are equal.

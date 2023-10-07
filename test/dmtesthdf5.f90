@@ -7,7 +7,8 @@ program dmtesthdf5
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: FILE_PATH = 'test.hdf5'
+    character(len=*), parameter :: FILE_PATH  = 'test.hdf5'
+    character(len=*), parameter :: GROUP_NAME = 'timeseries'
 
     integer, parameter :: NTESTS = 5
 
@@ -125,7 +126,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating group ...'
-            rc = dm_hdf5_open(file, group, 'nodes', create=.true.)
+            rc = dm_hdf5_open(file, group, GROUP_NAME, create=.true.)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
@@ -187,8 +188,8 @@ contains
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Creating group ...'
-            rc = dm_hdf5_open(file, group, 'sensors', create=.true.)
+            print *, 'Opening group ...'
+            rc = dm_hdf5_open(file, group, GROUP_NAME)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
@@ -250,8 +251,8 @@ contains
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Creating group ...'
-            rc = dm_hdf5_open(file, group, 'targets', create=.true.)
+            print *, 'Opening group ...'
+            rc = dm_hdf5_open(file, group, GROUP_NAME)
             call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 

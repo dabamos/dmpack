@@ -47,7 +47,7 @@ module dm_observ
         type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS) !! Array of requests.
     end type observ_type
 
-    integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type(), kind=i8) / 8 !! Size of `observ_type` in bytes.
+    integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
 
     ! ******************************************************************
     ! OBSERVATION VIEW.
@@ -68,8 +68,7 @@ module dm_observ
         real(kind=r8)                    :: response_value    = 0.0_r8       !! Response value.
     end type observ_view_type
 
-    integer(kind=i8), parameter, public :: OBSERV_VIEW_SIZE = &
-        storage_size(observ_view_type(), kind=i8) / 8 !! Size of `observ_view_type` in bytes.
+    integer, parameter, public :: OBSERV_VIEW_SIZE = storage_size(observ_view_type()) / 8 !! Size of `observ_view_type` in bytes.
 
     interface operator (==)
         !! Returns whether observations or observation views are equal.

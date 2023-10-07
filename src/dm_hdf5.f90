@@ -16,10 +16,10 @@ module dm_hdf5
     private
 
     ! HDF5 data set names of DMPACK derived types.
-    character(len=*), parameter, public :: HDF_DATASET_NODE   = 'node_type'   !! Name of node data set.
-    character(len=*), parameter, public :: HDF_DATASET_OBSERV = 'observ_type' !! Name of observation data set.
-    character(len=*), parameter, public :: HDF_DATASET_SENSOR = 'sensor_type' !! Name of sensor data set.
-    character(len=*), parameter, public :: HDF_DATASET_TARGET = 'target_type' !! Name of target data set.
+    character(len=*), parameter, public :: HDF_DATA_SET_NODE   = 'nodes'   !! Default name of node data set.
+    character(len=*), parameter, public :: HDF_DATA_SET_OBSERV = 'observs' !! Default name of observation data set.
+    character(len=*), parameter, public :: HDF_DATA_SET_SENSOR = 'sensors' !! Default name of sensor data set.
+    character(len=*), parameter, public :: HDF_DATA_SET_TARGET = 'targets' !! Default name of target data set.
 
     ! HDF5 access modes.
     integer, parameter, public :: HDF5_RDONLY = 0 !! Read-only access.
@@ -352,7 +352,7 @@ contains
         rc = E_NONE
     end function hdf5_open_group
 
-    integer function hdf5_read_nodes(id, nodes) result(rc)
+    integer function hdf5_read_nodes(id, nodes, data_set) result(rc)
         !! Reads array of `node_type` from compound data in HDF5 file.
         !!
         !! The function returns the following error codes:
@@ -360,8 +360,9 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if the allocation of array `nodes` failed.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),                  intent(inout) :: id       !! HDF5 file or group type.
-        type(node_type), allocatable, target, intent(out)   :: nodes(:) !! Node type array.
+        class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
+        type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
+        character(len=*),                     intent(in), optional :: data_set !! Name of data set (or `HDF5_DATA_SET_NODE`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -379,7 +380,11 @@ contains
 
         hdf5_block: block
             ! Open the data set.
-            call h5dopen_f(id%id, HDF_DATASET_NODE, set_id, stat)
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF_DATA_SET_NODE, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Get data space.
@@ -413,7 +418,7 @@ contains
         if (set_id > -1)   call h5dclose_f(set_id, stat)
     end function hdf5_read_nodes
 
-    integer function hdf5_read_sensors(id, sensors) result(rc)
+    integer function hdf5_read_sensors(id, sensors, data_set) result(rc)
         !! Reads array of `sensor_type` from compound data in HDF5 file.
         !!
         !! The function returns the following error codes:
@@ -421,8 +426,9 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if the allocation of array `sensors` failed.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),                    intent(inout) :: id         !! HDF5 file or group type.
-        type(sensor_type), allocatable, target, intent(out)   :: sensors(:) !! Sensor type array.
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
+        character(len=*),                       intent(in), optional :: data_set   !! Name of data set (or `HDF5_DATA_SET_SENSOR`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -440,7 +446,11 @@ contains
 
         hdf5_block: block
             ! Open the data set.
-            call h5dopen_f(id%id, HDF_DATASET_SENSOR, set_id, stat)
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF_DATA_SET_SENSOR, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Get data space.
@@ -474,7 +484,7 @@ contains
         if (set_id > -1)   call h5dclose_f(set_id, stat)
     end function hdf5_read_sensors
 
-    integer function hdf5_read_targets(id, targets) result(rc)
+    integer function hdf5_read_targets(id, targets, data_set) result(rc)
         !! Reads array of `target_type` from compound data in HDF5 file.
         !!
         !! The function returns the following error codes:
@@ -482,8 +492,9 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if the allocation of array `targets` failed.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),                    intent(inout) :: id         !! HDF5 file or group type.
-        type(target_type), allocatable, target, intent(out)   :: targets(:) !! Target type array.
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
+        character(len=*),                       intent(in), optional :: data_set   !! Name of data set (or `HDF5_DATA_SET_TARGET`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -501,7 +512,11 @@ contains
 
         hdf5_block: block
             ! Open the data set.
-            call h5dopen_f(id%id, HDF_DATASET_TARGET, set_id, stat)
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF_DATA_SET_TARGET, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Get data space.
@@ -684,7 +699,7 @@ contains
         rc = E_NONE
     end function hdf5_type_target
 
-    integer function hdf5_write_nodes(id, nodes) result(rc)
+    integer function hdf5_write_nodes(id, nodes, data_set) result(rc)
         !! Creates HDF5 data space `node_type` and writes nodes to HDF5 file or
         !! group.
         !!
@@ -693,8 +708,9 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed node array if of size 0.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),     intent(inout) :: id       !! HDF5 file or group type.
-        type(node_type), target, intent(inout) :: nodes(:) !! Node type array.
+        class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
+        type(node_type), target, intent(inout)        :: nodes(:) !! Node type array.
+        character(len=*),        intent(in), optional :: data_set !! Name of data set (or `HDF5_DATA_SET_NODE`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -724,7 +740,11 @@ contains
             if (dm_is_error(rc)) exit hdf5_block
 
             ! Create the data set in the data space.
-            call h5dcreate_f(id%id, HDF_DATASET_NODE, type_id, space_id, set_id, stat)
+            if (present(data_set)) then
+                call h5dcreate_f(id%id, data_set, type_id, space_id, set_id, stat)
+            else
+                call h5dcreate_f(id%id, HDF_DATA_SET_NODE, type_id, space_id, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Write data to the data set.
@@ -741,7 +761,7 @@ contains
         if (set_id > -1)   call h5dclose_f(set_id, stat)
     end function hdf5_write_nodes
 
-    integer function hdf5_write_sensors(id, sensors) result(rc)
+    integer function hdf5_write_sensors(id, sensors, data_set) result(rc)
         !! Creates HDF5 data space `sensor_type` and writes sensors to HDF5
         !! file or group.
         !!
@@ -750,8 +770,9 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed sensor array if of size 0.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),       intent(inout) :: id         !! HDF5 file or group type.
-        type(sensor_type), target, intent(inout) :: sensors(:) !! Sensor type array.
+        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
+        type(sensor_type), target, intent(inout)        :: sensors(:) !! Sensor type array.
+        character(len=*),          intent(in), optional :: data_set   !! Name of data set (or `HDF5_DATA_SET_SENSOR`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -781,7 +802,11 @@ contains
             if (dm_is_error(rc)) exit hdf5_block
 
             ! Create the data set in the data space.
-            call h5dcreate_f(id%id, HDF_DATASET_SENSOR, type_id, space_id, set_id, stat)
+            if (present(data_set)) then
+                call h5dcreate_f(id%id, data_set, type_id, space_id, set_id, stat)
+            else
+                call h5dcreate_f(id%id, HDF_DATA_SET_SENSOR, type_id, space_id, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Write data to the data set.
@@ -798,7 +823,7 @@ contains
         if (set_id > -1)   call h5dclose_f(set_id, stat)
     end function hdf5_write_sensors
 
-    integer function hdf5_write_targets(id, targets) result(rc)
+    integer function hdf5_write_targets(id, targets, data_set) result(rc)
         !! Creates HDF5 data space `target_type` and writes targets to HDF5
         !! file or group.
         !!
@@ -807,8 +832,9 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed target array if of size 0.
         !! * `E_HDF5` if the HDF5 library calls failed.
-        class(hdf5_id_type),       intent(inout) :: id         !! HDF5 file or group type.
-        type(target_type), target, intent(inout) :: targets(:) !! Target type array.
+        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
+        type(target_type), target, intent(inout)        :: targets(:) !! Target type array.
+        character(len=*),          intent(in), optional :: data_set   !! Name of data set (or `HDF5_DATA_SET_TARGET`).
 
         integer               :: stat
         integer(kind=hid_t)   :: set_id, space_id, type_id
@@ -838,7 +864,11 @@ contains
             if (dm_is_error(rc)) exit hdf5_block
 
             ! Create the data set in the data space.
-            call h5dcreate_f(id%id, HDF_DATASET_TARGET, type_id, space_id, set_id, stat)
+            if (present(data_set)) then
+                call h5dcreate_f(id%id, data_set, type_id, space_id, set_id, stat)
+            else
+                call h5dcreate_f(id%id, HDF_DATA_SET_TARGET, type_id, space_id, set_id, stat)
+            end if
             if (stat < 0) exit hdf5_block
 
             ! Write data to the data set.

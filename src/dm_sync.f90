@@ -23,8 +23,8 @@ module dm_sync
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6
 
     character(len=*), parameter, public :: SYNC_TYPE_NAMES(0:SYNC_NTYPES - 1) = [ &
-        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', &
-        'observ', 'log' ] !! Array of sync type names.
+        character(len=SYNC_TYPE_NAME_LEN) :: &
+        'none', 'node', 'sensor', 'target', 'observ', 'log' ] !! Array of sync type names.
 
     type, public :: sync_type
         !! Log, observation, node, sensor and target synchronisation type.
@@ -35,7 +35,7 @@ module dm_sync
         integer                    :: nattempts = 0              !! Number of (unsuccessful) attempts to transfer.
     end type sync_type
 
-    integer, parameter, public :: SYNC_SIZE = storage_size(sync_type(), kind=i8) / 8 !! Size of `sync_type` in bytes.
+    integer, parameter, public :: SYNC_SIZE = storage_size(sync_type()) / 8 !! Size of `sync_type` in bytes.
 
     interface operator (==)
         !! Returns whether sync types are equal.

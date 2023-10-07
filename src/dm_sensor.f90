@@ -42,7 +42,7 @@ module dm_sensor
         character(len=SENSOR_META_LEN) :: meta     = ' '              !! Meta information (optional).
     end type sensor_type
 
-    integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type(), kind=i8) / 8 !! Size of `sensor_type` in bytes.
+    integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
 
     interface operator (==)
         !! Returns whether sensors are equal.
