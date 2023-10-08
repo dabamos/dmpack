@@ -19,7 +19,8 @@ contains
     pure elemental integer(kind=i8) function dm_hash_djb2(str) result(hash)
         !! Dan Bernstein’s DJB2 non-cryptographic hash algorithm.
         character(len=*), intent(in) :: str !! Input string.
-        integer                      :: i
+
+        integer :: i
 
         hash = DJB2_OFFSET
 
@@ -31,7 +32,8 @@ contains
     pure elemental integer(kind=i8) function dm_hash_djb2a(str) result(hash)
         !! Dan Bernstein’s DJB2a (XOR) non-cryptographic hash algorithm.
         character(len=*), intent(in) :: str !! Input string.
-        integer                      :: i
+
+        integer :: i
 
         hash = DJB2_OFFSET
 

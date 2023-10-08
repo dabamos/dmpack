@@ -1221,14 +1221,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(13a)', iostat=stat) &
-                '#node_id',  s, &
-                'address',   s, &
-                'time_sent', s, &
-                'time_recv', s, &
-                'error',     s, &
-                'interval',  s, &
-                'uptime'
+            write (unit_, '(a)', iostat=stat) dm_csv_header_beat(s)
             if (stat /= 0) return
         end if
 
@@ -1297,7 +1290,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(a2, 2(a1))', iostat=stat) '#x',  s, 'y'
+            write (unit_, '(a)', iostat=stat) dm_csv_header_data_point(s)
             if (stat /= 0) return
         end if
 
@@ -1359,17 +1352,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(19a)', iostat=stat) &
-                '#id',       s, &
-                'level',     s, &
-                'error',     s, &
-                'timestamp', s, &
-                'node_id',   s, &
-                'sensor_id', s, &
-                'target_id', s, &
-                'observ_id', s, &
-                'soure',     s, &
-                'message'
+            write (unit_, '(a)', iostat=stat) dm_csv_header_log(s)
             if (stat /= 0) return
         end if
 
@@ -1441,7 +1424,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(5a)', iostat=stat) '#id', s, 'name', s , 'meta'
+            write (unit_, '(a)', iostat=stat) dm_csv_header_node(s)
             if (stat /= 0) return
         end if
 
@@ -1506,54 +1489,8 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(22a)', advance='no', iostat=stat) &
-                '#id',        s, &
-                'node_id',    s, &
-                'sensor_id',  s, &
-                'target_id',  s, &
-                'name',       s, &
-                'timestamp',  s, &
-                'tty',        s, &
-                'priority',   s, &
-                'error',      s, &
-                'next',       s, &
-                'nreceivers', s
+            write (unit_, '(a)', iostat=stat) dm_csv_header_observ(s)
             if (stat /= 0) return
-
-            do i = 1, OBSERV_MAX_NRECEIVERS
-                write (unit_, '("receivers(", i0, ")", a)', advance='no', iostat=stat) i, s
-                if (stat /= 0) return
-            end do
-
-            write (unit_, '("nrequests")', advance='no', iostat=stat)
-            if (stat /= 0) return
-
-            do i = 1, OBSERV_MAX_NREQUESTS
-                write (unit_, '(a, 10(a, i0, 2a), a, i0, a)', advance='no', iostat=stat) s, &
-                    'requests(', i, ')%timestamp',  s, &
-                    'requests(', i, ')%request',    s, &
-                    'requests(', i, ')%response',   s, &
-                    'requests(', i, ')%delimiter',  s, &
-                    'requests(', i, ')%pattern',    s, &
-                    'requests(', i, ')%delay',      s, &
-                    'requests(', i, ')%error',      s, &
-                    'requests(', i, ')%retries',    s, &
-                    'requests(', i, ')%state',      s, &
-                    'requests(', i, ')%timeout',    s, &
-                    'requests(', i, ')%nresponses'
-                if (stat /= 0) return
-
-                do j = 1, REQUEST_MAX_NRESPONSES
-                    write (unit_, '(a, 3(2(a, i0), 2a), 2(a, i0), a)', advance='no', iostat=stat) s, &
-                        'requests(', i, ')%responses(', j, ')%name',  s, &
-                        'requests(', i, ')%responses(', j, ')%unit',  s, &
-                        'requests(', i, ')%responses(', j, ')%error', s, &
-                        'requests(', i, ')%responses(', j, ')%value'
-                    if (stat /= 0) return
-                end do
-            end do
-
-            write (unit_, *)
         end if
 
         write (unit_, '(14a, 4(i0, a), i0)', advance='no', iostat=stat) &
@@ -1677,13 +1614,7 @@ contains
         if (present(separator)) s = separator
 
         if (header_) then
-            write (unit_, '(11a)', iostat=stat) &
-                '#node_id', s, &
-                'id',       s, &
-                'type',     s, &
-                'name',     s, &
-                'sn',       s, &
-                'meta'
+            write (unit_, '(a)', iostat=stat) dm_csv_header_sensor(s)
             if (stat /= 0) return
         end if
 

@@ -171,7 +171,9 @@ contains
     end function dm_tty_byte_size_from_value
 
     integer function dm_tty_flush(tty, input, output) result(rc)
-        !! Flushes TTY input and output buffer.
+        !! Flushes TTY input and output buffer. Returns `E_INVALID` if the
+        !! passed `tty` type is invalid, or `E_SYSTEM` if the system call
+        !! failed.
         use :: unix, only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
         type(tty_type), intent(inout)        :: tty    !! TTY type.
         logical,        intent(in), optional :: input  !! Flush input buffer.
@@ -213,6 +215,14 @@ contains
     integer function dm_tty_open(tty) result(rc)
         !! Opens TTY/PTS device in set access mode and applies serial port
         !! attributes.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if the TTY is already connected.
+        !! * `E_INVALID` if the TTY flags are invalid.
+        !! * `E_IO` if opening the TTY failed.
+        !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers
+        !!   failed.
         use :: unix
         type(tty_type), intent(inout) :: tty !! TTY type.
 
@@ -332,7 +342,8 @@ contains
     end function dm_tty_read_raw
 
     integer function dm_tty_set_attributes(tty) result(rc)
-        !! Sets terminal attributes.
+        !! Sets terminal attributes. Returns `E_INVALID` if the passed TTY is
+        !! invalid, or `E_SYSTEM` if one of the system calls failed.
         use :: unix
         type(tty_type), intent(inout) :: tty !! TTY type.
 
@@ -596,7 +607,7 @@ contains
     end function dm_tty_valid_timeout
 
     integer function dm_tty_write(tty, bytes) result(rc)
-        !! Writes given string to TTY.
+        !! Writes given string to TTY. Returns `E_WRITE` on error.
         use :: unix, only: c_write
         type(tty_type),   intent(inout) :: tty   !! TTY type.
         character(len=*), intent(in)    :: bytes !! Bytes to send.

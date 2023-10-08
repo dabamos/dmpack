@@ -12,7 +12,7 @@ module dm_sem
     integer, parameter, public :: SEM_NAME_LEN = 32           !! Max. semaphore identifier length.
 
     type, public :: sem_type
-        !! Named semaphore type.
+        !! Opaque named semaphore type.
         private
         character(len=SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
         type(c_ptr)                 :: ptr  = c_null_ptr !! C pointer to named semaphore.

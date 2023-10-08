@@ -101,13 +101,12 @@ contains
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     integer function nml_from_beat(beat, str) result(rc)
-        !! Writes beat namelist to string. The passed character string
-        !! must have a minimum length of `NML_BEAT_LEN`.
+        !! Writes beat namelist to string. The passed character string must have
+        !! a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
         type(beat_type),  intent(inout) :: beat !! Beat type.
         character(len=*), intent(inout) :: str  !! Output string.
 
         integer :: stat
-
         namelist /DMBEAT/ beat
 
         rc = E_WRITE
@@ -118,13 +117,14 @@ contains
     end function nml_from_beat
 
     integer function nml_from_beat_alloc(beat, str, n) result(rc)
-        !! Writes beat namelist to allocatable string of given length.
+        !! Writes beat namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(beat_type),               intent(inout) :: beat !! Beat type.
         character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
         integer,                       intent(in)    :: n    !! String length.
 
         integer :: stat
-
         namelist /DMBEAT/ beat
 
         rc = E_ALLOC
@@ -139,13 +139,13 @@ contains
     end function nml_from_beat_alloc
 
     integer function nml_from_log(log, str) result(rc)
-        !! Writes log namelist to string. The passed character string
-        !! must have a minimum length of `NML_LOG_LEN`.
+        !! Writes log namelist to string. The passed character string must
+        !! have a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on
+        !! error.
         type(log_type),   intent(inout) :: log !! Log type.
         character(len=*), intent(inout) :: str !! Output string.
 
         integer :: stat
-
         namelist /DMLOG/ log
 
         rc = E_WRITE
@@ -156,13 +156,14 @@ contains
     end function nml_from_log
 
     integer function nml_from_log_alloc(log, str, n) result(rc)
-        !! Writes log namelist to allocatable string of given length.
+        !! Writes log namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(log_type),                intent(inout) :: log !! Log type.
         character(len=:), allocatable, intent(out)   :: str !! Allocatable output string.
         integer,                       intent(in)    :: n   !! String length.
 
         integer :: stat
-
         namelist /DMLOG/ log
 
         rc = E_ALLOC
@@ -177,13 +178,13 @@ contains
     end function nml_from_log_alloc
 
     integer function nml_from_node(node, str) result(rc)
-        !! Writes node namelist to string. The passed character string
-        !! must have a minimum length of `NML_NODE_LEN`.
+        !! Writes node namelist to string. The passed character string must
+        !! have a minimum length of `NML_NODE_LEN`. Returns `E_WRITE` on
+        !! error.
         type(node_type),  intent(inout) :: node !! Node type.
         character(len=*), intent(inout) :: str  !! Output string.
 
         integer :: stat
-
         namelist /DMNODE/ node
 
         rc = E_WRITE
@@ -194,13 +195,14 @@ contains
     end function nml_from_node
 
     integer function nml_from_node_alloc(node, str, n) result(rc)
-        !! Writes node namelist to allocatable string of given length.
+        !! Writes node namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(node_type),               intent(inout) :: node !! Node type.
         character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
         integer,                       intent(in)    :: n    !! String length.
 
         integer :: stat
-
         namelist /DMNODE/ node
 
         rc = E_ALLOC
@@ -216,12 +218,12 @@ contains
 
     integer function nml_from_observ(observ, str) result(rc)
         !! Writes observation namelist to string. The passed character string
-        !! must have a minimum length of `NML_OBSERV_LEN`.
+        !! must have a minimum length of `NML_OBSERV_LEN`. Returns `E_WRITE`
+        !! on error.
         type(observ_type), intent(inout) :: observ !! Observation type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
         integer :: stat
-
         namelist /DMOBSERV/ observ
 
         rc = E_WRITE
@@ -233,12 +235,13 @@ contains
 
     integer function nml_from_observ_alloc(observ, str, n) result(rc)
         !! Writes observation namelist to allocatable string of given length.
+        !! Returns `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(observ_type),             intent(inout) :: observ !! Observation type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
 
         integer :: stat
-
         namelist /DMOBSERV/ observ
 
         rc = E_ALLOC
@@ -254,12 +257,12 @@ contains
 
     integer function nml_from_sensor(sensor, str) result(rc)
         !! Writes sensor namelist to string. The passed character string
-        !! must have a minimum length of `NML_SENSOR_LEN`.
+        !! must have a minimum length of `NML_SENSOR_LEN`. Returns `E_WRITE`
+        !! on error.
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
         integer :: stat
-
         namelist /DMSENSOR/ sensor
 
         rc = E_WRITE
@@ -270,13 +273,14 @@ contains
     end function nml_from_sensor
 
     integer function nml_from_sensor_alloc(sensor, str, n) result(rc)
-        !! Writes sensor namelist to allocatable string of given length.
+        !! Writes sensor namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(sensor_type),             intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
 
         integer :: stat
-
         namelist /DMSENSOR/ sensor
 
         rc = E_ALLOC
@@ -292,12 +296,12 @@ contains
 
     integer function nml_from_target(target, str) result(rc)
         !! Writes target namelist to string. The passed character string
-        !! must have a minimum length of `NML_TARGET_LEN`.
+        !! must have a minimum length of `NML_TARGET_LEN`. Returns `E_WRITE`
+        !! on error.
         type(target_type), intent(inout) :: target !! Target type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
         integer :: stat
-
         namelist /DMTARGET/ target
 
         rc = E_WRITE
@@ -308,13 +312,14 @@ contains
     end function nml_from_target
 
     integer function nml_from_target_alloc(target, str, n) result(rc)
-        !! Writes target namelist to allocatable string of given length.
+        !! Writes target namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! serialisation failed.
         type(target_type),             intent(inout) :: target !! Target type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
 
         integer :: stat
-
         namelist /DMTARGET/ target
 
         rc = E_ALLOC
@@ -329,7 +334,7 @@ contains
     end function nml_from_target_alloc
 
     integer function nml_read_log(log, unit) result(rc)
-        !! Reads log from file or standard input.
+        !! Reads log from file or standard input. Returns `E_READ` on error.
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
@@ -345,7 +350,7 @@ contains
     end function nml_read_log
 
     integer function nml_read_observ(observ, unit) result(rc)
-        !! Reads observation from file or standard input.
+        !! Reads observation from file or standard input. Returns `E_READ` on error.
         type(observ_type), intent(inout)        :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -361,11 +366,11 @@ contains
     end function nml_read_observ
 
     impure elemental integer function nml_to_beat(str, beat) result(rc)
-        !! Reads beat from namelist string.
+        !! Reads beat from namelist string. Returns `E_READ` on error.
         character(len=*), intent(in)  :: str  !! Beat namelist data.
         type(beat_type),  intent(out) :: beat !! Beat type.
-        integer                       :: stat
 
+        integer :: stat
         namelist /DMBEAT/ beat
 
         rc = E_READ
@@ -375,11 +380,11 @@ contains
     end function nml_to_beat
 
     impure elemental integer function nml_to_log(str, log) result(rc)
-        !! Reads log from namelist string.
+        !! Reads log from namelist string. Returns `E_READ` on error.
         character(len=*), intent(in)  :: str !! Log namelist data.
         type(log_type),   intent(out) :: log !! Log type.
-        integer                       :: stat
 
+        integer :: stat
         namelist /DMLOG/ log
 
         rc = E_READ
@@ -389,11 +394,11 @@ contains
     end function nml_to_log
 
     impure elemental integer function nml_to_node(str, node) result(rc)
-        !! Reads node from namelist string.
+        !! Reads node from namelist string. Returns `E_READ` on error.
         character(len=*), intent(in)  :: str  !! Node namelist data.
         type(node_type),  intent(out) :: node !! Node type.
-        integer                       :: stat
 
+        integer :: stat
         namelist /DMNODE/ node
 
         rc = E_READ
@@ -403,11 +408,11 @@ contains
     end function nml_to_node
 
     impure elemental integer function nml_to_observ(str, observ) result(rc)
-        !! Reads observation from namelist string.
+        !! Reads observation from namelist string. Returns `E_READ` on error.
         character(len=*),  intent(in)  :: str    !! Observation namelist data.
         type(observ_type), intent(out) :: observ !! Observation type.
-        integer                        :: stat
 
+        integer :: stat
         namelist /DMOBSERV/ observ
 
         rc = E_READ
@@ -417,11 +422,11 @@ contains
     end function nml_to_observ
 
     impure elemental integer function nml_to_sensor(str, sensor) result(rc)
-        !! Reads sensor from namelist string.
+        !! Reads sensor from namelist string. Returns `E_READ` on error.
         character(len=*),  intent(in)  :: str    !! Sensor namelist data.
         type(sensor_type), intent(out) :: sensor !! Sensor type.
-        integer                        :: stat
 
+        integer :: stat
         namelist /DMSENSOR/ sensor
 
         rc = E_READ
@@ -431,11 +436,11 @@ contains
     end function nml_to_sensor
 
     impure elemental integer function nml_to_target(str, target) result(rc)
-        !! Reads target from namelist string.
+        !! Reads target from namelist string. Returns `E_READ` on error.
         character(len=*),  intent(in)  :: str    !! Node namelist data.
         type(target_type), intent(out) :: target !! Target type.
-        integer                        :: stat
 
+        integer :: stat
         namelist /DMTARGET/ target
 
         rc = E_READ
@@ -445,7 +450,8 @@ contains
     end function nml_to_target
 
     integer function nml_write_log(log, unit) result(rc)
-        !! Writes log namelist to file or standard output.
+        !! Writes log namelist to file or standard output. Returns
+        !! `E_WRITE` on error.
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
@@ -461,7 +467,8 @@ contains
     end function nml_write_log
 
     integer function nml_write_observ(observ, unit) result(rc)
-        !! Writes observation namelist to file or standard output.
+        !! Writes observation namelist to file or standard output. Returns
+        !! `E_WRITE` on error.
         type(observ_type), intent(inout)        :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 

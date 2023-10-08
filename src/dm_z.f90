@@ -16,6 +16,12 @@ module dm_z
 contains
     integer function dm_z_compress(input, output, output_size) result(rc)
         !! Compresses input string using the zlib utility function.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if the allocation of the output string failed.
+        !! * `E_EMPTY` if the compressed size is 0.
+        !! * `E_ERROR` if the compression failed.
         character(len=*),              intent(inout)         :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)           :: output      !! Output bytes.
         integer(kind=i8),              intent(out), optional :: output_size !! Actual output length.
@@ -42,7 +48,8 @@ contains
     end function dm_z_compress
 
     integer function dm_z_deflate_mem(input, output) result(rc)
-        !! Compresses input string.
+        !! Compresses input string. Returns `E_ERROR` if the compression
+        !! failed.
         character(len=*), target,      intent(inout) :: input  !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output !! Output bytes.
 
@@ -78,7 +85,8 @@ contains
     end function dm_z_deflate_mem
 
     integer function dm_z_inflate_mem(input, output, buffer_size) result(rc)
-        !! Decompresses input string.
+        !! Decompresses input string. Returns `E_ERROR` if the compression
+        !! failed.
         character(len=*), target,      intent(inout) :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output      !! Output bytes.
         integer,                       intent(in)    :: buffer_size !! Buffer size.
@@ -114,7 +122,8 @@ contains
     end function dm_z_inflate_mem
 
     integer function dm_z_uncompress(input, output, output_size) result(rc)
-        !! Uncompresses input string using the zlib utility function.
+        !! Uncompresses input string using the zlib utility function. Returns
+        !! `E_ERROR` if the decompression failed.
         character(len=*), intent(inout)         :: input       !! Input bytes.
         character(len=*), intent(inout)         :: output      !! Output bytes.
         integer(kind=i8), intent(out), optional :: output_size !! Actual output length.

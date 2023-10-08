@@ -84,25 +84,27 @@ contains
         !! Returns `.true.` if given UUID in hex format is a valid UUID4.
         character(len=*), intent(in) :: uuid !! UUID to validate.
 
-        integer :: i
+        character :: a
+        integer   :: i
 
         valid = .false.
 
         if (len_trim(uuid) /= UUID_LEN) return
 
         do i = 1, UUID_LEN
+            a = uuid(i:i)
             select case (i)
                 case (13)
-                    if (uuid(i:i) /= '4') return
+                    if (a /= '4') return
                 case (17)
-                    select case (uuid(i:i))
+                    select case (a)
                         case ('8', '9', 'a', 'b')
                             continue
                         case default
                             return
                     end select
                 case default
-                    select case (uuid(i:i))
+                    select case (a)
                         case ('0':'9', 'a':'f')
                             continue
                         case default

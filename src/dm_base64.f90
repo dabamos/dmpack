@@ -3,26 +3,31 @@
 module dm_base64
     !! Base64 encoding for poor people.
     use :: dm_ascii
+    use :: dm_error
     use :: dm_kind
     implicit none (type, external)
     private
 
     public :: dm_base64_encode
 contains
-    pure subroutine dm_base64_encode(input, output)
+    pure subroutine dm_base64_encode(input, output, error)
         !! Encodes given input string in base64.
         !!
         !! Based on implementation by
         !! [cure honey](https://qiita.com/cure_honey/items/3a4cb6742364d3907cda)
         !! that is compatible to little endian and big endian alike (and quite
         !! fast, too!).
+        !!
+        !! The routine returns `E_ALLOC` in optional argument `error` if the
+        !! allocation of `output` failed.
         character, parameter :: b64(0:63) = &
             transfer('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', 'a', size=64)
 
-        character(len=*),              intent(in)  :: input  !! Input string.
-        character(len=:), allocatable, intent(out) :: output !! Base64-encoded output string.
+        character(len=*),              intent(in)            :: input  !! Input string.
+        character(len=:), allocatable, intent(out)           :: output !! Base64-encoded output string.
+        integer,                       intent(out), optional :: error  !! Error code.
 
-        integer :: i, j, l, n
+        integer :: i, j, l, n, stat
         integer :: m1, m2, m3
         integer :: k1, k2, k3, k4
 
@@ -30,7 +35,9 @@ contains
         n = len(input)
         l = ceiling(n / 3.0) * 4
 
-        allocate (character(len=l) :: output)
+        if (present(error)) error = E_ALLOC
+        allocate (character(len=l) :: output, stat=stat)
+        if (stat /= 0) return
 
         do i = 1, (n / 3) * 3, 3
             m1 = iachar(input(i:i))
@@ -58,5 +65,7 @@ contains
                 k3 = modulo(m2, 16) * 4
                 output(j:j + 3) = b64(k1) // b64(k2) // b64(k3) // '='
         end select
+
+        if (present(error)) error = E_NONE
     end subroutine dm_base64_encode
 end module dm_base64

@@ -503,7 +503,6 @@ contains
         !! `data_set`is not passed, the name will be set to
         !! `HDF5_DATA_SET_SENSOR`.
         !!
-        !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if passed `id` is invalid.
@@ -872,15 +871,15 @@ contains
                 call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
                 call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-                k = kind(observ%requests(i)%responses(j)%error)
                 write (name, '("requests_", i0, "_responses_", i0, "_error")') i, j
                 offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%error))
+                k = kind(observ%requests(i)%responses(j)%error)
                 call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
                 if (stat < 0) return
 
-                k = kind(observ%requests(i)%responses(j)%value)
                 write (name, '("requests_", i0, "_responses_", i0, "_value")') i, j
                 offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%value))
+                k = kind(observ%requests(i)%responses(j)%value)
                 call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_REAL_KIND), stat)
                 if (stat < 0) return
             end do

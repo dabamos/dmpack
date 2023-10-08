@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_time
     !! Date and time functions. ISO 8601/RFC 3339 is used as the universal
-    !! datetime format.
+    !! date and time format.
     use :: dm_error
     use :: dm_kind
     use :: dm_util
@@ -145,7 +145,7 @@ contains
 
     impure elemental integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the calendar time `epoch` in UTC to broken-down time
-        !! representation.
+        !! representation. Returns `E_SYSTEM` if the system call failed.
         !!
         !! The argument `epoch` is the number of seconds elapsed since the
         !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).

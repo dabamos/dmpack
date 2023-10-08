@@ -8,16 +8,16 @@ module dm_unit
     implicit none (type, external)
     private
 
-    integer, parameter, public :: UNIT_NONE = 0
-    integer, parameter, public :: UNIT_RAD  = 1
-    integer, parameter, public :: UNIT_GON  = 2
-    integer, parameter, public :: UNIT_DEG  = 3
+    integer, parameter, public :: UNIT_NONE = 0 !! No unit.
+    integer, parameter, public :: UNIT_RAD  = 1 !! Radiants [rad].
+    integer, parameter, public :: UNIT_GON  = 2 !! Gradians [gon].
+    integer, parameter, public :: UNIT_DEG  = 3 !! Degrees [deg].
 
     type, public :: unit_type
         !! Generic unit type.
-        real(kind=r8) :: value = real(0.0, kind=r8)
-        integer       :: type  = UNIT_NONE
-        integer       :: error = E_NONE
+        real(kind=r8) :: value = real(0.0, kind=r8) !! Value.
+        integer       :: type  = UNIT_NONE          !! Unit of value.
+        integer       :: error = E_NONE             !! Convert error.
     end type unit_type
 
     type, extends(unit_type), public :: angle_type
@@ -32,8 +32,8 @@ module dm_unit
 contains
     pure elemental function dm_unit_to_deg(a) result(b)
         !! Converts angle to degrees.
-        type(angle_type), intent(in) :: a
-        type(angle_type)             :: b
+        type(angle_type), intent(in) :: a !! Input angle.
+        type(angle_type)             :: b !! Output angle in deg.
 
         b%type = UNIT_DEG
 
@@ -50,9 +50,9 @@ contains
     end function dm_unit_to_deg
 
     pure elemental function dm_unit_to_gon(a) result(b)
-        !! Converts angle to gon.
-        type(angle_type), intent(in) :: a
-        type(angle_type)             :: b
+        !! Converts angle to gradians.
+        type(angle_type), intent(in) :: a !! Input angle.
+        type(angle_type)             :: b !! Output angle in gon.
 
         b%type = UNIT_GON
 
@@ -70,8 +70,8 @@ contains
 
     pure elemental function dm_unit_to_rad(a) result(b)
         !! Converts angle to radiants.
-        type(angle_type), intent(in) :: a
-        type(angle_type)             :: b
+        type(angle_type), intent(in) :: a !! Input angle.
+        type(angle_type)             :: b !! Output angle in rad.
 
         b%type = UNIT_RAD
 
@@ -89,16 +89,16 @@ contains
 
     pure elemental function dm_unit_type(a) result(type)
         !! Returns unit type.
-        type(unit_type), intent(in) :: a
-        integer(kind=i8)            :: type
+        type(unit_type), intent(in) :: a    !! Angle type.
+        integer(kind=i8)            :: type !! Unit of angle.
 
         type = a%type
     end function dm_unit_type
 
     pure elemental function dm_unit_value(a) result(value)
         !! Returns unit value.
-        type(unit_type), intent(in) :: a
-        real(kind=r8)               :: value
+        type(unit_type), intent(in) :: a     !! Angle type.
+        real(kind=r8)               :: value !! Unit of angle.
 
         value = a%value
     end function dm_unit_value

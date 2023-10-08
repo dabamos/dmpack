@@ -26,7 +26,8 @@ module dm_regex
     public :: dm_regex_request
 contains
     integer function dm_regex_create(regex, pattern, err_msg, err_offset) result(rc)
-        !! Creates new regular expression type from given pattern.
+        !! Creates new regular expression type from given pattern. Returns
+        !! `E_REGEX_COMPILE` on error.
         type(regex_type),              intent(out)           :: regex      !! Regular expression type.
         character(len=*),              intent(in)            :: pattern    !! Pattern to compile.
         character(len=:), allocatable, intent(out), optional :: err_msg    !! Error message.
@@ -61,6 +62,15 @@ contains
     integer function dm_regex_group(regex, subject, name, value) result(rc)
         !! Returns group value in given subject from compiled regular
         !! expression.
+        !!
+        !! The functions returns the following error codes:
+        !!
+        !! * `E_INVALID` if `regex` is invalid.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
+        !!    size.
+        !! * `E_REGEX_NO_GROUP` if no group matches.
+        !! * `E_REGEX_NO_MATCH` if the pattern does not match.
+        !! * `E_REGEX` if an PCRE2 library error occured.
         type(regex_type),              intent(inout) :: regex   !! Regular expression type.
         character(len=*),              intent(in)    :: subject !! Input string.
         character(len=*),              intent(in)    :: name    !! Group name.
@@ -105,6 +115,14 @@ contains
     integer function dm_regex_match(regex, subject) result(rc)
         !! Returns `E_NONE` if given subject matches the compiled regular
         !! expression.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if `regex` is invalid.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
+        !!    size.
+        !! * `E_REGEX_NO_MATCH` if the pattern does not match.
+        !! * `E_REGEX` if an PCRE2 library error occured.
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
         character(len=*), intent(in)    :: subject !! Input string to match against.
 
@@ -137,10 +155,18 @@ contains
     end function dm_regex_match
 
     integer function dm_regex_request(request) result(rc)
-        !! Extracts all values by group from raw response in given
-        !! request type. The regular expression is compiled and
-        !! destroyed by this function. The response error is set to
-        !! any occuring error code.
+        !! Extracts all values by group from raw response in given request type.
+        !! The regular expression is compiled and destroyed by this function.
+        !! The response error is set to any occuring error code.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if the regular expression is invalid.
+        !! * `E_REGEX_COMPILE` if the pattern failed to compile.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
+        !!    size.
+        !! * `E_REGEX_NO_MATCH` if the pattern does not match.
+        !! * `E_REGEX` if an PCRE2 library error occured.
         type(request_type), intent(inout) :: request !! Request type.
 
         character(len=:), allocatable :: buffer

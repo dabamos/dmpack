@@ -8,7 +8,7 @@ module dm_convert
     private
 
     interface dm_convert_to
-        !! Converts string to number.
+        !! Generic string to number converter.
         module procedure :: convert_to_i4
         module procedure :: convert_to_i8
         module procedure :: convert_to_r4
@@ -16,7 +16,7 @@ module dm_convert
     end interface
 
     interface dm_convert_from
-        !! Converts number to string.
+        !! Generic number to string converter.
         module procedure :: convert_from_i4
         module procedure :: convert_from_i8
         module procedure :: convert_from_r4

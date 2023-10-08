@@ -113,7 +113,8 @@ contains
         !!
         !! Call `dm_job_list_any()` or `dm_job_list_count()` beforehand to check
         !! if the job list contains any enabled jobs. Otherwise, this function
-        !! return `E_EMPTY`.
+        !! return `E_EMPTY`. If `job_list` is not allocated properly, `E_ALLOC`
+        !! is returned.
         type(job_list_type), intent(inout)         :: job_list !! Job list type.
         type(job_type),      intent(out)           :: job      !! Job type.
         integer,             intent(out), optional :: index    !! Position in job list.

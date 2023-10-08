@@ -25,7 +25,9 @@ contains
     end function dm_file_exists
 
     integer(kind=i8) function dm_file_line_count(path, error) result(n)
-        !! Returns number of lines in given file by counting new lines.
+        !! Returns number of lines in given file by counting new lines. Returns
+        !! `E_IO` if opening the file failed, and `E_EMPTY` if the file has no
+        !! lines.
         character(len=*), intent(in)            :: path  !! File path.
         integer,          intent(out), optional :: error !! Error code.
 
@@ -71,7 +73,7 @@ contains
     end function dm_file_size
 
     subroutine dm_file_delete(path, error)
-        !! Deletes file at given file path.
+        !! Deletes file at given file path. Returns `E_IO` on error.
         character(len=*), intent(in)            :: path  !! File to delete.
         integer,          intent(out), optional :: error !! Error code.
 
@@ -85,7 +87,7 @@ contains
     end subroutine dm_file_delete
 
     subroutine dm_file_touch(path, error)
-        !! Creates empty file at given file path.
+        !! Creates empty file at given file path. Returns `E_IO` on error.
         character(len=*), intent(in)            :: path  !! File to create.
         integer,          intent(out), optional :: error !! Error code.
 
@@ -101,6 +103,12 @@ contains
     subroutine dm_file_read(path, content, n, error)
         !! Reads file contents as byte stream into allocatable character
         !! string.
+        !!
+        !! The routine returns the following error codes in argument `error`:
+        !!
+        !! * `E_ALLOC` if the allocation if `content` failed.
+        !! * `E_IO` if opening the file failed.
+        !! * `E_READ` if reading from file failed.
         character(len=*),              intent(in)            :: path    !! File path.
         character(len=:), allocatable, intent(out)           :: content !! Byte string.
         integer(kind=i8),              intent(out), optional :: n       !! Content size.
@@ -150,6 +158,11 @@ contains
 
     subroutine dm_file_write(path, content, raw, error)
         !! Writes content to given file (ASCII or binary).
+        !!
+        !! The routine returns the following error codes in argument `error`:
+        !!
+        !! * `E_IO` if opening the file failed.
+        !! * `E_WRITE` if writing to file failed.
         character(len=*), intent(in)            :: path    !! Output file path.
         character(len=*), intent(in)            :: content !! Bytes to write.
         logical,          intent(in),  optional :: raw     !! Unformatted output if true.
