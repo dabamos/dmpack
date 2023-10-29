@@ -7,8 +7,8 @@ module dm_db
     !! Load the last 10 observations into allocatable array `observs`:
     !!
     !! ```fortran
-    !! integer                        :: rc
-    !! type(db_type)                  :: db
+    !! integer       :: rc
+    !! type(db_type) :: db
     !! type(observ_type), allocatable :: observs(:)
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
@@ -16,7 +16,7 @@ module dm_db
     !! rc = dm_db_close(db)
     !! ```
     !!
-    !! The database functions returns `E_NONE` if the respective operation was
+    !! The database functions return `E_NONE` if the respective operation was
     !! successful.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
@@ -73,7 +73,7 @@ module dm_db
     type, public :: db_stmt_type
         !! Opaque SQLite database statement type.
         private
-        type(c_ptr) :: ptr = c_null_ptr
+        type(c_ptr) :: ptr = c_null_ptr !! C pointer to SQLite 3 statement.
     end type db_stmt_type
 
     abstract interface
@@ -96,25 +96,23 @@ module dm_db
         end subroutine dm_db_backup_handler
 
         subroutine dm_db_log_handler(client_data, err_code, err_msg_ptr) bind(c)
-            !! C-interoperable callback routine that is invoked for each created
-            !! SQLite log.
+            !! C-interoperable callback routine that is invoked for each created SQLite log.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: client_data
-            integer(kind=c_int), intent(in), value :: err_code
-            type(c_ptr),         intent(in), value :: err_msg_ptr
+            type(c_ptr),         intent(in), value :: client_data !! Client data.
+            integer(kind=c_int), intent(in), value :: err_code    !! SQLite error code.
+            type(c_ptr),         intent(in), value :: err_msg_ptr !! SQLite error message.
         end subroutine dm_db_log_handler
 
         subroutine dm_db_update_handler(client_data, type, db_name, table_name, row_id) bind(c)
-            !! C-interoperable callback routine that is invoked on database
-            !! updates.
+            !! C-interoperable callback routine that is invoked on database updates.
             import :: c_int, c_int64_t, c_ptr
             implicit none
-            type(c_ptr),             intent(in), value :: client_data
-            integer(kind=c_int),     intent(in), value :: type
-            type(c_ptr),             intent(in), value :: db_name
-            type(c_ptr),             intent(in), value :: table_name
-            integer(kind=c_int64_t), intent(in), value :: row_id
+            type(c_ptr),             intent(in), value :: client_data !! Client data.
+            integer(kind=c_int),     intent(in), value :: type        !! Database operation.
+            type(c_ptr),             intent(in), value :: db_name     !! Database name.
+            type(c_ptr),             intent(in), value :: table_name  !! Table name.
+            integer(kind=c_int64_t), intent(in), value :: row_id      !! Row id.
         end subroutine dm_db_update_handler
     end interface
 
@@ -332,6 +330,12 @@ contains
     ! ******************************************************************
     integer function dm_db_backup(db, path, wal, callback, nsteps, sleep_time) result(rc)
         !! Creates online backup of given database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BACKUP` if SQLite backup failed.
+        !! * `E_EXIST` if backup database exists.
+        !! * `E_READ_ONLY` if database is opened read-only.
         integer, parameter :: NSTEPS_DEFAULT     = 500
         integer, parameter :: SLEEP_TIME_DEFAULT = 250
 
@@ -408,7 +412,7 @@ contains
 
     integer function dm_db_close(db, optimize) result(rc)
         !! Closes connection to SQLite database. Optimises the database by
-        !! default.
+        !! default. Returns `E_DB` on error.
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
@@ -677,6 +681,14 @@ contains
 
     integer function dm_db_delete_beat(db, node_id) result(rc)
         !! Deletes heartbeat from database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
@@ -707,6 +719,14 @@ contains
 
     integer function dm_db_delete_log(db, log_id) result(rc)
         !! Deletes log from database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id.
 
@@ -737,6 +757,14 @@ contains
 
     integer function dm_db_delete_node(db, node_id) result(rc)
         !! Deletes node from database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
@@ -770,6 +798,17 @@ contains
         !! trigger `delete_observ_trigger` as defined in module `dm_sql` to be
         !! present in the database, in order to delete receivers, requests, and
         !! responses automatically.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_EXEC` if query execution failed (commit).
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_ROLLBACK` if transaction rollback failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TRANSACTION` if transaction failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
@@ -814,6 +853,14 @@ contains
 
     integer function dm_db_delete_sensor(db, sensor_id) result(rc)
         !! Deletes sensor from database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
 
@@ -844,6 +891,14 @@ contains
 
     integer function dm_db_delete_target(db, target_id) result(rc)
         !! Deletes target from database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_INVALID` if node id is invalid.
+        !! * `E_READ_ONLY` if database is opened in read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.
 
@@ -965,6 +1020,12 @@ contains
 
     integer function dm_db_get_application_id(db, id) result(rc)
         !! Returns application id of database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type), intent(inout) :: db !! Database type.
         integer,       intent(out)   :: id !! Database application id.
 
@@ -993,14 +1054,20 @@ contains
     integer function dm_db_get_data_version(db, version) result(rc)
         !! Returns data version.
         !!
-        !! The integer values returned by two invocations of
-        !! `PRAGMA data_version` from the same connection will be different if
-        !! changes were committed to the database by any other connection in the
-        !! interim. The `PRAGMA data_version` value is unchanged for commits
-        !! made on the same database connection. The behaviour of
-        !! `PRAGMA data_version` is the same for all database connections,
-        !! including database connections in separate processes and shared cache
-        !! database connections.
+        !! The integer values returned by two invocations of `PRAGMA data_version`
+        !! from the same connection will be different if changes were committed to
+        !! the database by any other connection in the interim.
+        !!
+        !! The `PRAGMA data_version` value is unchanged for commits made on the same
+        !! database connection. The behaviour of `PRAGMA data_version` is the same
+        !! for all database connections, including database connections in separate
+        !! processes and shared cache database connections.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(out)   :: version !! Data version.
 
@@ -1028,6 +1095,12 @@ contains
 
     integer function dm_db_get_foreign_keys(db, enabled) result(rc)
         !! Returns status of foreign keys contraint.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(out)   :: enabled !! Foreign keys constraint is enabled.
 
@@ -1057,6 +1130,12 @@ contains
 
     integer function dm_db_get_journal_mode(db, mode, name) result(rc)
         !! Returns journal mode of database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type),                 intent(inout)         :: db   !! Database type.
         integer,                       intent(out)           :: mode !! Journal mode.
         character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
@@ -1103,6 +1182,12 @@ contains
 
     integer function dm_db_get_query_only(db, enabled) result(rc)
         !! Returns status of query-only pragma.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(out)   :: enabled !! Query-only mode is enabled.
 
@@ -1132,6 +1217,12 @@ contains
 
     integer function dm_db_get_user_version(db, version) result(rc)
         !! Returns user version of database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(out)   :: version !! Database user version.
 
@@ -1169,6 +1260,14 @@ contains
         !!
         !! rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
         !! ```
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !! * `E_INVALID` if argument `table` is invalid.
         type(db_type), intent(inout)         :: db     !! Database type.
         integer,       intent(in)            :: table  !! Table enum.
         logical,       intent(out), optional :: exists !! Boolean result.
@@ -1198,7 +1297,7 @@ contains
     end function dm_db_has_table
 
     integer function dm_db_init() result(rc)
-        !! Initialises SQLite backend.
+        !! Initialises SQLite backend. Returns `E_DB` on error.
         rc = E_DB
         if (sqlite3_initialize() /= SQLITE_OK) return
         rc = E_NONE

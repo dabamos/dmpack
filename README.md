@@ -195,7 +195,7 @@ $ fpm install
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically. The library and programs will be installed to `~/.local` by
-default. The configuration and the shared files have to be installed manually.
+default. The configuration and shared files have to be installed manually.
 
 ### Linux
 
