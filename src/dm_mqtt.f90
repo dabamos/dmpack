@@ -46,7 +46,7 @@ module dm_mqtt
     !! message.
     !!
     !! The procedures `dm_mqtt_init()` and `dm_mqtt_destroy()` have to be called
-    !! once per process and only if neither the RPC nor the mail backend was
+    !! once per process, and only if neither the RPC nor the mail backend is
     !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl

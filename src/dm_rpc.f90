@@ -23,7 +23,7 @@ module dm_rpc
     !! `http://localhost:80/api/v1/observ` in this case.
     !!
     !! The procedures `dm_rpc_init()` and `dm_rpc_destroy()` have to be called
-    !! once per process, and only if neither the MQTT nor the mail backend was
+    !! once per process, and only if neither the MQTT nor the mail backend is
     !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl

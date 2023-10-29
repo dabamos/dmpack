@@ -85,7 +85,7 @@ contains
     end function dm_z_deflate_mem
 
     integer function dm_z_inflate_mem(input, output, buffer_size) result(rc)
-        !! Decompresses input string. Returns `E_ERROR` if the compression
+        !! Decompresses input string. Returns `E_ERROR` if the decompression
         !! failed.
         character(len=*), target,      intent(inout) :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output      !! Output bytes.

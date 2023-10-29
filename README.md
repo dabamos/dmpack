@@ -183,7 +183,7 @@ $ make freebsd_debug DEBUG="-g -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-
 
 #### Fortran Package Manager
 
-Either clone the repository with Git, or download the archive of the
+Either clone the repository with Git, or download and unpack the archive of the
 [master branch](https://github.com/dabamos/dmpack/archive/refs/heads/master.zip).
 Then, run:
 
@@ -194,8 +194,8 @@ $ fpm install
 ```
 
 The Fortran Package Manager will fetch all third-party dependencies
-automatically, but the configuration and shared files have to be installed
-manually. The library and programs will be installed to `~/.local` by default.
+automatically. The library and programs will be installed to `~/.local` by
+default. The configuration and the shared files have to be installed manually.
 
 ### Linux
 
@@ -241,8 +241,8 @@ $ sudo make install PREFIX=/opt
 
 #### Fortran Package Manager
 
-Support for the Fortran Package Manager is experimental. Change to the cloned or
-fetched repository, then run:
+Support for the Fortran Package Manager on Linux is experimental. Clone or
+download the repository, then run:
 
 ```
 $ cd dmpack/
