@@ -83,9 +83,9 @@ module dm_db
             !! desired.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: client_data
-            integer(kind=c_int), intent(in), value :: n
-            integer(kind=c_int)                    :: dm_db_busy_handler
+            type(c_ptr),         intent(in), value :: client_data        !! Client data.
+            integer(kind=c_int), intent(in), value :: n                  !! Number of times the busy handler has been invoked previously.
+            integer(kind=c_int)                    :: dm_db_busy_handler !! Returns value.
         end function dm_db_busy_handler
 
         subroutine dm_db_backup_handler(remaining, page_count)
