@@ -56,29 +56,43 @@ program dmfs
     ! Run main loop.
     call dm_signal_register(signal_handler)
     call run(app)
-    call dm_stop(0)
 contains
-    integer function forward_observ(observ) result(rc)
-        type(observ_type), intent(inout) :: observ
+    integer function forward_observ(observ, name) result(rc)
+        !! Forwards given observation to next receiver.
+        type(observ_type), intent(inout)        :: observ !! Observation to forward.
+        character(len=*),  intent(in), optional :: name   !! App name.
 
         integer           :: next
         type(mqueue_type) :: mqueue
 
-        next = max(0, observ%next) + 1
+        rc   = E_NONE
+        next = observ%next
 
-        ! Validate receiver.
-        if (next > observ%nreceivers) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
-            rc = E_NONE
-            return
-        end if
+        do
+            ! Increase the receiver index.
+            next = max(0, next) + 1
 
-        if (.not. dm_id_valid(observ%receivers(next))) then
-            call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
-            rc = E_INVALID
-            return
-        end if
+            ! End of receiver list reached?
+            if (next > observ%nreceivers) then
+                call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
+                return
+            end if
+
+            ! Invalid receiver name?
+            if (.not. dm_id_valid(observ%receivers(next))) then
+                rc = E_INVALID
+                call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
+                            ' in observ ' // observ%name, observ=observ, error=rc)
+                return
+            end if
+
+            ! Cycle to next + 1 if receiver name equals app name. We don't want
+            ! to send the observation to this program instance.
+            if (.not. present(name)) exit
+            if (observ%receivers(next) /= name) exit
+            call dm_log(LOG_DEBUG, 'skipping receiver ' // dm_itoa(next) // &
+                        ' (' // trim(observ%receivers(next)) // ')')
+        end do
 
         mqueue_block: block
             ! Open message queue of receiver for writing.
@@ -129,9 +143,11 @@ contains
 
         select case (type)
             case (OUTPUT_NONE)
+                ! No output.
                 return
 
             case (OUTPUT_STDOUT)
+                ! Print to standard output.
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
@@ -140,6 +156,7 @@ contains
                 end if
 
             case (OUTPUT_FILE)
+                ! Write to file.
                 rc = E_IO
 
                 open (action='write', file=trim(app%output), iostat=stat, &
@@ -163,17 +180,19 @@ contains
 
     integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
-        type(observ_type), intent(inout) :: observ
-        integer,           intent(in)    :: unit
-        integer,           intent(in)    :: format
+        type(observ_type), intent(inout) :: observ !! Observation to write.
+        integer,           intent(in)    :: unit   !! File unit.
+        integer,           intent(in)    :: format !! Output format (`FORMAT_CSV`, `FORMAT_JSONL`).
 
         rc = E_INVALID
 
         select case (format)
             case (FORMAT_CSV)
+                ! CSV format.
                 rc = dm_csv_write(observ, unit=unit, header=.false., &
                                   separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL)
+                ! JSON Lines format.
                 rc = dm_json_write(observ, unit=unit)
             case default
                 return
@@ -294,7 +313,9 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer :: delay, fu, i, j, njobs, rc, stat
+        character(len=LOG_MESSAGE_LEN) :: message
+        integer                        :: delay, i, j, njobs
+        integer                        :: fu, rc, stat
 
         type(job_type),      target  :: job      ! Next job to run.
         type(observ_type),   pointer :: observ   ! Next observation to perform.
@@ -323,7 +344,8 @@ contains
             end if
 
             observ_if: if (job%valid) then
-                ! Get pointer to job observation.
+                ! Get pointer to observation in job, so we don't have to write
+                ! `job%observ` all the time.
                 observ => job%observ
 
                 call dm_log(LOG_DEBUG, 'starting observ ' // observ%name, observ=observ)
@@ -355,7 +377,7 @@ contains
                         cycle req_loop
                     end if
 
-                    ! Try to open file.
+                    ! Try to open file for reading.
                     open (action='read', file=trim(request%request), iostat=stat, newunit=fu)
 
                     if (stat == 0) request%error = E_NONE
@@ -389,10 +411,12 @@ contains
                         do j = 1, request%nresponses
                             response => request%responses(j)
                             if (dm_is_ok(response%error)) cycle
+
                             call dm_log(LOG_WARNING, 'failed to read response ' // response%name, &
                                         observ=observ, error=response%error)
                         end do
 
+                        ! Cycle on error or exit on success.
                         if (dm_is_error(rc)) cycle read_loop
                         exit read_loop
                     end do read_loop
@@ -400,29 +424,35 @@ contains
                     ! Close file.
                     close (fu)
 
+                    ! Save response and return code.
                     request%response = dm_ascii_escape(request%response)
                     request%error    = rc
 
+                    ! Create log message and repeat.
                     if (dm_is_error(rc)) then
                         call dm_log(LOG_ERROR, 'failed to read from file ' // request%request, &
                                     observ=observ, error=rc)
+                        ! Wait grace period.
+                        call dm_sleep(10)
                         cycle req_loop
                     end if
 
                     call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
-                                           dm_itoa(observ%nrequests), observ=observ)
+                                dm_itoa(observ%nrequests), observ=observ)
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
                     if (delay <= 0) cycle req_loop
-                    call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
-                                ' in ' // dm_itoa(delay / 1000) // ' sec')
+
+                    write (message, '("next request of observ ", a, " in ", i0, " sec")') &
+                        trim(observ%name), delay / 1000
+                    call dm_log(LOG_DEBUG, message)
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
                 ! Forward observation.
                 call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
-                rc = forward_observ(observ)
+                rc = forward_observ(observ, app%name)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
@@ -431,7 +461,9 @@ contains
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
-            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
+
+            write (message, '("next job in ", i0, " sec")') delay / 1000
+            call dm_log(LOG_DEBUG, message)
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run

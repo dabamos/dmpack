@@ -81,27 +81,42 @@ program dmrecv
     if (dm_is_error(rc)) call halt(1)
     call halt(0)
 contains
-    integer function forward_observ(observ) result(rc)
+    integer function forward_observ(observ, name) result(rc)
         !! Forwards given observation to next receiver.
-        type(observ_type), intent(inout) :: observ !! Observation type.
+        type(observ_type), intent(inout)        :: observ !! Observation to forward.
+        character(len=*),  intent(in), optional :: name   !! App name.
 
         integer           :: next
         type(mqueue_type) :: mqueue
 
-        next = max(0, observ%next) + 1
+        rc   = E_NONE
+        next = observ%next
 
-        ! Validate receiver.
-        if (next > observ%nreceivers) then
-            rc = E_NONE
-            return
-        end if
+        do
+            ! Increase the receiver index.
+            next = max(0, next) + 1
 
-        if (.not. dm_id_valid(observ%receivers(next))) then
-            call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
-            rc = E_INVALID
-            return
-        end if
+            ! End of receiver list reached?
+            if (next > observ%nreceivers) then
+                call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
+                return
+            end if
+
+            ! Invalid receiver name?
+            if (.not. dm_id_valid(observ%receivers(next))) then
+                rc = E_INVALID
+                call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
+                            ' in observ ' // observ%name, observ=observ, error=rc)
+                return
+            end if
+
+            ! Cycle to next + 1 if receiver name equals app name. We don't want
+            ! to send the observation to this program instance.
+            if (.not. present(name)) exit
+            if (observ%receivers(next) /= name) exit
+            call dm_log(LOG_DEBUG, 'skipping receiver ' // dm_itoa(next) // &
+                        ' (' // trim(observ%receivers(next)) // ')')
+        end do
 
         mqueue_block: block
             ! Open message queue of receiver for writing.
@@ -126,6 +141,9 @@ contains
                             ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
+
+            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
+                        observ%receivers(next), observ=observ)
         end block mqueue_block
 
         ! Close message queue.
@@ -423,7 +441,7 @@ contains
 
             ! Forward observation to next receiver.
             if (app%forward) then
-                rc = forward_observ(observ)
+                rc = forward_observ(observ, app%name)
 
                 if (dm_is_error(rc)) then
                     call dm_log(LOG_ERROR, 'failed to forward observ ' // observ%id, error=rc)
