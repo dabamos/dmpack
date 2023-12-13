@@ -135,8 +135,8 @@ contains
             ! to send the observation to this program instance.
             if (.not. present(name)) exit
             if (observ%receivers(next) /= name) exit
-            call dm_log(LOG_DEBUG, 'skipping receiver ' // dm_itoa(next) // &
-                        ' (' // trim(observ%receivers(next)) // ')')
+            call dm_log(LOG_DEBUG, 'skipping receiver ' // dm_itoa(next) // ' (' // &
+                        trim(observ%receivers(next)) // ') of observ ' // observ%name)
         end do
 
         mqueue_block: block
