@@ -47,7 +47,7 @@ program dmtestmail
         print '("        DM_MAIL_USERNAME - SMTP user name.")'
         print '("        DM_MAIL_PASSWORD - SMTP password.", /)'
         print '("    Otherwise, some tests will be skipped. The server must support")'
-        print '("    StartTLS.", /)'
+        print '("    StartTLS.")'
         call dm_ansi_reset(no_color)
 
         has_env = .false.

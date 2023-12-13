@@ -37,7 +37,7 @@ program dmtestmqtt
         print '("    connectivity:", /)'
         print '("        DM_MQTT_HOST - IP or FQDN of MQTT server.")'
         print '("        DM_MQTT_PORT - MQTT server port.", /)'
-        print '("    Otherwise, some tests will be skipped.", /)'
+        print '("    Otherwise, some tests will be skipped.")'
         call dm_ansi_reset(no_color)
 
         has_env = .false.
