@@ -159,7 +159,7 @@ contains
         !! The regular expression is compiled and destroyed by this function.
         !! The response error is set to any occuring error code.
         !!
-        !! The function returns the following error codes:
+        !! The function sets the following request error codes and returns:
         !!
         !! * `E_INVALID` if the regular expression is invalid.
         !! * `E_REGEX_COMPILE` if the pattern failed to compile.
@@ -167,6 +167,12 @@ contains
         !!    size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !! * `E_REGEX` if an PCRE2 library error occured.
+        !!
+        !! The function sets the following response error codes:
+        !!
+        !! * `E_EMPTY` if response string of regular expression group is empty.
+        !! * `E_INCOMPLETE` if response could not be extracted.
+        !! * `E_REGEX_NO_GROUP` if no regular expression group matches.
         type(request_type), intent(inout) :: request !! Request type.
 
         character(len=:), allocatable :: buffer
@@ -176,11 +182,17 @@ contains
         type(regex_type)              :: regex
 
         pcre_block: block
+            ! Set all response errors to `E_INCOMPLETE`.
+            do i = 1, request%nresponses
+                request%responses(i)%error = E_INCOMPLETE
+            end do
+
+            ! Create regular expression.
             rc = dm_regex_create(regex, trim(request%pattern))
             if (dm_is_error(rc)) exit pcre_block
 
+            ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
-
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = request%response, &
                                 length      = len_trim(request%response, kind=PCRE2_SIZE), &
@@ -189,6 +201,7 @@ contains
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)
 
+            ! Validate result.
             rc = E_REGEX_EXCEEDED
             if (match == 0) exit pcre_block
 
@@ -198,18 +211,21 @@ contains
             rc = E_REGEX
             if (match < 0) exit pcre_block
 
+            ! Copy sub-strings to responses.
             do i = 1, request%nresponses
+                ! Get sub-string by name.
                 request%responses(i)%error = E_REGEX_NO_GROUP
-
                 stat = pcre2_substring_get_byname(match_data = match_data, &
                                                   name       = trim(request%responses(i)%name), &
                                                   buffer     = buffer, &
                                                   buff_len   = n)
                 if (stat /= 0) cycle
 
+                ! Check string length.
                 request%responses(i)%error = E_EMPTY
                 if (n == 0) cycle
 
+                ! Convert string to real.
                 call dm_convert_to(buffer, request%responses(i)%value, rc)
                 request%responses(i)%error = rc
             end do
@@ -217,6 +233,7 @@ contains
             rc = E_NONE
         end block pcre_block
 
+        ! Set error code of request and clean up.
         request%error = rc
         if (c_associated(match_data)) call pcre2_match_data_free(match_data)
         call dm_regex_destroy(regex)
