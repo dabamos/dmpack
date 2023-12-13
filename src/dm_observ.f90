@@ -98,6 +98,11 @@ contains
     ! ******************************************************************
     integer function dm_observ_add_receiver(observ, receiver) result(rc)
         !! Adds receiver to observation.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if the list of receivers is full.
+        !! * `E_INVALID` if the receiver is empty or longer than the maximum.
         type(observ_type), intent(inout) :: observ   !! Observation type.
         character(len=*),  intent(in)    :: receiver !! Receiver data.
         integer                          :: n
@@ -116,7 +121,8 @@ contains
     end function dm_observ_add_receiver
 
     integer function dm_observ_add_request(observ, request) result(rc)
-        !! Appends a request to an observation.
+        !! Appends a request to an observation. Returns `E_BOUNDS` if the list
+        !! of requests is full.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
 
@@ -134,7 +140,7 @@ contains
         type(observ_type), intent(in) :: observ1 !! The first observation.
         type(observ_type), intent(in) :: observ2 !! The second observation.
 
-        integer :: i
+        integer :: i, n
 
         equals = .false.
 
@@ -156,11 +162,9 @@ contains
         end do
 
         if (observ1%nrequests > 0) then
-            if (.not.  all(dm_request_equals(observ1%requests(1:observ1%nrequests), &
-                                             observ2%requests(1:observ2%nrequests)))) return
+            n = observ1%nrequests
+            equals = all(dm_request_equals(observ1%requests(1:n), observ2%requests(1:n)))
         end if
-
-        equals = .true.
     end function dm_observ_equals
 
     integer function dm_observ_index(observ, name, request_index, response_index) result(rc)
@@ -196,7 +200,7 @@ contains
         !! Returns `.true.` if given observation has at least a valid UUID as
         !! id, and node id, sensor id, target id, and name set. Validating the
         !! node, observation, sensor, and target id is optional (only if `id`
-        !! is `.true.`).
+        !! is `.true.`). Validation of timestamps in enabled by default.
         type(observ_type), intent(in)           :: observ    !! Observation type.
         logical,           intent(in), optional :: id        !! Validate ids.
         logical,           intent(in), optional :: timestamp !! Validate timestamps.
@@ -237,11 +241,8 @@ contains
         end do
 
         if (observ%nrequests > 0) then
-            if (.not. all(dm_request_valid(observ%requests(1:observ%nrequests), &
-                                           timestamp=timestamp_))) return
+            valid = all(dm_request_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))
         end if
-
-        valid = .true.
     end function dm_observ_valid
 
     pure elemental logical function dm_observ_view_equals(view1, view2) result(equals)

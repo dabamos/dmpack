@@ -664,10 +664,8 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_NOBSERVS_BY_ID = &
         SQL_SELECT_NOBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.id <> ? ' // &
-        'AND observs.timestamp >= ' // &
-        'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''1970-01-01T00:00:00.000+00:00'') ' // &
-        'AND observs.timestamp < ' // &
-        'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''2300-01-01T00:00:00.000+00:00'')'
+        'AND observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?) ' // &
+        'AND observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?)'
 
     ! Query to select the number of observations by time range.
     ! Values: nodes.id, sensors.id, targets.id,
@@ -775,10 +773,8 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_ID = &
         SQL_SELECT_OBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.id <> ? ' // &
-        'AND observs.timestamp >= ' // &
-        'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''1970-01-01T00:00:00.000+00:00'') ' // &
-        'AND observs.timestamp < ' // &
-        'COALESCE((SELECT timestamp FROM observs WHERE id = ?), ''2300-01-01T00:00:00.000+00:00'') ' // &
+        'AND observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?) ' // &
+        'AND observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?) ' // &
         'ORDER BY observs.timestamp ASC'
 
     ! Query to select observations by time range.
@@ -824,18 +820,14 @@ module dm_sql
     ! Query to select observation receiver by index.
     ! Values: observs.id, receivers.idx
     character(len=*), parameter, public :: SQL_SELECT_RECEIVER = &
-        'SELECT ' // &
-        'receivers.name ' // &
-        'FROM receivers ' // &
+        'SELECT receivers.name FROM receivers ' // &
         'INNER JOIN observs ON receivers.observ_id = observs.observ_id ' // &
         'WHERE observs.id = ? AND receivers.idx = ?'
 
     ! Query to select observation receivers.
     ! Values: observs.id
     character(len=*), parameter, public :: SQL_SELECT_RECEIVERS = &
-        'SELECT ' // &
-        'receivers.name ' // &
-        'FROM receivers ' // &
+        'SELECT receivers.name FROM receivers ' // &
         'INNER JOIN observs ON receivers.observ_id = observs.observ_id ' // &
         'WHERE observs.id = ? ORDER BY receivers.idx ASC'
 
