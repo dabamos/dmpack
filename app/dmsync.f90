@@ -404,7 +404,7 @@ contains
                 end if
 
                 write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') &
-                    n, nsyncs, trim(app%database), app%host
+                    n, nsyncs, name, trim(app%database), app%host
                 call dm_log(LOG_DEBUG, message)
 
                 ! Send data records via HTTP-RPC to the host.
