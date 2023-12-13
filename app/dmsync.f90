@@ -252,10 +252,11 @@ contains
         type(db_type),  intent(inout) :: db  !! Database type.
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
-        character(len=:), allocatable :: name, url
-        integer                       :: delay, i, j, n, stat
-        integer(kind=i8)              :: limit, nsyncs
-        real(kind=r8)                 :: dt
+        character(len=LOG_MESSAGE_LEN) :: message
+        character(len=:), allocatable  :: name, url
+        integer                        :: delay, i, j, n, stat
+        integer(kind=i8)               :: limit, nsyncs
+        real(kind=r8)                  :: dt
 
         type(api_status_type) :: api
         type(timer_type)      :: sync_timer
@@ -313,7 +314,7 @@ contains
         allocate (ids(APP_SYNC_LIMIT), stat=stat)
         if (stat /= 0) return
 
-        ! Prepare requests (they will be re-used).
+        ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
             requests(i)%url     = url
             requests(i)%deflate = APP_RPC_DEFLATE
@@ -326,8 +327,7 @@ contains
         end do
 
         ! Main synchronisation loop.
-        sync_loop: &
-        do
+        sync_loop: do
             if (.not. app%ipc) then
                 ! Start interval timer.
                 call dm_timer_start(sync_timer)
@@ -363,7 +363,7 @@ contains
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 ! Unrecoverable database error. Stop program.
-                call dm_log(LOG_ERROR, 'failed to select sync data', error=rc)
+                call dm_log(LOG_ERROR, 'failed to select sync data from database', error=rc)
                 exit sync_loop
             end if
 
@@ -397,16 +397,15 @@ contains
             end do
 
             ! Send records concurrently to HTTP-RPC API.
-            rpc_block: &
-            block
+            rpc_block: block
                 if (n == 0) then
                     call dm_log(LOG_DEBUG, 'no ' // name // 's to sync found')
                     exit rpc_block
                 end if
 
-                call dm_log(LOG_DEBUG, 'syncing ' // dm_itoa(n) // ' of ' // &
-                            dm_itoa(nsyncs) // ' ' // name // 's from database ' // &
-                            trim(app%database) // ' with host ' // app%host)
+                write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') &
+                    n, nsyncs, trim(app%database), app%host
+                call dm_log(LOG_DEBUG, message)
 
                 ! Send data records via HTTP-RPC to the host.
                 call dm_timer_start(rpc_timer)
@@ -430,33 +429,38 @@ contains
                 if (dm_is_error(rc)) then
                     call dm_log(LOG_DEBUG, 'failed to sync with host ' // app%host, error=rc)
                 else
-                    call dm_log(LOG_DEBUG, 'finished sync in ' // dm_ftoa(dt) // ' seconds', error=rc)
+                    write (message, '("finished sync in ", f0.2, " seconds")') dt
+                    call dm_log(LOG_DEBUG, message, error=rc)
                 end if
 
-                update_loop: &
-                do i = 1, n
+                update_loop: do i = 1, n
                     ! Log the HTTP response code.
-                    code_select: &
-                    select case (responses(i)%code)
+                    code_select: select case (responses(i)%code)
                         case (0)
                             ! Failed to connect.
                             call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
                                         responses(i)%error_message, error=E_RPC_CONNECT)
+
                         case (HTTP_CREATED)
                             ! Success.
                             call dm_log(LOG_DEBUG, 'synced ' // name // ' ' // trim(ids(i)))
+
                         case (HTTP_CONFLICT)
                             ! Record exists in server database.
                             call dm_log(LOG_INFO, name // ' ' // trim(ids(i)) // ' exists', error=E_EXIST)
+
                         case (HTTP_UNAUTHORIZED)
                             ! Missing or wrong API credentials.
                             call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+
                         case (HTTP_INTERNAL_SERVER_ERROR)
                             ! Server crashed.
                             call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=E_RPC_SERVER)
+
                         case (HTTP_BAD_GATEWAY)
                             ! Reverse proxy of server failed to connect to API.
                             call dm_log(LOG_ERROR, 'bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+
                         case default
                             ! MIME type `text/plain` indicates API status response.
                             if (responses(i)%content_type == MIME_TEXT) then
@@ -464,34 +468,34 @@ contains
                                 stat = dm_api_status_from_string(api, responses(i)%payload)
 
                                 if (dm_is_ok(stat)) then
-                                    call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
-                                                ' (HTTP ' // dm_itoa(responses(i)%code) // '): ' // &
-                                                api%message, error=api%error)
+                                    write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
+                                        trim(app%host), responses(i)%code, api%message
+                                    call dm_log(LOG_ERROR, message, error=api%error)
                                     exit code_select
                                 end if
                             end if
 
                             ! Otherwise, output generic log message.
-                            call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
-                                        dm_itoa(responses(i)%code) // ')', error=E_RPC_API)
+                            write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
+                                trim(app%host), responses(i)%code
+                            call dm_log(LOG_WARNING, message, error=E_RPC_API)
                     end select code_select
 
                     ! Update sync data.
-                    syncs(i)%timestamp = dm_time_now()          ! Last sync attempt.
+                    syncs(i)%timestamp = dm_time_now()          ! Time of sync attempt.
                     syncs(i)%code      = responses(i)%code      ! Server status code.
                     syncs(i)%nattempts = syncs(i)%nattempts + 1 ! Number of sync attempts.
 
                     ! Insert or replace the sync data in database. If the database
                     ! is busy, try up to `APP_DB_NATTEMPTS` times, then abort.
-                    db_loop: &
-                    do j = 1, APP_DB_NATTEMPTS
+                    db_loop: do j = 1, APP_DB_NATTEMPTS
                         ! Try to insert sync data.
                         rc = dm_db_insert_sync(db, syncs(i))
 
                         ! Re-try insert if database is busy.
                         if (rc == E_DB_BUSY) then
-                            call dm_log(LOG_WARNING, 'database busy (attempt ' // dm_itoa(i) // &
-                                        ' of ' // dm_itoa(APP_DB_NATTEMPTS) // ')', error=rc)
+                            write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_NATTEMPTS
+                            call dm_log(LOG_WARNING, message, error=rc)
 
                             if (j < APP_DB_NATTEMPTS) then
                                 call dm_db_sleep(APP_DB_TIMEOUT)
@@ -515,7 +519,7 @@ contains
                 if (nsyncs > limit) then
                     if (dm_is_error(rc)) then
                         ! Wait a grace period on error.
-                        call dm_log(LOG_DEBUG, 'waiting 10 seconds before next sync attempt')
+                        call dm_log(LOG_DEBUG, 'waiting 10 sec before next sync attempt')
                         call dm_sleep(10)
                     end if
 
@@ -527,7 +531,7 @@ contains
             if (.not. app%ipc) then
                 if (app%interval <= 0) exit sync_loop
                 delay = max(1, nint(app%interval - dm_timer_stop(sync_timer)))
-                call dm_log(LOG_DEBUG, 'next sync in ' // dm_itoa(delay) // ' seconds')
+                call dm_log(LOG_DEBUG, 'next sync in ' // dm_itoa(delay) // ' sec')
                 call dm_sleep(delay)
             end if
         end do sync_loop
