@@ -45,7 +45,7 @@
 #
 # DMPACK build flags:
 #
-#   OS      - The operating system, either `freebsd` or `linux`.
+#   OS      - The operating system, either `FreeBSD` or `linux`.
 #   PREFIX  - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
 #
 #   FC      - Fortran 2018 compiler.
@@ -87,7 +87,7 @@
 .POSIX:
 .SUFFIXES:
 
-OS      = freebsd
+OS      = FreeBSD
 PREFIX  = /usr/local
 
 FC      = gfortran
@@ -121,6 +121,7 @@ RELEASE = -mtune=native -O2
 
 FFLAGS  = $(RELEASE)
 CFLAGS  = $(RELEASE)
+PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
 LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
@@ -191,14 +192,16 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 \
       src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 \
       src/dm_log.f90 src/dm_job.f90 src/dm_plot.f90 src/dm_report.f90 \
-      src/dm_regex.f90 src/dm_lua.f90 src/dm_config.f90 src/dm_sync.f90 \
-      src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 \
-      src/dm_dummy.f90 src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 \
-      src/dm_person.f90 src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 \
-      src/dm_api.f90 src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 \
-      src/dm_fcgi.f90 src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 \
-      src/dm_jsonl.f90 src/dm_html.f90 src/dm_atom.f90 src/dm_router.f90 \
-      src/dm_la.f90 src/dm_transform.f90 src/dmpack.f90
+      src/dm_regex.f90 src/dm_lua.f90 src/dm_lua_api.f90 src/dm_config.f90 \
+      src/dm_sync.f90 src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 \
+      src/dm_test.f90 src/dm_dummy.f90 src/dm_nml.f90 src/dm_sql.f90 \
+      src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 src/dm_mail.f90 \
+      src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 src/dm_rpc.f90 \
+      src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 src/dm_block.f90 \
+      src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 src/dm_html.f90 \
+      src/dm_atom.f90 src/dm_router.f90 src/dm_la.f90 src/dm_transform.f90 \
+      src/dm_geocom_api.f90 src/dm_geocom.f90 src/dm_lua_geocom.f90 \
+      src/dm_rts.f90 src/dmpack.f90
 
 # Library object files.
 OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
@@ -208,11 +211,12 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
       dm_signal.o dm_system.o dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o \
       dm_fifo.o dm_node.o dm_sensor.o dm_target.o dm_response.o dm_request.o \
       dm_observ.o dm_log.o dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o \
-      dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o dm_test.o \
-      dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
-      dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o \
-      dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o dm_router.o \
-      dm_la.o dm_transform.o dmpack.o
+      dm_lua_api.o dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o \
+      dm_test.o dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o \
+      dm_mail.o dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o \
+      dm_fcgi.o dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
+      dm_router.o dm_la.o dm_transform.o dm_geocom_api.o dm_geocom.o \
+      dm_lua_geocom.o dm_rts.o dmpack.o
 
 # ******************************************************************************
 #
@@ -233,7 +237,8 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
       dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob \
       dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
       dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc \
-      dmteststring dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz
+      dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil \
+      dmtestuuid dmtestz
 
 # ******************************************************************************
 #
@@ -241,10 +246,10 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
 #
 # ******************************************************************************
 freebsd_debug:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) all OS=FreeBSD PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 freebsd_release:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local
+	$(MAKE) all OS=FreeBSD PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local
 	$(STRIP) -s $(DISTDIR)/dm*
 
 freebsd:
@@ -256,10 +261,10 @@ freebsd:
 #
 # ******************************************************************************
 linux_debug:
-	$(MAKE) all OS=freebsd PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) all OS=linux PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 linux_release:
-	$(MAKE) all OS=linux PREFIX=/usr
+	$(MAKE) all OS=linux PPFLAGS="$(PPFLAGS)" PREFIX=/usr
 	$(STRIP) -s $(DISTDIR)/dm*
 
 linux:
@@ -297,7 +302,7 @@ $(LIBFSQLITE3): setup
 	cp ./vendor/fortran-sqlite3/*.mod $(INCDIR)/
 
 $(LIBFUNIX): setup
-	cd vendor/fortran-unix/ && make $(OS) RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFUNIX)"
+	cd vendor/fortran-unix/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	cp ./vendor/fortran-unix/*.mod $(INCDIR)/
 
 $(LIBFZ): setup
@@ -359,6 +364,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sync.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
@@ -389,6 +395,10 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_router.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_la.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_transform.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # ******************************************************************************
@@ -475,6 +485,9 @@ dmtestregex: test/dmtestregex.f90 $(TARGET)
 
 dmtestrouter: test/dmtestrouter.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrouter test/dmtestrouter.f90 $(TARGET) $(LDLIBS)
+
+dmtestrts: test/dmtestrts.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrts test/dmtestrts.f90 $(TARGET) $(LDLIBS)
 
 dmtestrpc: test/dmtestrpc.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrpc test/dmtestrpc.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBZ)
