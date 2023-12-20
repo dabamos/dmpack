@@ -4,6 +4,18 @@
 #
 # ******************************************************************************
 #
+# On FreeBSD, run:
+#
+#   $ make freebsd
+#   $ make install PREFIX=/usr/local
+#
+# On Linux, instead:
+#
+#   $ make linux
+#   $ make install PREFIX=/usr
+#
+# ******************************************************************************
+#
 # DMPACK build targets:
 #
 #   freebsd         - Alias for target `freebsd_release`.
@@ -31,37 +43,40 @@
 #
 # ******************************************************************************
 #
-# On FreeBSD, run:
-#
-#   $ make freebsd
-#   $ make install PREFIX=/usr/local
-#
-# On Linux, instead:
-#
-#   $ make linux
-#   $ make install PREFIX=/usr
-#
-# ******************************************************************************
-#
 # DMPACK build flags:
 #
-#   OS      - The operating system, either `FreeBSD` or `linux`.
+#   OS      - The operating system, either `FreeBSD` or `linux` (for GCC only).
 #   PREFIX  - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
 #
-#   FC      - Fortran 2018 compiler.
-#   CC      - ANSI C compiler.
+#   FC      - Fortran 2018 compiler (`gfortran`, `ifx`).
+#   CC      - ANSI C compiler (`gcc`, `icx`).
 #   AR      - Archiver.
 #   MAKE    - Either: `make`, `bmake`, or `gmake`.
+#   STRIP   - Strip utility.
 #   RM      - Remove command.
 #   SH      - Shell.
-#   STRIP   - Strip utility.
+#   FORD    - FORD documentation generator.
 #
-#   SRCDIR  - Directory of source files.
-#   INCDIR  - Directory of Fortran module files.
-#   LIBDIR  - Directory of static libraries.
-#   SHRDIR  - Directory of shared files.
-#   DISTDIR - Directory of distribution files (libraries and programs).
+#   FFLAGS  - Fortran compiler flags.
+#   CLAGS   - C compiler flags.
+#   PPFLAGS - Pre-processor flags (must be empty for Intel oneAPI).
+#   ARFLAGS - Archiver flags.
+#   LDFLAGS - Linker flags.
+#   LDLIBS  - Linker libraries.
+#
+#   DEBUG   - Debug flags.
+#   RELEASE - Release flags.
+#
+#   THIN    - Thin DMPACK library (without interface bindings).
+#   TARGET  - Path to the full DMPACK library (with interface bindings).
+#   SHARED  - Path to the shared DMPACK library (with interface bindings).
+#
 #   CONFDIR - Directory of configuration files.
+#   DISTDIR - Directory of distribution files (libraries and programs).
+#   LIBDIR  - Directory of static libraries.
+#   INCDIR  - Directory of Fortran module files.
+#   SHRDIR  - Directory of shared files.
+#   SRCDIR  - Directory of source files.
 #
 #   IBINDIR - Installation directory of DMPACK binaries.
 #   IETCDIR - Installation directory of DMPACK configuration files.
@@ -69,27 +84,16 @@
 #   ILIBDIR - Installation directory of DMPACK libraries.
 #   ISHRDIR - Installation directory of DMPACK shared files.
 #
-#   THIN    - Thin DMPACK library (without interface bindings).
-#   TARGET  - Path to the full DMPACK library (with interface bindings).
-#   SHARED  - Path to the shared DMPACK library (with interface bindings).
-#
-#   DEBUG   - Debug flags.
-#   RELEASE - Release flags.
-#
-#   FFLAGS  - Fortran compiler flags.
-#   CLAGS   - C compiler flags.
-#   ARFLAGS - Archiver flags.
-#   LDFLAGS - Linker flags.
-#   LDLIBS  - Linker libraries.
-#
 # ******************************************************************************
 
 .POSIX:
 .SUFFIXES:
 
+# Platform.
 OS      = FreeBSD
 PREFIX  = /usr/local
 
+# Compilers and build utilities.
 FC      = gfortran
 CC      = gcc
 AR      = ar
@@ -97,34 +101,45 @@ MAKE    = make
 STRIP   = strip
 RM      = /bin/rm
 SH      = /bin/sh
+FORD    = ford
 
-SRCDIR  = ./src
+# Workspace directories.
+CONFDIR = ./config
+DISTDIR = ./dist
+
 INCDIR  = ./include
 LIBDIR  = ./lib
 SHRDIR  = ./share
+SRCDIR  = ./src
 
-DISTDIR = ./dist
-CONFDIR = ./config
+ADOCDIR = ./adoc
+DOCDIR  = ./doc
+GUIDDIR = ./guide
 
+# Installation directories.
 IBINDIR = $(PREFIX)/bin/
 IETCDIR = $(PREFIX)/etc/dmpack/
 IINCDIR = $(PREFIX)/include/dmpack/
 ILIBDIR = $(PREFIX)/lib/
 ISHRDIR = $(PREFIX)/share/dmpack/
 
+# DMPACK libraries.
 THIN    = $(LIBDIR)/libdm.a
 TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
-DEBUG   = -g -O0 -Wall -fmax-errors=1 #-fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
+# Debug and release flags.
+#DEBUG  = -g -O0 -Wall -fcheck=all -fmax-errors=1 -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
+DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
+# Common build flags.
 FFLAGS  = $(RELEASE)
 CFLAGS  = $(RELEASE)
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
-LDLIBS  = #-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
+#LDLIBS = -pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
@@ -133,12 +148,17 @@ INCHDF5 = `pkg-config --cflags hdf5`
 LIBCURL    = `curl-config --libs`
 LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
+LIBLAPACK  = -llapack -lblas
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBZ       = `pkg-config --libs-only-l zlib`
+
+# All shared libraries (for `libdmpack.so`).
+LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
+             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -174,12 +194,7 @@ DMSYNC   = $(DISTDIR)/dmsync
 DMUUID   = $(DISTDIR)/dmuuid
 DMWEB    = $(DISTDIR)/dmweb
 
-# Documentation.
-FORD     = ford
-DOCDIR   = ./doc
-ADOCDIR  = ./adoc
-GUIDEDIR = ./guide
-
+# Library source files.
 SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_string.f90 src/dm_type.f90 src/dm_format.f90 src/dm_const.f90 \
       src/dm_error.f90 src/dm_ansi.f90 src/dm_convert.f90 src/dm_env.f90 \
@@ -191,14 +206,16 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 \
       src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 \
       src/dm_log.f90 src/dm_job.f90 src/dm_plot.f90 src/dm_report.f90 \
-      src/dm_regex.f90 src/dm_lua.f90 src/dm_config.f90 src/dm_sync.f90 \
-      src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 \
-      src/dm_dummy.f90 src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 \
-      src/dm_person.f90 src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 \
-      src/dm_api.f90 src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 \
-      src/dm_fcgi.f90 src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 \
-      src/dm_jsonl.f90 src/dm_html.f90 src/dm_atom.f90 src/dm_router.f90 \
-      src/dm_la.f90 src/dm_transform.f90 src/dmpack.f90
+      src/dm_regex.f90 src/dm_lua.f90 src/dm_lua_api.f90 src/dm_config.f90 \
+      src/dm_sync.f90 src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 \
+      src/dm_test.f90 src/dm_dummy.f90 src/dm_nml.f90 src/dm_sql.f90 \
+      src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 src/dm_mail.f90 \
+      src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 src/dm_rpc.f90 \
+      src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 src/dm_block.f90 \
+      src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 src/dm_html.f90 \
+      src/dm_atom.f90 src/dm_router.f90 src/dm_la.f90 src/dm_transform.f90 \
+      src/dm_geocom_error.f90 src/dm_geocom_api.f90 src/dm_geocom.f90 \
+      src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_rts.f90 src/dmpack.f90
 
 # Library object files.
 OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
@@ -208,27 +225,33 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
       dm_signal.o dm_system.o dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o \
       dm_fifo.o dm_node.o dm_sensor.o dm_target.o dm_response.o dm_request.o \
       dm_observ.o dm_log.o dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o \
-      dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o dm_test.o \
-      dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
-      dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o \
-      dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o dm_router.o \
-      dm_la.o dm_transform.o dmpack.o
+      dm_lua_api.o dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o \
+      dm_test.o dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o \
+      dm_mail.o dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o \
+      dm_fcgi.o dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
+      dm_router.o dm_la.o dm_transform.o dm_geocom_error.o dm_geocom_api.o \
+      dm_geocom.o dm_lua_geocom.o dm_lua_lib.o dm_rts.o dmpack.o
 
 # ******************************************************************************
 #
 # Build targets.
 #
 # ******************************************************************************
+
+# Named build targets.
 .PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
         html install install_freebsd install_linux linux man pdf purge setup test
 
+# Library target.
 all: $(TARGET) $(SHARED) test app
 
+# Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRAPH) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
      $(DMLUA) $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
      $(DMUUID) $(DMWEB)
 
+# Tests target.
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
       dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob \
       dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
@@ -238,9 +261,21 @@ test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
 
 # ******************************************************************************
 #
+# Setup.
+#
+# ******************************************************************************
+
+setup:
+	mkdir -p $(INCDIR)
+	mkdir -p $(LIBDIR)
+	mkdir -p $(DISTDIR)
+
+# ******************************************************************************
+#
 # FreeBSD target.
 #
 # ******************************************************************************
+
 freebsd_debug:
 	$(MAKE) all OS=FreeBSD PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
 
@@ -256,6 +291,7 @@ freebsd:
 # Linux target.
 #
 # ******************************************************************************
+
 linux_debug:
 	$(MAKE) all OS=linux PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
 
@@ -268,19 +304,10 @@ linux:
 
 # ******************************************************************************
 #
-# Output directories.
+# 3rd party interface libraries.
 #
 # ******************************************************************************
-setup:
-	mkdir -p $(INCDIR)
-	mkdir -p $(LIBDIR)
-	mkdir -p $(DISTDIR)
 
-# ******************************************************************************
-#
-# Fortran interface libraries.
-#
-# ******************************************************************************
 $(LIBFCURL): setup
 	cd vendor/fortran-curl/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
 	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
@@ -307,12 +334,9 @@ $(LIBFZ): setup
 
 # ******************************************************************************
 #
-# DMPACK static library.
+# DMPACK static libraries.
 #
 # ******************************************************************************
-$(TARGET): $(LIBF) $(OBJ)
-	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
-	$(SH) makelib.sh $(TARGET) $(THIN)
 
 $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_version.f90
@@ -360,6 +384,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sync.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
@@ -390,21 +415,35 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_router.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_la.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_transform.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_error.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
+
+# Static library `libdmpack.a`.
+$(TARGET): $(LIBF) $(OBJ)
+	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
+	$(SH) makelib.sh $(TARGET) $(THIN)
 
 # ******************************************************************************
 #
-# DMPACK shared library.
+# DMPACK shared library (incl. Lua API).
 #
 # ******************************************************************************
+
+# Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
-	$(FC) $(FFLAGS) -fPIC -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive
+	$(FC) -fPIC -shared $(FFLAGS) $(LDFLAGS) -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
 
 # ******************************************************************************
 #
 # DMPACK test programs.
 #
 # ******************************************************************************
+
 dmtestapi: test/dmtestapi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestapi test/dmtestapi.f90 $(TARGET) $(LDLIBS)
 
@@ -509,6 +548,7 @@ dmtestz: test/dmtestz.f90 $(TARGET)
 # DMPACK programs.
 #
 # ******************************************************************************
+
 $(DMAPI): app/dmapi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMAPI) app/dmapi.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI)
 
@@ -580,29 +620,36 @@ $(DMWEB): app/dmweb.f90 $(TARGET)
 
 # ******************************************************************************
 #
-# Source code documentation, manual pages, and User's Guide.
+# Documentation.
 #
 # ******************************************************************************
+
+# Documentation from source code.
 doc:
 	$(FORD) ford.md -d ./src
 
+# AsciiDoc to man pages.
 man:
 	cd $(ADOCDIR) && $(MAKE) man
 
+# Man pages to HTML format.
 html:
 	cd $(ADOCDIR) && $(MAKE) html
 
+# Man pages to PDF format.
 pdf:
 	cd $(ADOCDIR) && $(MAKE) pdf
 
+# User's Guide to HTML format.
 guide:
-	cd $(GUIDEDIR) && $(MAKE)
+	cd $(GUIDDIR) && $(MAKE)
 
 # ******************************************************************************
 #
 # Installation and deinstallation.
 #
 # ******************************************************************************
+
 install:
 	install -d $(IBINDIR)
 	install -d $(IETCDIR)
@@ -645,6 +692,12 @@ install:
 	install -m 755 $(SHRDIR)/diskfree.sh $(ISHRDIR)
 	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)
 
+install_freebsd:
+	$(MAKE) install PREFIX=/usr/local
+
+install_linux:
+	$(MAKE) install PREFIX=/usr
+
 deinstall:
 	$(RM) -rf $(PREFIX)/include/dmpack
 	$(RM) -rf $(PREFIX)/share/dmpack
@@ -678,18 +731,13 @@ deinstall:
 	@echo "You may need to manually remove $(PREFIX)/etc/dmpack/ if it is no longer needed."
 	@echo
 
-install_freebsd:
-	$(MAKE) install PREFIX=/usr/local
-
-install_linux:
-	$(MAKE) install PREFIX=/usr
-
 # ******************************************************************************
 #
 # Remove binaries, libraries, modules and object files in, clear "dist" and
 # "man" directories.
 #
 # ******************************************************************************
+
 clean:
 	@echo "--- deleting libraries ..."
 	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
@@ -705,15 +753,16 @@ clean:
 	@echo "--- deleting applications ..."
 	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
 	@echo "--- cleaning man pages ..."
-	cd $(ADOCDIR)  && $(MAKE) clean
+	cd $(ADOCDIR) && $(MAKE) clean
 	@echo "--- cleaning guide ..."
-	cd $(GUIDEDIR) && $(MAKE) clean
+	cd $(GUIDDIR) && $(MAKE) clean
 
 # ******************************************************************************
 #
 # Additionally, clean all dependencies and remove FORD output.
 #
 # ******************************************************************************
+
 purge: clean
 	@echo "--- cleaning fortran-curl ..."
 	cd vendor/fortran-curl/ && make clean TARGET="../../$(LIBFCURL)"

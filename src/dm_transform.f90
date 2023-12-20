@@ -15,15 +15,15 @@ contains
     integer function dm_transform_coord_2d(cs, ct, observs, trans, params, residuals, variance, rotation, scale_factor) result(rc)
         integer, parameter :: NRHS = 4 !! Number of columns in matrix A.
 
-        real(kind=r8),              intent(inout)         :: cs(:)        !! Input: Common control points in source system.
-        real(kind=r8),              intent(inout)         :: ct(:)        !! Input: Common control points in target system.
-        real(kind=r8),              intent(inout)         :: observs(:)   !! Input: Observations.
-        real(kind=r8), allocatable, intent(out)           :: trans(:)     !! Output: Transformed observations.
-        real(kind=r8), allocatable, intent(out), optional :: params(:)    !! Output: Transformation parameters.
-        real(kind=r8), allocatable, intent(out), optional :: residuals(:) !! Output: Residuals.
-        real(kind=r8),              intent(out), optional :: variance     !! Output: Reference variance of adjustment.
-        real(kind=r8),              intent(out), optional :: rotation     !! Output: Rotation angle.
-        real(kind=r8),              intent(out), optional :: scale_factor !! Output: Scale factor.
+        real(kind=r8),              intent(inout)         :: cs(:)        !! Common control points in source system.
+        real(kind=r8),              intent(inout)         :: ct(:)        !! Common control points in target system.
+        real(kind=r8),              intent(inout)         :: observs(:)   !! Observations.
+        real(kind=r8), allocatable, intent(out)           :: trans(:)     !! Transformed observations.
+        real(kind=r8), allocatable, intent(out), optional :: params(:)    !! Transformation parameters.
+        real(kind=r8), allocatable, intent(out), optional :: residuals(:) !! Residuals.
+        real(kind=r8),              intent(out), optional :: variance     !! Reference variance of adjustment.
+        real(kind=r8),              intent(out), optional :: rotation     !! Rotation angle.
+        real(kind=r8),              intent(out), optional :: scale_factor !! Scale factor.
 
         real(kind=r8), allocatable :: a(:, :), x(:), r(:)
         real(kind=r8), allocatable :: b(:, :), l(:)
@@ -52,20 +52,21 @@ contains
         s = x(1) / cos(w)     ! Scale factor.
         r = matmul(a, x) - ct ! Residuals of observations.
 
-        ! Adjustment's reference variance, given
-        ! n observations and NRHS degrees of freedom.
+        ! Adjustment's reference variance, given n observations and NRHS
+        ! degrees of freedom.
         v = dot_product(r, r) / (n - NRHS)
 
-        ! Transform observations from source (x, y) to target (E, N) system.
+        ! Functional model to transform observations from source (x, y) to
+        ! target (E, N) system.
         do i = 1, k, 2
             trans(i)     = (s * cos(w)) * observs(i) - (s * sin(w)) * observs(i + 1) + x(3)
             trans(i + 1) = (s * sin(w)) * observs(i) + (s * cos(w)) * observs(i + 1) + x(4)
         end do
 
-        if (present(params)) params = x
-        if (present(residuals)) residuals = r
-        if (present(variance)) variance = v
-        if (present(rotation)) rotation = w
+        if (present(params))       params       = x
+        if (present(residuals))    residuals    = r
+        if (present(variance))     variance     = v
+        if (present(rotation))     rotation     = w
         if (present(scale_factor)) scale_factor = s
 
         rc = E_NONE

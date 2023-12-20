@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_env
-    !! Environment variable access.
+    !! Module for reading environment variables.
     use :: dm_convert
     use :: dm_error
     use :: dm_kind

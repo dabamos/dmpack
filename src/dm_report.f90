@@ -5,12 +5,11 @@ module dm_report
     use :: dm_id
     use :: dm_kind
     use :: dm_log
-    use :: dm_node
-    use :: dm_plot
-    use :: dm_response
-    use :: dm_sensor
-    use :: dm_target
-    use :: dm_time
+    use :: dm_node,     only: NODE_ID_LEN
+    use :: dm_response, only: RESPONSE_NAME_LEN, RESPONSE_UNIT_LEN
+    use :: dm_sensor,   only: SENSOR_ID_LEN
+    use :: dm_target,   only: TARGET_ID_LEN
+    use :: dm_time,     only: TIME_LEN
     implicit none (type, external)
     private
 

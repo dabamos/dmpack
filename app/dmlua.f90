@@ -58,6 +58,14 @@ program dmlua
             exit init_block
         end if
 
+        ! Register DMPACK API for Lua.
+        rc = dm_lua_api_register(lua, constants=.true., procedures=.true.)
+
+        if (dm_is_error(rc)) then
+            call dm_log(LOG_ERROR, 'failed to register Lua API', error=rc)
+            exit init_block
+        end if
+
         ! Open and run Lua script.
         rc = dm_lua_open(lua, app%script, eval=.true.)
 
@@ -294,7 +302,7 @@ contains
             ! observation.
             lua_block: block
                 ! Load Lua function.
-                rc = dm_lua_global(lua, trim(app%proc))
+                rc = dm_lua_read(lua, trim(app%proc))
 
                 if (dm_is_error(rc)) then
                     call dm_log(LOG_ERROR, 'failed to load Lua function ' // trim(app%proc) // '()', error=rc)
@@ -307,16 +315,8 @@ contains
                     exit lua_block
                 end if
 
-                ! Write derived type to Lua stack.
-                rc = dm_lua_from(lua, obs_in)
-
-                if (dm_is_error(rc)) then
-                    call dm_lua_pop(lua)
-                    call dm_log(LOG_ERROR, 'failed to write observ to Lua stack', observ=obs_in, error=rc)
-                    exit lua_block
-                end if
-
-                ! Call the Lua function.
+                ! Write derived type to Lua stack and call the Lua function.
+                call dm_lua_from(lua, obs_in)
                 rc = dm_lua_call(lua, nargs=1, nresults=1)
 
                 if (dm_is_error(rc)) then

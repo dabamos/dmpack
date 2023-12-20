@@ -423,7 +423,7 @@ contains
             end do
             dt = dm_timer_stop(t)
 
-            print *, NOBSERVS, ' observations written in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
             print *, 'Selecting and matching observations ...'
 
             do i = 1, NOBSERVS
@@ -491,14 +491,14 @@ contains
             rc = dm_db_insert_observs(db, observs1)
             dt = dm_timer_stop(t)
             if (dm_is_error(rc)) exit test_block
-            print *, NOBSERVS, ' observations written in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
 
             print *, 'Selecting observations ...'
             call dm_timer_start(t)
             rc = dm_db_select_observs(db, observs2, limit=int(NOBSERVS, kind=i8))
             dt = dm_timer_stop(t)
             if (dm_is_error(rc)) exit test_block
-            print *, size(observs2), ' observations read in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (size(observs2) /= size(observs1)) return
 
             print *, 'Selecting observations by time range ...'
@@ -507,7 +507,7 @@ contains
                                               '1970', '2100', limit=int(NOBSERVS, kind=i8))
             dt = dm_timer_stop(t)
             if (dm_is_error(rc)) exit test_block
-            print *, size(observs2), ' observations read in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (size(observs2) /= size(observs1)) return
 
             print *, 'Selecting observations by id range ...'
@@ -519,7 +519,7 @@ contains
             rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, &
                                             nobservs=nobs)
             dt = dm_timer_stop(t)
-            print *, size(observs2), ' observations read in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (dm_is_error(rc)) exit test_block
             if (size(observs2) == 0) return
 
@@ -530,7 +530,7 @@ contains
                                            '1970', '2100')
             dt = dm_timer_stop(t)
             if (dm_is_error(rc)) exit test_block
-            print *, size(views), ' observation views read in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', size(views), ' observation views read in ', dt, ' sec'
 
             rc = E_NONE
         end block test_block
@@ -627,7 +627,7 @@ contains
             end do
             dt = dm_timer_stop(t)
 
-            print *, NLOGS, ' logs added in ', dt, ' sec'
+            print '(1x, i0, a, f0.3, a)', NLOGS, ' logs added in ', dt, ' sec'
         end block test_block
 
         call dm_error_out(rc)
@@ -661,7 +661,7 @@ contains
             rc = dm_db_select_logs(db, logs, node_id='', sensor_id='', target_id='', &
                                    source='', from='', to='', limit=int(NLOGS, i8), nlogs=n)
             dt = dm_timer_stop(t)
-            print *, 'Selected ', n, ' logs in ', dt, ' sec'
+            print '(1x, a, i0, a, f0.3, a)', 'Selected ', n, ' logs in ', dt, ' sec'
         end block test_block
 
         call dm_error_out(rc)
@@ -861,8 +861,8 @@ contains
             if (.not. allocated(json_logs)) exit test_block
             if (size(json_logs) /= 1) exit test_block
 
-            print *, 'Length: ', len_trim(json_logs(1))
-            print *, 'JSON..: ', trim(json_logs(1))
+            print '(" Length: ", i0)', len_trim(json_logs(1))
+            print '(" JSON..: ", a)',  trim(json_logs(1))
 
             rc = E_NONE
         end block test_block

@@ -48,6 +48,9 @@ module dmpack
     use :: dm_fifo
     use :: dm_file
     use :: dm_format
+    use :: dm_geocom
+    use :: dm_geocom_api
+    use :: dm_geocom_error
     use :: dm_hash
     use :: dm_hash_table
     use :: dm_hdf5
@@ -62,6 +65,9 @@ module dmpack
     use :: dm_log
     use :: dm_logger
     use :: dm_lua
+    use :: dm_lua_api
+    use :: dm_lua_geocom
+    use :: dm_lua_lib
     use :: dm_mail
     use :: dm_mime
     use :: dm_mqtt
@@ -81,6 +87,7 @@ module dmpack
     use :: dm_response
     use :: dm_router
     use :: dm_rpc
+    use :: dm_rts
     use :: dm_sem
     use :: dm_sensor
     use :: dm_signal

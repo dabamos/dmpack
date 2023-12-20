@@ -1,54 +1,44 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_html
-    !! HyperText Markup Language (HTML) generator procedures. Classless HTML5
-    !! synax is used.
+    !! HyperText Markup Language (HTML) generator procedures for (mostly)
+    !! classless HTML5 syntax.
     use :: dm_ascii, only: NL => ASCII_LF
-    use :: dm_beat
-    use :: dm_cgi
     use :: dm_error
-    use :: dm_http
     use :: dm_kind
-    use :: dm_log
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_request
-    use :: dm_response
-    use :: dm_sensor
-    use :: dm_target
     use :: dm_util
     use :: dm_version
     implicit none (type, external)
     private
 
     ! HTML button types.
-    integer, parameter, public :: HTML_BUTTON_TYPE_BUTTON  = 1
-    integer, parameter, public :: HTML_BUTTON_TYPE_RESET   = 2
-    integer, parameter, public :: HTML_BUTTON_TYPE_SUBMIT  = 3
+    integer, parameter, public :: HTML_BUTTON_TYPE_BUTTON  = 1 !! Default button.
+    integer, parameter, public :: HTML_BUTTON_TYPE_RESET   = 2 !! Reset button.
+    integer, parameter, public :: HTML_BUTTON_TYPE_SUBMIT  = 3 !! Submit button.
 
     ! HTML input types.
-    integer, parameter, public :: HTML_INPUT_TYPE_BUTTON         = 1
-    integer, parameter, public :: HTML_INPUT_TYPE_CHECKBOX       = 2
-    integer, parameter, public :: HTML_INPUT_TYPE_COLOR          = 3
-    integer, parameter, public :: HTML_INPUT_TYPE_DATE           = 4
-    integer, parameter, public :: HTML_INPUT_TYPE_DATETIME_LOCAL = 5
-    integer, parameter, public :: HTML_INPUT_TYPE_EMAIL          = 6
-    integer, parameter, public :: HTML_INPUT_TYPE_FILE           = 7
-    integer, parameter, public :: HTML_INPUT_TYPE_HIDDEN         = 8
-    integer, parameter, public :: HTML_INPUT_TYPE_IMAGE          = 9
-    integer, parameter, public :: HTML_INPUT_TYPE_MONTH          = 10
-    integer, parameter, public :: HTML_INPUT_TYPE_NUMBER         = 11
-    integer, parameter, public :: HTML_INPUT_TYPE_PASSWORD       = 12
-    integer, parameter, public :: HTML_INPUT_TYPE_RADIO          = 13
-    integer, parameter, public :: HTML_INPUT_TYPE_RANGE          = 14
-    integer, parameter, public :: HTML_INPUT_TYPE_RESET          = 15
-    integer, parameter, public :: HTML_INPUT_TYPE_SEARCH         = 16
-    integer, parameter, public :: HTML_INPUT_TYPE_SUBMIT         = 17
-    integer, parameter, public :: HTML_INPUT_TYPE_TEL            = 18
-    integer, parameter, public :: HTML_INPUT_TYPE_TEXT           = 19
-    integer, parameter, public :: HTML_INPUT_TYPE_TIME           = 20
-    integer, parameter, public :: HTML_INPUT_TYPE_URL            = 21
-    integer, parameter, public :: HTML_INPUT_TYPE_WEEK           = 22
+    integer, parameter, public :: HTML_INPUT_TYPE_BUTTON         = 1  !! Button.
+    integer, parameter, public :: HTML_INPUT_TYPE_CHECKBOX       = 2  !! Checkbox.
+    integer, parameter, public :: HTML_INPUT_TYPE_COLOR          = 3  !! Color.
+    integer, parameter, public :: HTML_INPUT_TYPE_DATE           = 4  !! Date.
+    integer, parameter, public :: HTML_INPUT_TYPE_DATETIME_LOCAL = 5  !! Date and time.
+    integer, parameter, public :: HTML_INPUT_TYPE_EMAIL          = 6  !! E-mail.
+    integer, parameter, public :: HTML_INPUT_TYPE_FILE           = 7  !! File.
+    integer, parameter, public :: HTML_INPUT_TYPE_HIDDEN         = 8  !! Hidden.
+    integer, parameter, public :: HTML_INPUT_TYPE_IMAGE          = 9  !! Image.
+    integer, parameter, public :: HTML_INPUT_TYPE_MONTH          = 10 !! Month.
+    integer, parameter, public :: HTML_INPUT_TYPE_NUMBER         = 11 !! Number.
+    integer, parameter, public :: HTML_INPUT_TYPE_PASSWORD       = 12 !! Password.
+    integer, parameter, public :: HTML_INPUT_TYPE_RADIO          = 13 !! Radio button.
+    integer, parameter, public :: HTML_INPUT_TYPE_RANGE          = 14 !! Range selector.
+    integer, parameter, public :: HTML_INPUT_TYPE_RESET          = 15 !! Reset.
+    integer, parameter, public :: HTML_INPUT_TYPE_SEARCH         = 16 !! Search.
+    integer, parameter, public :: HTML_INPUT_TYPE_SUBMIT         = 17 !! Submit.
+    integer, parameter, public :: HTML_INPUT_TYPE_TEL            = 18 !! Phone.
+    integer, parameter, public :: HTML_INPUT_TYPE_TEXT           = 19 !! Text.
+    integer, parameter, public :: HTML_INPUT_TYPE_TIME           = 20 !! Time.
+    integer, parameter, public :: HTML_INPUT_TYPE_URL            = 21 !! URL.
+    integer, parameter, public :: HTML_INPUT_TYPE_WEEK           = 22 !! Week.
 
     ! Selection of HTML tags.
     character(len=*), parameter, public :: H_BLOCKQUOTE     = '<blockquote>'
@@ -102,7 +92,8 @@ module dm_html
     character(len=*), parameter, public :: H_MARK           = '<mark>'
     character(len=*), parameter, public :: H_MARK_END       = '</mark>'
     character(len=*), parameter, public :: H_META_CHARSET   = '<meta charset="utf-8">' // NL
-    character(len=*), parameter, public :: H_META_GENERATOR = '<meta name="generator" content="DMPACK">' // NL
+    character(len=*), parameter, public :: H_META_GENERATOR = &
+        '<meta name="generator" content="DMPACK ' // DM_VERSION_STRING // '">' // NL
     character(len=*), parameter, public :: H_META_VIEWPORT  = &
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">' // NL
     character(len=*), parameter, public :: H_NAV            = '<nav>' // NL
@@ -149,9 +140,12 @@ module dm_html
     end type anchor_type
 
     type, public :: select_type
-        !! HTML select type.
-        character(len=32), allocatable :: options(:)
-        character(len=32), allocatable :: values(:)
+        !! HTML select type. The length if option names and values is limited
+        !! to 32 characters. Initialise this derived type with subroutine
+        !! `dm_html_select_create()`. Free the allocated memory with
+        !! `dm_html_select_destroy()`.
+        character(len=32), allocatable :: options(:) !! Option names.
+        character(len=32), allocatable :: values(:)  !! Option values.
     end type select_type
 
     public :: dm_html_anchor
@@ -207,6 +201,7 @@ contains
 
     function dm_html_beat(beat, delta) result(html)
         !! Returns table of single beat in HTML format.
+        use :: dm_beat
         use :: dm_time
         type(beat_type),  intent(inout)        :: beat  !! Beat type.
         integer(kind=i8), intent(in), optional :: delta !! Time delta.
@@ -265,6 +260,7 @@ contains
         !! Returns table of heartbeats in HTML format. If argument `prefix` is
         !! passed, the node ids are enclosed in HTML anchors, with the link
         !! set to `prefix`.
+        use :: dm_beat
         use :: dm_time
         type(beat_type),   intent(inout)           :: beats(:)  !! Beat types.
         integer(kind=i8),  intent(inout), optional :: deltas(:) !! Time deltas.
@@ -328,36 +324,42 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_beats
 
-    pure function dm_html_button(type, str, disabled) result(html)
+    pure function dm_html_button(type, text, disabled) result(html)
         !! Returns HTML button element. This function does not encode the
         !! argument.
-
         character(len=*), parameter :: BUTTON_TYPES(3) = [ &
-            character(len=6) :: 'button', 'reset', 'submit' ]
+            character(len=6) :: 'button', 'reset', 'submit' ] ! Button type names.
 
         integer,          intent(in)           :: type     !! Button type enumerator.
-        character(len=*), intent(in)           :: str      !! Label.
+        character(len=*), intent(in)           :: text     !! Button text.
         logical,          intent(in), optional :: disabled !! Disabled flag.
         character(len=:), allocatable          :: html     !! Generated HTML.
 
-        integer :: button_type
+        integer :: type_
+        logical :: disabled_
 
-        button_type = HTML_BUTTON_TYPE_BUTTON
+        disabled_ = .false.
+        if (present(disabled)) disabled_ = disabled
+
+        type_ = HTML_BUTTON_TYPE_BUTTON
 
         if (type >= HTML_BUTTON_TYPE_BUTTON .and. &
-            type <= HTML_BUTTON_TYPE_SUBMIT) button_type = type
+            type <= HTML_BUTTON_TYPE_SUBMIT) type_ = type
 
-        html = '<button type="' // trim(BUTTON_TYPES(button_type)) // '"'
-
-        if (present(disabled)) then
-            html = html // ' disabled="disabled"'
+        if (disabled_) then
+            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '" disabled="disabled">' // &
+                   trim(text) // &
+                   '</button>' // NL
+        else
+            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '">' // &
+                   trim(text) // &
+                   '</button>' // NL
         end if
-
-        html = html // '>' // trim(str) // '</button>' // NL
     end function dm_html_button
 
     function dm_html_cgi_env(env) result(html)
         !! Returns HTML table of CGI environment variables.
+        use :: dm_cgi
         type(cgi_env_type), intent(inout) :: env  !! CGI environment variables.
         character(len=:), allocatable     :: html !! Generated HTML.
 
@@ -469,6 +471,9 @@ contains
     pure function dm_html_encode(input) result(output)
         !! Returns encoded input string, with some HTML special characters
         !! replaced (`"`, `&`, `'`, `<`, `>`).
+        !!
+        !! It may be faster to count the number of occurences of special
+        !! characters, and only allocate the output string once at start.
         character(len=*), intent(in)  :: input  !! Input string.
         character(len=:), allocatable :: output !! Encoded string.
 
@@ -495,7 +500,7 @@ contains
     end function dm_html_encode
 
     pure function dm_html_error(error_code, message) result(html)
-        !! Returns HTML of error description.
+        !! Returns HTML of (encoded) error description.
         integer,          intent(in)           :: error_code !! DMPACK error code.
         character(len=*), intent(in), optional :: message    !! Error message.
         character(len=:), allocatable          :: html       !! Generated HTML.
@@ -528,7 +533,7 @@ contains
     end function dm_html_figure
 
     pure function dm_html_footer(content) result(html)
-        !! Returns HTML footer.
+        !! Returns HTML footer. The content will not be HTML encoded.
         character(len=*), intent(in), optional :: content !! Optional footer content.
         character(len=:), allocatable          :: html    !! Generated HTML.
 
@@ -543,9 +548,12 @@ contains
 
     function dm_html_header(title, subtitle, style, internal_style, brand, nav, mask) result(html)
         !! Returns HTML header with DOCTYPE and optional CSS. A link to the
-        !! style sheet file and internal CSS can be added. The page title
-        !! matches the first heading. No heading will be added if a navigation
-        !! array is passed. Instead, the title is set as navigation brand.
+        !! style sheet file and internal CSS can be added.
+        !!
+        !! The first heading will be set to the page title. The heading is
+        !! shown only if no navigation array is passed.
+        !!
+        !! The given title and sub-title are encoded by this function.
         character(len=*),  intent(in)              :: title          !! HTML page title and first heading.
         character(len=*),  intent(in),    optional :: subtitle       !! Subtitle.
         character(len=*),  intent(in),    optional :: style          !! Path to CSS file.
@@ -575,7 +583,7 @@ contains
 
         html = html // H_HEAD_END // H_BODY // H_HEADER
 
-        ! Brand title.
+        ! Brand title (will be encoded).
         if (present(brand)) then
             html = html // dm_html_heading(3, brand)
         end if
@@ -601,6 +609,8 @@ contains
         !! optional `<small>` child in `small`.
         !!
         !! Valid levels are 1, 2, 3, and 4. Any other is replaced by level 1.
+        !!
+        !! All input data will be trimmed and encoded.
         integer,          intent(in)           :: level !! Heading level.
         character(len=*), intent(in)           :: str   !! Heading string.
         character(len=*), intent(in), optional :: small !! Sub-heading string.
@@ -656,12 +666,11 @@ contains
     pure function dm_html_input(type, checked, disabled, id, max, max_length, min, min_length, &
                                 name, pattern, placeholder, read_only, required, size, value) result(html)
         !! Returns HTML input element.
-
         character(len=*), parameter :: INPUT_TYPES(22) = [ character(len=14) :: &
             'button', 'checkbox', 'color', 'date', 'datetime-local', 'email', &
             'file', 'hidden', 'image', 'month', 'number', 'password', 'radio', &
             'range', 'reset', 'search', 'submit', 'tel', 'text', 'time', 'url', &
-            'week' ]
+            'week' ] ! Input type names.
 
         integer,          intent(in)           :: type        !! HTML input type.
         logical,          intent(in), optional :: checked     !! Input is checked.
@@ -763,7 +772,8 @@ contains
     end function dm_html_label
 
     pure function dm_html_link(rel, href) result(html)
-        !! Returns link element.
+        !! Returns link element. Link address and text will be trimmed and
+        !! encoded.
         character(len=*), intent(in)  :: rel  !! The rel attribute.
         character(len=*), intent(in)  :: href !! The href attribute.
         character(len=:), allocatable :: html !! Generated HTML.
@@ -772,7 +782,9 @@ contains
     end function dm_html_link
 
     function dm_html_log(log, prefix_node, prefix_sensor, prefix_target, prefix_observ) result(html)
-        !! Returns log as HTML table.
+        !! Returns log as HTML table. The input data will be trimmed and
+        !! encoded.
+        use :: dm_log
         type(log_type),   intent(inout)        :: log           !! Log type.
         character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
         character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -780,10 +792,10 @@ contains
         character(len=*), intent(in), optional :: prefix_observ !! Observation link prefix.
         character(len=:), allocatable          :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: nid
-        character(len=:), allocatable :: sid
-        character(len=:), allocatable :: tid
-        character(len=:), allocatable :: oid
+        character(len=:), allocatable :: nid ! Node id.
+        character(len=:), allocatable :: sid ! Sensor id.
+        character(len=:), allocatable :: tid ! Target id.
+        character(len=:), allocatable :: oid ! Observation id.
 
         integer           :: level
         type(anchor_type) :: anchor
@@ -854,7 +866,9 @@ contains
         !! Returns table of logs in HTML format. If argument `prefix` is
         !! passed, the log timestamps are enclosed in HTML anchors, with the
         !! link set to `prefix`. By default, a node id column is added to the
-        !! table. Optionally, a maximum log message length can be set.
+        !! table. Optionally, a maximum log message length can be set. The
+        !! input data will be trimmed and encoded.
+        use :: dm_log
         type(log_type),   intent(inout)        :: logs(:) !! Log types.
         logical,          intent(in), optional :: node    !! Show node id column.
         character(len=*), intent(in), optional :: prefix  !! Link address prefix.
@@ -921,7 +935,7 @@ contains
 
     pure function dm_html_mark(str, class) result(html)
         !! Returns `<mark>` element of optional class, with encoded `str`
-        !! enclosed.
+        !! enclosed. This function encodes the passed string.
         character(len=*), intent(in)           :: str   !! Element content.
         character(len=*), intent(in), optional :: class !! Element class.
         character(len=:), allocatable          :: html  !! Generated HTML.
@@ -960,7 +974,9 @@ contains
     end function dm_html_nav
 
     function dm_html_node(node) result(html)
-        !! Returns sensor node as HTML table.
+        !! Returns sensor node as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_node
         type(node_type), intent(inout) :: node !! Node type.
         character(len=:), allocatable  :: html !! Generated HTML.
 
@@ -975,7 +991,9 @@ contains
     end function dm_html_node
 
     function dm_html_nodes(nodes, prefix) result(html)
-        !! Returns sensor nodes as HTML table.
+        !! Returns sensor nodes as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_node
         type(node_type),  intent(inout)        :: nodes(:) !! Node types.
         character(len=*), intent(in), optional :: prefix   !! Link address prefix.
         character(len=:), allocatable          :: html     !! Generated HTML.
@@ -1014,7 +1032,9 @@ contains
     end function dm_html_nodes
 
     function dm_html_observ(observ, prefix_node, prefix_sensor, prefix_target) result(html)
-        !! Returns observation as HTML table.
+        !! Returns observation as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_observ
         type(observ_type), intent(inout)        :: observ        !! Observation type.
         character(len=*),  intent(in), optional :: prefix_node   !! Node link prefix.
         character(len=*),  intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -1119,7 +1139,8 @@ contains
         !! passed, the observation names are enclosed in HTML anchors, with the
         !! link set to `prefix`. The table always contains index and timestamp.
         !! The columns id, node id, sensor id, target id, name, and error are
-        !! optional.
+        !! optional. Input data will be trimmed and encoded.
+        use :: dm_observ
         type(observ_type), intent(inout)        :: observs(:) !! Observation types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         logical,           intent(in), optional :: id         !! Show observation ids.
@@ -1229,7 +1250,9 @@ contains
     end function dm_html_pre
 
     function dm_html_request(request) result(html)
-        !! Returns request as HTML table.
+        !! Returns request as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_request
         type(request_type), intent(inout) :: request !! Observation request type.
         character(len=:), allocatable     :: html    !! Generated HTML.
 
@@ -1260,7 +1283,9 @@ contains
     end function dm_html_request
 
     function dm_html_responses(responses) result(html)
-        !! Returns responses as HTML table.
+        !! Returns responses as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_response
         type(response_type), intent(inout) :: responses(:) !! Observation response type.
         character(len=:), allocatable      :: html         !! Generated HTML.
 
@@ -1285,7 +1310,7 @@ contains
 
     function dm_html_select(select, id, name, selected, disabled) result(html)
         !! Returns HTML select element with option values. This function does
-        !! not encode the arguments.
+        !! not encode or trim the arguments.
         type(select_type), intent(inout)        :: select   !! HTML select type.
         character(len=*),  intent(in)           :: id       !! Select id.
         character(len=*),  intent(in)           :: name     !! Select name.
@@ -1314,7 +1339,9 @@ contains
     end function dm_html_select
 
     function dm_html_sensor(sensor) result(html)
-        !! Returns sensor as HTML table.
+        !! Returns sensor as HTML table. Input data will be trimmed and
+        !! encoded.
+        use :: dm_sensor
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: html   !! Generated HTML.
 
@@ -1342,7 +1369,8 @@ contains
     function dm_html_sensors(sensors, prefix) result(html)
         !! Returns table of sensors in HTML format. If argument `prefix` is
         !! passed, the sensor names are enclosed in HTML anchors, with the link
-        !! set to `prefix`.
+        !! set to `prefix`. Input data will be trimmed and encoded.
+        use :: dm_sensor
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensor types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         character(len=:), allocatable           :: html       !! Generated HTML.
@@ -1413,6 +1441,7 @@ contains
 
     function dm_html_target(target) result(html)
         !! Returns target as HTML table.
+        use :: dm_target
         type(target_type), intent(inout) :: target !! Target type.
         character(len=:), allocatable    :: html   !! Generated HTML.
 
@@ -1429,7 +1458,8 @@ contains
     function dm_html_targets(targets, prefix) result(html)
         !! Returns table of targets in HTML format. If argument `prefix` is
         !! passed, the target names are enclosed in HTML anchors, with the link
-        !! set to `prefix`.
+        !! set to `prefix`. Input data will be trimmed and encoded.
+        use :: dm_target
         type(target_type), intent(inout)        :: targets(:) !! Target types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         character(len=:), allocatable           :: html       !! Generated HTML.
@@ -1468,7 +1498,8 @@ contains
     end function dm_html_targets
 
     pure function dm_html_td(str, col_span, row_span) result(html)
-        !! Returns `str` enclosed by `<td>` tag, with optional column or row span.
+        !! Returns `str` enclosed by `<td>` tag, with optional column or row
+        !! span. The passed string will not be encoded or trimmed.
         character(len=*), intent(in)           :: str      !! Input string.
         integer,          intent(in), optional :: col_span !! Column span.
         integer,          intent(in), optional :: row_span !! Row span.
@@ -1481,7 +1512,8 @@ contains
     end function dm_html_td
 
     pure function dm_html_th(str, col_span, row_span) result(html)
-        !! Returns `str` enclosed by `<th>` tag, with optional column or row span.
+        !! Returns `str` enclosed by `<th>` tag, with optional column or row
+        !! span. The passed string will not be encoded or trimmed.
         character(len=*), intent(in)           :: str      !! Input string.
         integer,          intent(in), optional :: col_span !! Column span.
         integer,          intent(in), optional :: row_span !! Row span.
@@ -1509,10 +1541,11 @@ contains
     end subroutine dm_html_select_create
 
     subroutine dm_html_select_destroy(select)
-        !! Deallocates array in select type.
+        !! Deallocates arrays in select type.
         type(select_type), intent(inout) :: select !! Select type.
 
         if (allocated(select%options)) deallocate (select%options)
+        if (allocated(select%values))  deallocate (select%values)
     end subroutine dm_html_select_destroy
 
     subroutine dm_html_select_set(select, index, option, value, error)

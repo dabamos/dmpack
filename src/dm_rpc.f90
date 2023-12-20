@@ -13,9 +13,9 @@ module dm_rpc
     !! type(rpc_request_type)        :: request
     !! type(rpc_response_type)       :: response
     !!
-    !! rc = dm_rpc_init()
+    !! rc  = dm_rpc_init()
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
-    !! rc = dm_rpc_send(request, response, observ, url)
+    !! rc  = dm_rpc_send(request, response, observ, url)
     !! call dm_rpc_destroy()
     !! ```
     !!
@@ -323,7 +323,7 @@ contains
         !!
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
-        !! `target_type`. The function returns `E_INVALID` on any other type.
+        !! `target_type`. The function returns `E_TYPE` on any other type.
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
@@ -412,7 +412,7 @@ contains
         !!
         !! The dummy argument `types` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
-        !! `target_type`. The function returns `E_INVALID` on any other type.
+        !! `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
@@ -581,7 +581,7 @@ contains
                 if (stat /= CURLUE_OK) exit url_block
             end if
 
-            ! URL path.
+            ! Base path.
             if (present(base)) then
                 if (len_trim(base) == 0) exit url_block
                 if (base(1:1) /= '/') exit url_block
@@ -590,12 +590,14 @@ contains
                 path = RPC_BASE
             end if
 
+            ! Endpoint path.
             if (present(endpoint)) then
                 if (len_trim(endpoint) == 0) exit url_block
                 if (endpoint(1:1) /= '/') exit url_block
                 path = path // trim(endpoint)
             end if
 
+            ! URL path.
             stat = curl_url_set(ptr, CURLUPART_PATH, path)
             if (stat /= CURLUE_OK) exit url_block
 
@@ -681,9 +683,9 @@ contains
         multi_ptr = c_null_ptr
 
         curl_block: block
-            ! Create and prepare transfer handles.
             rc = E_IO
 
+            ! Create and prepare transfer handles.
             do i = 1, n
                 if (.not. c_associated(requests(i)%curl_ptr)) then
                     requests(i)%curl_ptr = curl_easy_init()
@@ -790,11 +792,13 @@ contains
         rc = E_INVALID
         if (.not. c_associated(request%curl_ptr)) return
 
+        ! Reset HTTP header list.
         if (c_associated(request%list_ptr)) then
             call curl_slist_free_all(request%list_ptr)
             request%list_ptr = c_null_ptr
         end if
 
+        ! Validate URL.
         if (.not. allocated(request%url)) return
         if (len_trim(request%url) == 0) return
 
@@ -811,16 +815,17 @@ contains
 
         ! Set HTTP Basic Auth header.
         if (request%auth == RPC_AUTH_BASIC) then
+            ! Enable HTTP Basic Auth.
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)
             if (stat /= CURLE_OK) return
 
-            ! User name.
+            ! Set user name.
             if (allocated(request%username)) then
                 stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERNAME, request%username)
                 if (stat /= CURLE_OK) return
             end if
 
-            ! Password.
+            ! Set password.
             if (allocated(request%password)) then
                 stat = curl_easy_setopt(request%curl_ptr, CURLOPT_PASSWORD, request%password)
                 if (stat /= CURLE_OK) return
@@ -840,15 +845,16 @@ contains
 
         ! Set HTTP POST method.
         post_if: if (request%method == RPC_METHOD_POST) then
+            ! Enable POST.
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_POST, 1)
             if (stat /= CURLE_OK) return
 
+            ! Exit if POST payload is missing.
             if (.not. allocated(request%payload)) exit post_if
 
             ! Pass POST data directly.
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8))
             if (stat /= CURLE_OK) return
-
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_POSTFIELDS, c_loc(request%payload))
             if (stat /= CURLE_OK) return
 
@@ -911,7 +917,7 @@ contains
                     exit ua_block
                 end if
             end if
-
+            ! Set default User Agent.
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
         end block ua_block
 
@@ -929,11 +935,13 @@ contains
 
         rc = E_IO
 
+        ! Initialise libcurl.
         if (.not. c_associated(request%curl_ptr)) then
             request%curl_ptr = curl_easy_init()
             if (.not. c_associated(request%curl_ptr)) return
         end if
 
+        ! Prepare and send HTTP request.
         curl_block: block
             stat = CURLE_OK
             rc = rpc_request_prepare(request, response)
@@ -946,6 +954,7 @@ contains
             rc = E_NONE
         end block curl_block
 
+        ! Get response info.
         if (rc /= E_INVALID) then
             ! Get HTTP response code.
             stat = curl_easy_getinfo(request%curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
@@ -970,6 +979,7 @@ contains
         if (.not. allocated(response%content_type)) response%content_type = ''
         if (.not. allocated(response%payload))      response%payload      = ''
 
+        ! Clean-up.
         call curl_slist_free_all(request%list_ptr)
         call curl_easy_cleanup(request%curl_ptr)
 

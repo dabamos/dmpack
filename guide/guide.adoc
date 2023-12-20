@@ -12,7 +12,7 @@
 :toclevels: 2
 :xrefstyle: short
 :table-caption!:
-:revnumber: 0.9
+:revnumber: 0.9.0
 
 = DMPACK User’s Guide
 
@@ -86,7 +86,7 @@ link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
 (GPLv3)
-link:https://github.com/istSOS/istsos2[istSOS]:: A server implementation of the
+link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
 observations from monitoring sensors. The project also provides a graphical user
 interface and a RESTful web API to automate administration procedures. Developed
@@ -116,7 +116,7 @@ DMPACK has the following requirements:
 
 * Linux (_glibc_) or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler
+* Fortran 2018 and ANSI C compiler (GCC, Intel oneAPI)
 
 Additional dependencies have to be present to build and run the software of this
 package:
@@ -158,9 +158,22 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 
 If the repository is cloned recursively, the submodules will be downloaded
-automatically to directory `vendor/`.
+automatically to directory `vendor/`. Otherwise, this step has to be done
+manually.
 
-=== FreeBSD
+There are separate instructions for FreeBSD and Linux:
+
+* <<freebsd>>
+** <<freebsd-make>>
+** <<freebsd-fpm>>
+* <<linux>>
+** <<linux-make>>
+** <<linux-fpm>>
+
+Either build with GNU/BSD Make or with the Fortran Package Manager. It is
+recommended to use _make(1)_.
+
+=== FreeBSD [[freebsd]]
 
 First, install the build and run-time dependencies:
 
@@ -179,7 +192,7 @@ User’s Guide:
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ....
 
-==== Make
+==== Make [[freebsd-make]]
 
 The repository has to be cloned recursively. Execute the Makefile with build
 target `freebsd`:
@@ -203,7 +216,21 @@ custom directory, run:
 $ doas make install PREFIX=/opt
 ....
 
-==== Fortran Package Manager
+.Default paths on FreeBSD
+[%autowidth]
+|===
+| Path                         | Description
+
+| `/usr/local/bin/`            | DMPACK programs.
+| `/usr/local/etc/dmpack/`     | DMPACK configuration files.
+| `/usr/local/include/dmpack/` | DMPACK module files.
+| `/usr/local/lib/dmpack/`     | DMPACK libraries.
+| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
+| `/var/dmpack/`               | DMPACK databases.
+| `/var/www/`                  | WWW root directory.
+|===
+
+==== Fortran Package Manager [[freebsd-fpm]]
 
 Either clone the repository with Git, or download the archive of the
 link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[master branch].
@@ -219,23 +246,10 @@ The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
 manually. The library and programs will be installed to `~/.local` by default.
 
-.Default paths on FreeBSD
-[%autowidth]
-|===
-| Path                         | Description
+=== Linux [[linux]]
 
-| `/usr/local/bin/`            | DMPACK programs.
-| `/usr/local/etc/dmpack/`     | DMPACK configuration files.
-| `/usr/local/include/dmpack/` | DMPACK module files.
-| `/usr/local/lib/dmpack/`     | DMPACK libraries.
-| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
-| `/var/dmpack/`               | DMPACK databases.
-| `/var/www/`                  | WWW root directory.
-|===
-
-=== Linux
-
-On Debian, install GCC, GNU Fortran, and the build environment:
+On Debian, install GCC, GNU Fortran, and the rest of the build environment
+first:
 
 ....
 $ sudo apt install gcc gfortran git make pkg-config
@@ -246,15 +260,19 @@ The third-party dependencies have to be installed with development headers:
 ....
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
-  libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
+  libhdf5 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
   sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
-Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`,
+Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 if raster image formats are not needed (SVG output only). Depending on the
 package repository, the names of the Lua packages may differ.
 
-==== Make
+If Intel oneAPI Fortran will be used to compile DMPACK, you have to build HDF5
+from source as well (as the versions in the Linux package repositories were
+compiled with GNU Fortran).
+
+==== Make [[linux-make]]
 
 Clone the DMPACK repository recursively, and execute the Makefile with build
 target `linux`:
@@ -263,6 +281,12 @@ target `linux`:
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make linux
+....
+
+If the Intel oneAPI compilers are preferred, run instead:
+
+....
+$ make CC=icx FC=ifx PPFLAGS= LIBHDF5=/path/to/libhdf5.a
 ....
 
 Install the library and all programs system-wide to `/usr`:
@@ -277,9 +301,10 @@ To install to a custom directory, run:
 $ sudo make install PREFIX=/opt
 ....
 
-==== Fortran Package Manager
+==== Fortran Package Manager [[linux-fpm]]
 
-Change to the cloned or fetched repository, then run:
+To build DMPACK with the Fortran Package Manager, change to the cloned or
+fetched repository, then run:
 
 ....
 $ cd dmpack/
@@ -295,215 +320,6 @@ the build manifests first:
 $ sed -i "s/lua-5/lua5/g" fpm.toml
 $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 ....
-
-== System Configuration
-
-Additional changes to the system configuration should be considered to prevent
-issues while conducting a long-term monitoring.
-
-=== Time Zone
-
-The local time zone of the sensor client should be set to a zone without summer
-daylight-saving. For instance, time zone `Europe/Berlin` implies Central
-European Summer Time (CEST), which is usually not desired for long-term
-observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
-in this case.
-
-==== FreeBSD
-
-On FreeBSD, configure the time zone using:
-
-....
-# tzsetup
-....
-
-==== Linux
-
-On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
-
-....
-# timedatectl list-timezones
-# timedatectl set-timezone Etc/GMT+1
-....
-
-=== Time Synchronisation
-
-The system time should be updated periodically by synchronising it with network
-time servers. A Network Time Protocol (NTP) client has to be installed and
-configured to enable the synchronisation.
-
-==== FreeBSD
-
-Set the current date and time intially by passing the IP or FQDN of the NTP
-server to _ntpdate(1)_:
-
-....
-# ntpdate -b ptbtime1.ptb.de
-....
-
-The NTP daemon _ntpd(8)_ is configured through file `/etc/ntp.conf`. If
-favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
-with a single server, for example:
-
-....
-server ptbtime1.ptb.de iburst
-....
-
-Add the following entries to `/etc/rc.conf`:
-
-....
-ntpd_enable="YES"
-ntpd_sync_on_start="YES"
-ntpd_flags="-g"
-....
-
-Start the _ntpd(8)_ service:
-
-....
-# service ntpd start
-....
-
-==== Linux
-
-On Debian Linux, install the NTP package:
-
-....
-# apt install ntp
-....
-
-Query the NTP servers to synchronise with:
-
-....
-# ntpq -p
-....
-
-The system time should be updated now:
-
-....
-# date -R
-....
-
-On error, try to reconfigure the NTP service:
-
-....
-# dpkg-reconfigure ntp
-....
-
-=== Power Saving
-
-On Linux, power saving for USB devices may be enabled by default. This can cause
-issues if sensors are attached through an USB adapter. USB power saving is
-enabled if the kernel boot parameter `usbcore.autosuspend` is not equal `-1`:
-
-....
-# cat /sys/module/usbcore/parameters/autosuspend
-2
-....
-
-We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
-and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
-
-....
-GRUB_CMDLINE_LINUX_DEFAULT="quiet usbcore.autosuspend=-1"
-....
-
-Then, update the boot loader:
-
-....
-# update-grub
-....
-
-The system has to be rebooted for the changes to take effect.
-
-=== Message Queues
-
-The operating system must have POSIX message queues enabled to run DMPACK
-programs on sensor nodes.
-
-==== FreeBSD
-
-On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
-queue file system is mounted:
-
-....
-# kldstat -m mqueuefs
-Id  Refs Name
-522    1 mqueuefs
-....
-
-Otherwise, we can simply load and mount the file system:
-
-....
-# kldload mqueuefs
-# mkdir -p /mnt/mqueue
-# mount -t mqueuefs null /mnt/mqueue
-....
-
-To load messages queues at system start, add the module `mqueuefs` to
-`/etc/rc.conf`, and the file system to `/etc/fstab`:
-
-....
-# sysrc kld_list+="mqueuefs"
-# echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
-....
-
-Additionally, we may increase the system limits of POSIX message queues with
-_sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
-
-....
-# sysctl kern.mqueue.maxmsg
-kern.mqueue.maxmsg: 100
-# sysctl kern.mqueue.maxmsgsize
-kern.mqueue.maxmsgsize: 16384
-....
-
-The maximum message size has to be at least 16384 bytes.
-
-==== Linux
-
-The POSIX message queue file system should be mounted by default on Linux. If
-not, run:
-
-....
-# mkdir -p /dev/mqueue
-# mount -t mqueue none /dev/mqueue
-....
-
-Set the maximum number of messages and the maximum message size to some
-reasonable values:
-
-....
-# sysctl fs.mqueue.msg_max=100
-# sysctl fs.mqueue.msgsize_max=16384
-....
-
-The maximum message size has to be at least 16384 bytes.
-
-=== Cron
-
-On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
-usually used to run jobs periodically. For example, in order to update an XML
-feed, or to generate HTML reports, add a schedule of the task to perform to the
-local _crontab(5)_ file.
-
-For example, we can edit the cron jobs of user `www` with _crontab(1)_:
-
-....
-# crontab -u www -e
-....
-
-The following _crontab(5)_ file adds a task to generate reports every hour:
-
-[source,crontab]
-....
-SHELL=/bin/sh
-MAILTO=/dev/null
-# Create reports every hour, suppress logging.
-@hourly -q /usr/local/share/dmpack/mkreport.sh
-....
-
-The shell script `mkreport.sh` must have the execution bits set. Update the
-script to your configuration.
 
 == Deformation Monitoring Entities [[entities]]
 
@@ -532,7 +348,7 @@ contain name, value, unit, and an optional error code.
 === Log Entities
 
 Log:: Log message of a sensor node, either of level _debug_, _info_, _warning_,
-_error_, or _critical_, and optionally related to a _sensor_, a _target_, or an
+_error_, or _critical_, and optionally related to a _sensor_, a _target_, and an
 _observation_.
 
 === Beat Entities
@@ -679,7 +495,7 @@ observation is sent by any other user, it will be rejected (HTTP 401).
 
 The web application is configured through environment variables. The web server
 or FastCGI spawner must be able to pass environment variables to *dmapi*. See
-<<rpc-server>> for an example configuration.
+<<web-rpc-server>> for an example configuration.
 
 The service accepts HTTP GET and POST requests. Section <<rpc-api>> gives an
 overview of the available endpoints. The response format depends on the MIME
@@ -732,16 +548,16 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 === dmbeat [[dmbeat]]
 
 The *dmbeat* program is a heartbeat emitter that sends
-<<data-beat,status messages>> via HTTP POST to a remote <<dmapi>> service. The
-status messages include timestamp, system uptime, and last connection error.
-The server may inspect this data to check if a client is still running and has
-network access. The RPC endpoint is expected at
+<<data-beat,handshake messages>> via HTTP POST to a remote <<dmapi>> service.
+The handshake messages include timestamp, system uptime, and last connection
+error. The server may inspect this data to check if a client is still running
+and has network access. The RPC endpoint is expected at
 `[http|https]://<host>:<port>/api/v1/beat`.
 
 Passing the server credentials via the command-line arguments `--username` and
 `--password` is insecure on multi-user operating systems and only recommended
 for testing.
-  
+
 ==== Command-Line Options
 
 [%autowidth.stretch]
@@ -2236,7 +2052,7 @@ authentication have to be provided by the web server.
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-See section <<web-ui>> for an example configuration.
+See section <<web-web-ui>> for an example configuration.
 
 == Web Applications
 
@@ -2278,12 +2094,20 @@ In the listed examples, the DMPACK executables are assumend to be in
 `/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
 other directory. Set appropriate owner and access rights.
 
-=== Authentication
+The following sections cover the configuration of the _lighttpd(1)_ web server:
 
-Set `auth.backend.htpasswd.userfile` to the path of the file that contains the
-HTTP Basic Auth credentials, or remove the related lines from the configuration
-if authentication is not desired. You can run _openssl(1)_ to add credentials to
-the _htpasswd_ user file:
+* <<web-auth>>
+* <<web-cors>>
+* <<web-db>>
+* <<web-rpc-server>>
+* <<web-web-ui>>
+
+=== Authentication [[web-auth]]
+
+In the _lighttpd(1)_ configuration file, set `auth.backend.htpasswd.userfile` to
+the path of the file that contains the HTTP Basic Auth credentials, or remove
+the related lines from the configuration if authentication is not desired. You
+can run _openssl(1)_ to add credentials to the _htpasswd_ user file:
 
 ....
 # printf "<user>:`openssl passwd -crypt '<password>'`\n" >> /usr/local/etc/lighttpd/htpasswd
@@ -2294,7 +2118,7 @@ file for, we may select a different authentication backend, for example, LDAP,
 MySQL/MariaDB, PostgreSQL, or SQLite 3. See the _lighttpd(1)_ auth module
 documentation for further instructions.
 
-=== Cross-Origin Resource Sharing
+=== Cross-Origin Resource Sharing [[web-cors]]
 
 If the HTTP-RPC API will be accessed by a client-side application running in the
 browser, the web server has to be configured to send the appropriate
@@ -2319,7 +2143,7 @@ $HTTP["request-method"] =~ "^(OPTIONS)$" {
 If the web server is behind a reverse proxy, CORS headers should be set by the
 proxy instead.
 
-=== Databases
+=== Databases [[web-db]]
 
 The databases are expected to be in directory `/var/dmpack/`. Change the
 environment variables in the web server configuration to the actual paths. The
@@ -2340,7 +2164,7 @@ Make sure the web server has read and write access to the directory:
 
 Change `www:www` to the user and the group the web server is running as.
 
-=== RPC Server [[rpc-server]]
+=== RPC Server [[web-rpc-server]]
 
 The snippet in this section may be added to the _lighttpd(1)_ configuration to
 run the <<dmapi>> service. The _lighttpd(1)_ web server does not require an
@@ -2416,7 +2240,7 @@ server manually:
 
 If served locally, access the RPC API at http://127.0.0.1/api/v1/.
 
-=== Web UI [[web-ui]]
+=== Web UI [[web-web-ui]]
 
 The _lighttpd(1)_ web server has to be configured to run the CGI
 application under base path `/dmpack/`. The following server modules are
@@ -2508,22 +2332,22 @@ The following HTTP endpoints are provided by the RPC API:
 
 [%autowidth]
 |===
-| Endpoint             | Method    | Description
+| Endpoint             | HTTP Method | Description
 
-| `/api/v1/`           | GET       | <<api-root,Read service status>>.
-| `/api/v1/beats`      | GET       | <<api-beats,Read beats>>.
-| `/api/v1/logs`       | GET       | <<api-logs,Read logs>>.
-| `/api/v1/nodes`      | GET       | <<api-nodes,Read nodes>>.
-| `/api/v1/observs`    | GET       | <<api-observs,Read observations>>.
-| `/api/v1/sensors`    | GET       | <<api-sensors,Read sensors>>.
-| `/api/v1/targets`    | GET       | <<api-targets,Read targets>>.
-| `/api/v1/timeseries` | GET       | <<api-timeseries,Read time series>>.
-| `/api/v1/beat`       | GET, POST | <<api-beat,Read or update beat>>.
-| `/api/v1/log`        | GET, POST | <<api-log,Read or create log>>.
-| `/api/v1/node`       | GET, POST | <<api-node,Read or create node>>.
-| `/api/v1/observ`     | GET, POST | <<api-observ,Read or create observation>>.
-| `/api/v1/sensor`     | GET, POST | <<api-sensor,Read or create sensor>>.
-| `/api/v1/target`     | GET, POST | <<api-target,Read or create target>>
+| `/api/v1/`           | GET         | <<api-root,Read service status>>.
+| `/api/v1/beats`      | GET         | <<api-beats,Read beats>>.
+| `/api/v1/logs`       | GET         | <<api-logs,Read logs>>.
+| `/api/v1/nodes`      | GET         | <<api-nodes,Read nodes>>.
+| `/api/v1/observs`    | GET         | <<api-observs,Read observations>>.
+| `/api/v1/sensors`    | GET         | <<api-sensors,Read sensors>>.
+| `/api/v1/targets`    | GET         | <<api-targets,Read targets>>.
+| `/api/v1/timeseries` | GET         | <<api-timeseries,Read time series>>.
+| `/api/v1/beat`       | GET, POST   | <<api-beat,Read or update beat>>.
+| `/api/v1/log`        | GET, POST   | <<api-log,Read or create log>>.
+| `/api/v1/node`       | GET, POST   | <<api-node,Read or create node>>.
+| `/api/v1/observ`     | GET, POST   | <<api-observ,Read or create observation>>.
+| `/api/v1/sensor`     | GET, POST   | <<api-sensor,Read or create sensor>>.
+| `/api/v1/target`     | GET, POST   | <<api-target,Read or create target>>
 |===
 
 === Read Service Status [[api-root]]
@@ -3502,7 +3326,7 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 DMPACK supports the following data serialisation formats:
 
-Atom (XML):: Export of log messages in
+Atom XML:: Export of log messages in
 link:https://en.wikipedia.org/wiki/Atom_(web_standard)[Atom Syndication Format]
 (RFC 4287), with optional XSLT style sheet.
 Block:: Export of observation responses as X/Y data points in ASCII block
@@ -3525,6 +3349,41 @@ case-insensitive, line-breaks are optional. Default values are assumed for
 omitted attributes of data in Namelist format.
 Text:: Status messages of the HTTP-RPC API are returned as key–value pairs in
 plain text format
+
+The following sections list the structured data types of DMPACK and their
+corresponding export formats:
+
+<<data-api>>:: <<data-api-text,Text>>
+
+<<data-beat>>:: <<data-beat-csv,CSV>>, <<data-beat-json,JSON>>,
+<<data-beat-nml,Namelist>>
+
+<<data-dp>>:: <<data-dp-block,Block>>, <<data-dp-csv,CSV>>,
+<<data-dp-json,JSON>>
+
+<<data-log>>:: <<data-log-atom,Atom XML>>, <<data-log-csv,CSV>>,
+<<data-log-json,JSON>>, <<data-log-nml,Namelist>>
+
+<<data-node>>:: <<data-node-csv,CSV>>, <<data-node-hdf5,HDF5>>,
+<<data-node-json,JSON>>, <<data-node-nml,Namelist>>
+
+<<data-observ>>:: <<data-observ-csv,CSV>>, <<data-observ-json,JSON>>,
+<<data-observ-lua,Lua>>, <<data-observ-nml,Namelist>>
+
+<<data-sensor>>:: <<data-sensor-csv,CSV>>, <<data-sensor-hdf5,HDF5>>,
+<<data-sensor-json,JSON>>, <<data-sensor-nml,Namelist>>
+
+<<data-target>>:: <<data-target-csv,CSV>>, <<data-target-hdf5,HDF5>>,
+<<data-target-json,JSON>>, <<data-target-nml,Namelist>>
+
+The JSON Lines format equals the JSON format, except that multiple records are
+separated by new line. The HDF5 format description for observations is omitted
+due to length. You can output the format from the command-line. For example, if
+the file `timeseries.hdf5` contains DMPACK observations:
+
+....
+$ h5dump -H -A 0 timeseries.hdf5
+....
 
 === API Status [[data-api]]
 
@@ -3664,8 +3523,7 @@ BEAT%UPTIME=0,
 | `message`   | string  | 512  | Log message.
 |===
 
-.Log level
-[[data-log-level]]
+.Log level [[data-log-level]]
 [%autowidth]
 |===
 | Level | Name
@@ -3677,7 +3535,7 @@ BEAT%UPTIME=0,
 | 5     | CRITICAL
 |===
 
-.Atom [[data-log-atom]]
+.Atom XML [[data-log-atom]]
 [source,xml]
 ....
 <?xml version="1.0" encoding="utf-8"?>
@@ -3788,6 +3646,33 @@ LOG%MESSAGE="dummy log message",
 | 2      | `name`    | Node name.
 | 3      | `meta`    | Node description.
 |===
+
+.HDF5 [[data-node-hdf5]]
+....
+DATASET "node_type" {
+  DATATYPE H5T_COMPOUND {
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "id";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "name";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "meta";
+  }
+  DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
+}
+....
 
 .JSON [[data-node-json]]
 [source,json]
@@ -3936,7 +3821,6 @@ NODE%META="Description",
 | 404 – 478 | `request`    | Request 6.
 | 479 – 553 | `request`    | Request 7.
 | 554 – 628 | `request`    | Request 8.
-
 |===
 
 .JSON [[data-observ-json]]
@@ -4108,6 +3992,46 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 6      | `meta`    | Sensor description.
 |===
 
+.HDF5 [[data-sensor-hdf5]]
+....
+DATASET "sensor_type" {
+  DATATYPE H5T_COMPOUND {
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "id";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "node_id";
+    H5T_STD_I32LE "type";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "name";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "sn";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "meta";
+  }
+  DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
+}
+....
+
 .JSON [[data-sensor-json]]
 [source,json]
 ....
@@ -4155,6 +4079,33 @@ SENSOR%META="Description",
 | 3      | `meta`    | Target description.
 |===
 
+.HDF5 [[data-target-hdf5]]
+....
+DATASET "target_type" {
+  DATATYPE H5T_COMPOUND {
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "id";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "name";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "meta";
+  }
+  DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
+}
+....
+
 .JSON [[data-target-json]]
 [source,json]
 ....
@@ -4183,8 +4134,7 @@ Observation Database:: Stores nodes, sensors, targets, observations, observation
 receivers, observation requests, and observation responses, with optional
 synchronisation tables for all record types.
 Log Database:: Stores all log messages in single table.
-Heartbeat Database:: Stores heartbeat messages by unique node id. Records are added
-via the SQL query `REPLACE INTO`.
+Heartbeat Database:: Stores heartbeat messages by unique node id.
 
 The databases are usually located in directory `/var/dmpack/`.
 
@@ -4237,6 +4187,243 @@ image::db_schema_log.png[log database schema,align="center"]
 .SQL schema of the beat database
 [#img-db-schema-beat]
 image::db_schema_beat.png[beat database schema,align="center"]
+
+== System Configuration
+
+Additional changes to the system configuration should be considered to prevent
+issues while conducting a long-term monitoring.
+
+=== Time Zone
+
+The local time zone of the sensor client should be set to a zone without summer
+daylight-saving. For instance, time zone `Europe/Berlin` implies Central
+European Summer Time (CEST), which is usually not desired for long-term
+observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
+in this case.
+
+==== FreeBSD
+
+On FreeBSD, configure the time zone using:
+
+....
+# tzsetup
+....
+
+==== Linux
+
+On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
+
+....
+# timedatectl list-timezones
+# timedatectl set-timezone Etc/GMT+1
+....
+
+=== Time Synchronisation
+
+The system time should be updated periodically by synchronising it with network
+time servers. A Network Time Protocol (NTP) client has to be installed and
+configured to enable the synchronisation.
+
+==== FreeBSD
+
+Set the current date and time intially by passing the IP or FQDN of the NTP
+server to _ntpdate(1)_:
+
+....
+# ntpdate -b ptbtime1.ptb.de
+....
+
+The NTP daemon _ntpd(8)_ is configured through file `/etc/ntp.conf`. If
+favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
+with a single server, for example:
+
+....
+server ptbtime1.ptb.de iburst
+....
+
+Add the following entries to `/etc/rc.conf`:
+
+....
+ntpd_enable="YES"
+ntpd_sync_on_start="YES"
+ntpd_flags="-g"
+....
+
+Start the _ntpd(8)_ service:
+
+....
+# service ntpd start
+....
+
+==== Linux
+
+On Debian Linux, install the NTP package:
+
+....
+# apt install ntp
+....
+
+Query the NTP servers to synchronise with:
+
+....
+# ntpq -p
+....
+
+The system time should be updated now:
+
+....
+# date -R
+....
+
+On error, try to reconfigure the NTP service:
+
+....
+# dpkg-reconfigure ntp
+....
+
+=== Power Saving
+
+On Linux, power saving for USB devices may be enabled by default. This can cause
+issues if sensors are attached through an USB adapter. USB power saving is
+enabled if the kernel boot parameter `usbcore.autosuspend` is not equal `-1`:
+
+....
+# cat /sys/module/usbcore/parameters/autosuspend
+2
+....
+
+We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
+and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
+
+....
+GRUB_CMDLINE_LINUX_DEFAULT="quiet usbcore.autosuspend=-1"
+....
+
+Then, update the boot loader:
+
+....
+# update-grub
+....
+
+The system has to be rebooted for the changes to take effect.
+
+=== Message Queues
+
+The operating system must have POSIX message queues enabled to run DMPACK
+programs on sensor nodes.
+
+==== FreeBSD
+
+On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
+queue file system is mounted:
+
+....
+# kldstat -m mqueuefs
+Id  Refs Name
+522    1 mqueuefs
+....
+
+Otherwise, we can simply load and mount the file system:
+
+....
+# kldload mqueuefs
+# mkdir -p /mnt/mqueue
+# mount -t mqueuefs null /mnt/mqueue
+....
+
+To load messages queues at system start, add the module `mqueuefs` to
+`/etc/rc.conf`, and the file system to `/etc/fstab`:
+
+....
+# sysrc kld_list+="mqueuefs"
+# echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
+....
+
+Additionally, we may increase the system limits of POSIX message queues with
+_sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
+
+....
+# sysctl kern.mqueue.maxmsg
+kern.mqueue.maxmsg: 100
+# sysctl kern.mqueue.maxmsgsize
+kern.mqueue.maxmsgsize: 16384
+....
+
+The maximum message size has to be at least 16384 bytes.
+
+==== Linux
+
+The POSIX message queue file system should be mounted by default on Linux. If
+not, run:
+
+....
+# mkdir -p /dev/mqueue
+# mount -t mqueue none /dev/mqueue
+....
+
+Set the maximum number of messages and the maximum message size to some
+reasonable values:
+
+....
+# sysctl fs.mqueue.msg_max=100
+# sysctl fs.mqueue.msgsize_max=16384
+....
+
+The maximum message size has to be at least 16384 bytes.
+
+=== Cron
+
+On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
+usually used to run jobs periodically. For example, in order to update an XML
+feed, or to generate HTML reports, add a schedule of the task to perform to the
+local _crontab(5)_ file.
+
+For example, we can edit the cron jobs of user `www` with _crontab(1)_:
+
+....
+# crontab -u www -e
+....
+
+The following _crontab(5)_ file adds a task to generate reports every hour:
+
+[source,crontab]
+....
+SHELL=/bin/sh
+MAILTO=/dev/null
+# Create reports every hour, suppress logging.
+@hourly -q /usr/local/share/dmpack/mkreport.sh
+....
+
+The shell script `mkreport.sh` must have the execution bits set. Update the
+script to your configuration.
+
+== Lua API [[lua-api]]
+
+Parts of the DMPACK library are exposed to Lua through a distinct API. The
+following functions are available in Lua:
+
+* `deg2gon(deg)` – Converts degrees to gon.
+* `deg2rad(deg)` – Converts degrees to radiants.
+* `gon2deg(gon)` – Converts gon to degrees.
+* `gon2rad(gon)` – Converts gon to radiants.
+* `rad2deg(rad)` – Converts radiants to degrees.
+* `rad2gon(rad)` – Converts radiants to gon.
+
+At the moment, the Lua API is used only for configuration file handling and
+observation processing. Load the shared library `libdmpack.so` from Lua to
+import the functions, for example:
+
+[source,lua]
+....
+-- Import the shared library `libdmpack.so`. The file must be
+-- located in the Lua search path.
+require("libdmpack")
+
+-- Convert angle from [deg] to [gon].
+deg = 360.0
+gon = deg2gon(deg)
+print(gon)
+....
 
 == Error Codes [[error-codes]]
 

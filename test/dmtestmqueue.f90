@@ -49,11 +49,11 @@ contains
         if (dm_is_error(rc)) return
         print *, 'Got message queue attributes'
 
-        print *, 'Flags.......: ', flags
-        print *, 'Max. Msg....: ', max_msg
-        print *, 'Msg. Size...: ', msg_size, ' bytes'
-        print *, 'Cur. Msgs...: ', cur_msgs
-        print *, 'Observ. Size: ', OBSERV_SIZE, ' bytes'
+        print '(" Flags.......: ", i0)',           flags
+        print '(" Max. Msg....: ", i0)',           max_msg
+        print '(" Msg. Size...: ", i0, " bytes")', msg_size
+        print '(" Cur. Msgs...: ", i0)',           cur_msgs
+        print '(" Observ. Size: ", i0, " bytes")', OBSERV_SIZE
 
         if (msg_size /= OBSERV_SIZE) then
             print *, 'Wrong message size!'

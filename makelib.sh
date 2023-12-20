@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#
 # This script packs the "thin" DMPACK library `libdm.a` and the interface
 # libraries into a "fat" static library `libdmpack.a`.
 #
@@ -10,7 +10,7 @@
 # For example:
 #
 #   $ sh makelib.sh ./dist/libdmpack.a ./lib/libdm.a
-
+#
 set -e
 
 TARGET=${1-"./dist/libdmpack.a"}

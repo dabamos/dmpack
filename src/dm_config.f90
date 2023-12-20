@@ -9,6 +9,7 @@ module dm_config
     use :: dm_job
     use :: dm_kind
     use :: dm_lua
+    use :: dm_lua_api
     use :: dm_report
     implicit none (type, external)
     private
@@ -69,7 +70,10 @@ contains
             rc = dm_lua_init(config%lua)
             if (dm_is_error(rc)) exit open_block
 
-            rc = dm_lua_open(config%lua, path, eval=.true., prepare=.true.)
+            rc = dm_lua_open(config%lua, path, eval=.true.)
+            if (dm_is_error(rc)) exit open_block
+
+            rc = dm_lua_api_register(config%lua, constants=.true., procedures=.false.)
             if (dm_is_error(rc)) exit open_block
 
             if (present(name)) then

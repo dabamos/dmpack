@@ -16,10 +16,6 @@ program dmtestmqtt
     implicit none (type, external)
     integer, parameter :: NTESTS = 2
 
-    character(len=:), allocatable :: env_host
-    integer                       :: env_port
-
-    logical         :: has_env
     logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
@@ -27,27 +23,31 @@ program dmtestmqtt
     call dm_init()
 
     no_color = dm_env_has('NO_COLOR')
-    has_env  = .true.
-
-    if (dm_is_error(dm_env_get('DM_MQTT_HOST', env_host)) .or. &
-        dm_is_error(dm_env_get('DM_MQTT_PORT', env_port))) then
-
-        call dm_ansi_color(COLOR_RED, no_color)
-        print '(/, "    Set the following environment variables to test MQTT")'
-        print '("    connectivity:", /)'
-        print '("        DM_MQTT_HOST - IP or FQDN of MQTT server.")'
-        print '("        DM_MQTT_PORT - MQTT server port.", /)'
-        print '("    Otherwise, some tests will be skipped.")'
-        call dm_ansi_reset(no_color)
-
-        has_env = .false.
-    end if
 
     tests(1) = test_type('dmtestmqtt.test01', test01)
     tests(2) = test_type('dmtestmqtt.test02', test02)
 
     call dm_test_run(tests, stats, no_color)
 contains
+    logical function get_env(host, port) result(has)
+        character(len=:), allocatable, intent(out) :: host
+        integer,                       intent(out) :: port
+
+        has = .false.
+
+        if (dm_is_error(dm_env_get('DM_MQTT_HOST', host)) .or. &
+            dm_is_error(dm_env_get('DM_MQTT_PORT', port))) then
+            call dm_ansi_color(COLOR_RED, no_color)
+            print '("dmtestmqtt:")'
+            print '("    Set environment variables DM_MQTT_HOST and DM_MQTT_PORT.")'
+            print '("    This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+            return
+        end if
+
+        has = .true.
+    end function get_env
+
     logical function test01() result(stat)
         character(len=*), parameter :: URL1 = 'mqtt://127.0.0.1/dmpack'
         character(len=*), parameter :: URL2 = 'mqtt://127.0.0.1:1883/dmpack'
@@ -74,18 +74,14 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        character(len=:), allocatable :: error_message, url
-        integer                       :: rc
+        character(len=:), allocatable :: error_message, host, url
+        integer                       :: port, rc
 
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(host, port)) return
 
         stat = TEST_FAILED
-
-        url = dm_mqtt_url(host=env_host, topic='/dmpack', port=env_port)
+        url = dm_mqtt_url(host=host, topic='/dmpack', port=port)
 
         print *, 'Publishing message on ' // url // ' ...'
         rc = dm_mqtt_publish(url, 'DMPACK', error_message=error_message)

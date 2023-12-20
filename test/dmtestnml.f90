@@ -76,7 +76,9 @@ contains
         if (.not. (beat1 == beat2)) return
 
         print *, 'Printing namelist string ...'
+        print '(72("."))'
         print '(a)', trim(str)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test02
@@ -104,7 +106,9 @@ contains
         if (.not. (log1 == log2)) return
 
         print *, 'Printing namelist string ...'
+        print '(72("."))'
         print '(a)', trim(str)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test03
@@ -132,7 +136,9 @@ contains
         if (.not. (node1 == node2)) return
 
         print *, 'Printing namelist string ...'
+        print '(72("."))'
         print '(a)', trim(str)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test04
@@ -160,7 +166,9 @@ contains
         if (.not. (sensor1 == sensor2)) return
 
         print *, 'Printing namelist string ...'
+        print '(72("."))'
         print '(a)', trim(str)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test05
@@ -188,7 +196,9 @@ contains
         if (.not. (target1 == target2)) return
 
         print *, 'Printing namelist string ...'
+        print '(72("."))'
         print '(a)', trim(str)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test06

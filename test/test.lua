@@ -100,3 +100,25 @@ dmreport = {
         meta = "Now is the time for all good men to come to the aid of the party.",
     }
 }
+
+function process(table)
+    print(dump(table))
+    return table
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k, v in pairs(o) do
+         if type(k) ~= 'number' then k = '"' .. k .. '"' end
+         s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+function geocom()
+    return geocom_beep_alarm()
+end

@@ -5,9 +5,6 @@ module dm_test
     use :: dm_ansi
     use :: dm_error
     use :: dm_kind
-    use :: dm_time
-    use :: dm_timer
-    use :: dm_version
     implicit none (type, external)
     private
 
@@ -37,8 +34,8 @@ module dm_test
 
     type, public :: test_type
         !! Test type.
-        character(len=TEST_NAME_LEN)                 :: name !! Test name.
-        procedure(dm_test_function), pointer, nopass :: proc !! Test procedure.
+        character(len=TEST_NAME_LEN)                 :: name = 'N/A' !! Test name.
+        procedure(dm_test_function), pointer, nopass :: proc         !! Test procedure.
     end type test_type
 
     public :: dm_test_function
@@ -51,6 +48,10 @@ contains
         !! Runs all tests in given array `tests`, returns test states in array
         !! `stats`.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+        use :: dm_system
+        use :: dm_time
+        use :: dm_timer
+        use :: dm_version
 
         type(test_type), intent(inout)        :: tests(:) !! Test types.
         logical,         intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
@@ -60,24 +61,31 @@ contains
         logical          :: no_color_
         real(kind=r8)    :: time, total_time
         type(timer_type) :: timer
+        type(uname_type) :: uname
 
         n = size(tests)
-        if (n == 0) return
 
         no_color_ = .false.
         if (present(no_color)) no_color_ = no_color
 
-        call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
-        print '("DMPACK..: ", a)',    DM_VERSION_STRING
-        print '("Time....: ", a)',    dm_time_now()
-        print '("Compiler: ", a)',    compiler_version()
-        print '("Options.: ", a, /)', compiler_options()
-        print '("Running ", i0, " test(s) ...", /)', n
+        call dm_system_uname(uname)
 
+        call dm_ansi_color(COLOR_WHITE, no_color_)
+        call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
+        call dm_ansi_reset(no_color_)
+
+        print '("Time....: ", a)',    dm_time_now()
+        print '("System..: ", a, 1x, a, " (", a, ")")', &
+            trim(uname%system_name), trim(uname%release), trim(uname%machine)
+        print '("Compiler: ", a)',    compiler_version()
+        print '("Options.: ", a)',    compiler_options()
+        print '("DMPACK..: ", a, /)', DM_VERSION_STRING
+
+        print '("Running ", i0, " test(s) ...")', n
         total_time = 0.0
-        print '(a)', TEST_RULE
 
         do i = 1, n
+            print '(a)', repeat('-', TEST_LINE_LEN)
             call test_print(i, n, tests(i)%name, TEST_STATE_RUNNING, no_color=no_color_)
 
             call dm_timer_start(timer)
@@ -89,11 +97,9 @@ contains
             if (stats(i) .eqv. TEST_PASSED) state = TEST_STATE_PASSED
 
             call test_print(i, n, tests(i)%name, state, time, no_color=no_color_)
-            print '(a)', TEST_RULE
         end do
 
-        call test_title('TEST SUMMARY', TEST_LINE_LEN, '=')
-
+        call test_title('TEST SUMMARY', TEST_LINE_LEN, '-')
         npass = count(stats)
         call dm_ansi_color(COLOR_GREEN, no_color_)
         print '(i0, " passed")', npass
@@ -106,8 +112,11 @@ contains
 
         print '("Total execution time: ", f8.4, " sec")', total_time
 
-        call test_title('TEST SESSION FINISHED', TEST_LINE_LEN, '=')
+        call dm_ansi_color(COLOR_WHITE, no_color_)
+        call test_title('TEST SESSION FINISHED', TEST_LINE_LEN)
+        call dm_ansi_reset(no_color_)
 
+        print *
         if (nfail > 0) call dm_stop(1)
     end subroutine dm_test_run
 
@@ -156,8 +165,8 @@ contains
         j = i / 2
         k = modulo(i, 2)
 
-        write (*, '(/, a, 1x)', advance='no') repeat(a, j)
-        write (*, '(a, 1x)',    advance='no') trim(text)
-        write (*, '(a)')                      repeat(a, j + k)
+        write (*, '(a, 1x)', advance='no') repeat(a, j)
+        write (*, '(a, 1x)', advance='no') trim(text)
+        write (*, '(a)')                   repeat(a, j + k)
     end subroutine test_title
 end module dm_test

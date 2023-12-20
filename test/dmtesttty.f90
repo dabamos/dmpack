@@ -25,12 +25,12 @@ contains
         integer(kind=i8)   :: n
         type(tty_type)     :: tty
 
+        stat = TEST_PASSED
+
         if (skip) then
             call dm_ansi_color(COLOR_RED, no_color)
-            print '(/, "This test will be skipped by default!", /)'
+            print *, 'This test will be skipped by default!'
             call dm_ansi_reset(no_color)
-
-            stat = TEST_PASSED
             return
         end if
 

@@ -8,7 +8,7 @@ program dmtestlua
     implicit none (type, external)
     character(len=*), parameter :: LUA_FILE = 'test/test.lua'
 
-    integer, parameter :: NTESTS = 6
+    integer, parameter :: NTESTS = 9
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -19,6 +19,9 @@ program dmtestlua
     tests(4) = test_type('dmtestlua.test04', test04)
     tests(5) = test_type('dmtestlua.test05', test05)
     tests(6) = test_type('dmtestlua.test06', test06)
+    tests(7) = test_type('dmtestlua.test07', test07)
+    tests(8) = test_type('dmtestlua.test08', test08)
+    tests(9) = test_type('dmtestlua.test09', test09)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -48,18 +51,18 @@ contains
 
             print *, 'Reading global string ...'
             str = ' '
-            rc = dm_lua_global(lua, 'foo', str)
+            rc = dm_lua_read(lua, 'foo', str)
             if (dm_is_error(rc)) exit test_block
             if (len_trim(str) == 0) exit test_block
             print *, 'Value: ', trim(str)
 
             print *, 'Reading global int ...'
-            rc = dm_lua_global(lua, 'value', v)
+            rc = dm_lua_read(lua, 'value', v)
             if (dm_is_error(rc)) exit test_block
             print *, 'Value: ', v
 
             print *, 'Reading global float ...'
-            rc = dm_lua_global(lua, 'pi', r)
+            rc = dm_lua_read(lua, 'pi', r)
             if (dm_is_error(rc)) exit test_block
             print *, 'Value: ', r
 
@@ -159,7 +162,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading table ...'
-            rc = dm_lua_global(lua, 'observ')
+            rc = dm_lua_read(lua, 'observ')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading observation ...'
@@ -193,7 +196,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading table ...'
-            rc = dm_lua_global(lua, 'observs')
+            rc = dm_lua_read(lua, 'observs')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Printing Lua stack dump ...'
@@ -239,7 +242,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading table ...'
-            rc = dm_lua_global(lua, 'config')
+            rc = dm_lua_read(lua, 'config')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading field ...'
@@ -297,7 +300,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading table "dmreport" ...'
-            rc = dm_lua_global(lua, 'dmreport')
+            rc = dm_lua_read(lua, 'dmreport')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading report to derived type ...'
@@ -320,4 +323,154 @@ contains
 
         stat = TEST_PASSED
     end function test06
+
+    logical function test07() result(stat)
+        !! Moves data through the Lua stack.
+        integer              :: rc
+        type(lua_state_type) :: lua
+        type(observ_type)    :: observ1, observ2
+
+        stat = TEST_FAILED
+        call dm_dummy_observ(observ1, nrequests=2)
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Pushing observation onto Lua stack ...'
+            call dm_lua_from(lua, observ1)
+
+            print *, 'Printing Lua stack dump ...'
+            call dm_lua_dump_stack(lua)
+
+            print *, 'Pulling observation from Lua stack ...'
+            rc = dm_lua_to(lua, observ2)
+
+            print *, 'Printing Lua stack dump ...'
+            call dm_lua_dump_stack(lua)
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_lua_destroy(lua)
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating ...'
+        if (.not. (observ1 == observ2)) return
+
+        stat = TEST_PASSED
+    end function test07
+
+    logical function test08() result(stat)
+        !! Test that passes a request to a Lua function and reads it back.
+        character(len=*), parameter :: FUNC_NAME = 'process'
+
+        integer              :: rc
+        type(lua_state_type) :: lua
+        type(request_type)   :: request1, request2
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening Lua file ...'
+            rc = dm_lua_open(lua, LUA_FILE)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Loading Lua function ' // FUNC_NAME // '() ...'
+            rc = dm_lua_read(lua, FUNC_NAME)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating Lua function ' // FUNC_NAME // '() ...'
+            if (.not. dm_lua_is_function(lua)) exit test_block
+
+            print *, 'Pushing request onto Lua stack ...'
+            call dm_geocom_prepare_request_beep_alarm(request1)
+            call dm_lua_from(lua, request1)
+
+            print *, 'Calling Lua function ' // FUNC_NAME // '() ...'
+            print '(72("."))'
+            rc = dm_lua_call(lua, nargs=1, nresults=1)
+            if (dm_is_error(rc)) exit test_block
+            print '(72("."))'
+
+            print *, 'Pulling request from Lua stack ...'
+            rc = dm_lua_to(lua, request2)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Printing Lua stack dump ...'
+            call dm_lua_dump_stack(lua)
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_lua_destroy(lua)
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating request ...'
+        if (.not. (request1 == request2)) return
+
+        stat = TEST_PASSED
+    end function test08
+
+    logical function test09() result(stat)
+        !! GeoCOM API test.
+        character(len=*), parameter :: FUNC_NAME = 'geocom'
+
+        integer              :: rc
+        type(lua_state_type) :: lua
+        type(request_type)   :: request1, request2
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening Lua file ...'
+            rc = dm_lua_open(lua, LUA_FILE)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Creating GeoCOM environment ...'
+            rc = dm_lua_geocom_register(lua)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Loading Lua function ' // FUNC_NAME // '() ...'
+            rc = dm_lua_read(lua, FUNC_NAME)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating Lua function ' // FUNC_NAME // '() ...'
+            if (.not. dm_lua_is_function(lua)) exit test_block
+
+            print *, 'Calling Lua function ' // FUNC_NAME // '() ...'
+            rc = dm_lua_call(lua, nargs=0, nresults=1)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Pulling request from Lua stack ...'
+            rc = dm_lua_to(lua, request1)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Printing Lua stack dump ...'
+            call dm_lua_dump_stack(lua)
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_perror(rc, 'Lua error: ' // dm_lua_last_error(lua))
+        call dm_lua_destroy(lua)
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating request ...'
+        call dm_geocom_prepare_request_beep_alarm(request2)
+        if (.not. (request1 == request2)) return
+
+        stat = TEST_PASSED
+    end function test09
 end program dmtestlua

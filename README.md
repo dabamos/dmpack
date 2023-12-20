@@ -45,11 +45,12 @@ semaphores.
 
 ## Features
 
-DMPACK covers the following tasks:
+DMPACK includes modules for:
 
 * command-line argument parsing
 * configuration file evaluation
 * sensor control (RS-232/422/485, 1-Wire, file system, sub-process)
+* GeoCOM API for Fortran and Lua
 * regular expression matching
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
@@ -58,9 +59,10 @@ DMPACK covers the following tasks:
 * HTTP-RPC API for remote procedure calls
 * concurrent data synchronisation between client and server
 * distributed logging
-* heartbeats
+* client status messages (heartbeats)
 * server-side web applications
 * time series plotting
+* virtual sensors
 * MQTT connectivity
 * Lua scripting
 * HTML5 reports
@@ -157,8 +159,8 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 
 #### Make
 
-The Git repository has to be cloned recursively. Otherwise, the required
-sub-modules will be missing. Then, run the Makefile:
+The Git repository has to be cloned recursively. Otherwise, your will need to
+download the sub-modules manually. Then, run the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack

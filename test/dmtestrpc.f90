@@ -18,33 +18,12 @@ program dmtestrpc
 
     integer, parameter :: NTESTS = 5
 
-    character(len=:), allocatable :: host, username, password
-
-    logical         :: has_env
     logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
     call dm_init()
-
     no_color = dm_env_has('NO_COLOR')
-    has_env  = .true.
-
-    if (dm_is_error(dm_env_get('DM_API_HOST',     host))     .or. &
-        dm_is_error(dm_env_get('DM_API_USERNAME', username)) .or. &
-        dm_is_error(dm_env_get('DM_API_PASSWORD', password))) then
-
-        print '(72("-"))'
-        call dm_ansi_color(COLOR_RED, no_color)
-        print '("dmtestrpc:", /)'
-        print '("    Set environment variables DM_API_HOST, DM_API_USERNAME, and")'
-        print '("    DM_API_PASSWORD of the DMPACK RPC API. Otherwise, some tests")'
-        print '("    of this program will be skipped.")'
-        call dm_ansi_reset(no_color)
-        print '(72("-"))'
-
-        has_env = .false.
-    end if
 
     tests(1) = test_type('dmtestrpc.test01', test01)
     tests(2) = test_type('dmtestrpc.test02', test02)
@@ -54,6 +33,28 @@ program dmtestrpc
 
     call dm_test_run(tests, stats, no_color)
 contains
+    logical function get_env(host, username, password) result(has)
+        character(len=:), allocatable, intent(out) :: host
+        character(len=:), allocatable, intent(out) :: username
+        character(len=:), allocatable, intent(out) :: password
+
+        has = .false.
+
+        if (dm_is_error(dm_env_get('DM_API_HOST',     host))     .or. &
+            dm_is_error(dm_env_get('DM_API_USERNAME', username)) .or. &
+            dm_is_error(dm_env_get('DM_API_PASSWORD', password))) then
+
+            call dm_ansi_color(COLOR_RED, no_color)
+            print '("dmtestrpc:")'
+            print '("    Set environment vars DM_RPC_HOST, DM_RPC_USERNAME, DM_API_PASSWORD")'
+            print '("    of the DMPACK RPC API. This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+            return
+        end if
+
+        has = .true.
+    end function get_env
+
     logical function test01() result(stat)
         character(len=*), parameter :: URL1 = 'http://example.com:8080/api/v1'
         character(len=*), parameter :: URL2 = 'https://example.com/api/v1/observ'
@@ -63,7 +64,6 @@ contains
         stat = TEST_FAILED
 
         print *, 'Validating URLs ...'
-
         url = dm_rpc_url('example.com', 8080, '/api/v1')
         print *, url
         if (url /= URL1) return
@@ -80,40 +80,37 @@ contains
         !! an RPC-API.
         integer, parameter :: NOBSERVS = 100
 
-        integer                 :: i, rc
-        real(kind=r8)           :: dt
-        type(rpc_request_type)  :: request
-        type(rpc_response_type) :: response
-        type(timer_type)        :: timer
-
+        integer                        :: i, rc
+        real(kind=r8)                  :: dt
+        type(rpc_request_type)         :: request
+        type(rpc_response_type)        :: response
+        type(timer_type)               :: timer
         type(observ_type), allocatable :: observs(:)
+        character(len=:),  allocatable :: host, username, password, url
 
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(host, username, password)) return
 
         stat = TEST_FAILED
-
         rc = dm_rpc_init()
         call dm_perror(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'Sending raw HTTP GET request to ' // dm_rpc_url(host) // ' ...'
+        url = dm_rpc_url(host)
+        print *, 'Sending raw HTTP GET request to "' // url // '" ...'
         rc = dm_rpc_request(request  = request, &
                             response = response, &
                             username = username, &
                             password = password, &
                             method   = RPC_METHOD_GET, &
-                            url      = dm_rpc_url(host))
+                            url      = url)
 
         if (response%code == HTTP_OK) then
             print *, 'Response content:'
             print '(a)', response%payload
         else
-            print *, 'HTTP code: ', response%code
-            print *, 'cURL message: ', response%error_message
+            print '("HTTP code...: ", i0)', response%code
+            print '("cURL message: ", a)',  response%error_message
         end if
 
         call dm_rpc_reset(request)
@@ -125,7 +122,7 @@ contains
         allocate (observs(NOBSERVS))
         call dm_dummy_observ(observs)
 
-        print *, 'Sending ', NOBSERVS, ' observations via HTTP POST ...'
+        print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations via HTTP POST ...'
         call dm_timer_start(timer)
 
         do i = 1, NOBSERVS
@@ -152,7 +149,7 @@ contains
 
         dt = dm_timer_stop(timer)
         call dm_perror(rc)
-        print *, i - 1, ' observations sent in ', real(dt), ' sec'
+        print '(1x, i0, a, f8.5, a)', (i - 1), ' observations sent in ', dt, ' sec'
 
         call dm_rpc_destroy()
         stat = TEST_PASSED
@@ -163,25 +160,21 @@ contains
         !! request to an RPC-API.
         integer, parameter :: NOBSERVS = 10
 
-        integer          :: i, rc
-        logical          :: error
-        real(kind=r8)    :: dt
-        type(timer_type) :: timer
+        character(len=:), allocatable :: host, username, password
+        integer                       :: i, rc
+        logical                       :: error
+        real(kind=r8)                 :: dt
+        type(timer_type)              :: timer
 
         type(observ_type),       allocatable :: observs(:)
         type(rpc_request_type),  allocatable :: requests(:)
         type(rpc_response_type), allocatable :: responses(:)
 
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(host, username, password)) return
 
         stat = TEST_FAILED
-
         rc = dm_rpc_init()
-
         call dm_perror(rc)
         if (dm_is_error(rc)) return
 
@@ -190,8 +183,7 @@ contains
 
         call dm_dummy_observ(observs)
 
-        print *, 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
-
+        print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
         call dm_timer_start(timer)
         rc = dm_rpc_send(requests, responses, observs, &
                          dm_rpc_url(host, endpoint='/observ'), &
@@ -211,7 +203,7 @@ contains
             end if
         end do
 
-        print *, NOBSERVS, ' observations sent in ', real(dt), ' sec'
+        print '(1x, i0, a, f8.5, a)', NOBSERVS, ' observations sent in ', dt, ' sec'
         call dm_rpc_destroy()
 
         if (error) return
@@ -223,25 +215,21 @@ contains
         !! request to an RPC-API.
         integer, parameter :: NOBSERVS = 10
 
-        integer          :: i, rc
-        logical          :: error
-        real(kind=r8)    :: dt
-        type(timer_type) :: timer
+        character(len=:), allocatable :: host, username, password
+        integer                       :: i, rc
+        logical                       :: error
+        real(kind=r8)                 :: dt
+        type(timer_type)              :: timer
 
         type(observ_type),       allocatable :: observs(:)
         type(rpc_request_type),  allocatable :: requests(:)
         type(rpc_response_type), allocatable :: responses(:)
 
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(host, username, password)) return
 
         stat = TEST_FAILED
-
         rc = dm_rpc_init()
-
         call dm_perror(rc)
         if (dm_is_error(rc)) return
 
@@ -250,8 +238,7 @@ contains
 
         call dm_dummy_observ(observs)
 
-        print *, 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
-
+        print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
         call dm_timer_start(timer)
         rc = dm_rpc_send(requests, responses, observs, &
                          dm_rpc_url(host, endpoint='/observ'), &
@@ -271,7 +258,7 @@ contains
             end if
         end do
 
-        print *, NOBSERVS, ' observations sent in ', real(dt), ' sec'
+        print '(1x, i0, a, f8.5, a)', NOBSERVS, ' observations sent in ', dt, ' sec'
         call dm_rpc_destroy()
 
         if (error) return
@@ -280,23 +267,19 @@ contains
 
     logical function test05() result(stat)
         !! This test sends a beat via HTTP POST request to an RPC-API.
-        integer          :: rc
-        integer(kind=i8) :: uptime
-        real(kind=r8)    :: dt
+        character(len=:), allocatable :: host, username, password
+        integer                       :: rc
+        integer(kind=i8)              :: uptime
+        real(kind=r8)                 :: dt
+        type(beat_type)               :: beat
+        type(rpc_request_type)        :: request
+        type(rpc_response_type)       :: response
+        type(timer_type)              :: timer
 
-        type(beat_type)         :: beat
-        type(rpc_request_type)  :: request
-        type(rpc_response_type) :: response
-        type(timer_type)        :: timer
-
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(host, username, password)) return
 
         stat = TEST_FAILED
-
         rc = dm_rpc_init()
         call dm_perror(rc)
         if (dm_is_error(rc)) return
@@ -317,13 +300,13 @@ contains
         dt = dm_timer_stop(timer)
         call dm_perror(rc)
 
-        if (response%code /= HTTP_CREATED) print *, 'HTTP: ', response%code
+        if (response%code /= HTTP_CREATED) print '(" HTTP: ", i0)', response%code
 
         print '(a)', response%payload
         call dm_rpc_reset(request)
         call dm_rpc_destroy()
 
-        print *, 'beat sent in ', real(dt), ' sec'
+        print '(1x, a, f8.5, a)', 'Beat sent in ', dt, ' sec'
         stat = TEST_PASSED
     end function test05
 end program dmtestrpc

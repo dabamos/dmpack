@@ -329,7 +329,9 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     integer function dm_db_backup(db, path, wal, callback, nsteps, sleep_time) result(rc)
-        !! Creates online backup of given database.
+        !! Creates online backup of given database. The functions assumes 500
+        !! steps and a sleep time of 250 ms by default, if the arguments are not
+        !! passed.
         !!
         !! Returns the following error codes:
         !!
@@ -688,7 +690,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
@@ -726,7 +728,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id.
 
@@ -764,7 +766,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
@@ -808,7 +810,7 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TRANSACTION` if transaction failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
@@ -852,7 +854,7 @@ contains
     end function dm_db_delete_observ
 
     integer function dm_db_delete_sensor(db, sensor_id) result(rc)
-        !! Deletes sensor from database.
+        !! Deletes sensor of given id from database.
         !!
         !! Returns the following error codes:
         !!
@@ -860,7 +862,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
 
@@ -898,7 +900,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_INVALID` if node id is invalid.
-        !! * `E_READ_ONLY` if database is opened in read-only.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.
 
@@ -1019,7 +1021,7 @@ contains
     end function dm_db_finalize
 
     integer function dm_db_get_application_id(db, id) result(rc)
-        !! Returns application id of database.
+        !! Returns application id of database in `id`.
         !!
         !! Returns the following error codes:
         !!
@@ -1052,7 +1054,7 @@ contains
     end function dm_db_get_application_id
 
     integer function dm_db_get_data_version(db, version) result(rc)
-        !! Returns data version.
+        !! Returns data version in `version`.
         !!
         !! The integer values returned by two invocations of `PRAGMA data_version`
         !! from the same connection will be different if changes were committed to
@@ -1094,7 +1096,7 @@ contains
     end function dm_db_get_data_version
 
     integer function dm_db_get_foreign_keys(db, enabled) result(rc)
-        !! Returns status of foreign keys contraint.
+        !! Returns status of foreign keys contraint in `enabled`.
         !!
         !! Returns the following error codes:
         !!
@@ -1129,7 +1131,8 @@ contains
     end function dm_db_get_foreign_keys
 
     integer function dm_db_get_journal_mode(db, mode, name) result(rc)
-        !! Returns journal mode of database.
+        !! Returns journal mode of database in `mode`. The name of the mode is
+        !! optionally passed in `name`.
         !!
         !! Returns the following error codes:
         !!
@@ -1181,7 +1184,7 @@ contains
     end function dm_db_get_journal_mode
 
     integer function dm_db_get_query_only(db, enabled) result(rc)
-        !! Returns status of query-only pragma.
+        !! Returns status of query-only pragma in `enabled`.
         !!
         !! Returns the following error codes:
         !!
@@ -1216,7 +1219,7 @@ contains
     end function dm_db_get_query_only
 
     integer function dm_db_get_user_version(db, version) result(rc)
-        !! Returns user version of database.
+        !! Returns user version of database in `version`.
         !!
         !! Returns the following error codes:
         !!
@@ -1916,7 +1919,7 @@ contains
                                               from, to, error, limit, npoints) result(rc)
         !! Returns data points from observations database. This function
         !! selects only responses of error `E_NONE`, unless argument `error` is
-        !! passed.
+        !! passed, then only of this error code.
         type(db_type),              intent(inout)         :: db            !! Database type.
         type(dp_type), allocatable, intent(out)           :: dps(:)        !! Returned data points.
         character(len=*),           intent(in)            :: node_id       !! Node id.

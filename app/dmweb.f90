@@ -1384,9 +1384,9 @@ contains
 
             call dm_cgi_out(dm_html_heading(2, 'System Status'))
             call dm_cgi_out(H_TABLE // H_TBODY // &
-                            H_TR // H_TH // 'Local Time' // H_TH_END // &
+                            H_TR // H_TH // 'Server Time' // H_TH_END // &
                                     H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Uptime' // H_TH_END // &
+                            H_TR // H_TH // 'Server Uptime' // H_TH_END // &
                                     H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'Hostname' // H_TH_END // &
                                     H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &

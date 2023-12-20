@@ -23,8 +23,8 @@
 TESTS="dmtestapi dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp dmtesthash \
 dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
 dmtestmqueue dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
-dmtestregex dmtestrouter dmtestrpc dmteststring dmtesttime dmtesttty dmtestunit \
-dmtestutil dmtestuuid"
+dmtestregex dmtestrouter dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty \
+dmtestunit dmtestutil dmtestuuid"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 
@@ -35,7 +35,7 @@ for TEST in ${TESTS}; do
     fi
 done
 
-printf "\n************************************************************************\n"
+printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
 
 if [ ${NFAIL} -eq 0 ]; then
     printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${NTEST}
@@ -43,4 +43,7 @@ else
     printf "\033[31m%s OF %s TEST PROGRAMS FAILED!\033[39m\n" ${NFAIL} ${NTEST}
 fi
 
-printf "************************************************************************\n\n"
+printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+printf "User and system times used by this script:\n"
+times
+printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n"

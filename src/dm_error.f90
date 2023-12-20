@@ -10,7 +10,7 @@ module dm_error
     ! Generic errors.
     integer, parameter, public :: E_NONE           =   0 !! No error.
     integer, parameter, public :: E_ERROR          =   1 !! Generic error.
-    integer, parameter, public :: E_DUMMY          =   2 !! Dummy error.
+    integer, parameter, public :: E_DUMMY          =   2 !! Dummy error or not implemented.
     integer, parameter, public :: E_INVALID        =   3 !! Invalid input/argument.
     integer, parameter, public :: E_INCOMPLETE     =   4 !! Input/argument missing.
     integer, parameter, public :: E_TYPE           =   5 !! Type error.
@@ -350,7 +350,10 @@ contains
         use :: unix, only: c_exit
         integer, intent(in), optional :: stat !! Exit status.
 
-        if (.not. present(stat)) call c_exit(0)
-        call c_exit(stat)
+        if (present(stat)) then
+            call c_exit(stat)
+        else
+            call c_exit(0)
+        end if
     end subroutine dm_stop
 end module dm_error

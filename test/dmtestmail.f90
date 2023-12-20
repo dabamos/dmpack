@@ -19,45 +19,44 @@ program dmtestmail
     implicit none (type, external)
     integer, parameter :: NTESTS = 2
 
-    character(len=:), allocatable :: env_from, env_to
-    character(len=:), allocatable :: env_host, env_username, env_password
-
-    logical         :: has_env
     logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
     call dm_init()
-
     no_color = dm_env_has('NO_COLOR')
-    has_env  = .true.
-
-    if (dm_is_error(dm_env_get('DM_MAIL_FROM',     env_from))     .or. &
-        dm_is_error(dm_env_get('DM_MAIL_TO',       env_to))       .or. &
-        dm_is_error(dm_env_get('DM_MAIL_HOST',     env_host))     .or. &
-        dm_is_error(dm_env_get('DM_MAIL_USERNAME', env_username)) .or. &
-        dm_is_error(dm_env_get('DM_MAIL_PASSWORD', env_password))) then
-
-        call dm_ansi_color(COLOR_RED, no_color)
-        print '(/, "    Set the following environment variables to send an e-mail")'
-        print '("    via SMTP:", /)'
-        print '("        DM_MAIL_FROM     - Address of sender.")'
-        print '("        DM_MAIL_TO       - Address of recipient.")'
-        print '("        DM_MAIL_HOST     - SMTP host name (example.com).")'
-        print '("        DM_MAIL_USERNAME - SMTP user name.")'
-        print '("        DM_MAIL_PASSWORD - SMTP password.", /)'
-        print '("    Otherwise, some tests will be skipped. The server must support")'
-        print '("    StartTLS.")'
-        call dm_ansi_reset(no_color)
-
-        has_env = .false.
-    end if
 
     tests(1) = test_type('dmtestmail.test01', test01)
     tests(2) = test_type('dmtestmail.test02', test02)
 
     call dm_test_run(tests, stats, no_color)
 contains
+    logical function get_env(from, to, host, username, password) result(has)
+        character(len=:), allocatable, intent(out) :: from
+        character(len=:), allocatable, intent(out) :: to
+        character(len=:), allocatable, intent(out) :: host
+        character(len=:), allocatable, intent(out) :: username
+        character(len=:), allocatable, intent(out) :: password
+
+        has = .false.
+
+        if (dm_is_error(dm_env_get('DM_MAIL_FROM',     from))     .or. &
+            dm_is_error(dm_env_get('DM_MAIL_TO',       to))       .or. &
+            dm_is_error(dm_env_get('DM_MAIL_HOST',     host))     .or. &
+            dm_is_error(dm_env_get('DM_MAIL_USERNAME', username)) .or. &
+            dm_is_error(dm_env_get('DM_MAIL_PASSWORD', password))) then
+
+            call dm_ansi_color(COLOR_RED, no_color)
+            print '("dmtestmail:")'
+            print '("    Set environment variables DM_MAIL_FROM, DM_MAIL_TO, DM_MAIL_HOST,")'
+            print '("    DM_MAIL_USERNAME, and DM_MAIL_PASSWORD. This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+            return
+        end if
+
+        has = .true.
+    end function get_env
+
     logical function test01() result(stat)
         !! Mock-testing of mail procedures.
         character(len=:), allocatable :: url
@@ -121,13 +120,15 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        !! Sends e-mail via SMTP, using parameters passed via environment
+        !! Sends e-mail via SMTP, using parameters passed through environment
         !! variables.
-        logical,          parameter :: DEBUG   = .true. !! Enable cURL debug output.
-        character(len=*), parameter :: SUBJECT = 'DMPACK Test Message'
-        character(len=*), parameter :: MESSAGE = &
+        logical,          parameter :: DEBUG   = .true.                !! Enable cURL debug output.
+        character(len=*), parameter :: SUBJECT = 'DMPACK Test Message' !! E-mail subject.
+        character(len=*), parameter :: MESSAGE = &                     !! E-mail body.
             'Now is the time for all good men to come to the aid of the party.'
 
+        character(len=:), allocatable :: env_from, env_to
+        character(len=:), allocatable :: env_host, env_username, env_password
         character(len=:), allocatable :: error_message
         integer                       :: error_curl, rc
 
@@ -136,14 +137,10 @@ contains
         type(person_type)      :: from
         type(person_type)      :: to(1)
 
-        if (.not. has_env) then
-            stat = TEST_PASSED
-            print *, 'Skipping test ...'
-            return
-        end if
+        stat = TEST_PASSED
+        if (.not. get_env(env_from, env_to, env_host, env_username, env_password)) return
 
         stat = TEST_FAILED
-
         mail_block: block
             print *, 'Creating server ...'
             rc = dm_mail_create(server, env_host, env_username, env_password, &

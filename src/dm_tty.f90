@@ -10,10 +10,12 @@ module dm_tty
     implicit none (type, external)
     private
 
-    integer, parameter, public :: TTY_RDONLY  = 1
-    integer, parameter, public :: TTY_WRONLY  = 2
-    integer, parameter, public :: TTY_RDWR    = 3
+    ! Access.
+    integer, parameter, public :: TTY_RDONLY  = 1 !! Read-only.
+    integer, parameter, public :: TTY_WRONLY  = 2 !! Write-only.
+    integer, parameter, public :: TTY_RDWR    = 3 !! Read/write.
 
+    ! Baud rate.
     integer, parameter, public :: TTY_B0      = 0
     integer, parameter, public :: TTY_B50     = 50
     integer, parameter, public :: TTY_B75     = 75
@@ -36,23 +38,26 @@ module dm_tty
     integer, parameter, public :: TTY_B460800 = 460800
     integer, parameter, public :: TTY_B921600 = 921600
 
-    integer, parameter, public :: TTY_PARITY_NONE = 1
-    integer, parameter, public :: TTY_PARITY_EVEN = 2
-    integer, parameter, public :: TTY_PARITY_ODD  = 3
+    ! Parity.
+    integer, parameter, public :: TTY_PARITY_NONE = 1 !! No parity.
+    integer, parameter, public :: TTY_PARITY_EVEN = 2 !! Even parity.
+    integer, parameter, public :: TTY_PARITY_ODD  = 3 !! Odd parity.
 
-    integer, parameter, public :: TTY_PARITY_NAME_LEN = 4
+    integer, parameter, public :: TTY_PARITY_NAME_LEN = 4 !! Parity string length.
 
-    integer, parameter, public :: TTY_BYTE_SIZE5  = 1
-    integer, parameter, public :: TTY_BYTE_SIZE6  = 2
-    integer, parameter, public :: TTY_BYTE_SIZE7  = 3
-    integer, parameter, public :: TTY_BYTE_SIZE8  = 4
+    ! Byte size.
+    integer, parameter, public :: TTY_BYTE_SIZE5  = 1 !! 5 bits.
+    integer, parameter, public :: TTY_BYTE_SIZE6  = 2 !! 6 bits.
+    integer, parameter, public :: TTY_BYTE_SIZE7  = 3 !! 7 bits.
+    integer, parameter, public :: TTY_BYTE_SIZE8  = 4 !! 8 bits.
 
-    integer, parameter, public :: TTY_STOP_BITS1  = 1
-    integer, parameter, public :: TTY_STOP_BITS2  = 2
+    ! Stop bits.
+    integer, parameter, public :: TTY_STOP_BITS1  = 1 !! 1 stop bit.
+    integer, parameter, public :: TTY_STOP_BITS2  = 2 !! 2 stop bits.
 
-    ! Serial port type (default: 9600 baud, 8N1).
+    ! Serial port type.
     type, public :: tty_type
-        !! TTY/PTY data type.
+        !! TTY/PTY data type that stores serial port settings (default: 9600 baud, 8N1).
         character(len=FILE_PATH_LEN) :: path      = ' '             !! TTY/PTY path.
         integer                      :: access    = TTY_RDWR        !! Access mode (read/write).
         integer                      :: baud_rate = TTY_B9600       !! Baud rate (9600).
@@ -66,6 +71,7 @@ module dm_tty
         integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
     end type tty_type
 
+    ! Public procedures.
     public :: dm_tty_baud_rate_from_value
     public :: dm_tty_byte_size_from_value
     public :: dm_tty_close
@@ -170,6 +176,14 @@ contains
         if (present(error)) error = E_NONE
     end function dm_tty_byte_size_from_value
 
+    logical function dm_tty_connected(tty) result(connected)
+        !! Return `.true.` if TTY is connected, else `.false.`.
+        type(tty_type), intent(inout) :: tty !! TTY type.
+
+        connected = .false.
+        if (tty%fd /= -1) connected = .true.
+    end function dm_tty_connected
+
     integer function dm_tty_flush(tty, input, output) result(rc)
         !! Flushes TTY input and output buffer. Returns `E_INVALID` if the
         !! passed `tty` type is invalid, or `E_SYSTEM` if the system call
@@ -257,14 +271,6 @@ contains
 
         rc = dm_tty_flush(tty)
     end function dm_tty_open
-
-    logical function dm_tty_connected(tty) result(connected)
-        !! Return `.true.` if TTY is connected, else `.false.`.
-        type(tty_type), intent(inout) :: tty !! TTY type.
-
-        connected = .false.
-        if (tty%fd /= -1) connected = .true.
-    end function dm_tty_connected
 
     integer function dm_tty_parity_from_name(name, error) result(parity)
         !! Returns parity from character string (`none`, `even`, `odd`). If the

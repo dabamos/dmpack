@@ -25,6 +25,8 @@ program dminfo
 
     ! Read command-line arguments.
     rc = read_args(app)
+    if (dm_is_error(rc)) call dm_stop(1)
+
     rc = output_info(app)
     if (dm_is_error(rc)) call dm_stop(1)
 contains
@@ -33,15 +35,16 @@ contains
         type(app_type), intent(inout) :: app
         type(arg_type)                :: args(1)
 
-        rc = E_NONE
-
-        args = [ arg_type(name='database', short='d', type=ARG_TYPE_DB) ] ! --database <path>
-
-        ! Read arguments and get database path.
+        args = [ arg_type(name='database', short='d', type=ARG_TYPE_DB) ] ! -d, --database <path>
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
-        if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%database)
+        arg_block: block
+            if (rc == E_ARG_NOT_FOUND) exit arg_block
+            if (dm_is_ok(rc)) rc = dm_arg_get(args(1), app%database)
+            return
+        end block arg_block
+
+        rc = E_NONE
     end function read_args
 
     integer function output_info(app) result(rc)
@@ -57,6 +60,7 @@ contains
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
+        ! Try to open database.
         has_db = (len_trim(app%database) > 0)
 
         if (has_db) then
@@ -69,11 +73,11 @@ contains
             end if
         end if
 
-        call dm_system_uname(uname)
-
+        ! Compiler and build options.
         print '("build.compiler: ", a)', compiler_version()
-        print '("build.options: ", a)', compiler_options()
+        print '("build.options: ", a)',  compiler_options()
 
+        ! Database information.
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
             print '("db.application_id: ", z0)', app_id
@@ -135,8 +139,10 @@ contains
             rc = dm_db_close(db)
         end if
 
+        ! DMPACK information.
         print '("dmpack.version: ", a)', DM_VERSION_STRING
 
+        ! System information.
         write (*, '("system.byte_order: ")', advance='no')
 
         if (LITTLE_ENDIAN) then
@@ -145,12 +151,14 @@ contains
             print '("big-endian")'
         end if
 
-        print '("system.host: ", a)', trim(uname%node_name)
-        print '("system.machine: ", a)', trim(uname%machine)
-        print '("system.name: ", a)', trim(uname%system_name)
-        print '("system.release: ", a)', trim(uname%release)
-        print '("system.time.now: ", a)', dm_time_now()
+        call dm_system_uname(uname)
+
+        print '("system.host: ", a)',      trim(uname%node_name)
+        print '("system.machine: ", a)',   trim(uname%machine)
+        print '("system.name: ", a)',      trim(uname%system_name)
+        print '("system.release: ", a)',   trim(uname%release)
+        print '("system.time.now: ", a)',  dm_time_now()
         print '("system.time.zone: ", a)', dm_time_zone()
-        print '("system.version: ", a)', trim(uname%version)
+        print '("system.version: ", a)',   trim(uname%version)
     end function output_info
 end program dminfo

@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_util
     !! Type conversion functions and other utility procedures.
-    use :: dm_const
+    use :: dm_const, only: PI
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)

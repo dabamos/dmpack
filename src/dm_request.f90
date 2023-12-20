@@ -12,14 +12,14 @@ module dm_request
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256
-    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256
-    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8
-    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256
-    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16
+    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256 !! Request string length.
+    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256 !! Response string length.
+    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8   !! Delimiter string length.
+    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256 !! Regular expression string length.
+    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16  !! Response array size.
 
-    integer, parameter, public :: REQUEST_STATE_NONE     = 0
-    integer, parameter, public :: REQUEST_STATE_DISABLED = 1
+    integer, parameter, public :: REQUEST_STATE_NONE     = 0 !! Default state.
+    integer, parameter, public :: REQUEST_STATE_DISABLED = 1 !! Disabled state.
 
     type, public :: request_type
         !! Request to send to a sensor.
@@ -31,7 +31,7 @@ module dm_request
         integer                              :: delay      = 0                    !! Delay in msec.
         integer                              :: error      = E_NONE               !! Error code.
         integer                              :: retries    = 0                    !! Number of retries.
-        integer                              :: state      = REQUEST_STATE_NONE   !! State error.
+        integer                              :: state      = REQUEST_STATE_NONE   !! Request state.
         integer                              :: timeout    = 0                    !! Timeout in msec.
         integer                              :: nresponses = 0                    !! Number of responses.
         type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) !! Responses array.
@@ -44,14 +44,30 @@ module dm_request
         module procedure :: dm_request_equals
     end interface
 
+    interface dm_request_get
+        !! Generic function to get value, unit, and error of a response.
+        module procedure :: request_get_i4
+        module procedure :: request_get_i8
+        module procedure :: request_get_r4
+        module procedure :: request_get_r8
+        module procedure :: request_get_type
+    end interface
+
     public :: operator (==)
 
     public :: dm_request_add
     public :: dm_request_equals
+    public :: dm_request_get
     public :: dm_request_set_response_error
     public :: dm_request_index
     public :: dm_request_out
     public :: dm_request_valid
+
+    private :: request_get_i4
+    private :: request_get_i8
+    private :: request_get_r4
+    private :: request_get_r8
+    private :: request_get_type
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -217,4 +233,119 @@ contains
                 i, request%responses(i)%error
         end do
     end subroutine dm_request_out
+
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES.
+    ! **************************************************************************
+    integer function request_get_i4(request, name, value, unit, error) result(rc)
+        !! Returns 4-byte integer value, unit, and error of response with name
+        !! `name`. If no response of this name exists in the responses array of
+        !! the passed request, the function returns `E_NOT_FOUND`.
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        integer(kind=i4),                 intent(out)           :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: error   !! Response error.
+
+        integer :: i
+
+        value = 0_i4
+        if (present(unit))  unit  = ' '
+        if (present(error)) error = E_NOT_FOUND
+
+        rc = dm_request_index(request, name, i)
+        if (dm_is_error(rc)) return
+
+        value = int(request%responses(i)%value, kind=i4)
+        if (present(unit))  unit  = request%responses(i)%unit
+        if (present(error)) error = request%responses(i)%error
+    end function request_get_i4
+
+    integer function request_get_i8(request, name, value, unit, error) result(rc)
+        !! Returns 8-byte integer value, unit, and error of response with name
+        !! `name`. If no response of this name exists in the responses array of
+        !! the passed request, the function returns `E_NOT_FOUND`.
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        integer(kind=i8),                 intent(out)           :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: error   !! Response error.
+
+        integer :: i
+
+        value = 0_i8
+        if (present(unit))  unit  = ' '
+        if (present(error)) error = E_NOT_FOUND
+
+        rc = dm_request_index(request, name, i)
+        if (dm_is_error(rc)) return
+
+        value = int(request%responses(i)%value, kind=i8)
+        if (present(unit))  unit  = request%responses(i)%unit
+        if (present(error)) error = request%responses(i)%error
+    end function request_get_i8
+
+    integer function request_get_r4(request, name, value, unit, error) result(rc)
+        !! Returns 4-byte real value, unit, and error of response with name
+        !! `name`. If no response of this name exists in the responses array of
+        !! the passed request, the function returns `E_NOT_FOUND`.
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        real(kind=r4),                    intent(out)           :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: error   !! Response error.
+
+        integer :: i
+
+        value = 0.0_r4
+        if (present(unit))  unit  = ' '
+        if (present(error)) error = E_NOT_FOUND
+
+        rc = dm_request_index(request, name, i)
+        if (dm_is_error(rc)) return
+
+        value = real(request%responses(i)%value, kind=r4)
+        if (present(unit))  unit  = request%responses(i)%unit
+        if (present(error)) error = request%responses(i)%error
+    end function request_get_r4
+
+    integer function request_get_r8(request, name, value, unit, error) result(rc)
+        !! Returns 8-byte real value, unit, and error of response with name
+        !! `name`. If no response of this name exists in the responses array of
+        !! the passed request, the function returns `E_NOT_FOUND`.
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        real(kind=r8),                    intent(out), optional :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: error   !! Response error.
+
+        integer :: i
+
+        if (present(value)) value = 0.0_r8
+        if (present(unit))  unit  = ' '
+        if (present(error)) error = E_NOT_FOUND
+
+        rc = dm_request_index(request, name, i)
+        if (dm_is_error(rc)) return
+
+        if (present(value)) value = request%responses(i)%value
+        if (present(unit))  unit  = request%responses(i)%unit
+        if (present(error)) error = request%responses(i)%error
+    end function request_get_r8
+
+    integer function request_get_type(request, name, response) result(rc)
+        !! Returns response of name `name`. If no response of this name exists
+        !! in the responses array of the passed request, the function returns
+        !! `E_NOT_FOUND`.
+        type(request_type),  intent(inout) :: request  !! Request type.
+        character(len=*),    intent(in)    :: name     !! Response name.
+        type(response_type), intent(out)   :: response !! Response type.
+
+        integer :: i
+
+        response%error = E_NOT_FOUND
+        rc = dm_request_index(request, name, i)
+        if (dm_is_error(rc)) return
+        response = request%responses(i)
+    end function request_get_type
 end module dm_request

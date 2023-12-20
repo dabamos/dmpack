@@ -2,8 +2,7 @@
 ! Licence: ISC
 module dm_dp
     !! X/Y data point type declaration that stores a single set of a time
-    !! series, as well as accompanying utility routines for reading from file
-    !! and writing to file.
+    !! series.
     use :: dm_error
     use :: dm_file
     use :: dm_kind

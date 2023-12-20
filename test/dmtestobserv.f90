@@ -100,7 +100,9 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Printing observation ...'
+        print '(72("."))'
         call dm_observ_out(observ)
+        print '(72("."))'
 
         print *, 'Validating JSON ...'
         buf = dm_json_from(observ)
@@ -108,7 +110,9 @@ contains
 
         print *, 'Printing JSON array ...'
         observs(1) = observ
-        print *, dm_json_from(observs)
+        print '(72("."))'
+        print '(a)', dm_json_from(observs)
+        print '(72("."))'
 
         ! print *, 'Printing Namelist ...'
         ! rc = dm_nml_from(observ, str)

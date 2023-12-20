@@ -33,7 +33,7 @@ observs = {
     {
         name = "dummy-observ",
         target_id = "dummy-target",
-        receivers = { "dmdb" },
+        receivers = { "dmfs", "dmdb" },
         requests = {
             {
                 request = path,
