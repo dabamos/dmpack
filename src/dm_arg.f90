@@ -8,6 +8,7 @@ module dm_arg
     !! ```fortran
     !! character(len=72) :: input
     !! integer           :: delay, rc
+    !! logical           :: verbose
     !! type(arg_type)    :: args(3)
     !!
     !! args = [ &
@@ -16,7 +17,7 @@ module dm_arg
     !!     arg_type('verbose', short='V', type=ARG_TYPE_BOOL) &
     !! ]
     !!
-    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=2)
+    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=0)
     !! rc = dm_arg_get(args(1), input)
     !! rc = dm_arg_get(args(2), delay)
     !! rc = dm_arg_get(args(3), verbose)
@@ -59,6 +60,7 @@ module dm_arg
         character(len=ARG_NAME_LEN)  :: name     = ' '           !! Identifier of the argument (without leading --).
         character                    :: short    = ASCII_NUL     !! Short argument character.
         character(len=ARG_VALUE_LEN) :: value    = ' '           !! Default and passed value (if any).
+        integer                      :: length   = 0             !! Value length.
         integer                      :: max_len  = ARG_VALUE_LEN !! Maximum argument value length.
         integer                      :: min_len  = 0             !! Minimum argument value length.
         integer                      :: type     = ARG_TYPE_BOOL !! Value data type.
@@ -70,9 +72,9 @@ module dm_arg
     interface dm_arg_get
         !! Returns argument value.
         module procedure :: arg_get_a
-        module procedure :: arg_get_b
-        module procedure :: arg_get_f
-        module procedure :: arg_get_i
+        module procedure :: arg_get_i4
+        module procedure :: arg_get_l
+        module procedure :: arg_get_r8
     end interface
 
     public :: dm_arg_get
@@ -83,9 +85,9 @@ module dm_arg
     public :: dm_arg_validate
 
     private :: arg_get_a
-    private :: arg_get_b
-    private :: arg_get_f
-    private :: arg_get_i
+    private :: arg_get_i4
+    private :: arg_get_l
+    private :: arg_get_r8
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -95,14 +97,111 @@ contains
         character(len=*), intent(in)           :: name  !! Name of command-line argument.
         character,        intent(in), optional :: short !! Short name.
 
+        integer        :: rc
         type(arg_type) :: args(1)
 
         has = .false.
         args(1) = arg_type(name=name, type=ARG_TYPE_BOOL)
         if (present(short)) args(1)%short = short
-        call dm_arg_parse(args)
+        rc = dm_arg_parse(args)
         has = (args(1)%error == E_NONE)
     end function dm_arg_has
+
+    integer function dm_arg_parse(args, verbose) result(rc)
+        !! Parses command-line for given arguments.
+        type(arg_type), intent(inout)        :: args(:) !! Arguments array.
+        logical,        intent(in), optional :: verbose !! Print error messages to stdout.
+
+        character(len=ARG_VALUE_LEN) :: a, value
+        integer                      :: i, j, k, n, stat
+        logical                      :: exists, verbose_
+
+        rc = E_NONE
+
+        ! Show error messages?
+        verbose_ = .false.
+        if (present(verbose)) verbose_ = verbose
+
+        ! Reset arguments.
+        do i = 1, size(args)
+            args(i)%error = E_ARG_NOT_FOUND
+        end do
+
+        ! Cycle through passed command-line arguments.
+        i = 1
+        n = command_argument_count()
+        if (n == 0) return
+
+        do
+            if (i > n) return
+            call get_command_argument(i, a)
+
+            if (a(1:1) /= '-') then
+                rc = E_INVALID
+                if (verbose_) call dm_error_out(rc, 'unknown command-line option "' // trim(a) // '"')
+                return
+            end if
+
+            do j = 1, size(args)
+                exists = .false.
+
+                ! Match argument.
+                if ((a(2:3) /= args(j)%short // ' ') .and. &
+                    (a(2:2) /= '-' .or. a(3:) /= args(j)%name)) cycle
+
+                ! Argument has been passed already.
+                if (args(j)%passed) then
+                    rc = E_INVALID
+                    if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' already set')
+                    return
+                end if
+
+                ! Argument matches.
+                exists = .true.
+
+                ! No value to expect.
+                if (args(j)%type == ARG_TYPE_BOOL) then
+                    args(j)%error  = E_NONE
+                    args(j)%passed = .true.
+                    exit
+                end if
+
+                ! No value passed if last argument.
+                args(j)%error = E_ARG_NO_VALUE
+                if (i == n) exit
+
+                ! Value found (may be empty).
+                i = i + 1
+
+                ! Get value of option.
+                call get_command_argument(i, value, length=k, status=stat)
+                if (stat /= 0) exit
+
+                ! Minimum and maximum length of value.
+                args(j)%length = k
+                args(j)%error  = E_ARG_LENGTH
+                if (k > args(j)%max_len .or. k < args(j)%min_len) exit
+
+                ! Read value. An empty value is still valid.
+                args(j)%value  = dm_ascii_escape(adjustl(value))
+                args(j)%passed = .true.
+                args(j)%error  = E_NONE
+
+                exit
+            end do
+
+            if (.not. exists) then
+                ! Unknown or unexpected command-line option passed.
+                rc = E_INVALID
+                if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' not allowed')
+                return
+            end if
+
+            i = i + 1
+        end do
+
+        rc = E_NONE
+    end function dm_arg_parse
 
     integer function dm_arg_read(args, app, major, minor, patch) result(rc)
         !! Reads all arguments from command-line and prints error message if one
@@ -132,25 +231,34 @@ contains
         if (present(minor)) minor_ = minor
         if (present(patch)) patch_ = patch
 
+        ! Print program and library version, then stop.
         if (dm_arg_has('version', 'v')) then
-            ! Print program and library version, then stop.
             if (present(app)) then
                 call dm_app_out(app, major_, minor_, patch_)
             else
-                write (stdout, '("DMPACK ", a3)') DM_VERSION_STRING
+                write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
             end if
 
             call dm_stop(0)
         end if
 
+        ! Print help, then stop.
         if (dm_arg_has('help', 'h')) then
-            ! Print help, then stop.
             call dm_arg_help(args)
             call dm_stop(0)
         end if
 
+        ! Parse command-line argument and stop on error.
+        rc = dm_arg_parse(args, verbose=.true.)
+
+        if (dm_is_error(rc)) then
+            print *
+            call dm_arg_help(args)
+            call dm_stop(1)
+        end if
+
+        ! Validate passed arguments.
         rc = E_EMPTY
-        call dm_arg_parse(args)
 
         do i = 1, size(args)
             rc = dm_arg_validate(args(i))
@@ -161,36 +269,36 @@ contains
                     cycle
 
                 case (E_ARG_INVALID)
-                    call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' required')
+                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' required')
 
                 case (E_ARG_NO_VALUE)
-                    call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' requires value')
+                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' requires value')
 
                 case (E_ARG_TYPE)
                     select case (args(i)%type)
                         case (ARG_TYPE_INTEGER)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not an integer')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not an integer')
                         case (ARG_TYPE_FLOAT)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a number')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a number')
                         case (ARG_TYPE_ID)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a valid id')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a valid id')
                         case (ARG_TYPE_UUID)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not a valid UUID4')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a valid UUID4')
                         case (ARG_TYPE_TIME)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' not in ISO 8601')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not in ISO 8601 format')
                         case (ARG_TYPE_FILE)
-                            call dm_error_out(rc, 'file ' // trim(args(i)%value) // ' not found')
+                            call dm_error_out(rc, 'file "' // trim(args(i)%value) // '" not found')
                         case (ARG_TYPE_DB)
-                            call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' not found')
+                            call dm_error_out(rc, 'database "' // trim(args(i)%value) // '" not found')
                     end select
 
                 case (E_ARG_LENGTH)
                     n = len_trim(args(i)%value)
                     if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too long, max. ' // &
+                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' too long, must be <= ' // &
                                           dm_itoa(args(i)%max_len))
                     else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' too short, min. ' // &
+                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' too short, must be >= ' // &
                                           dm_itoa(args(i)%min_len))
                     end if
             end select
@@ -207,43 +315,42 @@ contains
         integer(kind=i8) :: i
         real(kind=r8)    :: f
 
-        validate_block: block
-            rc = E_ARG
-            if (len_trim(arg%name) == 0) exit validate_block
+        rc = E_ARG
+        if (len_trim(arg%name) == 0) return
 
-            rc = E_ARG_INVALID
-            if (arg%required .and. .not. arg%passed) exit validate_block
+        rc = E_ARG_INVALID
+        if (arg%required .and. .not. arg%passed) return
 
-            rc = E_ARG_NOT_FOUND
-            if (.not. arg%passed) exit validate_block
+        rc = arg%error
+        if (dm_is_error(rc)) return
 
-            rc = E_ARG_TYPE
-            select case (arg%type)
-                case (ARG_TYPE_FLOAT)
-                    call dm_convert_to(arg%value, f, error)
-                    if (dm_is_error(error)) exit validate_block
+        rc = E_ARG_TYPE
+        select case (arg%type)
+            case (ARG_TYPE_FLOAT)
+                if (arg%length == 0) return
+                call dm_convert_to(arg%value, f, error)
+                if (dm_is_error(error)) return
 
-                case (ARG_TYPE_INTEGER)
-                    call dm_convert_to(arg%value, i, error)
-                    if (dm_is_error(error)) exit validate_block
+            case (ARG_TYPE_INTEGER)
+                if (arg%length == 0) return
+                call dm_convert_to(arg%value, i, error)
+                if (dm_is_error(error)) return
 
-                case (ARG_TYPE_ID)
-                    if (.not. dm_id_valid(arg%value)) exit validate_block
+            case (ARG_TYPE_ID)
+                if (.not. dm_id_valid(arg%value)) return
 
-                case (ARG_TYPE_UUID)
-                    if (.not. dm_uuid4_valid(arg%value)) exit validate_block
+            case (ARG_TYPE_UUID)
+                if (.not. dm_uuid4_valid(arg%value)) return
 
-                case (ARG_TYPE_TIME)
-                    if (.not. dm_time_valid(arg%value)) exit validate_block
+            case (ARG_TYPE_TIME)
+                if (.not. dm_time_valid(arg%value)) return
 
-                case (ARG_TYPE_FILE, ARG_TYPE_DB)
-                    if (.not. dm_file_exists(arg%value) .and. arg%required) exit validate_block
-            end select
+            case (ARG_TYPE_FILE, ARG_TYPE_DB)
+                if (arg%length == 0) return
+                if (.not. dm_file_exists(arg%value) .and. arg%required) return
+        end select
 
-            rc = E_NONE
-        end block validate_block
-
-        arg%error = rc
+        rc = E_NONE
     end function dm_arg_validate
 
     subroutine dm_arg_help(args)
@@ -265,8 +372,10 @@ contains
                     write (stdout, '("<integer>")')
                 case (ARG_TYPE_FLOAT)
                     write (stdout, '("<float>")')
-                case (ARG_TYPE_ID, ARG_TYPE_UUID)
+                case (ARG_TYPE_ID)
                     write (stdout, '("<id>")')
+                case (ARG_TYPE_UUID)
+                    write (stdout, '("<uuid>")')
                 case (ARG_TYPE_TIME)
                     write (stdout, '("<timestamp>")')
                 case (ARG_TYPE_FILE)
@@ -278,56 +387,9 @@ contains
             end select
         end do
 
-        write (stdout, '(4x, "-v, --version")')
+        write (stdout, '(/, 4x, "-v, --version")')
         write (stdout, '(4x, "-h, --help", /)')
     end subroutine dm_arg_help
-
-    subroutine dm_arg_parse(args)
-        !! Parses command-line arguments string `command` for arguments.
-        type(arg_type), intent(inout) :: args(:) !! Arguments array.
-
-        character(len=ARG_VALUE_LEN) :: name, value
-        integer                      :: i, j, k, n, stat
-
-        n = command_argument_count()
-
-        do i = 1, size(args)
-            do j = 1, n
-                ! Match argument.
-                args(i)%error = E_ARG_NOT_FOUND
-                call get_command_argument(j, name)
-
-                if (name(1:1) /= '-') cycle
-                if (name(2:2) /= args(i)%short .and. &
-                    name(3:)  /= args(i)%name) cycle
-
-                ! No value to expect.
-                if (args(i)%type == ARG_TYPE_BOOL) then
-                    args(i)%error  = E_NONE
-                    args(i)%passed = .true.
-                    exit
-                end if
-
-                ! No value passed.
-                args(i)%error = E_ARG_NO_VALUE
-                if (j == n) exit
-
-                call get_command_argument(j + 1, value, length=k, status=stat)
-                if (stat /= 0 .or. k == 0 .or. value(1:1) == '-') exit
-
-                ! Minimum and maximum value length.
-                args(i)%error = E_ARG_LENGTH
-                if (k > args(i)%max_len .or. k < args(i)%min_len) exit
-
-                ! Value found.
-                args(i)%value  = dm_ascii_escape(adjustl(value))
-                args(i)%passed = .true.
-                args(i)%error  = E_NONE
-
-                exit
-            end do
-        end do
-    end subroutine dm_arg_parse
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
@@ -351,45 +413,7 @@ contains
         value = arg%value
     end function arg_get_a
 
-    integer function arg_get_b(arg, value, default, passed) result(rc)
-        !! Returns `.true.` if argument has been passed.
-        type(arg_type), intent(inout)         :: arg     !! Arg type.
-        logical,        intent(inout)         :: value   !! Argument value.
-        logical,        intent(in),  optional :: default !! Default value.
-        logical,        intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
-
-        if (present(passed)) passed = arg%passed
-
-        if (rc == E_ARG_NOT_FOUND) then
-            if (present(default)) value = default
-            return
-        end if
-
-        value = .true.
-    end function arg_get_b
-
-    integer function arg_get_f(arg, value, default, passed) result(rc)
-        !! Returns argument value as 8-byte real.
-        type(arg_type), intent(inout)         :: arg     !! Arg type.
-        real(kind=r8),  intent(inout)         :: value   !! Argument value.
-        real(kind=r8),  intent(in),  optional :: default !! Default value.
-        logical,        intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
-
-        if (present(passed)) passed = arg%passed
-
-        if (rc == E_ARG_NOT_FOUND) then
-            if (present(default)) value = default
-            return
-        end if
-
-        value = dm_atof(arg%value)
-    end function arg_get_f
-
-    integer function arg_get_i(arg, value, default, passed) result(rc)
+    integer function arg_get_i4(arg, value, default, passed) result(rc)
         !! Returns argument value as 4-byte integer.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         integer,        intent(inout)         :: value   !! Argument value.
@@ -406,5 +430,43 @@ contains
         end if
 
         value = dm_atoi(arg%value)
-    end function arg_get_i
+    end function arg_get_i4
+
+    integer function arg_get_l(arg, value, default, passed) result(rc)
+        !! Returns `.true.` if argument has been passed.
+        type(arg_type), intent(inout)         :: arg     !! Arg type.
+        logical,        intent(inout)         :: value   !! Argument value.
+        logical,        intent(in),  optional :: default !! Default value.
+        logical,        intent(out), optional :: passed  !! Passed or not.
+
+        rc = arg%error
+
+        if (present(passed)) passed = arg%passed
+
+        if (rc == E_ARG_NOT_FOUND) then
+            if (present(default)) value = default
+            return
+        end if
+
+        value = .true.
+    end function arg_get_l
+
+    integer function arg_get_r8(arg, value, default, passed) result(rc)
+        !! Returns argument value as 8-byte real.
+        type(arg_type), intent(inout)         :: arg     !! Arg type.
+        real(kind=r8),  intent(inout)         :: value   !! Argument value.
+        real(kind=r8),  intent(in),  optional :: default !! Default value.
+        logical,        intent(out), optional :: passed  !! Passed or not.
+
+        rc = arg%error
+
+        if (present(passed)) passed = arg%passed
+
+        if (rc == E_ARG_NOT_FOUND) then
+            if (present(default)) value = default
+            return
+        end if
+
+        value = dm_atof(arg%value)
+    end function arg_get_r8
 end module dm_arg
