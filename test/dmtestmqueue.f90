@@ -31,6 +31,7 @@ contains
 
         stat = TEST_FAILED
 
+        print *, 'Creating message queue "' // MQ_NAME // '" ...'
         rc = dm_mqueue_open(mqueue    = mqueue, &
                             name      = MQ_NAME, &
                             max_msg   = MQ_MAX_MSG, &
@@ -42,17 +43,16 @@ contains
                             blocking  = .true.)
         call dm_error_out(rc, dm_system_error_string())
         if (dm_is_error(rc)) return
-        print *, 'Created message queue "' // MQ_NAME // '"'
 
+        print *, 'Reading message queue attributes ...'
         rc = dm_mqueue_attr(mqueue, flags, max_msg, msg_size, cur_msgs)
         call dm_error_out(rc, dm_system_error_string())
         if (dm_is_error(rc)) return
-        print *, 'Got message queue attributes'
 
         print '(" Flags.......: ", i0)',           flags
-        print '(" Max. Msg....: ", i0)',           max_msg
+        print '(" Cur. #Msg...: ", i0)',           cur_msgs
+        print '(" Max. #Msg...: ", i0)',           max_msg
         print '(" Msg. Size...: ", i0, " bytes")', msg_size
-        print '(" Cur. Msgs...: ", i0)',           cur_msgs
         print '(" Observ. Size: ", i0, " bytes")', OBSERV_SIZE
 
         if (msg_size /= OBSERV_SIZE) then

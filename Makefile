@@ -278,10 +278,10 @@ setup:
 # ******************************************************************************
 
 freebsd_debug:
-	$(MAKE) all OS=FreeBSD PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) all OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 freebsd_release:
-	$(MAKE) all OS=FreeBSD PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local
+	$(MAKE) all OS=FreeBSD PREFIX=/usr/local
 	$(STRIP) -s $(DISTDIR)/dm*
 
 freebsd:
@@ -294,10 +294,10 @@ freebsd:
 # ******************************************************************************
 
 linux_debug:
-	$(MAKE) all OS=linux PPFLAGS="$(PPFLAGS)" PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) all OS=linux PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 linux_release:
-	$(MAKE) all OS=linux PPFLAGS="$(PPFLAGS)" PREFIX=/usr
+	$(MAKE) all OS=linux PREFIX=/usr
 	$(STRIP) -s $(DISTDIR)/dm*
 
 linux:
