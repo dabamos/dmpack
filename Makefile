@@ -753,8 +753,6 @@ clean:
 	if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
 	@echo "--- deleting applications ..."
 	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
-	@echo "--- cleaning man pages ..."
-	cd $(ADOCDIR) && $(MAKE) clean
 	@echo "--- cleaning guide ..."
 	cd $(GUIDDIR) && $(MAKE) clean
 
