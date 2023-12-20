@@ -150,12 +150,13 @@ contains
     end function config_get_
 
     integer function config_get_a(config, name, value) result(rc)
-        !! Returns configuration value as character string.
+        !! Returns configuration value as character string. The string is
+        !! unescaped by default (`\\` is converted to `\`).
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         character(len=*),  intent(inout) :: value  !! Setting value.
 
-        rc = dm_lua_field(config%lua, name, value)
+        rc = dm_lua_field(config%lua, name, value, unescape=.true.)
         rc = config_error(rc, param=name)
     end function config_get_a
 
