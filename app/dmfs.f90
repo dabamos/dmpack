@@ -103,7 +103,7 @@ contains
                                 blocking = APP_MQ_BLOCKING)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next) // ': ' // &
+                call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // &
                             dm_system_error_string(), observ=observ, error=rc)
                 exit mqueue_block
             end if

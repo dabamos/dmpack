@@ -72,7 +72,7 @@ contains
             if (dm_is_error(rc)) exit open_block
 
             ! Register Lua API of DMPACK.
-            rc = dm_lua_api_register(config%lua, constants=.true., procedures=.false.)
+            rc = dm_lua_api_register(config%lua, constants=.true., procedures=.true.)
             if (dm_is_error(rc)) exit open_block
 
             ! Load and evaluate Lua script.
