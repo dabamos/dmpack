@@ -1,25 +1,34 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_lua
-    !! Lua abstraction layer.
+    !! Lua abstraction layer that provides procedures for reading from and
+    !! writing to the Lua stack.
+    !!
+    !! The following example creates a new Lua state, then pushes an
+    !! observation to and pulls it from the stack:
+    !!
+    !! ```fortran
+    !! integer              :: rc
+    !! type(lua_state_type) :: lua
+    !! type(observ_type)    :: observ1, observ2
+    !!
+    !! rc = dm_lua_init(lua)          ! Initialise Lua interpreter.
+    !! call dm_lua_from(lua, observ1) ! Push observation onto stack.
+    !! rc = dm_lua_to(lua, observ2)   ! Read observation back from stack.
+    !! call dm_lua_destroy(lua)       ! Destroy Lua interpreter.
+    !! ```
     use, intrinsic :: iso_c_binding
     use :: lua
     use :: dm_error
     use :: dm_file
     use :: dm_kind
-    use :: dm_job
-    use :: dm_log
-    use :: dm_observ
-    use :: dm_report
-    use :: dm_request
     use :: dm_string
     use :: dm_util
     implicit none (type, external)
     private
 
     type, public :: lua_state_type
-        !! Opaque Lua type.
-        private
+        !! Lua state type that stores the Lua pointer.
         type(c_ptr) :: ptr = c_null_ptr !! C pointer to Lua interpreter.
     end type lua_state_type
 
@@ -29,8 +38,8 @@ module dm_lua
             !! C-interoperable Lua callback function.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr), intent(in), value :: ptr
-            integer(kind=c_int)            :: dm_lua_callback
+            type(c_ptr), intent(in), value :: ptr             !! Lua state pointer.
+            integer(kind=c_int)            :: dm_lua_callback !! Return value.
         end function dm_lua_callback
     end interface
 
@@ -55,18 +64,19 @@ module dm_lua
     end interface
 
     interface dm_lua_from
-        !! Pushes derived types on stack.
+        !! Converts derived types to Lua table on stack.
         module procedure :: lua_from_observ
+        module procedure :: lua_from_request
     end interface
 
-    interface dm_lua_global
+    interface dm_lua_read
         !! Pushes global variable on stack and optionally returns value.
-        module procedure :: lua_global_
-        module procedure :: lua_global_a
-        module procedure :: lua_global_i4
-        module procedure :: lua_global_i8
-        module procedure :: lua_global_l
-        module procedure :: lua_global_r8
+        module procedure :: lua_read_
+        module procedure :: lua_read_a
+        module procedure :: lua_read_i4
+        module procedure :: lua_read_i8
+        module procedure :: lua_read_l
+        module procedure :: lua_read_r8
     end interface
 
     interface dm_lua_to
@@ -77,6 +87,7 @@ module dm_lua
         module procedure :: lua_to_observ
         module procedure :: lua_to_observs
         module procedure :: lua_to_report
+        module procedure :: lua_to_request
     end interface dm_lua_to
 
     ! Public procedures.
@@ -86,23 +97,25 @@ module dm_lua
     public :: dm_lua_dump_stack
     public :: dm_lua_error
     public :: dm_lua_escape
+    public :: dm_lua_eval
     public :: dm_lua_exec
     public :: dm_lua_field
     public :: dm_lua_from
     public :: dm_lua_get
-    public :: dm_lua_global
+    public :: dm_lua_read
     public :: dm_lua_init
     public :: dm_lua_is_function
     public :: dm_lua_is_nil
+    public :: dm_lua_is_opened
     public :: dm_lua_is_table
     public :: dm_lua_last_error
     public :: dm_lua_open
     public :: dm_lua_pop
-    public :: dm_lua_prepare
     public :: dm_lua_register
     public :: dm_lua_table
     public :: dm_lua_table_size
     public :: dm_lua_to
+    public :: dm_lua_unescape
     public :: dm_lua_version
 
     ! Private procedures.
@@ -114,6 +127,7 @@ module dm_lua
     private :: lua_field_r8
 
     private :: lua_from_observ
+    private :: lua_from_request
 
     private :: lua_get_
     private :: lua_get_a
@@ -122,12 +136,12 @@ module dm_lua
     private :: lua_get_l
     private :: lua_get_r8
 
-    private :: lua_global_
-    private :: lua_global_a
-    private :: lua_global_i4
-    private :: lua_global_i8
-    private :: lua_global_l
-    private :: lua_global_r8
+    private :: lua_read_
+    private :: lua_read_a
+    private :: lua_read_i4
+    private :: lua_read_i8
+    private :: lua_read_l
+    private :: lua_read_r8
 
     private :: lua_to_job
     private :: lua_to_job_list
@@ -135,9 +149,10 @@ module dm_lua
     private :: lua_to_observ
     private :: lua_to_observs
     private :: lua_to_report
+    private :: lua_to_request
 contains
     ! ******************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC FUNCTIONS.
     ! ******************************************************************
     integer function dm_lua_call(lua, nargs, nresults) result(rc)
         !! Calls Lua function on top of stack.
@@ -172,21 +187,21 @@ contains
         end select
     end function dm_lua_error
 
-    function dm_lua_escape(str) result(esc)
+    function dm_lua_escape(str) result(res)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
         character(len=*), intent(in)  :: str !! String to escape.
-        character(len=:), allocatable :: esc !! Escaped string.
+        character(len=:), allocatable :: res !! Escaped string.
         integer                       :: i
 
-        esc = ''
+        res = ''
 
         do i = 1, len_trim(str)
             if (str(i:i) == '\') then
-                esc = esc // '\\'
+                res = res // '\\'
                 cycle
             end if
-            esc = esc // str(i:i)
+            res = res // str(i:i)
         end do
     end function dm_lua_escape
 
@@ -206,9 +221,17 @@ contains
         rc = dm_lua_error(lual_dofile(lua%ptr, trim(file_path)))
     end function dm_lua_exec
 
-    integer function dm_lua_init(lua) result(rc)
-        !! Initialises Lua interpreter.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
+    integer function dm_lua_init(lua, libs) result(rc)
+        !! Initialises Lua interpreter and opens libraries, unless `libs` is
+        !! `.false.`. Returns `E_INVALID` if the Lua pointer is already
+        !! associated, and `E_LUA` if one of the Lua calls failed.
+        type(lua_state_type), intent(inout)        :: lua  !! Lua type.
+        logical,              intent(in), optional :: libs !! Open Lua libraries.
+
+        logical :: libs_
+
+        libs_ = .true.
+        if (present(libs)) libs_ = libs
 
         rc = E_INVALID
         if (c_associated(lua%ptr)) return
@@ -216,8 +239,8 @@ contains
         rc = E_LUA
         lua%ptr = lual_newstate()
         if (.not. c_associated(lua%ptr)) return
-        call lual_openlibs(lua%ptr)
 
+        if (libs_) call lual_openlibs(lua%ptr)
         rc = E_NONE
     end function dm_lua_init
 
@@ -234,6 +257,13 @@ contains
 
         is_nil = (lua_isnil(lua%ptr, -1) == 1)
     end function dm_lua_is_nil
+
+    logical function dm_lua_is_opened(lua) result(is_opened)
+        !! Returns `.true.` if pointer to Lua interpreter is associated.
+        type(lua_state_type), intent(inout) :: lua  !! Lua type.
+
+        is_opened = c_associated(lua%ptr)
+    end function dm_lua_is_opened
 
     logical function dm_lua_is_table(lua) result(is_table)
         !! Returns `.true.` if element on top of stack is of type table.
@@ -255,14 +285,13 @@ contains
         str = ''
     end function dm_lua_last_error
 
-    integer function dm_lua_open(lua, file_path, eval, prepare) result(rc)
+    integer function dm_lua_open(lua, file_path, eval) result(rc)
         !! Opens Lua script and executes it by default.
         type(lua_state_type), intent(inout)        :: lua       !! Lua type.
         character(len=*),     intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
-        logical,              intent(in), optional :: prepare   !! Inject DMPACK parameters into Lua state.
 
-        logical :: eval_, prepare_
+        logical :: eval_
 
         rc = E_INVALID
         if (.not. c_associated(lua%ptr)) return
@@ -273,14 +302,6 @@ contains
         eval_ = .true.
         if (present(eval)) eval_ = eval
 
-        prepare_ = .false.
-        if (present(prepare)) prepare_ = prepare
-
-        if (prepare_) then
-            rc = dm_lua_prepare(lua)
-            if (dm_is_error(rc)) return
-        end if
-
         if (eval_) then
             rc = dm_lua_error(lual_dofile(lua%ptr, trim(file_path)))
             return
@@ -288,37 +309,6 @@ contains
 
         rc = dm_lua_error(lual_loadfile(lua%ptr, trim(file_path)))
     end function dm_lua_open
-
-    integer function dm_lua_prepare(lua) result(rc)
-        !! Prepares Lua environment by injecting DMPACK parameters.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-
-        rc = dm_lua_eval(lua, 'LOG_NONE = ' // dm_itoa(LOG_NONE))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_DEBUG = ' // dm_itoa(LOG_DEBUG))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_INFO = ' // dm_itoa(LOG_INFO))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_WARNING = ' // dm_itoa(LOG_WARNING))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_ERROR = ' // dm_itoa(LOG_ERROR))
-        if (dm_is_error(rc)) return
-        rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL))
-
-        rc = E_NONE
-    end function dm_lua_prepare
-
-    integer function dm_lua_register(lua, name, proc) result(rc)
-        !! Registers a new Lua command.
-        type(lua_state_type), intent(inout) :: lua  !! Lua type.
-        character(len=*),     intent(in)    :: name !! Lua procedure name.
-        procedure(dm_lua_callback)          :: proc !! C-interoperable subroutine to call.
-
-        rc = E_LUA
-        call lua_register(lua%ptr, trim(name), c_funloc(proc))
-        if (lua_iscfunction(lua%ptr, -1) == 0) return
-        rc = E_NONE
-    end function dm_lua_register
 
     integer function dm_lua_table(lua, name, n) result(rc)
         !! Loads global table of given name.
@@ -348,6 +338,33 @@ contains
         n = int(lua_rawlen(lua%ptr, -1), kind=i4)
     end function dm_lua_table_size
 
+    function dm_lua_unescape(str) result(res)
+        !! Unescapes passed character string by replacing each occurance of
+        !! `\\` with `\`.
+        character(len=*), intent(in)  :: str !! String to escape.
+        character(len=:), allocatable :: res !! Unescaped string.
+
+        integer :: i, n
+
+        res = ''
+
+        i = 1
+        n = len_trim(str)
+
+        do
+            if (i > n) exit
+            if (i < n) then
+                if (str(i:i + 1) == '\\') then
+                    res = res // '\'
+                    i = i + 2
+                    cycle
+                end if
+            end if
+            res = res // str(i:i)
+            i = i + 1
+        end do
+    end function dm_lua_unescape
+
     real function dm_lua_version(lua) result(v)
         !! Returns Lua version number as 4-byte real.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
@@ -355,6 +372,9 @@ contains
         v = real(lua_version(lua%ptr))
     end function dm_lua_version
 
+    ! ******************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! ******************************************************************
     subroutine dm_lua_destroy(lua)
         !! Closes Lua.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
@@ -384,11 +404,11 @@ contains
                 case (LUA_TNIL)
                     write (unit_, '("nil")')
                 case (LUA_TBOOLEAN)
-                    write (unit_, '(l)')  lua_toboolean(lua%ptr, i)
+                    write (unit_, '(l)')    lua_toboolean(lua%ptr, i)
                 case (LUA_TNUMBER)
-                    write (unit_, '(i0)') lua_tonumber(lua%ptr, i)
+                    write (unit_, '(f0.1)') lua_tonumber(lua%ptr, i)
                 case (LUA_TSTRING)
-                    write (unit_, '(a)')  lua_tostring(lua%ptr, i)
+                    write (unit_, '(a)')    lua_tostring(lua%ptr, i)
                 case default
                     write (unit_, *)
             end select
@@ -408,11 +428,24 @@ contains
         call lua_pop(lua%ptr, n_)
     end subroutine dm_lua_pop
 
+    subroutine dm_lua_register(lua, name, proc)
+        !! Registers a new Lua command.
+        type(lua_state_type), intent(inout) :: lua  !! Lua type.
+        character(len=*),     intent(in)    :: name !! Lua procedure name.
+        procedure(dm_lua_callback)          :: proc !! C-interoperable subroutine to call.
+
+        call lua_register(lua%ptr, trim(name), c_funloc(proc))
+    end subroutine dm_lua_register
+
     ! ******************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE FUNCTIONS.
     ! ******************************************************************
     integer function lua_field_(lua, name) result(rc)
         !! Pushes table field of given name on stack.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
         character(len=*),     intent(in)    :: name !! Field name.
 
@@ -421,18 +454,40 @@ contains
         rc = E_NONE
     end function lua_field_
 
-    integer function lua_field_a(lua, name, value) result(rc)
-        !! Returns character string from table field `name` in `value`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        character(len=*),     intent(inout) :: value !! Table field value.
+    integer function lua_field_a(lua, name, value, unescape) result(rc)
+        !! Returns character string from table field `name` in `value`. If
+        !! `unescape` is passed and `.true.`, the returned string will have all
+        !! occurences of `\\` replaced by `\`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_LIMIT` if the actual string length is greater than the length of
+        !!    the passed value argument.
+        !! * `E_TYPE` if the field is not of type string.
+        type(lua_state_type), intent(inout)        :: lua      !! Lua type.
+        character(len=*),     intent(in)           :: name     !! Table field name.
+        character(len=*),     intent(inout)        :: value    !! Table field value.
+        logical,              intent(in), optional :: unescape !! Unescape the string.
+
+        character(len=:), allocatable :: str
+        logical                       :: unescape_
+
+        unescape_ = .false.
+        if (present(unescape)) unescape_ = unescape
 
         rc = E_EMPTY
         if (lua_getfield(lua%ptr, -1, name) > 0) then
             rc = E_TYPE
             if (lua_isstring(lua%ptr, -1) == 1) then
-                value = lua_tostring(lua%ptr, -1)
-                rc = E_NONE
+                str = lua_tostring(lua%ptr, -1)
+                if (unescape_) then
+                    value = dm_lua_unescape(str)
+                else
+                    value = str
+                end if
+                rc = E_LIMIT
+                if (len(str) <= len(value)) rc = E_NONE
             end if
         end if
         call lua_pop(lua%ptr, 1)
@@ -440,6 +495,11 @@ contains
 
     integer function lua_field_i4(lua, name, value) result(rc)
         !! Returns 4-byte integer from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Table field name.
         integer(kind=i4),     intent(inout) :: value !! Table field value.
@@ -457,6 +517,11 @@ contains
 
     integer function lua_field_i8(lua, name, value) result(rc)
         !! Returns 8-byte integer from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Table field name.
         integer(kind=i8),     intent(inout) :: value !! Table field value.
@@ -474,6 +539,11 @@ contains
 
     integer function lua_field_l(lua, name, value) result(rc)
         !! Returns logical from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type boolean.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Table field name.
         logical,              intent(inout) :: value !! Table field value.
@@ -491,6 +561,11 @@ contains
 
     integer function lua_field_r8(lua, name, value) result(rc)
         !! Returns 8-byte real from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type number.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Table field name.
         real(kind=r8),        intent(inout) :: value !! Table field value.
@@ -506,138 +581,13 @@ contains
         call lua_pop(lua%ptr, 1)
     end function lua_field_r8
 
-    integer function lua_from_observ(lua, observ) result(rc)
-        !! Pushes observation on Lua stack.
-        type(lua_state_type), intent(inout) :: lua    !! Lua type.
-        type(observ_type),    intent(in)    :: observ !! Observation type.
-
-        integer     :: i, j
-        type(c_ptr) :: ptr
-
-        rc = E_LUA
-        call lua_createtable(lua%ptr, 0, 14)
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%node_id))
-        call lua_setfield(lua%ptr, -2, 'node_id')
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%sensor_id))
-        call lua_setfield(lua%ptr, -2, 'sensor_id')
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%target_id))
-        call lua_setfield(lua%ptr, -2, 'target_id')
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%id))
-        call lua_setfield(lua%ptr, -2, 'id')
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%name))
-        call lua_setfield(lua%ptr, -2, 'name')
-
-        ptr = lua_pushstring(lua%ptr, trim(observ%timestamp))
-        call lua_setfield(lua%ptr, -2, 'timestamp')
-
-        ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%path))
-        call lua_setfield(lua%ptr, -2, 'path')
-
-        call lua_pushinteger(lua%ptr, int(observ%priority, kind=lua_integer))
-        call lua_setfield(lua%ptr, -2, 'priority')
-
-        call lua_pushinteger(lua%ptr, int(observ%error, kind=lua_integer))
-        call lua_setfield(lua%ptr, -2, 'error')
-
-        call lua_pushinteger(lua%ptr, int(observ%next, kind=lua_integer))
-        call lua_setfield(lua%ptr, -2, 'next')
-
-        call lua_pushinteger(lua%ptr, int(observ%nreceivers, kind=lua_integer))
-        call lua_setfield(lua%ptr, -2, 'nreceivers')
-
-        call lua_pushinteger(lua%ptr, int(observ%nrequests, kind=lua_integer))
-        call lua_setfield(lua%ptr, -2, 'nrequests')
-
-        ! Receivers.
-        call lua_createtable(lua%ptr, observ%nreceivers, 0)
-
-        do i = 1, observ%nreceivers
-            call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
-            ptr = lua_pushstring(lua%ptr, trim(observ%receivers(i)))
-            call lua_settable(lua%ptr, -3)
-        end do
-
-        call lua_setfield(lua%ptr, -2, 'receivers')
-
-        ! Requests.
-        call lua_createtable(lua%ptr, observ%nrequests, 0)
-
-        do i = 1, observ%nrequests
-            call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
-            call lua_createtable(lua%ptr, 0, 12)
-
-            ptr = lua_pushstring(lua%ptr, trim(observ%requests(i)%timestamp))
-            call lua_setfield(lua%ptr, -2, 'timestamp')
-
-            ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%requests(i)%request))
-            call lua_setfield(lua%ptr, -2, 'request')
-
-            ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%requests(i)%response))
-            call lua_setfield(lua%ptr, -2, 'response')
-
-            ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%requests(i)%delimiter))
-            call lua_setfield(lua%ptr, -2, 'delimiter')
-
-            ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%requests(i)%pattern))
-            call lua_setfield(lua%ptr, -2, 'pattern')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%delay, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'delay')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%error, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'error')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%retries, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'retries')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%state, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'state')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%timeout, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'timeout')
-
-            call lua_pushinteger(lua%ptr, int(observ%requests(i)%nresponses, kind=lua_integer))
-            call lua_setfield(lua%ptr, -2, 'nresponses')
-
-            ! Responses.
-            call lua_createtable(lua%ptr, observ%requests(i)%nresponses, 0)
-
-            do j = 1, observ%requests(i)%nresponses
-                ! Response.
-                call lua_pushinteger(lua%ptr, int(j, kind=lua_integer))
-                call lua_createtable(lua%ptr, 0, 4)
-
-                ptr = lua_pushstring(lua%ptr, trim(observ%requests(i)%responses(j)%name))
-                call lua_setfield(lua%ptr, -2, 'name')
-
-                ptr = lua_pushstring(lua%ptr, trim(observ%requests(i)%responses(j)%unit))
-                call lua_setfield(lua%ptr, -2, 'unit')
-
-                call lua_pushinteger(lua%ptr, int(observ%requests(i)%responses(j)%error, kind=lua_integer))
-                call lua_setfield(lua%ptr, -2, 'error')
-
-                call lua_pushnumber(lua%ptr, observ%requests(i)%responses(j)%value)
-                call lua_setfield(lua%ptr, -2, 'value')
-
-                call lua_settable(lua%ptr, -3)
-            end do
-
-            call lua_setfield(lua%ptr, -2, 'responses')
-            call lua_settable(lua%ptr, -3)
-        end do
-
-        call lua_setfield(lua%ptr, -2, 'requests')
-
-        rc = E_NONE
-    end function lua_from_observ
-
     integer function lua_get_(lua, i) result(rc)
         !! Pushes table element at index `i` on stack.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_EMPTY` if the table is empty.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: i   !! Variable index.
 
@@ -648,11 +598,28 @@ contains
         rc = E_NONE
     end function lua_get_
 
-    integer function lua_get_a(lua, i, value) result(rc)
-        !! Returns character string from table element `i` in `value`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(in)    :: i     !! Variable index.
-        character(len=*),     intent(inout) :: value !! Variable value.
+    integer function lua_get_a(lua, i, value, unescape) result(rc)
+        !! Returns character string from table element `i` in `value`.  If
+        !! `unescape` is passed and `.true.`, the returned string will have all
+        !! occurences of `\\` replaced by `\`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_LIMIT` if the actual string length is greater than the length of
+        !!    the passed value argument.
+        !! * `E_TYPE` if the table element is not of type string.
+        type(lua_state_type), intent(inout)        :: lua      !! Lua type.
+        integer,              intent(in)           :: i        !! Variable index.
+        character(len=*),     intent(inout)        :: value    !! Variable value.
+        logical,              intent(in), optional :: unescape !! Unescape string.
+
+        character(len=:), allocatable :: str
+        logical                       :: unescape_
+
+        unescape_ = .false.
+        if (present(unescape)) unescape_ = unescape
 
         rc = E_INVALID
         if (lua_istable(lua%ptr, -1) /= 1) return
@@ -660,8 +627,14 @@ contains
         if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) > 0) then
             rc = E_TYPE
             if (lua_isstring(lua%ptr, -1) == 1) then
-                value = lua_tostring(lua%ptr, -1)
-                rc = E_NONE
+                str = lua_tostring(lua%ptr, -1)
+                if (unescape_) then
+                    value = dm_lua_unescape(str)
+                else
+                    value = str
+                end if
+                rc = E_LIMIT
+                if (len(str) <= len(value)) rc = E_NONE
             end if
         end if
         call lua_pop(lua%ptr, 1)
@@ -669,6 +642,12 @@ contains
 
     integer function lua_get_i4(lua, i, value) result(rc)
         !! Returns 4-byte integer from table element `i` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
         integer,              intent(inout) :: value !! Variable value.
@@ -688,6 +667,12 @@ contains
 
     integer function lua_get_i8(lua, i, value) result(rc)
         !! Returns 8-byte integer from table element `i` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
         integer(kind=i8),     intent(inout) :: value !! Variable value.
@@ -707,17 +692,37 @@ contains
 
     integer function lua_get_l(lua, i, value) result(rc)
         !! Returns logical from table element `i` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type boolean.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
         logical,              intent(inout) :: value !! Variable value.
-        integer                             :: v
 
-        rc = dm_lua_get(lua, i, v)
-        if (rc == E_NONE) value = (v > 0)
+        rc = E_INVALID
+        if (lua_istable(lua%ptr, -1) /= 1) return
+        rc = E_EMPTY
+        if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) > 0) then
+            rc = E_TYPE
+            if (lua_isboolean(lua%ptr, -1) == 1) then
+                value = lua_toboolean(lua%ptr, -1)
+                rc = E_NONE
+            end if
+        end if
+        call lua_pop(lua%ptr, 1)
     end function lua_get_l
 
     integer function lua_get_r8(lua, i, value) result(rc)
         !! Returns 8-byte real from table element `i` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type number.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
         real(kind=r8),        intent(inout) :: value !! Variable value.
@@ -735,18 +740,20 @@ contains
         call lua_pop(lua%ptr, 1)
     end function lua_get_r8
 
-    integer function lua_global_(lua, name) result(rc)
-        !! Pushes global variable on stack.
+    integer function lua_read_(lua, name) result(rc)
+        !! Pushes global variable on stack. Returns `E_EMPTY` if the variable
+        !! does not exist.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
         character(len=*),     intent(in)    :: name !! Variable name.
 
         rc = E_EMPTY
         if (lua_getglobal(lua%ptr, name) <= 0) return
         rc = E_NONE
-    end function lua_global_
+    end function lua_read_
 
-    integer function lua_global_a(lua, name, value) result(rc)
-        !! Returns the value of global variable as allocatable string.
+    integer function lua_read_a(lua, name, value) result(rc)
+        !! Returns the value of global variable as allocatable string. The
+        !! function returns `E_TYPE` if the variable is not of type string.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Variable name.
         character(len=*),     intent(inout) :: value !! Variable value.
@@ -757,10 +764,11 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_global_a
+    end function lua_read_a
 
-    integer function lua_global_i4(lua, name, value) result(rc)
-        !! Returns the value of global variable as 4-byte integer.
+    integer function lua_read_i4(lua, name, value) result(rc)
+        !! Returns the value of global variable as 4-byte integer. The
+        !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Variable name.
         integer(kind=i4),     intent(inout) :: value !! Variable value.
@@ -771,10 +779,11 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_global_i4
+    end function lua_read_i4
 
-    integer function lua_global_i8(lua, name, value) result(rc)
-        !! Returns the value of global variable as 8-byte integer.
+    integer function lua_read_i8(lua, name, value) result(rc)
+        !! Returns the value of global variable as 8-byte integer. The
+        !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Variable name.
         integer(kind=i8),     intent(inout) :: value !! Variable value.
@@ -785,21 +794,26 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_global_i8
+    end function lua_read_i8
 
-    integer function lua_global_l(lua, name, value) result(rc)
-        !! Returns the value of global variable as logical.
+    integer function lua_read_l(lua, name, value) result(rc)
+        !! Returns the value of global variable as logical. The function
+        !! returns `E_TYPE` if the variable is not of type boolean.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Variable name.
         logical,              intent(inout) :: value !! Variable value.
-        integer                             :: v
 
-        rc = dm_lua_global(lua, name, v)
-        if (rc == E_NONE) value = (v > 0)
-    end function lua_global_l
+        rc = E_TYPE
+        if (lua_getglobal(lua%ptr, name) == LUA_TBOOLEAN) then
+            value = lua_toboolean(lua%ptr, -1)
+            rc = E_NONE
+        end if
+        call lua_pop(lua%ptr, 1)
+    end function lua_read_l
 
-    integer function lua_global_r8(lua, name, value) result(rc)
-        !! Returns the value of global variable as 8-byte real.
+    integer function lua_read_r8(lua, name, value) result(rc)
+        !! Returns the value of global variable as 8-byte real. The function
+        !! returns `E_TYPE` if the variable is not of type number.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         character(len=*),     intent(in)    :: name  !! Variable name.
         real(kind=r8),        intent(inout) :: value !! Variable value.
@@ -810,11 +824,12 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_global_r8
+    end function lua_read_r8
 
     integer function lua_to_job(lua, job) result(rc)
         !! Reads Lua table into Fortran job type. The table has to be on top of
         !! the stack and will be removed once finished.
+        use :: dm_job
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         type(job_type),       intent(out)   :: job !! Job type.
 
@@ -822,10 +837,12 @@ contains
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
+            ! Ignore error codes, just assume defaults if missing.
             rc = dm_lua_field(lua, 'delay',    job%delay)
             rc = dm_lua_field(lua, 'disabled', job%disabled)
             rc = dm_lua_field(lua, 'onetime',  job%onetime)
             rc = dm_lua_field(lua, 'observation')
+
             rc = lua_to_observ(lua, job%observ)
             job%valid = (rc == E_NONE)
         end block lua_block
@@ -837,6 +854,7 @@ contains
     integer function lua_to_job_list(lua, job_list) result(rc)
         !! Reads Lua table into Fortran job list. The table has to be on
         !! top of the stack and will be removed once finished.
+        use :: dm_job
         type(lua_state_type), intent(inout) :: lua      !! Lua type.
         type(job_list_type),  intent(out)   :: job_list !! Job list type.
 
@@ -870,6 +888,13 @@ contains
     integer function lua_to_jobs(lua, jobs) result(rc)
         !! Reads Lua table into Fortran jobs type array. The table has to be on
         !! top of the stack and will be removed once finished.
+        !!
+        !! The functions returns the following error codes:
+        !!
+        !! * `E_ALLOC` if the array allocation failed.
+        !! * `E_EMPTY` if the table is empty.
+        !! * `E_TYPE` if the stack element is not a table.
+        use :: dm_job
         type(lua_state_type),        intent(inout) :: lua     !! Lua type.
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
@@ -902,11 +927,11 @@ contains
     integer function lua_to_observ(lua, observ) result(rc)
         !! Reads Lua table into Fortran observation type. The table has to be on
         !! top of the stack and will be removed once finished.
+        use :: dm_observ
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(observ_type),    intent(out)   :: observ !! Observation type.
 
-        integer :: i, j, sz
-        integer :: nrec, nreq, nres
+        integer :: i, nrec, nreq, sz
 
         observ_block: block
             rc = E_TYPE
@@ -919,7 +944,7 @@ contains
             rc = dm_lua_field(lua, 'id',         observ%id)
             rc = dm_lua_field(lua, 'name',       observ%name)
             rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
-            rc = dm_lua_field(lua, 'path',       observ%path)
+            rc = dm_lua_field(lua, 'path',       observ%path, unescape=.true.)
             rc = dm_lua_field(lua, 'priority',   observ%priority)
             rc = dm_lua_field(lua, 'error',      observ%error)
             rc = dm_lua_field(lua, 'next',       observ%next)
@@ -948,44 +973,12 @@ contains
             observ%nrequests = nreq
 
             req_loop: do i = 1, nreq
+                ! Load element.
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit req_loop
-
-                rc = dm_lua_field(lua, 'timestamp',  observ%requests(i)%timestamp)
-                rc = dm_lua_field(lua, 'request',    observ%requests(i)%request)
-                rc = dm_lua_field(lua, 'response',   observ%requests(i)%response)
-                rc = dm_lua_field(lua, 'delimiter',  observ%requests(i)%delimiter)
-                rc = dm_lua_field(lua, 'pattern',    observ%requests(i)%pattern)
-                rc = dm_lua_field(lua, 'delay',      observ%requests(i)%delay)
-                rc = dm_lua_field(lua, 'error',      observ%requests(i)%error)
-                rc = dm_lua_field(lua, 'retries',    observ%requests(i)%retries)
-                rc = dm_lua_field(lua, 'state',      observ%requests(i)%state)
-                rc = dm_lua_field(lua, 'timeout',    observ%requests(i)%timeout)
-                rc = dm_lua_field(lua, 'nresponses', observ%requests(i)%nresponses)
-
-                ! Read responses.
-                rc = dm_lua_field(lua, 'responses')
-                sz = dm_lua_table_size(lua)
-
-                nres = min(REQUEST_MAX_NRESPONSES, int(sz))
-                observ%requests(i)%nresponses = nres
-
-                res_loop: do j = 1, nres
-                    rc = dm_lua_get(lua, j)
-                    if (dm_is_error(rc)) exit res_loop
-
-                    rc = dm_lua_field(lua, 'name',  observ%requests(i)%responses(j)%name)
-                    rc = dm_lua_field(lua, 'unit',  observ%requests(i)%responses(j)%unit)
-                    rc = dm_lua_field(lua, 'error', observ%requests(i)%responses(j)%error)
-                    rc = dm_lua_field(lua, 'value', observ%requests(i)%responses(j)%value)
-
-                    call dm_lua_pop(lua) ! table element
-                end do res_loop
-
-                call dm_lua_pop(lua) ! responses
-                call dm_lua_pop(lua) ! table element
-
-                rc = E_NONE
+                ! Read element.
+                rc = lua_to_request(lua, observ%requests(i))
+                if (dm_is_error(rc)) exit req_loop
             end do req_loop
 
             call dm_lua_pop(lua)
@@ -997,6 +990,7 @@ contains
     integer function lua_to_observs(lua, observs) result(rc)
         !! Reads Lua table into Fortran observation type array. The table has to
         !! be on top of the stack and will be removed once finished.
+        use :: dm_observ
         type(lua_state_type),           intent(inout) :: lua        !! Lua type.
         type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation type array.
 
@@ -1015,8 +1009,10 @@ contains
             if (sz == 0) exit lua_block
 
             do i = 1, sz
+                ! Load element.
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit lua_block
+                ! Read element.
                 rc = lua_to_observ(lua, observs(i))
                 if (dm_is_error(rc)) exit lua_block
             end do
@@ -1030,6 +1026,7 @@ contains
     integer function lua_to_report(lua, report) result(rc)
         !! Reads Lua table into Fortran report type. The table has to
         !! be on top of the stack and will be removed once finished.
+        use :: dm_report
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(report_type),    intent(out)   :: report !! Report type.
 
@@ -1127,4 +1124,197 @@ contains
 
         call dm_lua_pop(lua) ! table
     end function lua_to_report
+
+    integer function lua_to_request(lua, request) result(rc)
+        !! Reads Lua table into Fortran request type. The table has to be on
+        !! top of the stack and will be removed once finished.
+        use :: dm_request
+        type(lua_state_type), intent(inout) :: lua     !! Lua type.
+        type(request_type),   intent(out)   :: request !! Request type.
+
+        integer :: i, n, sz
+
+        request_block: block
+            rc = E_TYPE
+            if (.not. dm_lua_is_table(lua)) exit request_block
+
+            rc = dm_lua_field(lua, 'timestamp',  request%timestamp)
+            rc = dm_lua_field(lua, 'request',    request%request,   unescape=.true.)
+            rc = dm_lua_field(lua, 'response',   request%response,  unescape=.true.)
+            rc = dm_lua_field(lua, 'delimiter',  request%delimiter, unescape=.true.)
+            rc = dm_lua_field(lua, 'pattern',    request%pattern,   unescape=.true.)
+            rc = dm_lua_field(lua, 'delay',      request%delay)
+            rc = dm_lua_field(lua, 'error',      request%error)
+            rc = dm_lua_field(lua, 'retries',    request%retries)
+            rc = dm_lua_field(lua, 'state',      request%state)
+            rc = dm_lua_field(lua, 'timeout',    request%timeout)
+            rc = dm_lua_field(lua, 'nresponses', request%nresponses)
+
+            ! Read responses.
+            rc = dm_lua_field(lua, 'responses')
+            sz = dm_lua_table_size(lua)
+
+            n = min(REQUEST_MAX_NRESPONSES, int(sz))
+            request%nresponses = n
+
+            res_loop: do i = 1, n
+                rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit res_loop
+
+                rc = dm_lua_field(lua, 'name',  request%responses(i)%name)
+                rc = dm_lua_field(lua, 'unit',  request%responses(i)%unit)
+                rc = dm_lua_field(lua, 'error', request%responses(i)%error)
+                rc = dm_lua_field(lua, 'value', request%responses(i)%value)
+
+                call dm_lua_pop(lua) ! table element
+            end do res_loop
+
+            call dm_lua_pop(lua) ! responses
+            rc = E_NONE
+        end block request_block
+
+        call dm_lua_pop(lua) ! table
+    end function lua_to_request
+
+    ! ******************************************************************
+    ! PRIVATE SUBROUTINES.
+    ! ******************************************************************
+    subroutine lua_from_observ(lua, observ)
+        !! Pushes observation on Lua stack.
+        use :: dm_observ
+        type(lua_state_type), intent(inout) :: lua    !! Lua type.
+        type(observ_type),    intent(inout) :: observ !! Observation type.
+
+        integer     :: i
+        type(c_ptr) :: ptr
+
+        call lua_createtable(lua%ptr, 0, 14)
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%node_id))
+        call lua_setfield(lua%ptr, -2, 'node_id')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%sensor_id))
+        call lua_setfield(lua%ptr, -2, 'sensor_id')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%target_id))
+        call lua_setfield(lua%ptr, -2, 'target_id')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%id))
+        call lua_setfield(lua%ptr, -2, 'id')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%name))
+        call lua_setfield(lua%ptr, -2, 'name')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%timestamp))
+        call lua_setfield(lua%ptr, -2, 'timestamp')
+
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%path))
+        call lua_setfield(lua%ptr, -2, 'path')
+
+        call lua_pushinteger(lua%ptr, int(observ%priority, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'priority')
+
+        call lua_pushinteger(lua%ptr, int(observ%error, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'error')
+
+        call lua_pushinteger(lua%ptr, int(observ%next, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'next')
+
+        call lua_pushinteger(lua%ptr, int(observ%nreceivers, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'nreceivers')
+
+        call lua_pushinteger(lua%ptr, int(observ%nrequests, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'nrequests')
+
+        ! Receivers.
+        call lua_createtable(lua%ptr, observ%nreceivers, 0)
+
+        do i = 1, observ%nreceivers
+            call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
+            ptr = lua_pushstring(lua%ptr, trim(observ%receivers(i)))
+            call lua_settable(lua%ptr, -3)
+        end do
+
+        call lua_setfield(lua%ptr, -2, 'receivers')
+
+        ! Requests.
+        call lua_createtable(lua%ptr, observ%nrequests, 0)
+
+        do i = 1, observ%nrequests
+            call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
+            call lua_from_request(lua, observ%requests(i))
+            call lua_settable(lua%ptr, -3)
+        end do
+
+        call lua_setfield(lua%ptr, -2, 'requests')
+    end subroutine lua_from_observ
+
+    subroutine lua_from_request(lua, request)
+        !! Pushes request on Lua stack.
+        use :: dm_request
+        type(lua_state_type), intent(inout) :: lua     !! Lua type.
+        type(request_type),   intent(inout) :: request !! Request type.
+
+        integer     :: i
+        type(c_ptr) :: ptr
+
+        call lua_createtable(lua%ptr, 0, 12)
+
+        ptr = lua_pushstring(lua%ptr, trim(request%timestamp))
+        call lua_setfield(lua%ptr, -2, 'timestamp')
+
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(request%request))
+        call lua_setfield(lua%ptr, -2, 'request')
+
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(request%response))
+        call lua_setfield(lua%ptr, -2, 'response')
+
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(request%delimiter))
+        call lua_setfield(lua%ptr, -2, 'delimiter')
+
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(request%pattern))
+        call lua_setfield(lua%ptr, -2, 'pattern')
+
+        call lua_pushinteger(lua%ptr, int(request%delay, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'delay')
+
+        call lua_pushinteger(lua%ptr, int(request%error, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'error')
+
+        call lua_pushinteger(lua%ptr, int(request%retries, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'retries')
+
+        call lua_pushinteger(lua%ptr, int(request%state, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'state')
+
+        call lua_pushinteger(lua%ptr, int(request%timeout, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'timeout')
+
+        call lua_pushinteger(lua%ptr, int(request%nresponses, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'nresponses')
+
+        ! Responses.
+        call lua_createtable(lua%ptr, request%nresponses, 0)
+
+        do i = 1, request%nresponses
+            call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
+            call lua_createtable(lua%ptr, 0, 4)
+
+            ptr = lua_pushstring(lua%ptr, trim(request%responses(i)%name))
+            call lua_setfield(lua%ptr, -2, 'name')
+
+            ptr = lua_pushstring(lua%ptr, trim(request%responses(i)%unit))
+            call lua_setfield(lua%ptr, -2, 'unit')
+
+            call lua_pushinteger(lua%ptr, int(request%responses(i)%error, kind=lua_integer))
+            call lua_setfield(lua%ptr, -2, 'error')
+
+            call lua_pushnumber(lua%ptr, request%responses(i)%value)
+            call lua_setfield(lua%ptr, -2, 'value')
+
+            call lua_settable(lua%ptr, -3)
+        end do
+
+        call lua_setfield(lua%ptr, -2, 'responses')
+    end subroutine lua_from_request
 end module dm_lua
