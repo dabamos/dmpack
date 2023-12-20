@@ -25,7 +25,6 @@ module dm_lua_lib
     !! print(deg2gon(360.0))
     !! ```
     use, intrinsic :: iso_c_binding
-    use :: lua, only: lua_register
     use :: dm_lua_api
     use :: dm_lua_geocom
     implicit none (type, external)
@@ -38,17 +37,31 @@ contains
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
     function luaopen_libdmpack(ptr) bind(c) result(rc)
-        !! Registers the Lua interfaces of the DMPACK API. This function is
-        !! invoked automatically by Lua 5.4.
+        !! Registers the Lua parameters and interfaces of the DMPACK API. This
+        !! function is invoked automatically by Lua 5.4.
+        use :: lua,     only: lual_dostring, lua_register
+        use :: dm_log,  only: LOG_NONE, LOG_DEBUG, LOG_INFO, LOG_WARNING, &
+                              LOG_ERROR, LOG_CRITICAL
+        use :: dm_util, only: dm_itoa
         type(c_ptr), intent(in), value :: ptr !! C pointer to Lua interpreter.
         integer(kind=c_int)            :: rc  !! Return code.
 
+        ! Add log levels.
+        rc = lual_dostring(ptr, 'LOG_NONE = '     // dm_itoa(LOG_NONE))
+        rc = lual_dostring(ptr, 'LOG_DEBUG = '    // dm_itoa(LOG_DEBUG))
+        rc = lual_dostring(ptr, 'LOG_INFO = '     // dm_itoa(LOG_INFO))
+        rc = lual_dostring(ptr, 'LOG_WARNING = '  // dm_itoa(LOG_WARNING))
+        rc = lual_dostring(ptr, 'LOG_ERROR = '    // dm_itoa(LOG_ERROR))
+        rc = lual_dostring(ptr, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL))
+
+        ! Add utility functions.
         call lua_register(ptr, 'deg2gon', c_funloc(dm_lua_api_deg2gon))
         call lua_register(ptr, 'deg2rad', c_funloc(dm_lua_api_deg2rad))
         call lua_register(ptr, 'gon2deg', c_funloc(dm_lua_api_gon2deg))
         call lua_register(ptr, 'gon2rad', c_funloc(dm_lua_api_gon2rad))
         call lua_register(ptr, 'rad2deg', c_funloc(dm_lua_api_rad2deg))
         call lua_register(ptr, 'rad2gon', c_funloc(dm_lua_api_rad2gon))
+
         rc = 1
     end function luaopen_libdmpack
 end module dm_lua_lib

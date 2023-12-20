@@ -31,7 +31,7 @@ module dm_logger
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(0:5) = [ &
-        COLOR_RESET, COLOR_GREEN, COLOR_WHITE, COLOR_RED, COLOR_RED, COLOR_RED ]
+        COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED ]
 
     type, public :: logger_type
         !! Opaque logger type.

@@ -67,15 +67,19 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) exit open_block
 
+            ! Initialise Lua interpreter.
             rc = dm_lua_init(config%lua)
             if (dm_is_error(rc)) exit open_block
 
-            rc = dm_lua_open(config%lua, path, eval=.true.)
-            if (dm_is_error(rc)) exit open_block
-
+            ! Register Lua API of DMPACK.
             rc = dm_lua_api_register(config%lua, constants=.true., procedures=.false.)
             if (dm_is_error(rc)) exit open_block
 
+            ! Load and evaluate Lua script.
+            rc = dm_lua_open(config%lua, path, eval=.true.)
+            if (dm_is_error(rc)) exit open_block
+
+            ! Load Lua table onto stack.
             if (present(name)) then
                 rc = E_INVALID
                 if (len_trim(name) == 0) exit open_block

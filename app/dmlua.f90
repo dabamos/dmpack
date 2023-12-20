@@ -81,7 +81,8 @@ program dmlua
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open mqueue /' // app%name, error=rc)
+            call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(app%name) // ': ' // &
+                        dm_system_error_string(), error=rc)
             exit init_block
         end if
 

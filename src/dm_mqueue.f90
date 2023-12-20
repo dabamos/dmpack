@@ -25,8 +25,8 @@ module dm_mqueue
     type, public :: mqueue_type
         !! Opaque POSIX message queue type.
         private
-        character(len=MQUEUE_NAME_LEN) :: name = ' ' !! Message queue name (with leading `/`).
-        integer(kind=c_mqd_t)          :: mqd  = 0   !! C message queue descriptor.
+        character(len=MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
+        integer(kind=c_mqd_t)          :: mqd  = 0_c_mqd_t !! C message queue descriptor.
     end type mqueue_type
 
     interface dm_mqueue_open
