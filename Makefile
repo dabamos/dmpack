@@ -140,6 +140,7 @@ PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L/usr/local/lib -z execstack
 #LDLIBS = -pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
+LDLIBS  =
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`

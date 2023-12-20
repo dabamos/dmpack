@@ -30,7 +30,7 @@ module dm_geocom_api
     ! GEOCOM API CONSTANTS.
     ! **************************************************************************
     character(len=*),    parameter :: GEOCOM_DELIMITER        = '\r\n'                  !! Default GeoCOM delimiter.
-    character(len=*),    parameter :: GEOCOM_GRC_PATTERN      = '%R1P,0,0:(?<grc>\d+)'   !! Default GeoCOM response pattern.
+    character(len=*),    parameter :: GEOCOM_GRC_PATTERN      = '%R1P,0,0:(?<grc>\d+)'  !! Default GeoCOM response pattern.
     type(response_type), parameter :: GEOCOM_GRC_RESPONSES(1) = [ response_type('rc') ] !! Default GeoCOM responses (GRC only).
 
     ! **************************************************************************
@@ -650,11 +650,18 @@ contains
         character(len=*),    intent(in)  :: pattern      !! Regular expression pattern that matches the response.
         type(response_type), intent(in)  :: responses(:) !! Array of response types.
 
+        integer :: i, n
+
+        n = min(REQUEST_MAX_NRESPONSES, size(responses))
+
         request%request    = string           ! Request command.
         request%pattern    = pattern          ! Response pattern.
         request%delimiter  = GEOCOM_DELIMITER ! Response delimiter.
-        request%nresponses = size(responses)  ! Number of responses.
-        request%responses  = responses        ! Array of responses.
+        request%nresponses = n                ! Number of responses.
+
+        do i = 1, n
+            request%responses(i) = responses(i)
+        end do
     end subroutine dm_geocom_prepare_request
 
     ! **************************************************************************

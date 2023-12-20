@@ -120,7 +120,7 @@ contains
         if (present(trans)) then
             ltrans = trans
         else
-            ltrans = 'n'
+            ltrans = 'N'
         end if
 
         if (m < 0 .or. n < 0) then

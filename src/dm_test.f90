@@ -70,7 +70,7 @@ contains
 
         call dm_system_uname(uname)
 
-        call dm_ansi_color(COLOR_WHITE, no_color_)
+        call dm_ansi_color(COLOR_GREEN, no_color_)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color_)
 
@@ -112,7 +112,7 @@ contains
 
         print '("Total execution time: ", f8.4, " sec")', total_time
 
-        call dm_ansi_color(COLOR_WHITE, no_color_)
+        call dm_ansi_color(COLOR_GREEN, no_color_)
         call test_title('TEST SESSION FINISHED', TEST_LINE_LEN)
         call dm_ansi_reset(no_color_)
 
