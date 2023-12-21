@@ -115,7 +115,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **node_id** - Node ID (string).
+        !! * node_id - Node ID (string).
         character(len=*), parameter :: TITLE = 'Beat' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -418,7 +418,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **id** - Log ID (UUID4).
+        !! * id - Log ID (UUID4).
         character(len=*), parameter :: TITLE = 'Log' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -483,14 +483,14 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * **node_id**     - Node ID (string).
-        !! * **sensor_id**   - Sensor ID (string).
-        !! * **target_id**   - Target ID (string).
-        !! * **source**      - Log source (string).
-        !! * **from**        - Time range start (ISO 8601).
-        !! * **to**          - Time range end (ISO 8601).
-        !! * **level**       - Log level (integer).
-        !! * **max_results** - Maximum number of logs (integer).
+        !! * node_id     - Node ID (string).
+        !! * sensor_id   - Sensor ID (string).
+        !! * target_id   - Target ID (string).
+        !! * source      - Log source (string).
+        !! * from        - Time range start (ISO 8601).
+        !! * to          - Time range end (ISO 8601).
+        !! * level       - Log level (integer).
+        !! * max_results - Maximum number of logs (integer).
         character(len=*), parameter :: TITLE = 'Logs' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -652,7 +652,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **id** - Node ID (string).
+        !! * id - Node ID (string).
         character(len=*), parameter :: TITLE = 'Node' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -710,9 +710,9 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * **id**   - Node ID (string).
-        !! * **name** - Node name (string).
-        !! * **meta** - Node meta description (string).
+        !! * id   - Node ID (string).
+        !! * name - Node name (string).
+        !! * meta - Node meta description (string).
         character(len=*), parameter :: TITLE = 'Nodes' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -802,7 +802,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **id** - Observation ID (UUID4).
+        !! * id - Observation ID (UUID4).
         character(len=*), parameter :: TITLE = 'Observation' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -889,12 +889,12 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * **node_id**     - Node ID (string).
-        !! * **sensor_id**   - Sensor ID (string).
-        !! * **target_id**   - Target ID (string).
-        !! * **from**        - Time range start (ISO 8601).
-        !! * **to**          - Time range end (ISO 8601).
-        !! * **max_results** - Maximum number of points per plot (integer).
+        !! * node_id     - Node ID (string).
+        !! * sensor_id   - Sensor ID (string).
+        !! * target_id   - Target ID (string).
+        !! * from        - Time range start (ISO 8601).
+        !! * to          - Time range end (ISO 8601).
+        !! * max_results - Maximum number of points per plot (integer).
         character(len=*), parameter :: TITLE = 'Observations' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1026,13 +1026,13 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * **node_id**       - Node ID (string).
-        !! * **sensor_id**     - Sensor ID (string).
-        !! * **target_id**     - Target ID (string).
-        !! * **response_name** - Observation response name (string).
-        !! * **from**          - Time range start (ISO 8601).
-        !! * **to**            - Time range end (ISO 8601).
-        !! * **max_results**   - Maximum number of data points (integer).
+        !! * node_id       - Node ID (string).
+        !! * sensor_id     - Sensor ID (string).
+        !! * target_id     - Target ID (string).
+        !! * response_name - Observation response name (string).
+        !! * from          - Time range start (ISO 8601).
+        !! * to            - Time range end (ISO 8601).
+        !! * max_results   - Maximum number of data points (integer).
         character(len=*), parameter :: TITLE       = 'Plots' !! Page title.
         integer,          parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
         integer,          parameter :: PLOT_HEIGHT = 400     !! Default plot height.
@@ -1197,7 +1197,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **id** - Sensor ID (string).
+        !! * id - Sensor ID (string).
         character(len=*), parameter :: TITLE = 'Sensor' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1472,7 +1472,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * **id** - Target ID (string).
+        !! * id - Target ID (string).
         character(len=*), parameter :: TITLE = 'Target' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.

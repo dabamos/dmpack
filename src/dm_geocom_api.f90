@@ -672,10 +672,12 @@ contains
         !!
         !! Creates request to abort or end the file download command.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,23305:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,23305:`                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
@@ -689,10 +691,12 @@ contains
         !!
         !! Creates request to aborts or end the file list command.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,23308:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,23308:`                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
@@ -706,10 +710,12 @@ contains
         !!
         !! Creates request to output an alarm signal (triple beep).
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,11004:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,11004:`                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
@@ -723,10 +729,12 @@ contains
         !!
         !! Creates request to output an alarm signal (single beep).
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,11003:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,11003:`                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
@@ -740,10 +748,12 @@ contains
         !!
         !! Creates request to stop an active beep signal.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,20000:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,20000:`                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
@@ -759,10 +769,12 @@ contains
         !! no intensity is passed, the default (`GEOCOM_IOS_BEEP_STDINTENS`) is
         !! used.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,20001:<intensity>`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,20001:<intensity>`                         |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out)          :: request   !! Prepared request.
         integer,            intent(in), optional :: intensity !! Intensity of beep, from 0 to 100.
 
@@ -793,10 +805,12 @@ contains
         !! By default, `pos_mode` is set to `GEOCOM_AUT_NORMAL`, and `atr_mode`
         !! to `GEOCOM_AUT_POSITION`.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,9028:<pos_mode>,<atr_mode>,0`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,9028:<pos_mode>,<atr_mode>,0`              |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out)          :: request  !! Prepared request.
         integer,            intent(in), optional :: pos_mode !! Position mode (`AUT_POSMODE`).
         integer,            intent(in), optional :: atr_mode !! ATR mode (`AUT_ATRMODE`).
@@ -821,10 +835,12 @@ contains
         !! to delete multiple files. If the deletion date is valid, only files
         !! older than the deletion date are deleted.
         !!
-        !! Responses:       grc, nfiles
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,23309:<device_type>,<file_type>,<day>,<month>,<year>,<file_name>`
-        !! ASCII-Response:  `%R1P,0,0:<grc>,<nfiles>`
+        !! | Property       | Values                                                                  |
+        !! |----------------|-------------------------------------------------------------------------|
+        !! | Responses      | `grc`, `nfiles`                                                         |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                |
+        !! | ASCII request  | `%R1Q,23309:<device_type>,<file_type>,<day>,<month>,<year>,<file_name>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<nfiles>`                                               |
         type(request_type),     intent(out) :: request     !! Prepared request.
         integer,                intent(in)  :: device_type !! Internal memory or memory card (`FTR_DEVICETYPE`).
         integer,                intent(in)  :: file_type   !! Type of file (`FTR_FILETYPE`).
@@ -876,10 +892,12 @@ contains
         !! `GEOCOM_TMC_DEF_DIST`, the distance sensor will work with the set
         !! EDM mode.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,2008:<command>,<mode>`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,2008:<command>,<mode>`                     |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out)          :: request !! Prepared request.
         integer,            intent(in), optional :: command !! TMC measurement mode (`TMC_MEASURE_PRG`).
         integer,            intent(in), optional :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
@@ -915,10 +933,12 @@ contains
         !! By default, `pos_mode` is `GEOCOM_AUT_NORMAL`, and `atr_mode` is
         !! `GEOCOM_AUT_POSITION`.
         !!
-        !! Responses:       grc
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,9027:<hz>,<v>,<pos_mode>,<atr_mode>,0`
-        !! ASCII-Response:  `%R1P,0,0:<grc>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`                                            |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,9027:<hz>,<v>,<pos_mode>,<atr_mode>,0`     |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         type(request_type), intent(out)          :: request  !! Prepared request.
         real(kind=r8),      intent(in)           :: hz       !! Horizontal angle [rad].
         real(kind=r8),      intent(in)           :: v        !! Vertical angle [rad].
@@ -963,10 +983,12 @@ contains
         !! number of digits to the right of the decimal point – when double
         !! floating-point values are transmitted.
         !!
-        !! Responses:       grc, ndigits
-        !! Instruments:     TPS1200, TM30/TS30, TS16
-        !! ASCII-Request:   `%R1Q,108:`
-        !! ASCII-Response:  `%R1P,0,0:<grc>,<ndigits>`
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Responses      | `grc`, `ndigits`                                 |
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,108:`                                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<ndigits>`                       |
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_PATTERN_LEN) :: pattern

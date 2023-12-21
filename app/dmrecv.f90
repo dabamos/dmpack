@@ -40,6 +40,7 @@ program dmrecv
         integer                          :: format      = FORMAT_NONE !! Data output format.
         integer                          :: type        = TYPE_NONE   !! Data type.
         logical                          :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                          :: file        = .false.     !! Output to file.
         logical                          :: forward     = .false.     !! Observation forwarding.
         logical                          :: replace     = .false.     !! Replace output file.
         logical                          :: verbose     = .false.     !! Print debug messages to stderr.
@@ -66,7 +67,10 @@ program dmrecv
                             verbose = app%verbose)
 
         ! Open log message queue for reading.
-        rc = dm_mqueue_open(mqueue=mqueue, type=app%type, name=app%name, access=MQUEUE_RDONLY)
+        rc = dm_mqueue_open(mqueue = mqueue, &
+                            type   = app%type, &
+                            name   = app%name, &
+                            access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
             call dm_log(LOG_ERROR, 'failed to open mqueue /' // app%name, error=rc)
@@ -81,80 +85,6 @@ program dmrecv
     if (dm_is_error(rc)) call halt(1)
     call halt(0)
 contains
-    integer function forward_observ(observ, name) result(rc)
-        !! Forwards given observation to next receiver.
-        type(observ_type), intent(inout)        :: observ !! Observation to forward.
-        character(len=*),  intent(in), optional :: name   !! App name.
-
-        integer           :: next
-        type(mqueue_type) :: mqueue
-
-        rc   = E_NONE
-        next = observ%next
-
-        do
-            ! Increase the receiver index.
-            next = max(0, next) + 1
-
-            ! End of receiver list reached?
-            if (next > observ%nreceivers) then
-                call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
-                return
-            end if
-
-            ! Invalid receiver name?
-            if (.not. dm_id_valid(observ%receivers(next))) then
-                rc = E_INVALID
-                call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                            ' in observ ' // observ%name, observ=observ, error=rc)
-                return
-            end if
-
-            ! Cycle to next + 1 if receiver name equals app name. We don't want
-            ! to send the observation to this program instance.
-            if (.not. present(name)) exit
-            if (observ%receivers(next) /= name) exit
-            call dm_log(LOG_DEBUG, 'skipped receiver ' // dm_itoa(next) // ' (' // &
-                        trim(observ%receivers(next)) // ') of observ ' // observ%name)
-        end do
-
-        mqueue_block: block
-            ! Open message queue of receiver for writing.
-            rc = dm_mqueue_open(mqueue   = mqueue, &
-                                type     = TYPE_OBSERV, &
-                                name     = observ%receivers(next), &
-                                access   = MQUEUE_WRONLY, &
-                                blocking = APP_MQ_BLOCKING)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next), &
-                            observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            ! Send observation to message queue.
-            observ%next = next
-            rc = dm_mqueue_write(mqueue, observ)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
-                            ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
-                        observ%receivers(next), observ=observ)
-        end block mqueue_block
-
-        ! Close message queue.
-        rc = dm_mqueue_close(mqueue)
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
-                        observ=observ, error=rc)
-        end if
-    end function forward_observ
-
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(inout) :: app
@@ -201,6 +131,7 @@ contains
         rc = dm_arg_get(args(11), app%replace)
         rc = dm_arg_get(args(12), app%verbose)
 
+        app%file   = (len_trim(app%output) > 0 .and. app%output /= '-')
         app%format = dm_format_from_name(app%format_name)
         app%type   = dm_type_from_name(app%type_name)
 
@@ -227,7 +158,7 @@ contains
             return
         end if
 
-        if (app%replace .and. len_trim(app%output) == 0) then
+        if (app%replace .and. .not. app%file) then
             call dm_error_out(rc, '--replace requires output file')
             return
         end if
@@ -286,7 +217,7 @@ contains
 
     subroutine halt(stat)
         !! Cleans up and stops program.
-        integer, intent(in) :: stat
+        integer, intent(in) :: stat !! Exit status.
         integer             :: rc
 
         rc = dm_mqueue_close(mqueue)
@@ -304,26 +235,24 @@ contains
 
         integer :: file_unit
         integer :: i, j, rc, stat
-        logical :: is_file
 
         type(dp_type)     :: dp
         type(log_type)    :: log
         type(observ_type) :: observ
 
         file_unit = stdout
-        is_file   = .false.
-
-        if (len_trim(app%output) > 0 .or. app%output == '-') is_file = .true.
 
         call dm_log(LOG_INFO, 'started ' // app%name)
 
         ipc_loop: do
             ! Read observation or log from POSIX message queue (blocking).
             if (app%type == TYPE_OBSERV) then
-                call dm_log(LOG_DEBUG, 'waiting for observ on mqueue /' // app%name, error=rc)
+                ! Observation.
+                call dm_log(LOG_DEBUG, 'waiting for observ on mqueue /' // app%name)
                 rc = dm_mqueue_read(mqueue, observ)
             else if (app%type == TYPE_LOG) then
-                call dm_log(LOG_DEBUG, 'waiting for log on mqueue /' // app%name, error=rc)
+                ! Log.
+                call dm_log(LOG_DEBUG, 'waiting for log on mqueue /' // app%name)
                 rc = dm_mqueue_read(mqueue, log)
             end if
 
@@ -336,6 +265,7 @@ contains
 
             ! Validate observation or log.
             if (app%type == TYPE_OBSERV) then
+                ! Observation.
                 if (.not. dm_observ_valid(observ)) then
                     call dm_log(LOG_ERROR, 'invalid observ received', error=E_INVALID)
                     cycle ipc_loop
@@ -343,6 +273,7 @@ contains
 
                 call dm_log(LOG_DEBUG, 'received observ ' // trim(observ%id))
             else if (app%type == TYPE_LOG) then
+                ! Log.
                 if (.not. dm_log_valid(log)) then
                     call dm_log(LOG_ERROR, 'invalid log received', error=E_INVALID)
                     cycle ipc_loop
@@ -352,7 +283,7 @@ contains
             end if
 
             ! Open output file.
-            if (is_file) then
+            if (app%file) then
                 if (app%replace) then
                     ! Replace file.
                     open (action='write', file=trim(app%output), iostat=stat, &
@@ -422,17 +353,21 @@ contains
             ! Handle write errors.
             if (dm_is_error(rc)) then
                 if (app%type == TYPE_OBSERV) then
+                    ! Observation.
                     call dm_log(LOG_ERROR, 'failed to write observ ' // observ%id, error=rc)
                 else if (app%type == TYPE_LOG) then
+                    ! Log.
                     call dm_log(LOG_ERROR, 'failed to write log ' // log%id, error=rc)
                 end if
             end if
 
             ! Close file.
-            if (is_file) then
+            if (app%file) then
                 if (app%type == TYPE_OBSERV) then
+                    ! Observation.
                     call dm_log(LOG_DEBUG, 'observ ' // trim(observ%id) // ' written to ' // app%output)
                 else if (app%type == TYPE_LOG) then
+                    ! Log.
                     call dm_log(LOG_DEBUG, 'log ' // trim(log%id) // ' written to ' // app%output)
                 end if
 
@@ -440,13 +375,7 @@ contains
             end if
 
             ! Forward observation to next receiver.
-            if (app%forward) then
-                rc = forward_observ(observ, app%name)
-
-                if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to forward observ ' // observ%id, error=rc)
-                end if
-            end if
+            if (app%forward) rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 
@@ -454,7 +383,7 @@ contains
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
         use, intrinsic :: iso_c_binding, only: c_int
-        integer(kind=c_int), intent(in), value :: signum
+        integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
         select case (signum)
             case default

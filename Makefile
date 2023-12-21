@@ -216,7 +216,8 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 src/dm_html.f90 \
       src/dm_atom.f90 src/dm_router.f90 src/dm_la.f90 src/dm_transform.f90 \
       src/dm_geocom_error.f90 src/dm_geocom_api.f90 src/dm_geocom.f90 \
-      src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_rts.f90 src/dmpack.f90
+      src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_rts.f90 \
+      src/dm_mqueue_util.f90 src/dmpack.f90
 
 # Library object files.
 OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
@@ -231,7 +232,8 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
       dm_mail.o dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o \
       dm_fcgi.o dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
       dm_router.o dm_la.o dm_transform.o dm_geocom_error.o dm_geocom_api.o \
-      dm_geocom.o dm_lua_geocom.o dm_lua_lib.o dm_rts.o dmpack.o
+      dm_geocom.o dm_lua_geocom.o dm_lua_lib.o dm_rts.o dm_mqueue_util.o \
+      dmpack.o
 
 # ******************************************************************************
 #
@@ -253,12 +255,12 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestcsv dmtestdb dmtestdp \
-      dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob \
-      dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
-      dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrouter dmtestrpc \
-      dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil \
-      dmtestuuid dmtestz
+test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
+      dmtestdb dmtestdp dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua \
+      dmtestjob dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml \
+      dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrouter \
+      dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty dmtestunit \
+      dmtestutil dmtestuuid dmtestz
 
 # ******************************************************************************
 #
@@ -422,6 +424,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -456,6 +459,9 @@ dmtestbase64: test/dmtestbase64.f90 $(TARGET)
 
 dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcgi test/dmtestcgi.f90 $(TARGET) $(LDLIBS)
+
+dmtestconfig: test/dmtestconfig.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LDLIBS) $(LIBLUA54)
 
 dmtestcsv: test/dmtestcsv.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcsv test/dmtestcsv.f90 $(TARGET) $(LDLIBS)

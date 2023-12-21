@@ -59,7 +59,10 @@ program dmlua
         end if
 
         ! Register DMPACK API for Lua.
-        rc = dm_lua_api_register(lua, constants=.true., procedures=.true.)
+        rc = dm_lua_api_register(lua, &
+                                 add_errors     = .true., &
+                                 add_levels     = .true., &
+                                 add_procedures = .true.)
 
         if (dm_is_error(rc)) then
             call dm_log(LOG_ERROR, 'failed to register Lua API', error=rc)
@@ -82,7 +85,7 @@ program dmlua
 
         if (dm_is_error(rc)) then
             call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(app%name) // ': ' // &
-                        dm_system_error_string(), error=rc)
+                        dm_system_error_message(), error=rc)
             exit init_block
         end if
 
@@ -189,66 +192,6 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    integer function send_observ(observ) result(rc)
-        !! Sends passed observation to next receiver via POSIX message queue.
-        type(observ_type), intent(inout) :: observ
-
-        integer           :: next
-        type(mqueue_type) :: mqueue
-
-        next = max(0, observ%next) + 1
-
-        ! Validate receiver.
-        if (next > min(observ%nreceivers, OBSERV_MAX_NRECEIVERS)) then
-            call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
-            rc = E_NONE
-            return
-        end if
-
-        if (.not. dm_id_valid(observ%receivers(next))) then
-            call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                        ' in observ ' // observ%name, observ=observ, error=E_INVALID)
-            rc = E_INVALID
-            return
-        end if
-
-        mqueue_block: block
-            ! Open message queue of receiver for writing.
-            rc = dm_mqueue_open(mqueue   = mqueue, &
-                                type     = TYPE_OBSERV, &
-                                name     = observ%receivers(next), &
-                                access   = MQUEUE_WRONLY, &
-                                blocking = APP_MQ_BLOCKING)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open mqueue /' // observ%receivers(next), &
-                            observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            ! Send observation to message queue.
-            observ%next = next
-            rc = dm_mqueue_write(mqueue, observ)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
-                            ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
-                        observ%receivers(next), observ=observ)
-        end block mqueue_block
-
-        ! Close message queue.
-        rc = dm_mqueue_close(mqueue)
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
-                        observ=observ, error=rc)
-        end if
-    end function send_observ
-
     subroutine halt(stat)
         !! Cleans up and stops program.
         integer, intent(in) :: stat
@@ -266,22 +209,22 @@ contains
         !! function. The Lua function has to return the (modified) observation
         !! on exit.
         !!
-        !! Variable `obs_in` stores the observation type received from message
+        !! Variable `observ_in` stores the observation type received from message
         !! queue. The observation data returned from the Lua function is stored
-        !! in `obs_out` and will be forwarded to the next receiver. On error,
+        !! in `observ_out` and will be forwarded to the next receiver. On error,
         !! the received observation will be forwarded instead.
         type(app_type),       intent(inout) :: app
         type(lua_state_type), intent(inout) :: lua
         type(mqueue_type),    intent(inout) :: mqueue
 
         integer           :: rc
-        type(observ_type) :: obs_in, obs_out
+        type(observ_type) :: observ_in, observ_out
 
         call dm_log(LOG_INFO, 'started ' // app%name)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
-            rc = dm_mqueue_read(mqueue, obs_in)
+            rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
                 call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
@@ -290,14 +233,14 @@ contains
             end if
 
             ! Validate observation.
-            if (.not. dm_observ_valid(obs_in)) then
-                call dm_log(LOG_ERROR, 'invalid observ ' // trim(obs_in%name), &
-                            observ=obs_in, error=E_INVALID)
+            if (.not. dm_observ_valid(observ_in)) then
+                call dm_log(LOG_ERROR, 'invalid observ ' // trim(observ_in%name), &
+                            observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call dm_log(LOG_DEBUG, 'passing observ ' // trim(obs_in%name) // &
-                        ' to Lua function ' // trim(app%proc) // '()', observ=obs_in)
+            call dm_log(LOG_DEBUG, 'passing observ ' // trim(observ_in%name) // &
+                        ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
 
             ! Pass the observation to the Lua function in read the returned
             ! observation.
@@ -317,43 +260,43 @@ contains
                 end if
 
                 ! Write derived type to Lua stack and call the Lua function.
-                call dm_lua_from(lua, obs_in)
+                call dm_lua_from(lua, observ_in)
                 rc = dm_lua_call(lua, nargs=1, nresults=1)
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
                     call dm_log(LOG_ERROR, 'failed to execute Lua function ' // trim(app%proc) // '()', &
-                                observ=obs_in, error=rc)
+                                observ=observ_in, error=rc)
                     exit lua_block
                 end if
 
                 ! Read observation from Lua stack into derived type.
-                rc = dm_lua_to(lua, obs_out)
+                rc = dm_lua_to(lua, observ_out)
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
                     call dm_log(LOG_ERROR, 'failed to read observ from Lua stack', &
-                                error=rc, observ=obs_in)
+                                error=rc, observ=observ_in)
                     exit lua_block
                 end if
 
                 ! Validate returned observation.
-                if (.not. dm_observ_valid(obs_out)) then
+                if (.not. dm_observ_valid(observ_out)) then
                     rc = E_INVALID
                     call dm_log(LOG_ERROR, 'invalid observ returned from Lua function ' // &
-                                trim(app%proc) // '()', error=rc, observ=obs_in)
+                                trim(app%proc) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
 
             ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
-                obs_out = obs_in
+                observ_out = observ_in
             else
-                call dm_log(LOG_DEBUG, 'finished observ ' // obs_out%name, observ=obs_out)
+                call dm_log(LOG_DEBUG, 'finished observ ' // observ_out%name, observ=observ_out)
             end if
 
-            rc = send_observ(obs_out)
+            rc = dm_mqueue_util_forward(observ_out, app%name, APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 

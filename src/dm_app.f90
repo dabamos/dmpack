@@ -3,7 +3,6 @@
 module dm_app
     !! Utility procedures for applications based on the DMPACK library.
     use :: dm_id
-    use :: dm_version
     implicit none (type, external)
     private
 
@@ -13,6 +12,7 @@ module dm_app
 contains
     subroutine dm_app_out(name, major, minor, patch)
         !! Prints DMPACK and application version to standard output.
+        use :: dm_version
         character(len=*), intent(in) :: name  !! Application name.
         integer,          intent(in) :: major !! Major version number.
         integer,          intent(in) :: minor !! Minor version number.

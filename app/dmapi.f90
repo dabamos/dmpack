@@ -110,34 +110,34 @@ contains
         !! Accepts beat in Namelist format via HTTP POST. Returns beat of
         !! a given node id in CSV, JSON or Namelist format to GET requests.
         !!
-        !! Path:
-        !!      /api/v1/beat
+        !! ## Path
+        !! * /api/v1/beat
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      node_id - Node id.
+        !! ## GET Parameters
+        !! * node_id - Node id.
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Heartbeat is returned.
-        !!      400 - Invalid request.
-        !!      404 - Heartbeat was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Heartbeat is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Heartbeat was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Heartbeat was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Heartbeat was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -271,22 +271,22 @@ contains
         !! Returns list of all beats in database in CSV, JSON, or JSON Lines
         !! format.
         !!
-        !! Path:
-        !!      /api/v1/beats
+        !! ## Path
+        !! * /api/v1/beats
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      header - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * header - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Beats are returned.
-        !!      404 - No beats found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Beats are returned.
+        !! * 404 - No beats found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -344,35 +344,35 @@ contains
         !! Accepts log in Namelist format via HTTP POST. Returns single log of
         !! passed log id in CSV, JSON, or Namelist format to GET requests.
         !!
-        !! Path:
-        !!      /api/v1/log
+        !! ## Path
+        !! * /api/v1/log
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      id - Log id (UUID4).
+        !! ## GET Parameters
+        !! * id - Log id (UUID4).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Log is returned.
-        !!      400 - Invalid request.
-        !!      404 - Log was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Log is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Log was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Log was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      409 - Log exists in database.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Log was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 409 - Log exists in database.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -508,26 +508,26 @@ contains
         !! Returns logs of a given time range in CSV, JSON, or JSON Lines format
         !! from database.
         !!
-        !! Path:
-        !!      /api/v1/logs
+        !! ## Path
+        !! * /api/v1/logs
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      node_id - Node id.
-        !!      from    - Start timestamp (ISO 8601).
-        !!      to      - End timestamp (ISO 8601).
-        !!      header  - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * node_id - Node id.
+        !! * from    - Start timestamp (ISO 8601).
+        !! * to      - End timestamp (ISO 8601).
+        !! * header  - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Logs are returned.
-        !!      400 - Invalid request.
-        !!      404 - No logs found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Logs are returned.
+        !! * 400 - Invalid request.
+        !! * 404 - No logs found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
         integer                           :: rc
         type(db_type)                     :: db
@@ -655,35 +655,35 @@ contains
         !! Returns node of given node id in CSV, JSON, or Namelist format from
         !! database. On POST, adds node to database.
         !!
-        !! Path:
-        !!      /api/v1/node
+        !! ## Path
+        !! * /api/v1/node
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      id - Node id.
+        !! ## GET Parameters
+        !! * id - Node id.
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Node is returned.
-        !!      400 - Invalid request.
-        !!      404 - Node was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Node is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Node was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Node was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      409 - Node exists in database.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Node was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 409 - Node exists in database.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -818,22 +818,22 @@ contains
     subroutine route_nodes(env)
         !! Returns all nodes in CSV, JSON, JSON Lines format from database.
         !!
-        !! Path:
-        !!      /api/v1/nodes
+        !! ## Path
+        !! * /api/v1/nodes
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      header  - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * header  - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Nodes are returned.
-        !!      404 - No nodes found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Nodes are returned.
+        !! * 404 - No nodes found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -891,35 +891,35 @@ contains
         !! Returns observation of given id in CSV, JSON, or Namelist format
         !! from database. On POST, adds observation to database.
         !!
-        !! Path:
-        !!      /api/v1/observ
+        !! ## Path
+        !! * /api/v1/observ
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      id - Observation id (UUID4).
+        !! ## GET Parameters
+        !! * id - Observation id (UUID4).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Observation is returned.
-        !!      400 - Invalid request.
-        !!      404 - Observation was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Observation is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Observation was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Observation was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      409 - Observation exists in database.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Observation was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 409 - Observation exists in database.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1055,29 +1055,29 @@ contains
         !! Returns observations of given node, sensor, target, and time range
         !! in CSV, JSON, or JSON Lines format from database.
         !!
-        !! Path:
-        !!      /api/v1/observs
+        !! ## Path
+        !! * /api/v1/observs
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      node_id   - Node id.
-        !!      sensor_id - Sensor id.
-        !!      target_id - Target id.
-        !!      from      - Start timestamp (ISO 8601).
-        !!      to        - End timestamp (ISO 8601).
-        !!      limit     - Max. number of results (optional).
-        !!      header    - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * node_id   - Node id.
+        !! * sensor_id - Sensor id.
+        !! * target_id - Target id.
+        !! * from      - Start timestamp (ISO 8601).
+        !! * to        - End timestamp (ISO 8601).
+        !! * limit     - Max. number of results (optional).
+        !! * header    - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Observations are returned.
-        !!      400 - Invalid request.
-        !!      404 - No observations found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Observations are returned.
+        !! * 400 - Invalid request.
+        !! * 404 - No observations found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1228,14 +1228,14 @@ contains
     subroutine route_root(env)
         !! Returns service status in API status format.
         !!
-        !! Path:
-        !!      /api/v1/
+        !! ## Path
+        !! * /api/v1/
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Responses:
-        !!      200 - Always.
+        !! ## GET Responses
+        !! * 200 - Always.
         type(cgi_env_type), intent(inout) :: env
 
         character(len=API_STATUS_LEN) :: message
@@ -1279,35 +1279,35 @@ contains
         !! Returns sensor of given sensor id in CSV, JSON, or Namelist format
         !! from database. On POST, adds node to database.
         !!
-        !! Path:
-        !!      /api/v1/sensor
+        !! ## Path
+        !! * /api/v1/sensor
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      id - Sensor id.
+        !! ## GET Parameters
+        !! * id - Sensor id.
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Sensor is returned.
-        !!      400 - Invalid request.
-        !!      404 - Sensor was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Sensor is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Sensor was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Sensor was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      409 - Sensor exists in database.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Sensor was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 409 - Sensor exists in database.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1442,23 +1442,23 @@ contains
     subroutine route_sensors(env)
         !! Returns all sensor in database in CSV, JSON, or JSON Lines format.
         !!
-        !! Path:
-        !!      /api/v1/sensors
+        !! ## Path
+        !! * /api/v1/sensors
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      header - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * header - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Sensors are returned.
-        !!      400 - Invalid request.
-        !!      404 - No sensors found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Sensors are returned.
+        !! * 400 - Invalid request.
+        !! * 404 - No sensors found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1516,35 +1516,35 @@ contains
         !! Returns target of given target id in CSV, JSON, or Namelist format
         !! from database. On POST, adds target to database.
         !!
-        !! Path:
-        !!      /api/v1/target
+        !! ## Path
+        !! * /api/v1/target
         !!
-        !! Methods:
-        !!      GET, POST
+        !! ## Methods
+        !! * GET, POST
         !!
-        !! GET Parameters:
-        !!      id - Target id.
+        !! ## GET Parameters
+        !! * id - Target id.
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/namelist, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
-        !! POST Headers:
-        !!      Content-Encoding - deflate (optional)
-        !!      Content-Type     - application/namelist
+        !! ## POST Headers
+        !! * Content-Encoding - `deflate` (optional)
+        !! * Content-Type     - `application/namelist`
         !!
-        !! GET Responses:
-        !!      200 - Target is returned.
-        !!      400 - Invalid request.
-        !!      404 - Target was not found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Target is returned.
+        !! * 400 - Invalid request.
+        !! * 404 - Target was not found.
+        !! * 503 - Database error.
         !!
-        !! POST Responses:
-        !!      201 - Target was accepted.
-        !!      400 - Invalid request or payload.
-        !!      401 - Unauthorised.
-        !!      409 - Target exists in database.
-        !!      415 - Invalid payload format.
-        !!      503 - Database error.
+        !! ## POST Responses
+        !! * 201 - Target was accepted.
+        !! * 400 - Invalid request or payload.
+        !! * 401 - Unauthorised.
+        !! * 409 - Target exists in database.
+        !! * 415 - Invalid payload format.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1672,22 +1672,22 @@ contains
     subroutine route_targets(env)
         !! Returns all targets in CSV, JSON, or JSON Lines format from database.
         !!
-        !! Path:
-        !!      /api/v1/targets
+        !! ## Path
+        !! * /api/v1/targets
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      header - CSV header (0 or 1).
+        !! ## GET Parameters
+        !! * header - CSV header (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - application/json, application/jsonl, text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Targets are returned.
-        !!      404 - No targets found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Targets are returned.
+        !! * 404 - No targets found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1745,31 +1745,31 @@ contains
         !! Returns observations as observation views or data points (X/Y
         !! records) in CSV format from database.
         !!
-        !! Path:
-        !!      /api/v1/timeseries
+        !! ## Path
+        !! * /api/v1/timeseries
         !!
-        !! Methods:
-        !!      GET
+        !! ## Methods
+        !! * GET
         !!
-        !! GET Parameters:
-        !!      node_id   - Node id.
-        !!      sensor_id - Sensor id.
-        !!      target_id - Target id.
-        !!      response  - Response name.
-        !!      from      - Start timestamp (ISO 8601).
-        !!      to        - End timestamp (ISO 8601).
-        !!      limit     - Max. number of results (optional).
-        !!      header    - CSV header (0 or 1).
-        !!      view      - Returns observation views (0 or 1).
+        !! ## GET Parameters
+        !! * node_id   - Node id.
+        !! * sensor_id - Sensor id.
+        !! * target_id - Target id.
+        !! * response  - Response name.
+        !! * from      - Start timestamp (ISO 8601).
+        !! * to        - End timestamp (ISO 8601).
+        !! * limit     - Max. number of results (optional).
+        !! * header    - CSV header (0 or 1).
+        !! * view      - Returns observation views (0 or 1).
         !!
-        !! GET Headers:
-        !!      Accept - text/comma-separated-values
+        !! ## GET Headers
+        !! * Accept - `text/comma-separated-values`
         !!
-        !! GET Responses:
-        !!      200 - Observations are returned.
-        !!      400 - Invalid request.
-        !!      404 - No observations found.
-        !!      503 - Database error.
+        !! ## GET Responses
+        !! * 200 - Observations are returned.
+        !! * 400 - Invalid request.
+        !! * 404 - No observations found.
+        !! * 503 - Database error.
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc

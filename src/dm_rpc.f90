@@ -13,9 +13,11 @@ module dm_rpc
     !! type(rpc_request_type)        :: request
     !! type(rpc_response_type)       :: response
     !!
-    !! rc  = dm_rpc_init()
+    !! rc = dm_rpc_init()
+    !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
-    !! rc  = dm_rpc_send(request, response, observ, url)
+    !! rc = dm_rpc_send(request, response, observ, url)
+    !!
     !! call dm_rpc_destroy()
     !! ```
     !!

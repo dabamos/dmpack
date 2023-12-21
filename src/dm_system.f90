@@ -21,7 +21,7 @@ module dm_system
     end type uname_type
 
     public :: dm_system_daemonize
-    public :: dm_system_error_string
+    public :: dm_system_error_message
     public :: dm_system_fork
     public :: dm_system_path
     public :: dm_system_uname
@@ -65,11 +65,11 @@ contains
         rc = E_NONE
     end function dm_system_daemonize
 
-    function dm_system_error_string(error) result(str)
+    function dm_system_error_message(error) result(str)
         !! Returns system error string from _strerror(3)_. If `error` is not
         !! passed, this function used _errno(2)_ as error code.
         integer, intent(in), optional :: error !! System error code.
-        character(len=:), allocatable :: str   !! Error string.
+        character(len=:), allocatable :: str   !! Error message.
 
         type(c_ptr) :: ptr
 
@@ -80,7 +80,7 @@ contains
         end if
 
         call c_f_str_ptr(ptr, str)
-    end function dm_system_error_string
+    end function dm_system_error_message
 
     integer function dm_system_fork() result(pid)
         !! Forks process and returns PID.

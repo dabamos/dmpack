@@ -29,7 +29,7 @@ program dmfeed
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -172,8 +172,11 @@ contains
 
         character(len=:), allocatable :: xml
         integer                       :: rc
+        logical                       :: is_file
         type(db_type)                 :: db
         type(log_type), allocatable   :: logs(:)
+
+        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
 
         ! Connect to database.
         rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
@@ -211,7 +214,7 @@ contains
             call dm_atom_from_logs(app%atom, logs, xml)
 
             ! Write to file.
-            if (len_trim(app%output) > 0 .and. app%output /= '-') then
+            if (is_file) then
                 call dm_file_write(app%output, xml, raw=.true., error=rc)
                 if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
                 exit feed_block

@@ -64,7 +64,7 @@ program dmlogger
 
         if (dm_is_error(rc)) then
             call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(app%name) // ': ' // &
-                        dm_system_error_string(), error=rc)
+                        dm_system_error_message(), error=rc)
             exit init_block
         end if
 

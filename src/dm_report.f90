@@ -2,6 +2,7 @@
 ! Licence: ISC
 module dm_report
     !! Derived types for report generation.
+    use :: dm_file,     only: FILE_PATH_LEN
     use :: dm_id
     use :: dm_kind
     use :: dm_log
@@ -13,10 +14,9 @@ module dm_report
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REPORT_FORMAT_LEN = 8
-    integer, parameter, public :: REPORT_META_LEN   = 512
-    integer, parameter, public :: REPORT_PATH_LEN   = 4096
-    integer, parameter, public :: REPORT_TITLE_LEN  = 80
+    integer, parameter, public :: REPORT_FORMAT_LEN = 8   !! Plot format string length.
+    integer, parameter, public :: REPORT_META_LEN   = 512 !! Plot meta description string length.
+    integer, parameter, public :: REPORT_TITLE_LEN  = 80  !! Plot title string length.
 
     type, public :: report_observ_type
         !! Single plot of observations.
@@ -36,7 +36,7 @@ module dm_report
     type, public :: report_plot_type
         !! Section plots of report.
         logical                               :: disabled = .false. !! Generate plots.
-        character(len=REPORT_PATH_LEN)        :: database = ' '     !! Path to observation database (required).
+        character(len=FILE_PATH_LEN)          :: database = ' '     !! Path to observation database (required).
         character(len=REPORT_META_LEN)        :: meta     = ' '     !! Description text.
         character(len=REPORT_TITLE_LEN)       :: title    = 'Plots' !! Section title.
         type(report_observ_type), allocatable :: observs(:)         !! Plots to generate.
@@ -47,7 +47,7 @@ module dm_report
         logical                         :: disabled  = .false.      !! Generate plots.
         integer                         :: min_level = LOG_WARNING  !! Minimum log level.
         integer                         :: max_level = LOG_CRITICAL !! Maximum log level.
-        character(len=REPORT_PATH_LEN)  :: database  = ' '          !! Path to observation database (required).
+        character(len=FILE_PATH_LEN)    :: database  = ' '          !! Path to observation database (required).
         character(len=REPORT_META_LEN)  :: meta      = ' '          !! Description text.
         character(len=REPORT_TITLE_LEN) :: title     = 'Logs'       !! Section title.
     end type report_log_type
@@ -58,10 +58,10 @@ module dm_report
         character(len=TIME_LEN)         :: from     = ' '      !! Timestamp (ISO 8601).
         character(len=TIME_LEN)         :: to       = ' '      !! Timestamp (ISO 8601).
         character(len=REPORT_META_LEN)  :: meta     = ' '      !! Report description text.
-        character(len=REPORT_PATH_LEN)  :: output   = ' '      !! Path of output file.
+        character(len=FILE_PATH_LEN)    :: output   = ' '      !! Path of output file.
         character(len=REPORT_TITLE_LEN) :: title    = 'Report' !! Report title.
         character(len=REPORT_TITLE_LEN) :: subtitle = ' '      !! Report sub-title.
-        character(len=REPORT_PATH_LEN)  :: style    = ' '      !! Path to CSS file that will be included into the report.
+        character(len=FILE_PATH_LEN)    :: style    = ' '      !! Path to CSS file that will be included into the report.
         type(report_plot_type)          :: plot                !! Plots section.
         type(report_log_type)           :: log                 !! Logs sections.
     end type report_type

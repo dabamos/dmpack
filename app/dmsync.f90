@@ -429,7 +429,7 @@ contains
                 if (dm_is_error(rc)) then
                     call dm_log(LOG_DEBUG, 'failed to sync with host ' // app%host, error=rc)
                 else
-                    write (message, '("finished sync in ", f0.2, " seconds")') dt
+                    write (message, '("finished sync in ", f0.2, " sec")') dt
                     call dm_log(LOG_DEBUG, message, error=rc)
                 end if
 

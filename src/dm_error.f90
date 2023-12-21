@@ -7,6 +7,10 @@ module dm_error
     implicit none (type, external)
     private
 
+    ! NOTE: Any additional error code must be exported in function
+    ! `dm_lua_api_register()` in module `dm_lua_util` and in function
+    ! `luaopen_libdmpack()` in module `dm_lua_lib`.
+
     ! Generic errors.
     integer, parameter, public :: E_NONE           =   0 !! No error.
     integer, parameter, public :: E_ERROR          =   1 !! Generic error.

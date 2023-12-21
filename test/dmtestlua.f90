@@ -175,6 +175,10 @@ contains
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) return
+
+        print *, 'Validating observation ...'
+        if (observ%requests(1)%delimiter /= '\n') return
+        if (observ%requests(1)%response /= '123\r\n') return
         stat = TEST_PASSED
     end function test03
 

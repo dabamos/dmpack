@@ -28,7 +28,7 @@ observ = {
         {
             timestamp = "1970-01-01T00:00:00.000+00:00",
             request = "?",
-            response = "123",
+            response = "123\\r\\n",
             delimiter = "\\n",
             pattern = "(?:[0-9]+)",
             delay = 100,
@@ -99,6 +99,13 @@ dmreport = {
         title = "Logs",
         meta = "Now is the time for all good men to come to the aid of the party.",
     }
+}
+
+dmtestconfig = {
+    string = "a\\r\\n",
+    integer = 420,
+    logical = true,
+    real = 1.0
 }
 
 function process(table)

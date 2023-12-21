@@ -57,80 +57,6 @@ program dmfs
     call dm_signal_register(signal_handler)
     call run(app)
 contains
-    integer function forward_observ(observ, name) result(rc)
-        !! Forwards given observation to next receiver.
-        type(observ_type), intent(inout)        :: observ !! Observation to forward.
-        character(len=*),  intent(in), optional :: name   !! App name.
-
-        integer           :: next
-        type(mqueue_type) :: mqueue
-
-        rc   = E_NONE
-        next = observ%next
-
-        do
-            ! Increase the receiver index.
-            next = max(0, next) + 1
-
-            ! End of receiver list reached?
-            if (next > observ%nreceivers) then
-                call dm_log(LOG_DEBUG, 'no receivers left in observ ' // observ%name, observ=observ)
-                return
-            end if
-
-            ! Invalid receiver name?
-            if (.not. dm_id_valid(observ%receivers(next))) then
-                rc = E_INVALID
-                call dm_log(LOG_ERROR, 'invalid receiver ' // trim(observ%receivers(next)) // &
-                            ' in observ ' // observ%name, observ=observ, error=rc)
-                return
-            end if
-
-            ! Cycle to next + 1 if receiver name equals app name. We don't want
-            ! to send the observation to this program instance.
-            if (.not. present(name)) exit
-            if (observ%receivers(next) /= name) exit
-            call dm_log(LOG_DEBUG, 'skipped receiver ' // dm_itoa(next) // ' (' // &
-                        trim(observ%receivers(next)) // ') of observ ' // observ%name)
-        end do
-
-        mqueue_block: block
-            ! Open message queue of receiver for writing.
-            rc = dm_mqueue_open(mqueue   = mqueue, &
-                                type     = TYPE_OBSERV, &
-                                name     = observ%receivers(next), &
-                                access   = MQUEUE_WRONLY, &
-                                blocking = APP_MQ_BLOCKING)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // &
-                            dm_system_error_string(), observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            ! Send observation to message queue.
-            observ%next = next
-            rc = dm_mqueue_write(mqueue, observ)
-
-            if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to send observ ' // trim(observ%name) // &
-                            ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
-                exit mqueue_block
-            end if
-
-            call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
-                        observ%receivers(next), observ=observ)
-        end block mqueue_block
-
-        ! Close message queue.
-        rc = dm_mqueue_close(mqueue)
-
-        if (dm_is_error(rc)) then
-            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
-                        observ=observ, error=rc)
-        end if
-    end function forward_observ
-
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file or _stdout_ if `type` is not
         !! `OUTPUT_NONE`.
@@ -452,7 +378,7 @@ contains
 
                 ! Forward observation.
                 call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
-                rc = forward_observ(observ, app%name)
+                rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)

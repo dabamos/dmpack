@@ -272,7 +272,7 @@ contains
             end if
 
             t = max(0, int(app%interval - dm_timer_stop(timer)))
-            call dm_log(LOG_DEBUG, 'next beat in ' // dm_itoa(t) // ' seconds')
+            call dm_log(LOG_DEBUG, 'next beat in ' // dm_itoa(t) // ' sec')
             call dm_sleep(t)
         end do emit_loop
 

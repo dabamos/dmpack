@@ -30,7 +30,9 @@ contains
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
+
         call dm_lua_register(lua, 'geocom_beep_alarm', dm_lua_geocom_beep_alarm)
+
         rc = E_NONE
     end function dm_lua_geocom_register
 
