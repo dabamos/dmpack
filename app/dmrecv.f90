@@ -375,7 +375,7 @@ contains
             end if
 
             ! Forward observation to next receiver.
-            if (app%forward) rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
+            if (app%forward) rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 

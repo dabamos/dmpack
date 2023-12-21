@@ -296,7 +296,7 @@ contains
                 call dm_log(LOG_DEBUG, 'finished observ ' // observ_out%name, observ=observ_out)
             end if
 
-            rc = dm_mqueue_util_forward(observ_out, app%name, APP_MQ_BLOCKING)
+            rc = dm_mqueue_forward(observ_out, app%name, APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 

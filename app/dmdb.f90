@@ -261,7 +261,7 @@ contains
             end do db_loop
 
             ! Forward observation.
-            rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
+            rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
             if (steps == 0) then
                 ! Optimise database.

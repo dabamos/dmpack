@@ -498,7 +498,7 @@ contains
                 ! Forward and output observation.
                 call dm_log(LOG_DEBUG, 'finished observ ' // trim(observ%name) // &
                             ' for sensor ' // app%sensor, observ=observ)
-                rc = dm_mqueue_util_forward(observ, app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_mqueue_forward(observ, app%name, blocking=APP_MQ_BLOCKING)
                 rc = output_observ(observ, app%output_type)
             end if observ_if
 

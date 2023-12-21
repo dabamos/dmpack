@@ -254,7 +254,7 @@ contains
 
                     ! Forward observation to next receiver, or send it to message queue.
                     if (app%forward) then
-                        rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
+                        rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
                     else
                         rc = dm_mqueue_write(mqueue, observ)
                     end if

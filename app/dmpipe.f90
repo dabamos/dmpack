@@ -354,7 +354,7 @@ contains
 
                 ! Forward observation.
                 call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
-                rc = dm_mqueue_util_forward(observ, app%name, APP_MQ_BLOCKING)
+                rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)

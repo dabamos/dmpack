@@ -9,21 +9,21 @@ module dm_mqueue_util
     implicit none (type, external)
     private
 
-    interface dm_mqueue_util_forward
+    interface dm_mqueue_forward
         !! Generic function to forward derived types via message queue.
-        module procedure :: dm_mqueue_util_forward_observ
+        module procedure :: mqueue_forward_observ
     end interface
 
     ! Public procedures.
-    public :: dm_mqueue_util_forward
+    public :: dm_mqueue_forward
 
     ! Private procedures.
-    private :: dm_mqueue_util_forward_observ
+    private :: mqueue_forward_observ
 contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function dm_mqueue_util_forward_observ(observ, name, blocking, quiet) result(rc)
+    integer function mqueue_forward_observ(observ, name, blocking, quiet) result(rc)
         !! Forwards given observation to next receiver. This function creates
         !! log messages about the progress and requires a configured logger,
         !! unless `quiet` is `.false.`.
@@ -129,5 +129,5 @@ contains
             call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
                         observ=observ, error=rc)
         end if
-    end function dm_mqueue_util_forward_observ
+    end function mqueue_forward_observ
 end module dm_mqueue_util
