@@ -2061,14 +2061,13 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=TARGET_NAME_LEN, placeholder='Enter target name', &
                              required=.true.) // &
-               H_DIV_END // H_DIV_COL // &
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
+               H_DIV_END // H_DIV_COL // &
                dm_html_label('State', for='state') // &
                dm_html_input(HTML_INPUT_TYPE_NUMBER, disabled=disabled_, id='state', name='state', &
                              max_length=TARGET_META_LEN, placeholder='Enter target state (optional)') // &
-               H_DIV_END // H_DIV_COL // &
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter easting (optional)') // &

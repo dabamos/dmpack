@@ -1490,10 +1490,14 @@ contains
         if (present(prefix)) is_anchor = .true.
 
         html = H_TABLE // H_THEAD // H_TR // &
-               H_TH // '#'    // H_TH_END // &
-               H_TH // 'ID'   // H_TH_END // &
-               H_TH // 'Name' // H_TH_END // &
-               H_TH // 'Meta' // H_TH_END // &
+               H_TH // '#'     // H_TH_END // &
+               H_TH // 'ID'    // H_TH_END // &
+               H_TH // 'Name'  // H_TH_END // &
+               H_TH // 'Meta'  // H_TH_END // &
+               H_TH // 'State' // H_TH_END // &
+               H_TH // 'X'     // H_TH_END // &
+               H_TH // 'Y'     // H_TH_END // &
+               H_TH // 'Z'     // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(targets)
@@ -1509,7 +1513,11 @@ contains
             end if
 
             html = html // H_TD // dm_html_encode(targets(i)%name) // H_TD_END // &
-                           H_TD // dm_html_encode(targets(i)%meta) // H_TD_END // H_TR_END
+                           H_TD // dm_html_encode(targets(i)%meta) // H_TD_END // &
+                           H_TD // dm_itoa(targets(i)%state)       // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%x)           // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%y)           // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%z)           // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
