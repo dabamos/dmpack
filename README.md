@@ -85,10 +85,10 @@ this package:
 * Gnuplot
 * HDF5
 * LAPACK
-* libcurl (≥ 8.3.0)
+* libcurl
 * Lua 5.4
 * PCRE2
-* SQLite 3 (≥ 3.39.0)
+* SQLite 3
 * zlib
 
 On Linux, additional development headers are required for the build step. To

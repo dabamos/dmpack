@@ -1571,7 +1571,12 @@ contains
                     exit response_block
                 end if
 
-                rc = dm_cgi_get(param, 'meta', target%meta)
+                ! Invalid state, x, y, and z are replaced with the default values.
+                rc = dm_cgi_get(param, 'meta',  target%meta)
+                rc = dm_cgi_get(param, 'state', target%state)
+                rc = dm_cgi_get(param, 'x',     target%x)
+                rc = dm_cgi_get(param, 'y',     target%y)
+                rc = dm_cgi_get(param, 'z',     target%z)
 
                 ! Valid target data?
                 if (.not. dm_target_valid(target)) then
@@ -2060,6 +2065,20 @@ contains
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
+               dm_html_label('State', for='state') // &
+               dm_html_input(HTML_INPUT_TYPE_NUMBER, disabled=disabled_, id='state', name='state', &
+                             max_length=TARGET_META_LEN, placeholder='Enter target state (optional)') // &
+               H_DIV_END // H_DIV_COL // &
+               dm_html_label('X', for='x') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter easting (optional)') // &
+               dm_html_label('Y', for='y') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter northing (optional)') // &
+               H_DIV_END // H_DIV_COL // &
+               dm_html_label('Z', for='z') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
                H_DIV_END // H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END

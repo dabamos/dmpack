@@ -404,9 +404,13 @@ contains
         type(target_type), intent(inout) :: target !! Sensor type.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
-        json = '{ "id": "'  // trim(target%id)   // '",' // &
-               ' "name": "' // trim(target%name) // '",' // &
-               ' "meta": "' // trim(target%meta) // '" }'
+        json = '{ "id": "'  // trim(target%id)       // '",' // &
+               ' "name": "' // trim(target%name)     // '",' // &
+               ' "meta": "' // trim(target%meta)     // '",' // &
+               ' "state": ' // dm_itoa(target%state) // ','  // &
+               ' "x": '     // dm_ftoa(target%x)     // ','  // &
+               ' "y": '     // dm_ftoa(target%x)     // ','  // &
+               ' "z": '     // dm_ftoa(target%x)     // '" }'
     end function json_from_target
 
     function json_from_targets(targets) result(json)

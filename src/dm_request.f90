@@ -12,14 +12,16 @@ module dm_request
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256 !! Request string length.
-    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256 !! Response string length.
-    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8   !! Delimiter string length.
-    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256 !! Regular expression string length.
-    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16  !! Response array size.
+    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256  !! Request string length.
+    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256  !! Response string length.
+    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8    !! Delimiter string length.
+    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256  !! Regular expression string length.
+    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16   !! Response array size.
 
-    integer, parameter, public :: REQUEST_STATE_NONE     = 0 !! Default state.
-    integer, parameter, public :: REQUEST_STATE_DISABLED = 1 !! Disabled state.
+    integer, parameter, public :: REQUEST_MODE_NONE      = 0    !! Default mode.
+
+    integer, parameter, public :: REQUEST_STATE_NONE     = 0    !! Default state.
+    integer, parameter, public :: REQUEST_STATE_DISABLED = 1    !! Disabled state.
 
     type, public :: request_type
         !! Request to send to a sensor.
@@ -30,6 +32,7 @@ module dm_request
         character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Reg Exp pattern.
         integer                              :: delay      = 0                    !! Delay in msec.
         integer                              :: error      = E_NONE               !! Error code.
+        integer                              :: mode       = REQUEST_MODE_NONE    !! Request mode.
         integer                              :: retries    = 0                    !! Number of retries.
         integer                              :: state      = REQUEST_STATE_NONE   !! Request state.
         integer                              :: timeout    = 0                    !! Timeout in msec.
@@ -102,11 +105,12 @@ contains
         if (request1%delimiter  /= request2%delimiter)  return
         if (request1%pattern    /= request2%pattern)    return
         if (request1%delay      /= request2%delay)      return
-        if (request1%retries    /= request2%retries)    return
-        if (request1%timeout    /= request2%timeout)    return
         if (request1%error      /= request2%error)      return
-        if (request1%nresponses /= request2%nresponses) return
+        if (request1%mode       /= request2%mode)       return
+        if (request1%retries    /= request2%retries)    return
         if (request1%state      /= request2%state)      return
+        if (request1%timeout    /= request2%timeout)    return
+        if (request1%nresponses /= request2%nresponses) return
 
         if (request1%nresponses > 0) then
             if (.not. all(dm_response_equals(request1%responses(1:request1%nresponses), &
@@ -217,6 +221,7 @@ contains
         write (unit_, '("request.pattern: ", a)')     trim(request%pattern)
         write (unit_, '("request.delay: ", i0)')      request%delay
         write (unit_, '("request.error: ", i0)')      request%error
+        write (unit_, '("request.mode: ", i0)')       request%mode
         write (unit_, '("request.retries: ", i0)')    request%retries
         write (unit_, '("request.state: ", i0)')      request%state
         write (unit_, '("request.timeout: ", i0)')    request%timeout

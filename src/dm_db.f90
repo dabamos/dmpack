@@ -1679,9 +1679,13 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(target%id))   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 2, trim(target%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(target%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 1, trim(target%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 2, trim(target%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 3, trim(target%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt, 4, target%state)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 5, target%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, target%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, target%z)          /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -3816,13 +3820,21 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
             rc = E_DB_TYPE
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
-            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT) exit sql_block
-            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT) exit sql_block
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    exit sql_block
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit sql_block
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    exit sql_block
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) exit sql_block
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   exit sql_block
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   exit sql_block
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   exit sql_block
 
-            target%id   = sqlite3_column_text(stmt, 0)
-            target%name = sqlite3_column_text(stmt, 1)
-            target%meta = sqlite3_column_text(stmt, 2)
+            target%id    = sqlite3_column_text  (stmt, 0)
+            target%name  = sqlite3_column_text  (stmt, 1)
+            target%meta  = sqlite3_column_text  (stmt, 2)
+            target%state = sqlite3_column_int   (stmt, 3)
+            target%x     = sqlite3_column_double(stmt, 4)
+            target%y     = sqlite3_column_double(stmt, 5)
+            target%z     = sqlite3_column_double(stmt, 6)
 
             rc = E_NONE
         end block sql_block
@@ -3862,13 +3874,21 @@ contains
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit row_loop
 
                 rc = E_DB_TYPE
-                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit row_loop
-                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT) exit row_loop
-                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT) exit row_loop
+                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    exit row_loop
+                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit row_loop
+                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    exit row_loop
+                if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) exit sql_block
+                if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   exit sql_block
+                if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   exit sql_block
+                if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   exit sql_block
 
-                targets(i)%id   = sqlite3_column_text(stmt, 0)
-                targets(i)%name = sqlite3_column_text(stmt, 1)
-                targets(i)%meta = sqlite3_column_text(stmt, 2)
+                targets(i)%id    = sqlite3_column_text  (stmt, 0)
+                targets(i)%name  = sqlite3_column_text  (stmt, 1)
+                targets(i)%meta  = sqlite3_column_text  (stmt, 2)
+                targets(i)%state = sqlite3_column_int   (stmt, 3)
+                targets(i)%x     = sqlite3_column_double(stmt, 4)
+                targets(i)%y     = sqlite3_column_double(stmt, 5)
+                targets(i)%z     = sqlite3_column_double(stmt, 6)
 
                 rc = E_NONE
             end do row_loop
@@ -4265,9 +4285,13 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(target%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 2, trim(target%meta)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(target%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 1, trim(target%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 2, trim(target%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 3, trim(target%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt, 4, target%state)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 5, target%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, target%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, target%z)          /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4603,10 +4627,11 @@ contains
                 if (sqlite3_bind_text(stmt,  7, trim(requests(i)%timestamp)) /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_int (stmt,  8, requests(i)%delay)           /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_int (stmt,  9, requests(i)%error)           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 10, requests(i)%retries)         /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 11, requests(i)%state)           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 12, requests(i)%timeout)         /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 13, requests(i)%nresponses)      /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 10, requests(i)%mode)            /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 11, requests(i)%retries)         /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 12, requests(i)%state)           /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 13, requests(i)%timeout)         /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 14, requests(i)%nresponses)      /= SQLITE_OK) exit row_loop
 
                 rc = E_DB_STEP
                 if (sqlite3_step(stmt) /= SQLITE_DONE) exit row_loop
@@ -5119,6 +5144,7 @@ contains
                 if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) exit sql_block
                 if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) exit sql_block
                 if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) exit sql_block
+                if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) exit sql_block
 
                 requests(i)%request    = sqlite3_column_text(stmt,  0)
                 requests(i)%response   = sqlite3_column_text(stmt,  1)
@@ -5127,10 +5153,11 @@ contains
                 requests(i)%timestamp  = sqlite3_column_text(stmt,  4)
                 requests(i)%delay      = sqlite3_column_int (stmt,  5)
                 requests(i)%error      = sqlite3_column_int (stmt,  6)
-                requests(i)%retries    = sqlite3_column_int (stmt,  7)
-                requests(i)%state      = sqlite3_column_int (stmt,  8)
-                requests(i)%timeout    = sqlite3_column_int (stmt,  9)
-                requests(i)%nresponses = sqlite3_column_int (stmt, 10)
+                requests(i)%mode       = sqlite3_column_int (stmt,  7)
+                requests(i)%retries    = sqlite3_column_int (stmt,  8)
+                requests(i)%state      = sqlite3_column_int (stmt,  9)
+                requests(i)%timeout    = sqlite3_column_int (stmt, 10)
+                requests(i)%nresponses = sqlite3_column_int (stmt, 11)
 
                 nreq = nreq + 1
             end do row_loop

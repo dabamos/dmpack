@@ -25,9 +25,6 @@ module dm_lua_lib
     !! print(deg2gon(360.0))
     !! ```
     use, intrinsic :: iso_c_binding
-    use :: dm_error
-    use :: dm_lua_api
-    use :: dm_lua_geocom
     implicit none (type, external)
     private
 
@@ -40,6 +37,8 @@ contains
     function luaopen_libdmpack(ptr) bind(c) result(rc)
         !! Registers the Lua parameters and interfaces of the DMPACK API. This
         !! function is invoked automatically by Lua 5.4.
+        use :: dm_error
+        use :: dm_lua_api
         use :: lua,     only: lual_dostring, lua_register
         use :: dm_log,  only: LOG_NONE, LOG_DEBUG, LOG_INFO, LOG_WARNING, &
                               LOG_ERROR, LOG_CRITICAL

@@ -104,9 +104,13 @@ module dm_sql
     character(len=*), parameter, public :: SQL_CREATE_TARGETS = &
         'CREATE TABLE IF NOT EXISTS targets(' // NL // &
         'target_id   INTEGER PRIMARY KEY,' // NL // &
-        'id          TEXT NOT NULL UNIQUE,' // NL // &
+        'id          TEXT    NOT NULL UNIQUE,' // NL // &
         'name        TEXT,' // NL // &
-        'meta        TEXT) STRICT'
+        'meta        TEXT,' // NL // &
+        'state       INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'x           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'y           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'z           REAL    NOT NULL DEFAULT 0.0) STRICT'
 
     ! Observations schema.
     character(len=*), parameter, public :: SQL_CREATE_OBSERVS = &
@@ -151,6 +155,7 @@ module dm_sql
         'timestamp   TEXT,' // NL // &
         'delay       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'mode        INTEGER NOT NULL DEFAULT 0,' // NL // &
         'retries     INTEGER NOT NULL DEFAULT 0,' // NL // &
         'state       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'timeout     INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -165,7 +170,7 @@ module dm_sql
         'request_id  INTEGER NOT NULL,' // NL // &
         'idx         INTEGER NOT NULL,' // NL // &
         'name        TEXT,' // NL // &
-        'value       REAL,' // NL // &
+        'value       REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'unit        TEXT,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (request_id) REFERENCES requests(request_id),' // NL // &
@@ -374,9 +379,10 @@ module dm_sql
         '?, (SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?, ?)'
 
     ! Query to insert target.
-    ! Values: targets.id, targets.name
+    ! Values: targets.id, targets.name, targets.meta, targets.state,
+    !         targets.x, targets.y, targets.z
     character(len=*), parameter, public :: SQL_INSERT_TARGET = &
-        'INSERT OR FAIL INTO targets(id, name, meta) VALUES (?, ?, ?)'
+        'INSERT OR FAIL INTO targets(id, name, meta, state, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert observation.
     ! Values: nodes.id, sensors.id, targets.id, observs.id,
@@ -403,12 +409,12 @@ module dm_sql
     ! Query to insert request.
     ! Values: observs.id, requests.idx, requests.request, requests.response,
     !         requests.delimiter, requests.pattern, requests.delay,
-    !         requests.error, requests.retries, requests.state,
+    !         requests.error, requests.mode, requests.retries, requests.state,
     !         requests.timeout, requests.nresponses
     character(len=*), parameter, public :: SQL_INSERT_REQUEST = &
         'INSERT OR FAIL INTO requests(observ_id, idx, request, response, delimiter, ' // &
-        'pattern, timestamp, delay, error, retries, state, timeout, nresponses) VALUES (' // &
-        '(SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'pattern, timestamp, delay, error, mode, retries, state, timeout, nresponses) VALUES (' // &
+        '(SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert response that references observation, request index.
     ! Values: observs.id, requests.idx, responses.idx, responses.name,
@@ -490,9 +496,10 @@ module dm_sql
         'type = ?, name = ?, sn = ?, meta = ? WHERE id = ?'
 
     ! Query to update target.
-    ! Values: targets.name, targets.meta, targets.id
+    ! Values: targets.name, targets.meta, targets.state, targets.x, targets.y,
+    ! targets.z, targets.id
     character(len=*), parameter, public :: SQL_UPDATE_TARGET = &
-        'UPDATE OR FAIL targets SET name = ?, meta = ? WHERE id = ?'
+        'UPDATE OR FAIL targets SET name = ?, meta = ?, state = ?, x = ?, y = ?, z = ? WHERE id = ?'
 
     ! ******************************************************************
     ! SELECT EXISTS QUERIES.
@@ -842,6 +849,7 @@ module dm_sql
         'requests.timestamp, ' // &
         'requests.delay, ' // &
         'requests.error, ' // &
+        'requests.mode, ' // &
         'requests.retries, ' // &
         'requests.state, ' // &
         'requests.timeout, ' // &
@@ -861,6 +869,7 @@ module dm_sql
         'requests.timestamp, ' // &
         'requests.delay, ' // &
         'requests.error, ' // &
+        'requests.mode, ' // &
         'requests.retries, ' // &
         'requests.state, ' // &
         'requests.timeout, ' // &
@@ -994,11 +1003,27 @@ module dm_sql
     ! Query to select a target.
     ! Values: targets.id
     character(len=*), parameter, public :: SQL_SELECT_TARGET = &
-        'SELECT targets.id, targets.name, targets.meta FROM targets WHERE targets.id = ?'
+        'SELECT ' // &
+        'targets.id, ' // &
+        'targets.name, ' // &
+        'targets.meta, ' // &
+        'targets.state, ' // &
+        'targets.x, ' // &
+        'targets.y, ' // &
+        'targets.z ' // &
+        'FROM targets WHERE targets.id = ?'
 
     ! Query to select all targets.
     character(len=*), parameter, public :: SQL_SELECT_TARGETS = &
-        'SELECT targets.id, targets.name, targets.meta FROM targets ORDER BY targets.id ASC'
+        'SELECT ' // &
+        'targets.id, ' // &
+        'targets.name, ' // &
+        'targets.meta ' // &
+        'targets.state' // &
+        'targets.x' // &
+        'targets.y' // &
+        'targets.z' // &
+        'FROM targets ORDER BY targets.id ASC'
 
     ! ******************************************************************
     ! JSON SELECT QUERIES.

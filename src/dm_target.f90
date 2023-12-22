@@ -4,6 +4,7 @@ module dm_target
     !! Observation target declaration.
     use :: dm_id
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -11,11 +12,26 @@ module dm_target
     integer, parameter, public :: TARGET_NAME_LEN = 32
     integer, parameter, public :: TARGET_META_LEN = 32
 
+    integer, parameter, public :: TARGET_STATE_NONE    = 0 !! Default state.
+    integer, parameter, public :: TARGET_STATE_INVALID = 1 !! Target is invalid.
+    integer, parameter, public :: TARGET_STATE_IGNORE  = 2 !! Target should be ignored.
+    integer, parameter, public :: TARGET_STATE_MISSING = 3 !! Target is missing.
+    integer, parameter, public :: TARGET_NSTATES       = 4 !! Number of known states.
+
+    integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Length of target state name.
+
+    character(len=*), parameter, public :: TARGET_STATE_NAMES(0:TARGET_NSTATES - 1) = [ &
+        character(len=TARGET_STATE_NAME_LEN) :: 'none', 'invalid', 'ignore', 'missing' ] !! Target state names.
+
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id   = ' ' !! Target id (-0-9A-Za-z).
-        character(len=TARGET_NAME_LEN) :: name = ' ' !! Target name.
-        character(len=TARGET_META_LEN) :: meta = ' ' !! Target meta information.
+        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (-0-9A-Za-z).
+        character(len=TARGET_NAME_LEN) :: name  = ' '               !! Target name.
+        character(len=TARGET_META_LEN) :: meta  = ' '               !! Target meta information.
+        integer                        :: state = TARGET_STATE_NONE !! Target state.
+        real(kind=r8)                  :: x     = 0.0_r8            !! Target easting.
+        real(kind=r8)                  :: y     = 0.0_r8            !! Target northing.
+        real(kind=r8)                  :: z     = 0.0_r8            !! Target altitude.
     end type target_type
 
     integer, parameter, public :: TARGET_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -29,6 +45,7 @@ module dm_target
 
     public :: dm_target_equals
     public :: dm_target_out
+    public :: dm_target_state_valid
     public :: dm_target_valid
 contains
     pure elemental logical function dm_target_equals(target1, target2) result(equals)
@@ -37,11 +54,24 @@ contains
         type(target_type), intent(in) :: target2 !! The second target.
 
         equals = .false.
-        if (target1%id   /= target2%id)   return
-        if (target1%name /= target2%name) return
-        if (target1%meta /= target2%meta) return
+        if (target1%id    /= target2%id)           return
+        if (target1%name  /= target2%name)         return
+        if (target1%meta  /= target2%meta)         return
+        if (target1%state /= target2%state)        return
+        if (.not. dm_equals(target1%x, target2%x)) return
+        if (.not. dm_equals(target1%y, target2%y)) return
+        if (.not. dm_equals(target1%z, target2%z)) return
         equals= .true.
     end function dm_target_equals
+
+    pure elemental logical function dm_target_state_valid(state) result(valid)
+        !! Returns `.true.` if the state of the given target type is known.
+        integer, intent(in) :: state !! Target state.
+
+        valid = .false.
+        if (state < 0 .or. state >= TARGET_NSTATES) return
+        valid = .true.
+    end function dm_target_state_valid
 
     pure elemental logical function dm_target_valid(target) result(valid)
         !! Returns `.true.` if given target type elements are valid.
@@ -64,8 +94,12 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("target.id: ", a)')   trim(target%id)
-        write (unit_, '("target.name: ", a)') trim(target%name)
-        write (unit_, '("target.meta: ", a)') trim(target%meta)
+        write (unit_, '("target.id: ", a)')     trim(target%id)
+        write (unit_, '("target.name: ", a)')   trim(target%name)
+        write (unit_, '("target.meta: ", a)')   trim(target%meta)
+        write (unit_, '("target.state: ", i0)') target%state
+        write (unit_, '("target.x: ", f0.16)')  target%x
+        write (unit_, '("target.y: ", f0.16)')  target%y
+        write (unit_, '("target.z: ", f0.16)')  target%z
     end subroutine dm_target_out
 end module dm_target

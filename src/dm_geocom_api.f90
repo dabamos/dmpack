@@ -5,17 +5,17 @@ module dm_geocom_api
     !!
     !! The GeoCOM API is divided into the following sub-systems:
     !!
-    !! * AUT - Automation
-    !! * BAP - Basic Applications
-    !! * BMM - Basic Man-Machine Interface
-    !! * COM - Communication Settings
-    !! * CSV - Central Services
-    !! * EDM - Electronic Distance Measurement
-    !! * FTR - File Transfer
-    !! * IMG - Image Processing
-    !! * MOT - Motorisation
-    !! * SUP - Supervisor
-    !! * TMC - Theodolite Measurement and Calculation
+    !! * AUT – Automation
+    !! * BAP – Basic Applications
+    !! * BMM – Basic Man-Machine Interface
+    !! * COM – Communication Settings
+    !! * CSV – Central Services
+    !! * EDM – Electronic Distance Measurement
+    !! * FTR – File Transfer
+    !! * IMG – Image Processing
+    !! * MOT – Motorisation
+    !! * SUP – Supervisor
+    !! * TMC – Theodolite Measurement and Calculation
     !!
     !! All other GeoCOM parameters and structured types the prefix `GEOCOM_` or
     !! `geocom_`.
@@ -84,8 +84,8 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_AUT_POSITION      = 0  !! Positioning to Hz and V angle.
     integer, parameter, public :: GEOCOM_AUT_TARGET        = 1  !! Positioning to a target in the env. of the Hz V angle.
 
-    integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1  !! Direction closewise.
-    integer, parameter, public :: GEOCOM_AUT_ANTICLOCKWISE = -1 !! Direction counter clockwise.
+    integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1  !! Direction close-wise.
+    integer, parameter, public :: GEOCOM_AUT_ANTICLOCKWISE = -1 !! Direction counter clock-wise.
 
     ! AUT_DETENT: Automatic detent mode.
     type, public :: geocom_aut_detent_type
@@ -226,25 +226,25 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_CSV_INTERNAL_POWER = 2 !! Power source is the internal battery.
 
     ! TPS_DEVICE_CLASS: TPS device precision class.
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1100 = 0   !! TPS1000 family member, 1 mgon, 3".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1700 = 1   !! TPS1000 family member, 0.5 mgon, 1.5".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1800 = 2   !! TPS1000 family member, 0.3 mgon, 1".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1100 = 0   !! TPS1000 family member, 1 mgon, 3 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1700 = 1   !! TPS1000 family member, 0.5 mgon, 1.5 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1800 = 2   !! TPS1000 family member, 0.3 mgon, 1 ".
     integer, parameter, public :: GEOCOM_TPS_CLASS_5000 = 3   !! TPS2000 family member.
     integer, parameter, public :: GEOCOM_TPS_CLASS_6000 = 4   !! TPS2000 family member.
     integer, parameter, public :: GEOCOM_TPS_CLASS_1500 = 5   !! TPS1000 family member.
     integer, parameter, public :: GEOCOM_TPS_CLASS_2003 = 6   !! TPS2000 family member.
     integer, parameter, public :: GEOCOM_TPS_CLASS_5005 = 7   !! TPS5000 family member.
     integer, parameter, public :: GEOCOM_TPS_CLASS_5100 = 8   !! TPS5000 family member.
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1102 = 100 !! TPS1100 family member, 2".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1103 = 101 !! TPS1100 family member, 3".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1105 = 102 !! TPS1100 family member, 5".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1101 = 103 !! TPS1100 family member, 1".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1202 = 200 !! TPS1200 family member, 2".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1203 = 201 !! TPS1200 family member, 3".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1205 = 202 !! TPS1200 family member, 5".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_1201 = 203 !! TPS1200 family member, 1".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_TX30 = 300 !! TS30,TM30 family member, 0.5".
-    integer, parameter, public :: GEOCOM_TPS_CLASS_TX31 = 301 !! TS30,TM30 family member, 1".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1102 = 100 !! TPS1100 family member, 2 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1103 = 101 !! TPS1100 family member, 3 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1105 = 102 !! TPS1100 family member, 5 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1101 = 103 !! TPS1100 family member, 1 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1202 = 200 !! TPS1200 family member, 2 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1203 = 201 !! TPS1200 family member, 3 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1205 = 202 !! TPS1200 family member, 5 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_1201 = 203 !! TPS1200 family member, 1 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_TX30 = 300 !! TS30,TM30 family member, 0.5 ".
+    integer, parameter, public :: GEOCOM_TPS_CLASS_TX31 = 301 !! TS30,TM30 family member, 1 ".
 
     ! TPS_DEVICE_TYPE: TPS device configuration type.
     ! -- TPS1x00 common.
@@ -520,129 +520,129 @@ module dm_geocom_api
     end type geocom_tmc_ang_switch_type
 
     ! Public procedures.
-    public :: dm_geocom_prepare_request
-    public :: dm_geocom_prepare_request_abort_download
-    public :: dm_geocom_prepare_request_abort_list
-    public :: dm_geocom_prepare_request_beep_alarm
-    public :: dm_geocom_prepare_request_beep_normal
-    public :: dm_geocom_prepare_request_beep_off
-    public :: dm_geocom_prepare_request_beep_on
-    public :: dm_geocom_prepare_request_change_face
-    public :: dm_geocom_prepare_request_delete
-    public :: dm_geocom_prepare_request_do_measure
-    public :: dm_geocom_prepare_request_do_position
-    ! public :: dm_geocom_prepare_request_download
-    ! public :: dm_geocom_prepare_request_fine_adjust
-    ! public :: dm_geocom_prepare_request_get_angle1
-    ! public :: dm_geocom_prepare_request_get_angle5
-    ! public :: dm_geocom_prepare_request_get_angular_correction
-    ! public :: dm_geocom_prepare_request_get_atmospheric_correction
-    ! public :: dm_geocom_prepare_request_get_atmospheric_ppm
-    ! public :: dm_geocom_prepare_request_get_atr_error
-    ! public :: dm_geocom_prepare_request_get_atr_setting
-    ! public :: dm_geocom_prepare_request_get_binary_available
-    ! public :: dm_geocom_prepare_request_get_config
-    ! public :: dm_geocom_prepare_request_get_coordinate
-    ! public :: dm_geocom_prepare_request_get_date_time
-    ! public :: dm_geocom_prepare_request_get_date_time_centi
-    ! public :: dm_geocom_prepare_request_get_device_config
-    public :: dm_geocom_prepare_request_get_double_precision
-    ! public :: dm_geocom_prepare_request_get_edm_mode
-    ! public :: dm_geocom_prepare_request_get_egl_intensity
-    ! public :: dm_geocom_prepare_request_get_face
-    ! public :: dm_geocom_prepare_request_get_fine_adjust_mode
-    ! public :: dm_geocom_prepare_request_get_full_measurement
-    ! public :: dm_geocom_prepare_request_get_geometric_ppm
-    ! public :: dm_geocom_prepare_request_get_height
-    ! public :: dm_geocom_prepare_request_get_image_config
-    ! public :: dm_geocom_prepare_request_get_incline_correction
-    ! public :: dm_geocom_prepare_request_get_incline_error
-    ! public :: dm_geocom_prepare_request_get_instrument_name
-    ! public :: dm_geocom_prepare_request_get_instrument_number
-    ! public :: dm_geocom_prepare_request_get_internal_temperature
-    ! public :: dm_geocom_prepare_request_get_lock_status
-    ! public :: dm_geocom_prepare_request_get_measurement_program
-    ! public :: dm_geocom_prepare_request_get_power
-    ! public :: dm_geocom_prepare_request_get_prism_definition
-    ! public :: dm_geocom_prepare_request_get_prism_type
-    ! public :: dm_geocom_prepare_request_get_prism_type2
-    ! public :: dm_geocom_prepare_request_get_quick_distance
-    ! public :: dm_geocom_prepare_request_get_reduced_atr_fov
-    ! public :: dm_geocom_prepare_request_get_reflectorless_class
-    ! public :: dm_geocom_prepare_request_get_refractive_correction
-    ! public :: dm_geocom_prepare_request_get_refractive_method
-    ! public :: dm_geocom_prepare_request_get_search_area
-    ! public :: dm_geocom_prepare_request_get_set_laser_pointer
-    ! public :: dm_geocom_prepare_request_get_signal
-    ! public :: dm_geocom_prepare_request_get_simple_coordinates
-    ! public :: dm_geocom_prepare_request_get_simple_meta
-    ! public :: dm_geocom_prepare_request_get_slope_distance_correction
-    ! public :: dm_geocom_prepare_request_get_software_version
-    ! public :: dm_geocom_prepare_request_get_software_version2
-    ! public :: dm_geocom_prepare_request_get_station
-    ! public :: dm_geocom_prepare_request_get_target_type
-    ! public :: dm_geocom_prepare_request_get_timeout
-    ! public :: dm_geocom_prepare_request_get_tolerance
-    ! public :: dm_geocom_prepare_request_get_user_atr_mode
-    ! public :: dm_geocom_prepare_request_get_user_local_mode
-    ! public :: dm_geocom_prepare_request_get_user_prism_definition
-    ! public :: dm_geocom_prepare_request_get_user_spiral
-    ! public :: dm_geocom_prepare_request_list
-    ! public :: dm_geocom_prepare_request_lock_in
-    ! public :: dm_geocom_prepare_request_measure_distance_angle
-    ! public :: dm_geocom_prepare_request_null_proc
-    ! public :: dm_geocom_prepare_request_ps_enable_range
-    ! public :: dm_geocom_prepare_request_ps_search_next
-    ! public :: dm_geocom_prepare_request_ps_search_window
-    ! public :: dm_geocom_prepare_request_ps_set_range
-    ! public :: dm_geocom_prepare_request_search
-    ! public :: dm_geocom_prepare_request_search_target
-    ! public :: dm_geocom_prepare_request_set_angle_correction
-    ! public :: dm_geocom_prepare_request_set_atmospheric_correction
-    ! public :: dm_geocom_prepare_request_set_atmospheric_ppm
-    ! public :: dm_geocom_prepare_request_set_atr_setting
-    ! public :: dm_geocom_prepare_request_set_binary_available
-    ! public :: dm_geocom_prepare_request_set_config
-    ! public :: dm_geocom_prepare_request_set_date_time
-    ! public :: dm_geocom_prepare_request_set_double_precision
-    ! public :: dm_geocom_prepare_request_set_edm_mode
-    ! public :: dm_geocom_prepare_request_set_egl_intensity
-    ! public :: dm_geocom_prepare_request_set_fine_adjust_mode
-    ! public :: dm_geocom_prepare_request_set_geometric_ppm
-    ! public :: dm_geocom_prepare_request_set_height
-    ! public :: dm_geocom_prepare_request_set_image_config
-    ! public :: dm_geocom_prepare_request_set_incline_correction
-    ! public :: dm_geocom_prepare_request_set_measurement_program
-    ! public :: dm_geocom_prepare_request_set_offset
-    ! public :: dm_geocom_prepare_request_set_orientation
-    ! public :: dm_geocom_prepare_request_set_prism_correction
-    ! public :: dm_geocom_prepare_request_set_prism_type
-    ! public :: dm_geocom_prepare_request_set_prism_type2
-    ! public :: dm_geocom_prepare_request_set_reduced_atr_fov
-    ! public :: dm_geocom_prepare_request_set_refractive_correction
-    ! public :: dm_geocom_prepare_request_set_refractive_method
-    ! public :: dm_geocom_prepare_request_set_search_area
-    ! public :: dm_geocom_prepare_request_set_station
-    ! public :: dm_geocom_prepare_request_set_target_type
-    ! public :: dm_geocom_prepare_request_set_timeout
-    ! public :: dm_geocom_prepare_request_set_tolerance
-    ! public :: dm_geocom_prepare_request_set_user_atr_mode
-    ! public :: dm_geocom_prepare_request_set_user_local_mode
-    ! public :: dm_geocom_prepare_request_set_user_prism_definition
-    ! public :: dm_geocom_prepare_request_set_user_spiral
-    ! public :: dm_geocom_prepare_request_set_velocity
-    ! public :: dm_geocom_prepare_request_setup_download
-    ! public :: dm_geocom_prepare_request_setup_list
-    ! public :: dm_geocom_prepare_request_start_controller
-    ! public :: dm_geocom_prepare_request_stop_controller
-    ! public :: dm_geocom_prepare_request_switch_off
-    ! public :: dm_geocom_prepare_request_switch_on
-    ! public :: dm_geocom_prepare_request_take_image
+    public :: dm_geocom_api_request
+    public :: dm_geocom_api_request_abort_download
+    public :: dm_geocom_api_request_abort_list
+    public :: dm_geocom_api_request_beep_alarm
+    public :: dm_geocom_api_request_beep_normal
+    public :: dm_geocom_api_request_beep_off
+    public :: dm_geocom_api_request_beep_on
+    public :: dm_geocom_api_request_change_face
+    public :: dm_geocom_api_request_delete
+    public :: dm_geocom_api_request_do_measure
+    public :: dm_geocom_api_request_do_position
+    public :: dm_geocom_api_request_download
+    public :: dm_geocom_api_request_fine_adjust
+    public :: dm_geocom_api_request_get_angle
+    public :: dm_geocom_api_request_get_angle_complete
+    public :: dm_geocom_api_request_get_angular_correction_status
+    ! public :: dm_geocom_api_request_get_atmospheric_correction
+    ! public :: dm_geocom_api_request_get_atmospheric_ppm
+    ! public :: dm_geocom_api_request_get_atr_error
+    ! public :: dm_geocom_api_request_get_atr_setting
+    ! public :: dm_geocom_api_request_get_binary_available
+    ! public :: dm_geocom_api_request_get_config
+    ! public :: dm_geocom_api_request_get_coordinate
+    ! public :: dm_geocom_api_request_get_date_time
+    ! public :: dm_geocom_api_request_get_date_time_centi
+    ! public :: dm_geocom_api_request_get_device_config
+    public :: dm_geocom_api_request_get_double_precision
+    public :: dm_geocom_api_request_get_edm_mode
+    ! public :: dm_geocom_api_request_get_egl_intensity
+    ! public :: dm_geocom_api_request_get_face
+    ! public :: dm_geocom_api_request_get_fine_adjust_mode
+    ! public :: dm_geocom_api_request_get_full_measurement
+    ! public :: dm_geocom_api_request_get_geometric_ppm
+    ! public :: dm_geocom_api_request_get_height
+    ! public :: dm_geocom_api_request_get_image_config
+    ! public :: dm_geocom_api_request_get_incline_correction
+    ! public :: dm_geocom_api_request_get_incline_error
+    ! public :: dm_geocom_api_request_get_instrument_name
+    ! public :: dm_geocom_api_request_get_instrument_number
+    ! public :: dm_geocom_api_request_get_internal_temperature
+    ! public :: dm_geocom_api_request_get_lock_status
+    ! public :: dm_geocom_api_request_get_measurement_program
+    ! public :: dm_geocom_api_request_get_power
+    ! public :: dm_geocom_api_request_get_prism_definition
+    ! public :: dm_geocom_api_request_get_prism_type
+    ! public :: dm_geocom_api_request_get_prism_type2
+    ! public :: dm_geocom_api_request_get_quick_distance
+    ! public :: dm_geocom_api_request_get_reduced_atr_fov
+    ! public :: dm_geocom_api_request_get_reflectorless_class
+    ! public :: dm_geocom_api_request_get_refractive_correction
+    ! public :: dm_geocom_api_request_get_refractive_method
+    ! public :: dm_geocom_api_request_get_search_area
+    ! public :: dm_geocom_api_request_get_set_laser_pointer
+    ! public :: dm_geocom_api_request_get_signal
+    ! public :: dm_geocom_api_request_get_simple_coordinates
+    ! public :: dm_geocom_api_request_get_simple_meta
+    ! public :: dm_geocom_api_request_get_slope_distance_correction
+    ! public :: dm_geocom_api_request_get_software_version
+    ! public :: dm_geocom_api_request_get_software_version2
+    ! public :: dm_geocom_api_request_get_station
+    ! public :: dm_geocom_api_request_get_target_type
+    ! public :: dm_geocom_api_request_get_timeout
+    ! public :: dm_geocom_api_request_get_tolerance
+    ! public :: dm_geocom_api_request_get_user_atr_mode
+    ! public :: dm_geocom_api_request_get_user_local_mode
+    ! public :: dm_geocom_api_request_get_user_prism_definition
+    ! public :: dm_geocom_api_request_get_user_spiral
+    ! public :: dm_geocom_api_request_list
+    ! public :: dm_geocom_api_request_lock_in
+    ! public :: dm_geocom_api_request_measure_distance_angle
+    ! public :: dm_geocom_api_request_null_proc
+    ! public :: dm_geocom_api_request_ps_enable_range
+    ! public :: dm_geocom_api_request_ps_search_next
+    ! public :: dm_geocom_api_request_ps_search_window
+    ! public :: dm_geocom_api_request_ps_set_range
+    ! public :: dm_geocom_api_request_search
+    ! public :: dm_geocom_api_request_search_target
+    ! public :: dm_geocom_api_request_set_angle_correction
+    ! public :: dm_geocom_api_request_set_atmospheric_correction
+    ! public :: dm_geocom_api_request_set_atmospheric_ppm
+    ! public :: dm_geocom_api_request_set_atr_setting
+    ! public :: dm_geocom_api_request_set_binary_available
+    ! public :: dm_geocom_api_request_set_config
+    ! public :: dm_geocom_api_request_set_date_time
+    ! public :: dm_geocom_api_request_set_double_precision
+    ! public :: dm_geocom_api_request_set_edm_mode
+    ! public :: dm_geocom_api_request_set_egl_intensity
+    ! public :: dm_geocom_api_request_set_fine_adjust_mode
+    ! public :: dm_geocom_api_request_set_geometric_ppm
+    ! public :: dm_geocom_api_request_set_height
+    ! public :: dm_geocom_api_request_set_image_config
+    ! public :: dm_geocom_api_request_set_incline_correction
+    ! public :: dm_geocom_api_request_set_measurement_program
+    ! public :: dm_geocom_api_request_set_offset
+    ! public :: dm_geocom_api_request_set_orientation
+    ! public :: dm_geocom_api_request_set_prism_correction
+    ! public :: dm_geocom_api_request_set_prism_type
+    ! public :: dm_geocom_api_request_set_prism_type2
+    ! public :: dm_geocom_api_request_set_reduced_atr_fov
+    ! public :: dm_geocom_api_request_set_refractive_correction
+    ! public :: dm_geocom_api_request_set_refractive_method
+    ! public :: dm_geocom_api_request_set_search_area
+    ! public :: dm_geocom_api_request_set_station
+    ! public :: dm_geocom_api_request_set_target_type
+    ! public :: dm_geocom_api_request_set_timeout
+    ! public :: dm_geocom_api_request_set_tolerance
+    ! public :: dm_geocom_api_request_set_user_atr_mode
+    ! public :: dm_geocom_api_request_set_user_local_mode
+    ! public :: dm_geocom_api_request_set_user_prism_definition
+    ! public :: dm_geocom_api_request_set_user_spiral
+    ! public :: dm_geocom_api_request_set_velocity
+    ! public :: dm_geocom_api_request_setup_download
+    ! public :: dm_geocom_api_request_setup_list
+    ! public :: dm_geocom_api_request_start_controller
+    ! public :: dm_geocom_api_request_stop_controller
+    ! public :: dm_geocom_api_request_switch_off
+    ! public :: dm_geocom_api_request_switch_on
+    ! public :: dm_geocom_api_request_take_image
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure subroutine dm_geocom_prepare_request(request, string, pattern, responses)
+    pure subroutine dm_geocom_api_request(request, string, pattern, responses)
         !! Prepares a DMPACK request type by setting request command, response
         !! pattern, response delimiter, and response definition array.
         type(request_type),  intent(out) :: request      !! Prepared request type.
@@ -650,7 +650,7 @@ contains
         character(len=*),    intent(in)  :: pattern      !! Regular expression pattern that matches the response.
         type(response_type), intent(in)  :: responses(:) !! Array of response types.
 
-        integer :: i, n
+        integer :: n
 
         n = min(REQUEST_MAX_NRESPONSES, size(responses))
 
@@ -659,110 +659,114 @@ contains
         request%delimiter  = GEOCOM_DELIMITER ! Response delimiter.
         request%nresponses = n                ! Number of responses.
 
-        do i = 1, n
-            request%responses(i) = responses(i)
-        end do
-    end subroutine dm_geocom_prepare_request
+        if (n == 0) return
+        request%responses(1:n) = responses(1:n)
+    end subroutine dm_geocom_api_request
 
     ! **************************************************************************
     ! GEOCOM PREPARATION PROCEDURES.
     ! **************************************************************************
-    pure subroutine dm_geocom_prepare_request_abort_download(request)
+    pure subroutine dm_geocom_api_request_abort_download(request)
         !! Request of `FTR_AbortDownload` procedure.
         !!
         !! Creates request to abort or end the file download command.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,23305:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
 
         write (string, '("%R1Q,23305:", a)') GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_abort_download
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_abort_download
 
-    pure subroutine dm_geocom_prepare_request_abort_list(request)
+    pure subroutine dm_geocom_api_request_abort_list(request)
         !! Request of `FTR_AbortList` procedure.
         !!
         !! Creates request to aborts or end the file list command.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,23308:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
 
         write (string, '("%R1Q,23308:", a)') GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_abort_list
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_abort_list
 
-    pure subroutine dm_geocom_prepare_request_beep_alarm(request)
+    pure subroutine dm_geocom_api_request_beep_alarm(request)
         !! Request of `BMM_BeepAlarm` procedure.
         !!
         !! Creates request to output an alarm signal (triple beep).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,11004:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
 
         write (string, '("%R1Q,11004:", a)') GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_beep_alarm
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_beep_alarm
 
-    pure subroutine dm_geocom_prepare_request_beep_normal(request)
+    pure subroutine dm_geocom_api_request_beep_normal(request)
         !! Request of `BMM_BeepNormal` procedure.
         !!
         !! Creates request to output an alarm signal (single beep).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,11003:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
 
         write (string, '("%R1Q,11003:", a)') GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_beep_normal
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_beep_normal
 
-    pure subroutine dm_geocom_prepare_request_beep_off(request)
+    pure subroutine dm_geocom_api_request_beep_off(request)
         !! Request of `IOS_BeepOff` procedure.
         !!
         !! Creates request to stop an active beep signal.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,20000:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_REQUEST_LEN) :: string
 
         write (string, '("%R1Q,20000:", a)') GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_beep_off
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_beep_off
 
-    pure subroutine dm_geocom_prepare_request_beep_on(request, intensity)
+    pure subroutine dm_geocom_api_request_beep_on(request, intensity)
         !! Request of `IOS_BeepOn` procedure.
         !!
         !! Creates request for continuous beep signal of given intensity. If
@@ -771,10 +775,11 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,20001:<intensity>`                         |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out)          :: request   !! Prepared request.
         integer,            intent(in), optional :: intensity !! Intensity of beep, from 0 to 100.
 
@@ -785,10 +790,10 @@ contains
         if (present(intensity)) intensity_ = max(0, min(GEOCOM_IOS_BEEP_STDINTENS, intensity))
 
         write (string, '("%R1Q,20001:", i0, a)') intensity_, GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_beep_on
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_beep_on
 
-    pure subroutine dm_geocom_prepare_request_change_face(request, pos_mode, atr_mode)
+    pure subroutine dm_geocom_api_request_change_face(request, pos_mode, atr_mode)
         !! Request of `AUT_ChangeFace` procedure.
         !!
         !! Creates request for turning the telescope to the other face.
@@ -807,10 +812,11 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,9028:<pos_mode>,<atr_mode>,0`              |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out)          :: request  !! Prepared request.
         integer,            intent(in), optional :: pos_mode !! Position mode (`AUT_POSMODE`).
         integer,            intent(in), optional :: atr_mode !! ATR mode (`AUT_ATRMODE`).
@@ -825,10 +831,10 @@ contains
         if (present(atr_mode)) atr_mode_ = atr_mode
 
         write (string, '("%R1Q,9028:", i1, ",", i1, ",0", a)') pos_mode_, atr_mode_, GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_change_face
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_change_face
 
-    pure subroutine dm_geocom_prepare_request_delete(request, device_type, file_type, date, file_name)
+    pure subroutine dm_geocom_api_request_delete(request, device_type, file_type, date, file_name)
         !! Request of `FTR_Delete` procedure.
         !!
         !! Creates request for deleting one or more files. Wildcards may be used
@@ -837,10 +843,11 @@ contains
         !!
         !! | Property       | Values                                                                  |
         !! |----------------|-------------------------------------------------------------------------|
-        !! | Responses      | `grc`, `nfiles`                                                         |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                                |
         !! | ASCII request  | `%R1Q,23309:<device_type>,<file_type>,<day>,<month>,<year>,<file_name>` |
         !! | ASCII response | `%R1P,0,0:<grc>,<nfiles>`                                               |
+        !! | Responses      | `grc`, `nfiles`                                                         |
+        !!
         type(request_type),     intent(out) :: request     !! Prepared request.
         integer,                intent(in)  :: device_type !! Internal memory or memory card (`FTR_DEVICETYPE`).
         integer,                intent(in)  :: file_type   !! Type of file (`FTR_FILETYPE`).
@@ -853,14 +860,13 @@ contains
 
         write (string, '("%R1Q,23309:", 5(i0, ","), 2a)') &
             device_type, file_type, date%day, date%month, date%year, file_name, GEOCOM_DELIMITER
-
         pattern   = '%R1P,0,0:(?<grc>\d+),(?<nfiles>\d+)'
         responses = [ response_type('grc'), response_type('nfiles') ]
 
-        call dm_geocom_prepare_request(request, string, pattern, responses)
-    end subroutine dm_geocom_prepare_request_delete
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_delete
 
-    pure subroutine dm_geocom_prepare_request_do_measure(request, command, mode)
+    pure subroutine dm_geocom_api_request_do_measure(request, command, mode)
         !! Request of `TMC_DoMeasure` procedure.
         !!
         !! Creates request for trying a distance measurement. This command does
@@ -894,10 +900,11 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,2008:<command>,<mode>`                     |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out)          :: request !! Prepared request.
         integer,            intent(in), optional :: command !! TMC measurement mode (`TMC_MEASURE_PRG`).
         integer,            intent(in), optional :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
@@ -912,10 +919,10 @@ contains
         if (present(mode))    mode_    = mode
 
         write (string, '("%R1Q,2008:", i1, ",", i1, a)') command_, mode_, GEOCOM_DELIMITER
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_do_measure
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_do_measure
 
-    pure subroutine dm_geocom_prepare_request_do_position(request, hz, v, pos_mode, atr_mode)
+    pure subroutine dm_geocom_api_request_do_position(request, hz, v, pos_mode, atr_mode)
         !! Request of `AUT_MakePositioning` procedure.
         !!
         !! Creates request for for turning the telescope to a specified
@@ -935,10 +942,11 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`                                            |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,9027:<hz>,<v>,<pos_mode>,<atr_mode>,0`     |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
         type(request_type), intent(out)          :: request  !! Prepared request.
         real(kind=r8),      intent(in)           :: hz       !! Horizontal angle [rad].
         real(kind=r8),      intent(in)           :: v        !! Vertical angle [rad].
@@ -957,26 +965,234 @@ contains
         write (string, '("%R1Q,9027:", 2(f12.10, ","), 2(i1, ","), "0", a)') &
             hz, v, pos_mode_, atr_mode_, GEOCOM_DELIMITER
 
-        call dm_geocom_prepare_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
-    end subroutine dm_geocom_prepare_request_do_position
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_do_position
 
-    ! pure subroutine dm_geocom_prepare_request_download(block_number, block)
-    ! pure subroutine dm_geocom_prepare_request_fine_adjust(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_get_angle1(angle, mode)
-    ! pure subroutine dm_geocom_prepare_request_get_angle5(only_angle, mode)
-    ! pure subroutine dm_geocom_prepare_request_get_angular_correction(incline, stand_axis, collimation, tilt_axis)
-    ! pure subroutine dm_geocom_prepare_request_get_atmospheric_correction(atmos)
-    ! pure subroutine dm_geocom_prepare_request_get_atmospheric_ppm(ppm)
-    ! pure subroutine dm_geocom_prepare_request_get_atr_error(error)
-    ! pure subroutine dm_geocom_prepare_request_get_atr_setting(setting)
-    ! pure subroutine dm_geocom_prepare_request_get_binary_available(available)
-    ! pure subroutine dm_geocom_prepare_request_get_config(auto_power, timeout)
-    ! pure subroutine dm_geocom_prepare_request_get_coordinate(wait_time, coordinate, mode)
-    ! pure subroutine dm_geocom_prepare_request_get_date_time(dt)
-    ! pure subroutine dm_geocom_prepare_request_get_date_time_centi(year, month, day, hour, minute, second, centisecond)
-    ! pure subroutine dm_geocom_prepare_request_get_device_config(device)
+    pure subroutine dm_geocom_api_request_download(request, block_number)
+        !! Request of `FTR_Download` procedure.
+        !!
+        !! Creates request to get a single block of data. The
+        !! `FTR_SetupDownload` command has to be called first.
+        !!
+        !! The block sequence starts with 1. The download process will be
+        !! aborted if the block number is set to 0.
+        !!
+        !! The maximum block number is 65535. The file size is therefore
+        !! limited to 28 MiB.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,23304:<blocknum>`                          |
+        !! | ASCII response | `%R1P,0,0:<grc>,<blockval>,<blocklen>`           |
+        !! | Responses      | `grc`, `blockval`, `blocklen`                    |
+        !!
+        type(request_type), intent(out) :: request      !! Prepared request.
+        integer,            intent(in)  :: block_number !! Block number.
 
-    pure subroutine dm_geocom_prepare_request_get_double_precision(request)
+        character(len=REQUEST_PATTERN_LEN) :: pattern
+        character(len=REQUEST_REQUEST_LEN) :: string
+        type(response_type)                :: responses(3)
+
+        write (string, '("%R1Q,23304:", i0, a)') block_number, GEOCOM_DELIMITER
+        pattern   = '%R1P,0,0:(?<grc>\d+),(?<blockval>\d+),(?<blocklen>\d+)'
+        responses = [ response_type('grc'), response_type('blockval'), response_type('blocklen') ]
+
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_download
+
+    pure subroutine dm_geocom_api_request_fine_adjust(request, search_hz, search_v)
+        !! Request of `AUT_FineAdjust` procedure.
+        !!
+        !! Creates request for automatic target positioning.
+        !!
+        !! The procedure positions the telescope onto the target prosm and
+        !! measures the ATR Hz and V deviations. If the target is not within
+        !! the visible area of the ATR sensor (field of view), a target search
+        !! will be executed. The target search range is limited by the
+        !! parameter `search_v` in V direction, and by parameter `search_hz` in
+        !! Hz direction. If no target was found, the instrument turns back to
+        !! the initial start position.
+        !!
+        !! The Fine Adjust Lock-in towards a target is terminated by this
+        !! procedure call. After positioning, the lock mode will be active. The
+        !! timeout of the operation is set to 5 seconds, regardless of the
+        !! general position timeout settings. The position tolerance depends on
+        !! the previously selected find adjust mode.
+        !!
+        !! The tolerance settings have no influence to this operation. The
+        !! tolerance settings and the ATR precision depend on the instrument
+        !! class and the used EDM mode.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,9037:<search_hz>,<search_v>`               |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Responses      | `grc`                                            |
+        !!
+        type(request_type), intent(out) :: request   !! Prepared request.
+        real(kind=r8),      intent(in)  :: search_hz !! Search range, Hz axis [rad].
+        real(kind=r8),      intent(in)  :: search_v  !! Search range, V axis [rad].
+
+        character(len=REQUEST_REQUEST_LEN) :: string
+
+        write (string, '("%R1Q,9027:", 2(f12.10, ","), "0", a)') search_hz, search_v, GEOCOM_DELIMITER
+        call dm_geocom_api_request(request, string, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_fine_adjust
+
+    pure subroutine dm_geocom_api_request_get_angle(request, mode)
+        !! Request of `TMC_GetAngle5` procedure.
+        !!
+        !! Creates request for returning a simple angle measurement.
+        !!
+        !! The function starts an angle measurement and returns the results.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !! * `hz`  – Horizontal angle [rad].
+        !! * `v`   – Vertical angle [rad].
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,2107:<mode>`                               |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>`                        |
+        !! | Responses      | `grc`, `hz`, `v`                                 |
+        !!
+        type(request_type),     intent(out) :: request !! Prepared request.
+        integer,                intent(in)  :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
+
+        character(len=REQUEST_PATTERN_LEN) :: pattern
+        character(len=REQUEST_REQUEST_LEN) :: string
+        type(response_type)                :: responses(3)
+
+        write (string, '("%R1Q,2107:", i0, a)') mode, GEOCOM_DELIMITER
+
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<hz>[\d\.]+),(?<v>[\d\.]+)'
+
+        responses = [ &
+            response_type('grc'),       & ! GeoCOM return code.
+            response_type('hz', 'rad'), & ! Horizontal angle [rad].
+            response_type('v',  'rad')  & ! Vertical angle [rad].
+        ]
+
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_get_angle
+
+    pure subroutine dm_geocom_api_request_get_angle_complete(request, mode)
+        !! Request of `TMC_GetAngle1` procedure.
+        !!
+        !! Creates request for returning a complete angle measurement.
+        !!
+        !! The function starts an angle and, depending on the configuration, an
+        !! inclination measurement, and returns the results.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`     – GeoCOM return code.
+        !! * `hz`      – Horizontal angle [rad].
+        !! * `v`       – Vertical angle [rad].
+        !! * `angacc`  – Accuracy of angles [rad].
+        !! * `angtime` – Moment of measurement [ms].
+        !! * `xinc`    – Transverse axis inclination [rad].
+        !! * `linc`    – Longitude axis inclidation [rad].
+        !! * `accinc`  – Inclination accuracy [rad].
+        !! * `inctime` – Moment of measurement [ms].
+        !! * `face`    – Face position of telescope.
+        !!
+        !! | Property       | Values                                                                               |
+        !! |----------------|--------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                             |
+        !! | ASCII request  | `%R1Q,2003:<mode>`                                                                   |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<angtime>,<xinc>,<linc>,<accinc>,<inctime>,<face>` |
+        !! | Responses      | `grc`, `hz`, `v`, `angacc`, `angtime`, `xinc`, `linc`, `accinc`, `inctime`, `face`   |
+        !!
+        type(request_type),     intent(out) :: request !! Prepared request.
+        integer,                intent(in)  :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
+
+        character(len=REQUEST_PATTERN_LEN) :: pattern
+        character(len=REQUEST_REQUEST_LEN) :: string
+        type(response_type)                :: responses(10)
+
+        write (string, '("%R1Q,2003:", i0, a)') mode, GEOCOM_DELIMITER
+
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<hz>[\d\.]+),(?<v>[\d\.]+),(?<angacc>[\d\.]+),(?<angtime>\d+),' // &
+                  '(?<xinc>[\d\.]+),(?<linc>[\d\.]+),(?<accinc>[\d\.]+),(?<inctime>\d+),(?<face>\d+)'
+
+        responses = [ &
+            response_type('grc'),            & ! GeoCOM return code.
+            response_type('hz',      'rad'), & ! Horizontal angle [rad].
+            response_type('v',       'rad'), & ! Vertical angle [rad].
+            response_type('angacc',  'rad'), & ! Accuracy of angles [rad].
+            response_type('angtime', 'ms'),  & ! Moment of measurement [ms].
+            response_type('xinc',    'rad'), & ! Transverse axis inclination [rad].
+            response_type('linc',    'rad'), & ! Longitude axis inclidation [rad].
+            response_type('accinc',  'rad'), & ! Inclination accuracy [rad].
+            response_type('inctime', 'ms'),  & ! Moment of measurement [ms].
+            response_type('face')            & ! Face position of telescope.
+        ]
+
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_get_angle_complete
+
+    pure subroutine dm_geocom_api_request_get_angular_correction_status(request)
+        !! Request of `TMC_GetAngSwitch` procedure.
+        !!
+        !! Creates request for getting the angular correction status.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`    – GeoCOM return code.
+        !! * `inccor` – Inclination correction on/off [bool].
+        !! * `stdcor` – Standing axis correction on/off [bool].
+        !! * `colcor` – Collimation error correction on/off [bool].
+        !! * `tilcor` – Tilting axis correction on/off [bool].
+        !!
+        !! | Property       | Values                                               |
+        !! |----------------|------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                             |
+        !! | ASCII request  | `%R1Q,2014:`                                         |
+        !! | ASCII response | `%R1P,0,0:<grc>,<inccor>,<stdcor>,<colcor>,<tilcor>` |
+        !! | Responses      | `grc`, `inccor`, `stdcor`, `colcor`, `tilcor`        |
+        !!
+        type(request_type), intent(out) :: request !! Prepared request.
+
+        character(len=REQUEST_PATTERN_LEN) :: pattern
+        character(len=REQUEST_REQUEST_LEN) :: string
+        type(response_type)                :: responses(5)
+
+        string  = '%R1Q,2014:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
+
+        responses = [ &
+            response_type('grc'),    & ! GeoCOM return code.
+            response_type('inccor'), & ! Inclination correction on/off [bool].
+            response_type('stdcor'), & ! Standing axis correction on/off [bool].
+            response_type('colcor'), & ! Collimation error correction on/off [bool].
+            response_type('tilcor')  & ! Tilting axis correction on/off [bool].
+        ]
+
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_get_angular_correction_status
+
+    ! pure subroutine dm_geocom_api_request_get_atmospheric_correction(atmos)
+    ! pure subroutine dm_geocom_api_request_get_atmospheric_ppm(ppm)
+    ! pure subroutine dm_geocom_api_request_get_atr_error(error)
+    ! pure subroutine dm_geocom_api_request_get_atr_setting(setting)
+    ! pure subroutine dm_geocom_api_request_get_binary_available(available)
+    ! pure subroutine dm_geocom_api_request_get_config(auto_power, timeout)
+    ! pure subroutine dm_geocom_api_request_get_coordinate(wait_time, coordinate, mode)
+    ! pure subroutine dm_geocom_api_request_get_date_time(dt)
+    ! pure subroutine dm_geocom_api_request_get_date_time_centi(year, month, day, hour, minute, second, centisecond)
+    ! pure subroutine dm_geocom_api_request_get_device_config(device)
+
+    pure subroutine dm_geocom_api_request_get_double_precision(request)
         !! Request of `COM_GetDoublePrecision` procedure.
         !!
         !! Creates request for getting the double precision setting – the
@@ -985,10 +1201,11 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Responses      | `grc`, `ndigits`                                 |
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,108:`                                      |
         !! | ASCII response | `%R1P,0,0:<grc>,<ndigits>`                       |
+        !! | Responses      | `grc`, `ndigits`                                 |
+        !!
         type(request_type), intent(out) :: request !! Prepared request.
 
         character(len=REQUEST_PATTERN_LEN) :: pattern
@@ -999,98 +1216,127 @@ contains
         pattern   = '%R1P,0,0:(?<grc>\d+),(?<ndigits>\d+)'
         responses = [ response_type('grc'), response_type('ndigits') ]
 
-        call dm_geocom_prepare_request(request, string, pattern, responses)
-    end subroutine dm_geocom_prepare_request_get_double_precision
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_get_double_precision
 
-    ! pure subroutine dm_geocom_prepare_request_get_edm_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_egl_intensity(intensity)
-    ! pure subroutine dm_geocom_prepare_request_get_face(face)
-    ! pure subroutine dm_geocom_prepare_request_get_fine_adjust_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_full_measurement(wait_time, hz, v, accuracy, cross_incl, length_incl, accuracy_incl, slope_dist, dist_time, mode)
-    ! pure subroutine dm_geocom_prepare_request_get_geometric_ppm(automatic, scale_factor, offset, height, individual)
-    ! pure subroutine dm_geocom_prepare_request_get_height(height)
-    ! pure subroutine dm_geocom_prepare_request_get_image_config(mem_type, parameters)
-    ! pure subroutine dm_geocom_prepare_request_get_incline_correction(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_incline_error(error)
-    ! pure subroutine dm_geocom_prepare_request_get_instrument_name(name)
-    ! pure subroutine dm_geocom_prepare_request_get_instrument_number(serial)
-    ! pure subroutine dm_geocom_prepare_request_get_internal_temperature(temperature)
-    ! pure subroutine dm_geocom_prepare_request_get_lock_status(status)
-    ! pure subroutine dm_geocom_prepare_request_get_measurement_program(prog)
-    ! pure subroutine dm_geocom_prepare_request_get_power(capacity, active, suggest)
-    ! pure subroutine dm_geocom_prepare_request_get_prism_definition(type, definition)
-    ! pure subroutine dm_geocom_prepare_request_get_prism_type(type)
-    ! pure subroutine dm_geocom_prepare_request_get_prism_type2(type, name)
-    ! pure subroutine dm_geocom_prepare_request_get_quick_distance(only_angle, slope_dist)
-    ! pure subroutine dm_geocom_prepare_request_get_reduced_atr_fov(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_reflectorless_class(class)
-    ! pure subroutine dm_geocom_prepare_request_get_refractive_correction(coefficient)
-    ! pure subroutine dm_geocom_prepare_request_get_refractive_method(method)
-    ! pure subroutine dm_geocom_prepare_request_get_search_area(area)
-    ! pure subroutine dm_geocom_prepare_request_get_set_laser_pointer(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_signal(signal)
-    ! pure subroutine dm_geocom_prepare_request_get_simple_coordinates(wait_time, e, n, h, prog)
-    ! pure subroutine dm_geocom_prepare_request_get_simple_meta(wait_time, only_angle, slope_dist, mode)
-    ! pure subroutine dm_geocom_prepare_request_get_slope_distance_correction(ppm_corr, prism_corr)
-    ! pure subroutine dm_geocom_prepare_request_get_software_version(release, version, subversion)
-    ! pure subroutine dm_geocom_prepare_request_get_software_version2(release, version, subversion)
-    ! pure subroutine dm_geocom_prepare_request_get_station(station)
-    ! pure subroutine dm_geocom_prepare_request_get_target_type(type)
-    ! pure subroutine dm_geocom_prepare_request_get_timeout(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_get_tolerance(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_get_user_atr_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_user_local_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_get_user_prism_definition(name, add_const, type, creator)
-    ! pure subroutine dm_geocom_prepare_request_get_user_spiral(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_list(next, last, dir_info)
-    ! pure subroutine dm_geocom_prepare_request_lock_in()
-    ! pure subroutine dm_geocom_prepare_request_measure_distance_angle(mode, hz, v, slope_dist)
-    ! pure subroutine dm_geocom_prepare_request_null_proc()
-    ! pure subroutine dm_geocom_prepare_request_ps_enable_range(enable)
-    ! pure subroutine dm_geocom_prepare_request_ps_search_next(direction, swing)
-    ! pure subroutine dm_geocom_prepare_request_ps_search_window()
-    ! pure subroutine dm_geocom_prepare_request_ps_set_range(min_dist, max_dist)
-    ! pure subroutine dm_geocom_prepare_request_search(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_search_target()
-    ! pure subroutine dm_geocom_prepare_request_set_angle_correction(incline, stand_axis, collimation, tilt_axis)
-    ! pure subroutine dm_geocom_prepare_request_set_atmospheric_correction(atmos)
-    ! pure subroutine dm_geocom_prepare_request_set_atmospheric_ppm(ppm)
-    ! pure subroutine dm_geocom_prepare_request_set_atr_setting(setting)
-    ! pure subroutine dm_geocom_prepare_request_set_binary_available(available)
-    ! pure subroutine dm_geocom_prepare_request_set_config(auto_power, timeout)
-    ! pure subroutine dm_geocom_prepare_request_set_date_time(dt)
-    ! pure subroutine dm_geocom_prepare_request_set_double_precision(ndigits)
-    ! pure subroutine dm_geocom_prepare_request_set_edm_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_egl_intensity(intensity)
-    ! pure subroutine dm_geocom_prepare_request_set_fine_adjust_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_geometric_ppm(automatic, scale_factor, offset, height, individual)
-    ! pure subroutine dm_geocom_prepare_request_set_height(height)
-    ! pure subroutine dm_geocom_prepare_request_set_image_config(mem_type, parameters)
-    ! pure subroutine dm_geocom_prepare_request_set_incline_correction(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_measurement_program(prog)
-    ! pure subroutine dm_geocom_prepare_request_set_offset(slope_dist, height, mode)
-    ! pure subroutine dm_geocom_prepare_request_set_orientation(hz)
-    ! pure subroutine dm_geocom_prepare_request_set_prism_correction(prism_corr)
-    ! pure subroutine dm_geocom_prepare_request_set_prism_type(type)
-    ! pure subroutine dm_geocom_prepare_request_set_prism_type2(type, name)
-    ! pure subroutine dm_geocom_prepare_request_set_reduced_atr_fov(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_refractive_correction(coefficient)
-    ! pure subroutine dm_geocom_prepare_request_set_refractive_method(method)
-    ! pure subroutine dm_geocom_prepare_request_set_search_area(area)
-    ! pure subroutine dm_geocom_prepare_request_set_station(station)
-    ! pure subroutine dm_geocom_prepare_request_set_target_type(type)
-    ! pure subroutine dm_geocom_prepare_request_set_timeout(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_set_tolerance(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_set_user_atr_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_user_local_mode(mode)
-    ! pure subroutine dm_geocom_prepare_request_set_user_prism_definition(name, add_const, type, creator)
-    ! pure subroutine dm_geocom_prepare_request_set_user_spiral(hz, v)
-    ! pure subroutine dm_geocom_prepare_request_set_velocity(omega)
-    ! pure subroutine dm_geocom_prepare_request_setup_download(device_type, file_type, file_name, block_size, nblocks)
-    ! pure subroutine dm_geocom_prepare_request_setup_list(device_type, file_type, search_path)
-    ! pure subroutine dm_geocom_prepare_request_start_controller(mode)
-    ! pure subroutine dm_geocom_prepare_request_stop_controller(mode)
-    ! pure subroutine dm_geocom_prepare_request_switch_off(mode)
-    ! pure subroutine dm_geocom_prepare_request_switch_on(mode)
-    ! pure subroutine dm_geocom_prepare_request_take_image(mem_type, n)
+    pure subroutine dm_geocom_api_request_get_edm_mode(request)
+        !! Request of `TMC_GetEdmMode` procedure.
+        !!
+        !! Creates request for getting the EDM measurement mode.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`  – GeoCOM return code.
+        !! * `mode` – EDM mode (`EDM_MODE`).
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,2021:`                                     |
+        !! | ASCII response | `%R1P,0,0:<grc>,<mode>`                          |
+        !! | Responses      | `grc`, `mode`                                    |
+        !!
+        type(request_type), intent(out) :: request !! Prepared request.
+
+        character(len=REQUEST_PATTERN_LEN) :: pattern
+        character(len=REQUEST_REQUEST_LEN) :: string
+        type(response_type)                :: responses(2)
+
+        string    = '%R1Q,2021:' // GEOCOM_DELIMITER
+        pattern   = '%R1P,0,0:(?<grc>\d+),(?<mode>\d+)'
+        responses = [ response_type('grc'), response_type('mode') ]
+
+        call dm_geocom_api_request(request, string, pattern, responses)
+    end subroutine dm_geocom_api_request_get_edm_mode
+
+    ! pure subroutine dm_geocom_api_request_get_egl_intensity(intensity)
+    ! pure subroutine dm_geocom_api_request_get_face(face)
+    ! pure subroutine dm_geocom_api_request_get_fine_adjust_mode(mode)
+    ! pure subroutine dm_geocom_api_request_get_full_measurement(wait_time, hz, v, accuracy, cross_incl, length_incl, accuracy_incl, slope_dist, dist_time, mode)
+    ! pure subroutine dm_geocom_api_request_get_geometric_ppm(automatic, scale_factor, offset, height, individual)
+    ! pure subroutine dm_geocom_api_request_get_height(height)
+    ! pure subroutine dm_geocom_api_request_get_image_config(mem_type, parameters)
+    ! pure subroutine dm_geocom_api_request_get_incline_correction(mode)
+    ! pure subroutine dm_geocom_api_request_get_incline_error(error)
+    ! pure subroutine dm_geocom_api_request_get_instrument_name(name)
+    ! pure subroutine dm_geocom_api_request_get_instrument_number(serial)
+    ! pure subroutine dm_geocom_api_request_get_internal_temperature(temperature)
+    ! pure subroutine dm_geocom_api_request_get_lock_status(status)
+    ! pure subroutine dm_geocom_api_request_get_measurement_program(prog)
+    ! pure subroutine dm_geocom_api_request_get_power(capacity, active, suggest)
+    ! pure subroutine dm_geocom_api_request_get_prism_definition(type, definition)
+    ! pure subroutine dm_geocom_api_request_get_prism_type(type)
+    ! pure subroutine dm_geocom_api_request_get_prism_type2(type, name)
+    ! pure subroutine dm_geocom_api_request_get_quick_distance(only_angle, slope_dist)
+    ! pure subroutine dm_geocom_api_request_get_reduced_atr_fov(mode)
+    ! pure subroutine dm_geocom_api_request_get_reflectorless_class(class)
+    ! pure subroutine dm_geocom_api_request_get_refractive_correction(coefficient)
+    ! pure subroutine dm_geocom_api_request_get_refractive_method(method)
+    ! pure subroutine dm_geocom_api_request_get_search_area(area)
+    ! pure subroutine dm_geocom_api_request_get_set_laser_pointer(mode)
+    ! pure subroutine dm_geocom_api_request_get_signal(signal)
+    ! pure subroutine dm_geocom_api_request_get_simple_coordinates(wait_time, e, n, h, prog)
+    ! pure subroutine dm_geocom_api_request_get_simple_meta(wait_time, only_angle, slope_dist, mode)
+    ! pure subroutine dm_geocom_api_request_get_slope_distance_correction(ppm_corr, prism_corr)
+    ! pure subroutine dm_geocom_api_request_get_software_version(release, version, subversion)
+    ! pure subroutine dm_geocom_api_request_get_software_version2(release, version, subversion)
+    ! pure subroutine dm_geocom_api_request_get_station(station)
+    ! pure subroutine dm_geocom_api_request_get_target_type(type)
+    ! pure subroutine dm_geocom_api_request_get_timeout(hz, v)
+    ! pure subroutine dm_geocom_api_request_get_tolerance(hz, v)
+    ! pure subroutine dm_geocom_api_request_get_user_atr_mode(mode)
+    ! pure subroutine dm_geocom_api_request_get_user_local_mode(mode)
+    ! pure subroutine dm_geocom_api_request_get_user_prism_definition(name, add_const, type, creator)
+    ! pure subroutine dm_geocom_api_request_get_user_spiral(hz, v)
+    ! pure subroutine dm_geocom_api_request_list(next, last, dir_info)
+    ! pure subroutine dm_geocom_api_request_lock_in()
+    ! pure subroutine dm_geocom_api_request_measure_distance_angle(mode, hz, v, slope_dist)
+    ! pure subroutine dm_geocom_api_request_null_proc()
+    ! pure subroutine dm_geocom_api_request_ps_enable_range(enable)
+    ! pure subroutine dm_geocom_api_request_ps_search_next(direction, swing)
+    ! pure subroutine dm_geocom_api_request_ps_search_window()
+    ! pure subroutine dm_geocom_api_request_ps_set_range(min_dist, max_dist)
+    ! pure subroutine dm_geocom_api_request_search(hz, v)
+    ! pure subroutine dm_geocom_api_request_search_target()
+    ! pure subroutine dm_geocom_api_request_set_angle_correction(incline, stand_axis, collimation, tilt_axis)
+    ! pure subroutine dm_geocom_api_request_set_atmospheric_correction(atmos)
+    ! pure subroutine dm_geocom_api_request_set_atmospheric_ppm(ppm)
+    ! pure subroutine dm_geocom_api_request_set_atr_setting(setting)
+    ! pure subroutine dm_geocom_api_request_set_binary_available(available)
+    ! pure subroutine dm_geocom_api_request_set_config(auto_power, timeout)
+    ! pure subroutine dm_geocom_api_request_set_date_time(dt)
+    ! pure subroutine dm_geocom_api_request_set_double_precision(ndigits)
+    ! pure subroutine dm_geocom_api_request_set_edm_mode(mode)
+    ! pure subroutine dm_geocom_api_request_set_egl_intensity(intensity)
+    ! pure subroutine dm_geocom_api_request_set_fine_adjust_mode(mode)
+    ! pure subroutine dm_geocom_api_request_set_geometric_ppm(automatic, scale_factor, offset, height, individual)
+    ! pure subroutine dm_geocom_api_request_set_height(height)
+    ! pure subroutine dm_geocom_api_request_set_image_config(mem_type, parameters)
+    ! pure subroutine dm_geocom_api_request_set_incline_correction(mode)
+    ! pure subroutine dm_geocom_api_request_set_measurement_program(prog)
+    ! pure subroutine dm_geocom_api_request_set_offset(slope_dist, height, mode)
+    ! pure subroutine dm_geocom_api_request_set_orientation(hz)
+    ! pure subroutine dm_geocom_api_request_set_prism_correction(prism_corr)
+    ! pure subroutine dm_geocom_api_request_set_prism_type(type)
+    ! pure subroutine dm_geocom_api_request_set_prism_type2(type, name)
+    ! pure subroutine dm_geocom_api_request_set_reduced_atr_fov(mode)
+    ! pure subroutine dm_geocom_api_request_set_refractive_correction(coefficient)
+    ! pure subroutine dm_geocom_api_request_set_refractive_method(method)
+    ! pure subroutine dm_geocom_api_request_set_search_area(area)
+    ! pure subroutine dm_geocom_api_request_set_station(station)
+    ! pure subroutine dm_geocom_api_request_set_target_type(type)
+    ! pure subroutine dm_geocom_api_request_set_timeout(hz, v)
+    ! pure subroutine dm_geocom_api_request_set_tolerance(hz, v)
+    ! pure subroutine dm_geocom_api_request_set_user_atr_mode(mode)
+    ! pure subroutine dm_geocom_api_request_set_user_local_mode(mode)
+    ! pure subroutine dm_geocom_api_request_set_user_prism_definition(name, add_const, type, creator)
+    ! pure subroutine dm_geocom_api_request_set_user_spiral(hz, v)
+    ! pure subroutine dm_geocom_api_request_set_velocity(omega)
+    ! pure subroutine dm_geocom_api_request_setup_download(device_type, file_type, file_name, block_size, nblocks)
+    ! pure subroutine dm_geocom_api_request_setup_list(device_type, file_type, search_path)
+    ! pure subroutine dm_geocom_api_request_start_controller(mode)
+    ! pure subroutine dm_geocom_api_request_stop_controller(mode)
+    ! pure subroutine dm_geocom_api_request_switch_off(mode)
+    ! pure subroutine dm_geocom_api_request_switch_on(mode)
+    ! pure subroutine dm_geocom_api_request_take_image(mem_type, n)
 end module dm_geocom_api

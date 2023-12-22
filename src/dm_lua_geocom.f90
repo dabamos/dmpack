@@ -11,9 +11,7 @@ module dm_lua_geocom
     private
 
     ! Public procedures.
-    public :: dm_lua_geocom_register
-
-    ! Private procedures.
+    public  :: dm_lua_geocom_register
     private :: dm_lua_geocom_beep_alarm
 contains
     ! **************************************************************************
@@ -26,7 +24,7 @@ contains
         !! The following Lua procedures are registered:
         !!
         !! * `geocom_beep_alarm()`
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        type(lua_state_type), intent(inout) :: lua !! Lua state type.
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
@@ -37,7 +35,7 @@ contains
     end function dm_lua_geocom_register
 
     ! **************************************************************************
-    ! PRIVATE LUA INTERFACE PROCEDURES.
+    ! PUBLIC LUA INTERFACE PROCEDURES.
     ! **************************************************************************
     function dm_lua_geocom_beep_alarm(ptr) bind(c) result(n)
         !! Lua function `geocom_beep_alarm()` that pushes the request table of
@@ -49,7 +47,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        call dm_geocom_prepare_request_beep_alarm(request)
+        call dm_geocom_api_request_beep_alarm(request)
         call dm_lua_from(lua, request)
         n = 1
     end function dm_lua_geocom_beep_alarm

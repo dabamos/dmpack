@@ -43,7 +43,7 @@ contains
         character(len=:), allocatable :: html
 
         html = H_FOOTER // H_HR // H_P // H_SMALL // &
-               'This page was generated ' // dm_time_now() // &
+               'This report was generated ' // dm_time_now() // &
                ' by ' // APP_NAME // ' ' // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // &
                ' (DMPACK ' // DM_VERSION_STRING // ')' // &
                H_SMALL_END // H_P_END // H_FOOTER_END // dm_html_footer()

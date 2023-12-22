@@ -304,6 +304,7 @@ contains
             write (unit_, '("observ.requests(", i0, ").pattern: ", a)')     i, trim(observ%requests(i)%pattern)
             write (unit_, '("observ.requests(", i0, ").delay: ", i0)')      i, observ%requests(i)%delay
             write (unit_, '("observ.requests(", i0, ").error: ", i0)')      i, observ%requests(i)%error
+            write (unit_, '("observ.requests(", i0, ").mode: ", i0)')       i, observ%requests(i)%mode
             write (unit_, '("observ.requests(", i0, ").retries: ", i0)')    i, observ%requests(i)%retries
             write (unit_, '("observ.requests(", i0, ").state: ", i0)')      i, observ%requests(i)%state
             write (unit_, '("observ.requests(", i0, ").timeout: ", i0)')    i, observ%requests(i)%timeout

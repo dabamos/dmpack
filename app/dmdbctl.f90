@@ -20,23 +20,30 @@ program dmdbctl
     integer, parameter :: OP_DELETE = 4
 
     ! Affected data type attributes.
-    integer, parameter :: ATTR_NONE = 0
-    integer, parameter :: ATTR_NAME = 1
-    integer, parameter :: ATTR_META = 2
-    integer, parameter :: ATTR_NODE = 3
-    integer, parameter :: ATTR_TYPE = 4
-    integer, parameter :: ATTR_SN   = 5
+    integer, parameter :: ATTR_NONE  = 0
+    integer, parameter :: ATTR_NAME  = 1
+    integer, parameter :: ATTR_META  = 2
+    integer, parameter :: ATTR_NODE  = 3
+    integer, parameter :: ATTR_TYPE  = 4
+    integer, parameter :: ATTR_SN    = 5
+    integer, parameter :: ATTR_STATE = 6
+    integer, parameter :: ATTR_X     = 7
+    integer, parameter :: ATTR_Y     = 8
+    integer, parameter :: ATTR_Z     = 9
+
+    ! Number of attributes.
+    integer, parameter :: NATTRS = 9
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database    = ' '       !! Path to SQLite database file.
-        integer                      :: operation   = OP_NONE   !! Database operation (CRUD).
-        integer                      :: type        = TYPE_NONE !! Entity type (node, sensor, target).
-        logical                      :: mask(5)     = .false.   !! Attribute mask.
-        logical                      :: verbose     = .false.   !! Print debug messages to stderr.
-        type(node_type)              :: node                    !! Node type.
-        type(sensor_type)            :: sensor                  !! Sensor type.
-        type(target_type)            :: target                  !! Target type.
+        character(len=FILE_PATH_LEN) :: database     = ' '       !! Path to SQLite database file.
+        integer                      :: operation    = OP_NONE   !! Database operation (CRUD).
+        integer                      :: type         = TYPE_NONE !! Entity type (node, sensor, target).
+        logical                      :: mask(NATTRS) = .false.   !! Attribute mask.
+        logical                      :: verbose      = .false.   !! Print debug messages to stderr.
+        type(node_type)              :: node                     !! Node type.
+        type(sensor_type)            :: sensor                   !! Sensor type.
+        type(target_type)            :: target                   !! Target type.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -302,8 +309,12 @@ contains
                 rc = dm_db_select(db, old_target, target_id=id)
                 if (dm_is_error(rc)) return
 
-                if (.not. app%mask(ATTR_NAME)) app%target%name = old_target%name
-                if (.not. app%mask(ATTR_META)) app%target%meta = old_target%meta
+                if (.not. app%mask(ATTR_NAME))  app%target%name  = old_target%name
+                if (.not. app%mask(ATTR_META))  app%target%meta  = old_target%meta
+                if (.not. app%mask(ATTR_STATE)) app%target%state = old_target%state
+                if (.not. app%mask(ATTR_X))     app%target%x     = old_target%x
+                if (.not. app%mask(ATTR_Y))     app%target%y     = old_target%y
+                if (.not. app%mask(ATTR_Z))     app%target%z     = old_target%z
 
                 rc = dm_db_update(db, app%target)
         end select
@@ -324,8 +335,8 @@ contains
         character(len=TYPE_NAME_LEN)        :: type   ! DMPACK derived type name.
 
         integer        :: i, n
-        logical        :: mask(4)
-        type(arg_type) :: args(12)
+        logical        :: mask(4) ! CRUD operation mask.
+        type(arg_type) :: args(16)
 
         rc = E_NONE
 
@@ -340,8 +351,12 @@ contains
             arg_type('name',     short='n', type=ARG_TYPE_CHAR, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
             arg_type('meta',     short='M', type=ARG_TYPE_CHAR, max_len=NODE_META_LEN), &        ! -M, --meta <string>
             arg_type('node',     short='N', type=ARG_TYPE_ID), &                                 ! -N, --node <id>
-            arg_type('sn',       short='Z', type=ARG_TYPE_CHAR, max_len=SENSOR_SN_LEN), &        ! -Z, --sn <string>
+            arg_type('sn',       short='Q', type=ARG_TYPE_CHAR, max_len=SENSOR_SN_LEN), &        ! -Q, --sn <string>
             arg_type('type',     short='t', type=ARG_TYPE_CHAR, max_len=SENSOR_TYPE_NAME_LEN), & ! -t, --type <type>
+            arg_type('state',    short='S', type=ARG_TYPE_INTEGER), &                            ! -S, --state <state>
+            arg_type('easting',  short='X', type=ARG_TYPE_FLOAT), &                              ! -X, --easting <x>
+            arg_type('northing', short='Y', type=ARG_TYPE_FLOAT), &                              ! -Y, --northing <y>
+            arg_type('altitude', short='Z', type=ARG_TYPE_FLOAT), &                              ! -Z, --altitude <z>
             arg_type('verbose',  short='V', type=ARG_TYPE_BOOL) &                                ! -V, --verbose
         ]
 
@@ -368,8 +383,7 @@ contains
         app%type = dm_type_from_name(type)
 
         ! Get remaining command-line arguments.
-        rc = dm_arg_get(args( 5), app%database)
-        rc = dm_arg_get(args(12), app%verbose)
+        rc = dm_arg_get(args(5), app%database)
 
         select case (app%type)
             case (TYPE_NODE)
@@ -392,15 +406,21 @@ contains
 
             case (TYPE_TARGET)
                 ! Get target attributes.
-                rc = dm_arg_get(args(6), app%target%id)
-                rc = dm_arg_get(args(7), app%target%name, passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args(8), app%target%meta, passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args(6),  app%target%id)
+                rc = dm_arg_get(args(7),  app%target%name,  passed=app%mask(ATTR_NAME))
+                rc = dm_arg_get(args(8),  app%target%meta,  passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args(12), app%target%state, passed=app%mask(ATTR_STATE))
+                rc = dm_arg_get(args(13), app%target%x,     passed=app%mask(ATTR_X))
+                rc = dm_arg_get(args(14), app%target%y,     passed=app%mask(ATTR_Y))
+                rc = dm_arg_get(args(15), app%target%z,     passed=app%mask(ATTR_Z))
 
             case default
                 call dm_error_out(E_INVALID, 'invalid data type ' // trim(type) // &
                                   ' (either node, sensor, or target)')
                 return
         end select
+
+        rc = dm_arg_get(args(16), app%verbose)
 
         ! Validate options.
         select case (app%operation)

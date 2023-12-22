@@ -322,7 +322,7 @@ contains
         if (lua_getglobal(lua%ptr, trim(name)) == LUA_TNIL) return
 
         rc = E_TYPE
-        if (lua_istable(lua%ptr, -1) /= 1) then
+        if (lua_istable(lua%ptr, -1) == 0) then
             call lua_pop(lua%ptr, 1)
             return
         end if
@@ -621,7 +621,7 @@ contains
         integer,              intent(in)    :: i   !! Variable index.
 
         rc = E_INVALID
-        if (lua_istable(lua%ptr, -1) /= 1) return
+        if (lua_istable(lua%ptr, -1) == 0) return
         rc = E_EMPTY
         if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) return
         rc = E_NONE
@@ -654,10 +654,10 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) /= 1) return
+            if (lua_istable(lua%ptr, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isstring(lua%ptr, -1) /= 1) exit lua_block
@@ -695,10 +695,10 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) /= 1) return
+            if (lua_istable(lua%ptr, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
@@ -726,10 +726,10 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) /= 1) return
+            if (lua_istable(lua%ptr, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
@@ -757,10 +757,10 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) /= 1) return
+            if (lua_istable(lua%ptr, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isboolean(lua%ptr, -1) /= 1) exit lua_block
@@ -788,10 +788,10 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) /= 1) return
+            if (lua_istable(lua%ptr, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isnumber(lua%ptr, -1) /= 1) exit lua_block
@@ -1208,6 +1208,7 @@ contains
             rc = dm_lua_field(lua, 'pattern',    request%pattern,   unescape=.true.)
             rc = dm_lua_field(lua, 'delay',      request%delay)
             rc = dm_lua_field(lua, 'error',      request%error)
+            rc = dm_lua_field(lua, 'mode',       request%mode)
             rc = dm_lua_field(lua, 'retries',    request%retries)
             rc = dm_lua_field(lua, 'state',      request%state)
             rc = dm_lua_field(lua, 'timeout',    request%timeout)
@@ -1343,6 +1344,9 @@ contains
 
         call lua_pushinteger(lua%ptr, int(request%error, kind=lua_integer))
         call lua_setfield(lua%ptr, -2, 'error')
+
+        call lua_pushinteger(lua%ptr, int(request%mode, kind=lua_integer))
+        call lua_setfield(lua%ptr, -2, 'mode')
 
         call lua_pushinteger(lua%ptr, int(request%retries, kind=lua_integer))
         call lua_setfield(lua%ptr, -2, 'retries')

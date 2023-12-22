@@ -203,7 +203,7 @@ $ cd dmpack/
 $ make freebsd
 ....
 
-Install the library and all programs system-wide to `/usr/local`:
+Install the library and all programs system-wide to `/usr/local/`:
 
 ....
 $ doas make install_freebsd
@@ -244,7 +244,7 @@ $ fpm install
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually. The library and programs will be installed to `~/.local` by default.
+manually. The library and programs will be installed to `~/.local/` by default.
 
 === Linux [[linux]]
 
@@ -312,9 +312,9 @@ $ fpm build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5`"
 $ fpm install
 ....
 
-The library and programs will be installed to `~/.local` by default. If the
-compilation fails with an error message that `-llua-5.4` cannot be found, update
-the build manifests first:
+The library and programs will be installed to directory `~/.local/` by default.
+If the compilation fails with an error message that `-llua-5.4` cannot be
+found, update the build manifests first:
 
 ....
 $ sed -i "s/lua-5/lua5/g" fpm.toml
@@ -669,7 +669,7 @@ are supported. Data attributes are passed through command-line arguments.
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
-| `--sn _sn_`         | `-Z`  | –       | Serial number of sensor (optional).
+| `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
 | `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `rts`, `gnss`, … (optional).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
@@ -2114,7 +2114,7 @@ can run _openssl(1)_ to add credentials to the _htpasswd_ user file:
 ....
 
 Replace `<user>` and `<password>` with real values. Instead of a _htpasswd_
-file for, we may select a different authentication backend, for example, LDAP,
+file, we may select a different authentication backend, for example, LDAP,
 MySQL/MariaDB, PostgreSQL, or SQLite 3. See the _lighttpd(1)_ auth module
 documentation for further instructions.
 
@@ -3512,7 +3512,7 @@ BEAT%UPTIME=0,
 | Attribute   | Type    | Size | Description
 
 | `id`        | string  | 32   | Log id (UUID4).
-| `level`     | integer | 4    | <<data-log-level>>.
+| `level`     | integer | 4    | <<data-log-level,Log level>>.
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 | `timestamp` | string  | 29   | Date and time (ISO 8601).
 | `node_id`   | string  | 32   | Node id (optional).
@@ -3713,7 +3713,7 @@ NODE%META="Description",
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1277 | Array of requests (8).
+| `requests`  | array   | 8{nbsp}×{nbsp}1281 | Array of requests (8).
 |===
 
 .Request derived type of an observation
@@ -3728,6 +3728,7 @@ NODE%META="Description",
 | `pattern`    | string  | 256  | Regular expression pattern that describes the raw response using named groups.
 | `delay`      | integer | 4    | Delay in mseconds to wait after the request.
 | `error`      | integer | 4    | Request <<error-codes,error code>>.
+| `mode`       | integer | 4    | Request mode (unused, for future additions).
 | `retries`    | integer | 4    | Number of performed retries.
 | `state`      | integer | 4    | Request state (unused, for future additions).
 | `timeout`    | integer | 4    | Request timeout in mseconds.
@@ -3789,38 +3790,39 @@ NODE%META="Description",
 | 33        | `pattern`    | Regular expression pattern that describes the raw response.
 | 34        | `delay`      | Delay in mseconds to wait after the request.
 | 35        | `error`      | Error code.
-| 36        | `retries`    | Number of retries performed.
-| 37        | `state`      | Request state.
-| 38        | `timeout`    | Request timeout in mseconds.
-| 39        | `nresponses` | Number of responses (0 to 16).
-| 40 – 103  | `responses`  | Array of responses (16).
-| 40 – 43   | `response`   | Response 1.
-| 40        | `name`       | Response name.
-| 41        | `unit`       | Response unit.
-| 42        | `error`      | Response error.
-| 43        | `value`      | Response value.
-| 44 – 47   | `response`   | Response 2.
-| 48 – 51   | `response`   | Response 3.
-| 52 – 55   | `response`   | Response 4.
-| 56 – 59   | `response`   | Response 5.
-| 60 – 63   | `response`   | Response 6.
-| 64 – 67   | `response`   | Response 7.
-| 68 – 71   | `response`   | Response 8.
-| 72 – 75   | `response`   | Response 9.
-| 76 – 79   | `response`   | Response 10.
-| 80 – 83   | `response`   | Response 11.
-| 84 – 87   | `response`   | Response 12.
-| 88 – 91   | `response`   | Response 13.
-| 92 – 95   | `response`   | Response 14.
-| 96 – 99   | `response`   | Response 15.
-| 100 – 103 | `response`   | Response 16.
-| 104 – 178 | `request`    | Request 2.
-| 179 – 253 | `request`    | Request 3.
-| 254 – 328 | `request`    | Request 4.
-| 329 – 403 | `request`    | Request 5.
-| 404 – 478 | `request`    | Request 6.
-| 479 – 553 | `request`    | Request 7.
-| 554 – 628 | `request`    | Request 8.
+| 36        | `mode`       | Request mode.
+| 37        | `retries`    | Number of retries performed.
+| 38        | `state`      | Request state.
+| 39        | `timeout`    | Request timeout in mseconds.
+| 40        | `nresponses` | Number of responses (0 to 16).
+| 41 – 104  | `responses`  | Array of responses (16).
+| 41 – 44   | `response`   | Response 1.
+| 41        | `name`       | Response name.
+| 42        | `unit`       | Response unit.
+| 43        | `error`      | Response error.
+| 44        | `value`      | Response value.
+| 45 – 48   | `response`   | Response 2.
+| 49 – 52   | `response`   | Response 3.
+| 53 – 56   | `response`   | Response 4.
+| 57 – 60   | `response`   | Response 5.
+| 61 – 64   | `response`   | Response 6.
+| 65 – 68   | `response`   | Response 7.
+| 69 – 72   | `response`   | Response 8.
+| 73 – 76   | `response`   | Response 9.
+| 77 – 80   | `response`   | Response 10.
+| 81 – 84   | `response`   | Response 11.
+| 85 – 88   | `response`   | Response 12.
+| 89 – 92   | `response`   | Response 13.
+| 93 – 96   | `response`   | Response 14.
+| 97 – 100  | `response`   | Response 15.
+| 101 – 104 | `response`   | Response 16.
+| 105 – 179 | `request`    | Request 2.
+| 180 – 254 | `request`    | Request 3.
+| 255 – 329 | `request`    | Request 4.
+| 330 – 404 | `request`    | Request 5.
+| 405 – 479 | `request`    | Request 6.
+| 480 – 554 | `request`    | Request 7.
+| 555 – 629 | `request`    | Request 8.
 |===
 
 .JSON [[data-observ-json]]
@@ -3852,6 +3854,7 @@ NODE%META="Description",
       "pattern": "(?<sample>[-+0-9\\.]+)",
       "delay": 0,
       "error": 0,
+      "mode": 0,
       "retries": 0,
       "state": 0,
       "timeout": 0,
@@ -3895,6 +3898,7 @@ NODE%META="Description",
       delimiter = "\\n",
       delay = 0,
       error = 0,
+      mode = 0,
       retries = 0,
       state = 0,
       timeout = 0,
@@ -3935,6 +3939,7 @@ OBSERV%REQUESTS(1)%DELIMITER="\n",
 OBSERV%REQUESTS(1)%PATTERN="(?<sample>[-+0-9\.]+)",
 OBSERV%REQUESTS(1)%DELAY=0,
 OBSERV%REQUESTS(1)%ERROR=0,
+OBSERV%REQUESTS(1)%MODE=0,
 OBSERV%REQUESTS(1)%RETRIES=0,
 OBSERV%REQUESTS(1)%STATE=0,
 OBSERV%REQUESTS(1)%TIMEOUT=0,
@@ -4067,6 +4072,10 @@ SENSOR%META="Description",
 | `id`      | string  | 32   | Target id (`-0-9A-Za-z`).
 | `name`    | string  | 32   | Target name.
 | `meta`    | string  | 32   | Target description (optional).
+| `state`   | integer | 4    | Target state (optional).
+| `x`       | double  | 8    | Target easting (optional).
+| `y`       | double  | 8    | Target northing (optional).
+| `z`       | double  | 8    | Target altitude (optional).
 |===
 
 .CSV [[data-target-csv]]
@@ -4077,6 +4086,10 @@ SENSOR%META="Description",
 | 1      | `id`      | Target id.
 | 2      | `name`    | Target name.
 | 3      | `meta`    | Target description.
+| 4      | `state`   | Target state.
+| 5      | `x`       | Target easting.
+| 6      | `y`       | Target northing.
+| 7      | `z`       | Target altitude.
 |===
 
 .HDF5 [[data-target-hdf5]]
@@ -4101,6 +4114,10 @@ DATASET "target_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "meta";
+    H5T_STD_I32LE "state";
+    H5T_IEEE_F64LE "x";
+    H5T_IEEE_F64LE "y";
+    H5T_IEEE_F64LE "z";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -4112,7 +4129,11 @@ DATASET "target_type" {
 {
   "id": "dummy-target",
   "name": "Dummy Target",
-  "meta": "Description"
+  "meta": "Description",
+  "state": 0,
+  "x": 0.0,
+  "y": 0.0,
+  "z": 0.0
 }
 ....
 
@@ -4122,6 +4143,10 @@ DATASET "target_type" {
 TARGET%ID="dummy-target",
 TARGET%NAME="Dummy Target",
 TARGET%META="Description",
+TARGET%STATE=0,
+TARGET%X=0.0,
+TARGET%Y=0.0,
+TARGET%Z=0.0,
 /
 ....
 
@@ -4173,20 +4198,6 @@ Dump only table `logs` of a log database:
 ....
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
-
-=== Schemas
-
-.SQL schema of the observation database, with synchronisation tables
-[#img-db-schema-observ]
-image::db_schema_observ.png[observation database schema,align="center"]
-
-.SQL schema of the log database, with synchronisation table
-[#img-db-schema-log]
-image::db_schema_log.png[log database schema,align="center"]
-
-.SQL schema of the beat database
-[#img-db-schema-beat]
-image::db_schema_beat.png[beat database schema,align="center"]
 
 == System Configuration
 
@@ -4399,8 +4410,8 @@ script to your configuration.
 
 == Lua API [[lua-api]]
 
-Parts of the DMPACK library are exposed to Lua through a distinct API. The
-following functions are available in Lua:
+Parts of the DMPACK library are exposed to Lua through a distinct API. All
+error codes and log levels are exported, as well as the following functions:
 
 * `deg2gon(deg)` – Converts degrees to gon.
 * `deg2rad(deg)` – Converts degrees to radiants.

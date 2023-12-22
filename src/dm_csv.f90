@@ -323,9 +323,13 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        header = '#id'  // s // &
-                 'name' // s // &
-                 'meta'
+        header = '#id'   // s // &
+                 'name'  // s // &
+                 'meta'  // s // &
+                 'state' // s // &
+                 'x'     // s // &
+                 'y'     // s // &
+                 'z'
     end function dm_csv_header_target
 
     ! ******************************************************************
@@ -558,6 +562,7 @@ contains
                               '"' // trim(observ%requests(i)%pattern)   // '"' // s // &
                               dm_itoa(observ%requests(i)%delay)                // s // &
                               dm_itoa(observ%requests(i)%error)                // s // &
+                              dm_itoa(observ%requests(i)%mode)                 // s // &
                               dm_itoa(observ%requests(i)%retries)              // s // &
                               dm_itoa(observ%requests(i)%state)                // s // &
                               dm_itoa(observ%requests(i)%timeout)              // s // &
@@ -717,9 +722,13 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        csv = trim(target%id)   // s // &
-              trim(target%name) // s // &
-              '"' // trim(target%meta) // '"'
+        csv = trim(target%id)                 // s // &
+              trim(target%name)               // s // &
+              '"' // trim(target%meta) // '"' // s // &
+              dm_itoa(target%state)           // s // &
+              dm_ftoa(target%x)               // s // &
+              dm_ftoa(target%y)               // s // &
+              dm_ftoa(target%z)
     end function csv_from_target
 
     function csv_from_targets(targets, header, separator) result(csv)
@@ -1073,6 +1082,9 @@ contains
             rc = csv_next(buffer, observ%requests(i)%error, s, n, p, q)
             if (rc /= E_NONE) return
 
+            rc = csv_next(buffer, observ%requests(i)%mode, s, n, p, q)
+            if (rc /= E_NONE) return
+
             rc = csv_next(buffer, observ%requests(i)%retries, s, n, p, q)
             if (rc /= E_NONE) return
 
@@ -1191,9 +1203,13 @@ contains
 
         p = 0 ! Cursor of buffer string.
 
-        rc = csv_next(buffer, target%id,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%name, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%meta, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%id,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%name,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%meta,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%state, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%x,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%y,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%z,     s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_target
@@ -1524,7 +1540,7 @@ contains
             write (unit_, '(a)', advance='no', iostat=stat) s
             if (stat /= 0) return
 
-            write (unit_, '(18a, 5(i0, a), i0)', advance='no', iostat=stat) &
+            write (unit_, '(18a, 6(i0, a), i0)', advance='no', iostat=stat) &
                 trim(observ%requests(i)%timestamp),           s, &
                 '"', trim(observ%requests(i)%request),   '"', s, &
                 '"', trim(observ%requests(i)%response),  '"', s, &
@@ -1532,6 +1548,7 @@ contains
                 '"', trim(observ%requests(i)%pattern),   '"', s, &
                 observ%requests(i)%delay,                     s, &
                 observ%requests(i)%error,                     s, &
+                observ%requests(i)%mode,                      s, &
                 observ%requests(i)%retries,                   s, &
                 observ%requests(i)%state,                     s, &
                 observ%requests(i)%timeout,                   s, &
@@ -1681,10 +1698,14 @@ contains
         s = CSV_SEPARATOR_DEFAULT
         if (present(separator)) s = separator
 
-        write (unit_, '(7a)', iostat=stat) &
-            trim(target%id),   s, &
-            trim(target%name), s, &
-            '"', trim(target%meta), '"'
+        write (unit_, '(8a, i0, 3(a, f0.8))', iostat=stat) &
+            trim(target%id),             s, &
+            trim(target%name),           s, &
+            '"', trim(target%meta), '"', s, &
+            target%state,                s, &
+            target%x,                    s, &
+            target%y,                    s, &
+            target%z
         if (stat /= 0) return
 
         rc = E_NONE

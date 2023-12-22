@@ -827,6 +827,12 @@ contains
             call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
             if (stat < 0) return
 
+            write (name, '("requests_", i0, "_mode")') i
+            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%mode))
+            k = kind(observ%requests(i)%mode)
+            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
+            if (stat < 0) return
+
             write (name, '("requests_", i0, "_retries")') i
             offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%retries))
             k = kind(observ%requests(i)%retries)
@@ -978,6 +984,26 @@ contains
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
+        ! Target state.
+        offset = h5offsetof(c_loc(target), c_loc(target%state))
+        call h5tinsert_f(type_id, 'state', offset, h5kind_to_type(kind(target%state), H5_INTEGER_KIND), stat)
+        if (stat < 0) return
+
+        ! Target x.
+        offset = h5offsetof(c_loc(target), c_loc(target%x))
+        call h5tinsert_f(type_id, 'x', offset, h5kind_to_type(kind(target%x), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Target y.
+        offset = h5offsetof(c_loc(target), c_loc(target%y))
+        call h5tinsert_f(type_id, 'y', offset, h5kind_to_type(kind(target%y), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Target z.
+        offset = h5offsetof(c_loc(target), c_loc(target%z))
+        call h5tinsert_f(type_id, 'z', offset, h5kind_to_type(kind(target%z), H5_REAL_KIND), stat)
+        if (stat < 0) return
 
         rc = E_NONE
     end function hdf5_type_target

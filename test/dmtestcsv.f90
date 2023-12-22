@@ -220,7 +220,7 @@ contains
         n = len(dm_csv_header_sensor())
         if (n /= 29) return
         n = len(dm_csv_header_target())
-        if (n /= 13) return
+        if (n /= 25) return
 
         stat = TEST_PASSED
     end function test05

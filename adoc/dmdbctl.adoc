@@ -17,7 +17,8 @@ dmdbctl - command-line interface to DMPACK observation databases
 
 *dmdbctl* --*database* _file_ --*id* _id_ [--*create* _type_] [--*read* _type_]
 [--*update* _type_] [--*delete* _type_] [--*name* _name_] [--*meta* _meta_]
-[--*node* _id_] [--*type* _sensor_] [--*sn* _sn_] [--*verbose*]
+[--*node* _id_] [--*type* _sensor_] [--*sn* _sn_] [--*state* _n_]
+[--*easting* _x_] [--*northing* _y_] [--*altitude* _z_] [--*verbose*]
 
 == DESCRIPTION
 
@@ -27,6 +28,9 @@ supported. Data attributes are passed through command-line arguments.
 
 == OPTIONS
 
+*--altitude*, *-Z* _z_::
+  Target Z.
+
 *--create*, *-C* [node|sensor|target]::
   Create database record (node, sensor, or target).
 
@@ -35,6 +39,9 @@ supported. Data attributes are passed through command-line arguments.
 
 *--delete*, *-D* [node|sensor|target]::
   Delete database record (node, sensor, or target).
+
+*--easting*, *-X* _x_::
+  Target X.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
@@ -51,11 +58,17 @@ supported. Data attributes are passed through command-line arguments.
 *--node*, *-N* _id_::
   ID of the node the sensor is attached to.
 
+*--northing*, *-Y* _y_::
+  Target Y.
+
 *--read*, *-R* [node|sensor|target]::
   Read database record (node, sensor, or target).
 
-*--sn*, *-Z* _sn_::
+*--sn*, *-Q* _sn_::
   Serial number of sensor.
+
+*--state*, *-S* _n_::
+  Target state.
 
 *--type*, *-t* _sensor_::
   Sensor type, for example, `none`, `fs`, `process`, or `tps`.

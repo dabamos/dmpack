@@ -278,7 +278,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_prepare_request_beep_alarm(request)
+        call dm_geocom_api_request_beep_alarm(request)
         rc = this%send(request)
     end function geocom_beep_alarm
 
@@ -289,7 +289,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_prepare_request_beep_normal(request)
+        call dm_geocom_api_request_beep_normal(request)
         rc = this%send(request)
     end function geocom_beep_normal
 
@@ -300,7 +300,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_prepare_request_beep_off(request)
+        call dm_geocom_api_request_beep_off(request)
         rc = this%send(request)
     end function geocom_beep_off
 
@@ -316,9 +316,9 @@ contains
         type(request_type)                        :: request
 
         if (present(intensity)) then
-            call dm_geocom_prepare_request_beep_on(request, intensity)
+            call dm_geocom_api_request_beep_on(request, intensity)
         else
-            call dm_geocom_prepare_request_beep_on(request)
+            call dm_geocom_api_request_beep_on(request)
         end if
 
         rc = this%send(request)
