@@ -2077,13 +2077,13 @@ contains
                H_DIV_END // H_DIV_COL // &
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter easting (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target easting (optional)') // &
                dm_html_label('Y', for='y') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter northing (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target altitude (optional)') // &
                H_DIV_END // H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END

@@ -660,16 +660,20 @@ are supported. Data attributes are passed through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
+| `--altitude`        | `-Z`  | –       | Target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
-| `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
+| `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
+| `--easting`         | `-X`  | –       | Target easting (optional).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
 | `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
+| `--northing`        | `-Y`  | –       | Target northing (optional).
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
+| `--state`           | `-S`  | –       | Target state (optional).
 | `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `rts`, `gnss`, … (optional).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
