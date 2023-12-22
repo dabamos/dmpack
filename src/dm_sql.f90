@@ -1018,10 +1018,10 @@ module dm_sql
         'SELECT ' // &
         'targets.id, ' // &
         'targets.name, ' // &
-        'targets.meta ' // &
-        'targets.state' // &
-        'targets.x' // &
-        'targets.y' // &
+        'targets.meta, ' // &
+        'targets.state, ' // &
+        'targets.x, ' // &
+        'targets.y, ' // &
         'targets.z' // &
         'FROM targets ORDER BY targets.id ASC'
 
