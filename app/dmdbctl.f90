@@ -18,6 +18,7 @@ program dmdbctl
     integer, parameter :: OP_READ   = 2
     integer, parameter :: OP_UPDATE = 3
     integer, parameter :: OP_DELETE = 4
+    integer, parameter :: NOPS      = 4
 
     ! Affected data type attributes.
     integer, parameter :: ATTR_NONE  = 0
@@ -30,9 +31,7 @@ program dmdbctl
     integer, parameter :: ATTR_X     = 7
     integer, parameter :: ATTR_Y     = 8
     integer, parameter :: ATTR_Z     = 9
-
-    ! Number of attributes.
-    integer, parameter :: NATTRS = 9
+    integer, parameter :: NATTRS     = 9
 
     type :: app_type
         !! Command-line arguments.
@@ -335,10 +334,8 @@ contains
         character(len=TYPE_NAME_LEN)        :: type   ! DMPACK derived type name.
 
         integer        :: i, n
-        logical        :: mask(4) ! CRUD operation mask.
+        logical        :: mask(NOPS) ! CRUD operation mask.
         type(arg_type) :: args(16)
-
-        rc = E_NONE
 
         ! Required and optional command-line arguments.
         args = [ &
@@ -365,7 +362,7 @@ contains
         if (dm_is_error(rc)) return
 
         ! CRUD operation.
-        mask = [ (args(i)%passed, i = 1, 4) ]
+        mask = [ (args(i)%passed, i = 1, NOPS) ]
         n = count(mask)
 
         rc = E_INVALID
@@ -425,7 +422,6 @@ contains
         ! Validate options.
         select case (app%operation)
             case (OP_CREATE)
-                ! Create operation.
                 if (.not. app%mask(ATTR_NAME)) then
                     ! Node, sensor, and target.
                     call dm_error_out(rc, 'argument --name required')

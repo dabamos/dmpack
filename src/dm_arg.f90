@@ -57,16 +57,16 @@ module dm_arg
 
     type, public :: arg_type
         !! Argument description type.
-        character(len=ARG_NAME_LEN)  :: name     = ' '           !! Identifier of the argument (without leading --).
-        character                    :: short    = ASCII_NUL     !! Short argument character.
-        character(len=ARG_VALUE_LEN) :: value    = ' '           !! Default and passed value (if any).
-        integer                      :: length   = 0             !! Value length.
-        integer                      :: max_len  = ARG_VALUE_LEN !! Maximum argument value length.
-        integer                      :: min_len  = 0             !! Minimum argument value length.
-        integer                      :: type     = ARG_TYPE_BOOL !! Value data type.
-        logical                      :: required = .false.       !! Option is mandatory.
-        logical                      :: passed   = .false.       !! Option was passed.
-        integer                      :: error    = E_ARG         !! Occured error.
+        character(len=ARG_NAME_LEN)  :: name     = ' '             !! Identifier of the argument (without leading --).
+        character                    :: short    = ASCII_NUL       !! Short argument character.
+        character(len=ARG_VALUE_LEN) :: value    = ' '             !! Default and passed value (if any).
+        integer                      :: length   = 0               !! Value length.
+        integer                      :: max_len  = ARG_VALUE_LEN   !! Maximum argument value length.
+        integer                      :: min_len  = 0               !! Minimum argument value length.
+        integer                      :: type     = ARG_TYPE_BOOL   !! Value data type.
+        logical                      :: required = .false.         !! Option is mandatory.
+        logical                      :: passed   = .false.         !! Option was passed.
+        integer                      :: error    = E_ARG_NOT_FOUND !! Occured error.
     end type arg_type
 
     interface dm_arg_get
@@ -124,7 +124,8 @@ contains
 
         ! Reset arguments.
         do i = 1, size(args)
-            args(i)%error = E_ARG_NOT_FOUND
+            args(i)%passed = .false.
+            args(i)%error  = E_ARG_NOT_FOUND
         end do
 
         ! Cycle through passed command-line arguments.
@@ -146,7 +147,7 @@ contains
                 exists = .false.
 
                 ! Match argument.
-                if ((a(2:3) /= args(j)%short // ' ') .and. &
+                if ((args(j)%short == ASCII_NUL .or. a(2:3) /= args(j)%short // ' ') .and. &
                     (a(2:2) /= '-' .or. a(3:) /= args(j)%name)) cycle
 
                 ! Argument has been passed already.
@@ -302,8 +303,6 @@ contains
                                           dm_itoa(args(i)%min_len))
                     end if
             end select
-
-            exit
         end do
     end function dm_arg_read
 
