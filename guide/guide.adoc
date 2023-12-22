@@ -4487,6 +4487,7 @@ print(gon)
 | 53   | `E_ARG_NO_VALUE`    | Argument value missing.
 | 54   | `E_ARG_TYPE`        | Argument type mismatch.
 | 55   | `E_ARG_LENGTH`      | Argument value length invalid.
+| 56   | `E_ARG_UNKNOWN`     | Argument is unknown.
 | 60   | `E_MQUEUE`          | Generic message queue error.
 | 61   | `E_MQUEUE_EMPTY`    | Empty message.
 | 70   | `E_REGEX`           | Generic regular expression error.

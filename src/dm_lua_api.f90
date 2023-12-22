@@ -127,6 +127,7 @@ contains
             rc = dm_lua_eval(lua, 'E_ARG_NO_VALUE = '   // dm_itoa(E_ARG_NO_VALUE));   if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ARG_TYPE = '       // dm_itoa(E_ARG_TYPE));       if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ARG_LENGTH = '     // dm_itoa(E_ARG_LENGTH));     if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_ARG_UNKNOWN = '    // dm_itoa(E_ARG_UNKNOWN));    if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_MQUEUE = '         // dm_itoa(E_MQUEUE));         if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_MQUEUE_EMPTY = '   // dm_itoa(E_MQUEUE_EMPTY));   if (dm_is_error(rc)) return

@@ -94,6 +94,7 @@ contains
         rc = lual_dostring(ptr, 'E_ARG_NO_VALUE = '   // dm_itoa(E_ARG_NO_VALUE))
         rc = lual_dostring(ptr, 'E_ARG_TYPE = '       // dm_itoa(E_ARG_TYPE))
         rc = lual_dostring(ptr, 'E_ARG_LENGTH = '     // dm_itoa(E_ARG_LENGTH))
+        rc = lual_dostring(ptr, 'E_ARG_UNKNOWN = '    // dm_itoa(E_ARG_UNKNOWN))
 
         rc = lual_dostring(ptr, 'E_MQUEUE = '         // dm_itoa(E_MQUEUE))
         rc = lual_dostring(ptr, 'E_MQUEUE_EMPTY = '   // dm_itoa(E_MQUEUE_EMPTY))
