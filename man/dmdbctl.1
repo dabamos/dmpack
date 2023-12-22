@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-09-07
+.\"      Date: 2023-12-22
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2023-09-07" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2023-12-22" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -37,13 +37,19 @@ dmdbctl \- command\-line interface to DMPACK observation databases
 .sp
 \fBdmdbctl\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP [\-\-\fBcreate\fP \fItype\fP] [\-\-\fBread\fP \fItype\fP]
 [\-\-\fBupdate\fP \fItype\fP] [\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBmeta\fP \fImeta\fP]
-[\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP] [\-\-\fBverbose\fP]
+[\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP] [\-\-\fBstate\fP \fIn\fP]
+[\-\-\fBeasting\fP \fIx\fP] [\-\-\fBnorthing\fP \fIy\fP] [\-\-\fBaltitude\fP \fIz\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmdbctl\fP utility program performs create, read, update, or delete
 operations on the observation databasae. Only nodes, sensors, and targets are
 supported. Data attributes are passed through command\-line arguments.
 .SH "OPTIONS"
+.sp
+\fB\-\-altitude\fP, \fB\-Z\fP \fIz\fP
+.RS 4
+Target Z.
+.RE
 .sp
 \fB\-\-create\fP, \fB\-C\fP [node|sensor|target]
 .RS 4
@@ -58,6 +64,11 @@ Path to SQLite observation database.
 \fB\-\-delete\fP, \fB\-D\fP [node|sensor|target]
 .RS 4
 Delete database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-easting\fP, \fB\-X\fP \fIx\fP
+.RS 4
+Target X.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP
@@ -85,14 +96,24 @@ Name of node, sensor, or target.
 ID of the node the sensor is attached to.
 .RE
 .sp
+\fB\-\-northing\fP, \fB\-Y\fP \fIy\fP
+.RS 4
+Target Y.
+.RE
+.sp
 \fB\-\-read\fP, \fB\-R\fP [node|sensor|target]
 .RS 4
 Read database record (node, sensor, or target).
 .RE
 .sp
-\fB\-\-sn\fP, \fB\-Z\fP \fIsn\fP
+\fB\-\-sn\fP, \fB\-Q\fP \fIsn\fP
 .RS 4
 Serial number of sensor.
+.RE
+.sp
+\fB\-\-state\fP, \fB\-S\fP \fIn\fP
+.RS 4
+Target state.
 .RE
 .sp
 \fB\-\-type\fP, \fB\-t\fP \fIsensor\fP
