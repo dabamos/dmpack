@@ -61,6 +61,7 @@ module dm_error
     integer, parameter, public :: E_ARG_NO_VALUE   =  53 !! Argument given but no value.
     integer, parameter, public :: E_ARG_TYPE       =  54 !! Type mismatch.
     integer, parameter, public :: E_ARG_LENGTH     =  55 !! Wrong value length.
+    integer, parameter, public :: E_ARG_UNKNOWN    =  56 !! Unknown argument passed.
 
     ! Message queue errors.
     integer, parameter, public :: E_MQUEUE         =  60 !! Generic message queue error.
@@ -212,6 +213,8 @@ contains
                 str = 'argument type invalid'
             case (E_ARG_LENGTH)
                 str = 'argument length invalid'
+            case (E_ARG_UNKNOWN)
+                str = 'argument is unknown'
 
             ! POSIX message queue.
             case (E_MQUEUE)
@@ -329,7 +332,7 @@ contains
         if (present(verbose)) verbose_ = verbose
         if (present(quit))    quit_    = quit
 
-        if (.not. verbose_ .and. error == E_NONE) return
+        if (error == E_NONE .and. .not. verbose_) return
 
         stat = 0
         if (error /= E_NONE) stat = 1

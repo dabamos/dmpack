@@ -97,13 +97,16 @@ contains
 
         character(len=ID_LEN) :: id
 
+        rc = E_NONE
+
         select case (app%type)
             case (TYPE_NODE)
                 ! Create node.
                 id = app%node%id
 
                 if (dm_db_exists_node(db, id)) then
-                    call dm_error_out(E_EXIST, 'node ' // trim(id) // ' exists')
+                    rc = E_EXIST
+                    call dm_error_out(rc, 'node ' // trim(id) // ' exists')
                     return
                 end if
 
@@ -114,7 +117,14 @@ contains
                 id = app%sensor%id
 
                 if (dm_db_exists_sensor(db, id)) then
-                    call dm_error_out(E_EXIST, 'sensor ' // trim(id) // ' exists')
+                    rc = E_EXIST
+                    call dm_error_out(rc, 'sensor ' // trim(id) // ' exists')
+                    return
+                end if
+
+                if (.not. dm_db_exists_node(db, app%sensor%node_id)) then
+                    rc = E_INVALID
+                    call dm_error_out(rc, 'node ' // trim(app%sensor%node_id) // ' not found')
                     return
                 end if
 
@@ -125,15 +135,16 @@ contains
                 id = app%target%id
 
                 if (dm_db_exists_target(db, id)) then
-                    call dm_error_out(E_EXIST, 'target' // trim(id) // ' exists')
+                    rc = E_EXIST
+                    call dm_error_out(rc, 'target' // trim(id) // ' exists')
                     return
                 end if
 
                 rc = dm_db_insert(db, app%target)
         end select
 
-        if (dm_is_ok(rc)) then
-            call dm_error_out(E_NONE, 'database record created', verbose=app%verbose)
+        if (dm_is_ok(rc) .and. app%verbose) then
+            print '("database record created")'
             return
         end if
 
@@ -147,13 +158,16 @@ contains
 
         character(len=ID_LEN) :: id
 
+        rc = E_NONE
+
         select case (app%type)
             case (TYPE_NODE)
                 ! Delete node.
                 id = app%node%id
 
                 if (.not. dm_db_exists_node(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'node ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
                 end if
 
@@ -164,7 +178,8 @@ contains
                 id = app%sensor%id
 
                 if (.not. dm_db_exists_sensor(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'sensor ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
                 end if
 
@@ -175,15 +190,16 @@ contains
                 id = app%target%id
 
                 if (.not. dm_db_exists_target(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'target' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'target' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_delete_target(db, id)
         end select
 
-        if (dm_is_ok(rc)) then
-            call dm_error_out(E_NONE, 'database record deleted', verbose=app%verbose)
+        if (dm_is_ok(rc) .and. app%verbose) then
+            print '("database record deleted")'
             return
         end if
 
@@ -200,19 +216,23 @@ contains
         type(sensor_type)     :: sensor
         type(target_type)     :: target
 
+        rc = E_INVALID
+
         db_select: select case (app%type)
             case (TYPE_NODE)
                 ! Read node.
                 id = app%node%id
 
                 if (.not. dm_db_exists_node(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'node ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, node, node_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Output node.
                 call dm_node_out(node)
 
             case (TYPE_SENSOR)
@@ -220,13 +240,15 @@ contains
                 id = app%sensor%id
 
                 if (.not. dm_db_exists_sensor(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'sensor ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, sensor, sensor_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Output sensor.
                 call dm_sensor_out(sensor)
 
             case (TYPE_TARGET)
@@ -234,13 +256,15 @@ contains
                 id = app%target%id
 
                 if (.not. dm_db_exists_target(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'target ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'target ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, target, target_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Output target.
                 call dm_target_out(target)
         end select db_select
 
@@ -258,18 +282,21 @@ contains
         type(sensor_type)     :: old_sensor
         type(target_type)     :: old_target
 
-        select case (app%type)
+        rc = E_NONE
+
+        db_select: select case (app%type)
             case (TYPE_NODE)
                 ! Update node.
                 id = app%node%id
 
                 if (.not. dm_db_exists_node(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'node ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, old_node, node_id=id)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit db_select
 
                 if (.not. app%mask(ATTR_NAME)) app%node%name = old_node%name
                 if (.not. app%mask(ATTR_META)) app%node%meta = old_node%meta
@@ -281,18 +308,31 @@ contains
                 id = app%sensor%id
 
                 if (.not. dm_db_exists_sensor(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'sensor ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, old_sensor, sensor_id=id)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit db_select
 
                 if (.not. app%mask(ATTR_TYPE)) app%sensor%type    = old_sensor%type
                 if (.not. app%mask(ATTR_NODE)) app%sensor%node_id = old_sensor%node_id
                 if (.not. app%mask(ATTR_NAME)) app%sensor%name    = old_sensor%name
                 if (.not. app%mask(ATTR_SN))   app%sensor%sn      = old_sensor%sn
                 if (.not. app%mask(ATTR_META)) app%sensor%meta    = old_sensor%meta
+
+                if (len_trim(app%sensor%node_id) == 0) then
+                    rc = E_INVALID
+                    call dm_error_out(rc, 'node id is missing')
+                    return
+                end if
+
+                if (.not. dm_db_exists_node(db, app%sensor%node_id)) then
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'node ' // trim(app%sensor%node_id) // ' not found')
+                    return
+                end if
 
                 rc = dm_db_update(db, app%sensor)
 
@@ -301,12 +341,13 @@ contains
                 id = app%target%id
 
                 if (.not. dm_db_exists_target(db, id)) then
-                    call dm_error_out(E_NOT_FOUND, 'target ' // trim(id) // ' not found')
+                    rc = E_NOT_FOUND
+                    call dm_error_out(rc, 'target ' // trim(id) // ' not found')
                     return
                 end if
 
                 rc = dm_db_select(db, old_target, target_id=id)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit db_select
 
                 if (.not. app%mask(ATTR_NAME))  app%target%name  = old_target%name
                 if (.not. app%mask(ATTR_META))  app%target%meta  = old_target%meta
@@ -316,10 +357,10 @@ contains
                 if (.not. app%mask(ATTR_Z))     app%target%z     = old_target%z
 
                 rc = dm_db_update(db, app%target)
-        end select
+        end select db_select
 
-        if (dm_is_ok(rc)) then
-            call dm_error_out(E_NONE, 'database record updated', verbose=app%verbose)
+        if (dm_is_ok(rc) .and. app%verbose) then
+            print '("database record updated")'
             return
         end if
 
@@ -336,6 +377,8 @@ contains
         integer        :: i, n
         logical        :: mask(NOPS) ! CRUD operation mask.
         type(arg_type) :: args(16)
+
+        rc = E_NONE
 
         ! Required and optional command-line arguments.
         args = [ &
@@ -403,29 +446,39 @@ contains
 
             case (TYPE_TARGET)
                 ! Get target attributes.
-                rc = dm_arg_get(args(6),  app%target%id)
-                rc = dm_arg_get(args(7),  app%target%name,  passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args(8),  app%target%meta,  passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args( 6), app%target%id)
+                rc = dm_arg_get(args( 7), app%target%name,  passed=app%mask(ATTR_NAME))
+                rc = dm_arg_get(args( 8), app%target%meta,  passed=app%mask(ATTR_META))
                 rc = dm_arg_get(args(12), app%target%state, passed=app%mask(ATTR_STATE))
                 rc = dm_arg_get(args(13), app%target%x,     passed=app%mask(ATTR_X))
                 rc = dm_arg_get(args(14), app%target%y,     passed=app%mask(ATTR_Y))
                 rc = dm_arg_get(args(15), app%target%z,     passed=app%mask(ATTR_Z))
 
             case default
-                call dm_error_out(E_INVALID, 'invalid data type ' // trim(type) // &
-                                  ' (either node, sensor, or target)')
+                rc = E_INVALID
+                call dm_error_out(rc, 'invalid data type ' // trim(type) // ' (either node, sensor, or target)')
                 return
         end select
 
         rc = dm_arg_get(args(16), app%verbose)
 
         ! Validate options.
+        rc = E_INVALID
+
         select case (app%operation)
             case (OP_CREATE)
+                ! Node, sensor, and target.
                 if (.not. app%mask(ATTR_NAME)) then
-                    ! Node, sensor, and target.
                     call dm_error_out(rc, 'argument --name required')
                     return
+                end if
+
+                ! Sensor.
+                if (app%type == TYPE_SENSOR) then
+                    if (.not. dm_id_valid(app%sensor%node_id)) then
+                        call dm_error_out(rc, 'argument --node is invalid or missing')
+                        return
+                    end if
                 end if
             case (OP_UPDATE)
                 ! Update operation.

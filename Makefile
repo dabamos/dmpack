@@ -175,7 +175,7 @@ DMAPI    = $(DISTDIR)/dmapi
 DMBACKUP = $(DISTDIR)/dmbackup
 DMBEAT   = $(DISTDIR)/dmbeat
 DMDB     = $(DISTDIR)/dmdb
-DMDBCLI  = $(DISTDIR)/dmdbctl
+DMDBCTL  = $(DISTDIR)/dmdbctl
 DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
@@ -249,7 +249,7 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
 all: $(TARGET) $(SHARED) test app
 
 # Apps target.
-app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCLI) $(DMEXPORT) $(DMFEED) \
+app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRAPH) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
      $(DMLUA) $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
      $(DMUUID) $(DMWEB)
@@ -568,8 +568,8 @@ $(DMBEAT): app/dmbeat.f90 $(TARGET)
 $(DMDB): app/dmdb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT)
 
-$(DMDBCLI): app/dmdbctl.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCLI) app/dmdbctl.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
+$(DMDBCTL): app/dmdbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCTL) app/dmdbctl.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
 $(DMEXPORT): app/dmexport.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)

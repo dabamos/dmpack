@@ -57,16 +57,16 @@ module dm_arg
 
     type, public :: arg_type
         !! Argument description type.
-        character(len=ARG_NAME_LEN)  :: name     = ' '             !! Identifier of the argument (without leading --).
-        character                    :: short    = ASCII_NUL       !! Short argument character.
-        character(len=ARG_VALUE_LEN) :: value    = ' '             !! Default and passed value (if any).
-        integer                      :: length   = 0               !! Value length.
-        integer                      :: max_len  = ARG_VALUE_LEN   !! Maximum argument value length.
-        integer                      :: min_len  = 0               !! Minimum argument value length.
-        integer                      :: type     = ARG_TYPE_BOOL   !! Value data type.
-        logical                      :: required = .false.         !! Option is mandatory.
-        logical                      :: passed   = .false.         !! Option was passed.
-        integer                      :: error    = E_ARG_NOT_FOUND !! Occured error.
+        character(len=ARG_NAME_LEN)  :: name     = ' '           !! Identifier of the argument (without leading --).
+        character                    :: short    = ASCII_NUL     !! Short argument character.
+        character(len=ARG_VALUE_LEN) :: value    = ' '           !! Default and passed value (if any).
+        integer                      :: length   = 0             !! Value length.
+        integer                      :: max_len  = ARG_VALUE_LEN !! Maximum argument value length.
+        integer                      :: min_len  = 0             !! Minimum argument value length.
+        integer                      :: type     = ARG_TYPE_BOOL !! Value data type.
+        logical                      :: required = .false.       !! Option is mandatory.
+        logical                      :: passed   = .false.       !! Option was passed.
+        integer                      :: error    = E_NONE        !! Occured error.
     end type arg_type
 
     interface dm_arg_get
@@ -103,23 +103,37 @@ contains
         has = .false.
         args(1) = arg_type(name=name, type=ARG_TYPE_BOOL)
         if (present(short)) args(1)%short = short
-        rc = dm_arg_parse(args)
+        rc = dm_arg_parse(args, allow_unknown=.true., verbose=.false.)
         has = (args(1)%error == E_NONE)
     end function dm_arg_has
 
-    integer function dm_arg_parse(args, verbose) result(rc)
-        !! Parses command-line for given arguments.
-        type(arg_type), intent(inout)        :: args(:) !! Arguments array.
-        logical,        intent(in), optional :: verbose !! Print error messages to stdout.
+    integer function dm_arg_parse(args, allow_unknown, verbose) result(rc)
+        !! Parses command-line for given arguments. Error messages are printed
+        !! to standard error by default, unless `verbose` is `.false.`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ARG_INVALID` if an argument has been passed already.
+        !! * `E_ARG_NO_VALUE` if an argument has been passed without value.
+        !! * `E_ARG_LENGTH` if one of the argument values has wrong length.
+        !! * `E_ARG_UNKNOWN` if one of the arguments parsed is not known.
+        type(arg_type), intent(inout)        :: args(:)       !! Arguments array.
+        logical,        intent(in), optional :: allow_unknown !! Allow unknown arguments.
+        logical,        intent(in), optional :: verbose       !! Print error messages to stdout.
 
         character(len=ARG_VALUE_LEN) :: a, value
         integer                      :: i, j, k, n, stat
-        logical                      :: exists, verbose_
+        logical                      :: allow_unknown_, verbose_
+        logical                      :: exists
 
         rc = E_NONE
 
+        ! Allow unknown command-line arguments?
+        allow_unknown_ = .false.
+        if (present(allow_unknown)) allow_unknown_ = allow_unknown
+
         ! Show error messages?
-        verbose_ = .false.
+        verbose_ = .true.
         if (present(verbose)) verbose_ = verbose
 
         ! Reset arguments.
@@ -138,7 +152,8 @@ contains
             call get_command_argument(i, a)
 
             if (a(1:1) /= '-') then
-                rc = E_INVALID
+                ! Argument does not start with `-` and is therefore invalid.
+                rc = E_ARG_UNKNOWN
                 if (verbose_) call dm_error_out(rc, 'unknown command-line option "' // trim(a) // '"')
                 return
             end if
@@ -152,7 +167,7 @@ contains
 
                 ! Argument has been passed already.
                 if (args(j)%passed) then
-                    rc = E_INVALID
+                    rc = E_ARG_INVALID
                     if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' already set')
                     return
                 end if
@@ -191,9 +206,9 @@ contains
                 exit
             end do
 
-            if (.not. exists) then
-                ! Unknown or unexpected command-line option passed.
-                rc = E_INVALID
+            if (.not. exists .and. .not. allow_unknown_) then
+                ! Argument starts with `-` but is unknown or unexpected.
+                rc = E_ARG_UNKNOWN
                 if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' not allowed')
                 return
             end if
@@ -213,6 +228,15 @@ contains
         !! version, and `-h`/`--help` to output all available command-line
         !! arguments. If one of these arguments is passed, `dm_stop(0)` is
         !! called afterwards.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if array of arguments is empty.
+        !! * `E_ARG_INVALID` if an required argument has not been passed.
+        !! * `E_ARG_NO_VALUE` if an argument has been passed without value.
+        !! * `E_ARG_TYPE` if an argument has the wrong type.
+        !! * `E_ARG_LENGTH` if the length of the argument is wrong.
+        !! * `E_ARG_UNKNOWN` if an unknown argument has been passed.
         type(arg_type),   intent(inout)        :: args(:) !! Arguments to match.
         character(len=*), intent(in), optional :: app     !! App name (for `-v`).
         integer,          intent(in), optional :: major   !! Major version number (for `-v`).
@@ -261,49 +285,58 @@ contains
         ! Validate passed arguments.
         rc = E_EMPTY
 
-        do i = 1, size(args)
+        validate_loop: do i = 1, size(args)
             rc = dm_arg_validate(args(i))
 
             select case (rc)
                 case (E_NONE)
+                    cycle validate_loop
+
                 case (E_ARG_NOT_FOUND)
-                    cycle
+                    ! If the argument is required but not found, `E_ARG_INVALID` is set.
+                    ! We can ignore and overwrite this error.
+                    rc = E_NONE
+                    cycle validate_loop
 
                 case (E_ARG_INVALID)
-                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' required')
+                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is required')
+                    exit validate_loop
 
                 case (E_ARG_NO_VALUE)
                     call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' requires value')
+                    exit validate_loop
 
                 case (E_ARG_TYPE)
                     select case (args(i)%type)
                         case (ARG_TYPE_INTEGER)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not an integer')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not an integer')
                         case (ARG_TYPE_FLOAT)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a number')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a number')
                         case (ARG_TYPE_ID)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a valid id')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a valid id')
                         case (ARG_TYPE_UUID)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not a valid UUID4')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a valid UUID4')
                         case (ARG_TYPE_TIME)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' not in ISO 8601 format')
+                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not in ISO 8601 format')
                         case (ARG_TYPE_FILE)
                             call dm_error_out(rc, 'file "' // trim(args(i)%value) // '" not found')
                         case (ARG_TYPE_DB)
                             call dm_error_out(rc, 'database "' // trim(args(i)%value) // '" not found')
                     end select
+                    exit validate_loop
 
                 case (E_ARG_LENGTH)
                     n = len_trim(args(i)%value)
                     if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' too long, must be <= ' // &
+                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is too long, must be <= ' // &
                                           dm_itoa(args(i)%max_len))
                     else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' too short, must be >= ' // &
+                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is too short, must be >= ' // &
                                           dm_itoa(args(i)%min_len))
                     end if
+                    exit validate_loop
             end select
-        end do
+        end do validate_loop
     end function dm_arg_read
 
     integer function dm_arg_validate(arg) result(rc)
@@ -317,12 +350,15 @@ contains
         rc = E_ARG
         if (len_trim(arg%name) == 0) return
 
+        ! Required argument has not been passed.
         rc = E_ARG_INVALID
         if (arg%required .and. .not. arg%passed) return
 
+        ! Exit early if argument has not been passed.
         rc = arg%error
         if (dm_is_error(rc)) return
 
+        ! Validate the type.
         rc = E_ARG_TYPE
         select case (arg%type)
             case (ARG_TYPE_FLOAT)
