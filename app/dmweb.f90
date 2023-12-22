@@ -2044,10 +2044,18 @@ contains
         logical, intent(in), optional :: disabled !! Form elements are disabled.
         character(len=:), allocatable :: html     !! HTML form.
 
-        logical :: disabled_
+        integer           :: i
+        logical           :: disabled_
+        type(select_type) :: select_target_state
 
         disabled_ = .false.
         if (present(disabled)) disabled_ = disabled
+
+        call dm_html_select_create(select_target_state, TARGET_NSTATES)
+
+        do i = 0, TARGET_NSTATES - 1
+            call dm_html_select_set(select_target_state, i + 1, TARGET_STATE_NAMES(i), dm_itoa(i))
+        end do
 
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Target' // H_SUMMARY_END // &
@@ -2065,8 +2073,7 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
                dm_html_label('State', for='state') // &
-               dm_html_input(HTML_INPUT_TYPE_NUMBER, disabled=disabled_, id='state', name='state', &
-                             max_length=TARGET_META_LEN, placeholder='Enter target state (optional)') // &
+               dm_html_select(select_target_state, 'state', 'state', dm_itoa(TARGET_STATE_NONE), disabled=disabled_) // &
                H_DIV_END // H_DIV_COL // &
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &

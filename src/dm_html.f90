@@ -1447,14 +1447,6 @@ contains
         type(target_type), intent(inout) :: target !! Target type.
         character(len=:), allocatable    :: html   !! Generated HTML.
 
-        character(len=:), allocatable :: state_name
-
-        if (dm_target_state_valid(target%state)) then
-            state_name = trim(TARGET_STATE_NAMES(target%state))
-        else
-            state_name = 'unknown'
-        end if
-
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(target%id) // H_CODE_END // H_TD_END // H_TR_END // &
@@ -1463,7 +1455,7 @@ contains
                H_TR // H_TH // 'Meta' // H_TH_END // &
                H_TD // dm_html_encode(target%meta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'State' // H_TH_END // &
-               H_TD // state_name // ' (' // dm_itoa(target%state) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_target_state_name(target%state) // ' (' // dm_itoa(target%state) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'X' // H_TH_END // &
                H_TD // dm_ftoa(target%x) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Y' // H_TH_END // &
@@ -1512,12 +1504,12 @@ contains
                 html = html // H_TD // dm_html_encode(targets(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(targets(i)%name) // H_TD_END // &
-                           H_TD // dm_html_encode(targets(i)%meta) // H_TD_END // &
-                           H_TD // dm_itoa(targets(i)%state)       // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%x)           // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%y)           // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%z)           // H_TD_END // H_TR_END
+            html = html // H_TD // dm_html_encode(targets(i)%name)        // H_TD_END // &
+                           H_TD // dm_html_encode(targets(i)%meta)        // H_TD_END // &
+                           H_TD // dm_target_state_name(targets(i)%state) // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%x)                  // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%y)                  // H_TD_END // &
+                           H_TD // dm_ftoa(targets(i)%z)                  // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END

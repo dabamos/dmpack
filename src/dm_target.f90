@@ -12,16 +12,20 @@ module dm_target
     integer, parameter, public :: TARGET_NAME_LEN = 32
     integer, parameter, public :: TARGET_META_LEN = 32
 
-    integer, parameter, public :: TARGET_STATE_NONE    = 0 !! Default state.
-    integer, parameter, public :: TARGET_STATE_INVALID = 1 !! Target is invalid.
-    integer, parameter, public :: TARGET_STATE_IGNORE  = 2 !! Target should be ignored.
-    integer, parameter, public :: TARGET_STATE_MISSING = 3 !! Target is missing.
-    integer, parameter, public :: TARGET_NSTATES       = 4 !! Number of known states.
+    integer, parameter, public :: TARGET_STATE_NONE     = 0 !! Default state.
+    integer, parameter, public :: TARGET_STATE_REMOVED  = 1 !! Target was removed.
+    integer, parameter, public :: TARGET_STATE_MISSING  = 2 !! Target is missing.
+    integer, parameter, public :: TARGET_STATE_INVALID  = 3 !! Target is invalid.
+    integer, parameter, public :: TARGET_STATE_IGNORE   = 4 !! Target should be ignored.
+    integer, parameter, public :: TARGET_STATE_OBSOLETE = 5 !! Target is obsolete.
+    integer, parameter, public :: TARGET_STATE_USER     = 6 !! User-defined state.
+    integer, parameter, public :: TARGET_NSTATES        = 7 !! Number of known states.
 
     integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Length of target state name.
 
     character(len=*), parameter, public :: TARGET_STATE_NAMES(0:TARGET_NSTATES - 1) = [ &
-        character(len=TARGET_STATE_NAME_LEN) :: 'none', 'invalid', 'ignore', 'missing' ] !! Target state names.
+        character(len=TARGET_STATE_NAME_LEN) :: &
+        'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' ] !! Target state names.
 
     type, public :: target_type
         !! Target description.
@@ -45,6 +49,7 @@ module dm_target
 
     public :: dm_target_equals
     public :: dm_target_out
+    public :: dm_target_state_name
     public :: dm_target_state_valid
     public :: dm_target_valid
 contains
@@ -64,6 +69,20 @@ contains
         equals= .true.
     end function dm_target_equals
 
+    pure function dm_target_state_name(state) result(str)
+        !! Returns the name of the known target state as an allocatable
+        !! character string, or `unknown` if the state is not known.
+        integer, intent(in)           :: state !! Target state.
+        character(len=:), allocatable :: str !! Target state name.
+
+        if (.not. dm_target_state_valid(state)) then
+            str = 'unknown'
+            return
+        end if
+
+        str = trim(TARGET_STATE_NAMES(state))
+    end function dm_target_state_name
+
     pure elemental logical function dm_target_state_valid(state) result(valid)
         !! Returns `.true.` if the state of the given target type is known.
         integer, intent(in) :: state !! Target state.
@@ -80,6 +99,7 @@ contains
         valid = .false.
         if (.not. dm_id_valid(target%id)) return
         if (len_trim(target%name) == 0) return
+        if (target%state < 0 .or. target%state >= TARGET_NSTATES) return
         valid = .true.
     end function dm_target_valid
 
