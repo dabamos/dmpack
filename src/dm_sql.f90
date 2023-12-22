@@ -1022,7 +1022,7 @@ module dm_sql
         'targets.state, ' // &
         'targets.x, ' // &
         'targets.y, ' // &
-        'targets.z' // &
+        'targets.z ' // &
         'FROM targets ORDER BY targets.id ASC'
 
     ! ******************************************************************

@@ -2074,7 +2074,6 @@ contains
                dm_html_label('Y', for='y') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter northing (optional)') // &
-               H_DIV_END // H_DIV_COL // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
