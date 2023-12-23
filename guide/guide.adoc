@@ -75,40 +75,49 @@ image::schema.png[schema,align="center"]
 There are similar open source projects that provide middleware for autonomous
 sensor networks:
 
+link:https://github.com/52North/SOS[52°North Sensor Observation Service]::
+The reference implementation of the OGC Sensor Observation Service (SOS) in
+Java, by 52°North Spatial Information Research GmbH. Offers an interoperable
+interface for publishing and querying sensor data and meta data. Additional
+client applications enable analysis and visualisation of the measurement data.
+`GPLv2`
 link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
-monitoring and alerting solution built with MariaDB, Node.js and React. (MIT)
+monitoring and alerting solution built with MariaDB, Node.js and React. `MIT`
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
 SensorThings (FROST) is the reference implementation of the OGC SensorThings API
 in Java. The project provides an HTTP- and MQTT-based message bus for data
 transmission between client and server. Developed by Fraunhofer-Institut für
-Optronik, Systemtechnik und Bildauswertung (IOSB). (LGPLv3)
+Optronik, Systemtechnik und Bildauswertung (IOSB). `LGPLv3`
 link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
-(GPLv3)
+`GPLv3`
 link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
 observations from monitoring sensors. The project also provides a graphical user
 interface and a RESTful web API to automate administration procedures. Developed
 by Istituto Scienze della Terra, University of Applied Sciences and Arts of
-Southern Switzerland. (GPLv2)
+Southern Switzerland. `GPLv2`
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
-projects, distributed sensor networks, and likewise scenarios. (AGPLv3)
+projects, distributed sensor networks, and likewise scenarios. `AGPLv3`
 link:https://www.dabamos.de/software/openadms/[OpenADMS]:: The Open Automatic
 Deformation Monitoring software is an IoT sensor network middleware in Python 3.
 The system was developed as a prototype of DMPACK and includes client and server
-programs. (BSD)
+programs. `BSD`
+link:https://github.com/opensensorhub[OpenSensorHub]:: Java-based middleware
+for building Sensor Webs in the Internet of Things. Based on OGC standards from
+the Sensor Web Enablement (SWE) initiative. `MPLv2`
 link:https://github.com/project-mjolnir[Project Mjolnir]:: An open source
 client–server IoT architecture for scientific sensor networks written in
 Python, by University of Alabama in Huntsville and NASA. Includes a sensor
 client for data logging, uplink and control, as well as a server component to
-store, serve/display, and monitor data from remote sensors. (MIT)
+store, serve/display, and monitor data from remote sensors. `MIT`
 link:http://www.agt.bme.hu/ulyxes/[Ulyxes]:: An open source project in Python to
 control robotic total stations (RTS) and other sensors, and to publish
 observation results on web based maps. Developed at the Department of Geodesy
-and Surveying of the Budapest University of Technology and Economics. (GPLv2)
+and Surveying of the Budapest University of Technology and Economics. `GPLv2`
 
 == Requirements
 
@@ -121,15 +130,14 @@ DMPACK has the following requirements:
 Additional dependencies have to be present to build and run the software of this
 package:
 
-* BLAS
 * FastCGI
 * Gnuplot
 * HDF5
 * LAPACK
-* libcurl (≥ 8.3.0)
+* libcurl
 * Lua 5.4
 * PCRE2
-* SQLite 3 (≥ 3.39.0)
+* SQLite 3
 * zlib
 
 To generate the man pages, the User’s Guide, and the source code documentation,
@@ -412,7 +420,7 @@ messages.
 
 <<dmapi>>:: A FastCGI-based HTTP-RPC service that provides an API for node,
 sensor, target, observation, and log synchronisation, as well as heartbeat
-transmission.  Clients may either send records to be stored in the server
+transmission. Clients may either send records to be stored in the server
 database, or request data of a given time range. Depending on the HTTP Accept
 header, the server returns data in CSV, JSON, JSON Lines or Namelist format.
 Requires a FastCGI-compatible web server, such as _lighttpd(1)_.
@@ -845,7 +853,7 @@ $ xsltproc --output feed.html /var/www/feed.xsl /var/www/feed.xml
 === dmfs [[dmfs]]
 
 The *dmfs* program reads observations from file system, virtual file, or named
-pipe.  The program can be used to read sensor data from the 1-Wire File System
+pipe. The program can be used to read sensor data from the 1-Wire File System
 (OWFS).
 
 If any receivers are specified, observations are forwarded to the next receiver
@@ -1945,7 +1953,7 @@ for testing.
 ==== Examples
 
 Synchronise nodes, sensors, and targets in the local observation database with
-an HTTP-RPC server:
+an HTTP-RPC server (without authentication):
 
 ....
 $ dmsync --database observ.sqlite --type node --host 192.168.1.100
@@ -3428,7 +3436,7 @@ error=0
 | `address`   | string  | 45   | IPv4/IPv6 address of client.
 | `time_sent` | string  | 29   | Date and time heartbeat was sent (ISO 8601).
 | `time_recv` | string  | 29   | Date and time heartbeat was received (ISO 8601).
-| `error`     | integer | 4    | <<error-codes,Error code>>.
+| `error`     | integer | 4    | Last client connection <<error-codes,error>>.
 | `interval`  | integer | 4    | Emit interval in seconds.
 | `uptime`    | integer | 4    | Client uptime in seconds.
 |===
@@ -3756,13 +3764,14 @@ NODE%META="Description",
 .Response value types [[data-response-types]]
 [%autowidth]
 |===
-| # | Name                   | Description
+| # | Name                    | Description
 
-| 0 | `RESPONSE_TYPE_REAL64` | Signed 8-byte real response value.
-| 1 | `RESPONSE_TYPE_REAL32` | Signed 4-byte real response value.
-| 2 | `RESPONSE_TYPE_INT64`  | Signed 8-byte integer response value.
-| 3 | `RESPONSE_TYPE_INT32`  | Signed 4-byte integer response value.
-| 4 | `RESPONSE_TYPE_BYTE`   | Byte response value.
+| 0 | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.
+| 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.
+| 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer.
+| 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer.
+| 4 | `RESPONSE_TYPE_LOGICAL` | Boolean.
+| 5 | `RESPONSE_TYPE_BYTE`    | Byte.
 |===
 
 .CSV [[data-observ-csv]]
