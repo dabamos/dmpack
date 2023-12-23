@@ -660,20 +660,20 @@ are supported. Data attributes are passed through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
-| `--altitude`        | `-Z`  | –       | Target altitude (optional).
+| `--altitude _z_`    | `-Z`  | –       | Target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
-| `--easting`         | `-X`  | –       | Target easting (optional).
+| `--easting _x_`     | `-X`  | –       | Target easting (optional).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
 | `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
-| `--northing`        | `-Y`  | –       | Target northing (optional).
+| `--northing _y_`    | `-Y`  | –       | Target northing (optional).
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
-| `--state`           | `-S`  | –       | Target state (optional).
+| `--state _n_`       | `-S`  | –       | Target state (optional).
 | `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `rts`, `gnss`, … (optional).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
@@ -2160,7 +2160,8 @@ created and initialised beforehand:
 # dminit --type beat --database /var/dmpack/beat.sqlite --wal
 ....
 
-Make sure the web server has read and write access to the directory:
+Make sure the web server has read and write access to the directory and all
+databases inside:
 
 ....
 # chown -R www:www /var/dmpack
@@ -3717,7 +3718,7 @@ NODE%META="Description",
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1281 | Array of requests (8).
+| `requests`  | array   | 8{nbsp}×{nbsp}1345 | Array of requests (8).
 |===
 
 .Request derived type of an observation
@@ -3737,7 +3738,7 @@ NODE%META="Description",
 | `state`      | integer | 4    | Request state (unused, for future additions).
 | `timeout`    | integer | 4    | Request timeout in mseconds.
 | `nresponses` | integer | 4    | Number of responses (0 to 16).
-| `responses`  | array   | 16{nbsp}×{nbsp}28 | Extracted values from the raw response (16).
+| `responses`  | array   | 16{nbsp}×{nbsp}32 | Extracted values from the raw response (16).
 |===
 
 .Response derived type of a request
@@ -3747,8 +3748,21 @@ NODE%META="Description",
 
 | `name`    | string  | 8    | Response name (`-0-9A-Za-z`).
 | `unit`    | string  | 8    | Response unit.
+| `type`    | integer | 4    | Response <<data-response-types,value type>>.
 | `error`   | integer | 4    | Response <<error-codes,error code>>.
 | `value`   | double  | 8    | Response value.
+|===
+
+.Response value types [[data-response-types]]
+[%autowidth]
+|===
+| # | Name                   | Description
+
+| 0 | `RESPONSE_TYPE_REAL64` | Signed 8-byte real response value.
+| 1 | `RESPONSE_TYPE_REAL32` | Signed 4-byte real response value.
+| 2 | `RESPONSE_TYPE_INT64`  | Signed 8-byte integer response value.
+| 3 | `RESPONSE_TYPE_INT32`  | Signed 4-byte integer response value.
+| 4 | `RESPONSE_TYPE_BYTE`   | Byte response value.
 |===
 
 .CSV [[data-observ-csv]]
@@ -3785,7 +3799,7 @@ NODE%META="Description",
 | 26        | `receiver`   | Receiver 14.
 | 27        | `receiver`   | Receiver 15.
 | 28        | `receiver`   | Receiver 16.
-| 29 – 628  | `requests`   | Array of requests (8).
+| 29 – 764  | `requests`   | Array of requests (8).
 | 29 – 103  | `request`    | Request 1.
 | 29        | `timestamp`  | Date and time of request.
 | 30        | `request`    | Raw request to sensor.
@@ -3799,34 +3813,35 @@ NODE%META="Description",
 | 38        | `state`      | Request state.
 | 39        | `timeout`    | Request timeout in mseconds.
 | 40        | `nresponses` | Number of responses (0 to 16).
-| 41 – 104  | `responses`  | Array of responses (16).
-| 41 – 44   | `response`   | Response 1.
+| 41 – 120  | `responses`  | Array of responses (16).
+| 41 – 45   | `response`   | Response 1.
 | 41        | `name`       | Response name.
 | 42        | `unit`       | Response unit.
-| 43        | `error`      | Response error.
-| 44        | `value`      | Response value.
-| 45 – 48   | `response`   | Response 2.
-| 49 – 52   | `response`   | Response 3.
-| 53 – 56   | `response`   | Response 4.
-| 57 – 60   | `response`   | Response 5.
-| 61 – 64   | `response`   | Response 6.
-| 65 – 68   | `response`   | Response 7.
-| 69 – 72   | `response`   | Response 8.
-| 73 – 76   | `response`   | Response 9.
-| 77 – 80   | `response`   | Response 10.
-| 81 – 84   | `response`   | Response 11.
-| 85 – 88   | `response`   | Response 12.
-| 89 – 92   | `response`   | Response 13.
-| 93 – 96   | `response`   | Response 14.
-| 97 – 100  | `response`   | Response 15.
-| 101 – 104 | `response`   | Response 16.
-| 105 – 179 | `request`    | Request 2.
-| 180 – 254 | `request`    | Request 3.
-| 255 – 329 | `request`    | Request 4.
-| 330 – 404 | `request`    | Request 5.
-| 405 – 479 | `request`    | Request 6.
-| 480 – 554 | `request`    | Request 7.
-| 555 – 629 | `request`    | Request 8.
+| 43        | `type`       | Response value type.
+| 44        | `error`      | Response error.
+| 45        | `value`      | Response value.
+| 46 – 50   | `response`   | Response 2.
+| 51 – 55   | `response`   | Response 3.
+| 56 – 60   | `response`   | Response 4.
+| 61 – 65   | `response`   | Response 5.
+| 66 – 70   | `response`   | Response 6.
+| 71 – 75   | `response`   | Response 7.
+| 76 – 80   | `response`   | Response 8.
+| 81 – 85   | `response`   | Response 9.
+| 86 – 90   | `response`   | Response 10.
+| 91 – 95   | `response`   | Response 11.
+| 96 – 100  | `response`   | Response 12.
+| 101 – 105 | `response`   | Response 13.
+| 106 – 110 | `response`   | Response 14.
+| 111 – 115 | `response`   | Response 15.
+| 116 – 120 | `response`   | Response 16.
+| 121 – 212 | `request`    | Request 2.
+| 213 – 304 | `request`    | Request 3.
+| 305 – 396 | `request`    | Request 4.
+| 397 – 488 | `request`    | Request 5.
+| 489 – 580 | `request`    | Request 6.
+| 581 – 672 | `request`    | Request 7.
+| 673 – 764 | `request`    | Request 8.
 |===
 
 .JSON [[data-observ-json]]
@@ -3867,6 +3882,7 @@ NODE%META="Description",
         {
           "name": "sample",
           "unit": "none",
+          "type": 0,
           "error": 0,
           "value": 10.0
         }
@@ -3911,6 +3927,7 @@ NODE%META="Description",
         {
           name = "sample",
           unit = "none",
+          type = 0,
           error = 0,
           value = 10.0
         }
@@ -3950,6 +3967,7 @@ OBSERV%REQUESTS(1)%TIMEOUT=0,
 OBSERV%REQUESTS(1)%NRESPONSES=1,
 OBSERV%REQUESTS(1)%RESPONSES(1)%NAME="sample",
 OBSERV%REQUESTS(1)%RESPONSES(1)%UNIT="none",
+OBSERV%REQUESTS(1)%RESPONSES(1)%TYPE=0,
 OBSERV%REQUESTS(1)%RESPONSES(1)%ERROR=0,
 OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 /
@@ -4076,10 +4094,25 @@ SENSOR%META="Description",
 | `id`      | string  | 32   | Target id (`-0-9A-Za-z`).
 | `name`    | string  | 32   | Target name.
 | `meta`    | string  | 32   | Target description (optional).
-| `state`   | integer | 4    | Target state (optional).
+| `state`   | integer | 4    | Target <<data-target-states,state>> (optional).
 | `x`       | double  | 8    | Target easting (optional).
 | `y`       | double  | 8    | Target northing (optional).
 | `z`       | double  | 8    | Target altitude (optional).
+|===
+
+.Target states
+[[data-target-states]]
+[%autowidth]
+|===
+| # | Name       | Description
+
+| 0 | `none`     | No special target state.
+| 1 | `removed`  | Target has been removed.
+| 2 | `missing`  | Target is missing.
+| 3 | `invalid`  | Target is invalid.
+| 4 | `ignore`   | Target should be ignored.
+| 5 | `obsolete` | Target is obsolete.
+| 6 | `user`     | User-defined target state.
 |===
 
 .CSV [[data-target-csv]]
@@ -4414,8 +4447,18 @@ script to your configuration.
 
 == Lua API [[lua-api]]
 
-Parts of the DMPACK library are exposed to Lua through a distinct API. All
-error codes and log levels are exported, as well as the following functions:
+Parts of the DMPACK library are exposed to Lua through a distinct API. All log
+levels are exported:
+
+* `LOG_NONE`     – No log level (0).
+* `LOG_DEBUG`    – Debug level (1).
+* `LOG_INFO`     – Information level (2).
+* `LOG_WARNING`  – Warning level (3).
+* `LOG_ERROR`    – Error level (4).
+* `LOG_CRITICAL` – Critical error level (5).
+
+Furthermore, all <<error-codes,DMPACK error codes>> are registered, starting
+with `E_NONE`, as well as the following Lua functions:
 
 * `deg2gon(deg)` – Converts degrees to gon.
 * `deg2rad(deg)` – Converts degrees to radiants.
@@ -4482,7 +4525,7 @@ print(gon)
 | 40   | `E_DB_FINALIZE`     | Database statement finalisation error.
 | 41   | `E_DB_BIND`         | Database binding failed.
 | 42   | `E_DB_TYPE`         | Database type mismatch.
-| 43   | `E_DB_STEP`         | Database step failed.
+| 43   | `E_DB_STEP`         | Database step failed or no write permission.
 | 44   | `E_DB_NO_ROWS`      | Database returned no rows.
 | 45   | `E_DB_BACKUP`       | Database backup error.
 | 50   | `E_ARG`             | Generic command-line error.

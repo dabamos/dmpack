@@ -90,13 +90,13 @@ contains
         stat = TEST_FAILED
 
         print *, 'Opening scratch file ...'
-        open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
+        open (action='readwrite', iostat=rc, newunit=fu, file='/tmp/dmtestcsv.csv')
         if (rc /= 0) return
 
         call dm_dummy_observ(observs1, nrequests=OBSERV_MAX_NREQUESTS)
         call dm_dummy_request(request)
 
-        response = response_type('dummy', 'none', 0, 999.999_r8)
+        response = response_type('dummy', 'none', value=999.999_r8)
         observs1(1)%requests(OBSERV_MAX_NREQUESTS)%nresponses = REQUEST_MAX_NRESPONSES
         observs1(1)%requests(OBSERV_MAX_NREQUESTS)%responses(REQUEST_MAX_NRESPONSES) = response
 
@@ -119,6 +119,7 @@ contains
 
         close (fu)
         call dm_perror(rc)
+        if (dm_is_error(rc)) return
 
         print *, 'Validating observations ...'
         if (.not. all(observs1 == observs2)) return
@@ -199,28 +200,76 @@ contains
     end function test04
 
     logical function test05() result(stat)
+        integer, parameter :: LEN_BEAT   = 58
+        integer, parameter :: LEN_DP     = 4
+        integer, parameter :: LEN_LOG    = 71
+        integer, parameter :: LEN_NODE   = 13
+        integer, parameter :: LEN_OBSERV = 21954
+        integer, parameter :: LEN_VIEW   = 167
+        integer, parameter :: LEN_SENSOR = 29
+        integer, parameter :: LEN_TARGET = 25
+
         integer :: n
 
         stat = TEST_FAILED
 
         print *, 'Testing CSV header lengths ...'
 
+        print *, '-- beat'
         n = len(dm_csv_header_beat())
-        if (n /= 58) return
+        if (n /= LEN_BEAT) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_BEAT, n
+            return
+        end if
+
+        print *, '-- data point'
         n = len(dm_csv_header_data_point())
-        if (n /= 4) return
+        if (n /= LEN_DP) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_DP, n
+            return
+        end if
+
+        print *, '-- log'
         n = len(dm_csv_header_log())
-        if (n /= 71) return
+        if (n /= LEN_LOG) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_LOG, n
+            return
+        end if
+
+        print *, '-- node'
         n = len(dm_csv_header_node())
-        if (n /= 13) return
+        if (n /= LEN_NODE) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_NODE, n
+            return
+        end if
+
+        print *, '-- observ'
         n = len(dm_csv_header_observ())
-        if (n /= 17922) return
+        if (n /= LEN_OBSERV) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_OBSERV, n
+            return
+        end if
+
+        print *, '-- observ_view'
         n = len(dm_csv_header_observ_view())
-        if (n /= 153) return
+        if (n /= LEN_VIEW) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_VIEW, n
+            return
+        end if
+
+        print *, '-- sensor'
         n = len(dm_csv_header_sensor())
-        if (n /= 29) return
+        if (n /= LEN_SENSOR) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_SENSOR, n
+            return
+        end if
+
+        print *, '-- target'
         n = len(dm_csv_header_target())
-        if (n /= 25) return
+        if (n /= LEN_TARGET) then
+            print '(" Error: expected " i0, ", got ", i0)', LEN_TARGET, n
+            return
+        end if
 
         stat = TEST_PASSED
     end function test05

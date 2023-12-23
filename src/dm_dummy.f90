@@ -136,7 +136,7 @@ contains
         if (present(nresponses)) n = max(0, min(REQUEST_MAX_NRESPONSES, nresponses))
 
         do i = 1, n
-            response = response_type('dummy-' // dm_itoa(i), 'none', E_NONE, 999.999_r8)
+            response = response_type('dummy-' // dm_itoa(i), 'none', RESPONSE_TYPE_REAL64, E_NONE, 999.999_r8)
             if (present(name)) response%name = name
             if (present(value)) response%value = value
             rc = dm_request_add(request, response)

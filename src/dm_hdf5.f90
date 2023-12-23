@@ -872,6 +872,12 @@ contains
                 call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
                 call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
+                write (name, '("requests_", i0, "_responses_", i0, "_type")') i, j
+                offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%type))
+                k = kind(observ%requests(i)%responses(j)%type)
+                call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
+                if (stat < 0) return
+
                 write (name, '("requests_", i0, "_responses_", i0, "_error")') i, j
                 offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%error))
                 k = kind(observ%requests(i)%responses(j)%error)

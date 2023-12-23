@@ -24,11 +24,11 @@ contains
             '"/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, "nrequests": 2, "receivers": [ ' // &
             '"dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], "requests": [ { "timestamp": ' // &
             '"1970-01-01T00:00:00.000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
-            '"pattern": "^(.*)$", "delay": 1000, "error": 0, "retries": 0, "state": 0, "timeout": 500, "nresponses": 1, ' // &
-            '"responses": [ { "name": "a", "unit": "none", "error": 0, "value": 123.45000 } ] }, { "timestamp": ' // &
-            '"1970-01-01T00:00:00.000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", "pattern": ' // &
-            '"^OK", "delay": 500, "error": 1, "retries": 0, "state": 0, "timeout": 500, "nresponses": 1, "responses": [ { ' // &
-            '"name": "b", "unit": "none", "error": 0, "value": 0.99000000 } ] } ] }'
+            '"pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
+            '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": 123.45000 } ] }, ' // &
+            '{ "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", ' // &
+            '"pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
+            '"nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, "value": 0.99000000 } ] } ] }'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
@@ -71,7 +71,7 @@ contains
                                error     = 0)
 
         print *, 'Adding response ...'
-        response = response_type('a', 'none', 0, 123.45_r8)
+        response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)
         rc = dm_request_add(request, response)
         if (dm_is_error(rc)) return
 
@@ -91,7 +91,7 @@ contains
                                error     = 1)
 
         print *, 'Adding response ...'
-        response = response_type('b', 'none', 0, 0.99_r8)
+        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 0.99_r8)
         rc = dm_request_add(request, response)
         if (dm_is_error(rc)) return
 
@@ -106,7 +106,20 @@ contains
 
         print *, 'Validating JSON ...'
         buf = dm_json_from(observ)
-        if (buf /= JSON) return
+
+        if (buf /= JSON) then
+            print *, 'Generated JSON:'
+            print '(72("."))'
+            print '(a)', buf
+            print '(72("."))'
+
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+
+            return
+        end if
 
         print *, 'Printing JSON array ...'
         observs(1) = observ

@@ -1293,15 +1293,22 @@ contains
 
         integer :: i
 
-        html = H_TABLE // H_THEAD // H_TR // H_TH // '#' // H_TH_END // &
-               H_TH // 'Response Name' // H_TH_END // H_TH // 'Value' // H_TH_END // &
-               H_TH // 'Unit' // H_TH_END // H_TH // 'Error' // H_TH_END // H_THEAD_END // H_TBODY
+        html = H_TABLE // H_THEAD // H_TR // &
+               H_TH // '#' // H_TH_END // &
+               H_TH // 'Response Name' // H_TH_END // &
+               H_TH // 'Value'         // H_TH_END // &
+               H_TH // 'Unit'          // H_TH_END // &
+               H_TH // 'Type'          // H_TH_END // &
+               H_TH // 'Error'         // H_TH_END // &
+               H_THEAD_END // H_TBODY
 
         do i = 1, size(responses)
-            html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END // &
-                   H_TD // dm_html_encode(responses(i)%name) // H_TD_END // &
-                   H_TD // dm_ftoa(responses(i)%value) // H_TD_END // &
-                   H_TD // dm_html_encode(responses(i)%unit) // H_TD_END // &
+            html = html // H_TR // &
+                   H_TD // dm_itoa(i)                               // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%name)        // H_TD_END // &
+                   H_TD // dm_ftoa(responses(i)%value)              // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%unit)        // H_TD_END // &
+                   H_TD // dm_response_type_name(responses(i)%type) // H_TD_END // &
                    H_TD // dm_error_message(responses(i)%error) // &
                            ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // &
                    H_TR_END

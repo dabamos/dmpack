@@ -236,13 +236,12 @@ contains
                  'priority'   // s // &
                  'error'      // s // &
                  'next'       // s // &
-                 'nreceivers' // s
+                 'nreceivers' // s // &
+                 'nrequests'
 
         do i = 1, OBSERV_MAX_NRECEIVERS
-            header = header // 'receivers(' // dm_itoa(i) // ')' // s
+            header = header // s // 'receivers(' // dm_itoa(i) // ')'
         end do
-
-        header = header // 'nrequests'
 
         do i = 1, OBSERV_MAX_NREQUESTS
             header = header // s // &
@@ -253,6 +252,7 @@ contains
                      'requests(' // dm_itoa(i) // ').pattern'    // s // &
                      'requests(' // dm_itoa(i) // ').delay'      // s // &
                      'requests(' // dm_itoa(i) // ').error'      // s // &
+                     'requests(' // dm_itoa(i) // ').mode'       // s // &
                      'requests(' // dm_itoa(i) // ').retries'    // s // &
                      'requests(' // dm_itoa(i) // ').state'      // s // &
                      'requests(' // dm_itoa(i) // ').timeout'    // s // &
@@ -262,6 +262,7 @@ contains
                 header = header // s // &
                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').name'  // s // &
                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').unit'  // s // &
+                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').type'  // s // &
                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').error' // s // &
                          'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').value'
             end do
@@ -289,6 +290,7 @@ contains
                  'request_error'     // s // &
                  'response_name'     // s // &
                  'response_unit'     // s // &
+                 'response_type'     // s // &
                  'response_error'    // s // &
                  'response_value'
     end function dm_csv_header_observ_view
@@ -574,8 +576,9 @@ contains
                     cycle
                 end if
 
-                csv = csv // s // trim(observ%requests(i)%responses(j)%name)    // s // &
-                                  trim(observ%requests(i)%responses(j)%unit)    // s // &
+                csv = csv // s // trim(observ%requests(i)%responses(j)%name)     // s // &
+                                  trim(observ%requests(i)%responses(j)%unit)     // s // &
+                                  dm_itoa(observ%requests(i)%responses(j)%type)  // s // &
                                   dm_itoa(observ%requests(i)%responses(j)%error) // s // &
                                   dm_ftoa(observ%requests(i)%responses(j)%value)
             end do
@@ -604,6 +607,7 @@ contains
               dm_itoa(view%request_error)  // s // &
               trim(view%response_name)     // s // &
               trim(view%response_unit)     // s // &
+              dm_itoa(view%response_type)  // s // &
               dm_itoa(view%response_error) // s // &
               dm_ftoa(view%response_value)
     end function csv_from_observ_view
@@ -1061,54 +1065,25 @@ contains
         end do
 
         do i = 1, OBSERV_MAX_NREQUESTS
-            rc = csv_next(buffer, observ%requests(i)%timestamp, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%request, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%response, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%delimiter, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%pattern, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%delay, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%error, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%mode, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%retries, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%state, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%timeout, s, n, p, q)
-            if (rc /= E_NONE) return
-
-            rc = csv_next(buffer, observ%requests(i)%nresponses, s, n, p, q)
-            if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%timestamp,  s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%request,    s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%response,   s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%delimiter,  s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%pattern,    s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%delay,      s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%error,      s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%mode,       s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%retries,    s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%state,      s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%timeout,    s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%requests(i)%nresponses, s, n, p, q); if (rc /= E_NONE) return
 
             do j = 1, REQUEST_MAX_NRESPONSES
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%name, s, n, p, q)
-                if (rc /= E_NONE) return
-
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%unit, s, n, p, q)
-                if (rc /= E_NONE) return
-
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%error, s, n, p, q)
-                if (rc /= E_NONE) return
-
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%value, s, n, p, q)
-                if (rc /= E_NONE) return
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%name,  s, n, p, q); if (rc /= E_NONE) return
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%unit,  s, n, p, q); if (rc /= E_NONE) return
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%type,  s, n, p, q); if (rc /= E_NONE) return
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%error, s, n, p, q); if (rc /= E_NONE) return
+                rc = csv_next(buffer, observ%requests(i)%responses(j)%value, s, n, p, q); if (rc /= E_NONE) return
             end do
         end do
 
@@ -1565,9 +1540,10 @@ contains
                 write (unit_, '(a)', advance='no', iostat=stat) s
                 if (stat /= 0) return
 
-                write (unit_, '(4a, i0, a, 1pg0.8)', advance='no', iostat=stat) &
+                write (unit_, '(4a, 2(i0, a), 1pg0.8)', advance='no', iostat=stat) &
                     trim(observ%requests(i)%responses(j)%name), s, &
                     trim(observ%requests(i)%responses(j)%unit), s, &
+                    observ%requests(i)%responses(j)%type,       s, &
                     observ%requests(i)%responses(j)%error,      s, &
                     observ%requests(i)%responses(j)%value
                 if (stat /= 0) return

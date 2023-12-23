@@ -4671,9 +4671,10 @@ contains
                 if (sqlite3_bind_int   (stmt, 2, request_idx)             /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_int   (stmt, 3, i)                       /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_text  (stmt, 4, trim(responses(i)%name)) /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_double(stmt, 5, responses(i)%value)      /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text  (stmt, 6, trim(responses(i)%unit)) /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text  (stmt, 5, trim(responses(i)%unit)) /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int   (stmt, 6, responses(i)%type)       /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_int   (stmt, 7, responses(i)%error)      /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_double(stmt, 8, responses(i)%value)      /= SQLITE_OK) exit row_loop
 
                 rc = E_DB_STEP
                 if (sqlite3_step(stmt) /= SQLITE_DONE) exit row_loop
@@ -4855,7 +4856,8 @@ contains
         if (sqlite3_column_type(stmt,  8) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt,  9) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 11) /= SQLITE_FLOAT)   return
+        if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
+        if (sqlite3_column_type(stmt, 12) /= SQLITE_FLOAT)   return
 
         view%observ_id         = sqlite3_column_text  (stmt,  0)
         view%node_id           = sqlite3_column_text  (stmt,  1)
@@ -4867,8 +4869,9 @@ contains
         view%request_error     = sqlite3_column_int   (stmt,  7)
         view%response_name     = sqlite3_column_text  (stmt,  8)
         view%response_unit     = sqlite3_column_text  (stmt,  9)
-        view%response_error    = sqlite3_column_int   (stmt, 10)
-        view%response_value    = sqlite3_column_double(stmt, 11)
+        view%response_type     = sqlite3_column_int   (stmt, 10)
+        view%response_error    = sqlite3_column_int   (stmt, 11)
+        view%response_value    = sqlite3_column_double(stmt, 12)
 
         rc = E_NONE
     end function db_next_row_observ_view
@@ -5215,14 +5218,16 @@ contains
 
                 rc = E_DB_TYPE
                 if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt, 1) /= SQLITE_FLOAT)   exit sql_block
-                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    exit sql_block
+                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit sql_block
+                if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) exit sql_block
                 if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) exit sql_block
+                if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   exit sql_block
 
                 responses(i)%name  = sqlite3_column_text  (stmt, 0)
-                responses(i)%value = sqlite3_column_double(stmt, 1)
-                responses(i)%unit  = sqlite3_column_text  (stmt, 2)
+                responses(i)%unit  = sqlite3_column_text  (stmt, 1)
+                responses(i)%type  = sqlite3_column_int   (stmt, 2)
                 responses(i)%error = sqlite3_column_int   (stmt, 3)
+                responses(i)%value = sqlite3_column_double(stmt, 4)
 
                 nres = nres + 1
             end do row_loop

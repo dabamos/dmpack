@@ -291,19 +291,21 @@ contains
             ' "response": "'    // json_escape(observ%requests(i)%response)  // '",' // &
             ' "delimiter": "'   // json_escape(observ%requests(i)%delimiter) // '",' // &
             ' "pattern": "'     // json_escape(observ%requests(i)%pattern)   // '",' // &
-            ' "delay": '        // dm_itoa(observ%requests(i)%delay)         // ',' // &
-            ' "error": '        // dm_itoa(observ%requests(i)%error)         // ',' // &
-            ' "retries": '      // dm_itoa(observ%requests(i)%retries)       // ',' // &
-            ' "state": '        // dm_itoa(observ%requests(i)%state)         // ',' // &
-            ' "timeout": '      // dm_itoa(observ%requests(i)%timeout)       // ',' // &
-            ' "nresponses": '   // dm_itoa(observ%requests(i)%nresponses)    // ',' // &
+            ' "delay": '        // dm_itoa(observ%requests(i)%delay)         // ','  // &
+            ' "error": '        // dm_itoa(observ%requests(i)%error)         // ','  // &
+            ' "mode": '         // dm_itoa(observ%requests(i)%mode)          // ','  // &
+            ' "retries": '      // dm_itoa(observ%requests(i)%retries)       // ','  // &
+            ' "state": '        // dm_itoa(observ%requests(i)%state)         // ','  // &
+            ' "timeout": '      // dm_itoa(observ%requests(i)%timeout)       // ','  // &
+            ' "nresponses": '   // dm_itoa(observ%requests(i)%nresponses)    // ','  // &
             ' "responses": ['
 
             do j = 1, observ%requests(i)%nresponses
                 requests = requests // &
                 ' { "name": "' // trim(observ%requests(i)%responses(j)%name)     // '",' // &
                 ' "unit": "'   // trim(observ%requests(i)%responses(j)%unit)     // '",' // &
-                ' "error": '   // dm_itoa(observ%requests(i)%responses(j)%error) // ',' // &
+                ' "type": '    // dm_itoa(observ%requests(i)%responses(j)%type)  // ','  // &
+                ' "error": '   // dm_itoa(observ%requests(i)%responses(j)%error) // ','  // &
                 ' "value": '   // dm_ftoa(observ%requests(i)%responses(j)%value) // ' }'
 
                 if (j < observ%requests(i)%nresponses) requests = requests // ','

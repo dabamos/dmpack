@@ -54,18 +54,19 @@ module dm_observ
     ! ******************************************************************
     type, public :: observ_view_type
         !! View of an observation with only one response of a single request.
-        character(len=OBSERV_ID_LEN)     :: observ_id         = UUID_DEFAULT !! Observation id.
-        character(len=NODE_ID_LEN)       :: node_id           = ' '          !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor_id         = ' '          !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target_id         = ' '          !! Target id.
-        character(len=OBSERV_NAME_LEN)   :: observ_name       = ' '          !! Observation name.
-        integer                          :: observ_error      = E_NONE       !! Observation error code.
-        character(len=TIME_LEN)          :: request_timestamp = ' '          !! Request timestamp (ISO 8601).
-        integer                          :: request_error     = E_NONE       !! Request error code.
-        character(len=RESPONSE_NAME_LEN) :: response_name     = ' '          !! Response name.
-        character(len=RESPONSE_UNIT_LEN) :: response_unit     = ' '          !! Response unit (optional).
-        integer                          :: response_error    = E_NONE       !! Response error code.
-        real(kind=r8)                    :: response_value    = 0.0_r8       !! Response value.
+        character(len=OBSERV_ID_LEN)     :: observ_id         = UUID_DEFAULT         !! Observation id.
+        character(len=NODE_ID_LEN)       :: node_id           = ' '                  !! Node id.
+        character(len=SENSOR_ID_LEN)     :: sensor_id         = ' '                  !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target_id         = ' '                  !! Target id.
+        character(len=OBSERV_NAME_LEN)   :: observ_name       = ' '                  !! Observation name.
+        integer                          :: observ_error      = E_NONE               !! Observation error code.
+        character(len=TIME_LEN)          :: request_timestamp = ' '                  !! Request timestamp (ISO 8601).
+        integer                          :: request_error     = E_NONE               !! Request error code.
+        character(len=RESPONSE_NAME_LEN) :: response_name     = ' '                  !! Response name.
+        character(len=RESPONSE_UNIT_LEN) :: response_unit     = ' '                  !! Response unit (optional).
+        integer                          :: response_type     = RESPONSE_TYPE_REAL64 !! Response value type.
+        integer                          :: response_error    = E_NONE               !! Response error code.
+        real(kind=r8)                    :: response_value    = 0.0_r8               !! Response value.
     end type observ_view_type
 
     integer, parameter, public :: OBSERV_VIEW_SIZE = storage_size(observ_view_type()) / 8 !! Size of `observ_view_type` in bytes.
@@ -262,6 +263,7 @@ contains
         if (view1%request_error     /= view2%request_error)     return
         if (view1%response_name     /= view2%response_name)     return
         if (view1%response_unit     /= view2%response_unit)     return
+        if (view1%response_type     /= view2%response_type)     return
         if (view1%response_error    /= view2%response_error)    return
 
         if (.not. dm_equals(view1%response_value, view2%response_value)) return
@@ -313,12 +315,14 @@ contains
             do j = 1, observ%requests(i)%nresponses
                 write (unit_, '("observ.requests(", i0, ").responses(", i0, ").name: ", a)') &
                     i, j, trim(observ%requests(i)%responses(j)%name)
-                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").value: ", f0.5)') &
-                    i, j, observ%requests(i)%responses(j)%value
                 write (unit_, '("observ.requests(", i0, ").responses(", i0, ").unit: ", a)') &
                     i, j, trim(observ%requests(i)%responses(j)%unit)
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").type: ", i0)') &
+                    i, j, observ%requests(i)%responses(j)%type
                 write (unit_, '("observ.requests(", i0, ").responses(", i0, ").error: ", i0)') &
                     i, j, observ%requests(i)%responses(j)%error
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").value: ", f0.5)') &
+                    i, j, observ%requests(i)%responses(j)%value
             end do
         end do
     end subroutine dm_observ_out

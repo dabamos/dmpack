@@ -39,8 +39,9 @@ module dm_geocom
         !! GeoCOM class for TTY access and GeoCOM API handling through the
         !! public methods.
         private
-        integer        :: grc = GRC_OK !! Last GeoCOM return code.
-        type(tty_type) :: tty          !! TTY type for serial connection to sensor.
+        integer        :: grc     = GRC_OK !! Last GeoCOM return code.
+        logical        :: verbose = .true. !! Print error messages to stderr.
+        type(tty_type) :: tty              !! TTY type for serial connection to sensor.
     contains
         procedure, public :: beep_alarm  => geocom_beep_alarm
         procedure, public :: beep_normal => geocom_beep_normal

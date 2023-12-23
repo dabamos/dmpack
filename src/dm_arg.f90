@@ -119,7 +119,7 @@ contains
         !! * `E_ARG_UNKNOWN` if one of the arguments parsed is not known.
         type(arg_type), intent(inout)        :: args(:)       !! Arguments array.
         logical,        intent(in), optional :: allow_unknown !! Allow unknown arguments.
-        logical,        intent(in), optional :: verbose       !! Print error messages to stdout.
+        logical,        intent(in), optional :: verbose       !! Print error messages to stderr.
 
         character(len=ARG_VALUE_LEN) :: a, value
         integer                      :: i, j, k, n, stat

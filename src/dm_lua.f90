@@ -1227,6 +1227,7 @@ contains
 
                 rc = dm_lua_field(lua, 'name',  request%responses(i)%name)
                 rc = dm_lua_field(lua, 'unit',  request%responses(i)%unit)
+                rc = dm_lua_field(lua, 'type',  request%responses(i)%type)
                 rc = dm_lua_field(lua, 'error', request%responses(i)%error)
                 rc = dm_lua_field(lua, 'value', request%responses(i)%value)
 
@@ -1372,6 +1373,9 @@ contains
 
             ptr = lua_pushstring(lua%ptr, trim(request%responses(i)%unit))
             call lua_setfield(lua%ptr, -2, 'unit')
+
+            call lua_pushinteger(lua%ptr, int(request%responses(i)%type, kind=lua_integer))
+            call lua_setfield(lua%ptr, -2, 'type')
 
             call lua_pushinteger(lua%ptr, int(request%responses(i)%error, kind=lua_integer))
             call lua_setfield(lua%ptr, -2, 'error')

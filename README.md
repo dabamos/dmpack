@@ -287,7 +287,8 @@ $ gfortran -o example example.f90 /usr/local/lib/libdmpack.a
 ```
 
 Depending on which parts of the DMPACK library are used by third-party
-applications, additional shared libraries have to be linked.
+applications, additional shared libraries have to be linked. You probably have
+to pass the directory containing the DMPACK module files with argument `-I`.
 
 | Module         | Libraries     | Linker Libraries                                      |
 |----------------|---------------|-------------------------------------------------------|
