@@ -20,7 +20,7 @@ program dmbeat
 
     type :: app_type
         !! Application settings.
-        character(len=APP_NAME_LEN)    :: name     = APP_NAME !! Name of instance/configuration.
+        character(len=ID_LEN)          :: name     = APP_NAME !! Name of instance/configuration.
         character(len=FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
         character(len=NODE_ID_LEN)     :: node     = ' '      !! Sensor node id (required).

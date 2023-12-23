@@ -20,7 +20,7 @@ program dmdb
 
     type :: app_type
         !! Application settings.
-        character(len=LOGGER_NAME_LEN) :: name     = APP_NAME !! Name of logger instance and POSIX semaphore.
+        character(len=ID_LEN)          :: name     = APP_NAME !! Name of database instance and POSIX semaphore.
         character(len=FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
         character(len=FILE_PATH_LEN)   :: database = ' '      !! Path to SQLite database file.

@@ -18,9 +18,9 @@ program dmreport
 
     type :: app_type
         !! Application settings.
-        character(len=LOGGER_NAME_LEN) :: name   = APP_NAME !! Name of instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN)   :: config = ' '      !! Path to configuration file.
-        type(report_type)              :: report            !! Report settings.
+        character(len=ID_LEN)        :: name   = APP_NAME !! Name of instance and POSIX semaphore.
+        character(len=FILE_PATH_LEN) :: config = ' '      !! Path to configuration file.
+        type(report_type)            :: report            !! Report settings.
     end type app_type
 
     integer        :: rc  ! Return code.

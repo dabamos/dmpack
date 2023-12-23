@@ -90,7 +90,7 @@ contains
         stat = TEST_FAILED
 
         print *, 'Opening scratch file ...'
-        open (action='readwrite', iostat=rc, newunit=fu, file='/tmp/dmtestcsv.csv')
+        open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
         if (rc /= 0) return
 
         call dm_dummy_observ(observs1, nrequests=OBSERV_MAX_NREQUESTS)

@@ -17,7 +17,7 @@ program dmfeed
 
     type :: app_type
         !! Application settings.
-        character(len=APP_NAME_LEN)  :: name     = APP_NAME     !! Name of instance/configuration.
+        character(len=ID_LEN)        :: name     = APP_NAME     !! Name of instance/configuration.
         character(len=FILE_PATH_LEN) :: config   = ' '          !! Path to config file.
         character(len=FILE_PATH_LEN) :: database = ' '          !! Path to log database.
         character(len=FILE_PATH_LEN) :: output   = ' '          !! Output path of Atom file (stdout if empty).

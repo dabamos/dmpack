@@ -27,17 +27,11 @@ module dm_arg
     !! `ARG_TYPE_BOOL`. Errors are indicated by the return codes. The
     !! command-line arguments `--help`/-`h` and `--version`/`-v` are processed
     !! automatically by function `dm_arg_read()`.
-    use :: dm_app
     use :: dm_ascii
-    use :: dm_convert
     use :: dm_error
     use :: dm_file
-    use :: dm_id
     use :: dm_kind
-    use :: dm_time
     use :: dm_util
-    use :: dm_uuid
-    use :: dm_version
     implicit none (type, external)
     private
 
@@ -103,11 +97,11 @@ contains
         has = .false.
         args(1) = arg_type(name=name, type=ARG_TYPE_BOOL)
         if (present(short)) args(1)%short = short
-        rc = dm_arg_parse(args, allow_unknown=.true., verbose=.false.)
+        rc = dm_arg_parse(args, ignore_unknown=.true., verbose=.false.)
         has = (args(1)%error == E_NONE)
     end function dm_arg_has
 
-    integer function dm_arg_parse(args, allow_unknown, verbose) result(rc)
+    integer function dm_arg_parse(args, ignore_unknown, verbose) result(rc)
         !! Parses command-line for given arguments. Error messages are printed
         !! to standard error by default, unless `verbose` is `.false.`.
         !!
@@ -118,19 +112,19 @@ contains
         !! * `E_ARG_LENGTH` if one of the argument values has wrong length.
         !! * `E_ARG_UNKNOWN` if one of the arguments parsed is not known.
         type(arg_type), intent(inout)        :: args(:)       !! Arguments array.
-        logical,        intent(in), optional :: allow_unknown !! Allow unknown arguments.
+        logical,        intent(in), optional :: ignore_unknown !! Allow unknown arguments.
         logical,        intent(in), optional :: verbose       !! Print error messages to stderr.
 
         character(len=ARG_VALUE_LEN) :: a, value
         integer                      :: i, j, k, n, stat
-        logical                      :: allow_unknown_, verbose_
+        logical                      :: ignore_unknown_, verbose_
         logical                      :: exists
 
         rc = E_NONE
 
         ! Allow unknown command-line arguments?
-        allow_unknown_ = .false.
-        if (present(allow_unknown)) allow_unknown_ = allow_unknown
+        ignore_unknown_ = .false.
+        if (present(ignore_unknown)) ignore_unknown_ = ignore_unknown
 
         ! Show error messages?
         verbose_ = .true.
@@ -206,7 +200,7 @@ contains
                 exit
             end do
 
-            if (.not. exists .and. .not. allow_unknown_) then
+            if (.not. exists .and. .not. ignore_unknown_) then
                 ! Argument starts with `-` but is unknown or unexpected.
                 rc = E_ARG_UNKNOWN
                 if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' not allowed')
@@ -237,6 +231,7 @@ contains
         !! * `E_ARG_TYPE` if an argument has the wrong type.
         !! * `E_ARG_LENGTH` if the length of the argument is wrong.
         !! * `E_ARG_UNKNOWN` if an unknown argument has been passed.
+        use :: dm_version
         type(arg_type),   intent(inout)        :: args(:) !! Arguments to match.
         character(len=*), intent(in), optional :: app     !! App name (for `-v`).
         integer,          intent(in), optional :: major   !! Major version number (for `-v`).
@@ -259,7 +254,7 @@ contains
         ! Print program and library version, then stop.
         if (dm_arg_has('version', 'v')) then
             if (present(app)) then
-                call dm_app_out(app, major_, minor_, patch_)
+                call dm_version_out(app, major_, minor_, patch_)
             else
                 write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
             end if
@@ -341,6 +336,10 @@ contains
 
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument.
+        use :: dm_convert
+        use :: dm_id
+        use :: dm_uuid
+        use :: dm_time
         type(arg_type), intent(inout) :: arg !! Argument to validate.
 
         integer          :: error

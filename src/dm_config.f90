@@ -4,13 +4,9 @@ module dm_config
     !! Module for loading Lua configuration files.
     use, intrinsic :: iso_c_binding
     use :: dm_error
-    use :: dm_file
     use :: dm_id
-    use :: dm_job
     use :: dm_kind
     use :: dm_lua
-    use :: dm_lua_api
-    use :: dm_report
     implicit none (type, external)
     private
 
@@ -56,6 +52,8 @@ contains
     integer function dm_config_open(config, path, name) result(rc)
         !! Opens configuration file and optionally loads the table of the given
         !! name if the argument has been passed.
+        use :: dm_file,    only: dm_file_exists
+        use :: dm_lua_api, only: dm_lua_api_register
         type(config_type), intent(inout)        :: config !! Config type.
         character(len=*),  intent(in)           :: path   !! Path to config file.
         character(len=*),  intent(in), optional :: name   !! Name of table. Passed name implies table loading.
@@ -185,6 +183,7 @@ contains
 
     integer function config_get_job_list(config, name, value, field) result(rc)
         !! Returns configuration value as job list.
+        use :: dm_job
         type(config_type),   intent(inout)        :: config !! Config type.
         character(len=*),    intent(in)           :: name   !! Setting name.
         type(job_list_type), intent(out)          :: value  !! Setting value.
@@ -232,6 +231,7 @@ contains
 
     integer function config_get_report(config, name, value, field) result(rc)
         !! Returns configuration value as report.
+        use :: dm_report
         type(config_type), intent(inout)        :: config !! Config type.
         character(len=*),  intent(in)           :: name   !! Setting name.
         type(report_type), intent(out)          :: value  !! Setting value.

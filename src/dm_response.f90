@@ -12,15 +12,16 @@ module dm_response
     integer, parameter, public :: RESPONSE_NAME_LEN = 8 !! Max. response name length.
     integer, parameter, public :: RESPONSE_UNIT_LEN = 8 !! Max. response unit length.
 
-    integer, parameter, public :: RESPONSE_TYPE_REAL64 = 0 !! Signed 8-byte real response value.
-    integer, parameter, public :: RESPONSE_TYPE_REAL32 = 1 !! Signed 4-byte real response value.
-    integer, parameter, public :: RESPONSE_TYPE_INT64  = 2 !! Signed 8-byte integer response value.
-    integer, parameter, public :: RESPONSE_TYPE_INT32  = 3 !! Signed 4-byte integer response value.
-    integer, parameter, public :: RESPONSE_TYPE_BYTE   = 4 !! Byte response value.
-    integer, parameter, public :: RESPONSE_NTYPES      = 5 !! Number of response values types.
+    integer, parameter, public :: RESPONSE_TYPE_REAL64  = 0 !! 8-byte signed real.
+    integer, parameter, public :: RESPONSE_TYPE_REAL32  = 1 !! 4-byte signed real.
+    integer, parameter, public :: RESPONSE_TYPE_INT64   = 2 !! 8-byte signed integer.
+    integer, parameter, public :: RESPONSE_TYPE_INT32   = 3 !! 4-byte signed integer.
+    integer, parameter, public :: RESPONSE_TYPE_LOGICAL = 4 !! Boolean.
+    integer, parameter, public :: RESPONSE_TYPE_BYTE    = 5 !! Byte.
+    integer, parameter, public :: RESPONSE_NTYPES       = 6 !! Number of response values types.
 
     character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(0:RESPONSE_NTYPES - 1) = [ &
-        character(len=6) :: 'real64', 'real32', 'int64', 'int32', 'byte' ] !! Response value type names.
+        character(len=8) :: 'real64', 'real32', 'int64', 'int32', 'logical', 'byte' ] !! Response value type names.
 
     type, public :: response_type
         !! Response of a sensor.
@@ -56,24 +57,24 @@ contains
 
         equals = .false.
 
-        if (.not. dm_equals(response1%value, response2%value)) return
-
         if (response1%name  /= response2%name)  return
         if (response1%unit  /= response2%unit)  return
         if (response1%type  /= response2%type)  return
         if (response1%error /= response2%error) return
 
+        if (.not. dm_equals(response1%value, response2%value)) return
+
         equals = .true.
     end function dm_response_equals
 
     pure function dm_response_type_name(type) result(str)
-        !! Returns allocatable string of response value type name, or `unknown`
+        !! Returns allocatable string of response value type name, or `invalid`
         !! if the type is invalid.
         integer, intent(in)           :: type !! Response value type.
         character(len=:), allocatable :: str  !! Response value type name.
 
         if (.not. dm_response_type_valid(type)) then
-            str = 'unknown'
+            str = 'invalid'
             return
         end if
 
@@ -85,7 +86,7 @@ contains
         integer, intent(in) :: type !! Response value type.
 
         valid = .false.
-        if (type < 0 .or. type >= RESPONSE_NTYPES) return
+        if (type < RESPONSE_TYPE_REAL64 .or. type >= RESPONSE_NTYPES) return
         valid = .true.
     end function dm_response_type_valid
 
@@ -111,9 +112,9 @@ contains
         if (present(unit)) unit_ = unit
 
         write (unit_, '("response.name: ", a)')      trim(response%name)
-        write (unit_, '("response.value: ", f0.12)') response%value
         write (unit_, '("response.type: ", i0)')     response%type
         write (unit_, '("response.unit: ", a)')      trim(response%unit)
         write (unit_, '("response.error: ", i0)')    response%error
+        write (unit_, '("response.value: ", f0.12)') response%value
     end subroutine dm_response_out
 end module dm_response

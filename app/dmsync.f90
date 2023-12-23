@@ -23,7 +23,7 @@ program dmsync
 
     type :: app_type
         !! Global application settings.
-        character(len=APP_NAME_LEN)    :: name      = APP_NAME       !! Name of instance/configuration.
+        character(len=ID_LEN)          :: name      = APP_NAME       !! Name of instance/configuration.
         character(len=FILE_PATH_LEN)   :: config    = ' '            !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger    = ' '            !! Name of logger.
         character(len=SEM_NAME_LEN)    :: wait      = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).

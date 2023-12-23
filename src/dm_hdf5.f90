@@ -7,12 +7,7 @@ module dm_hdf5
     !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/develop/_r_m.html)
     use :: hdf5
     use :: dm_error
-    use :: dm_file
     use :: dm_kind
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_sensor
-    use :: dm_target
     implicit none (type, external)
     private
 
@@ -174,6 +169,7 @@ contains
         !! * `E_FORMAT` if file is not an HDF5 file.
         !! * `E_NOT_FOUND` if file does not exist.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_file
         character(len=*), intent(in) :: path !! File path.
 
         integer :: stat
@@ -272,6 +268,7 @@ contains
         !! * `E_HDF5` if opening or creating the file failed.
         !! * `E_INVALID` if file is opened already or argument `mode` is invalid.
         !! * `E_NOT_FOUND` if file was not found.
+        use :: dm_file, only: dm_file_exists
         type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
         character(len=*),     intent(in)           :: path   !! Path to HDF5 file.
         integer,              intent(in), optional :: mode   !! Open mode (`HDF5_RDONLY` or `HDF5_RDWR`).
@@ -366,6 +363,7 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `nodes` failed.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_node
         class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
         character(len=*),                     intent(in), optional :: data_set !! Name of data set.
@@ -435,6 +433,7 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `observs` failed.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_observ
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
         character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
@@ -504,6 +503,7 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `sensors` failed.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_sensor
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
         character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
@@ -573,6 +573,7 @@ contains
         !! * `E_INVALID` if passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `targets` failed.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_target
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
         character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
@@ -635,6 +636,7 @@ contains
 
     integer function hdf5_type_node(type_id) result(rc)
         !! Creates compound memory data type for derived type `node_type`.
+        use :: dm_node
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
         integer                 :: stat
@@ -675,10 +677,13 @@ contains
 
     integer function hdf5_type_observ(type_id) result(rc)
         !! Creates compound memory data type for derived type `observ_type`.
+        use :: dm_observ
+        use :: dm_node
         use :: dm_request
         use :: dm_response
+        use :: dm_sensor
+        use :: dm_target
         use :: dm_time
-
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
         character(len=32)         :: name
@@ -897,6 +902,8 @@ contains
 
     integer function hdf5_type_sensor(type_id) result(rc)
         !! Creates compound memory data type for derived type `sensor_type`.
+        use :: dm_node
+        use :: dm_sensor
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
         integer                   :: stat
@@ -956,6 +963,7 @@ contains
 
     integer function hdf5_type_target(type_id) result(rc)
         !! Creates compound memory data type for derived type `target_type`.
+        use :: dm_target
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
         integer                   :: stat
@@ -1064,6 +1072,7 @@ contains
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if passed node array if of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_node
         class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), target, intent(inout)        :: nodes(:) !! Node type array.
         character(len=*),        intent(in), optional :: data_set !! Name of data set.
@@ -1104,6 +1113,7 @@ contains
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if passed observation array if of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_observ
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), target, intent(inout)        :: observs(:) !! Observation type array.
         character(len=*),          intent(in), optional :: data_set   !! Name of data set.
@@ -1143,6 +1153,7 @@ contains
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if passed sensor array if of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_sensor
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), target, intent(inout)        :: sensors(:) !! Sensor type array.
         character(len=*),          intent(in), optional :: data_set   !! Name of data set.
@@ -1182,6 +1193,7 @@ contains
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if passed target array if of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_target
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), target, intent(inout)        :: targets(:) !! Target type array.
         character(len=*),          intent(in), optional :: data_set   !! Name of data set.

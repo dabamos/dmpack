@@ -27,7 +27,6 @@ module dmpack
     !! ```
     use :: dm_ansi
     use :: dm_api
-    use :: dm_app
     use :: dm_arg
     use :: dm_ascii
     use :: dm_atom

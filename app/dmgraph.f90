@@ -14,7 +14,7 @@ program dmgraph
 
     type :: app_type
         !! Application settings.
-        character(len=LOGGER_NAME_LEN)   :: name       = APP_NAME       !! Name of instance and POSIX semaphore.
+        character(len=ID_LEN)            :: name       = APP_NAME       !! Name of instance and POSIX semaphore.
         character(len=FILE_PATH_LEN)     :: config     = ' '            !! Path to configuration file.
         character(len=FILE_PATH_LEN)     :: database   = ' '            !! Path to observation database.
         character(len=NODE_ID_LEN)       :: node       = ' '            !! Node id.

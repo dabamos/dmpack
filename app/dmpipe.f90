@@ -24,7 +24,7 @@ program dmpipe
 
     type :: app_type
         !! Global application settings.
-        character(len=APP_NAME_LEN)    :: name        = APP_NAME    !! Instance and configuration name (required).
+        character(len=ID_LEN)          :: name        = APP_NAME    !! Instance and configuration name (required).
         character(len=FILE_PATH_LEN)   :: config      = ' '         !! Path to configuration file (required).
         character(len=LOGGER_NAME_LEN) :: logger      = ' '         !! Name of logger.
         character(len=NODE_ID_LEN)     :: node        = ' '         !! Node id (required).

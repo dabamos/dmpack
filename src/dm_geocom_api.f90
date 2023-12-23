@@ -29,9 +29,11 @@ module dm_geocom_api
     ! **************************************************************************
     ! GEOCOM API CONSTANTS.
     ! **************************************************************************
-    character(len=*),    parameter :: GEOCOM_DELIMITER        = '\r\n'                  !! Default GeoCOM delimiter.
-    character(len=*),    parameter :: GEOCOM_GRC_PATTERN      = '%R1P,0,0:(?<grc>\d+)'  !! Default GeoCOM response pattern.
-    type(response_type), parameter :: GEOCOM_GRC_RESPONSES(1) = [ response_type('rc') ] !! Default GeoCOM responses (GRC only).
+    character(len=*), parameter :: GEOCOM_DELIMITER   = '\r\n'                 !! Default GeoCOM delimiter.
+    character(len=*), parameter :: GEOCOM_GRC_PATTERN = '%R1P,0,0:(?<grc>\d+)' !! Default GeoCOM response pattern.
+
+    type(response_type), parameter :: GEOCOM_GRC_RESPONSES(1) = [ &
+        response_type('rc', type=RESPONSE_TYPE_INT64) ] !! Default GeoCOM responses (GRC only).
 
     ! **************************************************************************
     ! COMMON.
@@ -863,8 +865,13 @@ contains
 
         write (string, '("%R1Q,23309:", 5(i0, ","), 2a)') &
             device_type, file_type, date%day, date%month, date%year, file_name, GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<nfiles>\d+)'
-        responses = [ response_type('grc'), response_type('nfiles') ]
+
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<nfiles>\d+)'
+
+        responses = [ &
+            response_type('grc',    type=RESPONSE_TYPE_INT64), &
+            response_type('nfiles', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_delete
@@ -998,8 +1005,14 @@ contains
         type(response_type)                :: responses(3)
 
         write (string, '("%R1Q,23304:", i0, a)') block_number, GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<blockval>\d+),(?<blocklen>\d+)'
-        responses = [ response_type('grc'), response_type('blockval'), response_type('blocklen') ]
+
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<blockval>\d+),(?<blocklen>\d+)'
+
+        responses = [ &
+            response_type('grc',      type=RESPONSE_TYPE_INT64), &
+            response_type('blockval', type=RESPONSE_TYPE_INT64), &
+            response_type('blocklen', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_download
@@ -1080,9 +1093,9 @@ contains
         pattern = '%R1P,0,0:(?<grc>\d+),(?<hz>[\d\.]+),(?<v>[\d\.]+)'
 
         responses = [ &
-            response_type('grc'),       & ! GeoCOM return code.
-            response_type('hz', 'rad'), & ! Horizontal angle [rad].
-            response_type('v',  'rad')  & ! Vertical angle [rad].
+            response_type('grc', type=RESPONSE_TYPE_INT64), & ! GeoCOM return code.
+            response_type('hz', 'rad'), &                     ! Horizontal angle [rad].
+            response_type('v',  'rad')  &                     ! Vertical angle [rad].
         ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
@@ -1129,16 +1142,16 @@ contains
                   '(?<xinc>[-\d\.]+),(?<linc>[-\d\.]+),(?<accinc>[-\d\.]+),(?<inctime>\d+),(?<face>\d+)'
 
         responses = [ &
-            response_type('grc'),            & ! GeoCOM return code.
-            response_type('hz',      'rad'), & ! Horizontal angle [rad].
-            response_type('v',       'rad'), & ! Vertical angle [rad].
-            response_type('angacc',  'rad'), & ! Accuracy of angles [rad].
-            response_type('angtime', 'ms'),  & ! Moment of measurement [ms].
-            response_type('xinc',    'rad'), & ! Transverse axis inclination [rad].
-            response_type('linc',    'rad'), & ! Longitude axis inclidation [rad].
-            response_type('accinc',  'rad'), & ! Inclination accuracy [rad].
-            response_type('inctime', 'ms'),  & ! Moment of measurement [ms].
-            response_type('face')            & ! Face position of telescope.
+            response_type('grc',           type=RESPONSE_TYPE_INT64), & ! GeoCOM return code.
+            response_type('hz',      'rad'), &                          ! Horizontal angle [rad].
+            response_type('v',       'rad'), &                          ! Vertical angle [rad].
+            response_type('angacc',  'rad'), &                          ! Accuracy of angles [rad].
+            response_type('angtime', 'ms', type=RESPONSE_TYPE_INT64), & ! Moment of measurement [ms].
+            response_type('xinc',    'rad'), &                          ! Transverse axis inclination [rad].
+            response_type('linc',    'rad'), &                          ! Longitude axis inclidation [rad].
+            response_type('accinc',  'rad'), &                          ! Inclination accuracy [rad].
+            response_type('inctime', 'ms', type=RESPONSE_TYPE_INT64), & ! Moment of measurement [ms].
+            response_type('face',          type=RESPONSE_TYPE_INT64) &  ! Face position of telescope.
         ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
@@ -1174,11 +1187,11 @@ contains
         pattern = '%R1P,0,0:(?<grc>\d+),(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
 
         responses = [ &
-            response_type('grc'),            & ! GeoCOM return code.
-            response_type('inccor', 'bool'), & ! Inclination correction on/off [bool].
-            response_type('stdcor', 'bool'), & ! Standing axis correction on/off [bool].
-            response_type('colcor', 'bool'), & ! Collimation error correction on/off [bool].
-            response_type('tilcor', 'bool')  & ! Tilting axis correction on/off [bool].
+            response_type('grc',    type=RESPONSE_TYPE_INT64), &   ! GeoCOM return code.
+            response_type('inccor', type=RESPONSE_TYPE_LOGICAL), & ! Inclination correction on/off [bool].
+            response_type('stdcor', type=RESPONSE_TYPE_LOGICAL), & ! Standing axis correction on/off [bool].
+            response_type('colcor', type=RESPONSE_TYPE_LOGICAL), & ! Collimation error correction on/off [bool].
+            response_type('tilcor', type=RESPONSE_TYPE_LOGICAL)  & ! Tilting axis correction on/off [bool].
         ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
@@ -1215,11 +1228,11 @@ contains
                   '(?<drytemp>[-\d\.]+),(?<wettemp>[-\d\.]+)'
 
         responses = [ &
-            response_type('grc'),              & ! GeoCOM return code.
-            response_type('lambda',   'm'),    & ! Wave length of the EDM transmitter [m].
-            response_type('pressure', 'mbar'), & ! Atmospheric pressure [mbar].
-            response_type('drytemp',  'degC'), & ! Dry temperature [°C].
-            response_type('wettemp',  'degC')  & ! Wet temperature [°C].
+            response_type('grc', type=RESPONSE_TYPE_INT64), & ! GeoCOM return code.
+            response_type('lambda',   'm'), &                 ! Wave length of the EDM transmitter [m].
+            response_type('pressure', 'mbar'), &              ! Atmospheric pressure [mbar].
+            response_type('drytemp',  'degC'), &              ! Dry temperature [°C].
+            response_type('wettemp',  'degC')  &              ! Wet temperature [°C].
         ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
@@ -1248,9 +1261,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,2151:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<atmppm>[-\d\.]+)'
-        responses = [ response_type('grc'), response_type('atmppm', 'ppm') ]
+        string  = '%R1Q,2151:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<atmppm>[-\d\.]+)'
+
+        responses = [ &
+            response_type('grc', type=RESPONSE_TYPE_INT64), &
+            response_type('atmppm', 'ppm') &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_atmospheric_ppm
@@ -1278,9 +1295,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,17034:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<atrset>\d+)'
-        responses = [ response_type('grc'), response_type('atrset') ]
+        string  = '%R1Q,17034:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<atrset>\d+)'
+
+        responses = [ &
+            response_type('grc',    type=RESPONSE_TYPE_INT64), &
+            response_type('atrset', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_atr_setting
@@ -1311,9 +1332,14 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(3)
 
-        string    = '%R1Q,14001:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),\d+,(?<autopwr>\d+),(?<pwrtime>\d+)'
-        responses = [ response_type('grc'), response_type('autopwr'), response_type('pwrtime', 'ms') ]
+        string  = '%R1Q,14001:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),\d+,(?<autopwr>\d+),(?<pwrtime>\d+)'
+
+        responses = [ &
+            response_type('grc',           type=RESPONSE_TYPE_INT64), &
+            response_type('autopwr',       type=RESPONSE_TYPE_INT64), &
+            response_type('pwrtime', 'ms', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_config
@@ -1373,15 +1399,15 @@ contains
                   '(?<econt>[-\d\.]+),(?<ncont>[-\d\.]+),(?<hcont>[-\d\.]+),(?<crdtimec>\d+)'
 
         responses = [ &
-            response_type('grc'),            & ! GeoCOM return code.
-            response_type('e',        'm'),  & ! E coordinate [m].
-            response_type('n',        'm'),  & ! N coordinate [m]
-            response_type('h',        'm'),  & ! H coordinate [m].
-            response_type('crdtime',  'ms'), & ! Timestamp of distance measurement [ms].
-            response_type('econt',    'm'),  & ! E coordinate (continuously) [m].
-            response_type('ncont',    'm'),  & ! N coordinate (continuously) [m].
-            response_type('hcont',    'm'),  & ! H coordinate (continuously) [m].
-            response_type('crdtimec', 'ms')  & ! Timestamp of continuous measurement [m].
+            response_type('grc',            type=RESPONSE_TYPE_INT64), & ! GeoCOM return code.
+            response_type('e',        'm'),  &                           ! E coordinate [m].
+            response_type('n',        'm'),  &                           ! N coordinate [m]
+            response_type('h',        'm'),  &                           ! H coordinate [m].
+            response_type('crdtime',  'ms', type=RESPONSE_TYPE_INT64), & ! Timestamp of distance measurement [ms].
+            response_type('econt',    'm'),  &                           ! E coordinate (continuously) [m].
+            response_type('ncont',    'm'),  &                           ! N coordinate (continuously) [m].
+            response_type('hcont',    'm'),  &                           ! H coordinate (continuously) [m].
+            response_type('crdtimec', 'ms', type=RESPONSE_TYPE_INT64)  & ! Timestamp of continuous measurement [m].
         ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
@@ -1416,9 +1442,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,108:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<ndigits>\d+)'
-        responses = [ response_type('grc'), response_type('ndigits') ]
+        string  = '%R1Q,108:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<ndigits>\d+)'
+
+        responses = [ &
+            response_type('grc',     type=RESPONSE_TYPE_INT64), &
+            response_type('ndigits', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_double_precision
@@ -1446,9 +1476,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,2021:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<edmmode>\d+)'
-        responses = [ response_type('grc'), response_type('edmmode') ]
+        string  = '%R1Q,2021:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<edmmode>\d+)'
+
+        responses = [ &
+            response_type('grc',     type=RESPONSE_TYPE_INT64), &
+            response_type('edmmode', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_edm_mode
@@ -1482,9 +1516,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,2011:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<rheight>[-\d\.]+)'
-        responses = [ response_type('grc'), response_type('rheight', 'm') ]
+        string  = '%R1Q,2011:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<rheight>[-\d\.]+)'
+
+        responses = [ &
+            response_type('grc', type=RESPONSE_TYPE_INT64), &
+            response_type('rheight', 'm') &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_height
@@ -1543,9 +1581,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,5003:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<serialno>\d+)'
-        responses = [ response_type('grc'), response_type('serialno') ]
+        string  = '%R1Q,5003:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<serialno>\d+)'
+
+        responses = [ &
+            response_type('grc',      type=RESPONSE_TYPE_INT64), &
+            response_type('serialno', type=RESPONSE_TYPE_INT64) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_get_instrument_number
@@ -1602,9 +1644,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,2114:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<atrerr>\d+)'
-        responses = [ response_type('grc'), response_type('atrerr', 'bool') ]
+        string  = '%R1Q,2114:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<atrerr>\d+)'
+
+        responses = [ &
+            response_type('grc',    type=RESPONSE_TYPE_INT64), &
+            response_type('atrerr', type=RESPONSE_TYPE_LOGICAL) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_is_atr_error
@@ -1632,9 +1678,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,113:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<binmode>\d+)'
-        responses = [ response_type('grc'), response_type('binmode', 'bool') ]
+        string  = '%R1Q,113:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<binmode>\d+)'
+
+        responses = [ &
+            response_type('grc',     type=RESPONSE_TYPE_INT64), &
+            response_type('binmode', type=RESPONSE_TYPE_LOGICAL) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_is_binary_mode
@@ -1662,9 +1712,13 @@ contains
         character(len=REQUEST_REQUEST_LEN) :: string
         type(response_type)                :: responses(2)
 
-        string    = '%R1Q,2115:' // GEOCOM_DELIMITER
-        pattern   = '%R1P,0,0:(?<grc>\d+),(?<incerr>\d+)'
-        responses = [ response_type('grc'), response_type('incerr', 'bool') ]
+        string  = '%R1Q,2115:' // GEOCOM_DELIMITER
+        pattern = '%R1P,0,0:(?<grc>\d+),(?<incerr>\d+)'
+
+        responses = [ &
+            response_type('grc',    type=RESPONSE_TYPE_INT64), &
+            response_type('incerr', type=RESPONSE_TYPE_LOGICAL) &
+        ]
 
         call dm_geocom_api_request(request, string, pattern, responses)
     end subroutine dm_geocom_api_request_is_inclination_error
