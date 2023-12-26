@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# This script runs some DMPACK test programs and prints the results to standard
+# This script runs all DMPACK test programs and prints the results to standard
 # output. Simply run:
 #
 #   $ sh ./runtests.sh

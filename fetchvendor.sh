@@ -15,9 +15,10 @@
 #
 set -e
 
-VENDOR="./vendor"
+UNZIP=unzip
+VENDOR=./vendor
+
 LIBS="curl lua54 pcre2 sqlite3 unix zlib"
-UNZIP="unzip"
 
 for LIB in ${LIBS}; do
     LIBPATH="${VENDOR}/fortran-${LIB}"

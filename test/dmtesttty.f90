@@ -28,7 +28,7 @@ contains
         stat = TEST_PASSED
 
         if (skip) then
-            call dm_ansi_color(COLOR_RED, no_color)
+            call dm_ansi_color(COLOR_YELLOW, no_color)
             print *, 'This test will be skipped by default!'
             call dm_ansi_reset(no_color)
             return

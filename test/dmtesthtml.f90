@@ -32,8 +32,15 @@ contains
         nodes(2)%name = 'Test Node 2'
         nodes(2)%meta = 'Another test node'
 
+        print *, 'Node to HTML ...'
+        print '(72("."))'
         print '(a)', dm_html_node(nodes(1))
+        print '(72("."))'
+
+        print *, 'Nodes to HTML ...'
+        print '(72("."))'
         print '(a)', dm_html_nodes(nodes)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test01
@@ -44,7 +51,11 @@ contains
         stat = TEST_FAILED
 
         call dm_dummy_observ(observ)
+
+        print *, 'Observation to HTML ...'
+        print '(72("."))'
         print '(a)', dm_html_observ(observ)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test02
