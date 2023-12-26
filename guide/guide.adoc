@@ -167,7 +167,8 @@ DMPACK depends on the following interface libraries:
 
 If the repository is cloned recursively, the submodules will be downloaded
 automatically to directory `vendor/`. Otherwise, this step has to be done
-manually.
+manually by executing `fetchvendor.sh`. The script requires _curl(1)_ and
+_unzip(1)_.
 
 There are separate instructions for FreeBSD and Linux:
 
@@ -362,8 +363,8 @@ _observation_.
 === Beat Entities
 
 Beat:: Short status message (heartbeat, handshake) that contains node id,
-timestamp, system uptime, and last connection error, sent periodically from
-client to server.
+client address, client library version, timestamp, system uptime, and last
+connection error, sent periodically from client to server.
 
 === RPC Entities
 
@@ -4227,6 +4228,20 @@ for MariaDB, MySQL, MS SQL Server, PostgreSQL, and SQLite. For Windows only.
 (GPLv2)
 link:https://www.phpliteadmin.org/[phpLiteAdmin]:: A web front-end for SQLite
 database administration, written in PHP. (GPLv3)
+
+=== Entity–Relationship Model
+
+.Observation database
+[#db-uml-observ]
+image::observ.png[UML,align="center"]
+
+.Log database
+[#db-uml-log]
+image::log.png[UML,align="center"]
+
+.Heartbeat database
+[#db-uml-beat]
+image::beat.png[UML,align="center"]
 
 === Examples
 
