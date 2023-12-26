@@ -144,11 +144,11 @@ contains
         end select
 
         if (dm_is_ok(rc) .and. app%verbose) then
-            print '("database record created")'
+            print '(a, " added to database ", a)', trim(TYPE_NAMES(app%type)), trim(app%database)
             return
         end if
 
-        call dm_error_out(rc, 'failed to create database record')
+        call dm_error_out(rc, 'failed to add ' // trim(TYPE_NAMES(app%type)) // ' to database ' // app%database)
     end function db_create
 
     integer function db_delete(db, app) result(rc)
@@ -199,11 +199,11 @@ contains
         end select
 
         if (dm_is_ok(rc) .and. app%verbose) then
-            print '("database record deleted")'
+            print '(a, " deleted from database ", a)', trim(TYPE_NAMES(app%type)), trim(app%database)
             return
         end if
 
-        call dm_error_out(rc, 'failed to delete database record')
+        call dm_error_out(rc, 'failed to delete ' // trim(TYPE_NAMES(app%type)) // ' from database ' // app%database)
     end function db_delete
 
     integer function db_read(db, app) result(rc)
@@ -269,7 +269,7 @@ contains
         end select db_select
 
         if (dm_is_ok(rc)) return
-        call dm_error_out(rc, 'failed to read database record')
+        call dm_error_out(rc, 'failed to read ' // trim(TYPE_NAMES(app%type)) // ' from database ' // app%database)
     end function db_read
 
     integer function db_update(db, app) result(rc)
@@ -360,11 +360,11 @@ contains
         end select db_select
 
         if (dm_is_ok(rc) .and. app%verbose) then
-            print '("database record updated")'
+            print '(a, " updated in database ", a)', trim(TYPE_NAMES(app%type)), trim(app%database)
             return
         end if
 
-        call dm_error_out(rc, 'failed to update database record')
+        call dm_error_out(rc, 'failed to update ' // trim(TYPE_NAMES(app%type)) // ' in database ' // app%database)
     end function db_update
 
     integer function read_args(app) result(rc)

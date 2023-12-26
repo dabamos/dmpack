@@ -159,7 +159,7 @@ contains
 
             call html_header(TITLE)
             call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_beat(beat, delta))
+            call dm_cgi_out(dm_html_beat(beat, delta, prefix=APP_BASE_PATH // '/node?id='))
             call html_footer()
         end block response_block
 
