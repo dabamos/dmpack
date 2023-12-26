@@ -265,7 +265,7 @@ contains
 
         !! Get GeoCOM return code from response.
         this%grc = GRC_UNDEFINED
-        rc = dm_request_get(request, 'grc', grc)
+        call dm_request_get(request, 'grc', grc, error=rc)
         if (dm_is_ok(rc)) this%grc = grc
     end function geocom_send
 

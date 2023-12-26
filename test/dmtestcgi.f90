@@ -3,10 +3,10 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestcgi
-    !! Tests CGI procedures.
+    !! Tests CGI and CGI router procedures.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 3
+    integer, parameter :: NTESTS = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -14,6 +14,7 @@ program dmtestcgi
     tests(1) = test_type('dmtestcgi.test01', test01)
     tests(2) = test_type('dmtestcgi.test02', test02)
     tests(3) = test_type('dmtestcgi.test03', test03)
+    tests(4) = test_type('dmtestcgi.test04', test04)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -92,4 +93,80 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        !! Tests CGI router.
+        integer                       :: rc
+        type(cgi_env_type)            :: env
+        type(cgi_router_type)         :: router
+        type(cgi_route_type), target  :: routes(2)
+        type(cgi_route_type), pointer :: ptr
+
+        stat = TEST_FAILED
+
+        print *, 'Creating router ...'
+        rc = dm_cgi_router_create(router, 32)
+        if (dm_is_error(rc)) return
+
+        print *, 'Creating routes ...'
+        routes(1)%path = '/'
+        routes(1)%callback => default_resource
+
+        routes(2)%path = '/index'
+        routes(2)%callback => index_resource
+
+        print *, 'Adding routes to router ...'
+        rc = dm_cgi_router_add(router, routes(1))
+        if (dm_is_error(rc)) return
+
+        rc = dm_cgi_router_add(router, routes(2))
+        if (dm_is_error(rc)) return
+
+        print *, 'Retrieving routes ...'
+        ptr => null()
+        rc = dm_cgi_router_get(router, '/', ptr)
+        if (dm_is_error(rc)) return
+        if (.not. associated(ptr)) return
+        if (.not. allocated(ptr%path)) return
+        if (ptr%path /= '/') return
+        call ptr%callback(env)
+
+        ptr => null()
+        rc = dm_cgi_router_get(router, '/index', ptr)
+        if (dm_is_error(rc)) return
+        if (.not. associated(ptr)) return
+        if (.not. allocated(ptr%path)) return
+        if (ptr%path /= '/index') return
+        call ptr%callback(env)
+
+        print *, 'Testing invalid route ...'
+        ptr => null()
+        rc = dm_cgi_router_get(router, '/invalid', ptr)
+        if (rc == E_NONE) return
+        if (associated(ptr)) return
+
+        print *, 'Filtering request URI ...'
+        env%path_info = '/index'
+        call dm_cgi_router_dispatch(router, env, rc)
+        if (rc /= HTTP_OK) return
+
+        print *, 'Filtering invalid request URI ...'
+        env%path_info = '/invalid'
+        call dm_cgi_router_dispatch(router, env, rc)
+        if (rc == HTTP_OK) return
+
+        stat = TEST_PASSED
+    end function test04
+
+    subroutine default_resource(env)
+        type(cgi_env_type), intent(inout) :: env
+
+        print *, '-- default_resource'
+    end subroutine default_resource
+
+    subroutine index_resource(env)
+        type(cgi_env_type), intent(inout) :: env
+
+        print *, '-- index resource'
+    end subroutine index_resource 
 end program dmtestcgi

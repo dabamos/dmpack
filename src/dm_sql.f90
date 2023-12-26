@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_sql
     !! Predefined SQL statements as Fortran parameter strings.
-    use :: dm_ascii, only: NL => CR_LF
+    use :: dm_ascii, only: NL => ASCII_LF
     implicit none (type, external)
     private
 
@@ -59,6 +59,7 @@ module dm_sql
         'beat_id   INTEGER PRIMARY KEY,' // NL // &
         'node_id   TEXT    NOT NULL UNIQUE,' // NL // &
         'address   TEXT,' // NL // &
+        'version   TEXT,' // NL // &
         'time_sent TEXT    NOT NULL DEFAULT ''1970-01-01T00:00:00.000+00:00'',' // NL // &
         'time_recv TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
         'error     INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -348,11 +349,12 @@ module dm_sql
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
     !         beats.time_recv, beats.interval, beats.error
     character(len=*), parameter, public :: SQL_INSERT_BEAT = &
-        'INSERT INTO beats(node_id, address, time_sent, time_recv, error, interval, uptime) ' // &
-        'VALUES (?, ?, ?, ?, ?, ?, ?) ' // &
+        'INSERT INTO beats(node_id, address, version, time_sent, time_recv, error, interval, uptime) ' // &
+        'VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'node_id = excluded.node_id, ' // &
         'address = excluded.address, ' // &
+        'version = excluded.version, ' // &
         'time_sent = excluded.time_sent, ' // &
         'time_recv = excluded.time_recv, ' // &
         'error = excluded.error, ' // &
@@ -536,12 +538,12 @@ module dm_sql
     ! Query to select beat by node id.
     ! Arguments: beats.node_id
     character(len=*), parameter, public :: SQL_SELECT_BEAT = &
-        'SELECT node_id, address, time_sent, time_recv, error, interval, uptime ' // &
+        'SELECT node_id, address, version, time_sent, time_recv, error, interval, uptime ' // &
         'FROM beats WHERE node_id = ?'
 
     ! Query to select all beats.
     character(len=*), parameter, public :: SQL_SELECT_BEATS = &
-        'SELECT node_id, address, time_sent, time_recv, error, interval, uptime ' // &
+        'SELECT node_id, address, version, time_sent, time_recv, error, interval, uptime ' // &
         'FROM beats ORDER BY node_id ASC'
 
     ! Query to select data points (time series) by response name and time range.

@@ -30,7 +30,6 @@ contains
         !! Reads Lua global variables from file.
         character(len=*), parameter   :: FOO   = 'bar'
         integer,          parameter   :: VALUE = 420
-        real(kind=r8),    parameter   :: PI    = 3.1415926535_r8
 
         character(len=32)    :: str
         integer              :: rc
@@ -75,7 +74,7 @@ contains
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc, dm_lua_last_error(lua))
+            call dm_error_out(rc, dm_lua_last_error(lua))
             return
         end if
 
@@ -137,7 +136,7 @@ contains
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc)
+            call dm_error_out(rc)
             return
         end if
 
@@ -170,8 +169,11 @@ contains
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
+        print '(72("."))'
         call dm_observ_out(observ)
-        call dm_perror(rc, dm_lua_last_error(lua))
+        print '(72("."))'
+
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         if (dm_is_error(rc)) return
@@ -214,7 +216,7 @@ contains
             call dm_lua_dump_stack(lua)
         end block test_block
 
-        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         print *, 'Validating observations ...'
@@ -266,7 +268,7 @@ contains
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
-        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
 
         print *, 'Validating jobs ...'
@@ -275,7 +277,7 @@ contains
 
         print *, 'Retrieving next job ...'
         rc = dm_job_list_next(job_list, job)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'delay...: ', job%delay
@@ -321,7 +323,7 @@ contains
             rc = E_NONE
         end block test_block
 
-        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
@@ -357,7 +359,7 @@ contains
             rc = E_NONE
         end block test_block
 
-        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
@@ -413,7 +415,7 @@ contains
             rc = E_NONE
         end block test_block
 
-        call dm_perror(rc, dm_lua_last_error(lua))
+        call dm_error_out(rc, dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
@@ -467,7 +469,7 @@ contains
             rc = E_NONE
         end block test_block
 
-        call dm_perror(rc, 'Lua error: ' // dm_lua_last_error(lua))
+        call dm_error_out(rc, 'Lua error: ' // dm_lua_last_error(lua))
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 

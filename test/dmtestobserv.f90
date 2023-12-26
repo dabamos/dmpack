@@ -3,60 +3,47 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestobserv
-    !! Test programs that validates observation data handling and JSON
-    !! transformation.
+    !! Test programs that validates observation, request, and response data
+    !! handling,
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS  = 1
+    integer, parameter :: NTESTS = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests(1) = test_type('dmtestobserv.test01', test01)
+    tests(2) = test_type('dmtestobserv.test02', test02)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: JSON = &
-            '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
-            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000+00:00", "path": ' // &
-            '"/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, "nrequests": 2, "receivers": [ ' // &
-            '"dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], "requests": [ { "timestamp": ' // &
-            '"1970-01-01T00:00:00.000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
-            '"pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
-            '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": 123.45000 } ] }, ' // &
-            '{ "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", ' // &
-            '"pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
-            '"nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, "value": 0.99000000 } ] } ] }'
-
-        character(len=:), allocatable :: buf
-        integer                       :: rc
-        type(observ_type)             :: observ
-        type(observ_type)             :: observs(1)
-        type(request_type)            :: request
-        type(response_type)           :: response
+        integer             :: rc
+        type(observ_type)   :: observ1, observ2
+        type(request_type)  :: request
+        type(response_type) :: response
 
         stat = TEST_FAILED
 
         print *, 'Creating new observation ...'
 
-        observ%id        = '9273ab62f9a349b6a4da6dd274ee83e7'
-        observ%node_id   = 'dummy-node'
-        observ%sensor_id = 'dummy-sensor'
-        observ%target_id = 'dummy-target'
-        observ%name      = 'dummy-observ'
-        observ%path      = '/dev/null'
-        observ%timestamp = TIME_DEFAULT
+        observ1%id        = '9273ab62f9a349b6a4da6dd274ee83e7'
+        observ1%node_id   = 'dummy-node'
+        observ1%sensor_id = 'dummy-sensor'
+        observ1%target_id = 'dummy-target'
+        observ1%name      = 'dummy-observ'
+        observ1%path      = '/dev/null'
+        observ1%timestamp = TIME_DEFAULT
 
         print *, 'Adding receivers ...'
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver1')
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver1')
         if (dm_is_error(rc)) return
 
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver2')
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver2')
         if (dm_is_error(rc)) return
 
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver3')
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver3')
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
@@ -76,7 +63,7 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ, request)
+        rc = dm_observ_add_request(observ1, request)
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
@@ -96,43 +83,69 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ, request)
+        rc = dm_observ_add_request(observ1, request)
         if (dm_is_error(rc)) return
 
         print *, 'Printing observation ...'
         print '(72("."))'
-        call dm_observ_out(observ)
+        call dm_observ_out(observ1)
         print '(72("."))'
 
-        print *, 'Validating JSON ...'
-        buf = dm_json_from(observ)
-
-        if (buf /= JSON) then
-            print *, 'Generated JSON:'
-            print '(72("."))'
-            print '(a)', buf
-            print '(72("."))'
-
-            print *, 'Expected JSON:'
-            print '(72("."))'
-            print '(a)', JSON
-            print '(72("."))'
-
-            return
-        end if
-
-        print *, 'Printing JSON array ...'
-        observs(1) = observ
-        print '(72("."))'
-        print '(a)', dm_json_from(observs)
-        print '(72("."))'
-
-        ! print *, 'Printing Namelist ...'
-        ! rc = dm_nml_from(observ, str)
-        ! if (dm_is_error(rc)) return
-        ! print *, str
-
+        print *, 'Validating observation ...'
+        observ2 = observ1
+        if (.not. (observ1 == observ2)) return
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        integer            :: rc
+        integer(kind=i4)   :: ival4
+        integer(kind=i8)   :: ival8
+        logical            :: lval1
+        real(kind=r4)      :: rval4
+        real(kind=r8)      :: rval8
+        type(request_type) :: request
+
+        stat = TEST_FAILED
+
+        ival4 = 1_i4
+        ival8 = 1_i8
+        lval1 = .true.
+        rval4 = 1.0_r4
+        rval8 = 1.0_r8
+
+        print *, 'Setting responses ...'
+        request%nresponses = 5
+        call dm_request_set(request, 1, 'ival4', ival4)
+        call dm_request_set(request, 2, 'ival8', ival8)
+        call dm_request_set(request, 3, 'lval1', lval1)
+        call dm_request_set(request, 4, 'rval4', rval4)
+        call dm_request_set(request, 5, 'rval8', rval8)
+
+        print *, 'Getting responses ...'
+        call dm_request_get(request, 'ival4', ival4)
+        call dm_request_get(request, 'ival8', ival8)
+        call dm_request_get(request, 'lval1', lval1)
+        call dm_request_get(request, 'rval4', rval4)
+        call dm_request_get(request, 'rval8', rval8)
+
+        print *, 'Validating responses ...'
+        if (ival4 /= 1_i4) return
+        if (ival8 /= 1_i8) return
+        if (.not. lval1) return
+        if (.not. dm_equals(rval4, 1.0_r4)) return
+        if (.not. dm_equals(rval8, 1.0_r8)) return
+
+        print *, 'Calling get routine ...'
+        call dm_request_get(request, 'invalid', ival4, error=rc)
+        if (ival4 /= huge(0_i4)) return
+        if (rc /= E_NOT_FOUND) return
+
+        request%nresponses = 0
+        call dm_request_get(request, 'invalid', ival4, error=rc)
+        if (rc /= E_EMPTY) return
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestobserv
 

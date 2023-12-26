@@ -51,28 +51,28 @@ program dmweb
     logical :: has_db_observ = .false.              ! Observation database passed.
     logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
 
-    type(route_type)  :: routes(18)
-    type(router_type) :: router
+    type(cgi_route_type)  :: routes(18)
+    type(cgi_router_type) :: router
 
     ! Routes to dynamic pages.
-    routes = [ route_type('',         route_dashboard), &
-               route_type('/',        route_dashboard), &
-               route_type('/beat',    route_beat), &
-               route_type('/beats',   route_beats), &
-               route_type('/env',     route_env), &
-               route_type('/licence', route_licence), &
-               route_type('/log',     route_log), &
-               route_type('/logs',    route_logs), &
-               route_type('/node',    route_node), &
-               route_type('/nodes',   route_nodes), &
-               route_type('/observ',  route_observ), &
-               route_type('/observs', route_observs), &
-               route_type('/plots',   route_plots), &
-               route_type('/sensor',  route_sensor), &
-               route_type('/sensors', route_sensors), &
-               route_type('/status',  route_status), &
-               route_type('/target',  route_target), &
-               route_type('/targets', route_targets) ]
+    routes = [ cgi_route_type('',         route_dashboard), &
+               cgi_route_type('/',        route_dashboard), &
+               cgi_route_type('/beat',    route_beat), &
+               cgi_route_type('/beats',   route_beats), &
+               cgi_route_type('/env',     route_env), &
+               cgi_route_type('/licence', route_licence), &
+               cgi_route_type('/log',     route_log), &
+               cgi_route_type('/logs',    route_logs), &
+               cgi_route_type('/node',    route_node), &
+               cgi_route_type('/nodes',   route_nodes), &
+               cgi_route_type('/observ',  route_observ), &
+               cgi_route_type('/observs', route_observs), &
+               cgi_route_type('/plots',   route_plots), &
+               cgi_route_type('/sensor',  route_sensor), &
+               cgi_route_type('/sensors', route_sensors), &
+               cgi_route_type('/status',  route_status), &
+               cgi_route_type('/target',  route_target), &
+               cgi_route_type('/targets', route_targets) ]
 
     ! Initialise DMPACK.
     call dm_init()
@@ -90,17 +90,17 @@ program dmweb
         rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Read-only mode for web UI.
 
         ! Set-up router.
-        call set_routes(router, routes, rc)
+        rc = dm_cgi_router_set(router, routes)
         if (dm_is_error(rc)) exit route_block
 
         ! Get CGI environment variables, dispatch request, and
         ! return the response.
         call dm_cgi_env(env)
-        call dm_router_dispatch(router, env, code)
+        call dm_cgi_router_dispatch(router, env, code)
         if (code /= HTTP_OK) call html_error(status=code)
     end block route_block
 
-    call dm_router_destroy(router)
+    call dm_cgi_router_destroy(router)
 contains
     ! ******************************************************************
     ! ENDPOINTS.
@@ -2190,33 +2190,4 @@ contains
                                        nav   = nav, &
                                        mask  = mask))
     end subroutine html_header
-
-    subroutine set_routes(router, routes, stat)
-        !! Creates a new router and adds given routes.
-        type(router_type), intent(inout)         :: router    !! Router type.
-        type(route_type),  intent(inout)         :: routes(:) !! Endpoints.
-        integer,           intent(out), optional :: stat      !! Error code.
-
-        integer :: i, rc
-
-        if (present(stat)) stat = E_ERROR
-
-        rc = dm_router_create(router, max_routes=size(ROUTES))
-
-        if (dm_is_error(rc)) then
-            call html_error(error=rc, status=HTTP_SERVICE_UNAVAILABLE)
-            return
-        end if
-
-        do i = 1, size(routes)
-            rc = dm_router_add(router, ROUTES(i))
-
-            if (dm_is_error(rc)) then
-                call html_error(error=rc, status=HTTP_SERVICE_UNAVAILABLE)
-                return
-            end if
-        end do
-
-        if (present(stat)) stat = E_NONE
-    end subroutine set_routes
 end program dmweb

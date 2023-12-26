@@ -10,17 +10,19 @@ module dm_beat
     implicit none (type, external)
     private
 
-    integer, parameter, public :: IP_ADDR_LEN = 45 !! IPv6 address length.
+    integer, parameter, public :: BEAT_ADDR_LEN    = 45 !! IPv6 address length.
+    integer, parameter, public :: BEAT_VERSION_LEN = 16 !! DMPACK library version.
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
-        character(len=NODE_ID_LEN) :: node_id   = ' '          !! Node id.
-        character(len=IP_ADDR_LEN) :: address   = ' '          !! Client IP address (IPv4 or IPv6).
-        character(len=TIME_LEN)    :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
-        character(len=TIME_LEN)    :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
-        integer                    :: error     = E_NONE       !! Client error.
-        integer                    :: interval  = 0            !! Transmission interval in seconds.
-        integer                    :: uptime    = 0            !! System uptime in seconds.
+        character(len=NODE_ID_LEN)      :: node_id   = ' '          !! Node id.
+        character(len=BEAT_ADDR_LEN)    :: address   = ' '          !! Client IP address (IPv4 or IPv6).
+        character(len=BEAT_VERSION_LEN) :: version   = ' '          !! Client library version.
+        character(len=TIME_LEN)         :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
+        character(len=TIME_LEN)         :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
+        integer                         :: error     = E_NONE       !! Client error.
+        integer                         :: interval  = 0            !! Transmission interval in seconds.
+        integer                         :: uptime    = 0            !! System uptime in seconds.
     end type beat_type
 
     integer, parameter, public :: BEAT_SIZE = storage_size(beat_type()) / 8 !! Size of `beat_type` in bytes.
@@ -44,6 +46,7 @@ contains
         equals = .false.
         if (beat1%node_id   /= beat2%node_id)   return
         if (beat1%address   /= beat2%address)   return
+        if (beat1%version   /= beat2%version)   return
         if (beat1%time_sent /= beat2%time_sent) return
         if (beat1%time_recv /= beat2%time_recv) return
         if (beat1%error     /= beat2%error)     return
@@ -76,6 +79,7 @@ contains
 
         write (unit_, '("beat.node_id: ", a)')   trim(beat%node_id)
         write (unit_, '("beat.address: ", a)')   trim(beat%address)
+        write (unit_, '("beat.version: ", a)')   trim(beat%version)
         write (unit_, '("beat.time_sent: ", a)') trim(beat%time_sent)
         write (unit_, '("beat.time_recv: ", a)') trim(beat%time_recv)
         write (unit_, '("beat.error: ", i0)')    beat%error

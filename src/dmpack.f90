@@ -34,6 +34,7 @@ module dmpack
     use :: dm_beat
     use :: dm_block
     use :: dm_cgi
+    use :: dm_cgi_router
     use :: dm_config
     use :: dm_const
     use :: dm_convert
@@ -85,7 +86,6 @@ module dmpack
     use :: dm_report
     use :: dm_request
     use :: dm_response
-    use :: dm_router
     use :: dm_rpc
     use :: dm_rts
     use :: dm_sem

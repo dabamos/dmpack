@@ -12,7 +12,7 @@ module dm_db
     !! type(observ_type), allocatable :: observs(:)
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
-    !! rc = dm_db_select_observs(db, observs, desc=.true., limit=10)
+    !! rc = dm_db_select(db, observs, desc=.true., limit=10)
     !! rc = dm_db_close(db)
     !! ```
     !!
@@ -1327,11 +1327,12 @@ contains
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(beat%node_id))   /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 2, trim(beat%address))   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(beat%time_sent)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 4, trim(beat%time_recv)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 5, beat%error)           /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 6, beat%interval)        /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 7, beat%uptime)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 3, trim(beat%version))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 4, trim(beat%time_sent)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 5, trim(beat%time_recv)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 6, beat%error)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 7, beat%interval)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 8, beat%uptime)          /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4726,17 +4727,19 @@ contains
         if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 4) /= SQLITE_INTEGER) return
+        if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 5) /= SQLITE_INTEGER) return
         if (sqlite3_column_type(stmt, 6) /= SQLITE_INTEGER) return
+        if (sqlite3_column_type(stmt, 7) /= SQLITE_INTEGER) return
 
         beat%node_id   = sqlite3_column_text(stmt, 0)
         beat%address   = sqlite3_column_text(stmt, 1)
-        beat%time_sent = sqlite3_column_text(stmt, 2)
-        beat%time_recv = sqlite3_column_text(stmt, 3)
-        beat%error     = sqlite3_column_int (stmt, 4)
-        beat%interval  = sqlite3_column_int (stmt, 5)
-        beat%uptime    = sqlite3_column_int (stmt, 6)
+        beat%version   = sqlite3_column_text(stmt, 2)
+        beat%time_sent = sqlite3_column_text(stmt, 3)
+        beat%time_recv = sqlite3_column_text(stmt, 4)
+        beat%error     = sqlite3_column_int (stmt, 5)
+        beat%interval  = sqlite3_column_int (stmt, 6)
+        beat%uptime    = sqlite3_column_int (stmt, 7)
 
         rc = E_NONE
     end function db_next_row_beat

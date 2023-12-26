@@ -50,7 +50,6 @@ DMPACK includes modules for:
 * command-line argument parsing
 * configuration file evaluation
 * sensor control (RS-232/422/485, 1-Wire, file system, sub-process)
-* GeoCOM API for Fortran and Lua
 * regular expression matching
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
@@ -61,8 +60,8 @@ DMPACK includes modules for:
 * distributed logging
 * client status messages (heartbeats)
 * server-side web applications
+* GeoCOM API for Fortran and Lua
 * time series plotting
-* virtual sensors
 * MQTT connectivity
 * Lua scripting
 * HTML5 reports
@@ -80,7 +79,6 @@ DMPACK has the following requirements:
 Third-party dependencies have to be present to build and run the software of
 this package:
 
-* BLAS
 * FastCGI
 * Gnuplot
 * HDF5
@@ -404,7 +402,7 @@ To write the test protocols to file, disable coloured output first by setting
 the environment variable `NO_COLOR`:
 
 ```
-$ export NO_COLOR=
+$ export NO_COLOR=1
 $ sh runtests.sh &> tests.log
 ```
 

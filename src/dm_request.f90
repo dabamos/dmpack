@@ -12,16 +12,16 @@ module dm_request
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256  !! Request string length.
-    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256  !! Response string length.
-    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8    !! Delimiter string length.
-    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256  !! Regular expression string length.
-    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16   !! Response array size.
+    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256 !! Request string length.
+    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256 !! Response string length.
+    integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8   !! Delimiter string length.
+    integer, parameter, public :: REQUEST_PATTERN_LEN    = 256 !! Regular expression string length.
+    integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16  !! Response array size.
 
-    integer, parameter, public :: REQUEST_MODE_NONE      = 0    !! Default mode.
+    integer, parameter, public :: REQUEST_MODE_NONE      = 0   !! Default mode.
 
-    integer, parameter, public :: REQUEST_STATE_NONE     = 0    !! Default state.
-    integer, parameter, public :: REQUEST_STATE_DISABLED = 1    !! Disabled state.
+    integer, parameter, public :: REQUEST_STATE_NONE     = 0   !! Default state.
+    integer, parameter, public :: REQUEST_STATE_DISABLED = 1   !! Disabled state.
 
     type, public :: request_type
         !! Request to send to a sensor.
@@ -48,12 +48,22 @@ module dm_request
     end interface
 
     interface dm_request_get
-        !! Generic function to get value, unit, and error of a response.
+        !! Generic function to get value, unit, type, and error of a response.
         module procedure :: request_get_i4
         module procedure :: request_get_i8
+        module procedure :: request_get_l
         module procedure :: request_get_r4
         module procedure :: request_get_r8
         module procedure :: request_get_type
+    end interface
+
+    interface dm_request_set
+        !! Generic function to set value, unit, type, and error of a response.
+        module procedure :: request_set_i4
+        module procedure :: request_set_i8
+        module procedure :: request_set_l
+        module procedure :: request_set_r4
+        module procedure :: request_set_r8
     end interface
 
     public :: operator (==)
@@ -61,13 +71,21 @@ module dm_request
     public :: dm_request_add
     public :: dm_request_equals
     public :: dm_request_get
+    public :: dm_request_set
     public :: dm_request_set_response_error
     public :: dm_request_index
     public :: dm_request_out
     public :: dm_request_valid
 
+    private :: request_set_i4
+    private :: request_set_i8
+    private :: request_set_l
+    private :: request_set_r4
+    private :: request_set_r8
+
     private :: request_get_i4
     private :: request_get_i8
+    private :: request_get_l
     private :: request_get_r4
     private :: request_get_r8
     private :: request_get_type
@@ -120,17 +138,15 @@ contains
         equals = .true.
     end function dm_request_equals
 
-    integer function dm_request_index(request, name, index) result(rc)
+    pure elemental integer function dm_request_index(request, name) result(index)
         !! Searches request for responses of passed name and returns the index
         !! of the first found. If no response of this name is found,
-        !! `E_NOT_FOUND` is returned and index is set to 0.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(len=*),   intent(in)    :: name    !! Response name.
-        integer,            intent(out)   :: index   !! Position of response in responses array.
+        !! the index is set to 0.
+        type(request_type), intent(in) :: request !! Request type.
+        character(len=*),   intent(in) :: name    !! Response name.
 
         integer :: i
 
-        rc = E_NONE
         index = 0
 
         do i = 1, request%nresponses
@@ -140,11 +156,10 @@ contains
             end if
         end do
 
-        rc = E_NOT_FOUND
     end function dm_request_index
 
     integer function dm_request_set_response_error(request, error, name) result(rc)
-        !! Sets error code to all responses of the given request. If argument
+        !! Sets error code of all responses of the given request. If argument
         !! `name` is given, the error is set only for the first response of the
         !! same name.
         type(request_type), intent(inout)        :: request !! Request type.
@@ -154,8 +169,9 @@ contains
         integer :: i
 
         if (present(name)) then
-            rc = dm_request_index(request, name, i)
-            if (dm_is_error(rc)) return
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) return
             request%responses(i)%error = error
             return
         end if
@@ -194,8 +210,7 @@ contains
         if (request%state < 0)   return
         if (request%timeout < 0) return
 
-        if (request%nresponses < 0 .or. &
-            request%nresponses > REQUEST_MAX_NRESPONSES) return
+        if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return
 
         if (request%nresponses > 0) then
             if (.not. all(dm_response_valid(request%responses(1:request%nresponses)))) return
@@ -228,129 +243,439 @@ contains
         write (unit_, '("request.nresponses: ", i0)') request%nresponses
 
         do i = 1, request%nresponses
-            write (unit_, '("request.responses(", i0, ").name: ", a)') &
-                i, trim(request%responses(i)%name)
-            write (unit_, '("request.responses(", i0, ").value: ", f0.5)') &
-                i, request%responses(i)%value
-            write (unit_, '("request.responses(", i0, ").unit: ", a)') &
-                i, trim(request%responses(i)%unit)
-            write (unit_, '("request.responses(", i0, ").error: ", i0)') &
-                i, request%responses(i)%error
+            write (unit_, '("request.responses(", i0, ").name: ", a)')     i, trim(request%responses(i)%name)
+            write (unit_, '("request.responses(", i0, ").unit: ", a)')     i, trim(request%responses(i)%unit)
+            write (unit_, '("request.responses(", i0, ").type: ", a)')     i, request%responses(i)%type
+            write (unit_, '("request.responses(", i0, ").error: ", i0)')   i, request%responses(i)%error
+            write (unit_, '("request.responses(", i0, ").value: ", f0.8)') i, request%responses(i)%value
         end do
     end subroutine dm_request_out
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function request_get_i4(request, name, value, unit, error) result(rc)
-        !! Returns 4-byte integer value, unit, and error of response with name
-        !! `name`. If no response of this name exists in the responses array of
-        !! the passed request, the function returns `E_NOT_FOUND`.
+    pure elemental subroutine request_get_i4(request, name, value, unit, type, error)
+        !! Returns 4-byte integer response value of response of name `name`,
+        !! and optionally the unit, the type, and the error.
+        !!
+        !! The routine returns the error code of the response in `error` if
+        !! found, or:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! If no response is found, `value` will be set to `huge(0_i4)`.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT32
+
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
         integer(kind=i4),                 intent(out)           :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
 
-        integer :: i
+        integer :: i, rc
 
-        value = 0_i4
+        value = huge(0_i4)
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            value = int(request%responses(i)%value, kind=i4)
+            rc = request%responses(i)%error
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+
+            return
+        end block response_block
+
         if (present(unit))  unit  = ' '
-        if (present(error)) error = E_NOT_FOUND
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = rc
+    end subroutine request_get_i4
 
-        rc = dm_request_index(request, name, i)
-        if (dm_is_error(rc)) return
+    pure elemental subroutine request_get_i8(request, name, value, unit, type, error)
+        !! Returns 8-byte integer response value of response of name `name`,
+        !! and optionally the unit, the type, and the error.
+        !!
+        !! The routine returns the error code of the response in `error` if
+        !! found, or:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! If no response is found, `value` will be set to `huge(0_i8)`.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT64
 
-        value = int(request%responses(i)%value, kind=i4)
-        if (present(unit))  unit  = request%responses(i)%unit
-        if (present(error)) error = request%responses(i)%error
-    end function request_get_i4
-
-    integer function request_get_i8(request, name, value, unit, error) result(rc)
-        !! Returns 8-byte integer value, unit, and error of response with name
-        !! `name`. If no response of this name exists in the responses array of
-        !! the passed request, the function returns `E_NOT_FOUND`.
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
         integer(kind=i8),                 intent(out)           :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
 
-        integer :: i
+        integer :: i, rc
 
-        value = 0_i8
+        value = huge(0_i8)
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            value = int(request%responses(i)%value, kind=i8)
+            rc = request%responses(i)%error
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+
+            return
+        end block response_block
+
         if (present(unit))  unit  = ' '
-        if (present(error)) error = E_NOT_FOUND
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = rc
+    end subroutine request_get_i8
 
-        rc = dm_request_index(request, name, i)
-        if (dm_is_error(rc)) return
+    pure elemental subroutine request_get_l(request, name, value, unit, type, error)
+        !! Returns logical response value of response of name `name`, and
+        !! optionally the unit, the type, and the error.
+        !!
+        !! The routine returns the error code of the response in `error` if
+        !! found, or:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! If no response is found, `value` will be set to `.false.`.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_LOGICAL
 
-        value = int(request%responses(i)%value, kind=i8)
-        if (present(unit))  unit  = request%responses(i)%unit
-        if (present(error)) error = request%responses(i)%error
-    end function request_get_i8
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        logical,                          intent(out)           :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
+        integer,                          intent(out), optional :: error   !! Response error.
 
-    integer function request_get_r4(request, name, value, unit, error) result(rc)
-        !! Returns 4-byte real value, unit, and error of response with name
-        !! `name`. If no response of this name exists in the responses array of
-        !! the passed request, the function returns `E_NOT_FOUND`.
+        integer :: i, rc
+
+        value = .false.
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            value = (int(request%responses(i)%value) == 1)
+            rc = request%responses(i)%error
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+
+            return
+        end block response_block
+
+        if (present(unit))  unit  = ' '
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = rc
+    end subroutine request_get_l
+
+    pure elemental subroutine request_get_r4(request, name, value, unit, type, error)
+        !! Returns 4-byte real response value of response of name `name`, and
+        !! optionally the unit, the type, and the error.
+        !!
+        !! The routine returns the error code of the response in `error` if
+        !! found, or:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! If no response is found, `value` will be set to `huge(0.0_r4)`.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL32
+
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
         real(kind=r4),                    intent(out)           :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
 
-        integer :: i
+        integer :: i, rc
 
-        value = 0.0_r4
+        value = huge(0.0_r4)
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            value = real(request%responses(i)%value, kind=r4)
+            rc = request%responses(i)%error
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+
+            return
+        end block response_block
+
         if (present(unit))  unit  = ' '
-        if (present(error)) error = E_NOT_FOUND
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = rc
+    end subroutine request_get_r4
 
-        rc = dm_request_index(request, name, i)
-        if (dm_is_error(rc)) return
+    pure elemental subroutine request_get_r8(request, name, value, unit, type, error)
+        !! Returns 8-byte real response value of response of name `name`, and
+        !! optionally the unit, the type, and the error.
+        !!
+        !! The routine returns the error code of the response in `error` if
+        !! found, or:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! If no response is found, `value` will be set to `huge(0.0_r8)`.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL64
 
-        value = real(request%responses(i)%value, kind=r4)
-        if (present(unit))  unit  = request%responses(i)%unit
-        if (present(error)) error = request%responses(i)%error
-    end function request_get_r4
-
-    integer function request_get_r8(request, name, value, unit, error) result(rc)
-        !! Returns 8-byte real value, unit, and error of response with name
-        !! `name`. If no response of this name exists in the responses array of
-        !! the passed request, the function returns `E_NOT_FOUND`.
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        real(kind=r8),                    intent(out), optional :: value   !! Response value.
+        real(kind=r8),                    intent(out)           :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
 
-        integer :: i
+        integer :: i, rc
 
-        if (present(value)) value = 0.0_r8
+        value = huge(0.0_r8)
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            value = request%responses(i)%value
+            rc = request%responses(i)%error
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+
+            return
+        end block response_block
+
         if (present(unit))  unit  = ' '
-        if (present(error)) error = E_NOT_FOUND
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = rc
+    end subroutine request_get_r8
 
-        rc = dm_request_index(request, name, i)
-        if (dm_is_error(rc)) return
-
-        if (present(value)) value = request%responses(i)%value
-        if (present(unit))  unit  = request%responses(i)%unit
-        if (present(error)) error = request%responses(i)%error
-    end function request_get_r8
-
-    integer function request_get_type(request, name, response) result(rc)
+    pure elemental subroutine request_get_type(request, name, response, error)
         !! Returns response of name `name`. If no response of this name exists
-        !! in the responses array of the passed request, the function returns
-        !! `E_NOT_FOUND`.
-        type(request_type),  intent(inout) :: request  !! Request type.
-        character(len=*),    intent(in)    :: name     !! Response name.
-        type(response_type), intent(out)   :: response !! Response type.
+        !! in the responses array of the passed request, the routine sets the
+        !! response error to `E_NOT_FOUND`.
+        type(request_type),  intent(inout)         :: request  !! Request type.
+        character(len=*),    intent(in)            :: name     !! Response name.
+        type(response_type), intent(out)           :: response !! Response type.
+        integer,             intent(out), optional :: error    !! Response error.
 
-        integer :: i
+        integer :: i, rc
 
-        response%error = E_NOT_FOUND
-        rc = dm_request_index(request, name, i)
-        if (dm_is_error(rc)) return
-        response = request%responses(i)
-    end function request_get_type
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            response = request%responses(i)
+            rc = response%error
+
+            if (present(error)) error = rc
+            return
+        end block response_block
+
+        response%error = rc
+        if (present(error)) error = rc
+    end subroutine request_get_type
+
+    pure elemental subroutine request_set_i4(request, index, name, value, unit, error)
+        !! Updates response name, value, and optional unit and error, of
+        !! response at position `index` to given 4-byte integer value. This
+        !! routine does not update the number of responses
+        !! `request%nresponses`. No update is performed if `index` is out of
+        !! bounds. An existing response at `index` will be overwritten.
+        type(request_type), intent(inout)        :: request !! Request type.
+        integer,            intent(in)           :: index   !! Response index.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        integer(kind=i4),   intent(in)           :: value   !! Response value.
+        character(len=*),   intent(in), optional :: unit    !! Response unit.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
+
+        request%responses(index)%name  = name
+        request%responses(index)%value = dm_to_real64(value)
+        request%responses(index)%type  = RESPONSE_TYPE_INT32
+
+        if (present(unit)) request%responses(index)%unit = unit
+
+        if (present(error)) then
+            request%responses(index)%error = error
+        else
+            request%responses(index)%error = E_NONE
+        end if
+    end subroutine request_set_i4
+
+    pure elemental subroutine request_set_i8(request, index, name, value, unit, error)
+        !! Updates response name, value, and optional unit and error, of
+        !! response at position `index` to given 8-byte integer value. This
+        !! routine does not update the number of responses
+        !! `request%nresponses`. No update is performed if `index` is out of
+        !! bounds. An existing response at `index` will be overwritten.
+        type(request_type), intent(inout)        :: request !! Request type.
+        integer,            intent(in)           :: index   !! Response index.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        integer(kind=i8),   intent(in)           :: value   !! Response value.
+        character(len=*),   intent(in), optional :: unit    !! Response unit.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
+
+        request%responses(index)%name  = name
+        request%responses(index)%value = dm_to_real64(value)
+        request%responses(index)%type  = RESPONSE_TYPE_INT64
+
+        if (present(unit)) request%responses(index)%unit = unit
+
+        if (present(error)) then
+            request%responses(index)%error = error
+        else
+            request%responses(index)%error = E_NONE
+        end if
+    end subroutine request_set_i8
+
+    pure elemental subroutine request_set_l(request, index, name, value, unit, error)
+        !! Updates response name, value, and optional unit and error, of
+        !! response at position `index` to given logical value. This routine
+        !! does not update the number of responses `request%nresponses`. No
+        !! update is performed if `index` is out of bounds. An existing
+        !! response at `index` will be overwritten.
+        type(request_type), intent(inout)        :: request !! Request type.
+        integer,            intent(in)           :: index   !! Response index.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        logical,            intent(in)           :: value   !! Response value.
+        character(len=*),   intent(in), optional :: unit    !! Response unit.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
+
+        request%responses(index)%name  = name
+        request%responses(index)%value = dm_to_real64(value)
+        request%responses(index)%type  = RESPONSE_TYPE_LOGICAL
+
+        if (present(unit)) request%responses(index)%unit = unit
+
+        if (present(error)) then
+            request%responses(index)%error = error
+        else
+            request%responses(index)%error = E_NONE
+        end if
+    end subroutine request_set_l
+
+    pure elemental subroutine request_set_r4(request, index, name, value, unit, error)
+        !! Updates response name, value, and optional unit and error, of
+        !! response at position `index` to given 4-byte real value. This
+        !! routine does not update the number of responses
+        !! `request%nresponses`. No update is performed if `index` is out of
+        !! bounds. An existing response at `index` will be overwritten.
+        type(request_type), intent(inout)        :: request !! Request type.
+        integer,            intent(in)           :: index   !! Response index.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        real(kind=r4),      intent(in)           :: value   !! Response value.
+        character(len=*),   intent(in), optional :: unit    !! Response unit.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
+
+        request%responses(index)%name  = name
+        request%responses(index)%value = dm_to_real64(value)
+        request%responses(index)%type  = RESPONSE_TYPE_REAL32
+
+        if (present(unit)) request%responses(index)%unit = unit
+
+        if (present(error)) then
+            request%responses(index)%error = error
+        else
+            request%responses(index)%error = E_NONE
+        end if
+    end subroutine request_set_r4
+
+    pure elemental subroutine request_set_r8(request, index, name, value, unit, error)
+        !! Updates response name, value, and optional unit and error, of
+        !! response at position `index` to given 8-byte real value. This
+        !! routine does not update the number of responses
+        !! `request%nresponses`. No update is performed if `index` is out of
+        !! bounds. An existing response at `index` will be overwritten.
+        type(request_type), intent(inout)        :: request !! Request type.
+        integer,            intent(in)           :: index   !! Response index.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        real(kind=r8),      intent(in)           :: value   !! Response value.
+        character(len=*),   intent(in), optional :: unit    !! Response unit.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
+
+        request%responses(index)%name  = name
+        request%responses(index)%value = value
+        request%responses(index)%type  = RESPONSE_TYPE_REAL64
+
+        if (present(unit)) request%responses(index)%unit = unit
+
+        if (present(error)) then
+            request%responses(index)%error = error
+        else
+            request%responses(index)%error = E_NONE
+        end if
+    end subroutine request_set_r8
 end module dm_request

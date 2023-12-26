@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_util
     !! Type conversion functions and other utility procedures.
-    use :: dm_const, only: PI
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
@@ -21,15 +20,31 @@ module dm_util
     end interface
 
     interface dm_itoa
-        !! Converts integer to string.
+        !! Generic integer to string converter.
         module procedure :: i4_to_a
         module procedure :: i8_to_a
     end interface
 
     interface dm_ftoa
-        !! Converts real to string.
+        !! Generic real to string converter.
         module procedure :: f4_to_a
         module procedure :: f8_to_a
+    end interface
+
+    interface dm_from_real64
+        !! Converts 8-byte real to type (for response values).
+        module procedure :: dm_real64_to_int32
+        module procedure :: dm_real64_to_int64
+        module procedure :: dm_real64_to_logical
+        module procedure :: dm_real64_to_real32
+    end interface
+
+    interface dm_to_real64
+        !! Converts type to 8-byte real (for response values).
+        module procedure :: dm_int32_to_real64
+        module procedure :: dm_int64_to_real64
+        module procedure :: dm_logical_to_real64
+        module procedure :: dm_real32_to_real64
     end interface
 
     public :: dm_atof
@@ -50,6 +65,18 @@ module dm_util
     public :: dm_rad_to_deg
     public :: dm_rad_to_gon
 
+    public :: dm_from_real64
+    public :: dm_int32_to_real64
+    public :: dm_int64_to_real64
+    public :: dm_logical_to_real64
+    public :: dm_real32_to_real64
+
+    public :: dm_to_real64
+    public :: dm_real64_to_int32
+    public :: dm_real64_to_int64
+    public :: dm_real64_to_logical
+    public :: dm_real64_to_real32
+
     private :: array_has_i4
     private :: array_has_i8
 
@@ -66,8 +93,8 @@ contains
     ! ****************************************************************** 
     pure elemental function dm_atof(str) result(f)
         !! Converts string to 8-byte real.
-        character(len=*),intent(in) :: str
-        real(kind=r8)               :: f
+        character(len=*),intent(in) :: str !! Number string.
+        real(kind=r8)               :: f   !! Value.
 
         integer :: stat
 
@@ -77,8 +104,8 @@ contains
 
     pure elemental function dm_atoi(str) result(i)
         !! Converts string to 4-byte integer.
-        character(len=*),intent(in) :: str
-        integer                     :: i
+        character(len=*),intent(in) :: str !! Number string.
+        integer                     :: i   !! Value.
 
         integer :: stat
 
@@ -88,8 +115,8 @@ contains
 
     pure elemental function dm_btoi(l) result(i)
         !! Converts logical (boolean) to 4-byte integer.
-        logical, intent(in) :: l
-        integer             :: i
+        logical, intent(in) :: l !! Logical value.
+        integer             :: i !! `0` or `1`.
 
         i = 0
         if (.not. l) return
@@ -98,51 +125,124 @@ contains
 
     pure elemental function dm_deg_to_gon(a) result(b)
         !! Converts angle in degrees to gon.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        real(kind=r8), intent(in) :: a !! Angle [deg].
+        real(kind=r8)             :: b !! Angle [gon].
 
         b = a * (10.0_r8 / 9.0_r8)
     end function dm_deg_to_gon
 
     pure elemental function dm_deg_to_rad(a) result(b)
         !! Converts angle in degrees to radiants.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        use :: dm_const, only: PI
+        real(kind=r8), intent(in) :: a !! Angle [deg].
+        real(kind=r8)             :: b !! Angle [rad].
 
         b = a * (PI / 180.0_r8)
     end function dm_deg_to_rad
 
     pure elemental function dm_gon_to_deg(a) result(b)
         !! Converts angle in gon to degrees.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        real(kind=r8), intent(in) :: a !! Angle [gon].
+        real(kind=r8)             :: b !! Angle [deg].
 
         b = a * (9.0_r8 / 10.0_r8)
     end function dm_gon_to_deg
 
     pure elemental function dm_gon_to_rad(a) result(b)
         !! Converts angle in gon to radiants.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        use :: dm_const, only: PI
+        real(kind=r8), intent(in) :: a !! Angle [gon].
+        real(kind=r8)             :: b !! Angle [rad].
 
         b = a * (PI / 200.0_r8)
     end function dm_gon_to_rad
 
     pure elemental function dm_rad_to_deg(a) result(b)
         !! Converts angle in radiants to degrees.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        use :: dm_const, only: PI
+        real(kind=r8), intent(in) :: a !! Angle [rad].
+        real(kind=r8)             :: b !! Angle [deg]
 
         b = a * (180.0_r8 / PI)
     end function dm_rad_to_deg
 
     pure elemental function dm_rad_to_gon(a) result(b)
         !! Converts angle in radiants to gon.
-        real(kind=r8), intent(in) :: a
-        real(kind=r8)             :: b
+        use :: dm_const, only: PI
+        real(kind=r8), intent(in) :: a !! Angle [rad].
+        real(kind=r8)             :: b !! Angle [gon]
 
         b = a * (200.0_r8 / PI)
     end function dm_rad_to_gon
+
+    pure elemental function dm_int32_to_real64(i) result(r)
+        !! Converts 4-byte integer to 8-byte real.
+        integer(kind=i4), intent(in) :: i !! 4-byte integer value.
+        real(kind=r8)                :: r !! Value as 8-byte real.
+
+        r = real(i, kind=r8)
+    end function dm_int32_to_real64
+
+    pure elemental function dm_int64_to_real64(i) result(r)
+        !! Converts 8-byte integer to 8-byte real.
+        integer(kind=i8), intent(in) :: i !! 8-byte integer value.
+        real(kind=r8)                :: r !! Value as 8-byte real.
+
+        r = real(i, kind=r8)
+    end function dm_int64_to_real64
+
+    pure elemental function dm_logical_to_real64(l) result(r)
+        !! Converts 8-byte integer to 8-byte real (`0.0` or `1.0`).
+        logical, intent(in) :: l !! Logical value.
+        real(kind=r8)       :: r !! Value as 8-byte real.
+
+        if (l) then
+            r = 1.0_r8
+        else
+            r = 0.0_r8
+        end if
+    end function dm_logical_to_real64
+
+    pure elemental function dm_real32_to_real64(f) result(r)
+        !! Converts 4-byte real to 8-byte real.
+        real(kind=r4), intent(in) :: f !! 4-byte real value.
+        real(kind=r8)             :: r !! Value as 8-byte real.
+
+        r = real(f, kind=r8)
+    end function dm_real32_to_real64
+
+    pure elemental subroutine dm_real64_to_int32(f, i)
+        !! Converts 8-byte real to 4-byte integer.
+        real(kind=r8),    intent(in)  :: f !! 8-byte real value.
+        integer(kind=i4), intent(out) :: i !! 4-byte integer value.
+
+        i = int(f, kind=i4)
+    end subroutine dm_real64_to_int32
+
+    pure elemental subroutine dm_real64_to_int64(f, i)
+        !! Converts 8-byte real to 8-byte integer.
+        real(kind=r8),    intent(in)  :: f !! 8-byte real value.
+        integer(kind=i8), intent(out) :: i !! 8-byte integer value.
+
+        i = int(f, kind=i8)
+    end subroutine dm_real64_to_int64
+
+    pure elemental subroutine dm_real64_to_logical(f, l)
+        !! Converts 8-byte real to logical. If `f` is `0.0`, the result is
+        !! `.false.`, else `.true.`.
+        real(kind=r8), intent(in)  :: f !! 8-byte real value.
+        logical,       intent(out) :: l !! Logical value.
+
+        l = (.not. dm_equals(f, 0.0_r8))
+    end subroutine dm_real64_to_logical
+
+    pure elemental subroutine dm_real64_to_real32(f, r)
+        !! Converts 8-byte real to 4-byte real
+        real(kind=r8), intent(in)  :: f !! 8-byte real value.
+        real(kind=r4), intent(out) :: r !! 4-byte real value.
+
+        r = real(f, kind=r4)
+    end subroutine dm_real64_to_real32
 
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
@@ -202,9 +302,9 @@ contains
     end function equals_r8
 
     pure function f4_to_a(f) result(str)
-        !! Converts 4-byte real to string.
-        real(kind=r4), intent(in)     :: f
-        character(len=:), allocatable :: str
+        !! Converts 4-byte real to allocatable string of length > 1.
+        real(kind=r4), intent(in)     :: f   !! Value.
+        character(len=:), allocatable :: str !! String of value.
 
         character(len=20) :: buf
         integer           :: stat
@@ -216,9 +316,9 @@ contains
     end function f4_to_a
 
     pure function f8_to_a(f) result(str)
-        !! Converts 8-byte real to string.
-        real(kind=r8), intent(in)     :: f
-        character(len=:), allocatable :: str
+        !! Converts 8-byte real to allocatable string of length > 1.
+        real(kind=r8), intent(in)     :: f   !! Value.
+        character(len=:), allocatable :: str !! String of value.
 
         character(len=20) :: buf
         integer           :: stat
@@ -230,9 +330,9 @@ contains
     end function f8_to_a
 
     pure function i4_to_a(i) result(str)
-        !! Converts 4-byte integer to string.
-        integer, intent(in)           :: i
-        character(len=:), allocatable :: str
+        !! Converts 4-byte integer to allocatable string of length > 0.
+        integer, intent(in)           :: i   !! Value.
+        character(len=:), allocatable :: str !! String of value.
 
         integer :: n, stat
 
@@ -248,9 +348,9 @@ contains
     end function i4_to_a
 
     pure function i8_to_a(i) result(str)
-        !! Converts 8-byte integer to string.
-        integer(kind=i8), intent(in)  :: i
-        character(len=:), allocatable :: str
+        !! Converts 8-byte integer to allocatable string of length > 0.
+        integer(kind=i8), intent(in)  :: i   !! Value.
+        character(len=:), allocatable :: str !! String of value.
 
         integer :: n, stat
 

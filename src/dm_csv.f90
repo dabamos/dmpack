@@ -156,6 +156,7 @@ contains
 
         header = '#node_id'  // s // &
                  'address'   // s // &
+                 'version'   // s // &
                  'time_sent' // s // &
                  'time_recv' // s // &
                  'error'     // s // &
@@ -349,6 +350,7 @@ contains
         if (present(separator)) s = separator
 
         csv = trim(beat%node_id)     // s // &
+              trim(beat%version)     // s // &
               trim(beat%address)     // s // &
               trim(beat%time_sent)   // s // &
               trim(beat%time_recv)   // s // &
@@ -1216,8 +1218,9 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(8a, 2(i0, a), i0)', iostat=stat) &
+        write (unit_, '(8a, 3(i0, a), i0)', iostat=stat) &
             trim(beat%node_id),   s, &
+            trim(beat%version),   s, &
             trim(beat%address),   s, &
             trim(beat%time_sent), s, &
             trim(beat%time_recv), s, &

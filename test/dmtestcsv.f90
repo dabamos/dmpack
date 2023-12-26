@@ -200,7 +200,7 @@ contains
     end function test04
 
     logical function test05() result(stat)
-        integer, parameter :: LEN_BEAT   = 58
+        integer, parameter :: LEN_BEAT   = 66
         integer, parameter :: LEN_DP     = 4
         integer, parameter :: LEN_LOG    = 71
         integer, parameter :: LEN_NODE   = 13

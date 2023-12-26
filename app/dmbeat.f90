@@ -210,6 +210,7 @@ contains
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
+                             version   = 'DMPACK ' // DM_VERSION_STRING, &
                              time_sent = dm_time_now(), &
                              interval  = app%interval, &
                              error     = last_error)

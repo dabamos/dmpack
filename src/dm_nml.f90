@@ -2,27 +2,21 @@
 ! Licence: ISC
 module dm_nml
     !! Fortran namelist import/export of DMPACK derived types.
-    use :: dm_beat
     use :: dm_error
     use :: dm_file
     use :: dm_kind
-    use :: dm_log
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_sensor
-    use :: dm_target
     implicit none (type, external)
     private
 
     ! The actual size of the namelist data is slightly smaller,
     ! but due to the compiler-dependent implementation additional
     ! bytes are added as extra space.
-    integer, parameter, public :: NML_BEAT_LEN   = 320       !! Max. size of `beat_type` namelist in bytes.
+    integer, parameter, public :: NML_BEAT_LEN   = 336       !! Max. size of `beat_type` namelist in bytes.
     integer, parameter, public :: NML_LOG_LEN    = 960       !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   = 160       !! Max. size of `node_type` namelist in bytes.
     integer, parameter, public :: NML_OBSERV_LEN = 46 * 1024 !! Max. size of `observ_type` namelist in bytes.
     integer, parameter, public :: NML_SENSOR_LEN = 288       !! Max. size of `sensor_type` namelist in bytes.
-    integer, parameter, public :: NML_TARGET_LEN = 295       !! Max. size of `target_type` namelist in bytes.
+    integer, parameter, public :: NML_TARGET_LEN = 296       !! Max. size of `target_type` namelist in bytes.
 
     interface dm_nml_from
         !! Converts type to static or allocatable string.
@@ -103,6 +97,7 @@ contains
     integer function nml_from_beat(beat, str) result(rc)
         !! Writes beat namelist to string. The passed character string must have
         !! a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
+        use :: dm_beat
         type(beat_type),  intent(inout) :: beat !! Beat type.
         character(len=*), intent(inout) :: str  !! Output string.
 
@@ -120,6 +115,7 @@ contains
         !! Writes beat namelist to allocatable string of given length. Returns
         !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_beat
         type(beat_type),               intent(inout) :: beat !! Beat type.
         character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
         integer,                       intent(in)    :: n    !! String length.
@@ -142,6 +138,7 @@ contains
         !! Writes log namelist to string. The passed character string must
         !! have a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on
         !! error.
+        use :: dm_log
         type(log_type),   intent(inout) :: log !! Log type.
         character(len=*), intent(inout) :: str !! Output string.
 
@@ -159,6 +156,7 @@ contains
         !! Writes log namelist to allocatable string of given length. Returns
         !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_log
         type(log_type),                intent(inout) :: log !! Log type.
         character(len=:), allocatable, intent(out)   :: str !! Allocatable output string.
         integer,                       intent(in)    :: n   !! String length.
@@ -181,6 +179,7 @@ contains
         !! Writes node namelist to string. The passed character string must
         !! have a minimum length of `NML_NODE_LEN`. Returns `E_WRITE` on
         !! error.
+        use :: dm_node
         type(node_type),  intent(inout) :: node !! Node type.
         character(len=*), intent(inout) :: str  !! Output string.
 
@@ -198,6 +197,7 @@ contains
         !! Writes node namelist to allocatable string of given length. Returns
         !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_node
         type(node_type),               intent(inout) :: node !! Node type.
         character(len=:), allocatable, intent(out)   :: str  !! Allocatable output string.
         integer,                       intent(in)    :: n    !! String length.
@@ -220,6 +220,7 @@ contains
         !! Writes observation namelist to string. The passed character string
         !! must have a minimum length of `NML_OBSERV_LEN`. Returns `E_WRITE`
         !! on error.
+        use :: dm_observ
         type(observ_type), intent(inout) :: observ !! Observation type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
@@ -237,6 +238,7 @@ contains
         !! Writes observation namelist to allocatable string of given length.
         !! Returns `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_observ
         type(observ_type),             intent(inout) :: observ !! Observation type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
@@ -259,6 +261,7 @@ contains
         !! Writes sensor namelist to string. The passed character string
         !! must have a minimum length of `NML_SENSOR_LEN`. Returns `E_WRITE`
         !! on error.
+        use :: dm_sensor
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
@@ -276,6 +279,7 @@ contains
         !! Writes sensor namelist to allocatable string of given length. Returns
         !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_sensor
         type(sensor_type),             intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
@@ -298,6 +302,7 @@ contains
         !! Writes target namelist to string. The passed character string
         !! must have a minimum length of `NML_TARGET_LEN`. Returns `E_WRITE`
         !! on error.
+        use :: dm_target
         type(target_type), intent(inout) :: target !! Target type.
         character(len=*),  intent(inout) :: str    !! Output string.
 
@@ -315,6 +320,7 @@ contains
         !! Writes target namelist to allocatable string of given length. Returns
         !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
         !! serialisation failed.
+        use :: dm_target
         type(target_type),             intent(inout) :: target !! Target type.
         character(len=:), allocatable, intent(out)   :: str    !! Allocatable output string.
         integer,                       intent(in)    :: n      !! String length.
@@ -335,6 +341,7 @@ contains
 
     integer function nml_read_log(log, unit) result(rc)
         !! Reads log from file or standard input. Returns `E_READ` on error.
+        use :: dm_log
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
@@ -351,6 +358,7 @@ contains
 
     integer function nml_read_observ(observ, unit) result(rc)
         !! Reads observation from file or standard input. Returns `E_READ` on error.
+        use :: dm_observ
         type(observ_type), intent(inout)        :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -367,6 +375,7 @@ contains
 
     impure elemental integer function nml_to_beat(str, beat) result(rc)
         !! Reads beat from namelist string. Returns `E_READ` on error.
+        use :: dm_beat
         character(len=*), intent(in)  :: str  !! Beat namelist data.
         type(beat_type),  intent(out) :: beat !! Beat type.
 
@@ -381,6 +390,7 @@ contains
 
     impure elemental integer function nml_to_log(str, log) result(rc)
         !! Reads log from namelist string. Returns `E_READ` on error.
+        use :: dm_log
         character(len=*), intent(in)  :: str !! Log namelist data.
         type(log_type),   intent(out) :: log !! Log type.
 
@@ -395,6 +405,7 @@ contains
 
     impure elemental integer function nml_to_node(str, node) result(rc)
         !! Reads node from namelist string. Returns `E_READ` on error.
+        use :: dm_node
         character(len=*), intent(in)  :: str  !! Node namelist data.
         type(node_type),  intent(out) :: node !! Node type.
 
@@ -409,6 +420,7 @@ contains
 
     impure elemental integer function nml_to_observ(str, observ) result(rc)
         !! Reads observation from namelist string. Returns `E_READ` on error.
+        use :: dm_observ
         character(len=*),  intent(in)  :: str    !! Observation namelist data.
         type(observ_type), intent(out) :: observ !! Observation type.
 
@@ -423,6 +435,7 @@ contains
 
     impure elemental integer function nml_to_sensor(str, sensor) result(rc)
         !! Reads sensor from namelist string. Returns `E_READ` on error.
+        use :: dm_sensor
         character(len=*),  intent(in)  :: str    !! Sensor namelist data.
         type(sensor_type), intent(out) :: sensor !! Sensor type.
 
@@ -437,6 +450,7 @@ contains
 
     impure elemental integer function nml_to_target(str, target) result(rc)
         !! Reads target from namelist string. Returns `E_READ` on error.
+        use :: dm_target
         character(len=*),  intent(in)  :: str    !! Node namelist data.
         type(target_type), intent(out) :: target !! Target type.
 
@@ -452,6 +466,7 @@ contains
     integer function nml_write_log(log, unit) result(rc)
         !! Writes log namelist to file or standard output. Returns
         !! `E_WRITE` on error.
+        use :: dm_log
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
@@ -469,6 +484,7 @@ contains
     integer function nml_write_observ(observ, unit) result(rc)
         !! Writes observation namelist to file or standard output. Returns
         !! `E_WRITE` on error.
+        use :: dm_observ
         type(observ_type), intent(inout)        :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 

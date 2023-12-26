@@ -48,31 +48,31 @@ program dmapi
     character(len=FILE_PATH_LEN) :: db_observ = ' '           ! Path to observation database.
     logical                      :: read_only = APP_READ_ONLY ! Read-only flag for databases.
 
-    integer            :: code
-    integer            :: n, rc
-    type(cgi_env_type) :: env
-    type(route_type)   :: routes(15)
-    type(router_type)  :: router
-
-    ! Add routes.
-    routes = [ route_type('',            route_root), &
-               route_type('/',           route_root), &
-               route_type('/beat',       route_beat), &
-               route_type('/beats',      route_beats), &
-               route_type('/log',        route_log), &
-               route_type('/logs',       route_logs), &
-               route_type('/node',       route_node), &
-               route_type('/nodes',      route_nodes), &
-               route_type('/observ',     route_observ), &
-               route_type('/observs',    route_observs), &
-               route_type('/sensor',     route_sensor), &
-               route_type('/sensors',    route_sensors), &
-               route_type('/target',     route_target), &
-               route_type('/targets',    route_targets), &
-               route_type('/timeseries', route_timeseries) ]
+    integer               :: code
+    integer               :: n, rc
+    type(cgi_env_type)    :: env
+    type(cgi_route_type)  :: routes(15)
+    type(cgi_router_type) :: router
 
     ! Initialise DMPACK.
     call dm_init()
+
+    ! Add routes.
+    routes = [ cgi_route_type('',            route_root), &
+               cgi_route_type('/',           route_root), &
+               cgi_route_type('/beat',       route_beat), &
+               cgi_route_type('/beats',      route_beats), &
+               cgi_route_type('/log',        route_log), &
+               cgi_route_type('/logs',       route_logs), &
+               cgi_route_type('/node',       route_node), &
+               cgi_route_type('/nodes',      route_nodes), &
+               cgi_route_type('/observ',     route_observ), &
+               cgi_route_type('/observs',    route_observs), &
+               cgi_route_type('/sensor',     route_sensor), &
+               cgi_route_type('/sensors',    route_sensors), &
+               cgi_route_type('/target',     route_target), &
+               cgi_route_type('/targets',    route_targets), &
+               cgi_route_type('/timeseries', route_timeseries) ]
 
     ! Read environment variables.
     rc = dm_env_get('DM_DB_BEAT', db_beat, n)
@@ -87,13 +87,13 @@ program dmapi
     rc = dm_env_get('DM_READ_ONLY', read_only, .false.)
 
     ! Set API routes.
-    call set_routes(router, routes, rc)
+    rc = dm_cgi_router_set(router, routes)
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Run event loop.
     do while (dm_is_ok(dm_fcgi_accept()))
         call dm_cgi_env(env)
-        call dm_router_dispatch(router, env, code)
+        call dm_cgi_router_dispatch(router, env, code)
 
         if (code /= HTTP_OK) then
             call api_error(code, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
@@ -101,7 +101,7 @@ program dmapi
     end do
 
     ! Clean up.
-    call dm_router_destroy(router)
+    call dm_cgi_router_destroy(router)
 contains
     ! ******************************************************************
     ! ENDPOINTS.
@@ -1962,22 +1962,4 @@ contains
         if (present(message)) call dm_fcgi_out('message=' // trim(message))
         if (present(error))   call dm_fcgi_out('error=' // dm_itoa(error))
     end subroutine api_error
-
-    subroutine set_routes(router, routes, stat)
-        !! Creates a new router and adds routes to endpoints.
-        type(router_type), intent(inout)         :: router    !! Router type.
-        type(route_type),  intent(inout)         :: routes(:) !! Endpoints.
-        integer,           intent(out), optional :: stat      !! Error code.
-        integer                                  :: i, rc
-
-        rc = dm_router_create(router, max_routes=size(ROUTES))
-        if (present(stat)) stat = rc
-        if (dm_is_error(rc)) return
-
-        do i = 1, size(routes)
-            rc = dm_router_add(router, ROUTES(i))
-            if (present(stat)) stat = rc
-            if (dm_is_error(rc)) return
-        end do
-    end subroutine set_routes
 end program dmapi

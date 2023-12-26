@@ -6,7 +6,7 @@ program dmtestjson
     !! Test program that tries JSON export.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 6
+    integer, parameter :: NTESTS = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -17,6 +17,7 @@ program dmtestjson
     tests(4) = test_type('dmtestjson.test04', test04)
     tests(5) = test_type('dmtestjson.test05', test05)
     tests(6) = test_type('dmtestjson.test06', test06)
+    tests(7) = test_type('dmtestjson.test07', test07)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -54,7 +55,9 @@ contains
         if (len_trim(json) == 0) return
 
         print *, 'Printing JSON string ...'
+        print '(72("."))'
         print '(a)', trim(json)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test02
@@ -74,7 +77,9 @@ contains
         if (len_trim(json) == 0) return
 
         print *, 'Printing JSON string ...'
+        print '(72("."))'
         print '(a)', trim(json)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test03
@@ -94,7 +99,9 @@ contains
         if (len_trim(json) == 0) return
 
         print *, 'Printing JSON string ...'
+        print '(72("."))'
         print '(a)', trim(json)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test04
@@ -114,7 +121,9 @@ contains
         if (len_trim(json) == 0) return
 
         print *, 'Printing JSON string ...'
+        print '(72("."))'
         print '(a)', trim(json)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test05
@@ -134,8 +143,118 @@ contains
         if (len_trim(json) == 0) return
 
         print *, 'Printing JSON string ...'
+        print '(72("."))'
         print '(a)', trim(json)
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test06
+
+    logical function test07() result(stat)
+        character(len=*), parameter :: JSON = &
+            '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
+            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000+00:00", "path": ' // &
+            '"/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, "nrequests": 2, "receivers": [ ' // &
+            '"dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], "requests": [ { "timestamp": ' // &
+            '"1970-01-01T00:00:00.000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
+            '"pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
+            '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": 123.45000 } ] }, ' // &
+            '{ "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", ' // &
+            '"pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
+            '"nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, "value": 0.99000000 } ] } ] }'
+
+        character(len=:), allocatable :: buf
+        integer                       :: rc
+        type(observ_type)             :: observ
+        type(observ_type)             :: observs(1)
+        type(request_type)            :: request
+        type(response_type)           :: response
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new observation ...'
+
+        observ%id        = '9273ab62f9a349b6a4da6dd274ee83e7'
+        observ%node_id   = 'dummy-node'
+        observ%sensor_id = 'dummy-sensor'
+        observ%target_id = 'dummy-target'
+        observ%name      = 'dummy-observ'
+        observ%path      = '/dev/null'
+        observ%timestamp = TIME_DEFAULT
+
+        print *, 'Adding receivers ...'
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver1')
+        if (dm_is_error(rc)) return
+
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver2')
+        if (dm_is_error(rc)) return
+
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver3')
+        if (dm_is_error(rc)) return
+
+        print *, 'Creating request ...'
+        request = request_type(timestamp = TIME_DEFAULT, &
+                               request   = 'A', &
+                               response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF), &
+                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
+                               pattern   = '^(.*)$', &
+                               delay     = 1000, &
+                               retries   = 0, &
+                               timeout   = 500, &
+                               error     = 0)
+
+        print *, 'Adding response ...'
+        response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)
+        rc = dm_request_add(request, response)
+        if (dm_is_error(rc)) return
+
+        print *, 'Adding request ...'
+        rc = dm_observ_add_request(observ, request)
+        if (dm_is_error(rc)) return
+
+        print *, 'Creating request ...'
+        request = request_type(timestamp = TIME_DEFAULT, &
+                               request   = 'B', &
+                               response  = dm_ascii_escape('OK' // CR_LF), &
+                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
+                               pattern   = '^OK', &
+                               delay     = 500, &
+                               retries   = 0, &
+                               timeout   = 500, &
+                               error     = 1)
+
+        print *, 'Adding response ...'
+        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 0.99_r8)
+        rc = dm_request_add(request, response)
+        if (dm_is_error(rc)) return
+
+        print *, 'Adding request ...'
+        rc = dm_observ_add_request(observ, request)
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating JSON ...'
+        buf = dm_json_from(observ)
+
+        if (buf /= JSON) then
+            print *, 'Generated JSON:'
+            print '(72("."))'
+            print '(a)', buf
+            print '(72("."))'
+
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+
+            return
+        end if
+
+        print *, 'Printing JSON array ...'
+        observs(1) = observ
+        print '(72("."))'
+        print '(a)', dm_json_from(observs)
+        print '(72("."))'
+
+        stat = TEST_PASSED
+    end function test07
 end program dmtestjson

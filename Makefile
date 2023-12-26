@@ -214,7 +214,7 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 src/dm_rpc.f90 \
       src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 src/dm_block.f90 \
       src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 src/dm_html.f90 \
-      src/dm_atom.f90 src/dm_router.f90 src/dm_la.f90 src/dm_transform.f90 \
+      src/dm_atom.f90 src/dm_cgi_router.f90 src/dm_la.f90 src/dm_transform.f90 \
       src/dm_geocom_error.f90 src/dm_geocom_api.f90 src/dm_geocom.f90 \
       src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_rts.f90 \
       src/dm_mqueue_util.f90 src/dmpack.f90
@@ -231,7 +231,7 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
       dm_test.o dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o \
       dm_mail.o dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o \
       dm_fcgi.o dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
-      dm_router.o dm_la.o dm_transform.o dm_geocom_error.o dm_geocom_api.o \
+      dm_cgi_router.o dm_la.o dm_transform.o dm_geocom_error.o dm_geocom_api.o \
       dm_geocom.o dm_lua_geocom.o dm_lua_lib.o dm_rts.o dm_mqueue_util.o \
       dmpack.o
 
@@ -258,9 +258,9 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
       dmtestdb dmtestdp dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua \
       dmtestjob dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml \
-      dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrouter \
-      dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty dmtestunit \
-      dmtestutil dmtestuuid dmtestz
+      dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc \
+      dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil \
+      dmtestuuid dmtestz
 
 # ******************************************************************************
 #
@@ -414,7 +414,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_jsonl.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_html.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_atom.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_router.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_cgi_router.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_la.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_transform.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_error.f90
@@ -518,9 +518,6 @@ dmtestplot: test/dmtestplot.f90 $(TARGET)
 
 dmtestregex: test/dmtestregex.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestregex test/dmtestregex.f90 $(TARGET) $(LDLIBS) $(LIBPCRE2)
-
-dmtestrouter: test/dmtestrouter.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrouter test/dmtestrouter.f90 $(TARGET) $(LDLIBS)
 
 dmtestrts: test/dmtestrts.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestrts test/dmtestrts.f90 $(TARGET) $(LDLIBS)

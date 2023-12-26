@@ -199,22 +199,33 @@ contains
                               dm_html_encode(anchor%text) // '</a>'
     end function dm_html_anchor
 
-    function dm_html_beat(beat, delta) result(html)
+    function dm_html_beat(beat, delta, prefix) result(html)
         !! Returns table of single beat in HTML format.
         use :: dm_beat
         use :: dm_time
-        type(beat_type),  intent(inout)        :: beat  !! Beat type.
-        integer(kind=i8), intent(in), optional :: delta !! Time delta.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        type(beat_type),  intent(inout)        :: beat   !! Beat type.
+        integer(kind=i8), intent(in), optional :: delta  !! Time delta.
+        character(len=*), intent(in), optional :: prefix !! GET argument name.
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
-        character(len=8)        :: beats_now, beats_sent, beats_recv
-        character(len=TIME_LEN) :: now
-        integer                 :: rc
-        integer(kind=i8)        :: delta_
-        type(time_delta_type)   :: time, time_delta, time_inter
+        character(len=8)              :: beats_now, beats_sent, beats_recv
+        character(len=:), allocatable :: nid
+        character(len=TIME_LEN)       :: now
+        integer                       :: rc
+        integer(kind=i8)              :: delta_
+        type(anchor_type)             :: anchor
+        type(time_delta_type)         :: time, time_delta, time_inter
 
         delta_ = huge(0_i8)
         if (present(delta)) delta_ = delta
+
+        if (present(prefix)) then
+            ! Turn node id into link to `prefix`.
+            anchor = anchor_type(link=prefix // beat%node_id, text=beat%node_id)
+            nid = dm_html_anchor(anchor)
+        else
+            nid = H_CODE // dm_html_encode(beat%node_id) // H_CODE_END
+        end if
 
         call dm_time_delta_from_seconds(time, int(beat%uptime, kind=i8))
         call dm_time_delta_from_seconds(time_inter, int(beat%interval, kind=i8))
@@ -228,9 +239,11 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Node ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(beat%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Address' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Version' // H_TH_END // &
+               H_TD // dm_html_encode(beat%version) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
                H_TD // dm_html_encode(beat%time_sent // ' (' // trim(beats_sent) // ')') // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &
