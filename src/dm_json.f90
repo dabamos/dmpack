@@ -150,7 +150,7 @@ contains
         character(len=:), allocatable :: json       !! Alloctable JSON string.
 
         json = '{ "x": "' // trim(data_point%x)    // '",' // &
-               ' "y": '  // dm_ftoa(data_point%y) // ' }'
+               ' "y": '   // dm_ftoa(data_point%y) // ' }'
     end function json_from_data_point
 
     function json_from_data_points(data_points) result(json)
@@ -235,9 +235,9 @@ contains
         json = '{ "id": "'  // trim(node%id)   // '",' // &
                ' "name": "' // trim(node%name) // '",' // &
                ' "meta": "' // trim(node%meta) // '",' // &
-               ' "x": "'    // dm_ftoa(node%x) // '",' // &
-               ' "y": "'    // dm_ftoa(node%y) // '",' // &
-               ' "z": "'    // dm_ftoa(node%z) // '" }'
+               ' "x": '     // dm_ftoa(node%x) // ',' // &
+               ' "y": '     // dm_ftoa(node%y) // ',' // &
+               ' "z": '     // dm_ftoa(node%z) // ' }'
     end function json_from_node
 
     function json_from_nodes(nodes) result(json)
@@ -381,9 +381,9 @@ contains
                ' "name": "'    // trim(sensor%name)    // '",' // &
                ' "sn": "'      // trim(sensor%sn)      // '",' // &
                ' "meta": "'    // trim(sensor%meta)    // '",' // &
-               ' "x": "'       // dm_ftoa(sensor%x)    // '",' // &
-               ' "y": "'       // dm_ftoa(sensor%y)    // '",' // &
-               ' "z": "'       // dm_ftoa(sensor%z)    // '" }'
+               ' "x": '        // dm_ftoa(sensor%x)    // ',' // &
+               ' "y": '        // dm_ftoa(sensor%y)    // ',' // &
+               ' "z": '        // dm_ftoa(sensor%z)    // ' }'
     end function json_from_sensor
 
     function json_from_sensors(sensors) result(json)
@@ -426,7 +426,7 @@ contains
                ' "state": ' // dm_itoa(target%state) // ','  // &
                ' "x": '     // dm_ftoa(target%x)     // ','  // &
                ' "y": '     // dm_ftoa(target%x)     // ','  // &
-               ' "z": '     // dm_ftoa(target%x)     // '" }'
+               ' "z": '     // dm_ftoa(target%x)     // ' }'
     end function json_from_target
 
     function json_from_targets(targets) result(json)
