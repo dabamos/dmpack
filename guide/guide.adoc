@@ -151,9 +151,9 @@ you will also need:
 == Installation
 
 This section describes how to build the DMPACK library and programs from source,
-with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager].
-At the moment, support for the Fortran Package Manager is experimental. The
-shared library `libgfortran.so` must be present on the target system if the
+with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
+(FPM). At the moment, support for the Fortran Package Manager is experimental.
+The shared library `libgfortran.so` must be present on the target system if the
 DMPACK programs have been compiled with GNU Fortran.
 
 DMPACK depends on the following interface libraries:
@@ -165,9 +165,9 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-unix[fortran-unix]
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 
-If the repository is cloned recursively with Git, the submodules will be
-downloaded automatically to directory `vendor/`. Without Git, this step has to
-be done manually by executing `fetchvendor.sh`, for example:
+If the repository is cloned recursively with Git, or if the project is built
+using FPM, the submodules will be downloaded automatically. Without Git or FPM,
+this step has to be done manually by executing `fetchvendor.sh`, for example:
 
 ....
 $ curl -L -s -o master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
@@ -177,8 +177,9 @@ $ sh fetchvendor.sh
 $ make [freebsd|linux]
 ....
 
-The script requires _curl(1)_ and _unzip(1)_. There are separate instructions
-for FreeBSD and Linux:
+The shell script requires _curl(1)_ and _unzip(1)_.
+
+There are separate instructions for FreeBSD and Linux:
 
 * <<freebsd>>
 ** <<freebsd-make>>
@@ -241,7 +242,8 @@ $ doas make install PREFIX=/opt
 | `/usr/local/bin/`            | DMPACK programs.
 | `/usr/local/etc/dmpack/`     | DMPACK configuration files.
 | `/usr/local/include/dmpack/` | DMPACK module files.
-| `/usr/local/lib/dmpack/`     | DMPACK libraries.
+| `/usr/local/lib/`            | DMPACK libraries.
+| `/usr/local/man/man1/`       | DMPACK man pages.
 | `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
 | `/var/dmpack/`               | DMPACK databases.
 | `/var/www/`                  | WWW root directory.
