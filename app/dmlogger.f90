@@ -244,7 +244,8 @@ contains
                         cycle db_loop
                     end if
 
-                    call dm_log(LOG_ERROR, 'failed to insert log ' // log%id, error=rc)
+                    call dm_log(LOG_ERROR, 'failed to insert log ' // trim(log%id) // ': ' // &
+                                dm_db_error_message(db), error=rc)
                     exit db_loop
                 end if
 
