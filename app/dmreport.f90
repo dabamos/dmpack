@@ -136,18 +136,23 @@ contains
         end if
     end function html_plot
 
-    function html_report_table(node_id, from, to) result(html)
+    function html_report_table(node, from, to) result(html)
         !! Returns HTML table of node id, from, to.
-        character(len=*), intent(in)  :: node_id !! Node id.
-        character(len=*), intent(in)  :: from    !! Start of time range.
-        character(len=*), intent(in)  :: to      !! End of time range.
-        character(len=:), allocatable :: html    !! Generated HTML.
+        type(node_type),  intent(inout) :: node !! Node type.
+        character(len=*), intent(in)    :: from !! Start of time range.
+        character(len=*), intent(in)    :: to   !! End of time range.
+        character(len=:), allocatable   :: html !! Generated HTML.
 
-        html = H_NAV // H_TABLE // H_TBODY // H_TR // &
-               H_TH // 'Node ID:' // H_TH_END // H_TD // dm_html_encode(node_id) // H_TD_END // &
-               H_TH // 'From:'    // H_TH_END // H_TD // dm_html_encode(from)    // H_TD_END // &
-               H_TH // 'To:'      // H_TH_END // H_TD // dm_html_encode(to)      // H_TD_END // &
-               H_TR_END // H_TBODY_END // H_TABLE_END // H_NAV_END
+        html = H_NAV // H_TABLE // H_TBODY // &
+               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_encode(from)      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'To:'        // H_TH_END // H_TD // dm_html_encode(to)        // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Meta:' // H_TH_END // H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node X:'    // H_TH_END // H_TD // dm_ftoa(node%x)           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Y:'    // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Z:'    // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // H_TR_END // &
+               H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
     integer function read_args(app) result(rc)
@@ -339,6 +344,23 @@ contains
         rc = max(dm_db_close(db), rc)
     end function read_logs
 
+    integer function read_node(node, node_id, database) result(rc)
+        !! Returns node of given id from observations database.
+        type(node_type),  intent(out) :: node     !! Returned node type from database.
+        character(len=*), intent(in)  :: node_id  !! Node id.
+        character(len=*), intent(in)  :: database !! Path to database.
+
+        type(db_type) :: db
+
+        db_block: block
+            rc = dm_db_open(db, database, read_only=.true.)
+            if (dm_is_error(rc)) exit db_block
+            rc = dm_db_select(db, node, node_id)
+        end block db_block
+
+        rc = max(dm_db_close(db), rc)
+    end function read_node
+
     subroutine create_report(report, error)
         !! Creates report in HTML format.
         type(report_type), intent(inout)         :: report !! Report type.
@@ -350,6 +372,7 @@ contains
 
         type(dp_type),  allocatable :: data_points(:)
         type(log_type), allocatable :: logs(:)
+        type(node_type)             :: node
 
         ! By default, print generated HTML to standard output.
         fu = stdout
@@ -387,7 +410,13 @@ contains
             end if
 
             ! Output report table.
-            write (fu, '(a)') html_report_table(report%node, report%from, report%to)
+            rc = read_node(node, report%node, report%plot%database)
+
+            if (dm_is_error(rc)) then
+                write (fu, '(a)') dm_html_error(rc)
+            else
+                write (fu, '(a)') html_report_table(node, report%from, report%to)
+            end if
 
             if (len_trim(report%meta) > 0) then
                 write (fu, '(a)') dm_html_p(dm_html_encode(report%meta))
