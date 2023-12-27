@@ -165,12 +165,20 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-unix[fortran-unix]
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 
-If the repository is cloned recursively, the submodules will be downloaded
-automatically to directory `vendor/`. Otherwise, this step has to be done
-manually by executing `fetchvendor.sh`. The script requires _curl(1)_ and
-_unzip(1)_.
+If the repository is cloned recursively with Git, the submodules will be
+downloaded automatically to directory `vendor/`. Without Git, this step has to
+be done manually by executing `fetchvendor.sh`, for example:
 
-There are separate instructions for FreeBSD and Linux:
+....
+$ curl -L -s -o master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip master.zip
+$ cd dmpack-master/
+$ sh fetchvendor.sh
+$ make [freebsd|linux]
+....
+
+The script requires _curl(1)_ and _unzip(1)_. There are separate instructions
+for FreeBSD and Linux:
 
 * <<freebsd>>
 ** <<freebsd-make>>
@@ -715,6 +723,9 @@ sensor.type: virtual
 sensor.name: Sensor 1
 sensor.sn: 12345
 sensor.meta: dummy sensor
+sensor.x: 0.000000000000
+sensor.y: 0.000000000000
+sensor.z: 0.000000000000
 ....
 
 === dmexport [[dmexport]]
@@ -2383,7 +2394,8 @@ Returns <<data-api-text,service status>> in API status format as `text/plain`.
 |===
 | Status | Description
 
-| 200    | Always.
+| `200`  | Default response.
+| `500`  | Server error.
 |===
 
 ==== Example

@@ -133,8 +133,8 @@ The DMPACK library and programs have to be built from source by either executing
 the provided Makefile, or by using the
 [Fortran Package Manager](https://fpm.fortran-lang.org/).
 
-The DMPACK programs require the shared library `libgfortran.so` if they have
-been compiled with GNU Fortran.
+See the [User’s Guide](https://www.dabamos.de/dmpack/guide/#_installation) for
+complete installation instructions.
 
 ### FreeBSD
 
@@ -181,22 +181,6 @@ $ make freebsd_debug DEBUG="-g -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-
   LDLIBS="-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer"
 ```
 
-#### Fortran Package Manager
-
-Either clone the repository with Git, or download and unpack the archive of the
-[master branch](https://github.com/dabamos/dmpack/archive/refs/heads/master.zip).
-Then, run:
-
-```
-$ cd dmpack/
-$ fpm build --profile release --flag "-D__FreeBSD__ -I/usr/local/include"
-$ fpm install
-```
-
-The Fortran Package Manager will fetch all third-party dependencies
-automatically. The library and programs will be installed to `~/.local` by
-default. The configuration and shared files have to be installed manually.
-
 ### Linux
 
 On Debian, install GCC, GNU Fortran, and the build environment:
@@ -237,26 +221,6 @@ To install to a custom directory, run:
 
 ```
 $ sudo make install PREFIX=/opt
-```
-
-#### Fortran Package Manager
-
-Support for the Fortran Package Manager on Linux is experimental. Clone or
-download the repository, then run:
-
-```
-$ cd dmpack/
-$ fpm build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5`"
-$ fpm install
-```
-
-The library and programs will be installed to `~/.local` by default. If the
-compilation fails with an error message that `-llua-5.4` cannot be found, update
-the build manifests first:
-
-```
-$ sed -i "s/lua-5/lua5/g" fpm.toml
-$ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 ```
 
 ### Updates
