@@ -16,7 +16,7 @@
 set -e
 
 UNZIP=unzip
-VENDOR=./vendor2
+VENDOR=./vendor
 
 LIBS="curl lua54 pcre2 sqlite3 unix zlib"
 
