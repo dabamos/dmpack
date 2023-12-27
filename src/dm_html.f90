@@ -1000,6 +1000,12 @@ contains
                H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
                H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'X' // H_TH_END // &
+               H_TD // dm_ftoa(node%x) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Y' // H_TH_END // &
+               H_TD // dm_ftoa(node%y) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Z' // H_TH_END // &
+               H_TD // dm_ftoa(node%z) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
@@ -1023,6 +1029,9 @@ contains
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
                H_TH // 'Meta' // H_TH_END // &
+               H_TH // 'X'    // H_TH_END // &
+               H_TH // 'Y'    // H_TH_END // &
+               H_TH // 'Z'    // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(nodes)
@@ -1038,7 +1047,11 @@ contains
             end if
 
             html = html // H_TD // dm_html_encode(nodes(i)%name) // H_TD_END // &
-                           H_TD // dm_html_encode(nodes(i)%meta) // H_TD_END //H_TR_END
+                           H_TD // dm_html_encode(nodes(i)%meta) // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%x)           // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%y)           // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%z)           // H_TD_END // &
+                           H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1385,6 +1398,12 @@ contains
                H_TD // dm_html_encode(sensor%sn) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
                H_TD // dm_html_encode(sensor%meta) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'X' // H_TH_END // &
+               H_TD // dm_ftoa(sensor%x) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Y' // H_TH_END // &
+               H_TD // dm_ftoa(sensor%y) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Z' // H_TH_END // &
+               H_TD // dm_ftoa(sensor%z) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_sensor
 
@@ -1412,6 +1431,9 @@ contains
                H_TH // 'Type'    // H_TH_END // &
                H_TH // 'S/N'     // H_TH_END // &
                H_TH // 'Meta'    // H_TH_END // &
+               H_TH // 'X'       // H_TH_END // &
+               H_TH // 'Y'       // H_TH_END // &
+               H_TH // 'Z'       // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)
@@ -1433,7 +1455,11 @@ contains
                    H_TD // dm_html_encode(sensors(i)%name) // H_TD_END // &
                    H_TD // trim(SENSOR_TYPE_NAMES(t)) // H_TD_END // &
                    H_TD // dm_html_encode(sensors(i)%sn) // H_TD_END // &
-                   H_TD // dm_html_encode(sensors(i)%meta) // H_TD_END // H_TR_END
+                   H_TD // dm_html_encode(sensors(i)%meta) // H_TD_END // &
+                   H_TD // dm_ftoa(sensors(i)%x) // H_TD_END // &
+                   H_TD // dm_ftoa(sensors(i)%y) // H_TD_END // &
+                   H_TD // dm_ftoa(sensors(i)%z) // H_TD_END // &
+                   H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1529,7 +1555,8 @@ contains
                            H_TD // dm_target_state_name(targets(i)%state) // H_TD_END // &
                            H_TD // dm_ftoa(targets(i)%x)                  // H_TD_END // &
                            H_TD // dm_ftoa(targets(i)%y)                  // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%z)                  // H_TD_END // H_TR_END
+                           H_TD // dm_ftoa(targets(i)%z)                  // H_TD_END // &
+                           H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END

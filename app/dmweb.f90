@@ -753,6 +753,9 @@ contains
                 end if
 
                 rc = dm_cgi_get(param, 'meta', node%meta)
+                rc = dm_cgi_get(param, 'x',    node%x)
+                rc = dm_cgi_get(param, 'y',    node%y)
+                rc = dm_cgi_get(param, 'z',    node%z)
 
                 ! Valid node data?
                 if (.not. dm_node_valid(node)) then
@@ -1301,6 +1304,9 @@ contains
 
                 rc = dm_cgi_get(param, 'sn',   sensor%sn)
                 rc = dm_cgi_get(param, 'meta', sensor%meta)
+                rc = dm_cgi_get(param, 'x',    sensor%x)
+                rc = dm_cgi_get(param, 'y',    sensor%y)
+                rc = dm_cgi_get(param, 'z',    sensor%z)
 
                 ! Valid sensor data?
                 if (.not. dm_sensor_valid(sensor)) then
@@ -1712,14 +1718,16 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // H_DIV_COL // &
+               H_DIV_ROW // &
+               H_DIV_COL // &
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Source', for='source') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='source', name='source', &
                              max_length=LOG_SOURCE_LEN, pattern='[\-0-9A-Za-z]+', &
@@ -1728,12 +1736,14 @@ contains
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Log Level', for='level') // &
                dm_html_select(select_level, 'level', 'level', level_) // &
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // H_DIV_END //  &
+               H_DIV_END // &
+               H_DIV_END //  &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Search') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -1757,7 +1767,9 @@ contains
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Node' // H_SUMMARY_END // &
                H_P // 'Add a new sensor node to the database.' // H_P_END // &
-               H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
+               H_FORM_POST // H_FIELDSET // &
+               H_DIV_ROW // &
+               H_DIV_COL // &
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=NODE_ID_LEN, pattern='[\-0-9A-Za-z]+', &
@@ -1766,11 +1778,22 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=NODE_NAME_LEN, placeholder='Enter node name', &
                              required=.true.) // &
-               H_DIV_END // H_DIV_COL // &
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=NODE_META_LEN, placeholder='Enter node description (optional)') // &
-               H_DIV_END // H_DIV_END // &
+               H_DIV_END // &
+               H_DIV_COL // &
+               dm_html_label('X', for='x') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node easting (optional)') // &
+               dm_html_label('Y', for='y') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node northing (optional)') // &
+               dm_html_label('Z', for='z') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node altitude (optional)') // &
+               H_DIV_END // &
+               H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_nodes
@@ -1848,22 +1871,26 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // H_DIV_COL // &
+               H_DIV_ROW // &
+               H_DIV_COL // &
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('From', for='from') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // H_DIV_END //  &
+               H_DIV_END // &
+               H_DIV_END //  &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled, name='submit', value='Search') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -1953,14 +1980,16 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // H_DIV_COL // &
+               H_DIV_ROW // &
+               H_DIV_COL // &
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Response Name', for='response_name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='response_name', name='response_name', &
                              max_length=RESPONSE_NAME_LEN, pattern='[\-0-9A-Za-z]+', &
@@ -1970,10 +1999,12 @@ contains
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // H_DIV_END //  &
+               H_DIV_END // &
+               H_DIV_END //  &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled, name='submit', value='Plot') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -2011,7 +2042,9 @@ contains
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Sensor' // H_SUMMARY_END // &
                H_P // 'Add a new sensor to the database.' // H_P_END // &
-               H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
+               H_FORM_POST // H_FIELDSET // &
+               H_DIV_ROW // &
+               H_DIV_COL // &
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', '', disabled=disabled_) // &
                dm_html_label('ID', for='id') // &
@@ -2022,7 +2055,8 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=SENSOR_NAME_LEN, placeholder='Enter sensor name', &
                              required=.true.) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // &
+               H_DIV_COL // &
                dm_html_label('Type', for='type') // &
                dm_html_select(select_sensor_type, 'type', 'type', dm_itoa(SENSOR_TYPE_NONE), disabled=disabled_) // &
                dm_html_label('Serial Number', for='sn') // &
@@ -2031,7 +2065,19 @@ contains
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=SENSOR_META_LEN, placeholder='Enter sensor description (optional)') // &
-               H_DIV_END // H_DIV_END // &
+               H_DIV_END // &
+               H_DIV_COL // &
+               dm_html_label('X', for='x') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor easting (optional)') // &
+               dm_html_label('Y', for='y') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor northing (optional)') // &
+               dm_html_label('Z', for='z') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor altitude (optional)') // &
+               H_DIV_END // &
+               H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
 
@@ -2060,7 +2106,9 @@ contains
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Target' // H_SUMMARY_END // &
                H_P // 'Add a new target to the database.' // H_P_END // &
-               H_FORM_POST // H_FIELDSET // H_DIV_ROW // H_DIV_COL // &
+               H_FORM_POST // H_FIELDSET // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=TARGET_ID_LEN, pattern='[\-0-9A-Za-z]+', &
@@ -2074,7 +2122,8 @@ contains
                              max_length=TARGET_META_LEN, placeholder='Enter target description (optional)') // &
                dm_html_label('State', for='state') // &
                dm_html_select(select_target_state, 'state', 'state', dm_itoa(TARGET_STATE_NONE), disabled=disabled_) // &
-               H_DIV_END // H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter target easting (optional)') // &
@@ -2084,7 +2133,8 @@ contains
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter target altitude (optional)') // &
-               H_DIV_END // H_DIV_END // &
+               H_DIV_END // & ! end column 2
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_targets
