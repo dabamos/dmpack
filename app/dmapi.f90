@@ -1929,13 +1929,13 @@ contains
             return
         end if
 
-        if (index(env%http_accept, MIME_JSON) > 0) then
-            content_type = MIME_JSON
+        if (index(env%http_accept, MIME_JSONL) > 0) then
+            content_type = MIME_JSONL
             return
         end if
 
-        if (index(env%http_accept, MIME_JSONL) > 0) then
-            content_type = MIME_JSONL
+        if (index(env%http_accept, MIME_JSON) > 0) then
+            content_type = MIME_JSON
             return
         end if
 
