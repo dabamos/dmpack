@@ -43,14 +43,14 @@ contains
         character(len=*), parameter :: FMT_ISO = &
             '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.3, a)'
 
-        integer,          intent(in), optional :: year     !! Year (YYYY).
-        integer,          intent(in), optional :: month    !! Month (MM).
-        integer,          intent(in), optional :: day      !! Day (DD).
-        integer,          intent(in), optional :: hour     !! Hour (hh).
-        integer,          intent(in), optional :: minute   !! Minute (mm).
-        integer,          intent(in), optional :: second   !! Second (ss).
-        integer,          intent(in), optional :: msecond  !! Millisecond (fff).
-        character(len=6), intent(in), optional :: zone     !! Timezone ([+|-]hh:mm).
+        integer,          intent(in), optional :: year     !! Year (`YYYY`).
+        integer,          intent(in), optional :: month    !! Month (`MM`).
+        integer,          intent(in), optional :: day      !! Day (`DD`).
+        integer,          intent(in), optional :: hour     !! Hour (`hh`).
+        integer,          intent(in), optional :: minute   !! Minute (`mm`).
+        integer,          intent(in), optional :: second   !! Second (`ss`).
+        integer,          intent(in), optional :: msecond  !! Millisecond (`fff`).
+        character(len=6), intent(in), optional :: zone     !! Timezone (`[+|-]hh:mm`).
 
         integer          :: year_, month_, day_
         integer          :: hour_, minute_, second_, msecond_
@@ -319,17 +319,22 @@ contains
                 case (25:26)
                 case (28:29)
                     if (.not. dm_ascii_is_digit(a)) return
+
                 case (5)
                 case (8)
                     if (a /= '-') return
+
                 case (11)
                     if (a /= 'T') return
+
                 case (14)
                 case (17)
                 case (27)
                     if (a /= ':') return
+
                 case (20)
                     if (a /= '.') return
+
                 case (24)
                     if (a /= '+' .and. a /= '-') return
             end select

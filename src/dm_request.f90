@@ -243,11 +243,11 @@ contains
         write (unit_, '("request.nresponses: ", i0)') request%nresponses
 
         do i = 1, request%nresponses
-            write (unit_, '("request.responses(", i0, ").name: ", a)')     i, trim(request%responses(i)%name)
-            write (unit_, '("request.responses(", i0, ").unit: ", a)')     i, trim(request%responses(i)%unit)
-            write (unit_, '("request.responses(", i0, ").type: ", a)')     i, request%responses(i)%type
-            write (unit_, '("request.responses(", i0, ").error: ", i0)')   i, request%responses(i)%error
-            write (unit_, '("request.responses(", i0, ").value: ", f0.8)') i, request%responses(i)%value
+            write (unit_, '("request.responses(", i0, ").name: ", a)')        i, trim(request%responses(i)%name)
+            write (unit_, '("request.responses(", i0, ").unit: ", a)')        i, trim(request%responses(i)%unit)
+            write (unit_, '("request.responses(", i0, ").type: ", a)')        i, request%responses(i)%type
+            write (unit_, '("request.responses(", i0, ").error: ", i0)')      i, request%responses(i)%error
+            write (unit_, '("request.responses(", i0, ").value: ", 1pg0.12)') i, request%responses(i)%value
         end do
     end subroutine dm_request_out
 

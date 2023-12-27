@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2023-12-22
+.\"      Date: 2023-12-27
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2023-12-22" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2023-12-27" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -48,7 +48,8 @@ supported. Data attributes are passed through command\-line arguments.
 .sp
 \fB\-\-altitude\fP, \fB\-Z\fP \fIz\fP
 .RS 4
-Target Z.
+Node, sensor, or target z, usually in meters. May be in local or global
+coordinate system.
 .RE
 .sp
 \fB\-\-create\fP, \fB\-C\fP [node|sensor|target]
@@ -68,7 +69,8 @@ Delete database record (node, sensor, or target).
 .sp
 \fB\-\-easting\fP, \fB\-X\fP \fIx\fP
 .RS 4
-Target X.
+Node, sensor, or target x, usually in meters. May be in local or global
+coordinate system.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP
@@ -98,7 +100,8 @@ ID of the node the sensor is attached to.
 .sp
 \fB\-\-northing\fP, \fB\-Y\fP \fIy\fP
 .RS 4
-Target Y.
+Node, sensor, or target y, usually in meters. May be in local or global
+coordinate system.
 .RE
 .sp
 \fB\-\-read\fP, \fB\-R\fP [node|sensor|target]

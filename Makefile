@@ -197,12 +197,12 @@ DMWEB    = $(DISTDIR)/dmweb
 
 # Library source files.
 SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
-      src/dm_string.f90 src/dm_type.f90 src/dm_format.f90 src/dm_const.f90 \
-      src/dm_error.f90 src/dm_ansi.f90 src/dm_convert.f90 src/dm_env.f90 \
-      src/dm_util.f90 src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 \
-      src/dm_path.f90 src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 \
-      src/dm_hdf5.f90 src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 \
-      src/dm_arg.f90 src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 \
+      src/dm_const.f90 src/dm_error.f90 src/dm_string.f90 src/dm_type.f90 \
+      src/dm_format.f90 src/dm_ansi.f90 src/dm_env.f90 src/dm_util.f90 \
+      src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 src/dm_path.f90 \
+      src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 src/dm_hdf5.f90 \
+      src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_arg.f90 \
+      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 \
       src/dm_tty.f90 src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 \
       src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 \
       src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 \
@@ -220,8 +220,8 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_mqueue_util.f90 src/dmpack.f90
 
 # Library object files.
-OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_string.o dm_type.o \
-      dm_format.o dm_const.o dm_error.o dm_ansi.o dm_convert.o dm_env.o \
+OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o \
+      dm_error.o dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o \
       dm_util.o dm_time.o dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o \
       dm_hash_table.o dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o \
       dm_signal.o dm_system.o dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o \
@@ -346,13 +346,12 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_kind.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_string.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_type.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_format.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_ansi.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_convert.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_env.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_util.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_time.f90

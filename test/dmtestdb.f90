@@ -48,7 +48,7 @@ program dmtestdb
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 17
+    integer, parameter :: NTESTS   = 18
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -70,6 +70,7 @@ program dmtestdb
     tests(15) = test_type('dmtestdb.test15', test15)
     tests(16) = test_type('dmtestdb.test16', test16)
     tests(17) = test_type('dmtestdb.test17', test17)
+    tests(18) = test_type('dmtestdb.test18', test18)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -136,9 +137,9 @@ contains
         allocate (in(3))
 
         ! Sensor nodes.
-        in = [ node_type('z', 'Test Node Z', 'A test node.'), &
-               node_type('a', 'Test Node A', 'A test node.'), &
-               node_type('b', 'Test Node B', 'A test node.') ]
+        in = [ node_type('a', 'Test Node A', 'A test node.'), &
+               node_type('b', 'Test Node B', 'A test node.'), &
+               node_type('z', 'Test Node Z', 'A test node.') ]
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
         rc = dm_db_open(db, DB_OBSERV)
@@ -146,23 +147,39 @@ contains
         if (dm_is_error(rc)) return
 
         test_block: block
+            print *, 'Adding nodes ...'
             do i = 1, size(in)
                 rc = dm_db_insert_node(db, in(i))
                 if (dm_is_error(rc)) exit test_block
                 print *, 'Added node "' // trim(in(i)%name) // '"'
             end do
 
+            print *, 'Selecting nodes ...'
             rc = dm_db_select_nodes(db, out)
             if (dm_is_error(rc)) exit test_block
-            print *, 'Read nodes'
 
+            print *, 'Validating number of nodes ...'
             if (.not. allocated(out)) return
             if (size(in) /= size(out)) return
-            print *, 'Node data match'
 
+            print *, 'Validating nodes ...'
             rc = E_INVALID
             do i = 1, size(out)
-                if (.not. (in(i) == out(i))) exit test_block
+                if (.not. (in(i) == out(i))) then
+                    print *, 'Expected:'
+                    print '(72("."))'
+                    call dm_node_out(in(i))
+                    print '(72("."))'
+                    print *, 'Received:'
+                    print '(72("."))'
+                    call dm_node_out(out(i))
+                    print '(72("."))'
+                    exit test_block
+                end if
+            end do
+
+            print *, 'Deleting ...'
+            do i = 1, size(out)
                 print *, 'Deleting "' // trim(in(i)%id) // '" ...'
                 if (dm_db_delete_node(db, in(i)%id) /= E_NONE) exit test_block
             end do
@@ -234,13 +251,43 @@ contains
 
             rc = E_INVALID
             print *, 'Matching nodes ...'
-            if (.not. (node1 == node2)) exit test_block
+            if (.not. (node1 == node2)) then
+                print *, 'Expected:'
+                print '(72("."))'
+                call dm_node_out(node1)
+                print '(72("."))'
+                print *, 'Received:'
+                print '(72("."))'
+                call dm_node_out(node2)
+                print '(72("."))'
+                exit test_block
+            end if
 
             print *, 'Matching sensors ...'
-            if (.not. (sensor1 == sensor2)) exit test_block
+            if (.not. (sensor1 == sensor2)) then
+                print *, 'Expected:'
+                print '(72("."))'
+                call dm_sensor_out(sensor1)
+                print '(72("."))'
+                print *, 'Received:'
+                print '(72("."))'
+                call dm_sensor_out(sensor2)
+                print '(72("."))'
+                exit test_block
+            end if
 
             print *, 'Matching targets ...'
-            if (.not. (target1 == target2)) exit test_block
+            if (.not. (target1 == target2)) then
+                print *, 'Expected:'
+                print '(72("."))'
+                call dm_target_out(target1)
+                print '(72("."))'
+                print *, 'Received:'
+                print '(72("."))'
+                call dm_target_out(target2)
+                print '(72("."))'
+                exit test_block
+            end if
             rc = E_NONE
         end block test_block
 
@@ -567,7 +614,7 @@ contains
 
             print *, 'Creating tables ...'
             rc = dm_db_create_logs(db, sync=.true.)
-            call dm_error_out(rc)
+            if (dm_is_error(rc)) exit test_block
         end block test_block
 
         call dm_error_out(rc)
@@ -761,8 +808,9 @@ contains
 
     logical function test14() result(stat)
         !! Tests creation of beat database
-        integer         :: rc
+        integer         :: rc, rc2
         type(beat_type) :: beat1, beat2
+        type(beat_type) :: beats(2)
         type(db_type)   :: db
 
         stat = TEST_FAILED
@@ -790,19 +838,28 @@ contains
             beat1%address = '127.0.0.1'
 
             print *, 'Adding beat ...'
-            rc = dm_db_insert_beat(db, beat1)
-            call dm_error_out(rc)
+            rc = dm_db_insert(db, beat1)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Selecting beat ...'
-            rc = dm_db_select_beat(db, beat2, beat1%node_id)
-            call dm_error_out(rc)
+            rc = dm_db_select(db, beat2, beat1%node_id)
             if (dm_is_error(rc)) exit test_block
+
+            print *, 'Adding beats ...'
+            call dm_dummy_beat(beats)
+            beats(1)%node_id = 'dummy-node-1'
+            beats(2)%node_id = 'dummy-node-2'
+            rc = dm_db_insert(db, beats)
         end block test_block
 
         print *, 'Closing database "' // DB_BEAT // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        rc2 = dm_db_close(db)
+
+        call dm_error_out(rc)
+        call dm_error_out(rc2)
+
         if (dm_is_error(rc)) return
+        if (dm_is_error(rc2)) return
 
         print *, 'Matching beats ...'
         if (.not. (beat1 == beat2)) return
@@ -842,10 +899,11 @@ contains
 
     logical function test16() result(stat)
         !! Tests JSON output of SQLite.
-        character(len=1024), allocatable :: json_logs(:)
-        integer                          :: rc
-        integer(kind=i8)                 :: nlogs
-        type(db_type)                    :: db
+        character(len=DB_JSON_LOG_LEN), allocatable :: json_logs(:)
+
+        integer          :: rc
+        integer(kind=i8) :: nlogs
+        type(db_type)    :: db
 
         stat = TEST_FAILED
 
@@ -862,11 +920,15 @@ contains
             if (size(json_logs) /= 1) exit test_block
 
             print '(" Length: ", i0)', len_trim(json_logs(1))
-            print '(" JSON..: ", a)',  trim(json_logs(1))
+            print *, 'JSON:'
+            print '(72("."))'
+            print '(a)', trim(json_logs(1))
+            print '(72("."))'
 
             rc = E_NONE
         end block test_block
 
+        call dm_error_out(rc)
         print *, 'Closing database "' // DB_LOG // '" ...'
         if (dm_db_close(db) /= E_NONE) return
         if (dm_is_error(rc)) return
@@ -875,6 +937,48 @@ contains
     end function test16
 
     logical function test17() result(stat)
+        !! Tests JSON output of SQLite.
+        character(len=DB_JSON_BEAT_LEN), allocatable :: json_beats(:)
+
+        integer          :: rc
+        integer(kind=i8) :: nbeats
+        type(db_type)    :: db
+
+        stat = TEST_FAILED
+
+        print *, 'Opening database "' // DB_BEAT // '" ...'
+        if (dm_db_open(db, DB_BEAT) /= E_NONE) return
+
+        test_block: block
+            print *, 'Selecting beats in JSON format ...'
+            rc = dm_db_select_json_beats(db, json_beats, limit=1_i8, nbeats=nbeats)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = E_ERROR
+            if (.not. allocated(json_beats)) exit test_block
+            if (size(json_beats) /= 1) exit test_block
+
+            print '(" Length: ", i0)', len_trim(json_beats(1))
+            print *, 'JSON:'
+            print '(72("."))'
+            print '(a)', trim(json_beats(1))
+            print '(72("."))'
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_error_out(rc)
+        print *, 'Closing database "' // DB_BEAT // '" ...'
+        if (dm_db_close(db) /= E_NONE) return
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating number of beats in database ...'
+        if (nbeats /= 3_i8) return
+
+        stat = TEST_PASSED
+    end function test17
+
+    logical function test18() result(stat)
         !! Tests PRAGMAs.
         integer, parameter :: USER_VERSION = 1
 
@@ -924,5 +1028,5 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function test17
+    end function test18
 end program dmtestdb

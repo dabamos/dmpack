@@ -63,6 +63,10 @@ module dm_db
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31')   !! Application id of DMPACK databases (`DM1` in ASCII).
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000             !! Default SQLite 3 busy timeout in mseconds.
 
+    ! JSON string lengths.
+    integer, parameter, public :: DB_JSON_BEAT_LEN = 256                !! Max. length of single beat in JSON format.
+    integer, parameter, public :: DB_JSON_LOG_LEN  = 1024               !! Max. length of single log in JSON format.
+
     type, public :: db_type
         !! Opaque SQLite database connectivity type.
         private
@@ -131,6 +135,7 @@ module dm_db
     interface dm_db_insert
         !! Generic database insert function.
         module procedure :: dm_db_insert_beat
+        module procedure :: dm_db_insert_beats
         module procedure :: dm_db_insert_log
         module procedure :: dm_db_insert_node
         module procedure :: dm_db_insert_observ
@@ -157,12 +162,6 @@ module dm_db
         module procedure :: dm_db_select_sensors
         module procedure :: dm_db_select_target
         module procedure :: dm_db_select_targets
-    end interface
-
-    interface dm_db_select_json
-        !! Generic database select function with JSON result.
-        module procedure :: dm_db_select_json_log
-        module procedure :: dm_db_select_json_logs
     end interface
 
     interface dm_db_update
@@ -224,6 +223,7 @@ module dm_db
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
+    public :: dm_db_insert_beats
     public :: dm_db_insert_log
     public :: dm_db_insert_node
     public :: dm_db_insert_observ
@@ -245,7 +245,8 @@ module dm_db
     public :: dm_db_select_beat
     public :: dm_db_select_beats
     public :: dm_db_select_data_points
-    public :: dm_db_select_json
+    public :: dm_db_select_json_beat
+    public :: dm_db_select_json_beats
     public :: dm_db_select_json_log
     public :: dm_db_select_json_logs
     public :: dm_db_select_log
@@ -414,13 +415,13 @@ contains
 
     integer function dm_db_close(db, optimize) result(rc)
         !! Closes connection to SQLite database. Optimises the database by
-        !! default. Returns `E_DB` on error.
+        !! if `optimize` is `.true.`. Returns `E_DB` on error.
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
         logical :: optimize_
 
-        optimize_ = .true.
+        optimize_ = .false.
         if (present(optimize)) optimize_ = optimize
         if (optimize_) rc = dm_db_optimize(db)
 
@@ -824,8 +825,8 @@ contains
         if (len_trim(observ_id) == 0) return
 
         ! Start transaction.
-        rc = E_DB_TRANSACTION
-        if (dm_is_error(db_begin(db))) return
+        rc = db_begin(db)
+        if (dm_is_error(rc)) return
 
         sql_block: block
             ! Delete observation.
@@ -1306,10 +1307,11 @@ contains
         rc = E_NONE
     end function dm_db_init
 
-    integer function dm_db_insert_beat(db, beat) result(rc)
+    integer function dm_db_insert_beat(db, beat, db_stmt) result(rc)
         !! Adds the given heartbeat to database.
-        type(db_type),   intent(inout) :: db   !! Database type.
-        type(beat_type), intent(inout) :: beat !! Beat to insert.
+        type(db_type),      intent(inout)           :: db      !! Database type.
+        type(beat_type),    intent(inout)           :: beat    !! Beat to insert.
+        type(db_stmt_type), intent(inout), optional :: db_stmt !! Database statement type.
 
         integer     :: stat
         type(c_ptr) :: stmt
@@ -1320,9 +1322,15 @@ contains
         rc = E_INVALID
         if (.not. dm_beat_valid(beat)) return
 
+        ! Set given statement.
+        stmt = c_null_ptr
+        if (present(db_stmt)) stmt = db_stmt%ptr
+
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_BEAT, stmt) /= SQLITE_OK) exit sql_block
+            if (.not. c_associated(stmt)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_BEAT, stmt) /= SQLITE_OK) exit sql_block
+            end if
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(beat%node_id))   /= SQLITE_OK) exit sql_block
@@ -1337,11 +1345,61 @@ contains
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
 
+            rc = E_DB
+            if (sqlite3_reset(stmt) /= SQLITE_OK) exit sql_block
+
             rc = E_NONE
         end block sql_block
 
-        stat = sqlite3_finalize(stmt)
+        if (present(db_stmt)) then
+            db_stmt%ptr = stmt
+        else
+            stat = sqlite3_finalize(stmt)
+        end if
     end function dm_db_insert_beat
+
+    integer function dm_db_insert_beats(db, beats, transaction) result(rc)
+        !! Adds array of beats to database. A transaction is used unless
+        !! `transaction` is `.false.`.
+        type(db_type),   intent(inout)        :: db          !! Database type.
+        type(beat_type), intent(inout)        :: beats(:)    !! Beat type array.
+        logical,         intent(in), optional :: transaction !! Use SQL transaction.
+
+        integer            :: i, stat
+        logical            :: transaction_
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_EMPTY
+        if (size(beats) == 0) return
+
+        transaction_ = .true.
+        if (present(transaction)) transaction_ = transaction
+
+        ! Start transaction.
+        if (transaction_) then
+            rc = db_begin(db)
+            if (dm_is_error(rc)) return
+        end if
+
+        ! Re-use statement.
+        do i = 1, size(beats)
+            rc = dm_db_insert_beat(db, beats(i), db_stmt)
+            if (dm_is_error(rc)) exit
+        end do
+
+        stat = dm_db_finalize(db_stmt)
+
+        if (transaction_) then
+            ! Commit transaction.
+            if (dm_is_ok(rc)) rc = db_commit(db)
+            if (dm_is_ok(rc)) return
+            ! Rollback transaction.
+            if (dm_is_error(db_rollback(db))) rc = E_DB_ROLLBACK
+        end if
+    end function dm_db_insert_beats
 
     integer function dm_db_insert_log(db, log) result(rc)
         !! Adds the given log to database.
@@ -1401,9 +1459,12 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(node%id))   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 2, trim(node%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(node%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 1, trim(node%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 2, trim(node%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 3, trim(node%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 4, node%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 5, node%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, node%z)          /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -1493,7 +1554,9 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (.not. present(db_stmt)) then
+        if (present(db_stmt)) then
+            db_stmt%ptr = stmt
+        else
             if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         end if
 
@@ -1504,7 +1567,6 @@ contains
         end if
 
         if (dm_is_error(db_release(db, SAVE_POINT))) rc = E_DB_TRANSACTION
-        if (present(db_stmt)) db_stmt%ptr = stmt
     end function dm_db_insert_observ
 
     integer function dm_db_insert_observs(db, observs, transaction) result(rc)
@@ -1514,29 +1576,32 @@ contains
         type(observ_type), intent(inout)        :: observs(:)  !! Observation type array.
         logical,           intent(in), optional :: transaction !! Use SQL transaction.
 
-        integer            :: i
+        integer            :: i, stat
         logical            :: transaction_
-        type(db_stmt_type) :: stmt
+        type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
+
+        rc = E_EMPTY
+        if (size(observs) == 0) return
 
         transaction_ = .true.
         if (present(transaction)) transaction_ = transaction
 
         ! Start transaction.
         if (transaction_) then
-            rc = E_DB_TRANSACTION
-            if (dm_is_error(db_begin(db))) return
+            rc = db_begin(db)
+            if (dm_is_error(rc)) return
         end if
 
         ! Re-use statement.
         do i = 1, size(observs)
-            rc = dm_db_insert_observ(db, observs(i), stmt)
+            rc = dm_db_insert_observ(db, observs(i), db_stmt)
             if (dm_is_error(rc)) exit
         end do
 
-        if (sqlite3_finalize(stmt%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
+        stat = dm_db_finalize(db_stmt)
 
         if (transaction_) then
             ! Commit transaction.
@@ -1566,12 +1631,15 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(sensor%id))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 2, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 3, sensor%type)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 4, trim(sensor%name))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 5, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 6, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 1, trim(sensor%id))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 2, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt, 3, sensor%type)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 4, trim(sensor%name))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 5, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 6, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, sensor%x)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, sensor%y)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 9, sensor%z)             /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -1869,7 +1937,7 @@ contains
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(beat_type), allocatable, intent(out)           :: beats(:) !! Returned beat types.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of beats.
-        integer(kind=i8),             intent(out), optional :: nbeats   !! Number of beats.
+        integer(kind=i8),             intent(out), optional :: nbeats   !! Total number of beats in database.
 
         integer          :: stat
         integer(kind=i8) :: i, n
@@ -1880,16 +1948,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NBEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
-            else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NBEATS, stmt) /= SQLITE_OK) exit sql_block
-            end if
-
-            if (present(limit)) then
-                rc = E_DB_BIND
-                if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
-            end if
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NBEATS, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1897,6 +1956,9 @@ contains
 
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+
+            if (present(nbeats)) nbeats = n
+            if (present(limit)) n = min(limit, n)
 
             rc = E_ALLOC
             allocate (beats(n), stat=stat)
@@ -1906,15 +1968,20 @@ contains
             if (n == 0) exit sql_block
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, stmt) /= SQLITE_OK) exit sql_block
+            if (present(limit)) then
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+
+                rc = E_DB_BIND
+                if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
+            else
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, stmt) /= SQLITE_OK) exit sql_block
+            end if
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, beats(i))
             end do
-
-            if (present(nbeats)) nbeats = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2005,10 +2072,109 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_data_points
 
+    integer function dm_db_select_json_beat(db, json_beat, node_id) result(rc)
+        !! Returns heartbeat associated with given node id in JSON format.
+        type(db_type),                 intent(inout) :: db        !! Database type.
+        character(len=:), allocatable, intent(out)   :: json_beat !! Returned JSON.
+        character(len=*),              intent(in)    :: node_id   !! Node id.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEAT, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_BIND
+            if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
+
+            json_beat = sqlite3_column_text(stmt, 0)
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_select_json_beat
+
+    integer function dm_db_select_json_beats(db, json_beats, limit, nbeats) result(rc)
+        !! Returns beats in JSON format in allocatable character array
+        !! `json_beats`, each of length `DB_JSON_BEAT_LEN`. The actual length
+        !! of the JSON object may be less than the maximum character length.
+        !!
+        !! An optional limit may be passed. The number of beats `nbeats` may be
+        !! greater than `limit`. If no beats have been found, the array will
+        !! be empty, and the function returns `E_DB_NO_ROWS`.
+        type(db_type),                                intent(inout)         :: db            !! Database type.
+        character(len=DB_JSON_BEAT_LEN), allocatable, intent(out)           :: json_beats(:) !! Returned JSON array.
+        integer(kind=i8),                             intent(in),  optional :: limit         !! Max. number of beats.
+        integer(kind=i8),                             intent(out), optional :: nbeats        !! Total number of beats.
+
+        integer          :: stat
+        integer(kind=i8) :: i, n
+        type(c_ptr)      :: stmt
+
+        if (present(nbeats)) nbeats = 0_i8
+        n = 0_i8
+
+        sql_block: block
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NBEATS, stmt) /= SQLITE_OK) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+            n = sqlite3_column_int64(stmt, 0)
+
+            rc = E_DB_FINALIZE
+            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+
+            if (present(nbeats)) nbeats = n
+            if (present(limit)) n = min(limit, n)
+
+            rc = E_ALLOC
+            allocate (json_beats(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            if (present(limit)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+
+                rc = E_DB_BIND
+                if (sqlite3_bind_int64(stmt, 1, n) /= SQLITE_OK) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS, stmt) /= SQLITE_OK) exit sql_block
+            end if
+
+            do i = 1, n
+                rc = E_DB_NO_ROWS
+                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+                if (i == 1) then
+                    rc = E_DB_TYPE
+                    if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
+                end if
+
+                json_beats(i) = sqlite3_column_text(stmt, 0)
+            end do
+
+            rc = E_NONE
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_select_json_beats
+
     integer function dm_db_select_json_log(db, json_log, log_id) result(rc)
         !! Returns log associated with given id as allocatable character in
-        !! JSON format in `json_log`. If no log has been found, the string is
-        !! empty and the function returns `E_DB_NO_ROWS`.
+        !! JSON format in `json_log`. If no log has been found, the string will
+        !! be empty and the function returns `E_DB_NO_ROWS`.
         character(len=*), parameter :: QUERY = ' WHERE id = ?'
 
         type(db_type),                 intent(inout) :: db       !! Database type.
@@ -2042,22 +2208,26 @@ contains
     integer function dm_db_select_json_logs(db, json_logs, node_id, sensor_id, target_id, source, &
                                             from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
         !! Returns logs in JSON format in allocatable character array
-        !! `json_logs`, each of length 1024. The actual length of the JSON
-        !! object may be less than the maximum character length.
-        type(db_type),                    intent(inout)         :: db           !! Database type.
-        character(len=1024), allocatable, intent(out)           :: json_logs(:) !! Returned JSON array.
-        character(len=*),                 intent(in),  optional :: node_id      !! Node id.
-        character(len=*),                 intent(in),  optional :: sensor_id    !! Sensor id.
-        character(len=*),                 intent(in),  optional :: target_id    !! Target id.
-        character(len=*),                 intent(in),  optional :: source       !! Source name.
-        character(len=*),                 intent(in),  optional :: from         !! Begin of time range.
-        character(len=*),                 intent(in),  optional :: to           !! End of time range.
-        integer,                          intent(in),  optional :: min_level    !! Minimum log level.
-        integer,                          intent(in),  optional :: max_level    !! Maximum log level.
-        integer,                          intent(in),  optional :: error        !! Error code.
-        logical,                          intent(in),  optional :: desc         !! Descending order.
-        integer(kind=i8),                 intent(in),  optional :: limit        !! Max. numbers of logs.
-        integer(kind=i8),                 intent(out), optional :: nlogs        !! Total number of logs.
+        !! `json_logs`, each of length `DB_JSON_LOG_LEN`. The actual length of
+        !! the JSON object may be less than the maximum character length.
+        !!
+        !! An optional limit may be passed. The number of logs `nlogs` may be
+        !! greater than `limit`. If no logs have been found, the array will
+        !! be empty, and the function returns `E_DB_NO_ROWS`.
+        type(db_type),                               intent(inout)         :: db           !! Database type.
+        character(len=DB_JSON_LOG_LEN), allocatable, intent(out)           :: json_logs(:) !! Returned JSON array.
+        character(len=*),                            intent(in),  optional :: node_id      !! Node id.
+        character(len=*),                            intent(in),  optional :: sensor_id    !! Sensor id.
+        character(len=*),                            intent(in),  optional :: target_id    !! Target id.
+        character(len=*),                            intent(in),  optional :: source       !! Source name.
+        character(len=*),                            intent(in),  optional :: from         !! Begin of time range.
+        character(len=*),                            intent(in),  optional :: to           !! End of time range.
+        integer,                                     intent(in),  optional :: min_level    !! Minimum log level.
+        integer,                                     intent(in),  optional :: max_level    !! Maximum log level.
+        integer,                                     intent(in),  optional :: error        !! Error code.
+        logical,                                     intent(in),  optional :: desc         !! Descending order.
+        integer(kind=i8),                            intent(in),  optional :: limit        !! Max. numbers of logs.
+        integer(kind=i8),                            intent(out), optional :: nlogs        !! Total number of logs.
 
         character(len=:), allocatable :: query
         integer                       :: k, stat
@@ -2219,9 +2389,10 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_ALLOC
             if (present(nlogs)) nlogs = n
             if (has_limit) n = min(n, limit)
+
+            rc = E_ALLOC
             allocate (json_logs(n), stat=stat)
             if (stat /= 0) exit sql_block
 
@@ -2243,15 +2414,17 @@ contains
             k  = 1
 
             if (has_param) then
+                ! Bind query parameters.
                 if (dm_is_error(db_bind_logs(k))) exit sql_block
             end if
 
             if (has_limit) then
-                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
+                ! Bind limit.
+                if (sqlite3_bind_int64(stmt, k, n) /= SQLITE_OK) exit sql_block
             end if
 
             do i = 1, n
-                rc = E_DB_STEP
+                rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
                 if (i == 1) then
@@ -2558,7 +2731,7 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_STEP
+                rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, logs(i))
                 if (dm_is_error(rc)) exit sql_block
@@ -2664,7 +2837,7 @@ contains
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
 
             do i = 1, n
-                rc = E_DB_STEP
+                rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, logs(i))
                 if (dm_is_error(rc)) exit sql_block
@@ -2700,13 +2873,19 @@ contains
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
             rc = E_DB_TYPE
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
-            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT) exit sql_block
-            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT) exit sql_block
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  exit sql_block
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)  exit sql_block
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)  exit sql_block
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) exit sql_block
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) exit sql_block
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) exit sql_block
 
-            node%id   = sqlite3_column_text(stmt, 0)
-            node%name = sqlite3_column_text(stmt, 1)
-            node%meta = sqlite3_column_text(stmt, 2)
+            node%id   = sqlite3_column_text  (stmt, 0)
+            node%name = sqlite3_column_text  (stmt, 1)
+            node%meta = sqlite3_column_text  (stmt, 2)
+            node%x    = sqlite3_column_double(stmt, 3)
+            node%y    = sqlite3_column_double(stmt, 4)
+            node%z    = sqlite3_column_double(stmt, 5)
 
             rc = E_NONE
         end block sql_block
@@ -2745,13 +2924,19 @@ contains
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
                 rc = E_DB_TYPE
-                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
-                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT) exit sql_block
-                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT) exit sql_block
+                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  exit sql_block
+                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)  exit sql_block
+                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)  exit sql_block
+                if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) exit sql_block
+                if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) exit sql_block
+                if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) exit sql_block
 
-                nodes(i)%id   = sqlite3_column_text(stmt, 0)
-                nodes(i)%name = sqlite3_column_text(stmt, 1)
-                nodes(i)%meta = sqlite3_column_text(stmt, 2)
+                nodes(i)%id   = sqlite3_column_text  (stmt, 0)
+                nodes(i)%name = sqlite3_column_text  (stmt, 1)
+                nodes(i)%meta = sqlite3_column_text  (stmt, 2)
+                nodes(i)%x    = sqlite3_column_double(stmt, 3)
+                nodes(i)%y    = sqlite3_column_double(stmt, 4)
+                nodes(i)%z    = sqlite3_column_double(stmt, 5)
 
                 rc = E_NONE
             end do
@@ -2974,7 +3159,7 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_STEP
+                rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, ids(i))
                 if (dm_is_error(rc)) exit sql_block
@@ -3266,7 +3451,7 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_STEP
+                rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
                 rc = db_next_row(stmt, observs(i))
                 if (dm_is_error(rc)) exit sql_block
@@ -4219,9 +4404,13 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(node%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 2, trim(node%meta)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(node%id))   /= SQLITE_OK) exit sql_block
+            ! Node id must be last argument!
+            if (sqlite3_bind_text  (stmt, 1, trim(node%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 2, trim(node%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 3, node%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 4, node%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 5, node%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 6, trim(node%id))   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4251,12 +4440,16 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 2, sensor%type)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 3, trim(sensor%name))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 4, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 5, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt, 6, trim(sensor%id))      /= SQLITE_OK) exit sql_block
+            ! Sensor id must be last argument!
+            if (sqlite3_bind_text  (stmt, 1, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt, 2, sensor%type)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 3, trim(sensor%name))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 4, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 5, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, sensor%x)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, sensor%y)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, sensor%z)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 9, trim(sensor%id))      /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4286,13 +4479,14 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
+            ! Target id must be last argument!
             if (sqlite3_bind_text  (stmt, 1, trim(target%name)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text  (stmt, 2, trim(target%meta)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 3, trim(target%id))   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int   (stmt, 4, target%state)      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 5, target%x)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 6, target%y)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, target%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt, 3, target%state)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 4, target%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 5, target%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, target%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 7, trim(target%id))   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4387,7 +4581,10 @@ contains
                 rc = db_exec(db, 'BEGIN EXCLUSIVE')
             case default
                 rc = E_INVALID
+                return
         end select
+
+        if (dm_is_error(rc)) rc = E_DB_TRANSACTION
     end function db_begin
 
     integer function db_commit(db) result(rc)
@@ -4892,13 +5089,19 @@ contains
         if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
         if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
+        if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
+        if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT)   return
+        if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT)   return
 
-        sensor%id      = sqlite3_column_text(stmt, 0)
-        sensor%node_id = sqlite3_column_text(stmt, 1)
-        sensor%type    = sqlite3_column_int (stmt, 2)
-        sensor%name    = sqlite3_column_text(stmt, 3)
-        sensor%sn      = sqlite3_column_text(stmt, 4)
-        sensor%meta    = sqlite3_column_text(stmt, 5)
+        sensor%id      = sqlite3_column_text  (stmt, 0)
+        sensor%node_id = sqlite3_column_text  (stmt, 1)
+        sensor%type    = sqlite3_column_int   (stmt, 2)
+        sensor%name    = sqlite3_column_text  (stmt, 3)
+        sensor%sn      = sqlite3_column_text  (stmt, 4)
+        sensor%meta    = sqlite3_column_text  (stmt, 5)
+        sensor%x       = sqlite3_column_double(stmt, 6)
+        sensor%y       = sqlite3_column_double(stmt, 7)
+        sensor%z       = sqlite3_column_double(stmt, 8)
 
         rc = E_NONE
     end function db_next_row_sensor

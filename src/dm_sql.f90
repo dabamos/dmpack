@@ -87,7 +87,10 @@ module dm_sql
         'node_id     INTEGER PRIMARY KEY,' // NL // &
         'id          TEXT NOT NULL UNIQUE,' // NL // &
         'name        TEXT NOT NULL,' // NL // &
-        'meta        TEXT) STRICT'
+        'meta        TEXT,' // NL // &
+        'x           REAL NOT NULL DEFAULT 0.0,' // NL // &
+        'y           REAL NOT NULL DEFAULT 0.0,' // NL // &
+        'z           REAL NOT NULL DEFAULT 0.0) STRICT'
 
     ! Sensors schema.
     character(len=*), parameter, public :: SQL_CREATE_SENSORS = &
@@ -99,6 +102,9 @@ module dm_sql
         'name        TEXT    NOT NULL,' // NL // &
         'sn          TEXT,' // NL // &
         'meta        TEXT,' // NL // &
+        'x           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'y           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'z           REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'FOREIGN KEY (node_id) REFERENCES nodes(node_id)) STRICT'
 
     ! Targets schema.
@@ -178,6 +184,9 @@ module dm_sql
         'FOREIGN KEY (request_id) REFERENCES requests(request_id),' // NL // &
         'UNIQUE      (request_id, idx) ON CONFLICT REPLACE) STRICT'
 
+    ! ******************************************************************
+    ! SYNC TABLE CREATION QUERIES.
+    ! ******************************************************************
     ! Synchronised logs schema.
     character(len=*), parameter, public :: SQL_CREATE_SYNC_LOGS = &
         'CREATE TABLE IF NOT EXISTS sync_logs(' // NL // &
@@ -372,14 +381,14 @@ module dm_sql
     ! Query to insert node.
     ! Arguments: nodes.id, nodes.name, nodes.meta
     character(len=*), parameter, public :: SQL_INSERT_NODE = &
-        'INSERT OR FAIL INTO nodes(id, name, meta) VALUES (?, ?, ?)'
+        'INSERT OR FAIL INTO nodes(id, name, meta, x, y, z) VALUES (?, ?, ?, ?, ?, ?)'
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
     !         sensors.sn, sensors.meta
     character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
-        'INSERT OR FAIL INTO sensors(id, node_id, type, name, sn, meta) VALUES (' // &
-        '?, (SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?, ?)'
+        'INSERT OR FAIL INTO sensors(id, node_id, type, name, sn, meta, x, y, z) VALUES (' // &
+        '?, (SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert target.
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
@@ -428,75 +437,20 @@ module dm_sql
         'INNER JOIN observs ON observs.observ_id = requests.observ_id ' // &
         'WHERE observs.id = ? AND requests.idx = ?), ?, ?, ?, ?, ?, ?)'
 
-    ! Query to upsert sync_logs data.
-    ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
-        'INSERT INTO sync_logs(log_id, timestamp, code, nattempts) ' // &
-        'VALUES ((SELECT log_id FROM logs WHERE id = ?), ?, ?, ?) ' // &
-        'ON CONFLICT DO UPDATE SET ' // &
-        'log_id = excluded.log_id, ' // &
-        'timestamp = excluded.timestamp, ' // &
-        'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
-
-    ! Query to upsert sync_nodes data.
-    ! Arguments: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.nattempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_NODE = &
-        'INSERT INTO sync_nodes(node_id, timestamp, code, nattempts) ' // &
-        'VALUES ((SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?) ' // &
-        'ON CONFLICT DO UPDATE SET ' // &
-        'node_id = excluded.node_id, ' // &
-        'timestamp = excluded.timestamp, ' // &
-        'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
-
-    ! Query to upsert sync_observs data.
-    ! Arguments: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
-        'INSERT INTO sync_observs(observ_id, timestamp, code, nattempts) ' // &
-        'VALUES ((SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?) ' // &
-        'ON CONFLICT DO UPDATE SET ' // &
-        'observ_id = excluded.observ_id, ' // &
-        'timestamp = excluded.timestamp, ' // &
-        'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
-
-    ! Query to upsert sync_sensors data.
-    ! Arguments: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.nattempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
-        'INSERT INTO sync_sensors(sensor_id, timestamp, code, nattempts) ' // &
-        'VALUES ((SELECT sensor_id FROM sensors WHERE id = ?), ?, ?, ?) ' // &
-        'ON CONFLICT DO UPDATE SET ' // &
-        'sensor_id = excluded.sensor_id, ' // &
-        'timestamp = excluded.timestamp, ' // &
-        'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
-
-    ! Query to upsert sync_targets data.
-    ! Arguments: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.nattempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
-        'INSERT INTO sync_targets(target_id, timestamp, code, nattempts) ' // &
-        'VALUES ((SELECT target_id FROM targets WHERE id = ?), ?, ?, ?) ' // &
-        'ON CONFLICT DO UPDATE SET ' // &
-        'target_id = excluded.target_id, ' // &
-        'timestamp = excluded.timestamp, ' // &
-        'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
-
     ! ******************************************************************
     ! UPDATE QUERIES.
     ! ******************************************************************
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.id
     character(len=*), parameter, public :: SQL_UPDATE_NODE = &
-        'UPDATE OR FAIL nodes SET name = ?, meta = ? WHERE id = ?'
+        'UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ? WHERE id = ?'
 
     ! Query to update sensor.
     ! Arguments: nodes.id, sensors.type, sensors.id, sensors.name, sensors.sn,
     ! sensors.meta, sensors.id
     character(len=*), parameter, public :: SQL_UPDATE_SENSOR = &
         'UPDATE OR FAIL sensors SET node_id = (SELECT node_id FROM nodes WHERE id = ?), ' // &
-        'type = ?, name = ?, sn = ?, meta = ? WHERE id = ?'
+        'type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ? WHERE id = ?'
 
     ! Query to update target.
     ! Arguments: targets.name, targets.meta, targets.state, targets.x, targets.y,
@@ -631,7 +585,10 @@ module dm_sql
         'SELECT ' // &
         'nodes.id, ' // &
         'nodes.name, ' // &
-        'nodes.meta ' // &
+        'nodes.meta, ' // &
+        'nodes.x, ' // &
+        'nodes.y, ' // &
+        'nodes.z ' // &
         'FROM nodes WHERE nodes.id = ?'
 
     ! Query to select all nodes.
@@ -639,8 +596,11 @@ module dm_sql
         'SELECT ' // &
         'nodes.id, ' // &
         'nodes.name, ' // &
-        'nodes.meta ' // &
-        'FROM nodes ORDER BY nodes.node_id ASC'
+        'nodes.meta, ' // &
+        'nodes.x, ' // &
+        'nodes.y, ' // &
+        'nodes.z ' // &
+        'FROM nodes ORDER BY nodes.id ASC'
 
     ! Query to select number of time series by time range.
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
@@ -701,31 +661,6 @@ module dm_sql
         'responses.name = ? AND ' // &
         'requests.timestamp >= ? AND ' // &
         'requests.timestamp < ?'
-
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
-        'SELECT COUNT(*) FROM logs ' // &
-        'LEFT JOIN sync_logs ON sync_logs.log_id = logs.log_id ' // &
-        'WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409)'
-
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_NODES = &
-        'SELECT COUNT(*) FROM nodes ' // &
-        'LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.node_id ' // &
-        'WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)'
-
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_OBSERVS = &
-        'SELECT COUNT(*) FROM observs ' // &
-        'LEFT JOIN sync_observs ON sync_observs.observ_id = observs.observ_id ' // &
-        'WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409)'
-
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_SENSORS = &
-        'SELECT COUNT(*) FROM sensors ' // &
-        'LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.sensor_id ' // &
-        'WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)'
-
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_TARGETS = &
-        'SELECT COUNT(*) FROM targets ' // &
-        'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
-        'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'
 
     ! Query to select single observation by id.
     ! Arguments: observs.id
@@ -919,7 +854,10 @@ module dm_sql
         'sensors.type, ' // &
         'sensors.name, ' // &
         'sensors.sn, ' // &
-        'sensors.meta ' // &
+        'sensors.meta, ' // &
+        'sensors.x, ' // &
+        'sensors.y, ' // &
+        'sensors.z ' // &
         'FROM sensors ' // &
         'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
         'WHERE sensors.id = ?'
@@ -932,7 +870,10 @@ module dm_sql
         'sensors.type, ' // &
         'sensors.name, ' // &
         'sensors.sn, ' // &
-        'sensors.meta ' // &
+        'sensors.meta, ' // &
+        'sensors.x, ' // &
+        'sensors.y, ' // &
+        'sensors.z ' // &
         'FROM sensors ' // &
         'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
         'ORDER BY sensors.id ASC'
@@ -946,65 +887,13 @@ module dm_sql
         'sensors.type, ' // &
         'sensors.name, ' // &
         'sensors.sn, ' // &
-        'sensors.meta ' // &
+        'sensors.meta, ' // &
+        'sensors.x, ' // &
+        'sensors.y, ' // &
+        'sensors.z ' // &
         'FROM sensors ' // &
         'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
         'WHERE nodes.id = ?'
-
-    ! Query to select logs.id and sync_logs meta data of unsynchronised logs.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
-        'SELECT ' // &
-        'logs.id, ' // &
-        'sync_logs.timestamp, ' // &
-        'sync_logs.code, ' // &
-        'sync_logs.nattempts ' // &
-        'FROM logs ' // &
-        'LEFT JOIN sync_logs ON sync_logs.log_id = logs.log_id ' // &
-        'WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409) ' // &
-        'ORDER BY logs.timestamp ASC'
-
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_NODES = &
-        'SELECT ' // &
-        'nodes.id, ' // &
-        'sync_nodes.timestamp, ' // &
-        'sync_nodes.code, ' // &
-        'sync_nodes.nattempts ' // &
-        'FROM nodes ' // &
-        'LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.node_id ' // &
-        'WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)'
-
-    ! Query to select observ.id and sync_observs meta data of
-    ! unsynchronised observations.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_OBSERVS = &
-        'SELECT ' // &
-        'observs.id, ' // &
-        'sync_observs.timestamp, ' // &
-        'sync_observs.code, ' // &
-        'sync_observs.nattempts ' // &
-        'FROM observs ' // &
-        'LEFT JOIN sync_observs ON sync_observs.observ_id = observs.observ_id ' // &
-        'WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409) ' // &
-        'ORDER BY observs.timestamp ASC'
-
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_SENSORS = &
-        'SELECT ' // &
-        'sensors.id, ' // &
-        'sync_sensors.timestamp, ' // &
-        'sync_sensors.code, ' // &
-        'sync_sensors.nattempts ' // &
-        'FROM sensors ' // &
-        'LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.sensor_id ' // &
-        'WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)'
-
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_TARGETS = &
-        'SELECT ' // &
-        'targets.id, ' // &
-        'sync_targets.timestamp, ' // &
-        'sync_targets.code, ' // &
-        'sync_targets.nattempts ' // &
-        'FROM targets ' // &
-        'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
-        'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'
 
     ! Query to select a target.
     ! Arguments: targets.id
@@ -1032,11 +921,193 @@ module dm_sql
         'FROM targets ORDER BY targets.id ASC'
 
     ! ******************************************************************
+    ! SYNC QUERIES.
+    ! ******************************************************************
+    ! Query to upsert sync_logs data.
+    ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
+        'INSERT INTO sync_logs(log_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT log_id FROM logs WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'log_id = excluded.log_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
+
+    ! Query to upsert sync_nodes data.
+    ! Arguments: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.nattempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_NODE = &
+        'INSERT INTO sync_nodes(node_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'node_id = excluded.node_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
+
+    ! Query to upsert sync_observs data.
+    ! Arguments: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
+        'INSERT INTO sync_observs(observ_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'observ_id = excluded.observ_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
+
+    ! Query to upsert sync_sensors data.
+    ! Arguments: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.nattempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
+        'INSERT INTO sync_sensors(sensor_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT sensor_id FROM sensors WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'sensor_id = excluded.sensor_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
+
+    ! Query to upsert sync_targets data.
+    ! Arguments: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.nattempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
+        'INSERT INTO sync_targets(target_id, timestamp, code, nattempts) ' // &
+        'VALUES ((SELECT target_id FROM targets WHERE id = ?), ?, ?, ?) ' // &
+        'ON CONFLICT DO UPDATE SET ' // &
+        'target_id = excluded.target_id, ' // &
+        'timestamp = excluded.timestamp, ' // &
+        'code = excluded.code, ' // &
+        'nattempts = excluded.nattempts'
+
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
+        'SELECT COUNT(*) FROM logs ' // &
+        'LEFT JOIN sync_logs ON sync_logs.log_id = logs.log_id ' // &
+        'WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409)'
+
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_NODES = &
+        'SELECT COUNT(*) FROM nodes ' // &
+        'LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.node_id ' // &
+        'WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)'
+
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_OBSERVS = &
+        'SELECT COUNT(*) FROM observs ' // &
+        'LEFT JOIN sync_observs ON sync_observs.observ_id = observs.observ_id ' // &
+        'WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409)'
+
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_SENSORS = &
+        'SELECT COUNT(*) FROM sensors ' // &
+        'LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.sensor_id ' // &
+        'WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)'
+
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_TARGETS = &
+        'SELECT COUNT(*) FROM targets ' // &
+        'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
+        'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'
+
+    ! Query to select logs.id and sync_logs meta data of unsynchronised logs.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
+        'SELECT ' // &
+        'logs.id, ' // &
+        'sync_logs.timestamp, ' // &
+        'sync_logs.code, ' // &
+        'sync_logs.nattempts ' // &
+        'FROM logs ' // &
+        'LEFT JOIN sync_logs ON sync_logs.log_id = logs.log_id ' // &
+        'WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409) ' // &
+        'ORDER BY logs.timestamp ASC'
+
+    ! Query to select node.id and sync_nodes meta data of
+    ! unsynchronised nodes.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_NODES = &
+        'SELECT ' // &
+        'nodes.id, ' // &
+        'sync_nodes.timestamp, ' // &
+        'sync_nodes.code, ' // &
+        'sync_nodes.nattempts ' // &
+        'FROM nodes ' // &
+        'LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.node_id ' // &
+        'WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)'
+
+    ! Query to select observ.id and sync_observs meta data of
+    ! unsynchronised observations.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_OBSERVS = &
+        'SELECT ' // &
+        'observs.id, ' // &
+        'sync_observs.timestamp, ' // &
+        'sync_observs.code, ' // &
+        'sync_observs.nattempts ' // &
+        'FROM observs ' // &
+        'LEFT JOIN sync_observs ON sync_observs.observ_id = observs.observ_id ' // &
+        'WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409) ' // &
+        'ORDER BY observs.timestamp ASC'
+
+    ! Query to select sensor.id and sync_sensors meta data of
+    ! unsynchronised sensors.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_SENSORS = &
+        'SELECT ' // &
+        'sensors.id, ' // &
+        'sync_sensors.timestamp, ' // &
+        'sync_sensors.code, ' // &
+        'sync_sensors.nattempts ' // &
+        'FROM sensors ' // &
+        'LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.sensor_id ' // &
+        'WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)'
+
+    ! Query to select target.id and sync_targets meta data of
+    ! unsynchronised targets.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_TARGETS = &
+        'SELECT ' // &
+        'targets.id, ' // &
+        'sync_targets.timestamp, ' // &
+        'sync_targets.code, ' // &
+        'sync_targets.nattempts ' // &
+        'FROM targets ' // &
+        'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
+        'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'
+
+    ! ******************************************************************
     ! JSON SELECT QUERIES.
-    ! ****************************************************************** 
+    ! ******************************************************************
+    ! Query to select beat by node id in JSON format.
+    ! Arguments: beats.node_id
+    character(len=*), parameter, public :: SQL_SELECT_JSON_BEAT = &
+        'SELECT ' // &
+        'json_object(''node_id'', node_id, ''address'', address, ''version'', version, ''time_sent'', time_sent, ' // &
+        '''time_recv'', time_recv, ''error'', error, ''interval'', interval, ''uptime'', uptime) ' // &
+        'FROM beats WHERE node_id = ?'
+
+    ! Query to select all beats in JSON format.
+    character(len=*), parameter, public :: SQL_SELECT_JSON_BEATS = &
+        'SELECT ' // &
+        'json_object(''node_id'', node_id, ''address'', address, ''version'', version, ''time_sent'', time_sent, ' // &
+        '''time_recv'', time_recv, ''error'', error, ''interval'', interval, ''uptime'', uptime) ' // &
+        'FROM beats ORDER BY node_id ASC'
+
     ! Query to select all logs in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_LOGS = &
-        'SELECT json_object(''id'', id, ''level'', level, ''error'', error, ''timestamp'', timestamp, ' // &
+        'SELECT ' // &
+        'json_object(''id'', id, ''level'', level, ''error'', error, ''timestamp'', timestamp, ' // &
         '''node_id'', node_id, ''sensor_id'', sensor_id, ''target_id'', target_id, ''observ_id'', observ_id, ' // &
-        '''source'', source, ''message'', message) FROM logs'
+        '''source'', source, ''message'', message) ' // &
+        'FROM logs'
+
+    ! Query to select all nodes in JSON format.
+    character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
+        'SELECT ' // &
+        'json_object(''id'', id, ''name'', name, ''meta'', meta, ''x'', x, ''y'', y, ''z'', z) ' // &
+        'FROM nodes ORDER BY nodes.id ASC'
+
+    ! Query to select all sensors in JSON format.
+    character(len=*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
+        'SELECT ' // &
+        'json_object(''id'', sensors.id, ''node_id'', nodes.id, ''type'', sensors.type, ''name'', ''sensors.name, ' // &
+        '''sn'', sensors.sn, ''meta'', sensors.meta, ''x'', sensors.x, ''y'', sensors.y, ''z'', sensors.z) ' // &
+        'FROM sensors ' // &
+        'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
+        'ORDER BY sensors.id ASC'
+
+    ! Query to select all targets in JSON format.
+    character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
+        'SELECT ' // &
+        'json_object(''id'', id, ''name'', name, ''meta'', meta, ''state'', state, ''x'', x, ''y'', y, ''z'', z) ' // &
+        'FROM targets ORDER BY targets.id ASC'
 end module dm_sql

@@ -336,9 +336,9 @@ contains
 
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument.
-        use :: dm_convert
         use :: dm_id
         use :: dm_uuid
+        use :: dm_string
         use :: dm_time
         type(arg_type), intent(inout) :: arg !! Argument to validate.
 
@@ -362,12 +362,12 @@ contains
         select case (arg%type)
             case (ARG_TYPE_FLOAT)
                 if (arg%length == 0) return
-                call dm_convert_to(arg%value, f, error)
+                call dm_string_to(arg%value, f, error)
                 if (dm_is_error(error)) return
 
             case (ARG_TYPE_INTEGER)
                 if (arg%length == 0) return
-                call dm_convert_to(arg%value, i, error)
+                call dm_string_to(arg%value, i, error)
                 if (dm_is_error(error)) return
 
             case (ARG_TYPE_ID)

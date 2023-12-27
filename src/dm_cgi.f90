@@ -3,7 +3,6 @@
 module dm_cgi
     !! Common Gateway Interface (CGI) utility procedures.
     use :: dm_ascii
-    use :: dm_convert
     use :: dm_error
     use :: dm_hash
     use :: dm_http
@@ -437,7 +436,7 @@ contains
         i = cgi_param_loc(param, key)
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
-        call dm_convert_to(param%values(i), value, rc)
+        call dm_string_to(param%values(i), value, rc)
     end function cgi_get_i4
 
     integer function cgi_get_i8(param, key, value, default, required) result(rc)
@@ -463,7 +462,7 @@ contains
         i = cgi_param_loc(param, key)
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
-        call dm_convert_to(param%values(i), value, rc)
+        call dm_string_to(param%values(i), value, rc)
     end function cgi_get_i8
 
     integer function cgi_get_l(param, key, value, default, required) result(rc)
@@ -490,7 +489,7 @@ contains
         if (i == 0) return
 
         rc = E_TYPE
-        call dm_convert_to(param%values(i), j, stat)
+        call dm_string_to(param%values(i), j, stat)
         if (stat /= E_NONE) return
         value = .not. (j == 0)
         rc = E_NONE
@@ -519,7 +518,7 @@ contains
         i = cgi_param_loc(param, key)
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
-        call dm_convert_to(param%values(i), value, rc)
+        call dm_string_to(param%values(i), value, rc)
     end function cgi_get_r4
 
     integer function cgi_get_r8(param, key, value, default, required) result(rc)
@@ -545,7 +544,7 @@ contains
         i = cgi_param_loc(param, key)
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
-        call dm_convert_to(param%values(i), value, rc)
+        call dm_string_to(param%values(i), value, rc)
     end function cgi_get_r8
 
     integer function cgi_param_loc(param, key) result(i)

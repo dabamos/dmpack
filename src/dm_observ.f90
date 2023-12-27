@@ -321,7 +321,7 @@ contains
                     i, j, observ%requests(i)%responses(j)%type
                 write (unit_, '("observ.requests(", i0, ").responses(", i0, ").error: ", i0)') &
                     i, j, observ%requests(i)%responses(j)%error
-                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").value: ", f0.5)') &
+                write (unit_, '("observ.requests(", i0, ").responses(", i0, ").value: ", 1pg0.12)') &
                     i, j, observ%requests(i)%responses(j)%value
             end do
         end do
@@ -370,7 +370,7 @@ contains
 !           do j = 1, observ%requests(i)%nresponses
 !               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%name=", a, /)') &
 !                   i, j, trim(observ%requests(i)%responses(j)%name)
-!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%value=", f0.5, /)') &
+!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%value=", 1pg0.12, /)') &
 !                   i, j, observ%requests(i)%responses(j)%value
 !               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%unit=", a, /)') &
 !                   i, j, trim(observ%requests(i)%responses(j)%unit)

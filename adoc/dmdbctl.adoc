@@ -29,7 +29,8 @@ supported. Data attributes are passed through command-line arguments.
 == OPTIONS
 
 *--altitude*, *-Z* _z_::
-  Target Z.
+  Node, sensor, or target z, usually in meters. May be in local or global
+  coordinate system.
 
 *--create*, *-C* [node|sensor|target]::
   Create database record (node, sensor, or target).
@@ -41,7 +42,8 @@ supported. Data attributes are passed through command-line arguments.
   Delete database record (node, sensor, or target).
 
 *--easting*, *-X* _x_::
-  Target X.
+  Node, sensor, or target x, usually in meters. May be in local or global
+  coordinate system.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
@@ -59,7 +61,8 @@ supported. Data attributes are passed through command-line arguments.
   ID of the node the sensor is attached to.
 
 *--northing*, *-Y* _y_::
-  Target Y.
+  Node, sensor, or target y, usually in meters. May be in local or global
+  coordinate system.
 
 *--read*, *-R* [node|sensor|target]::
   Read database record (node, sensor, or target).

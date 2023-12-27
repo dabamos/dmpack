@@ -5,19 +5,13 @@ module dm_dummy
     use :: dm_ascii
     use :: dm_error
     use :: dm_kind
-    use :: dm_log
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_request
-    use :: dm_response
-    use :: dm_sensor
-    use :: dm_target
     use :: dm_time
-    use :: dm_uuid
     use :: dm_util
+    use :: dm_uuid
     implicit none (type, external)
     private
 
+    public :: dm_dummy_beat
     public :: dm_dummy_log
     public :: dm_dummy_node
     public :: dm_dummy_observ
@@ -25,8 +19,24 @@ module dm_dummy
     public :: dm_dummy_sensor
     public :: dm_dummy_target
 contains
+    impure elemental subroutine dm_dummy_beat(beat)
+        !! Generates dummy beat data type.
+        use :: dm_beat
+        use :: dm_version
+        type(beat_type), intent(out) :: beat !! Beat type.
+
+        beat = beat_type(node_id   = 'dummy-node', &
+                         address   = '127.0.0.1', &
+                         version   = 'DMPACK ' // DM_VERSION_STRING, &
+                         time_sent = dm_time_now(), &
+                         time_recv = dm_time_now(), &
+                         interval  = 60, &
+                         uptime    = 3600)
+    end subroutine dm_dummy_beat
+
     impure elemental subroutine dm_dummy_log(log, timestamp)
         !! Generates dummy log data type.
+        use :: dm_log
         type(log_type),   intent(out)          :: log       !! Log type.
         character(len=*), intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
         real                                   :: r(2)
@@ -49,13 +59,17 @@ contains
 
     pure elemental subroutine dm_dummy_node(node, id, name)
         !! Generates dummy sensor node data type.
+        use :: dm_node
         type(node_type),  intent(out)          :: node !! Node type.
         character(len=*), intent(in), optional :: id   !! Node id.
         character(len=*), intent(in), optional :: name !! Node name.
 
         node%id   = 'dummy-node'
         node%name = 'Dummy Node'
-        node%meta = 'a dummy node'
+        node%meta = 'dummy description'
+        node%x    = 1000.0_r8
+        node%y    = 2000.0_r8
+        node%z    = 100.0_r8
 
         if (present(id)) node%id = id
         if (present(name)) node%name = name
@@ -64,6 +78,8 @@ contains
     impure elemental subroutine dm_dummy_observ(observ, id, node_id, sensor_id, target_id, &
                                                 name, timestamp, nrequests, value)
         !! Generates dummy observation data type.
+        use :: dm_observ
+        use :: dm_request
         type(observ_type), intent(out)          :: observ    !! Observation type.
         character(len=*),  intent(in), optional :: id        !! Observation id.
         character(len=*),  intent(in), optional :: node_id   !! Node id.
@@ -112,6 +128,8 @@ contains
 
     impure elemental subroutine dm_dummy_request(request, timestamp, nresponses, name, value)
         !! Generates dummy request data type.
+        use :: dm_request
+        use :: dm_response
         type(request_type), intent(out)          :: request    !! Request type.
         character(len=*),   intent(in), optional :: timestamp  !! Request timestamp (ISO 8601).
         integer,            intent(in), optional :: nresponses !! Number of responses.
@@ -124,7 +142,7 @@ contains
         n = 1
         request = request_type(timestamp  = dm_time_now(), &
                                request    = 'dummy', &
-                               response   = dm_ascii_escape('999.999' // ASCII_CR // ASCII_LF), &
+                               response   = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF), &
                                delimiter  = dm_ascii_escape(ASCII_CR // ASCII_LF), &
                                pattern    = '^(?<dummy>.*)$', &
                                delay      = 1000, &
@@ -136,7 +154,7 @@ contains
         if (present(nresponses)) n = max(0, min(REQUEST_MAX_NRESPONSES, nresponses))
 
         do i = 1, n
-            response = response_type('dummy-' // dm_itoa(i), 'none', RESPONSE_TYPE_REAL64, E_NONE, 999.999_r8)
+            response = response_type('dummy-' // dm_itoa(i), 'none', RESPONSE_TYPE_REAL64, E_NONE, 999.99_r8)
             if (present(name)) response%name = name
             if (present(value)) response%value = value
             rc = dm_request_add(request, response)
@@ -145,6 +163,7 @@ contains
 
     pure elemental subroutine dm_dummy_sensor(sensor, node_id, id, name)
         !! Generates dummy sensor data type.
+        use :: dm_sensor
         type(sensor_type), intent(out)          :: sensor  !! Sensor type.
         character(len=*),  intent(in), optional :: node_id !! Node id.
         character(len=*),  intent(in), optional :: id      !! Sensor id.
@@ -169,12 +188,16 @@ contains
         end if
 
         sensor%type = SENSOR_TYPE_VIRTUAL
-        sensor%sn   = '00000'
-        sensor%meta = 'a dummy sensor'
+        sensor%sn   = '12345'
+        sensor%meta = 'dummy description'
+        sensor%x    = 1000.0_r8
+        sensor%y    = 2000.0_r8
+        sensor%z    = 100.0_r8
     end subroutine dm_dummy_sensor
 
     pure elemental subroutine dm_dummy_target(target, id, name)
         !! Generates dummy target data type.
+        use :: dm_target
         type(target_type), intent(out)          :: target !! Target type.
         character(len=*),  intent(in), optional :: id     !! Target id.
         character(len=*),  intent(in), optional :: name   !! Target name.
@@ -190,5 +213,10 @@ contains
         else
             target%name = 'Dummy Target'
         end if
+
+        target%meta = 'dummy description'
+        target%x    = 100.0_r8
+        target%y    = 200.0_r8
+        target%z    = 10.0_r8
     end subroutine dm_dummy_target
 end module dm_dummy

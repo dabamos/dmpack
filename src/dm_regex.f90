@@ -4,10 +4,10 @@ module dm_regex
     !! Abstraction layer over PCRE2.
     use, intrinsic :: iso_c_binding, only: c_associated, c_null_ptr, c_ptr
     use :: pcre2
-    use :: dm_convert
     use :: dm_error
     use :: dm_kind
     use :: dm_request
+    use :: dm_string
     implicit none (type, external)
     private
 
@@ -226,7 +226,7 @@ contains
                 if (n == 0) cycle
 
                 ! Convert string to real.
-                call dm_convert_to(buffer, request%responses(i)%value, rc)
+                call dm_string_to(buffer, request%responses(i)%value, rc)
                 request%responses(i)%error = rc
             end do
 

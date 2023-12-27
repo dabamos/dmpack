@@ -47,6 +47,7 @@ module dm_util
         module procedure :: dm_real32_to_real64
     end interface
 
+    ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
     public :: dm_btoi
@@ -77,6 +78,7 @@ module dm_util
     public :: dm_real64_to_logical
     public :: dm_real64_to_real32
 
+    ! Private procedures.
     private :: array_has_i4
     private :: array_has_i8
 
@@ -310,7 +312,7 @@ contains
         integer           :: stat
 
         str = ''
-        write (buf, '(1pg0.8)', iostat=stat) f
+        write (buf, '(1pg0.12)', iostat=stat) f
         if (stat /= 0) return
         str = trim(buf)
     end function f4_to_a
@@ -324,7 +326,7 @@ contains
         integer           :: stat
 
         str = ''
-        write (buf, '(1pg0.8)', iostat=stat) f
+        write (buf, '(1pg0.12)', iostat=stat) f
         if (stat /= 0) return
         str = trim(buf)
     end function f8_to_a

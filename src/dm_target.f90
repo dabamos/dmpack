@@ -29,13 +29,13 @@ module dm_target
 
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (-0-9A-Za-z).
+        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (`-0-9A-Za-z`).
         character(len=TARGET_NAME_LEN) :: name  = ' '               !! Target name.
-        character(len=TARGET_META_LEN) :: meta  = ' '               !! Target meta information.
-        integer                        :: state = TARGET_STATE_NONE !! Target state.
-        real(kind=r8)                  :: x     = 0.0_r8            !! Target easting.
-        real(kind=r8)                  :: y     = 0.0_r8            !! Target northing.
-        real(kind=r8)                  :: z     = 0.0_r8            !! Target altitude.
+        character(len=TARGET_META_LEN) :: meta  = ' '               !! Target meta information (optional).
+        integer                        :: state = TARGET_STATE_NONE !! Target state (optional).
+        real(kind=r8)                  :: x     = 0.0_r8            !! Target x or easting (optional).
+        real(kind=r8)                  :: y     = 0.0_r8            !! Target y or northing (optional).
+        real(kind=r8)                  :: z     = 0.0_r8            !! Target z or altitude (optional).
     end type target_type
 
     integer, parameter, public :: TARGET_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -114,12 +114,12 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("target.id: ", a)')     trim(target%id)
-        write (unit_, '("target.name: ", a)')   trim(target%name)
-        write (unit_, '("target.meta: ", a)')   trim(target%meta)
-        write (unit_, '("target.state: ", i0)') target%state
-        write (unit_, '("target.x: ", f0.16)')  target%x
-        write (unit_, '("target.y: ", f0.16)')  target%y
-        write (unit_, '("target.z: ", f0.16)')  target%z
+        write (unit_, '("target.id: ", a)')      trim(target%id)
+        write (unit_, '("target.name: ", a)')    trim(target%name)
+        write (unit_, '("target.meta: ", a)')    trim(target%meta)
+        write (unit_, '("target.state: ", i0)')  target%state
+        write (unit_, '("target.x: ", 1pg0.12)') target%x
+        write (unit_, '("target.y: ", 1pg0.12)') target%y
+        write (unit_, '("target.z: ", 1pg0.12)') target%z
     end subroutine dm_target_out
 end module dm_target

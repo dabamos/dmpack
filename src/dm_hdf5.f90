@@ -672,6 +672,21 @@ contains
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
+        ! Node x.
+        offset = h5offsetof(c_loc(node), c_loc(node%x))
+        call h5tinsert_f(type_id, 'x', offset, h5kind_to_type(kind(node%x), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Node y.
+        offset = h5offsetof(c_loc(node), c_loc(node%y))
+        call h5tinsert_f(type_id, 'y', offset, h5kind_to_type(kind(node%y), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Node z.
+        offset = h5offsetof(c_loc(node), c_loc(node%z))
+        call h5tinsert_f(type_id, 'z', offset, h5kind_to_type(kind(node%z), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
         rc = E_NONE
     end function hdf5_type_node
 
@@ -957,6 +972,21 @@ contains
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
+        ! Sensor x.
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%x))
+        call h5tinsert_f(type_id, 'x', offset, h5kind_to_type(kind(sensor%x), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Sensor y.
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%y))
+        call h5tinsert_f(type_id, 'y', offset, h5kind_to_type(kind(sensor%y), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Sensor z.
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%z))
+        call h5tinsert_f(type_id, 'z', offset, h5kind_to_type(kind(sensor%z), H5_REAL_KIND), stat)
+        if (stat < 0) return
 
         rc = E_NONE
     end function hdf5_type_sensor

@@ -9,18 +9,25 @@ module dm_rts
     !! assumed to be 6.389 * 10^6 m.
     !!
     !! The following code calculates scale correction values for the measured
-    !! slope distance `dist_slope` from air temperature `temperature` [°C], air
+    !! slope distance `slope_dist` from air temperature `temperature` [°C], air
     !! pressure `pressure` [mbar], relative humidity `humidity`, and instrument
-    !! EDM height `height` [m]. The horizontal distance `dist_hz` [m] is
+    !! EDM height `height` [m]. The horizontal distance `hz_dist` [m] is
     !! determined using the corrected slope distance `corr` [m] and the
     !! vertical angle `v` [rad]:
     !!
     !! ```fortran
+    !! real(kind=r8) :: temperature, pressure, humidity, height
+    !! real(kind=r8) :: corr, ppm, ppm1, ppm2
+    !! real(kind=r8) :: hz_dist, slope_dist
+    !!
+    !! ! [...]
+    !!
     !! ppm1 = dm_rts_correction_atmospheric(temperature, pressure, humidity)
     !! ppm2 = dm_rts_correction_sea_level(height)
-    !! corr = dm_rts_correction_distance(dist_slope, ppm1 + ppm2, RTS_PRISM_LEICA_STANDARD)
+    !! ppm  = ppm1 + ppm2
+    !! corr = dm_rts_correction_distance(slope_dist, ppm, RTS_PRISM_LEICA_STANDARD)
     !!
-    !! dist_hz = dm_rts_distance_horizontal(corr, v)
+    !! hz_dist = dm_rts_distance_horizontal(corr, v)
     !! ```
     !!
     !! Formulas are taken from the Leica TM30/TS30 User Manual.
@@ -111,14 +118,14 @@ contains
         ppm = 286.34 - (c - d * 10.0_r8**x)
     end function dm_rts_correction_atmospheric
 
-    pure elemental real(kind=r8) function dm_rts_correction_distance(dist_slope, ppm, prism) result(corrected)
+    pure elemental real(kind=r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(corrected)
         !! Applied atmospheric correction [ppm] and prism constant [mmm] to
         !! uncorrected slope distance [m].
-        real(kind=r8), intent(in) :: dist_slope !! Uncorrected slope distance [m].
+        real(kind=r8), intent(in) :: slope_dist !! Uncorrected slope distance [m].
         real(kind=r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].
         real(kind=r8), intent(in) :: prism      !! Additive constant of the reflector [mm].
 
-        corrected = dist_slope * (1 + (ppm * 10e-6)) + prism
+        corrected = slope_dist * (1 + (ppm * 10e-6)) + prism
     end function dm_rts_correction_distance
 
     pure elemental real(kind=r8) function dm_rts_correction_projection(east) result(ppm)
@@ -147,8 +154,8 @@ contains
         ppm = -1 * (height / EARTH_RADIUS) * 10e6
     end function dm_rts_correction_sea_level
 
-    pure elemental real(kind=r8) function dm_rts_distance_horizontal(dist_slope, v, k) result(dist_hz)
-        !! Returns horizontal distance [m] from slope distance `dist_slope` [m]
+    pure elemental real(kind=r8) function dm_rts_distance_horizontal(slope_dist, v, k) result(hz_dist)
+        !! Returns horizontal distance [m] from slope distance `slope_dist` [m]
         !! and vertical angle `v` [rad]. The default mean refraction
         !! coefficient `k` is 0.13.
         !!
@@ -158,7 +165,7 @@ contains
         !! (Instrument Settings/TPS Corrections). The calculated horizontal
         !! distance relates to the instrument height and not to the reflector
         !! height.
-        real(kind=r8), intent(in)           :: dist_slope !! Slope distance [m].
+        real(kind=r8), intent(in)           :: slope_dist !! Slope distance [m].
         real(kind=r8), intent(in)           :: v          !! Vertical cycle reading [rad].
         real(kind=r8), intent(in), optional :: k          !! Mean refraction coefficient.
 
@@ -168,10 +175,10 @@ contains
         if (present(k)) k_ = k
 
         a = (1 - (k_ / 2)) / EARTH_RADIUS
-        x = dist_slope * cos(v)
-        y = dist_slope * abs(sin(v))
+        x = slope_dist * cos(v)
+        y = slope_dist * abs(sin(v))
 
-        dist_hz = y - a * x * y
+        hz_dist = y - a * x * y
     end function dm_rts_distance_horizontal
 
     real(kind=r8) function dm_rts_distance_mean(dists) result(mean)
@@ -203,15 +210,15 @@ contains
         std_dev = s / sqrt(real(n, kind=r8))
     end function dm_rts_distance_std_dev_mean
 
-    pure elemental real(kind=r8) function dm_rts_height_difference(dist_slope, v, k) result(diff)
-        !! Returns height difference [m] from slope distance `dist_slope` [m]
+    pure elemental real(kind=r8) function dm_rts_height_difference(slope_dist, v, k) result(diff)
+        !! Returns height difference [m] from slope distance `slope_dist` [m]
         !! and vertical angle `v` [rad]. The default mean refraction
         !! coefficient `k` is 0.13.
         !!
         !! Earth curvature (1 / `EARTH_RADIUS`) and mean refraction coefficient
         !! (`k`) are automatically taken into account by Leica instruments when
         !! calculating the height difference if enabled in the settings.
-        real(kind=r8), intent(in)           :: dist_slope !! Slope distance [m].
+        real(kind=r8), intent(in)           :: slope_dist !! Slope distance [m].
         real(kind=r8), intent(in)           :: v          !! Vertical cycle reading [rad].
         real(kind=r8), intent(in), optional :: k          !! Mean refraction coefficient.
 
@@ -221,8 +228,8 @@ contains
         if (present(k)) k_ = k
 
         b = (1 - k_) / (2 * EARTH_RADIUS)
-        x = dist_slope * cos(v)
-        y = dist_slope * abs(sin(v))
+        x = slope_dist * cos(v)
+        y = slope_dist * abs(sin(v))
 
         diff = x + b * y**2
     end function dm_rts_height_difference

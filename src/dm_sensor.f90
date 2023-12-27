@@ -5,7 +5,6 @@ module dm_sensor
     use :: dm_id
     use :: dm_kind
     use :: dm_node
-    use :: dm_string
     implicit none (type, external)
     private
 
@@ -40,6 +39,9 @@ module dm_sensor
         character(len=SENSOR_NAME_LEN) :: name     = ' '              !! Sensor name.
         character(len=SENSOR_SN_LEN)   :: sn       = ' '              !! Serial number (optional).
         character(len=SENSOR_META_LEN) :: meta     = ' '              !! Meta information (optional).
+        real(kind=r8)                  :: x        = 0.0_r8           !! Sensor x or easting (optional).
+        real(kind=r8)                  :: y        = 0.0_r8           !! Sensor y or northing (optional).
+        real(kind=r8)                  :: z        = 0.0_r8           !! Sensor z or altitude (optional).
     end type sensor_type
 
     integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
@@ -62,21 +64,29 @@ contains
     ! ******************************************************************
     pure elemental logical function dm_sensor_equals(sensor1, sensor2) result(equals)
         !! Returns `.true.` if given sensors are equal.
+        use :: dm_util, only: dm_equals
         type(sensor_type), intent(in) :: sensor1 !! First sensor.
         type(sensor_type), intent(in) :: sensor2 !! Second sensor.
 
         equals = .false.
+
         if (sensor1%id      /= sensor2%id)      return
         if (sensor1%node_id /= sensor2%node_id) return
         if (sensor1%type    /= sensor2%type)    return
         if (sensor1%name    /= sensor2%name)    return
         if (sensor1%sn      /= sensor2%sn)      return
         if (sensor1%meta    /= sensor2%meta)    return
+
+        if (.not. dm_equals(sensor1%x, sensor2%x)) return
+        if (.not. dm_equals(sensor1%y, sensor2%y)) return
+        if (.not. dm_equals(sensor1%z, sensor2%z)) return
+
         equals = .true.
     end function dm_sensor_equals
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)
         !! Returns format enumerator from given name.
+        use :: dm_string, only: dm_lower
         character(len=*), intent(in) :: name !! Format name.
 
         character(len=SENSOR_TYPE_NAME_LEN) :: name_
@@ -111,7 +121,7 @@ contains
         integer, intent(in) :: type !! Sensor type.
 
         valid = .false.
-        if (type < SENSOR_TYPE_NONE .or. type > SENSOR_NTYPES - 1) return
+        if (type < SENSOR_TYPE_NONE .or. type >= SENSOR_NTYPES) return
         valid = .true.
     end function dm_sensor_type_valid
 
@@ -148,8 +158,11 @@ contains
             write (unit_, '("invalid")')
         end if
 
-        write (unit_, '("sensor.name: ", a)') trim(sensor%name)
-        write (unit_, '("sensor.sn: ", a)')   trim(sensor%sn)
-        write (unit_, '("sensor.meta: ", a)') trim(sensor%meta)
+        write (unit_, '("sensor.name: ", a)')    trim(sensor%name)
+        write (unit_, '("sensor.sn: ", a)')      trim(sensor%sn)
+        write (unit_, '("sensor.meta: ", a)')    trim(sensor%meta)
+        write (unit_, '("sensor.x: ", 1pg0.12)') sensor%x
+        write (unit_, '("sensor.y: ", 1pg0.12)') sensor%y
+        write (unit_, '("sensor.z: ", 1pg0.12)') sensor%z
     end subroutine dm_sensor_out
 end module dm_sensor

@@ -192,7 +192,7 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but neither includes raster graphic terminals).
+does not depend on X11 (but lacks the raster graphic terminals).
 
 Optionally, install Pygments and AsciiDoctor to generate the man pages and the
 User’s Guide:
@@ -336,12 +336,12 @@ The data structures used by DMPACK are based on the following entities.
 
 === Observation Entities
 
-Node:: A unique sensor node within a sensor network. Contains id, name, and
-additional meta information.
-Sensor:: A unique sensor attached to a _node_, with id, name, and additional
-meta information.
+Node:: A unique sensor node within a sensor network. Contains id, name,
+description, and optional position.
+Sensor:: A unique sensor attached to a _node_, with id, name, description, and
+optional position.
 Target:: A unique measurement target (point of interest, location) with id,
-name, and additional meta information. Multiple nodes and sensors may share a
+name, description, and optional position. Multiple nodes and sensors may share a
 single target.
 Observation:: A single measurement identified by name and unique UUID4 that
 contains requests to and responses from a sensor, referencing a _node_, a
@@ -669,17 +669,17 @@ are supported. Data attributes are passed through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
-| `--altitude _z_`    | `-Z`  | –       | Target altitude (optional).
+| `--altitude _z_`    | `-Z`  | –       | Node, sensor, or target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
-| `--easting _x_`     | `-X`  | –       | Target easting (optional).
+| `--easting _x_`     | `-X`  | –       | Node, sensor, or target easting (optional).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
 | `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
-| `--northing _y_`    | `-Y`  | –       | Target northing (optional).
+| `--northing _y_`    | `-Y`  | –       | Node, sensor, or target northing (optional).
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
 | `--state _n_`       | `-S`  | –       | Target state (optional).
@@ -1414,8 +1414,8 @@ the observation will be discarded.
 
 ==== Examples
 
-The following Lua script `script.lua` just prints observation tables to
-standard output:
+The following Lua script `script.lua` just prints observation table `observ` to
+standard output, before returning it to *dmlua* unmodified:
 
 [source,lua]
 ....
@@ -3381,8 +3381,8 @@ corresponding export formats:
 <<data-node>>:: <<data-node-csv,CSV>>, <<data-node-hdf5,HDF5>>,
 <<data-node-json,JSON>>, <<data-node-nml,Namelist>>
 
-<<data-observ>>:: <<data-observ-csv,CSV>>, <<data-observ-json,JSON>>,
-<<data-observ-lua,Lua>>, <<data-observ-nml,Namelist>>
+<<data-observ>>:: <<data-observ-csv,CSV>>, <<data-observ-hdf5,HDF5>>,
+<<data-observ-json,JSON>>, <<data-observ-lua,Lua>>, <<data-observ-nml,Namelist>>
 
 <<data-sensor>>:: <<data-sensor-csv,CSV>>, <<data-sensor-hdf5,HDF5>>,
 <<data-sensor-json,JSON>>, <<data-sensor-nml,Namelist>>
@@ -3393,10 +3393,10 @@ corresponding export formats:
 The JSON Lines format equals the JSON format, except that multiple records are
 separated by new line. The HDF5 format description for observations is omitted
 due to length. You can output the format from the command-line. For example, if
-the file `timeseries.hdf5` contains DMPACK observations:
+the file `observ.hdf5` contains DMPACK observations:
 
 ....
-$ h5dump -H -A 0 timeseries.hdf5
+$ h5dump -H -A 0 observ.hdf5
 ....
 
 === API Status [[data-api]]
@@ -3653,6 +3653,9 @@ LOG%MESSAGE="dummy log message",
 | `id`      | string  | 32   | Node id (`-0-9A-Za-z`).
 | `name`    | string  | 32   | Node name.
 | `meta`    | string  | 32   | Node description (optional).
+| `x`       | double  | 8    | Node x or easting (optional).
+| `y`       | double  | 8    | Node y or northing (optional).
+| `z`       | double  | 8    | Node z or altitude (optional).
 |===
 
 .CSV [[data-node-csv]]
@@ -3663,6 +3666,9 @@ LOG%MESSAGE="dummy log message",
 | 1      | `id`      | Node id.
 | 2      | `name`    | Node name.
 | 3      | `meta`    | Node description.
+| 4      | `x`       | Node x or easting.
+| 5      | `y`       | Node y or northing.
+| 6      | `z`       | Node z or altitude.
 |===
 
 .HDF5 [[data-node-hdf5]]
@@ -3687,6 +3693,9 @@ DATASET "node_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "meta";
+    H5T_IEEE_F64LE "x";
+    H5T_IEEE_F64LE "y";
+    H5T_IEEE_F64LE "z";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -3698,7 +3707,10 @@ DATASET "node_type" {
 {
   "id": "dummy-node",
   "name": "Dummy Node",
-  "meta": "Description"
+  "meta": "Description",
+  "x": 0.0,
+  "y": 0.0,
+  "z": 0.0
 }
 ....
 
@@ -3708,6 +3720,9 @@ DATASET "node_type" {
 NODE%ID="dummy-node",
 NODE%NAME="Dummy Node",
 NODE%META="Description",
+NODE%X=0.0,
+NODE%Y=0.0,
+NODE%Z=0.0,
 /
 ....
 
@@ -3775,7 +3790,7 @@ NODE%META="Description",
 | 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.
 | 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer.
 | 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer.
-| 4 | `RESPONSE_TYPE_LOGICAL` | Boolean.
+| 4 | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.
 | 5 | `RESPONSE_TYPE_BYTE`    | Byte.
 |===
 
@@ -3857,6 +3872,9 @@ NODE%META="Description",
 | 581 – 672 | `request`    | Request 7.
 | 673 – 764 | `request`    | Request 8.
 |===
+
+.HDF5 [[data-observ-hdf5]]
+The HDF5 data-set description is too large to be fully shown in this document.
 
 .JSON [[data-observ-json]]
 [source,json]
@@ -4001,6 +4019,9 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | `name`    | string  | 32   | Sensor name.
 | `sn`      | string  | 32   | Sensor serial number (optional).
 | `meta`    | string  | 32   | Sensor description (optional).
+| `x`       | double  | 8    | Sensor x or easting (optional).
+| `y`       | double  | 8    | Sensor y or northing (optional).
+| `z`       | double  | 8    | Sensor z or altitude (optional).
 |===
 
 .Sensor types
@@ -4031,6 +4052,9 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 4      | `name`    | Sensor name.
 | 5      | `sn`      | Sensor serial number.
 | 6      | `meta`    | Sensor description.
+| 7      | `x`       | Sensor x or easting.
+| 8      | `y`       | Sensor y or northing.
+| 9      | `z`       | Sensor z or altitude.
 |===
 
 .HDF5 [[data-sensor-hdf5]]
@@ -4068,6 +4092,9 @@ DATASET "sensor_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "meta";
+    H5T_IEEE_F64LE "x";
+    H5T_IEEE_F64LE "y";
+    H5T_IEEE_F64LE "z";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -4082,7 +4109,10 @@ DATASET "sensor_type" {
   "type": 3,
   "name": "Dummy Sensor",
   "sn": "00000",
-  "meta": "Description."
+  "meta": "Description.",
+  "x": 0.0,
+  "y": 0.0,
+  "z": 0.0
 }
 ....
 
@@ -4095,6 +4125,9 @@ SENSOR%TYPE=3,
 SENSOR%NAME="Dummy Sensor",
 SENSOR%SN="00000",
 SENSOR%META="Description",
+SENSOR%X=0.0,
+SENSOR%Y=0.0,
+SENSOR%Z=0.0,
 /
 ....
 
@@ -4109,9 +4142,9 @@ SENSOR%META="Description",
 | `name`    | string  | 32   | Target name.
 | `meta`    | string  | 32   | Target description (optional).
 | `state`   | integer | 4    | Target <<data-target-states,state>> (optional).
-| `x`       | double  | 8    | Target easting (optional).
-| `y`       | double  | 8    | Target northing (optional).
-| `z`       | double  | 8    | Target altitude (optional).
+| `x`       | double  | 8    | Target x or easting (optional).
+| `y`       | double  | 8    | Target y or northing (optional).
+| `z`       | double  | 8    | Target z or altitude (optional).
 |===
 
 .Target states
@@ -4138,9 +4171,9 @@ SENSOR%META="Description",
 | 2      | `name`    | Target name.
 | 3      | `meta`    | Target description.
 | 4      | `state`   | Target state.
-| 5      | `x`       | Target easting.
-| 6      | `y`       | Target northing.
-| 7      | `z`       | Target altitude.
+| 5      | `x`       | Target x or easting.
+| 6      | `y`       | Target y or northing.
+| 7      | `z`       | Target z or altitude.
 |===
 
 .HDF5 [[data-target-hdf5]]
@@ -4233,15 +4266,15 @@ database administration, written in PHP. (GPLv3)
 
 .Observation database
 [#db-uml-observ]
-image::observ.png[UML,align="center"]
+image::observ.svg[UML,align="center"]
 
 .Log database
 [#db-uml-log]
-image::log.png[UML,align="center"]
+image::log.svg[UML,align="center"]
 
 .Heartbeat database
 [#db-uml-beat]
-image::beat.png[UML,align="center"]
+image::beat.svg[UML,align="center"]
 
 === Examples
 

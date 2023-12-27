@@ -158,10 +158,11 @@ contains
             '"dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], "requests": [ { "timestamp": ' // &
             '"1970-01-01T00:00:00.000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
             '"pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
-            '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": 123.45000 } ] }, ' // &
-            '{ "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", ' // &
-            '"pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
-            '"nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, "value": 0.99000000 } ] } ] }'
+            '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": ' // &
+            '123.450000000 } ] }, { "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": ' // &
+            '"OK\\r\\n", "delimiter": "\\r\\n", "pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, ' // &
+            '"state": 0, "timeout": 500, "nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, ' // &
+            '"error": 0, "value": 0.990000000000 } ] } ] }'
 
         character(len=:), allocatable :: buf
         integer                       :: rc

@@ -24,43 +24,43 @@ contains
 
         str = dm_ftoa(123.123)
         print *, 'dm_ftoa() = ', str
-        if (str /= '123.12300') return
+        if (str /= '123.123001099') return
 
-        str = dm_ftoa(123.123_i8)
+        str = dm_ftoa(123.123_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '123.12300') return
+        if (str /= '123.123000000') return
 
         str = dm_ftoa(-123.123)
         print *, 'dm_ftoa() = ', str
-        if (str /= '-123.12300') return
+        if (str /= '-123.123001099') return
 
-        str = dm_ftoa(-123.123_i8)
+        str = dm_ftoa(-123.123_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '-123.12300') return
+        if (str /= '-123.123000000') return
 
-        str = dm_ftoa(123.123123123_i8)
+        str = dm_ftoa(123.123123123_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '123.12312') return
+        if (str /= '123.123123123') return
 
-        str = dm_ftoa(-123.123123123_i8)
+        str = dm_ftoa(-123.123123123_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '-123.12312') return
+        if (str /= '-123.123123123') return
 
         str = dm_ftoa(987654321.12345678)
         print *, 'dm_ftoa() = ', str
-        if (str /= '9.87654336E+8') return
+        if (str /= '987654336.000') return
 
-        str = dm_ftoa(987654321.12345678_i8)
+        str = dm_ftoa(987654321.12345678_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '9.87654321E+8') return
+        if (str /= '987654321.123') return
 
         str = dm_ftoa(-987654321.12345678)
         print *, 'dm_ftoa() = ', str
-        if (str /= '-9.87654336E+8') return
+        if (str /= '-987654336.000') return
 
-        str = dm_ftoa(-987654321.12345678_i8)
+        str = dm_ftoa(-987654321.12345678_r8)
         print *, 'dm_ftoa() = ', str
-        if (str /= '-9.87654321E+8') return
+        if (str /= '-987654321.123') return
 
         stat = TEST_PASSED
     end function test01

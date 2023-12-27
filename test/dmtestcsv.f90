@@ -21,6 +21,7 @@ program dmtestcsv
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
+        !! Prints nodes and observations to stdout in CSV format.
         real(kind=r8)     :: dt
         type(node_type)   :: nodes(2)
         type(observ_type) :: observs(2)
@@ -32,24 +33,33 @@ contains
         call dm_dummy_observ(observs)
 
         print *, 'Node to CSV:'
+        print '(72("."))'
         print '(a)', dm_csv_from(nodes(1))
+        print '(72("."))'
 
         print *, 'Nodes to CSV (with header):'
+        print '(72("."))'
         print '(a)', dm_csv_from(nodes, header=.true.)
+        print '(72("."))'
 
         print *, 'Observation to CSV:'
+        print '(72("."))'
         print '(a)', dm_csv_from(observs(1))
+        print '(72("."))'
 
         print *, 'Observations to CSV:'
+        print '(72("."))'
         call dm_timer_start(timer)
         print '(a)', dm_csv_from(observs, header=.false.)
         dt = dm_timer_stop(timer)
+        print '(72("."))'
         print '(a, f8.6)', ' Time: ', dt
 
         stat = TEST_PASSED
     end function test01
 
     logical function test02() result(stat)
+        !! Prints nodes and observations to stdout in CSV format.
         integer           :: rc
         real(kind=r8)     :: dt
         type(node_type)   :: nodes(2)
@@ -62,15 +72,19 @@ contains
         call dm_dummy_observ(observs)
 
         print *, 'Nodes to CSV (write):'
+        print '(72("."))'
         rc = dm_csv_write(nodes, header=.false.)
+        print '(72("."))'
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Observations to CSV (write):'
+        print '(72("."))'
         call dm_timer_start(timer)
         rc = dm_csv_write(observs, header=.false.)
         dt = dm_timer_stop(timer)
+        print '(72("."))'
         print '(a, f8.6)', ' Time: ', dt
 
         call dm_error_out(rc)
@@ -80,6 +94,7 @@ contains
     end function test02
 
     logical function test03() result(stat)
+        !! Writes and reads observations in CSV to/from scratch file.
         integer, parameter :: N = 3
 
         integer             :: i, fu, rc
@@ -127,6 +142,7 @@ contains
     end function test03
 
     logical function test04() result(stat)
+        !! Writes and reads CSV to/from scratch file.
         integer           :: fu, rc
         type(log_type)    :: log1, log2
         type(node_type)   :: node1, node2
@@ -200,14 +216,15 @@ contains
     end function test04
 
     logical function test05() result(stat)
-        integer, parameter :: LEN_BEAT   = 66
-        integer, parameter :: LEN_DP     = 4
-        integer, parameter :: LEN_LOG    = 71
-        integer, parameter :: LEN_NODE   = 13
-        integer, parameter :: LEN_OBSERV = 21954
-        integer, parameter :: LEN_VIEW   = 167
-        integer, parameter :: LEN_SENSOR = 29
-        integer, parameter :: LEN_TARGET = 25
+        !! Tests header string lengths.
+        integer, parameter :: LEN_BEAT   = 66    !! Beats header length.
+        integer, parameter :: LEN_DP     = 4     !! Data points header length.
+        integer, parameter :: LEN_LOG    = 71    !! Logs header length.
+        integer, parameter :: LEN_NODE   = 19    !! Nodes header length.
+        integer, parameter :: LEN_OBSERV = 21954 !! Observations header length.
+        integer, parameter :: LEN_VIEW   = 167   !! Observation views header length.
+        integer, parameter :: LEN_SENSOR = 35    !! Sensors header length.
+        integer, parameter :: LEN_TARGET = 25    !! Targets header length.
 
         integer :: n
 

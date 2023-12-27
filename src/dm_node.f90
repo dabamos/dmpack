@@ -13,9 +13,12 @@ module dm_node
 
     type, public :: node_type
         !! Node type.
-        character(len=NODE_ID_LEN)   :: id   = ' ' !! Node id (-0-9A-Za-z).
-        character(len=NODE_NAME_LEN) :: name = ' ' !! Note name.
-        character(len=NODE_META_LEN) :: meta = ' ' !! Additional description text.
+        character(len=NODE_ID_LEN)   :: id   = ' '    !! Node id (`-0-9A-Za-z`).
+        character(len=NODE_NAME_LEN) :: name = ' '    !! Note name.
+        character(len=NODE_META_LEN) :: meta = ' '    !! Additional description text (optional).
+        real(kind=r8)                :: x    = 0.0_r8 !! Node x or easting (optional).
+        real(kind=r8)                :: y    = 0.0_r8 !! Node y or northing (optional).
+        real(kind=r8)                :: z    = 0.0_r8 !! Node z or altitude (optional).
     end type node_type
 
     integer, parameter, public :: NODE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.
@@ -33,13 +36,20 @@ module dm_node
 contains
     pure elemental logical function dm_node_equals(node1, node2) result(equals)
         !! Returns `.true.` if given nodes are equal.
+        use :: dm_util, only: dm_equals
         type(node_type), intent(in) :: node1 !! The first node.
         type(node_type), intent(in) :: node2 !! The second node.
 
         equals = .false.
+
         if (node1%id   /= node2%id)   return
         if (node1%name /= node2%name) return
         if (node1%meta /= node2%meta) return
+
+        if (.not. dm_equals(node1%x, node2%x)) return
+        if (.not. dm_equals(node1%y, node2%y)) return
+        if (.not. dm_equals(node1%z, node2%z)) return
+
         equals= .true.
     end function dm_node_equals
 
@@ -63,8 +73,11 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("node.id: ", a)')   trim(node%id)
-        write (unit_, '("node.name: ", a)') trim(node%name)
-        write (unit_, '("node.meta: ", a)') trim(node%meta)
+        write (unit_, '("node.id: ", a)')      trim(node%id)
+        write (unit_, '("node.name: ", a)')    trim(node%name)
+        write (unit_, '("node.meta: ", a)')    trim(node%meta)
+        write (unit_, '("node.x: ", 1pg0.12)') node%x
+        write (unit_, '("node.y: ", 1pg0.12)') node%y
+        write (unit_, '("node.z: ", 1pg0.12)') node%z
     end subroutine dm_node_out
 end module dm_node

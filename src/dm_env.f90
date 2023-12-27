@@ -2,9 +2,9 @@
 ! Licence: ISC
 module dm_env
     !! Module for reading environment variables.
-    use :: dm_convert
     use :: dm_error
     use :: dm_kind
+    use :: dm_string
     implicit none (type, external)
     private
 
@@ -94,7 +94,7 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
-        call dm_convert_to(buffer, i, rc)
+        call dm_string_to(buffer, i, rc)
         if (rc /= E_NONE) return
 
         value = i
@@ -118,7 +118,7 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
-        call dm_convert_to(buffer, i, rc)
+        call dm_string_to(buffer, i, rc)
         if (rc /= E_NONE) return
 
         value = i
@@ -159,7 +159,7 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
-        call dm_convert_to(buffer, f, rc)
+        call dm_string_to(buffer, f, rc)
         if (rc /= E_NONE) return
 
         value = f
@@ -183,7 +183,7 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
-        call dm_convert_to(buffer, f, rc)
+        call dm_string_to(buffer, f, rc)
         if (rc /= E_NONE) return
 
         value = f

@@ -298,8 +298,12 @@ contains
                 rc = dm_db_select(db, old_node, node_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_NAME)) app%node%name = old_node%name
                 if (.not. app%mask(ATTR_META)) app%node%meta = old_node%meta
+                if (.not. app%mask(ATTR_X))    app%node%x    = old_node%x
+                if (.not. app%mask(ATTR_Y))    app%node%y    = old_node%y
+                if (.not. app%mask(ATTR_Z))    app%node%z    = old_node%z
 
                 rc = dm_db_update(db, app%node)
 
@@ -316,11 +320,15 @@ contains
                 rc = dm_db_select(db, old_sensor, sensor_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_TYPE)) app%sensor%type    = old_sensor%type
                 if (.not. app%mask(ATTR_NODE)) app%sensor%node_id = old_sensor%node_id
                 if (.not. app%mask(ATTR_NAME)) app%sensor%name    = old_sensor%name
                 if (.not. app%mask(ATTR_SN))   app%sensor%sn      = old_sensor%sn
                 if (.not. app%mask(ATTR_META)) app%sensor%meta    = old_sensor%meta
+                if (.not. app%mask(ATTR_X))    app%sensor%x       = old_sensor%x
+                if (.not. app%mask(ATTR_Y))    app%sensor%y       = old_sensor%y
+                if (.not. app%mask(ATTR_Z))    app%sensor%z       = old_sensor%z
 
                 if (len_trim(app%sensor%node_id) == 0) then
                     rc = E_INVALID
@@ -349,6 +357,7 @@ contains
                 rc = dm_db_select(db, old_target, target_id=id)
                 if (dm_is_error(rc)) exit db_select
 
+                ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_NAME))  app%target%name  = old_target%name
                 if (.not. app%mask(ATTR_META))  app%target%meta  = old_target%meta
                 if (.not. app%mask(ATTR_STATE)) app%target%state = old_target%state
@@ -428,9 +437,12 @@ contains
         select case (app%type)
             case (TYPE_NODE)
                 ! Get node attributes.
-                rc = dm_arg_get(args(6), app%node%id)
-                rc = dm_arg_get(args(7), app%node%name, passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args(8), app%node%meta, passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args( 6), app%node%id)
+                rc = dm_arg_get(args( 7), app%node%name, passed=app%mask(ATTR_NAME))
+                rc = dm_arg_get(args( 8), app%node%meta, passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args(13), app%node%x,    passed=app%mask(ATTR_X))
+                rc = dm_arg_get(args(14), app%node%y,    passed=app%mask(ATTR_Y))
+                rc = dm_arg_get(args(15), app%node%z,    passed=app%mask(ATTR_Z))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
@@ -439,8 +451,10 @@ contains
                 rc = dm_arg_get(args( 8), app%sensor%meta,    passed=app%mask(ATTR_META))
                 rc = dm_arg_get(args( 9), app%sensor%node_id, passed=app%mask(ATTR_NODE))
                 rc = dm_arg_get(args(10), app%sensor%sn,      passed=app%mask(ATTR_SN))
-                rc = dm_arg_get(args(11), sensor,             passed=app%mask(ATTR_TYPE), &
-                    default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                rc = dm_arg_get(args(11), sensor, passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                rc = dm_arg_get(args(13), app%sensor%x,       passed=app%mask(ATTR_X))
+                rc = dm_arg_get(args(14), app%sensor%y,       passed=app%mask(ATTR_Y))
+                rc = dm_arg_get(args(15), app%sensor%z,       passed=app%mask(ATTR_Z))
 
                 app%sensor%type = dm_sensor_type_from_name(sensor)
 
@@ -469,32 +483,50 @@ contains
             case (OP_CREATE)
                 ! Node, sensor, and target.
                 if (.not. app%mask(ATTR_NAME)) then
-                    call dm_error_out(rc, 'argument --name required')
+                    call dm_error_out(rc, 'command-line option --name required')
                     return
                 end if
 
                 ! Sensor.
                 if (app%type == TYPE_SENSOR) then
                     if (.not. dm_id_valid(app%sensor%node_id)) then
-                        call dm_error_out(rc, 'argument --node is invalid or missing')
+                        call dm_error_out(rc, 'command-line option --node is invalid or missing')
                         return
                     end if
                 end if
             case (OP_UPDATE)
                 ! Update operation.
-                if (app%type == TYPE_NODE .or. app%type == TYPE_TARGET) then
-                    ! Node and target.
-                    if (.not. app%mask(ATTR_NAME) .and. .not. app%mask(ATTR_META)) then
-                        call dm_error_out(rc, 'argument --name or --meta required')
-                        return
-                    end if
-                else if (app%type == TYPE_SENSOR) then
-                    ! Sensor.
-                    if (.not. any(app%mask)) then
-                        call dm_error_out(rc, 'argument --node, --type, --name, --sn, or --meta required')
-                        return
-                    end if
-                end if
+                select case (app%type)
+                    case (TYPE_NODE)
+                        if (.not. app%mask(ATTR_NAME) .and. .not. app%mask(ATTR_META) .and. &
+                            .not. app%mask(ATTR_X)    .and. .not. app%mask(ATTR_Y)    .and. &
+                            .not. app%mask(ATTR_Z)) then
+                            call dm_error_out(rc, 'command-line option --name, --meta, --easting, ' // &
+                                                  '--northing, or --altitude required')
+                            return
+                        end if
+
+                    case (TYPE_TARGET)
+                        if (.not. app%mask(ATTR_NAME)  .and. .not. app%mask(ATTR_META) .and. &
+                            .not. app%mask(ATTR_STATE) .and. .not. app%mask(ATTR_X)    .and. &
+                            .not. app%mask(ATTR_Y)     .and. .not. app%mask(ATTR_Z)) then
+                            call dm_error_out(rc, 'command-line option --name, --meta, --state, ' // &
+                                                  '--easting, --northing, or --altitude required')
+                            return
+                        end if
+
+                    case (TYPE_SENSOR)
+                        if (app%mask(ATTR_STATE)) then
+                            call dm_error_out(rc, 'command-line option --state is not allowed')
+                            return
+                        end if
+
+                        if (.not. any(app%mask)) then
+                            call dm_error_out(rc, 'command-line option --node, --type, --name, --sn, ' // &
+                                                  '--meta, --easting, --northing, or --altitude required')
+                            return
+                        end if
+                end select
         end select
 
         rc = E_NONE
