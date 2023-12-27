@@ -26,7 +26,8 @@ for LIB in ${LIBS}; do
     LIBNAME="fortran-${LIB}"
     LIBPATH="${VENDOR}/${LIBNAME}"
     echo "Searching for ${LIBNAME} ..."
-    [ -d "${LIBPATH}/Makefile" ] && echo "Error: ${LIBNAME} exists" && exit 1
+    [ -e "${LIBPATH}/Makefile" ] && echo "Error: ${LIBNAME} exists" && exit 1
+    [ -d ${LIBPATH} ] && rm -r ${LIBPATH} && echo "Deleted ${LIBPATH}"
     LIBURL="https://codeload.github.com/interkosmos/${LIBNAME}/zip/refs/heads/master"
     LIBMASTER="${LIBNAME}-master"
     LIBZIP="${LIBMASTER}.zip"
