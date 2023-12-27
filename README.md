@@ -155,8 +155,6 @@ AsciiDoctor:
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ```
 
-#### Make
-
 The Git repository has to be cloned recursively. Otherwise, your will need to
 download the sub-modules manually. Then, run the Makefile:
 
@@ -200,8 +198,6 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 alternatively, if raster image formats are not desired (SVG output only).
-
-#### Make
 
 Clone the DMPACK repository, and execute the Makefile:
 
