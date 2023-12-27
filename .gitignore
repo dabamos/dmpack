@@ -10,6 +10,9 @@ man/html/
 man/pdf/
 
 # Other stuff
+*-shm
+*-wal
+*.*~
 *.a
 *.conf
 *.db
@@ -22,5 +25,4 @@ man/pdf/
 *.sql
 *.sqlite
 *.swp
-*.*~
 rsync_*

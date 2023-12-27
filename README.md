@@ -131,10 +131,9 @@ The following programs are based on the DMPACK library.
 
 The DMPACK library and programs have to be built from source by either executing
 the provided Makefile, or by using the
-[Fortran Package Manager](https://fpm.fortran-lang.org/).
-
-See the [User’s Guide](https://www.dabamos.de/dmpack/guide/#_installation) for
-complete installation instructions.
+[Fortran Package Manager](https://fpm.fortran-lang.org/). See the
+[User’s Guide](https://www.dabamos.de/dmpack/guide/#_installation) for complete
+installation instructions.
 
 ### FreeBSD
 

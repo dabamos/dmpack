@@ -102,6 +102,7 @@ STRIP   = strip
 RM      = /bin/rm
 SH      = /bin/sh
 FORD    = ford
+GZIP    = gzip
 
 # Workspace directories.
 CONFDIR = ./config
@@ -114,14 +115,16 @@ SRCDIR  = ./src
 
 ADOCDIR = ./adoc
 DOCDIR  = ./doc
+MANDIR  = ./man
 GUIDDIR = ./guide
 
 # Installation directories.
-IBINDIR = $(PREFIX)/bin/
-IETCDIR = $(PREFIX)/etc/dmpack/
-IINCDIR = $(PREFIX)/include/dmpack/
-ILIBDIR = $(PREFIX)/lib/
-ISHRDIR = $(PREFIX)/share/dmpack/
+IBINDIR = $(PREFIX)/bin
+IETCDIR = $(PREFIX)/etc/dmpack
+IINCDIR = $(PREFIX)/include/dmpack
+ILIBDIR = $(PREFIX)/lib
+IMANDIR = $(PREFIX)/man/man1
+ISHRDIR = $(PREFIX)/share/dmpack
 
 # DMPACK libraries.
 THIN    = $(LIBDIR)/libdm.a
@@ -202,35 +205,34 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 src/dm_path.f90 \
       src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 src/dm_hdf5.f90 \
       src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_arg.f90 \
-      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 \
-      src/dm_tty.f90 src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 \
-      src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 \
-      src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 \
-      src/dm_log.f90 src/dm_job.f90 src/dm_plot.f90 src/dm_report.f90 \
-      src/dm_regex.f90 src/dm_lua.f90 src/dm_lua_api.f90 src/dm_config.f90 \
-      src/dm_sync.f90 src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 \
-      src/dm_test.f90 src/dm_dummy.f90 src/dm_nml.f90 src/dm_sql.f90 \
-      src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 src/dm_mail.f90 \
-      src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 src/dm_rpc.f90 \
-      src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 src/dm_block.f90 \
-      src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 src/dm_html.f90 \
-      src/dm_atom.f90 src/dm_cgi_router.f90 src/dm_la.f90 src/dm_transform.f90 \
-      src/dm_geocom_error.f90 src/dm_geocom_api.f90 src/dm_geocom.f90 \
-      src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_rts.f90 \
-      src/dm_mqueue_util.f90 src/dmpack.f90
+      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 src/dm_tty.f90 \
+      src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 \
+      src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 \
+      src/dm_request.f90 src/dm_observ.f90 src/dm_log.f90 src/dm_job.f90 \
+      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 src/dm_lua.f90 \
+      src/dm_lua_api.f90 src/dm_config.f90 src/dm_sync.f90 src/dm_beat.f90 \
+      src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 src/dm_dummy.f90 \
+      src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 \
+      src/dm_person.f90 src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 \
+      src/dm_api.f90 src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 \
+      src/dm_fcgi.f90 src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 \
+      src/dm_jsonl.f90 src/dm_html.f90 src/dm_atom.f90 src/dm_cgi_router.f90 \
+      src/dm_la.f90 src/dm_transform.f90 src/dm_geocom_error.f90 \
+      src/dm_geocom_api.f90 src/dm_geocom.f90 src/dm_lua_geocom.f90 \
+      src/dm_lua_lib.f90 src/dm_rts.f90 src/dm_mqueue_util.f90 src/dmpack.f90
 
 # Library object files.
-OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o \
-      dm_error.o dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o \
-      dm_util.o dm_time.o dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o \
-      dm_hash_table.o dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o \
-      dm_signal.o dm_system.o dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o \
-      dm_fifo.o dm_node.o dm_sensor.o dm_target.o dm_response.o dm_request.o \
-      dm_observ.o dm_log.o dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o \
-      dm_lua_api.o dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o \
-      dm_test.o dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o \
-      dm_mail.o dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o \
-      dm_fcgi.o dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
+OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
+      dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o dm_util.o dm_time.o \
+      dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o dm_hash_table.o \
+      dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o dm_signal.o dm_system.o \
+      dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o \
+      dm_sensor.o dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o \
+      dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o dm_lua_api.o \
+      dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o dm_test.o \
+      dm_dummy.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
+      dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o \
+      dm_block.o dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o \
       dm_cgi_router.o dm_la.o dm_transform.o dm_geocom_error.o dm_geocom_api.o \
       dm_geocom.o dm_lua_geocom.o dm_lua_lib.o dm_rts.o dm_mqueue_util.o \
       dmpack.o
@@ -657,42 +659,66 @@ install:
 	install -d $(IETCDIR)
 	install -d $(IINCDIR)
 	install -d $(ILIBDIR)
+	install -d $(IMANDIR)
 	install -d $(ISHRDIR)
-	install -m 755 $(DISTDIR)/dmapi $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmbackup $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmbeat $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmdb $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmdbctl $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmexport $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmfeed $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmfs $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmgraph $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmimport $(IBINDIR)
-	install -m 755 $(DISTDIR)/dminfo $(IBINDIR)
-	install -m 755 $(DISTDIR)/dminit $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmlog $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmlogger $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmlua $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmpipe $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmrecv $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmreport $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmsend $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmserial $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmsync $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmuuid $(IBINDIR)
-	install -m 755 $(DISTDIR)/dmweb $(IBINDIR)
-	install -m 644 $(INCDIR)/*.mod $(IINCDIR)
-	install -m 644 $(TARGET) $(ILIBDIR)
-	install -m 644 $(SHARED) $(ILIBDIR)
-	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)
-	install -m 644 $(SHRDIR)/dmpack.css $(ISHRDIR)
-	install -m 644 $(SHRDIR)/dmpack.min.css $(ISHRDIR)
-	install -m 644 $(SHRDIR)/dmreport.css $(ISHRDIR)
-	install -m 644 $(SHRDIR)/dmreport.min.css $(ISHRDIR)
-	install -m 644 $(SHRDIR)/dmlua.lua $(ISHRDIR)
-	install -m 644 $(SHRDIR)/feed.xsl $(ISHRDIR)
-	install -m 755 $(SHRDIR)/diskfree.sh $(ISHRDIR)
-	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)
+	install -m 755 $(DMAPI)    $(IBINDIR)/
+	install -m 755 $(DMBACKUP) $(IBINDIR)/
+	install -m 755 $(DMBEAT)   $(IBINDIR)/
+	install -m 755 $(DMDB)     $(IBINDIR)/
+	install -m 755 $(DMDBCTL)  $(IBINDIR)/
+	install -m 755 $(DMEXPORT) $(IBINDIR)/
+	install -m 755 $(DMFEED)   $(IBINDIR)/
+	install -m 755 $(DMFS)     $(IBINDIR)/
+	install -m 755 $(DMGRAPH)  $(IBINDIR)/
+	install -m 755 $(DMIMPORT) $(IBINDIR)/
+	install -m 755 $(DMINFO)   $(IBINDIR)/
+	install -m 755 $(DMINIT)   $(IBINDIR)/
+	install -m 755 $(DMLOG)    $(IBINDIR)/
+	install -m 755 $(DMLOGGER) $(IBINDIR)/
+	install -m 755 $(DMLUA)    $(IBINDIR)/
+	install -m 755 $(DMPIPE)   $(IBINDIR)/
+	install -m 755 $(DMRECV)   $(IBINDIR)/
+	install -m 755 $(DMREPORT) $(IBINDIR)/
+	install -m 755 $(DMSEND)   $(IBINDIR)/
+	install -m 755 $(DMSERIAL) $(IBINDIR)/
+	install -m 755 $(DMSYNC)   $(IBINDIR)/
+	install -m 755 $(DMUUID)   $(IBINDIR)/
+	install -m 755 $(DMWEB)    $(IBINDIR)/
+	install -m 644 $(INCDIR)/*.mod $(IINCDIR)/
+	install -m 644 $(TARGET) $(ILIBDIR)/
+	install -m 644 $(SHARED) $(ILIBDIR)/
+	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
+	install -m 644 $(SHRDIR)/dmpack.css $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmpack.min.css $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmreport.css $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmreport.min.css $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmlua.lua $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/feed.xsl $(ISHRDIR)/
+	install -m 755 $(SHRDIR)/diskfree.sh $(ISHRDIR)/
+	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)/
+	$(GZIP) -9 < $(MANDIR)/dmapi.1    > $(IMANDIR)/dmapi.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmdb.1     > $(IMANDIR)/dmdb.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmdbctl.1  > $(IMANDIR)/dmdbctl.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmexport.1 > $(IMANDIR)/dmexport.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmfeed.1   > $(IMANDIR)/dmfeed.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmfs.1     > $(IMANDIR)/dmfs.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmgraph.1  > $(IMANDIR)/dmgraph.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmimport.1 > $(IMANDIR)/dmimport.1.gz
+	$(GZIP) -9 < $(MANDIR)/dminfo.1   > $(IMANDIR)/dminfo.1.gz
+	$(GZIP) -9 < $(MANDIR)/dminit.1   > $(IMANDIR)/dminit.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmlog.1    > $(IMANDIR)/dmlog.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmlogger.1 > $(IMANDIR)/dmlogger.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmlua.1    > $(IMANDIR)/dmlua.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmpipe.1   > $(IMANDIR)/dmpipe.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmrecv.1   > $(IMANDIR)/dmrecv.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmreport.1 > $(IMANDIR)/dmreport.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmsend.1   > $(IMANDIR)/dmsend.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmserial.1 > $(IMANDIR)/dmserial.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmsync.1   > $(IMANDIR)/dmsync.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmuuid.1   > $(IMANDIR)/dmuuid.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmweb.1    > $(IMANDIR)/dmweb.1.gz
 
 install_freebsd:
 	$(MAKE) install PREFIX=/usr/local
@@ -701,36 +727,59 @@ install_linux:
 	$(MAKE) install PREFIX=/usr
 
 deinstall:
-	$(RM) -rf $(PREFIX)/include/dmpack
-	$(RM) -rf $(PREFIX)/share/dmpack
-	$(RM) -f $(PREFIX)/etc/*.conf.sample
-	$(RM) -f $(PREFIX)/lib/libdmpack.a
-	$(RM) -f $(PREFIX)/lib/libdmpack.so
-	$(RM) -f $(PREFIX)/dmapi
-	$(RM) -f $(PREFIX)/dmbackup
-	$(RM) -f $(PREFIX)/dmbeat
-	$(RM) -f $(PREFIX)/dmdb
-	$(RM) -f $(PREFIX)/dmdbctl
-	$(RM) -f $(PREFIX)/dmexport
-	$(RM) -f $(PREFIX)/dmfeed
-	$(RM) -f $(PREFIX)/dmfs
-	$(RM) -f $(PREFIX)/dmgraph
-	$(RM) -f $(PREFIX)/dmimport
-	$(RM) -f $(PREFIX)/dminfo
-	$(RM) -f $(PREFIX)/dminit
-	$(RM) -f $(PREFIX)/dmlog
-	$(RM) -f $(PREFIX)/dmlogger
-	$(RM) -f $(PREFIX)/dmlua
-	$(RM) -f $(PREFIX)/dmpipe
-	$(RM) -f $(PREFIX)/dmrecv
-	$(RM) -f $(PREFIX)/dmreport
-	$(RM) -f $(PREFIX)/dmsend
-	$(RM) -f $(PREFIX)/dmserial
-	$(RM) -f $(PREFIX)/dmsync
-	$(RM) -f $(PREFIX)/dmuuid
-	$(RM) -f $(PREFIX)/dmweb
+	$(RM) -r $(IINCDIR)
+	$(RM) -r $(ISHRDIR)
+	$(RM) -f $(IETCDIR)/*.conf.sample
+	$(RM) -f $(ILIBDIR)/libdmpack.a
+	$(RM) -f $(ILIBDIR)/libdmpack.so
+	$(RM) -f $(IBINDIR)/dmapi
+	$(RM) -f $(IBINDIR)/dmbackup
+	$(RM) -f $(IBINDIR)/dmbeat
+	$(RM) -f $(IBINDIR)/dmdb
+	$(RM) -f $(IBINDIR)/dmdbctl
+	$(RM) -f $(IBINDIR)/dmexport
+	$(RM) -f $(IBINDIR)/dmfeed
+	$(RM) -f $(IBINDIR)/dmfs
+	$(RM) -f $(IBINDIR)/dmgraph
+	$(RM) -f $(IBINDIR)/dmimport
+	$(RM) -f $(IBINDIR)/dminfo
+	$(RM) -f $(IBINDIR)/dminit
+	$(RM) -f $(IBINDIR)/dmlog
+	$(RM) -f $(IBINDIR)/dmlogger
+	$(RM) -f $(IBINDIR)/dmlua
+	$(RM) -f $(IBINDIR)/dmpipe
+	$(RM) -f $(IBINDIR)/dmrecv
+	$(RM) -f $(IBINDIR)/dmreport
+	$(RM) -f $(IBINDIR)/dmsend
+	$(RM) -f $(IBINDIR)/dmserial
+	$(RM) -f $(IBINDIR)/dmsync
+	$(RM) -f $(IBINDIR)/dmuuid
+	$(RM) -f $(IBINDIR)/dmweb
+	$(RM) -f $(IMANDIR)/dmapi.1.gz
+	$(RM) -f $(IMANDIR)/dmbackup.1.gz
+	$(RM) -f $(IMANDIR)/dmbeat.1.gz
+	$(RM) -f $(IMANDIR)/dmdb.1.gz
+	$(RM) -f $(IMANDIR)/dmdbctl.1.gz
+	$(RM) -f $(IMANDIR)/dmexport.1.gz
+	$(RM) -f $(IMANDIR)/dmfeed.1.gz
+	$(RM) -f $(IMANDIR)/dmfs.1.gz
+	$(RM) -f $(IMANDIR)/dmgraph.1.gz
+	$(RM) -f $(IMANDIR)/dmimport.1.gz
+	$(RM) -f $(IMANDIR)/dminfo.1.gz
+	$(RM) -f $(IMANDIR)/dminit.1.gz
+	$(RM) -f $(IMANDIR)/dmlog.1.gz
+	$(RM) -f $(IMANDIR)/dmlogger.1.gz
+	$(RM) -f $(IMANDIR)/dmlua.1.gz
+	$(RM) -f $(IMANDIR)/dmpipe.1.gz
+	$(RM) -f $(IMANDIR)/dmrecv.1.gz
+	$(RM) -f $(IMANDIR)/dmreport.1.gz
+	$(RM) -f $(IMANDIR)/dmsend.1.gz
+	$(RM) -f $(IMANDIR)/dmserial.1.gz
+	$(RM) -f $(IMANDIR)/dmsync.1.gz
+	$(RM) -f $(IMANDIR)/dmuuid.1.gz
+	$(RM) -f $(IMANDIR)/dmweb.1.gz
 	@echo
-	@echo "You may need to manually remove $(PREFIX)/etc/dmpack/ if it is no longer needed."
+	@echo "You may need to manually remove $(IETCDIR) if it is no longer needed."
 	@echo
 
 # ******************************************************************************
