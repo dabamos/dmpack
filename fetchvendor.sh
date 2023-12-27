@@ -16,23 +16,28 @@
 set -e
 
 UNZIP=unzip
-VENDOR=./vendor
+VENDOR=./vendor2
 
 LIBS="curl lua54 pcre2 sqlite3 unix zlib"
 
+mkdir -p ${VENDOR}
+
 for LIB in ${LIBS}; do
-    LIBPATH="${VENDOR}/fortran-${LIB}"
-    echo "Searching for ${LIBPATH}/ ..."
-    [ -d ${LIBPATH} ] && echo "Error: directory exists" && exit 1
-    LIBURL="https://codeload.github.com/interkosmos/fortran-${LIB}/zip/refs/heads/master"
-    LIBZIP="fortran-${LIB}-master.zip"
+    LIBNAME="fortran-${LIB}"
+    LIBPATH="${VENDOR}/${LIBNAME}"
+    echo "Searching for ${LIBNAME} ..."
+    [ -d "${LIBPATH}/Makefile" ] && echo "Error: ${LIBNAME} exists" && exit 1
+    LIBURL="https://codeload.github.com/interkosmos/${LIBNAME}/zip/refs/heads/master"
+    LIBMASTER="${LIBNAME}-master"
+    LIBZIP="${LIBMASTER}.zip"
     LIBFILE="${VENDOR}/${LIBZIP}"
-    LIBDIR="${VENDOR}/fortran-${LIB}"
+    LIBDIR="${VENDOR}/${LIBNAME}"
     echo "Fetching ${LIBZIP} ..."
     curl ${LIBURL} -s -o ${LIBFILE}
     echo "Unpacking ${LIBZIP} ..."
     ${UNZIP} -q -d ${VENDOR} ${LIBFILE}
-    mv "${VENDOR}/fortran-${LIB}-master" ${LIBDIR}
     echo "Deleting ${LIBZIP} ..."
     rm ${LIBFILE}
+    echo "Renaming directory ..."
+    mv "${VENDOR}/${LIBMASTER}" ${LIBDIR}
 done
