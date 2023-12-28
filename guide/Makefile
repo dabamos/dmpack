@@ -1,17 +1,30 @@
 .POSIX:
 
-ADOC     = asciidoctor
-ADOCDIR  = .
-CSSDIR   = ../share
-GUIDEDIR = .
-TARGET   = index.html
+ADOC    = asciidoctor
+ADOCPDF = asciidoctor-pdf
 
-.PHONY: all clean guide multi
+OUTDIR  = .
+SRC     = guide.adoc
+HTML    = index.html
+PDF     = guide.pdf
 
-all: guide
+THEME   = resources/themes/dmpack-theme.yml
+CSS     = resources/css/adoc.css
 
-guide:
-	$(ADOC) -a webfonts! -a stylesheet=$(CSSDIR)/adoc.css -D $(GUIDEDIR) -o $(TARGET) $(ADOCDIR)/guide.adoc
+.PHONY: all clean html pdf
+
+all: $(HTML)
+
+html: $(HTML)
+
+pdf: $(PDF)
+
+$(HTML): $(SRC)
+	$(ADOC) -a webfonts! -a stylesheet=$(CSS) -D $(OUTDIR) -o $(HTML) $(SRC)
+
+$(PDF): $(SRC) $(THEME)
+	$(ADOCPDF) -a pdf-theme=$(THEME) -a pdf-fontsdir=resources/fonts -D $(OUTDIR) -o $(PDF) $(SRC)
 
 clean:
-	if [ `ls -1 $(GUIDEDIR)/*.html 2>/dev/null | wc -l` -gt 0 ]; then rm $(GUIDEDIR)/*.html; fi
+	if [ `ls -1 $(OUTDIR)/$(HTML) 2>/dev/null | wc -l` -gt 0 ]; then rm $(OUTDIR)/$(HTML); fi
+	if [ `ls -1 $(OUTDIR)/$(PDF)  2>/dev/null | wc -l` -gt 0 ]; then rm $(OUTDIR)/$(PDF); fi

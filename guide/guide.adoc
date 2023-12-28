@@ -1,18 +1,21 @@
-:docdate: 2023-12-21
 :description: DMPACK User’s Guide
-:lang: en
 :author: Philipp Engel
-:orgname: DABAMOS
 :copyright: CC BY 4.0
+:orgname: DABAMOS
+:revnumber: 0.9.2
+:lang: en
+:docdate: 2023-12-28
+:doctype: book
 :url-org: https://dabamos.de/
 :url-project: {url-org}dmpack
+:imagesdir: resources/images/
 :data-uri:
 :source-highlighter: pygments
+:pygments-style: lovelace
 :toc: left
 :toclevels: 2
 :xrefstyle: short
 :table-caption!:
-:revnumber: 0.9.2
 
 = DMPACK User’s Guide
 
@@ -80,44 +83,44 @@ The reference implementation of the OGC Sensor Observation Service (SOS) in
 Java, by 52°North Spatial Information Research GmbH. Offers an interoperable
 interface for publishing and querying sensor data and meta data. Additional
 client applications enable analysis and visualisation of the measurement data.
-`GPLv2`
+(GPLv2)
 link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
-monitoring and alerting solution built with MariaDB, Node.js and React. `MIT`
+monitoring and alerting solution built with MariaDB, Node.js and React. (MIT)
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
 SensorThings (FROST) is the reference implementation of the OGC SensorThings API
 in Java. The project provides an HTTP- and MQTT-based message bus for data
 transmission between client and server. Developed by Fraunhofer-Institut für
-Optronik, Systemtechnik und Bildauswertung (IOSB). `LGPLv3`
+Optronik, Systemtechnik und Bildauswertung (IOSB). (LGPLv3)
 link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
-`GPLv3`
+(GPLv3)
 link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
 observations from monitoring sensors. The project also provides a graphical user
 interface and a RESTful web API to automate administration procedures. Developed
 by Istituto Scienze della Terra, University of Applied Sciences and Arts of
-Southern Switzerland. `GPLv2`
+Southern Switzerland. (GPLv2)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
-projects, distributed sensor networks, and likewise scenarios. `AGPLv3`
+projects, distributed sensor networks, and likewise scenarios. (AGPLv3)
 link:https://www.dabamos.de/software/openadms/[OpenADMS]:: The Open Automatic
 Deformation Monitoring software is an IoT sensor network middleware in Python 3.
 The system was developed as a prototype of DMPACK and includes client and server
-programs. `BSD`
+programs. (BSD)
 link:https://github.com/opensensorhub[OpenSensorHub]:: Java-based middleware
 for building Sensor Webs in the Internet of Things. Based on OGC standards from
-the Sensor Web Enablement (SWE) initiative. `MPLv2`
+the Sensor Web Enablement (SWE) initiative. (MPLv2)
 link:https://github.com/project-mjolnir[Project Mjolnir]:: An open source
 client–server IoT architecture for scientific sensor networks written in
 Python, by University of Alabama in Huntsville and NASA. Includes a sensor
 client for data logging, uplink and control, as well as a server component to
-store, serve/display, and monitor data from remote sensors. `MIT`
+store, serve/display, and monitor data from remote sensors. (MIT)
 link:http://www.agt.bme.hu/ulyxes/[Ulyxes]:: An open source project in Python to
 control robotic total stations (RTS) and other sensors, and to publish
 observation results on web based maps. Developed at the Department of Geodesy
-and Surveying of the Budapest University of Technology and Economics. `GPLv2`
+and Surveying of the Budapest University of Technology and Economics. (GPLv2)
 
 == Requirements
 
@@ -148,14 +151,6 @@ you will also need:
   link:https://rubygems.org/gems/pygments.rb/versions/2.2.0[pygments.rb]
 * link:https://github.com/Fortran-FOSS-Programmers/ford[FORD]
 
-== Installation
-
-This section describes how to build the DMPACK library and programs from source,
-with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
-(FPM). At the moment, support for the Fortran Package Manager is experimental.
-The shared library `libgfortran.so` must be present on the target system if the
-DMPACK programs have been compiled with GNU Fortran.
-
 DMPACK depends on the following interface libraries:
 
 * link:https://github.com/interkosmos/fortran-curl[fortran-curl]
@@ -179,14 +174,13 @@ $ make [freebsd|linux]
 
 The shell script requires _curl(1)_ and _unzip(1)_.
 
-There are separate instructions for FreeBSD and Linux:
+== Installation
 
-* <<freebsd>>
-** <<freebsd-make>>
-** <<freebsd-fpm>>
-* <<linux>>
-** <<linux-make>>
-** <<linux-fpm>>
+This section describes how to build the DMPACK library and programs from source,
+with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
+(FPM). At the moment, support for the Fortran Package Manager is experimental.
+The shared library `libgfortran.so` must be present on the target system if the
+DMPACK programs have been compiled with GNU Fortran.
 
 Either build with GNU/BSD Make or with the Fortran Package Manager. It is
 recommended to use _make(1)_.
@@ -196,8 +190,8 @@ recommended to use _make(1)_.
 First, install the build and run-time dependencies:
 
 ....
-$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
+$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl \
+  lang/gcc lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -235,7 +229,7 @@ $ doas make install PREFIX=/opt
 ....
 
 .Default paths on FreeBSD
-[%autowidth]
+[cols="3,6"]
 |===
 | Path                         | Description
 
@@ -279,8 +273,8 @@ The third-party dependencies have to be installed with development headers:
 ....
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
-  libhdf5 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
-  sqlite3 libsqlite3-dev zlib1g zlib1g-dev
+  libhdf5 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
+  libpcre2-dev sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 ....
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
@@ -366,8 +360,8 @@ contain name, value, unit, and an optional error code.
 
 === Log Entities
 
-Log:: Log message of a sensor node, either of level _debug_, _info_, _warning_,
-_error_, or _critical_, and optionally related to a _sensor_, a _target_, and an
+Log:: Log message of a sensor node, either of level `DEBUG`, `INFO`, `WARNING`,
+`ERROR`, or `CRITICAL`, and optionally related to a _sensor_, a _target_, and an
 _observation_.
 
 === Beat Entities
@@ -502,7 +496,7 @@ authenticated user. For example, to store an observation of a node with the id
 `node-1`, the HTTP Basic Auth user name must equal the node id. If the
 observation is sent by any other user, it will be rejected (HTTP 401).
 
-[%autowidth]
+[cols="4,12"]
 |===
 | Environment Variable | Description
 
@@ -543,7 +537,7 @@ $ sqlite3 <database> ".backup '<output>'"
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
@@ -579,15 +573,15 @@ for testing.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,7"]
 |===
 | Option                 | Short | Default  | Description
 
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--count _n_`          | `-C`  | 0        | Maximum number of heartbeats to send (unlimited if `0`).
-| `--debug`              | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
-| `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
+| `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
 | `--interval _seconds_` | `-I`  | 60       | Emit interval in seconds.
 | `--logger _name_`      | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmbeat` | Optional name of instance and table in given configuration file.
@@ -622,13 +616,13 @@ equals the *dmdb* name. Only a single process may wait for the semaphore.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database.
-| `--debug`           | `-D`  | off     | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`           | `-D`  | off     | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 
 | `--ipc`
@@ -675,7 +669,7 @@ are supported. Data attributes are passed through command-line arguments.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
@@ -693,7 +687,7 @@ are supported. Data attributes are passed through command-line arguments.
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
 | `--state _n_`       | `-S`  | –       | Target state (optional).
-| `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>>: `none`, `rts`, `gnss`, … (optional).
+| `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>> (`none`, `rts`, `gnss`, …).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
 | `--version`         | `-v`  | –       | Output version information and quit.
@@ -704,21 +698,21 @@ are supported. Data attributes are passed through command-line arguments.
 Add node, sensor, and target to observation database:
 
 ....
-$ dmdbctl --database observ.sqlite --create node --id node-1 --name "Node 1"
-$ dmdbctl --database observ.sqlite --create sensor --id sensor-1 --name "Sensor 1" --node node-1
-$ dmdbctl --database observ.sqlite --create target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
+$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
 ....
 
 Delete a target from the database:
 
 ....
-$ dmdbctl --database observ.sqlite --delete target --id target-1
+$ dmdbctl -d observ.sqlite -D target --id target-1
 ....
 
 Read attributes of sensor `sensor-1`:
 
 ....
-$ dmdbctl --database observ.sqlite --read sensor --id sensor-1
+$ dmdbctl -d observ.sqlite -R sensor --id sensor-1
 sensor.id: sensor-1
 sensor.node_id: node-1
 sensor.type: virtual
@@ -744,7 +738,7 @@ an empty file will be created.
 
 .Output file formats
 [[dmexport-output]]
-[%autowidth]
+[cols="1,5,4"]
 |===
 | Format  | Supported Types                                           | Description
 
@@ -756,12 +750,12 @@ an empty file will be created.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,6"]
 |===
 | Option               | Short | Default | Description
 
 | `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
-| `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>>: `block`, `csv`, `json`, `jsonl` (required).
+| `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>> (`block`, `csv`, `json`, `jsonl`).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
@@ -781,7 +775,7 @@ an empty file will be created.
 Export log messages from database to JSON file:
 
 ....
-$ dmexport --database /var/dmpack/log.sqlite --type log --format json --node dummy-node \
+$ dmexport --database log.sqlite --type log --format json --node dummy-node \
   --from 2020-01-01 --to 2023-01-01 --output /tmp/log.json
 ....
 
@@ -810,7 +804,7 @@ the web server. An example style sheet `feed.xsl` is located in
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,6"]
 |===
 | Option                | Short | Default  | Description
 
@@ -886,12 +880,12 @@ present in the database.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
-| `--debug`           | `-D`  | off     | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`           | `-D`  | off     | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -955,17 +949,18 @@ $ cat /mnt/1wire/10.DCA98C020800/temperature
 Then, initialise the observation and log databases:
 
 ....
-$ dminit --type observ --database /var/dmpack/observ.sqlite --wal
-$ dminit --type log --database /var/dmpack/log.sqlite --wal
+$ cd /var/dmpack/
+$ dminit --type observ --database observ.sqlite --wal
+$ dminit --type log --database log.sqlite --wal
 ....
 
 Create node `node-1`, sensor `sensor-1`, and target `target-1` in database
 `/var/dmpack/observ.sqlite` through <<dmweb>> or <<dmdbctl>>:
 
 ....
-$ dmdbctl -d /var/dmpack/observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbctl -d /var/dmpack/observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
-$ dmdbctl -d /var/dmpack/observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
+$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
 ....
 
 Set the program settings in configuration file
@@ -975,25 +970,24 @@ Set the program settings in configuration file
 ....
 -- dmfs.conf
 dmfs = {
-  logger = "dmlogger",          -- Logger to send logs to (optional).
+  logger = "dmlogger",          -- Logger to send logs to.
   node = "node-1",              -- Node id (required).
   sensor = "sensor-1",          -- Sensor id (required).
-  output = "",                  -- Path to output file, empty or `-` for stdout (optional).
+  output = "",                  -- Path to output file, or `-` for stdout.
   format = "none",              -- Output format (`csv` or `jsonl`).
   jobs = {                      -- List of jobs to perform.
     {
-      delay = 10 * 1000,        -- Delay in mseconds to wait afterwards (optional).
-      disabled = false,         -- Disable to ignore job (optional).
-      onetime = false,          -- Run job only once (optional).
+      disabled = false,         -- Disable to ignore job.
+      onetime = false,          -- Run job only once.
       observation = {           -- Observation to execute (required).
         name = "observ-1",      -- Observation name (required).
         target_id = "target-1", -- Target id (required).
-        receivers = { "dmdb" }, -- Optional list of receivers (up to 16).
+        receivers = { "dmfs", "dmdb" }, -- List of receivers (up to 16).
         requests = {            -- List of files to read.
           {
             request = "/mnt/1wire/10.DCA98C020800/temperature", -- File path.
-            pattern = "(?<temp>[-+0-9\\.]+)",                   -- RegEx pattern.
-            delay = 500,        -- Delay in mseconds (optional).
+            pattern = "(?<temp>[-+0-9\\.]+)", -- RegEx pattern.
+            delay = 500,        -- Delay in mseconds.
             responses = {
               {
                 name = "temp",  -- RegEx group.
@@ -1002,11 +996,12 @@ dmfs = {
             }
           }
         }
-      }
+      },
+      delay = 10 * 1000,        -- Delay in mseconds to wait afterwards.
     }
   },
-  debug = false,                -- Forward log messages of level DEBUG via IPC.
-  verbose = true                -- Print messages to standard output (optional).
+  debug = false,                -- Forward logs of level DEBUG via IPC.
+  verbose = true                -- Print messages to standard output.
 }
 ....
 
@@ -1049,7 +1044,7 @@ configuration file.
 
 .Terminals supported by *dmgraph*
 [[dmgraph-format]]
-[%autowidth]
+[cols="1,7"]
 |===
 | Terminal   | Description
 
@@ -1065,7 +1060,7 @@ configuration file.
 
 .Format descriptors allowed in the output file name
 [[dmgraph-descript]]
-[%autowidth]
+[cols="1,7"]
 |===
 | Descriptor | Description (Format)
 
@@ -1079,7 +1074,7 @@ configuration file.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,6"]
 |===
 | Option                  | Short | Default   | Description
 
@@ -1110,8 +1105,9 @@ Create a plot of observations selected from database `observ.sqlite` in PNG
 format, and write the file to `/tmp/plot.png`:
 
 ....
-$ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target --response dummy \
-  --from 2020 --to 2024 --database observ.sqlite --terminal pngcairo --output /tmp/plot.png
+$ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --response dummy --from 2020 --to 2024 --database observ.sqlite \
+  --terminal pngcairo --output /tmp/plot.png
 ....
 
 Output the plot directly to terminal, with the configuration loaded from file:
@@ -1138,7 +1134,7 @@ number of rows; as well as system name, version, and host name.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
@@ -1179,7 +1175,7 @@ sensors must exist as well.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,6"]
 |===
 | Option               | Short | Default | Description
 
@@ -1216,7 +1212,7 @@ multiple readers.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default | Description
 
@@ -1257,20 +1253,20 @@ level is INFO. Pass the name of the _dmlogger_ instance through argument
 
 The following log levels are accepted:
 
-[%autowidth]
+[cols="1,9"]
 |===
 | Level | Name
 
-| 1     | DEBUG
-| 2     | INFO
-| 3     | WARNING
-| 4     | ERROR
-| 5     | CRITICAL
+| 1     | `DEBUG`
+| 2     | `INFO`
+| 3     | `WARNING`
+| 4     | `ERROR`
+| 5     | `CRITICAL`
 |===
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,5"]
 |===
 | Option               | Short | Default    | Description
 
@@ -1293,8 +1289,8 @@ The following log levels are accepted:
 Send a log message to the message queue of logger `dmlogger`:
 
 ....
-$ dmlog --level 3 --message "low battery" --source test --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
+$ dmlog --level 3 --message "low battery" --source dmlog --verbose
+2022-12-09T22:50:44.161+01:00 [WARNING] dmlog - low battery
 ....
 
 The `dmlogger` process will receive the log message and store it in the log
@@ -1302,7 +1298,7 @@ database (if the log level is ≥ the minimum log level):
 
 ....
 $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
+2022-12-09T22:50:44.161+01:00 [WARNING] dmlog - low battery
 ....
 
 === dmlogger [[dmlogger]]
@@ -1328,20 +1324,20 @@ command-line argument `--wait`.
 
 The following log levels are accepted:
 
-[%autowidth]
+[cols="1,9"]
 |===
 | Level | Name
 
-| 1     | DEBUG
-| 2     | INFO
-| 3     | WARNING
-| 4     | ERROR
-| 5     | CRITICAL
+| 1     | `DEBUG`
+| 2     | `INFO`
+| 3     | `WARNING`
+| 4     | `ERROR`
+| 5     | `CRITICAL`
 |===
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,5"]
 |===
 | Option              | Short | Default | Description
 
@@ -1379,20 +1375,20 @@ Create a message queue `/dmlogger`, wait for incoming logs, and store them in
 the given database if logs are of level 4 (ERROR) or higher:
 
 ....
-$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --minlevel 4
+$ dmlogger --node dummy-node --database log.sqlite --minlevel 4
 ....
 
 Push semaphore `/dmlogger` each time a log has been received:
 
 ....
-$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --ipc
+$ dmlogger --node dummy-node --database log.sqlite --ipc
 ....
 
 Let <<dmsync>> wait for semaphore `/dmlogger` before synchronising the log
 database with host `192.168.1.100`, then repeat:
 
 ....
-$ dmsync --type log --database /var/dmpack/log.sqlite --host 192.168.1.100 --wait dmlogger
+$ dmsync --type log --database log.sqlite --host 192.168.1.100 --wait dmlogger
 ....
 
 === dmlua [[dmlua]]
@@ -1409,12 +1405,12 @@ the observation will be discarded.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,6"]
 |===
 | Option               | Short | Default  | Description
 
 | `--config _file_`    | `-c`  | –         | Path to configuration file (optional).
-| `--debug`            | `-D`  | off       | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`            | `-D`  | off       | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`             | `-h`  | –         | Output available command-line arguments and quit.
 | `--logger _name_`    | `-l`  | –         | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`      | `-n`  | `dmlua`   | Name of instance and table in given configuration file.
@@ -1452,8 +1448,8 @@ function dump(o)
 end
 ....
 
-Observations sent to message queue `/dmlua` will be passed to the Lua function
-`process()` in `script.lua`, then forwarded to the next receiver:
+Any observation sent to receiver `dmlua` will be passed to the Lua function
+`process()` in `script.lua`, then forwarded to the next receiver (if any):
 
 ....
 $ dmlua --name dmlua --node dummy-node --script script.lua --verbose
@@ -1479,12 +1475,12 @@ database for the observation to be stored.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
-| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1520,25 +1516,24 @@ Backslash characters in the string values have to be escaped with `\`.
 ....
 -- dmpipe.conf
 dmpipe = {
-  logger = "dmlogger",              -- Logger to send logs to (optional).
+  logger = "dmlogger",              -- Logger to send logs to.
   node = "dummy-node",              -- Node id (required).
   sensor = "dummy-sensor",          -- Sensor id (required).
-  output = "",                      -- Path to output file, empty or `-` for stdout (optional).
+  output = "",                      -- Path to output file, `-` for stdout.
   format = "none",                  -- Output format (`csv` or `jsonl`).
   jobs = {                          -- Jobs to perform.
     {
-      delay = 60 * 1000,            -- Delay to wait afterwards in mseconds (optional).
-      disabled = false,             -- Disable to ignore job (optional).
-      onetime = false,              -- Run job only once (optional).
-      observation = {               -- Observation to execute (optional).
+      disabled = false,             -- Disable to ignore job.
+      onetime = false,              -- Run job only once.
+      observation = {               -- Observation to execute.
         name = "dummy-observ",      -- Observation name (required).
         target_id = "dummy-target", -- Target id (required).
-        receivers = { "dmdb" },     -- Optional list of receivers (up to 16).
+        receivers = { "dmpipe", "dmdb" }, -- List of receivers (up to 16).
         requests = {                -- Pipes to open.
           {
-            request = "sysctl hw.acpi.battery.life",                    -- Command to run.
-            pattern = "hw\\.acpi\\.battery\\.life: (?<battery>[0-9]+)", -- RegEx pattern.
-            delay = 0,              -- Delay in mseconds (optional).
+            request = "sysctl hw.acpi.battery.life", -- Command to execute.
+            pattern = "hw\\.acpi\\.battery\\.life: (?<battery>[0-9]+)", -- RegEx.
+            delay = 0,              -- Delay in mseconds.
             responses = {
               {
                 name = "battery",   -- RegEx group.
@@ -1547,11 +1542,12 @@ dmpipe = {
             }
           }
         }
-      }
+      },
+      delay = 60 * 1000,            -- Delay to wait afterwards in mseconds.
     }
   },
-  debug = false,                    -- Forward log messages of level DEBUG via IPC.
-  verbose = true                    -- Print messages to standard output (optional).
+  debug = false,                    -- Forward logs of level DEBUG via IPC.
+  verbose = true                    -- Print messages to standard output.
 }
 ....
 
@@ -1601,7 +1597,7 @@ configuration file. The arguments overwrite settings from file.
 
 .Output formats of logs and observations
 [[dmrecv-output]]
-[%autowidth]
+[cols="2,4,12"]
 |===
 | Format  | Type            | Description
 
@@ -1613,19 +1609,19 @@ configuration file. The arguments overwrite settings from file.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
-| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
-| `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>>: `block`, `csv`, `jsonl`, `nml`.
+| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>> (`block`, `csv`, `jsonl`, `nml`).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration file and POSIX message queue to subscribe to.
 | `--node _id_`       | `-N`  | –        | Optional node id.
-| `--output _file_`   | `-o`  | _stdout_ | Output file to append observations to (empty or `-` for _stdout_).
+| `--output _file_`   | `-o`  | _stdout_ | Output file to append observations to (`-` for _stdout_).
 | `--replace`         | `-r`  | off      | Replace output file instead of appending data.
 | `--response _name_` | `-R`  | –        | Name of observation response to output (required for format `block`).
 | `--type _type_`     | `-t`  | –        | Data type to receive: `log` or `observ`.
@@ -1677,7 +1673,7 @@ priority over settings in the configuration file.
 
 .Format descriptors allowed in the output file name
 [[dmreport-descript]]
-[%autowidth]
+[cols="1,7"]
 |===
 | Descriptor | Description (Format)
 
@@ -1691,7 +1687,7 @@ priority over settings in the configuration file.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,5"]
 |===
 | Option                 | Short | Default    | Description
 
@@ -1805,12 +1801,12 @@ configuration file. The arguments overwrite settings from file.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
-| `--debug`           | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | Input format: `csv` or `nml`.
 | `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
@@ -1866,14 +1862,14 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,5"]
 |===
 | Option              | Short | Default    | Description
 
 | `--baudrate _n_`    | `-B`  | 9600       | Number of symbols transmitted per second (4800, 9600, 115200, …).
 | `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
 | `--config _file_`   | `-c`  | –          | Path to configuration file (required).
-| `--debug`           | `-D`  | off        | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`           | `-D`  | off        | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--dtr`             | `-Q`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –          | Output available command-line arguments and quit.
@@ -1934,17 +1930,17 @@ for testing.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="3,1,1,6"]
 |===
 | Option                 | Short | Default  | Description
 
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--create`             | `-C`  | off      | Create database synchronisation tables if they do not exist.
 | `--database _file_`    | `-d`  | –        | Path to SQLite log or observation database.
-| `--debug`              | `-D`  | off      | Forward log messages of level DEBUG via IPC (if logger is set).
+| `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
-| `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for example, `127.0.0.1` or `example.com`).
-| `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds. If `0`, syncronisation is done only once.
+| `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
+| `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds. If `0`, synchronisation is executed only once.
 | `--logger _name_`      | `-l`  | –        | Name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmsync` | Name of program instance and configuration.
 | `--node _id_`          | `-N`  | –        | Node id, required for types `sensor` and `observ`.
@@ -1997,11 +1993,11 @@ with the default UUID4.
 
 ==== Command-Line Options
 
-[%autowidth.stretch]
+[cols="2,1,1,7"]
 |===
 | Option        | Short | Default | Description
 
-| `--convert`   | `-C`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via stdin.
+| `--convert`   | `-C`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via _stdin_.
 | `--count _n_` | `-n`  | 1       | Number of UUIDs to generate.
 | `--help`      | `-h`  | –       | Output available command-line arguments and quit.
 | `--hyphens`   | `-H`  | off     | Return 36 characters long UUIDs with hyphens.
@@ -2068,7 +2064,7 @@ image::dmweb.png[dmweb,align="center"]
 Environment variables are used to configure *dmweb*. Transport security and
 authentication have to be provided by the web server.
 
-[%autowidth]
+[cols="4,12"]
 |===
 | Environment Variable | Description
 
@@ -2084,7 +2080,7 @@ See section <<web-web-ui>> for an example configuration.
 
 .Comparision of DMPACK web applications
 [[web-services-comp]]
-[%autowidth]
+[cols="2,4,4"]
 |===
 |                | dmapi                                 | dmweb
 
@@ -2120,14 +2116,6 @@ In the listed examples, the DMPACK executables are assumend to be in
 `/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
 other directory. Set appropriate owner and access rights.
 
-The following sections cover the configuration of the _lighttpd(1)_ web server:
-
-* <<web-auth>>
-* <<web-cors>>
-* <<web-db>>
-* <<web-rpc-server>>
-* <<web-web-ui>>
-
 === Authentication [[web-auth]]
 
 In the _lighttpd(1)_ configuration file, set `auth.backend.htpasswd.userfile` to
@@ -2159,7 +2147,8 @@ how to set the `Access-Control-*` headers. For _lighttpd(1)_, load the module
 $HTTP["request-method"] =~ "^(OPTIONS)$" {
   setenv.add-response-header = (
     "Access-Control-Allow-Origin"   => "*",
-    "Access-Control-Allow-Headers"  => "accept, origin, x-requested-with, content-type, x-transmission-session-id",
+    "Access-Control-Allow-Headers"  =>
+        "accept, origin, x-requested-with, content-type, x-transmission-session-id",
     "Access-Control-Expose-Headers" => "X-Transmission-Session-Id",
     "Access-Control-Allow-Methods"  => "GET, POST, OPTIONS"
   )
@@ -2230,7 +2219,7 @@ fastcgi.server = (
   "/api/v1" => ((
     "socket"      => "/var/lighttpd/sockets/dmapi.sock",
     "bin-path"    => "/usr/local/bin/dmapi",
-    "max-procs"   => 2,
+    "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
       "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
@@ -2294,7 +2283,7 @@ server.modules += (
 
 # Set maximum number of concurrent connections and maximum
 # HTTP request size of 8192 KiB (optional).
-server.max-connections  = 16
+server.max-connections  = 32
 server.max-request-size = 8192
 
 # Pass the database paths through environment variables.
@@ -2357,7 +2346,7 @@ key–values pairs, with content type `text/plain`.
 
 The following HTTP endpoints are provided by the RPC API:
 
-[%autowidth]
+[cols="3,2,7"]
 |===
 | Endpoint             | HTTP Method | Description
 
@@ -2381,22 +2370,23 @@ The following HTTP endpoints are provided by the RPC API:
 
 Returns <<data-api-text,service status>> in API status format as `text/plain`.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Default response.
+| `401`  | Unauthorised.
 | `500`  | Server error.
 |===
 
@@ -2414,18 +2404,18 @@ $ curl -s -u <username>:<password> --header "Accept: text/plain" \
 Returns all heartbeats in <<data-beat-csv,CSV>>, <<data-beat-json,JSON>>, or
 JSON Lines format from database.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/beats`
 * `/api/v1/beats?header=<0|1>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2435,7 +2425,7 @@ JSON Lines format from database.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2445,11 +2435,12 @@ JSON Lines format from database.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Beats are returned.
+| `401`  | Unauthorised.
 | `404`  | No beats found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2470,17 +2461,17 @@ Returns logs of a given node and time range in <<data-log-csv,CSV>>,
 <<data-log-json,JSON>>, or JSON Lines format from database. Node id and time
 range are mandatory.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/logs?node_id=<id>&from=<timestamp>&to=<timestamp>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2493,7 +2484,7 @@ range are mandatory.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2503,12 +2494,13 @@ range are mandatory.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Nodes are returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | No nodes found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2528,18 +2520,18 @@ $ curl -s -u <username>:<password> --header "Accept: text/comma-separated-values
 Returns all nodes in <<data-node-csv,CSV>>, <<data-node-json,JSON>>, or JSON
 Lines format from database.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/nodes`
 * `/api/v1/nodes?header=<0|1>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2549,7 +2541,7 @@ Lines format from database.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2559,11 +2551,12 @@ Lines format from database.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Nodes are returned.
+| `401`  | Unauthorised.
 | `404`  | No nodes found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2584,17 +2577,17 @@ Returns observations of given node, sensor, target, and time range from
 database, in <<data-observ-csv,CSV>>, <<data-observ-json,JSON>>, or JSON Lines
 format.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/observs?<parameters>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2611,7 +2604,7 @@ format.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2621,12 +2614,13 @@ format.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Observations are returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | No observations found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2641,7 +2635,7 @@ with _jq(1)_:
 ....
 $ curl -s -u <username>:<password> --header "Accept: application/json" \
   "http://localhost/api/v1/observs?node_id=dummy-node&sensor_id=dummy-sensor\
-&target_id=dummy-target&from=2023-01&to=2023-01" | jq
+&target_id=dummy-target&from=2023-01&to=2024-01" | jq
 ....
 
 === Read Sensors [[api-sensors]]
@@ -2649,18 +2643,18 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 Returns all sensors in <<data-sensor-csv,CSV>>, <<data-sensor-json,JSON>>, or
 JSON Lines format from database.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/sensors`
 * `/api/v1/sensors?header=<0|1>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2670,7 +2664,7 @@ JSON Lines format from database.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2680,11 +2674,12 @@ JSON Lines format from database.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Sensors are returned.
+| `401`  | Unauthorised.
 | `404`  | No sensors found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2704,18 +2699,18 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 Returns all targets in <<data-target-csv,CSV>>, <<data-target-json,JSON>>, or
 JSON Lines format from database.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/targets`
 * `/api/v1/targets?header=<0|1>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2725,7 +2720,7 @@ JSON Lines format from database.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2735,11 +2730,12 @@ JSON Lines format from database.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Targets are returned.
+| `401`  | Unauthorised.
 | `404`  | No targets found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2761,17 +2757,17 @@ records) in CSV format from database. In comparison to the
 <<api-observs,observation endpoint>>, the time series include only a single
 response, selected by name.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/timeseries?<parameters>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2789,7 +2785,7 @@ response, selected by name.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2799,12 +2795,13 @@ response, selected by name.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Observations are returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | No observations found.
 | `500`  | Server error.
 | `503`  | Database error.
@@ -2836,19 +2833,19 @@ was accepted.
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/beat`
 * `/api/v1/beat?node_id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowith]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -2858,7 +2855,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2866,7 +2863,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -2877,19 +2874,20 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Heartbeat is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Heartbeat not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -2923,19 +2921,19 @@ accepted.
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/log`
 * `/api/v1/log?id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -2945,7 +2943,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -2953,7 +2951,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -2964,19 +2962,20 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Log is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Log not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -3011,19 +3010,19 @@ accepted.
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/node`
 * `/api/v1/node?id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3033,7 +3032,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -3041,7 +3040,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -3052,19 +3051,20 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Node is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Node not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -3100,19 +3100,19 @@ If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the observation, otherwise, the request will be rejected as unauthorised (HTTP
 401).
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/observ`
 * `/api/v1/observ?id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3122,7 +3122,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -3130,7 +3130,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -3141,19 +3141,20 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Observation is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Observation not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -3189,19 +3190,19 @@ accepted.
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/sensor`
 * `/api/v1/sensor?id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3211,7 +3212,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -3219,7 +3220,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -3230,19 +3231,20 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Sensor is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Sensor not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -3275,19 +3277,19 @@ On POST, adds target in Namelist format to database. Optionally, the payload
 may be deflate compressed. The API returns HTTP 201 Created if the target was
 accepted.
 
-==== Paths
+==== Endpoint
 
 * `/api/v1/target`
 * `/api/v1/target?id=<id>`
 
-==== Methods
+==== HTTP Methods
 
 * GET
 * POST
 
 ==== Request Parameters
 
-[%autowidth]
+[cols="2,1,8"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3297,7 +3299,7 @@ accepted.
 ==== Request Headers
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Name   | Values
 
@@ -3305,7 +3307,7 @@ accepted.
 |===
 
 .POST
-[%autowidth]
+[cols="2,8"]
 |===
 | Name             | Values
 
@@ -3316,19 +3318,20 @@ accepted.
 ==== Responses
 
 .GET
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
 | `200`  | Target is returned.
 | `400`  | Invalid request.
+| `401`  | Unauthorised.
 | `404`  | Target not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
 
 .POST
-[%autowidth]
+[cols="1,9"]
 |===
 | Status | Description
 
@@ -3378,32 +3381,6 @@ omitted attributes of data in Namelist format.
 Text:: Status messages of the HTTP-RPC API are returned as key–value pairs in
 plain text format
 
-The following sections list the structured data types of DMPACK and their
-corresponding export formats:
-
-<<data-api>>:: <<data-api-text,Text>>
-
-<<data-beat>>:: <<data-beat-csv,CSV>>, <<data-beat-json,JSON>>,
-<<data-beat-nml,Namelist>>
-
-<<data-dp>>:: <<data-dp-block,Block>>, <<data-dp-csv,CSV>>,
-<<data-dp-json,JSON>>
-
-<<data-log>>:: <<data-log-atom,Atom XML>>, <<data-log-csv,CSV>>,
-<<data-log-json,JSON>>, <<data-log-nml,Namelist>>
-
-<<data-node>>:: <<data-node-csv,CSV>>, <<data-node-hdf5,HDF5>>,
-<<data-node-json,JSON>>, <<data-node-nml,Namelist>>
-
-<<data-observ>>:: <<data-observ-csv,CSV>>, <<data-observ-hdf5,HDF5>>,
-<<data-observ-json,JSON>>, <<data-observ-lua,Lua>>, <<data-observ-nml,Namelist>>
-
-<<data-sensor>>:: <<data-sensor-csv,CSV>>, <<data-sensor-hdf5,HDF5>>,
-<<data-sensor-json,JSON>>, <<data-sensor-nml,Namelist>>
-
-<<data-target>>:: <<data-target-csv,CSV>>, <<data-target-hdf5,HDF5>>,
-<<data-target-json,JSON>>, <<data-target-nml,Namelist>>
-
 The JSON Lines format equals the JSON format, except that multiple records are
 separated by new line. The HDF5 format description for observations is omitted
 due to length. You can output the format from the command-line. For example, if
@@ -3416,7 +3393,7 @@ $ h5dump -H -A 0 observ.hdf5
 === API Status [[data-api]]
 
 .API status derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute   | Type    | Size | Description
 
@@ -3443,7 +3420,7 @@ error=0
 === Beat [[data-beat]]
 
 .Beat derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute   | Type    | Size | Description
 
@@ -3458,7 +3435,7 @@ error=0
 |===
 
 .CSV [[data-beat-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute   | Description
 
@@ -3505,7 +3482,7 @@ BEAT%UPTIME=0,
 === Data Point [[data-dp]]
 
 .Data point derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute | Type   | Size | Description
 
@@ -3519,7 +3496,7 @@ BEAT%UPTIME=0,
 ....
 
 .CSV [[data-dp-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute | Description
 
@@ -3539,7 +3516,7 @@ BEAT%UPTIME=0,
 === Log [[data-log]]
 
 .Log derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute   | Type    | Size | Description
 
@@ -3556,15 +3533,15 @@ BEAT%UPTIME=0,
 |===
 
 .Log level [[data-log-level]]
-[%autowidth]
+[cols="1,9"]
 |===
 | Level | Name
 
-| 1     | DEBUG
-| 2     | INFO
-| 3     | WARNING
-| 4     | ERROR
-| 5     | CRITICAL
+| 1     | `DEBUG`
+| 2     | `INFO`
+| 3     | `WARNING`
+| 4     | `ERROR`
+| 5     | `CRITICAL`
 |===
 
 .Atom XML [[data-log-atom]]
@@ -3609,7 +3586,7 @@ BEAT%UPTIME=0,
 ....
 
 .CSV [[data-log-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute   | Description
 
@@ -3660,7 +3637,7 @@ LOG%MESSAGE="dummy log message",
 === Node [[data-node]]
 
 .Node derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute | Type    | Size | Description
 
@@ -3673,7 +3650,7 @@ LOG%MESSAGE="dummy log message",
 |===
 
 .CSV [[data-node-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute | Description
 
@@ -3743,7 +3720,7 @@ NODE%Z=0.0,
 === Observation [[data-observ]]
 
 .Observation derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute   | Type    | Size | Description
 
@@ -3764,7 +3741,7 @@ NODE%Z=0.0,
 |===
 
 .Request derived type of an observation
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute    | Type    | Size | Description
 
@@ -3784,7 +3761,7 @@ NODE%Z=0.0,
 |===
 
 .Response derived type of a request
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute | Type    | Size | Description
 
@@ -3796,7 +3773,7 @@ NODE%Z=0.0,
 |===
 
 .Response value types [[data-response-types]]
-[%autowidth]
+[cols="1,6,14"]
 |===
 | # | Name                    | Description
 
@@ -3809,7 +3786,7 @@ NODE%Z=0.0,
 |===
 
 .CSV [[data-observ-csv]]
-[%autowidth]
+[cols="3,3,14"]
 |===
 | Column    | Attribute    | Description
 
@@ -4023,7 +4000,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 === Sensor [[data-sensor]]
 
 .Sensor derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute | Type    | Size | Description
 
@@ -4040,7 +4017,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 
 .Sensor types
 [[data-sensor-types]]
-[%autowidth]
+[cols="1,1,8"]
 |===
 | # | Name      | Description
 
@@ -4056,7 +4033,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 |===
 
 .CSV [[data-sensor-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute | Description
 
@@ -4148,7 +4125,7 @@ SENSOR%Z=0.0,
 === Target [[data-target]]
 
 .Target derived type
-[%autowidth]
+[cols="3,2,2,14"]
 |===
 | Attribute | Type    | Size | Description
 
@@ -4163,7 +4140,7 @@ SENSOR%Z=0.0,
 
 .Target states
 [[data-target-states]]
-[%autowidth]
+[cols="1,3,16"]
 |===
 | # | Name       | Description
 
@@ -4177,7 +4154,7 @@ SENSOR%Z=0.0,
 |===
 
 .CSV [[data-target-csv]]
-[%autowidth]
+[cols="2,3,15"]
 |===
 | Column | Attribute | Description
 
@@ -4284,11 +4261,11 @@ image::observ.svg[UML,align="center"]
 
 .Log database
 [#db-uml-log]
-image::log.svg[UML,align="center"]
+image::log.svg[UML,align="center",scaledwidth=25%]
 
 .Heartbeat database
 [#db-uml-beat]
-image::beat.svg[UML,align="center"]
+image::beat.svg[UML,align="center",scaledwidth=25%]
 
 === Examples
 
@@ -4560,7 +4537,7 @@ print(gon)
 
 == Error Codes [[error-codes]]
 
-[%autowidth]
+[cols="1,2,7"]
 |===
 | Code | Error Name          | Error Description
 

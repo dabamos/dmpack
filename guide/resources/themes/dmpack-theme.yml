@@ -1,0 +1,241 @@
+font:
+  catalog:
+    IBM Plex Sans:
+      normal: IBMPlexSans-Regular.ttf
+      bold: IBMPlexSans-Bold.ttf
+      italic: IBMPlexSans-Italic.ttf
+      bold_italic: IBMPlexSans-BoldItalic.ttf
+    IBM Plex Mono:
+      normal: IBMPlexMono-Regular.ttf
+      bold: IBMPlexMono-Bold.ttf
+      italic: IBMPlexMono-Italic.ttf
+      bold_italic: IBMPlexMono-BoldItalic.ttf
+base_font_family: IBM Plex Sans
+page:
+  background_color: FFFFFF
+  initial_zoom: FitH
+  layout: portrait
+  margin: [1.5cm, 2.5cm, 1.5cm, 2.5cm]
+  margin_inner: 0.5cm # margin_inner and margin_outer keys are used for recto/verso print margins when media=prepress
+  margin_outer: 0.5cm
+  size: A4
+base:
+  border_color: EEEEEE
+  border_width: 1
+  font_color: 333333
+  font_family: IBM Plex Sans
+  font_size: 10.0
+  font_size_large: round($base_font_size * 1.25)
+  font_size_min: $base_font_size * 0.75
+  font_size_small: round($base_font_size * 0.85)
+  font_style: normal
+  line_height_length: 11 # line_height_length is really just a vertical spacing variable; it's not actually the height of a line
+  line_height: $base_line_height_length / 10.0
+  text_align: justify
+role:
+  lead:
+    font_size: $base_font_size_large
+  line-through:
+    text_decoration: line-through
+  underline:
+    text_decoration: underline
+  big:
+    font_size: 1.2em
+  small:
+    font_size: 0.8em
+  subtitle:
+    font_color: 999999
+    font_size: 0.8em
+    font_style: normal_italic
+vertical_rhythm: $base_line_height_length
+horizontal_rhythm: $base_line_height_length
+admonition:
+  column_rule_color: $base_border_color
+  column_rule_width: $base_border_width
+  padding: [$vertical_rhythm / 3.0, $horizontal_rhythm, $vertical_rhythm / 3.0, $horizontal_rhythm]
+  label:
+    font_style: bold
+    text_transform: uppercase
+block:
+  margin_bottom: $vertical_rhythm
+button:
+  content: "[\u2009%s\u2009]"
+  font_style: bold
+callout_list:
+  margin_top_after_code: -$block_margin_bottom / 2
+caption:
+  align: left
+  font_size: $base_font_size * 0.95
+  font_style: italic
+  margin_inside: $vertical_rhythm / 3 # FIXME perhaps set line_height instead of / in addition to margins?
+  margin_outside: 0
+codespan: # codespan is currently used for monospaced phrases and table cells
+  font_color: B83838
+  font_family: IBM Plex Mono
+  font_size: round($base_font_size * 0.85)
+code: # code is used for literal, listing, and source blocks and literal table cells
+  background_color: F5F5F5
+  border_color: $base_border_color
+  border_radius: 2
+  border_width: $base_border_width * 0.5
+  font_color: $base_font_color
+  font_family: $codespan_font_family
+  font_size: ceil($base_font_size)
+  font_size: round($base_font_size * 0.8)
+  line_gap: 3.8 # line_gap is an experimental property to control how a background color is applied to an inline block element
+  line_height: 1.2
+  padding: [$code_font_size * 0.5, $code_font_size, $code_font_size * 0.5, $code_font_size]
+conum:
+  font_color: $codespan_font_color
+  font_family: $codespan_font_family
+  font_size: $base_font_size
+  glyphs: circled
+  line_height: 4 / 3
+description_list:
+  description_indent: $horizontal_rhythm * 1.25
+  term_font_style: bold
+  term_spacing: $vertical_rhythm / 4
+example:
+  background_color: $page_background_color
+  border_width: 0
+  padding: [$vertical_rhythm, $horizontal_rhythm, $vertical_rhythm, $horizontal_rhythm]
+header:
+  font_size: $base_font_size_small
+  line_height: 1
+  vertical_align: middle
+heading:
+  font_color: $base_font_color
+  font_style: bold
+  h1_font_size: floor($base_font_size * 2.6)  # h1 is used for part titles (book doctype) or the doctitle (article doctype)
+  h2_font_size: floor($base_font_size * 2.15) # h2 is used for chapter titles (book doctype only)
+  h3_font_size: round($base_font_size * 1.5)
+  h4_font_size: round($base_font_size_large * 0.85)
+  h5_font_size: $base_font_size
+  h6_font_size: $base_font_size_small
+  line_height: 1
+  margin_bottom: $vertical_rhythm * 0.9
+  margin_top: $vertical_rhythm * 0.4
+  min_height_after: $base_line_height_length * 1.5
+  text_align: left
+abstract:
+  first_line_font_style: bold
+  font_color: 5C6266
+  font_size: $role_lead_font_size
+  font_style: italic
+  line_height: 1.4
+  title:
+    font_color: $heading_font_color
+    font_size: $heading_h4_font_size
+    font_style: $heading_font_style
+    text_align: center
+image:
+  align: left
+index:
+  column_gap: $vertical_rhythm
+kbd:
+  background_color: F5F5F5
+  border_width: 0
+  font_family: $codespan_font_family
+  separator: "\u202f+\u202f"
+link:
+  font_color: 428BCA
+list:
+  indent: $horizontal_rhythm * 1.5
+  item_spacing: $vertical_rhythm / 2 # NOTE list_item_spacing only applies to list items that do not have complex content
+  #marker_font_color: 404040
+footer:
+  # NOTE if background_color is set, background and border will span width of page
+  border_color: $base_border_color
+  border_width: 0.25
+  font_size: $base_font_size_small
+  height: $base_line_height_length * 2.5
+  line_height: 1
+  padding: [$base_line_height_length / 2, 1, 0, 1]
+  recto:
+    center:
+      content: '{page-number}'
+  verso:
+    center:
+      content: $footer_recto_center_content
+  vertical_align: top
+  item_spacing: $list_item_spacing / 2
+footnotes:
+  font_size: round($base_font_size * 0.75)
+mark:
+  background_color: FFFF00
+  border_offset: 1
+menu:
+  caret_content: " <font size=\"1.15em\" color=\"#B83838\">\u203a</font> "
+  font_style: bold
+prose:
+  margin_bottom: $block_margin_bottom
+quote:
+  border_left_width: $horizontal_rhythm / 3
+  border_width: 0
+  font_size: $base_font_size_large
+  cite:
+    font_size: $base_font_size_small
+    font_color: $role_subtitle_font_color
+  padding: [$vertical_rhythm / 4, $horizontal_rhythm, $vertical_rhythm / 4, $horizontal_rhythm + $quote_border_left_width / 2]
+sidebar:
+  background_color: EEEEEE
+  border_width: 0
+  padding: [$vertical_rhythm, $vertical_rhythm * 1.25, $vertical_rhythm, $vertical_rhythm * 1.25]
+  title:
+    font_color: $heading_font_color
+    font_size: $heading_h4_font_size
+    font_style: $heading_font_style
+    text_align: center
+table:
+  background_color: $page_background_color
+  body:
+    border_bottom_width: $base_border_width * 0.5
+    stripe_background_color: F9F9F9
+  border_color: $base_border_color
+  border_width: 0
+  cell_padding: 0
+  foot:
+    border_bottom_width: $base_border_width * 0.5
+  grid_width: 0
+  head:
+    border_bottom_width: $base_border_width * 0.5
+    font_style: bold
+thematic_break:
+  border_color: $base_border_color
+  border_style: solid
+  border_width: $base_border_width
+  padding: [$vertical_rhythm * 0.5, 0]
+title_page:
+  authors:
+    font_color: 181818
+    font_size: $base_font_size_large
+    margin_top: $base_font_size * 1.25
+  logo:
+    top: 10%
+  revision:
+    margin_top: $base_font_size * 1.25
+  subtitle:
+    font_size: $heading_h3_font_size
+    font_style: bold_italic
+    line_height: 1
+  text_align: right
+  title:
+    font_color: $role_subtitle_font_color
+    font_size: $heading_h1_font_size
+    line_height: 0.9
+    top: 55%
+toc:
+  dot_leader:
+    #content: ". "
+    font_color: A9A9A9
+    #levels: 2 3
+  indent: $horizontal_rhythm
+  line_height: 1.4
+verse:
+  border_width: $quote_border_width
+  border_left_width: $quote_border_left_width
+  cite:
+    font_size: $quote_cite_font_size
+    font_color: $quote_cite_font_color
+  font_size: $quote_font_size
+  padding: $quote_padding
