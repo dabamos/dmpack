@@ -425,8 +425,8 @@ contains
                ' "meta": "' // trim(target%meta)     // '",' // &
                ' "state": ' // dm_itoa(target%state) // ','  // &
                ' "x": '     // dm_ftoa(target%x)     // ','  // &
-               ' "y": '     // dm_ftoa(target%x)     // ','  // &
-               ' "z": '     // dm_ftoa(target%x)     // ' }'
+               ' "y": '     // dm_ftoa(target%y)     // ','  // &
+               ' "z": '     // dm_ftoa(target%z)     // ' }'
     end function json_from_target
 
     function json_from_targets(targets) result(json)

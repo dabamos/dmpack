@@ -6,18 +6,23 @@ program dmtestjson
     !! Test program that tries JSON export.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 7
+    integer, parameter :: NTESTS = 10
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestjson.test01', test01)
-    tests(2) = test_type('dmtestjson.test02', test02)
-    tests(3) = test_type('dmtestjson.test03', test03)
-    tests(4) = test_type('dmtestjson.test04', test04)
-    tests(5) = test_type('dmtestjson.test05', test05)
-    tests(6) = test_type('dmtestjson.test06', test06)
-    tests(7) = test_type('dmtestjson.test07', test07)
+    tests = [ &
+        test_type('dmtestjson.test01', test01), &
+        test_type('dmtestjson.test02', test02), &
+        test_type('dmtestjson.test03', test03), &
+        test_type('dmtestjson.test04', test04), &
+        test_type('dmtestjson.test05', test05), &
+        test_type('dmtestjson.test06', test06), &
+        test_type('dmtestjson.test07', test07), &
+        test_type('dmtestjson.test08', test08), &
+        test_type('dmtestjson.test09', test09), &
+        test_type('dmtestjson.test10', test10)  &
+    ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -250,7 +255,7 @@ contains
             return
         end if
 
-        print *, 'Printing JSON array ...'
+        print *, 'JSON array:'
         observs(1) = observ
         print '(72("."))'
         print '(a)', dm_json_from(observs)
@@ -258,4 +263,116 @@ contains
 
         stat = TEST_PASSED
     end function test07
+
+    logical function test08() result(stat)
+        character(len=*), parameter :: JSON = &
+            '{ "id": "dummy-node", "name": "Dummy Node", "meta": "", ' // &
+            '"x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+
+        character(len=:), allocatable :: buf
+        type(node_type)               :: node
+
+        stat = TEST_FAILED
+
+        node = node_type(id    = 'dummy-node', &
+                         name  = 'Dummy Node', &
+                         meta  = '', &
+                         x     = 1000.0_r8, &
+                         y     = 2000.0_r8, &
+                         z     = 10.0_r8)
+
+        buf = dm_json_from(node)
+
+        print *, 'Generated JSON:'
+        print '(72("."))'
+        print '(a)', buf
+        print '(72("."))'
+
+        print *, 'Validating JSON ...'
+        if (buf /= JSON) then
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test08
+
+    logical function test09() result(stat)
+        character(len=*), parameter :: JSON = &
+            '{ "id": "dummy-sensor", "node_id": "dummy-node", "type": 0, "name": "Dummy Sensor", ' // &
+            '"sn": "12345", "meta": "", "x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+
+        character(len=:), allocatable :: buf
+        type(sensor_type)             :: sensor
+
+        stat = TEST_FAILED
+
+        sensor = sensor_type(id      = 'dummy-sensor', &
+                             node_id = 'dummy-node', &
+                             type    = SENSOR_TYPE_NONE, &
+                             name    = 'Dummy Sensor', &
+                             sn      = '12345', &
+                             meta    = '', &
+                             x       = 1000.0_r8, &
+                             y       = 2000.0_r8, &
+                             z       = 10.0_r8)
+
+        buf = dm_json_from(sensor)
+
+        print *, 'Generated JSON:'
+        print '(72("."))'
+        print '(a)', buf
+        print '(72("."))'
+
+        print *, 'Validating JSON ...'
+        if (buf /= JSON) then
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test09
+
+    logical function test10() result(stat)
+        character(len=*), parameter :: JSON = &
+            '{ "id": "dummy-target", "name": "Dummy Target", "meta": "", ' // &
+            '"state": 1, "x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+
+        character(len=:), allocatable :: buf
+        type(target_type)             :: target
+
+        stat = TEST_FAILED
+
+        target = target_type(id    = 'dummy-target', &
+                             name  = 'Dummy Target', &
+                             meta  = '', &
+                             state = TARGET_STATE_REMOVED, &
+                             x     = 1000.0_r8, &
+                             y     = 2000.0_r8, &
+                             z     = 10.0_r8)
+
+        buf = dm_json_from(target)
+
+        print *, 'Generated JSON:'
+        print '(72("."))'
+        print '(a)', buf
+        print '(72("."))'
+
+        print *, 'Validating JSON ...'
+        if (buf /= JSON) then
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test10
 end program dmtestjson
