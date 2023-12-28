@@ -50,7 +50,7 @@ contains
         backup_block: block
             ! VACUUM INTO.
             if (app%vacuum) then
-                rc = dm_db_vacuum_into(db, app%backup)
+                rc = dm_db_vacuum(db, into=app%backup)
                 exit backup_block
             end if
 

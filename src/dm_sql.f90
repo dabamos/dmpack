@@ -36,9 +36,6 @@ module dm_sql
     ! Drop table.
     character(len=*), parameter, public :: SQL_DROP_TABLE = 'DROP TABLE IF EXISTS ?'
 
-    ! Vacuum database.
-    character(len=*), parameter, public :: SQL_VACUUM = 'VACUUM ''main'' INTO ?'
-
     ! Select all tables.
     character(len=*), parameter, public :: SQL_SELECT_TABLES = &
         'SELECT ' // &

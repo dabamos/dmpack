@@ -293,7 +293,7 @@ module dm_db
     public :: dm_db_update_node
     public :: dm_db_update_sensor
     public :: dm_db_update_target
-    public :: dm_db_vacuum_into
+    public :: dm_db_vacuum
     public :: dm_db_valid
 
     ! Private procedures.
@@ -4497,23 +4497,32 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_update_target
 
-    integer function dm_db_vacuum_into(db, path) result(rc)
+    integer function dm_db_vacuum(db, into) result(rc)
         !! Creates online backup of given database using the VACUUM command.
-        type(db_type),    intent(inout) :: db   !! Database type.
-        character(len=*), intent(in)    :: path !! File path to backup database.
+        character(len=*), parameter :: QUERY = "VACUUM 'main'"
+
+        type(db_type),    intent(inout)        :: db   !! Database type.
+        character(len=*), intent(in), optional :: into !! File path to backup database.
 
         integer     :: stat
         type(c_ptr) :: stmt
 
-        rc = E_EXIST
-        if (dm_file_exists(path)) return
+        if (present(into)) then
+            rc = E_EXIST
+            if (dm_file_exists(into)) return
+        end if
 
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_VACUUM, stmt) /= SQLITE_OK) exit sql_block
+            if (present(into)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, QUERY // ' INTO ?', stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(path)) /= SQLITE_OK) exit sql_block
+                rc = E_DB_BIND
+                if (sqlite3_bind_text(stmt, 1, trim(into)) /= SQLITE_OK) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, QUERY, stmt) /= SQLITE_OK) exit sql_block
+            end if
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4522,7 +4531,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
-    end function dm_db_vacuum_into
+    end function dm_db_vacuum
 
     integer function dm_db_valid(db) result(rc)
         !! Returns error code `E_NONE` if the application id of the database

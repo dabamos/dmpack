@@ -796,7 +796,7 @@ contains
         if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
 
         print *, 'Creating backup ...'
-        rc = dm_db_vacuum_into(db, DB_OBSERV_VACUUM)
+        rc = dm_db_vacuum(db, into=DB_OBSERV_VACUUM)
         call dm_error_out(rc)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'

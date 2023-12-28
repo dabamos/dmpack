@@ -1918,17 +1918,18 @@ contains
     ! ******************************************************************
     function content_type(env, default)
         !! Returns the content type first found in CGI environment variable
-        !! `HTTP_ACCEPT`, either CSV, JSON, JSON Lines, or NML (in this order).
+        !! `HTTP_ACCEPT`, either CSV, JSON Lines, JSON, or NML (in this order).
         !! If none of them is found, the passed default is returned.
-        type(cgi_env_type), intent(inout) :: env
-        character(len=*),   intent(in)    :: default
-        character(len=:), allocatable     :: content_type
+        type(cgi_env_type), intent(inout) :: env          !! CGI environment type.
+        character(len=*),   intent(in)    :: default      !! Default content type.
+        character(len=:), allocatable     :: content_type !! String of content type.
 
         if (index(env%http_accept, MIME_CSV) > 0) then
             content_type = MIME_CSV
             return
         end if
 
+        ! Look for JSONL before JSON, or JSONL will never be returned.
         if (index(env%http_accept, MIME_JSONL) > 0) then
             content_type = MIME_JSONL
             return
