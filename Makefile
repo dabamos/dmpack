@@ -14,6 +14,10 @@
 #   $ make linux
 #   $ make install PREFIX=/usr
 #
+# Display the build options:
+#
+#   $ make options
+#
 # ******************************************************************************
 #
 # DMPACK build targets:
@@ -43,7 +47,7 @@
 #
 # ******************************************************************************
 #
-# DMPACK build flags:
+# DMPACK build options:
 #
 #   OS      - The operating system, either `FreeBSD` or `linux` (for GCC only).
 #   PREFIX  - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
@@ -57,15 +61,15 @@
 #   SH      - Shell.
 #   FORD    - FORD documentation generator.
 #
-#   FFLAGS  - Fortran compiler flags.
-#   CLAGS   - C compiler flags.
-#   PPFLAGS - Pre-processor flags (must be empty for Intel oneAPI).
-#   ARFLAGS - Archiver flags.
-#   LDFLAGS - Linker flags.
+#   FFLAGS  - Fortran compiler options.
+#   CLAGS   - C compiler options.
+#   PPFLAGS - Pre-processor options (must be empty for Intel oneAPI).
+#   ARFLAGS - Archiver options.
+#   LDFLAGS - Linker options.
 #   LDLIBS  - Linker libraries.
 #
-#   DEBUG   - Debug flags.
-#   RELEASE - Release flags.
+#   DEBUG   - Debug options.
+#   RELEASE - Release options.
 #
 #   THIN    - Thin DMPACK library (without interface bindings).
 #   TARGET  - Path to the full DMPACK library (with interface bindings).
@@ -131,12 +135,12 @@ THIN    = $(LIBDIR)/libdm.a
 TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
-# Debug and release flags.
+# Debug and release options.
 #DEBUG  = -g -O0 -Wall -fcheck=all -fmax-errors=1 -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
 DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
-# Common build flags.
+# Common build options.
 FFLAGS  = $(RELEASE)
 CFLAGS  = $(RELEASE)
 PPFLAGS = -cpp -D__$(OS)__
@@ -244,8 +248,9 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
 # ******************************************************************************
 
 # Named build targets.
-.PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
-        html install install_freebsd install_linux linux man pdf purge setup test
+.PHONY: all app clean deinstall doc options freebsd freebsd_debug freebsd_release \
+        guide html install install_freebsd install_linux linux man pdf purge \
+        setup test
 
 # Library target.
 all: $(TARGET) $(SHARED) test app
@@ -829,3 +834,43 @@ purge: clean
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
 	@echo "--- deleting source code documentation ..."
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
+
+options:
+	@echo "OS         = $(OS)"
+	@echo "PREFIX     = $(PREFIX)"
+	@echo "CC         = $(CC)"
+	@echo "FC         = $(FC)"
+	@echo "CONFDIR    = $(CONFDIR)"
+	@echo "DISTDIR    = $(DISTDIR)"
+	@echo "INCDIR     = $(INCDIR)"
+	@echo "LIBDIR     = $(LIBDIR)"
+	@echo "SHRDIR     = $(SHRDIR)"
+	@echo "SRCDIR     = $(SRCDIR)"
+	@echo "IBINDIR    = $(IBINDIR)"
+	@echo "IETCDIR    = $(IETCDIR)"
+	@echo "IINCDIR    = $(IINCDIR)"
+	@echo "ILIBDIR    = $(ILIBDIR)"
+	@echo "IMANDIR    = $(IMANDIR)"
+	@echo "ISHRDIR    = $(ISHRDIR)"
+	@echo "THIN       = $(THIN)"
+	@echo "TARGET     = $(TARGET)"
+	@echo "SHARED     = $(SHARED)"
+	@echo "DEBUG      = $(DEBUG)"
+	@echo "RELEASE    = $(RELEASE)"
+	@echo "FFLAGS     = $(FFLAGS)"
+	@echo "CFLAGS     = $(CFLAGS)"
+	@echo "PPFLAGS    = $(PPFLAGS)"
+	@echo "ARFLAGS    = $(ARFLAGS)"
+	@echo "LDFLAGS    = $(LDFLAGS)"
+	@echo "LDLIBS     = $(LDLIBS)"
+	@echo "INCHDF5    = $(INCHDF5)"
+	@echo "LIBCURL    = $(LIBCURL)"
+	@echo "LIBFASTCGI = $(LIBFASTCGI)"
+	@echo "LIBHDF5    = $(LIBHDF5)"
+	@echo "LIBLAPACK  = $(LIBLAPACK)"
+	@echo "LIBLUA54   = $(LIBLUA54)"
+	@echo "LIBPCRE2   = $(LIBPCRE2)"
+	@echo "LIBPTHREAD = $(LIBPTHREAD)"
+	@echo "LIBRT      = $(LIBRT)"
+	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
+	@echo "LIBZ       = $(LIBZ)"

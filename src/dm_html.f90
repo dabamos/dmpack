@@ -1210,7 +1210,8 @@ contains
         if (name_)      html = html // H_TH // 'Name' // H_TH_END
         if (error_)     html = html // H_TH // 'Error' // H_TH_END
 
-        html = html // H_TR_END // H_THEAD_END // H_TBODY
+        html = html // H_TH // '#Requests' // H_TH_END // &
+                       H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(observs)
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
@@ -1231,7 +1232,7 @@ contains
             if (name_)      html = html // H_TD // dm_html_encode(observs(i)%name) // H_TD_END
             if (error_)     html = html // H_TD // dm_itoa(observs(i)%error) // H_TD_END
 
-            html = html // H_TR_END
+            html = html // H_TD // dm_itoa(observs(i)%nrequests) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END

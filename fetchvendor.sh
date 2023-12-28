@@ -34,7 +34,7 @@ for LIB in ${LIBS}; do
     LIBFILE="${VENDOR}/${LIBZIP}"
     LIBDIR="${VENDOR}/${LIBNAME}"
     echo "Fetching ${LIBZIP} ..."
-    curl ${LIBURL} -s -o ${LIBFILE}
+    curl -L -s -o ${LIBFILE} ${LIBURL}
     echo "Unpacking ${LIBZIP} ..."
     ${UNZIP} -q -d ${VENDOR} ${LIBFILE}
     echo "Deleting ${LIBZIP} ..."

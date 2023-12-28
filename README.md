@@ -74,7 +74,7 @@ DMPACK has the following requirements:
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler
+* Fortran 2018 and ANSI C compiler (GCC, Intel oneAPI)
 
 Third-party dependencies have to be present to build and run the software of
 this package:
@@ -155,7 +155,8 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ```
 
 The Git repository has to be cloned recursively. Otherwise, your will need to
-download the sub-modules manually. Then, run the Makefile:
+download the sub-modules manually by executing `fetchvendor.sh`. Then, run the
+Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -198,7 +199,7 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 alternatively, if raster image formats are not desired (SVG output only).
 
-Clone the DMPACK repository, and execute the Makefile:
+Clone the DMPACK repository, or run `fetchvendor.sh`, and execute the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
