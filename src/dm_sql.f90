@@ -6,29 +6,29 @@ module dm_sql
     implicit none (type, external)
     private
 
-    integer, parameter, public :: SQL_TABLE_NODES        = 1
-    integer, parameter, public :: SQL_TABLE_SENSORS      = 2
-    integer, parameter, public :: SQL_TABLE_TARGETS      = 3
-    integer, parameter, public :: SQL_TABLE_OBSERVS      = 4
-    integer, parameter, public :: SQL_TABLE_RECEIVERS    = 5
-    integer, parameter, public :: SQL_TABLE_REQUESTS     = 6
-    integer, parameter, public :: SQL_TABLE_RESPONSES    = 7
-    integer, parameter, public :: SQL_TABLE_LOGS         = 8
-    integer, parameter, public :: SQL_TABLE_BEATS        = 9
-    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 10
-    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 11
-    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 12
-    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 13
-    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 14
-    integer, parameter, public :: SQL_NTABLES            = 14
+    integer, parameter, public :: SQL_TABLE_NODES        = 1  !! Nodes table.
+    integer, parameter, public :: SQL_TABLE_SENSORS      = 2  !! Sensors table.
+    integer, parameter, public :: SQL_TABLE_TARGETS      = 3  !! Targets table.
+    integer, parameter, public :: SQL_TABLE_OBSERVS      = 4  !! Observations table.
+    integer, parameter, public :: SQL_TABLE_RECEIVERS    = 5  !! Receivers table.
+    integer, parameter, public :: SQL_TABLE_REQUESTS     = 6  !! Requests table.
+    integer, parameter, public :: SQL_TABLE_RESPONSES    = 7  !! Responses table.
+    integer, parameter, public :: SQL_TABLE_LOGS         = 8  !! Logs table.
+    integer, parameter, public :: SQL_TABLE_BEATS        = 9  !! Heartbeats table.
+    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 10 !! Sync nodes table.
+    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 11 !! Sync sensors table.
+    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 12 !! Sync targets table.
+    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 13 !! Sync observations table.
+    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 14 !! Sync logs table.
+    integer, parameter, public :: SQL_TABLE_LAST         = 14 !! Never use this.
 
-    integer, parameter, public :: SQL_TABLE_NAME_LEN = 12
+    integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
 
-    character(len=*), parameter, public :: SQL_TABLE_NAMES(SQL_NTABLES) = [ &
+    character(len=*), parameter, public :: SQL_TABLE_NAMES(SQL_TABLE_LAST) = [ &
         character(len=SQL_TABLE_NAME_LEN) :: 'nodes', 'sensors', 'targets', 'observs', &
         'receivers', 'requests', 'responses', 'logs', 'beats', 'sync_nodes', &
         'sync_sensors', 'sync_targets', 'sync_observs', 'sync_logs' &
-    ]
+    ] !! SQL table names.
 
     ! ******************************************************************
     ! UTILITY QUERIES.

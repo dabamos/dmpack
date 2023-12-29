@@ -51,14 +51,14 @@ module dm_mail
 !   end interface
 
     type :: payload_type
-        !! Payload type.
+        !! Private payload type.
         character(len=:), allocatable :: data
         integer(kind=i8)              :: length = 0_i8
         integer(kind=i8)              :: nbytes = 0_i8
     end type payload_type
 
     type, public :: mail_server_type
-        !! Opaque SMTP server type.
+        !! Opaque SMTP server type that stores connection settings.
         private
         character(len=:), allocatable :: url                          !! SMTP server URL.
         character(len=:), allocatable :: username                     !! SMTP user name.
@@ -71,7 +71,8 @@ module dm_mail
     end type mail_server_type
 
     type, public :: mail_type
-        !! Opaque e-mail type.
+        !! Opaque e-mail type that stores sender, recipients, subject, message,
+        !! and allocation status.
         private
         type(person_type)              :: from                !! E-mail From.
         type(person_type), allocatable :: to(:)               !! E-mail To.

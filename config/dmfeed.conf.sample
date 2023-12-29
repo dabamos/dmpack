@@ -29,7 +29,7 @@
 --      subtitle    -   Subtitle of the feed (optional).
 --      title       -   Title of the feed (optional).
 --      url         -   URL to the feed (optional).
---      xsl         -   Absolute or relative path to XSLT style sheet (optional).
+--      xsl         -   URL of XSLT style sheet (optional).
 --
 
 dmfeed = {
@@ -44,6 +44,6 @@ dmfeed = {
     minlevel = LOG_WARNING,
     maxlevel = LOG_CRITICAL,
     nentries = 100,
-    xslt = "feed.xls",
-    output = "/tmp/feed.xml"
+    xsl = "feed.xsl",
+    output = "/var/www/feed.xml"
 }

@@ -19,11 +19,11 @@ module dm_target
     integer, parameter, public :: TARGET_STATE_IGNORE   = 4 !! Target should be ignored.
     integer, parameter, public :: TARGET_STATE_OBSOLETE = 5 !! Target is obsolete.
     integer, parameter, public :: TARGET_STATE_USER     = 6 !! User-defined state.
-    integer, parameter, public :: TARGET_NSTATES        = 7 !! Number of known states.
+    integer, parameter, public :: TARGET_STATE_LAST     = 6 !! Never use this.
 
     integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Length of target state name.
 
-    character(len=*), parameter, public :: TARGET_STATE_NAMES(0:TARGET_NSTATES - 1) = [ &
+    character(len=*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
         character(len=TARGET_STATE_NAME_LEN) :: &
         'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' ] !! Target state names.
 
@@ -88,7 +88,7 @@ contains
         integer, intent(in) :: state !! Target state.
 
         valid = .false.
-        if (state < 0 .or. state >= TARGET_NSTATES) return
+        if (state < TARGET_STATE_NONE .or. state > TARGET_STATE_LAST) return
         valid = .true.
     end function dm_target_state_valid
 
@@ -99,7 +99,7 @@ contains
         valid = .false.
         if (.not. dm_id_valid(target%id)) return
         if (len_trim(target%name) == 0) return
-        if (target%state < 0 .or. target%state >= TARGET_NSTATES) return
+        if (.not. dm_target_state_valid(target%state)) return
         valid = .true.
     end function dm_target_valid
 

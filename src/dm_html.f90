@@ -1384,7 +1384,7 @@ contains
         integer :: type
 
         type = sensor%type
-        if (type < 0 .or. type > SENSOR_NTYPES - 1) type = 0
+        if (.not. dm_sensor_type_valid(type)) type = SENSOR_TYPE_NONE
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1439,7 +1439,7 @@ contains
 
         do i = 1, size(sensors)
             t = sensors(i)%type
-            if (t < 0 .or. t > SENSOR_NTYPES - 1) t = 0
+            if (.not. dm_sensor_type_valid(t)) t = SENSOR_TYPE_NONE
 
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
 

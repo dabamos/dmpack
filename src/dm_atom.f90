@@ -51,17 +51,18 @@ module dm_atom
 
     type, public :: atom_type
         !! Atom feed attributes.
-        character(len=256)         :: alt      = ' '
-        character(len=256)         :: author   = ' '
-        character(len=256)         :: email    = ' '
-        character(len=ATOM_ID_LEN) :: id       = ' '
-        character(len=256)         :: title    = ' '
-        character(len=256)         :: subtitle = ' '
-        character(len=512)         :: url      = ' '
-        character(len=512)         :: xsl      = ' '
+        character(len=256)         :: alt      = ' ' !! Alternate content link.
+        character(len=256)         :: author   = ' ' !! Author name.
+        character(len=256)         :: email    = ' ' !! Author e-mail.
+        character(len=ATOM_ID_LEN) :: id       = ' ' !! Feed id.
+        character(len=256)         :: title    = ' ' !! Feed title.
+        character(len=256)         :: subtitle = ' ' !! Feed sub-title.
+        character(len=512)         :: url      = ' ' !! Feed URL.
+        character(len=512)         :: xsl      = ' ' !! Path or URL of XSLT style sheet.
     end type atom_type
 
     interface atom_entry
+        !! Generic XML entry generator.
         module procedure :: atom_entry_log
     end interface
 
@@ -172,10 +173,8 @@ contains
         character(len=:), allocatable          :: xml  !! Atom XML string.
 
         xml = '<link href="' // dm_html_encode(href) // '"'
-
-        if (present(rel)) xml = xml // ' rel="' // dm_html_encode(rel) // '"'
+        if (present(rel))  xml = xml // ' rel="'  // dm_html_encode(rel)  // '"'
         if (present(type)) xml = xml // ' type="' // dm_html_encode(type) // '"'
-
         xml = xml // ' />' // NL
     end function atom_link
 
@@ -189,20 +188,25 @@ contains
 
         level = max(min(LOG_NLEVEL, log%level), LOG_NONE)
 
-        xml = A_ENTRY // A_TITLE // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
+        ! Atom entry.
+        xml = A_ENTRY // &
+              A_TITLE // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
                          dm_html_encode(log%message) // A_TITLE_END
 
+        ! Alternate link.
         if (present(alt)) then
             xml = xml // atom_link(alt, rel='alternate', type='text/html')
         end if
 
-        xml = xml // A_ID // 'urn:uuid:' // dm_uuid4_hyphenize(log%id) // A_ID_END // &
-              A_PUBLISHED // dm_html_encode(log%timestamp) // A_PUBLISHED_END // &
-              A_UPDATED // dm_html_encode(log%timestamp) // A_UPDATED_END // &
-              A_SUMMARY // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
-                           dm_html_encode(log%message) // A_SUMMARY_END // &
-              A_CONTENT_XHTML // A_DIV // dm_html_log(log) // A_DIV_END // A_CONTENT_END // &
-              A_AUTHOR // A_NAME // dm_html_encode(log%source) // A_NAME_END // A_AUTHOR_END // &
+        ! Atom entry content.
+        xml = xml // &
+              A_ID            // 'urn:uuid:' // dm_uuid4_hyphenize(log%id) // A_ID_END // &
+              A_PUBLISHED     // dm_html_encode(log%timestamp)             // A_PUBLISHED_END // &
+              A_UPDATED       // dm_html_encode(log%timestamp)             // A_UPDATED_END // &
+              A_SUMMARY       // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
+                                 dm_html_encode(log%message) // A_SUMMARY_END // &
+              A_CONTENT_XHTML // A_DIV  // dm_html_log(log)                // A_DIV_END  // A_CONTENT_END // &
+              A_AUTHOR        // A_NAME // dm_html_encode(log%source)      // A_NAME_END // A_AUTHOR_END // &
               A_ENTRY_END
     end function atom_entry_log
 

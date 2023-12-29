@@ -2029,13 +2029,13 @@ contains
         if (present(disabled)) disabled_ = disabled
 
         call dm_html_select_create(select_node, size(nodes))
-        call dm_html_select_create(select_sensor_type, SENSOR_NTYPES)
+        call dm_html_select_create(select_sensor_type, SENSOR_TYPE_LAST + 1)
 
         do i = 1, size(nodes)
             call dm_html_select_set(select_node, i, nodes(i)%name, nodes(i)%id)
         end do
 
-        do i = 0, SENSOR_NTYPES - 1
+        do i = 0, SENSOR_TYPE_LAST
             call dm_html_select_set(select_sensor_type, i + 1, SENSOR_TYPE_NAMES(i), dm_itoa(i))
         end do
 
@@ -2097,9 +2097,9 @@ contains
         disabled_ = .false.
         if (present(disabled)) disabled_ = disabled
 
-        call dm_html_select_create(select_target_state, TARGET_NSTATES)
+        call dm_html_select_create(select_target_state, TARGET_STATE_LAST + 1)
 
-        do i = 0, TARGET_NSTATES - 1
+        do i = 0, TARGET_STATE_LAST
             call dm_html_select_set(select_target_state, i + 1, TARGET_STATE_NAMES(i), dm_itoa(i))
         end do
 

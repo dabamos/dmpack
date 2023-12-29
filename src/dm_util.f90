@@ -126,7 +126,7 @@ contains
     end function dm_btoi
 
     pure elemental function dm_deg_to_gon(a) result(b)
-        !! Converts angle in degrees to gon.
+        !! Converts angle from degrees to gon.
         real(kind=r8), intent(in) :: a !! Angle [deg].
         real(kind=r8)             :: b !! Angle [gon].
 
@@ -134,7 +134,7 @@ contains
     end function dm_deg_to_gon
 
     pure elemental function dm_deg_to_rad(a) result(b)
-        !! Converts angle in degrees to radiants.
+        !! Converts angle from degrees to radiants.
         use :: dm_const, only: PI
         real(kind=r8), intent(in) :: a !! Angle [deg].
         real(kind=r8)             :: b !! Angle [rad].
@@ -143,7 +143,7 @@ contains
     end function dm_deg_to_rad
 
     pure elemental function dm_gon_to_deg(a) result(b)
-        !! Converts angle in gon to degrees.
+        !! Converts angle from gon to degrees.
         real(kind=r8), intent(in) :: a !! Angle [gon].
         real(kind=r8)             :: b !! Angle [deg].
 
@@ -151,7 +151,7 @@ contains
     end function dm_gon_to_deg
 
     pure elemental function dm_gon_to_rad(a) result(b)
-        !! Converts angle in gon to radiants.
+        !! Converts angle from gon to radiants.
         use :: dm_const, only: PI
         real(kind=r8), intent(in) :: a !! Angle [gon].
         real(kind=r8)             :: b !! Angle [rad].
@@ -160,7 +160,7 @@ contains
     end function dm_gon_to_rad
 
     pure elemental function dm_rad_to_deg(a) result(b)
-        !! Converts angle in radiants to degrees.
+        !! Converts angle from radiants to degrees.
         use :: dm_const, only: PI
         real(kind=r8), intent(in) :: a !! Angle [rad].
         real(kind=r8)             :: b !! Angle [deg]
@@ -169,7 +169,7 @@ contains
     end function dm_rad_to_deg
 
     pure elemental function dm_rad_to_gon(a) result(b)
-        !! Converts angle in radiants to gon.
+        !! Converts angle from radiants to gon.
         use :: dm_const, only: PI
         real(kind=r8), intent(in) :: a !! Angle [rad].
         real(kind=r8)             :: b !! Angle [gon]
@@ -194,7 +194,7 @@ contains
     end function dm_int64_to_real64
 
     pure elemental function dm_logical_to_real64(l) result(r)
-        !! Converts 8-byte integer to 8-byte real (`0.0` or `1.0`).
+        !! Converts logical to 8-byte real (`0.0` or `1.0`).
         logical, intent(in) :: l !! Logical value.
         real(kind=r8)       :: r !! Value as 8-byte real.
 

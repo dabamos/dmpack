@@ -22,11 +22,11 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_GNSS    = 6 !! GNSS sensor.
     integer, parameter, public :: SENSOR_TYPE_LEVEL   = 7 !! Level sensor.
     integer, parameter, public :: SENSOR_TYPE_MEMS    = 8 !! MEMS sensor.
-    integer, parameter, public :: SENSOR_NTYPES       = 9 !! Number of sensor types.
+    integer, parameter, public :: SENSOR_TYPE_LAST    = 8 !! Never use this.
 
     integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7
 
-    character(len=*), parameter, public :: SENSOR_TYPE_NAMES(0:SENSOR_NTYPES - 1) = [ &
+    character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
         character(len=SENSOR_TYPE_NAME_LEN) :: &
         'none', 'virtual', 'fs', 'process', 'meteo', 'rts', 'gnss', 'level', 'mems' &
     ] !! Array of sensor type names.
@@ -121,7 +121,7 @@ contains
         integer, intent(in) :: type !! Sensor type.
 
         valid = .false.
-        if (type < SENSOR_TYPE_NONE .or. type >= SENSOR_NTYPES) return
+        if (type < SENSOR_TYPE_NONE .or. type > SENSOR_TYPE_LAST) return
         valid = .true.
     end function dm_sensor_type_valid
 

@@ -97,10 +97,10 @@ contains
         !! Converts `time_delta_type` to string of format
         !! `[d days ][h hours ][m mins ][s secs]`.
         type(time_delta_type), intent(inout)        :: time_delta !! Time delta type.
-        logical,               intent(in), optional :: days       !! Write days (`.true.` by default).
-        logical,               intent(in), optional :: hours      !! Write hours (`.true.` by default).
-        logical,               intent(in), optional :: minutes    !! Write minutes (`.true.` by default).
-        logical,               intent(in), optional :: seconds    !! Write seconds (`.true.` by default).
+        logical,               intent(in), optional :: days       !! Write days, `.true.` by default.
+        logical,               intent(in), optional :: hours      !! Write hours, `.true.` by default.
+        logical,               intent(in), optional :: minutes    !! Write minutes, `.true.` by default.
+        logical,               intent(in), optional :: seconds    !! Write seconds, `.true.` by default.
 
         character(len=:), allocatable :: str
         logical                       :: days_, hours_, minutes_, seconds_

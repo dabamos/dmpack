@@ -15,12 +15,12 @@ module dm_plot
     integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 512 !! Line buffer length.
 
     ! Line styles.
-    integer, parameter, public :: PLOT_STYLE_NONE        = 0 !! None.
+    integer, parameter, public :: PLOT_STYLE_NONE        = 0 !! Invalid style.
     integer, parameter, public :: PLOT_STYLE_LINES       = 1 !! Lines.
     integer, parameter, public :: PLOT_STYLE_LINESPOINTS = 2 !! Lines with symbols.
     integer, parameter, public :: PLOT_STYLE_DOTS        = 3 !! Dots.
     integer, parameter, public :: PLOT_STYLE_POINTS      = 4 !! Points.
-    integer, parameter, public :: PLOT_NSTYLES           = 5 !! Points.
+    integer, parameter, public :: PLOT_STYLE_LAST        = 4 !! Never use this.
 
     ! Gnuplot terminals, see:
     ! http://gnuplot.info/docs_5.5/Terminals.html
@@ -33,11 +33,11 @@ module dm_plot
     integer, parameter, public :: PLOT_TERM_SIXEL     = 6 !! Sixel (libgd).
     integer, parameter, public :: PLOT_TERM_SVG       = 7 !! SVG.
     integer, parameter, public :: PLOT_TERM_X11       = 8 !! X11.
-    integer, parameter, public :: PLOT_NTERMS         = 9 !! Number of terminals.
+    integer, parameter, public :: PLOT_TERM_LAST      = 8 !! Never use this.
 
     integer, parameter, public :: PLOT_TERM_NAME_LEN = 8
 
-    character(len=*), parameter, public :: PLOT_TERM_NAMES(0:PLOT_NTERMS - 1) = [ &
+    character(len=*), parameter, public :: PLOT_TERM_NAMES(PLOT_TERM_NONE:PLOT_TERM_LAST) = [ &
         character(len=PLOT_TERM_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'png', &
         'pngcairo', 'sixelgd', 'svg', 'x11' ] !! Gnuplot terminal names.
 
@@ -66,9 +66,9 @@ module dm_plot
         logical                  :: yautoscale = .true.           !! Auto-scale Y axis.
         logical                  :: grid       = .true.           !! Show grid.
         logical                  :: legend     = .false.          !! Show legend.
-        type(pipe_type), private :: stdin                         !! Gnuplot's standard input.
-        type(pipe_type), private :: stdout                        !! Gnuplot's standard output.
-        type(pipe_type), private :: stderr                        !! Gnuplot's standard error.
+        type(pipe_type), private :: stdin                         !! Gnuplot’s standard input.
+        type(pipe_type), private :: stdout                        !! Gnuplot’s standard output.
+        type(pipe_type), private :: stderr                        !! Gnuplot’s standard error.
     end type plot_type
 
     public :: dm_plot_error
@@ -116,12 +116,12 @@ contains
     end function dm_plot_error
 
     integer function dm_plot_lines(plot, dps) result(rc)
-        !! Plots XY data as line chart.
+        !! Plots XY data points as line chart.
         type(plot_type), intent(inout) :: plot   !! Plot settings.
-        type(dp_type),   intent(inout) :: dps(:) !! XY plot data array.
+        type(dp_type),   intent(inout) :: dps(:) !! Data points array.
 
         rc = E_INVALID
-        if (plot%term <= PLOT_TERM_NONE .or. plot%term > PLOT_NTERMS) return
+        if (plot%term <= PLOT_TERM_NONE .or. plot%term > PLOT_TERM_LAST) return
 
         if (.not. plot%bidirect) then
             rc = dm_pipe_open(plot%stdin, PLOT_GNUPLOT, PIPE_WRONLY)
@@ -214,10 +214,12 @@ contains
     end function dm_plot_term_from_name
 
     pure elemental logical function dm_plot_term_valid(term) result(valid)
-        integer, intent(in) :: term
+        !! Returns `.true.` if the given terminal is valid. `PLOT_TERM_NONE` is
+        !! an invalid terminal.
+        integer, intent(in) :: term !! Terminal type enumerator.
 
         valid = .false.
-        if (term <= PLOT_TERM_NONE .or. term >= PLOT_NTERMS) return
+        if (term <= PLOT_TERM_NONE .or. term > PLOT_TERM_LAST) return
         valid = .true.
     end function dm_plot_term_valid
 

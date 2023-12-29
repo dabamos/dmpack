@@ -5,40 +5,40 @@ module dm_ascii
     implicit none (type, external)
     private
 
-    character, parameter, public :: ASCII_NUL = achar(0)  ! null
-    character, parameter, public :: ASCII_SOH = achar(1)  ! start of heading
-    character, parameter, public :: ASCII_STX = achar(2)  ! start of text
-    character, parameter, public :: ASCII_ETX = achar(3)  ! end of text
-    character, parameter, public :: ASCII_EOT = achar(4)  ! end of transmission
-    character, parameter, public :: ASCII_ENQ = achar(5)  ! enquiry
-    character, parameter, public :: ASCII_ACK = achar(6)  ! acknowledge
-    character, parameter, public :: ASCII_BEL = achar(7)  ! bell
-    character, parameter, public :: ASCII_BS  = achar(8)  ! backspace
-    character, parameter, public :: ASCII_TAB = achar(9)  ! horizontal tab
-    character, parameter, public :: ASCII_LF  = achar(10) ! NL line feed, new line
-    character, parameter, public :: ASCII_VT  = achar(11) ! vertical tab
-    character, parameter, public :: ASCII_FF  = achar(12) ! NP form feed, new page
-    character, parameter, public :: ASCII_CR  = achar(13) ! carriage return
-    character, parameter, public :: ASCII_SO  = achar(14) ! shift out
-    character, parameter, public :: ASCII_SI  = achar(15) ! shift in
-    character, parameter, public :: ASCII_DLE = achar(16) ! data link escape
-    character, parameter, public :: ASCII_DC1 = achar(17) ! device control 1
-    character, parameter, public :: ASCII_DC2 = achar(18) ! device control 2
-    character, parameter, public :: ASCII_DC3 = achar(19) ! device control 3
-    character, parameter, public :: ASCII_DC4 = achar(20) ! device control 4
-    character, parameter, public :: ASCII_NAK = achar(21) ! negative acknowledge
-    character, parameter, public :: ASCII_SYN = achar(22) ! synchronous idle
-    character, parameter, public :: ASCII_ETB = achar(23) ! end of trans. block
-    character, parameter, public :: ASCII_CAN = achar(24) ! cancel
-    character, parameter, public :: ASCII_EM  = achar(25) ! end of medium
-    character, parameter, public :: ASCII_SUB = achar(26) ! substitute
-    character, parameter, public :: ASCII_ESC = achar(27) ! escape
-    character, parameter, public :: ASCII_FS  = achar(28) ! file separator
-    character, parameter, public :: ASCII_GS  = achar(29) ! group separator
-    character, parameter, public :: ASCII_RS  = achar(30) ! record separator
-    character, parameter, public :: ASCII_US  = achar(31) ! unit separator
+    character, parameter, public :: ASCII_NUL = achar(0)  !! Null.
+    character, parameter, public :: ASCII_SOH = achar(1)  !! Start of heading.
+    character, parameter, public :: ASCII_STX = achar(2)  !! Start of text.
+    character, parameter, public :: ASCII_ETX = achar(3)  !! End of text.
+    character, parameter, public :: ASCII_EOT = achar(4)  !! End of transmission.
+    character, parameter, public :: ASCII_ENQ = achar(5)  !! Enquiry.
+    character, parameter, public :: ASCII_ACK = achar(6)  !! Acknowledge.
+    character, parameter, public :: ASCII_BEL = achar(7)  !! Bell.
+    character, parameter, public :: ASCII_BS  = achar(8)  !! Backspace.
+    character, parameter, public :: ASCII_TAB = achar(9)  !! Horizontal tab.
+    character, parameter, public :: ASCII_LF  = achar(10) !! NL line feed, new line.
+    character, parameter, public :: ASCII_VT  = achar(11) !! Vertical tab.
+    character, parameter, public :: ASCII_FF  = achar(12) !! NP form feed, new page.
+    character, parameter, public :: ASCII_CR  = achar(13) !! Carriage return.
+    character, parameter, public :: ASCII_SO  = achar(14) !! Shift out.
+    character, parameter, public :: ASCII_SI  = achar(15) !! Shift in.
+    character, parameter, public :: ASCII_DLE = achar(16) !! Data link escape.
+    character, parameter, public :: ASCII_DC1 = achar(17) !! Device control 1.
+    character, parameter, public :: ASCII_DC2 = achar(18) !! Device control 2.
+    character, parameter, public :: ASCII_DC3 = achar(19) !! Device control 3.
+    character, parameter, public :: ASCII_DC4 = achar(20) !! Device control 4.
+    character, parameter, public :: ASCII_NAK = achar(21) !! Negative acknowledge.
+    character, parameter, public :: ASCII_SYN = achar(22) !! Synchronous idle.
+    character, parameter, public :: ASCII_ETB = achar(23) !! End of trans. block.
+    character, parameter, public :: ASCII_CAN = achar(24) !! Cancel.
+    character, parameter, public :: ASCII_EM  = achar(25) !! End of medium.
+    character, parameter, public :: ASCII_SUB = achar(26) !! Substitute.
+    character, parameter, public :: ASCII_ESC = achar(27) !! Escape.
+    character, parameter, public :: ASCII_FS  = achar(28) !! File separator.
+    character, parameter, public :: ASCII_GS  = achar(29) !! Group separator.
+    character, parameter, public :: ASCII_RS  = achar(30) !! Record separator.
+    character, parameter, public :: ASCII_US  = achar(31) !! Unit separator.
 
-    character(len=*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! `\r\n`
+    character(len=*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! Carriage return + line feed (`\r\n`).
 
     public :: dm_ascii_escape
     public :: dm_ascii_is_alpha

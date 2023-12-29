@@ -27,14 +27,17 @@ module dm_fifo
 contains
     integer function dm_fifo_read(fifo, str, error) result(n)
         !! Reads from named pipe and returns number of lines read. The read
-        !! string is returned in `str`.
+        !! string is returned in `str`. Argument `error` is set to `E_INVALID`
+        !! if `fifo` is not connected.
         type(fifo_type),               intent(inout)         :: fifo  !! FIFO type.
         character(len=:), allocatable, intent(out)           :: str   !! Result.
         integer,                       intent(out), optional :: error !! Error code.
-        integer                                              :: i
 
-        n = 0
+        integer :: i
+
+        n   = 0
         str = ''
+
         if (present(error)) error = E_INVALID
         if (.not. c_associated(fifo%stream)) return
 
@@ -54,9 +57,10 @@ contains
         integer                        :: rc
 
         if (allocated(fifo%path)) deallocate (fifo%path)
-        if (c_associated(fifo%stream)) rc = c_fclose(fifo%stream)
 
+        if (c_associated(fifo%stream)) rc = c_fclose(fifo%stream)
         fifo%stream = c_null_ptr
+
         if (fifo%fd > -1) rc = c_close(fifo%fd)
         fifo%fd = -1
     end subroutine dm_fifo_close

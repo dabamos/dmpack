@@ -6,22 +6,22 @@ module dm_type
     public
 
     ! Derived type enumeration.
-    integer, parameter, public :: TYPE_NONE       =  0 !! Invalid type.
-    integer, parameter, public :: TYPE_NODE       =  1 !! Node.
-    integer, parameter, public :: TYPE_SENSOR     =  2 !! Sensor.
-    integer, parameter, public :: TYPE_TARGET     =  3 !! Target.
-    integer, parameter, public :: TYPE_OBSERV     =  4 !! Observation.
-    integer, parameter, public :: TYPE_REQUEST    =  5 !! Request of observation.
-    integer, parameter, public :: TYPE_RESPONSE   =  6 !! Response of request.
-    integer, parameter, public :: TYPE_LOG        =  7 !! Log.
-    integer, parameter, public :: TYPE_BEAT       =  8 !! Heartbeat.
-    integer, parameter, public :: TYPE_DATA_POINT =  9 !! X/Y data point.
-    integer, parameter, public :: TYPE_NTYPES     = 10 !! Number of types.
+    integer, parameter, public :: TYPE_NONE       = 0 !! Invalid type.
+    integer, parameter, public :: TYPE_NODE       = 1 !! Node.
+    integer, parameter, public :: TYPE_SENSOR     = 2 !! Sensor.
+    integer, parameter, public :: TYPE_TARGET     = 3 !! Target.
+    integer, parameter, public :: TYPE_OBSERV     = 4 !! Observation.
+    integer, parameter, public :: TYPE_REQUEST    = 5 !! Request of observation.
+    integer, parameter, public :: TYPE_RESPONSE   = 6 !! Response of request.
+    integer, parameter, public :: TYPE_LOG        = 7 !! Log.
+    integer, parameter, public :: TYPE_BEAT       = 8 !! Heartbeat.
+    integer, parameter, public :: TYPE_DATA_POINT = 9 !! X/Y data point.
+    integer, parameter, public :: TYPE_LAST       = 9 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
     ! Derived type names.
-    character(len=*), parameter, public :: TYPE_NAMES(0:TYPE_NTYPES - 1) = [ &
+    character(len=*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
         character(len=TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', &
         'request', 'response', 'log', 'beat', 'dp' ] !! Type names array.
 
@@ -69,7 +69,7 @@ contains
         integer, intent(in) :: type !! Type enumerator.
 
         valid = .false.
-        if (type <= TYPE_NONE .or. type >= TYPE_NTYPES) return
+        if (type <= TYPE_NONE .or. type > TYPE_LAST) return
         valid = .true.
     end function dm_type_valid
 end module dm_type

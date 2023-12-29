@@ -10,8 +10,8 @@ module dm_csv
     implicit none (type, external)
     private
 
-    character, parameter, public :: CSV_SEPARATOR_DEFAULT = ','  !! Default CSV separator character.
-    integer,   parameter, public :: CSV_BUFFER_LEN        = 8192 !! CSV line buffer length.
+    character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV separator character.
+    integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.
@@ -142,7 +142,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#node_id'  // s // &
@@ -163,7 +163,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
         header = '#x' // s // 'y'
     end function dm_csv_header_data_point
@@ -176,7 +176,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#id'       // s // &
@@ -198,7 +198,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#id'  // s // &
@@ -220,7 +220,7 @@ contains
         character :: s
         integer   :: i, j
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#id'        // s // &
@@ -274,7 +274,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#node_id'          // s // &
@@ -300,7 +300,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#id'     // s // &
@@ -322,7 +322,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         header = '#id'   // s // &
@@ -346,7 +346,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(beat%node_id)     // s // &
@@ -374,7 +374,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -397,7 +397,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
     end function csv_from_data_point
@@ -417,7 +417,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -441,7 +441,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(log%id)        // s // &
@@ -470,7 +470,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -493,7 +493,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(node%id)                 // s // &
@@ -519,7 +519,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -545,7 +545,7 @@ contains
         character :: s
         integer   :: i, j
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(observ%id)            // s // &
@@ -610,7 +610,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(view%node_id)           // s // &
@@ -643,7 +643,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -672,7 +672,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -695,7 +695,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(sensor%id)                 // s // &
@@ -724,7 +724,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -747,7 +747,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         csv = trim(target%id)                 // s // &
@@ -774,7 +774,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -952,7 +952,7 @@ contains
         unit_ = stdin
         if (present(unit)) unit_ = unit
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         q = ASCII_NUL
@@ -971,7 +971,7 @@ contains
         if (n == 0) return
         if (buffer(1:1) == '#') return
 
-        p = 0 ! Cursor of buffer string.
+        p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, log%id,        s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, log%level,     s, n, p, q); if (rc /= E_NONE) return
@@ -1006,7 +1006,7 @@ contains
         unit_ = stdin
         if (present(unit)) unit_ = unit
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         q = ASCII_NUL
@@ -1025,7 +1025,7 @@ contains
         if (n == 0) return
         if (buffer(1:1) == '#') return
 
-        p = 0 ! Cursor of buffer string.
+        p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, node%id,   s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, node%name, s, n, p, q); if (rc /= E_NONE) return
@@ -1059,7 +1059,7 @@ contains
         unit_ = stdin
         if (present(unit)) unit_ = unit
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         q = ASCII_NUL
@@ -1077,7 +1077,7 @@ contains
         if (n == 0) return
         if (buffer(1:1) == '#') return
 
-        p = 0 ! Cursor of buffer string.
+        p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, observ%id,         s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%node_id,    s, n, p, q); if (rc /= E_NONE) return
@@ -1142,7 +1142,7 @@ contains
         unit_ = stdin
         if (present(unit)) unit_ = unit
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         q = ASCII_NUL
@@ -1161,7 +1161,7 @@ contains
         if (n == 0) return
         if (buffer(1:1) == '#') return
 
-        p = 0 ! Cursor of buffer string.
+        p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, sensor%id,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%node_id, s, n, p, q); if (rc /= E_NONE) return
@@ -1195,7 +1195,7 @@ contains
         unit_ = stdin
         if (present(unit)) unit_ = unit
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         q = ASCII_NUL
@@ -1214,7 +1214,7 @@ contains
         if (n == 0) return
         if (buffer(1:1) == '#') return
 
-        p = 0 ! Cursor of buffer string.
+        p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, target%id,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%name,  s, n, p, q); if (rc /= E_NONE) return
@@ -1247,7 +1247,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1289,7 +1289,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(beats)
@@ -1319,7 +1319,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1353,7 +1353,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(data_points)
@@ -1383,7 +1383,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1427,7 +1427,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(logs)
@@ -1457,7 +1457,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1497,7 +1497,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(nodes)
@@ -1529,7 +1529,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1628,7 +1628,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(observs)
@@ -1658,7 +1658,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         if (header_) then
@@ -1701,7 +1701,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(sensors)
@@ -1731,7 +1731,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         write (unit_, '(8a, i0, 3(a, 1pg0.12))', iostat=stat) &
@@ -1767,7 +1767,7 @@ contains
         header_ = .false.
         if (present(header)) header_ = header
 
-        s = CSV_SEPARATOR_DEFAULT
+        s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
         do i = 1, size(targets)

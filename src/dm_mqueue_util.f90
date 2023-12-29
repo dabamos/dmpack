@@ -23,10 +23,16 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function mqueue_forward_observ(observ, name, blocking, quiet) result(rc)
+    integer function mqueue_forward_observ(observ, name, blocking, quiet, self) result(rc)
         !! Forwards given observation to next receiver. This function creates
         !! log messages about the progress and requires a configured logger,
-        !! unless `quiet` is `.false.`.
+        !! unless `quiet` is `.false.`. Therefore, it should not be called by
+        !! a library procedure (for programs only).
+        !!
+        !! If `name` is passed and equals the next receiver, the receiver will
+        !! be skipped, unless `self` is `.true.`. This behaviour prevents the
+        !! observation to be forwarded back to the sender if the sender is the
+        !! next receiver in the list.
         use :: dm_id
         use :: dm_log
         use :: dm_logger, dm_log => dm_logger_log
@@ -36,9 +42,10 @@ contains
         character(len=*),  intent(in), optional :: name     !! App name.
         logical,           intent(in), optional :: blocking !! Message queue access is blocking.
         logical,           intent(in), optional :: quiet    !! No logging if `.true.`.
+        logical,           intent(in), optional :: self     !! Allow forwarding to `name`.
 
         integer           :: next
-        logical           :: blocking_, quiet_
+        logical           :: blocking_, quiet_, self_
         type(mqueue_type) :: mqueue
 
         rc   = E_NONE
@@ -51,6 +58,10 @@ contains
         ! Generate log messages.
         quiet_ = .false.
         if (present(quiet)) quiet_ = quiet
+
+        ! Allow forwarding to sender.
+        self_ = .false.
+        if (present(self)) self_ = self
 
         do
             ! Increase the receiver index.
@@ -77,8 +88,8 @@ contains
             ! function.
             if (.not. present(name)) exit
 
-            ! Found valid receiver.
-            if (observ%receivers(next) /= name) exit
+            ! Forwarding to self is allowed, or valid receiver is found?
+            if (self_ .or. observ%receivers(next) /= name) exit
 
             if (.not. quiet_) then
                 call dm_log(LOG_DEBUG, 'skipped receiver ' // dm_itoa(next) // ' (' // &
@@ -116,7 +127,7 @@ contains
                 exit mqueue_block
             end if
 
-            if (quiet_) then
+            if (.not. quiet_) then
                 call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
                             observ%receivers(next), observ=observ)
             end if
@@ -126,8 +137,8 @@ contains
         rc = dm_mqueue_close(mqueue)
 
         if (dm_is_error(rc) .and. .not. quiet_) then
-            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next), &
-                        observ=observ, error=rc)
+            call dm_log(LOG_WARNING, 'failed to close mqueue /' // observ%receivers(next) // ': ' // &
+                        dm_system_error_message(), observ=observ, error=rc)
         end if
     end function mqueue_forward_observ
 end module dm_mqueue_util

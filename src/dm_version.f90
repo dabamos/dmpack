@@ -51,9 +51,9 @@ contains
     subroutine dm_version_out(name, major, minor, patch)
         !! Prints DMPACK and application version to standard output.
         character(len=*), intent(in) :: name  !! Application name.
-        integer,          intent(in) :: major !! Major version number.
-        integer,          intent(in) :: minor !! Minor version number.
-        integer,          intent(in) :: patch !! Patch level.
+        integer,          intent(in) :: major !! Major version number of application.
+        integer,          intent(in) :: minor !! Minor version number of application.
+        integer,          intent(in) :: patch !! Patch level of application.
 
         print '(a, 1x, i1, 2(".", i1), " (DMPACK ", a, ")")', &
             name, major, minor, patch, DM_VERSION_STRING

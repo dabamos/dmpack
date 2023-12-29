@@ -18,9 +18,9 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_INT32   = 3 !! 4-byte signed integer.
     integer, parameter, public :: RESPONSE_TYPE_LOGICAL = 4 !! Boolean.
     integer, parameter, public :: RESPONSE_TYPE_BYTE    = 5 !! Byte.
-    integer, parameter, public :: RESPONSE_NTYPES       = 6 !! Number of response values types.
+    integer, parameter, public :: RESPONSE_TYPE_LAST    = 5 !! Never use this.
 
-    character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(0:RESPONSE_NTYPES - 1) = [ &
+    character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
         character(len=8) :: 'real64', 'real32', 'int64', 'int32', 'logical', 'byte' ] !! Response value type names.
 
     type, public :: response_type
@@ -86,7 +86,7 @@ contains
         integer, intent(in) :: type !! Response value type.
 
         valid = .false.
-        if (type < RESPONSE_TYPE_REAL64 .or. type >= RESPONSE_NTYPES) return
+        if (type < RESPONSE_TYPE_REAL64 .or. type > RESPONSE_TYPE_LAST) return
         valid = .true.
     end function dm_response_type_valid
 
@@ -112,8 +112,8 @@ contains
         if (present(unit)) unit_ = unit
 
         write (unit_, '("response.name: ", a)')        trim(response%name)
-        write (unit_, '("response.type: ", i0)')       response%type
         write (unit_, '("response.unit: ", a)')        trim(response%unit)
+        write (unit_, '("response.type: ", i0)')       response%type
         write (unit_, '("response.error: ", i0)')      response%error
         write (unit_, '("response.value: ", 1pg0.12)') response%value
     end subroutine dm_response_out

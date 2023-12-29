@@ -315,6 +315,7 @@ module dm_db
     private :: db_next_row_observ_view
     private :: db_next_row_sensor
     private :: db_next_row_data_point
+    private :: db_query_where
     private :: db_release
     private :: db_rollback
     private :: db_save_point
@@ -327,7 +328,7 @@ module dm_db
     private :: db_select_syncs
 contains
     ! ******************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC FUNCTIONS.
     ! ******************************************************************
     integer function dm_db_backup(db, path, wal, callback, nsteps, sleep_time) result(rc)
         !! Creates online backup of given database. The functions assumes 500
@@ -337,19 +338,20 @@ contains
         !! Returns the following error codes:
         !!
         !! * `E_DB_BACKUP` if SQLite backup failed.
+        !! * `E_DB` if closing the database failed.
         !! * `E_EXIST` if backup database exists.
         !! * `E_READ_ONLY` if database is opened read-only.
         integer, parameter :: NSTEPS_DEFAULT     = 500
         integer, parameter :: SLEEP_TIME_DEFAULT = 250
 
         type(db_type),    intent(inout)           :: db         !! Database type.
-        character(len=*), intent(in)              :: path       !! File path to new backup database.
+        character(len=*), intent(in)              :: path       !! File path of backup database to be created.
         logical,          intent(in),    optional :: wal        !! Enable WAL mode for backup.
         procedure(dm_db_backup_handler), optional :: callback   !! Progress callback routine.
         integer,          intent(in),    optional :: nsteps     !! Number of steps per iteration (default: 500).
         integer,          intent(in),    optional :: sleep_time !! Sleep time per iteration in msec (default: 250 ms).
 
-        integer       :: err, n
+        integer       :: err
         integer       :: nsteps_, sleep_time_
         logical       :: wal_
         type(db_type) :: backup
@@ -387,7 +389,7 @@ contains
                 end if
 
                 if (err == SQLITE_OK .or. err == SQLITE_BUSY .or. err == SQLITE_LOCKED) then
-                    n = sqlite3_sleep(sleep_time_)
+                    call dm_db_sleep(sleep_time_)
                     cycle
                 end if
 
@@ -403,6 +405,14 @@ contains
 
     integer function dm_db_begin(db, mode) result(rc)
         !! Starts a transaction. Public wrapper for `db_begin()`.
+        !!
+        !! Optional argument `mode` may be one of:
+        !!
+        !! * `DB_TRANS_DEFERRED`
+        !! * `DB_TRANS_IMMEDIATE`
+        !! * `DB_TRANS_EXCLUSIVE`
+        !!
+        !! The default mode is `DB_TRANS_DEFERRED`.
         type(db_type), intent(inout)        :: db   !! Database type.
         integer,       intent(in), optional :: mode !! Transaction mode.
 
@@ -433,7 +443,7 @@ contains
 
     integer function dm_db_commit(db) result(rc)
         !! Ends transaction and commits changes to database. On error, does a
-        !! rollback automatically. Returns `E_DB_TRANSACTION` if the rollback
+        !! rollback automatically. Returns `E_DB_ROLLBACK` if the rollback
         !! failed.
         type(db_type), intent(inout) :: db !! Database type.
 
@@ -556,6 +566,12 @@ contains
 
     integer function dm_db_create_beats(db) result(rc)
         !! Creates logs table in given database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_INVALID` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type), intent(inout) :: db !! Database type.
 
         integer :: i
@@ -579,6 +595,12 @@ contains
 
     integer function dm_db_create_logs(db, sync) result(rc)
         !! Creates logs table in given database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_INVALID` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type), intent(inout)         :: db   !! Database type.
         logical,       intent(in),  optional :: sync !! Create synchronisation tables.
 
@@ -617,8 +639,14 @@ contains
         !! Initialises a connected SQLite 3 database by creating all necessary
         !! tables if they do not exist already. The function also creates
         !! additional indices and triggers on the tables.
-        type(db_type), intent(inout)         :: db   !! Database type.
-        logical,       intent(in),  optional :: sync !! Create synchronisation tables.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table, index, or trigger creation failed.
+        !! * `E_INVALID` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        type(db_type), intent(inout)        :: db   !! Database type.
+        logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
         logical :: sync_
@@ -689,7 +717,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
@@ -727,7 +755,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db     !! Database type.
@@ -765,7 +793,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db      !! Database type.
@@ -808,7 +836,7 @@ contains
         !! * `E_DB_EXEC` if query execution failed (commit).
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_ROLLBACK` if transaction rollback failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TRANSACTION` if transaction failed.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
@@ -861,7 +889,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
@@ -899,7 +927,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
@@ -1013,7 +1041,8 @@ contains
     end function dm_db_exists_target
 
     integer function dm_db_finalize(db_stmt) result(rc)
-        !! Finalises given database statement.
+        !! Finalises given database statement. Returns `E_DB_FINALIZE` on
+        !! error.
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
 
         rc = E_NONE
@@ -1281,7 +1310,7 @@ contains
 
         rc = E_INVALID
         if (present(exists)) exists = .false.
-        if (table < SQL_TABLE_NODES .or. table > SQL_NTABLES) return
+        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1309,6 +1338,15 @@ contains
 
     integer function dm_db_insert_beat(db, beat, db_stmt) result(rc)
         !! Adds the given heartbeat to database.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_DB` if statement reset failed.
+        !! * `E_INVALID` if argument `beat` is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),      intent(inout)           :: db      !! Database type.
         type(beat_type),    intent(inout)           :: beat    !! Beat to insert.
         type(db_stmt_type), intent(inout), optional :: db_stmt !! Database statement type.
@@ -1361,6 +1399,19 @@ contains
     integer function dm_db_insert_beats(db, beats, transaction) result(rc)
         !! Adds array of beats to database. A transaction is used unless
         !! `transaction` is `.false.`.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_EXEC` if execution of transaction statement failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_ROLLBACK` if transaction rollback failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_DB_TRANSACTION` if transaction failed.
+        !! * `E_DB` if statement reset failed.
+        !! * `E_EMPTY` if array `beats` is empty.
+        !! * `E_INVALID` if an element in `beats` is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),   intent(inout)        :: db          !! Database type.
         type(beat_type), intent(inout)        :: beats(:)    !! Beat type array.
         logical,         intent(in), optional :: transaction !! Use SQL transaction.
@@ -1967,13 +2018,14 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            rc = E_DB_PREPARE
             if (present(limit)) then
+                rc = E_DB_PREPARE
                 if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
             else
+                rc = E_DB_PREPARE
                 if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
@@ -1985,6 +2037,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(beats)) allocate (beats(0))
     end function dm_db_select_beats
 
     integer function dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response_name, &
@@ -2070,6 +2123,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(dps)) allocate (dps(0))
     end function dm_db_select_data_points
 
     integer function dm_db_select_json_beat(db, json_beat, node_id) result(rc)
@@ -2099,6 +2153,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(json_beat)) json_beat = ''
     end function dm_db_select_json_beat
 
     integer function dm_db_select_json_beats(db, json_beats, limit, nbeats) result(rc)
@@ -2169,6 +2224,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(json_beats)) allocate (json_beats(0))
     end function dm_db_select_json_beats
 
     integer function dm_db_select_json_log(db, json_log, log_id) result(rc)
@@ -2317,69 +2373,28 @@ contains
         query = ''
 
         if (has_param) then
-            query = ' WHERE'
-            more  = .false.
-
-            if (has_min_level) then
-                query = query // ' level >= ?'
-                more  = .true.
-            end if
-
-            if (has_max_level) then
-                if (more) query = query // ' AND'
-                query = query // ' level <= ?'
-                more  = .true.
-            end if
-
-            if (has_error) then
-                if (more) query = query // ' AND'
-                query = query // ' error = ?'
-                more  = .true.
-            end if
-
-            if (has_from) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp >= ?'
-                more  = .true.
-            end if
-
-            if (has_to) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp < ?'
-                more  = .true.
-            end if
-
-            if (has_node_id) then
-                if (more) query = query // ' AND'
-                query = query // ' node_id = ?'
-                more  = .true.
-            end if
-
-            if (has_sensor_id) then
-                if (more) query = query // ' AND'
-                query = query // ' sensor_id = ?'
-                more  = .true.
-            end if
-
-            if (has_target_id) then
-                if (more) query = query // ' AND'
-                query = query // ' target_id = ?'
-                more  = .true.
-            end if
-
-            if (has_source) then
-                if (more) query = query // ' AND'
-                query = query // ' source = ?'
-            end if
+            more = .false.
+            if (has_min_level) call db_query_where(query, 'level >= ?',     more)
+            if (has_max_level) call db_query_where(query, 'level <= ?',     more)
+            if (has_error)     call db_query_where(query, 'error = ?',      more)
+            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
+            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
+            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
+            if (has_source)    call db_query_where(query, 'source = ?',     more)
         end if
 
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
-
             if (has_param) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+
                 rc = db_bind_logs(k)
                 if (dm_is_error(rc)) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -2627,69 +2642,28 @@ contains
         query = ''
 
         if (has_param) then
-            query = ' WHERE'
-            more  = .false.
-
-            if (has_min_level) then
-                query = query // ' level >= ?'
-                more  = .true.
-            end if
-
-            if (has_max_level) then
-                if (more) query = query // ' AND'
-                query = query // ' level <= ?'
-                more  = .true.
-            end if
-
-            if (has_error) then
-                if (more) query = query // ' AND'
-                query = query // ' error = ?'
-                more  = .true.
-            end if
-
-            if (has_from) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp >= ?'
-                more  = .true.
-            end if
-
-            if (has_to) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp < ?'
-                more  = .true.
-            end if
-
-            if (has_node_id) then
-                if (more) query = query // ' AND'
-                query = query // ' node_id = ?'
-                more  = .true.
-            end if
-
-            if (has_sensor_id) then
-                if (more) query = query // ' AND'
-                query = query // ' sensor_id = ?'
-                more  = .true.
-            end if
-
-            if (has_target_id) then
-                if (more) query = query // ' AND'
-                query = query // ' target_id = ?'
-                more  = .true.
-            end if
-
-            if (has_source) then
-                if (more) query = query // ' AND'
-                query = query // ' source = ?'
-            end if
+            more = .false.
+            if (has_min_level) call db_query_where(query, 'level >= ?',     more)
+            if (has_max_level) call db_query_where(query, 'level <= ?',     more)
+            if (has_error)     call db_query_where(query, 'error = ?',      more)
+            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
+            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
+            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
+            if (has_source)    call db_query_where(query, 'source = ?',     more)
         end if
 
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
-
             if (has_param) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+
                 rc = db_bind_logs(k)
                 if (dm_is_error(rc)) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -2945,6 +2919,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(nodes)) allocate (nodes(0))
     end function dm_db_select_nodes
 
     integer function dm_db_select_observ(db, observ, observ_id) result(rc)
@@ -3080,47 +3055,24 @@ contains
         query = ''
 
         if (has_param) then
-            query = ' WHERE'
-            more  = .false.
-
-            if (has_node_id) then
-                if (more) query = query // ' AND'
-                query = query // ' node_id = ?'
-                more  = .true.
-            end if
-
-            if (has_sensor_id) then
-                if (more) query = query // ' AND'
-                query = query // ' sensor_id = ?'
-                more  = .true.
-            end if
-
-            if (has_target_id) then
-                if (more) query = query // ' AND'
-                query = query // ' target_id = ?'
-                more  = .true.
-            end if
-
-            if (has_from) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp >= ?'
-                more  = .true.
-            end if
-
-            if (has_to) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp < ?'
-                more  = .true.
-            end if
+            more = .false.
+            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
+            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
+            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
+            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
         end if
 
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
-
             if (has_param) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+
                 rc = db_bind_observs(k)
                 if (dm_is_error(rc)) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -3167,6 +3119,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(ids)) allocate (ids(0))
     contains
         integer function db_bind_observs(i) result(rc)
             integer, intent(out) :: i
@@ -3278,6 +3231,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(views)) allocate (views(0))
     end function dm_db_select_observ_views
 
     integer function dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
@@ -3372,47 +3326,24 @@ contains
         query = ''
 
         if (has_param) then
-            query = ' WHERE'
-            more  = .false.
-
-            if (has_node_id) then
-                if (more) query = query // ' AND'
-                query = query // ' node_id = ?'
-                more  = .true.
-            end if
-
-            if (has_sensor_id) then
-                if (more) query = query // ' AND'
-                query = query // ' sensor_id = ?'
-                more  = .true.
-            end if
-
-            if (has_target_id) then
-                if (more) query = query // ' AND'
-                query = query // ' target_id = ?'
-                more  = .true.
-            end if
-
-            if (has_from) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp >= ?'
-                more  = .true.
-            end if
-
-            if (has_to) then
-                if (more) query = query // ' AND'
-                query = query // ' timestamp < ?'
-                more  = .true.
-            end if
+            more = .false.
+            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
+            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
+            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
+            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
         end if
 
         sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
-
             if (has_param) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+
                 rc = db_bind_observs(k)
                 if (dm_is_error(rc)) exit sql_block
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -3460,8 +3391,10 @@ contains
 
         stat = sqlite3_finalize(stmt)
 
+        if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
         if (stub_view) return
+        if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
     contains
@@ -3598,8 +3531,10 @@ contains
 
         stat = sqlite3_finalize(stmt)
 
+        if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
         if (stub_) return
+        if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
     end function dm_db_select_observs_by_id
@@ -3682,8 +3617,10 @@ contains
 
         stat = sqlite3_finalize(stmt)
 
+        if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
         if (stub_) return
+        if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
     end function dm_db_select_observs_by_time
@@ -3754,6 +3691,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(sensors)) allocate (sensors(0))
     end function dm_db_select_sensors
 
     integer function dm_db_select_sensors_by_node(db, sensors, node_id, nsensors) result(rc)
@@ -3808,6 +3746,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(sensors)) allocate (sensors(0))
     end function dm_db_select_sensors_by_node
 
     integer function dm_db_select_sync_log(db, sync) result(rc)
@@ -3981,6 +3920,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(tables)) allocate (tables(0))
     end function dm_db_select_tables
 
     integer function dm_db_select_target(db, target, target_id) result(rc)
@@ -4083,6 +4023,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(targets)) allocate (targets(0))
     end function dm_db_select_targets
 
     integer function dm_db_set_application_id(db, id) result(rc)
@@ -4208,8 +4149,6 @@ contains
         type(c_ptr) :: stmt
 
         sql_block: block
-            integer :: stat
-
             rc = E_DB_PREPARE
             if (enabled) then
                 stat = sqlite3_prepare_v2(db%ptr, QUERY // 'ON', stmt)
@@ -4241,8 +4180,6 @@ contains
         if (mode < DB_JOURNAL_OFF .or. mode > DB_JOURNAL_WAL) return
 
         sql_block: block
-            integer :: stat
-
             rc = E_DB_PREPARE
 
             select case (mode)
@@ -4306,8 +4243,6 @@ contains
         type(c_ptr) :: stmt
 
         sql_block: block
-            integer :: stat
-
             rc = E_DB_PREPARE
             if (enabled) then
                 stat = sqlite3_prepare_v2(db%ptr, QUERY // 'ON', stmt)
@@ -4548,6 +4483,10 @@ contains
         rc = E_NONE
     end function dm_db_valid
 
+    ! ******************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! ******************************************************************
+
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to
         !! be set through `dm_db_set_log_handler()` initially.
@@ -4567,7 +4506,7 @@ contains
     end subroutine dm_db_sleep
 
     ! ******************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE FUNCTIONS.
     ! ******************************************************************
     integer function db_begin(db, mode) result(rc)
         !! Starts a transactions in IMMEDIATE mode. Mode shall be either
@@ -4616,7 +4555,7 @@ contains
 
         n = 0_i8
         rc = E_INVALID
-        if (table < SQL_TABLE_NODES .or. table > SQL_NTABLES) return
+        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -5189,12 +5128,11 @@ contains
 
         n = 0_i8
         rc = E_INVALID
-        if (table < 1 .or. table > SQL_NTABLES) return
+        if (table < 1 .or. table > SQL_TABLE_LAST) return
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) &
-                exit sql_block
+            if (sqlite3_prepare_v2(db%ptr, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -5554,5 +5492,42 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
+        if (.not. allocated(syncs)) allocate (syncs(0))
     end function db_select_syncs
+
+    ! ******************************************************************
+    ! PRIVATE SUBROUTINES.
+    ! ******************************************************************
+    pure subroutine db_query_where(query, part, more)
+        !! Sub-query builder for `WHERE` clauses that appends `part` to query
+        !! string `query`. If `query` is not allocated or of length 0, or if
+        !! `more` is `.false.`, `query` will start with ` WHERE` on output.
+        !!
+        !! This routine may be called multiple times on succession to add more
+        !! parameters to the query.
+        !!
+        !! On first call, argument `more` must be `.false.`, as it will be set
+        !! to `.true.` on exit to indicate an SQL `AND` operation on the next
+        !! call.
+        character(len=:), allocatable, intent(inout) :: query !! Query input/output string.
+        character(len=*),              intent(in)    :: part  !! Part to add to query string.
+        logical,                       intent(inout) :: more  !! Append `AND` to query first if `.true.`.
+
+        integer :: n
+        logical :: alloc
+
+        alloc = allocated(query)
+        n = 0
+        if (alloc) n = len(query)
+
+        if (.not. alloc .or. n == 0 .or. .not. more) then
+            ! On first call just add the part.
+            query = ' WHERE ' // trim(part)
+        else
+            ! On successive calls append `AND` first.
+            query = query // ' AND ' // trim(part)
+        end if
+
+        more = .true.
+    end subroutine db_query_where
 end module dm_db

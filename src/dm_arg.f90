@@ -337,9 +337,9 @@ contains
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument.
         use :: dm_id
-        use :: dm_uuid
         use :: dm_string
         use :: dm_time
+        use :: dm_uuid
         type(arg_type), intent(inout) :: arg !! Argument to validate.
 
         integer          :: error

@@ -34,7 +34,8 @@ module dm_http
     public :: dm_http_status_string
 contains
     pure function dm_http_status_string(http_status) result(str)
-        !! Returns allocatable string of HTTP status.
+        !! Returns allocatable string of HTTP status. Returns an empty string
+        !! if the passed status is unknown.
         integer, intent(in)           :: http_status !! HTTP code.
         character(len=:), allocatable :: str         !! Status string.
 
