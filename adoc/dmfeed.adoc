@@ -86,8 +86,8 @@ different feeds. Run _dmuuid(1)_ to generate a valid UUID4.
   Output version information and quit.
 
 *--xsl*, *-X*::
-  Absolute or relative path to XSLT style sheet. Web browsers may be able to
-  display the Atom feed in HTML format if a style sheet is provided.
+  URL or path of optional XSLT style sheet. Web browsers may be able to display
+  the Atom feed in HTML format if a style sheet is provided.
 
 == EXIT STATUS
 

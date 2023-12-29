@@ -94,7 +94,7 @@ Optronik, Systemtechnik und Bildauswertung (IOSB). (LGPLv3)
 link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
-(GPLv3)
+Further development appears to have been stopped. (GPLv3)
 link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
 observations from monitoring sensors. The project also provides a graphical user
@@ -105,7 +105,7 @@ link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
 projects, distributed sensor networks, and likewise scenarios. (AGPLv3)
-link:https://www.dabamos.de/software/openadms/[OpenADMS]:: The Open Automatic
+link:https://www.dabamos.de/openadms.html[OpenADMS]:: The Open Automatic
 Deformation Monitoring software is an IoT sensor network middleware in Python 3.
 The system was developed as a prototype of DMPACK and includes client and server
 programs. (BSD)
@@ -4255,13 +4255,13 @@ database administration, written in PHP. (GPLv3)
 
 === Entity–Relationship Model
 
-.Observation database
-[#db-uml-observ]
-image::observ.svg[UML,align="center"]
-
 .Log database
 [#db-uml-log]
 image::log.svg[UML,align="center",scaledwidth=25%]
+
+.Observation database
+[#db-uml-observ]
+image::observ.svg[UML,align="center"]
 
 .Heartbeat database
 [#db-uml-beat]
