@@ -10,7 +10,7 @@ program dmtestplot
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestplot.test01', test01)
+    tests = [ test_type('dmtestplot.test01', test01) ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -24,7 +24,7 @@ contains
 
         stat = TEST_FAILED
 
-        plot%term = PLOT_TERM_PNG
+        plot%term = PLOT_TERM_SVG
         ! plot%term = PLOT_TERM_PNG_CAIRO
         ! plot%font = '/usr/local/share/fonts/gnu-unifont-ttf/unifont.ttf'
 

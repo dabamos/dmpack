@@ -33,7 +33,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_observ(observ)
+        call dm_test_dummy(observ)
 
         print *, 'Writing observation to JSON string ...'
         json = dm_json_from(observ)
@@ -73,7 +73,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_log(log)
+        call dm_test_dummy(log)
 
         print *, 'Writing log to JSON string ...'
         json = dm_json_from(log)
@@ -95,7 +95,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(node)
+        call dm_test_dummy(node)
 
         print *, 'Writing node to JSON string ...'
         json = dm_json_from(node)
@@ -117,7 +117,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_sensor(sensor)
+        call dm_test_dummy(sensor)
 
         print *, 'Writing sensor to JSON string ...'
         json = dm_json_from(sensor)
@@ -139,7 +139,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_target(target)
+        call dm_test_dummy(target)
 
         print *, 'Writing target to JSON string ...'
         json = dm_json_from(target)

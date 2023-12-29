@@ -337,7 +337,7 @@ contains
         type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
-        call dm_dummy_observ(observ1, nrequests=2)
+        call dm_test_dummy(observ1, nrequests=2)
 
         print *, 'Creating new Lua state ...'
         rc = dm_lua_init(lua)

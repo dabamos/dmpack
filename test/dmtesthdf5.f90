@@ -7,7 +7,7 @@ program dmtesthdf5
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: FILE_PATH  = 'test.hdf5'
+    character(len=*), parameter :: FILE_PATH  = 'testobserv.hdf5'
     character(len=*), parameter :: GROUP_NAME = 'timeseries'
 
     integer, parameter :: NTESTS = 6
@@ -110,7 +110,7 @@ contains
 
         allocate (input(N))
 
-        call dm_dummy_node(input)
+        call dm_test_dummy(input)
 
         do i = 1, N
             write (input(i)%id, '("node-", i0)') i
@@ -178,7 +178,7 @@ contains
 
         allocate (input(N))
 
-        call dm_dummy_sensor(input)
+        call dm_test_dummy(input)
 
         do i = 1, N
             write (input(i)%id, '("sensor-", i0)') i
@@ -241,7 +241,7 @@ contains
 
         allocate (input(N))
 
-        call dm_dummy_target(input)
+        call dm_test_dummy(input)
 
         do i = 1, N
             write (input(i)%id, '("target-", i0)') i
@@ -304,7 +304,7 @@ contains
 
         allocate (input(N))
 
-        call dm_dummy_observ(input)
+        call dm_test_dummy(input)
 
         do i = 1, N
             write (input(i)%name, '("observ-", i0)') i

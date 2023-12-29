@@ -30,7 +30,7 @@ contains
         atom%subtitle = 'Dummy Sub-Title'
         atom%url      = 'http://example.com/feed.xml'
 
-        call dm_dummy_log(logs)
+        call dm_test_dummy(logs)
         call dm_atom_from_logs(atom, logs, xml)
         print '(a)', xml
 

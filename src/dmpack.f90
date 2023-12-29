@@ -40,7 +40,6 @@ module dmpack
     use :: dm_csv
     use :: dm_db
     use :: dm_dp
-    use :: dm_dummy
     use :: dm_env
     use :: dm_error
     use :: dm_fcgi

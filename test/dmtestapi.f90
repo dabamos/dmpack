@@ -10,7 +10,7 @@ program dmtestapi
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestapi.test01', test01)
+    tests = [ test_type('dmtestapi.test01', test01) ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))

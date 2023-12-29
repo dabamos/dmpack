@@ -29,7 +29,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_observ(observ1)
+        call dm_test_dummy(observ1)
 
         print *, 'Writing observation to namelist string ...'
         rc = dm_nml_from(observ1, str)
@@ -90,7 +90,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_log(log1)
+        call dm_test_dummy(log1)
 
         print *, 'Writing log to namelist string ...'
         rc = dm_nml_from(log1, str)
@@ -120,7 +120,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(node1)
+        call dm_test_dummy(node1)
 
         print *, 'Writing node to namelist string ...'
         rc = dm_nml_from(node1, str)
@@ -150,7 +150,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_sensor(sensor1)
+        call dm_test_dummy(sensor1)
 
         print *, 'Writing sensor to namelist string ...'
         rc = dm_nml_from(sensor1, str)
@@ -180,7 +180,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_target(target1)
+        call dm_test_dummy(target1)
 
         print *, 'Writing target to namelist string ...'
         rc = dm_nml_from(target1, str)

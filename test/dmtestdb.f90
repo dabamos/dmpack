@@ -204,9 +204,9 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(node1)
-        call dm_dummy_sensor(sensor1)
-        call dm_dummy_target(target1)
+        call dm_test_dummy(node1)
+        call dm_test_dummy(sensor1)
+        call dm_test_dummy(target1)
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
         rc = dm_db_open(db, DB_OBSERV)
@@ -311,10 +311,10 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(node)
-        call dm_dummy_sensor(sensor)
-        call dm_dummy_target(target)
-        call dm_dummy_observ(observ)
+        call dm_test_dummy(node)
+        call dm_test_dummy(sensor)
+        call dm_test_dummy(target)
+        call dm_test_dummy(observ)
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
         if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
@@ -376,7 +376,7 @@ contains
         rc = dm_db_open(db, DB_OBSERV)
         if (dm_is_error(rc)) return
 
-        call dm_dummy_observ(observ1)
+        call dm_test_dummy(observ1)
         observ1%priority = 100
 
         print *, 'Created observation "' // observ1%id // '"'
@@ -425,11 +425,11 @@ contains
         stat = TEST_FAILED
         allocate (observs1(NOBSERVS), observs2(NOBSERVS))
 
-        call dm_dummy_node(node1)
-        call dm_dummy_sensor(sensor1)
-        call dm_dummy_sensor(sensor2, id='dummy-sensor2', name='Sensor 2')
-        call dm_dummy_target(target1)
-        call dm_dummy_target(target2, id='dummy-target2', name='Target 2')
+        call dm_test_dummy(node1)
+        call dm_test_dummy(sensor1)
+        call dm_test_dummy(sensor2, id='dummy-sensor2', name='Sensor 2')
+        call dm_test_dummy(target1)
+        call dm_test_dummy(target2, id='dummy-target2', name='Target 2')
 
         do i = 1, NOBSERVS
             call random_number(r)
@@ -440,7 +440,7 @@ contains
                                        minute  = int(r(3) * 60), &
                                        second  = int(r(4) * 60), &
                                        msecond = int(r(5) * 1000))
-            call dm_dummy_observ(observs1(i), timestamp=timestamp, value=sin(r(6) * PI))
+            call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(6) * PI))
         end do
 
         observs2 = observs1
@@ -511,9 +511,9 @@ contains
         stat = TEST_FAILED
         allocate (observs1(NOBSERVS))
 
-        call dm_dummy_node(node1)
-        call dm_dummy_sensor(sensor1)
-        call dm_dummy_target(target1)
+        call dm_test_dummy(node1)
+        call dm_test_dummy(sensor1)
+        call dm_test_dummy(target1)
 
         do i = 1, NOBSERVS
             call random_number(r)
@@ -525,7 +525,7 @@ contains
                                        minute  = int(r(2) * 60), &
                                        second  = int(r(3) * 60), &
                                        msecond = int(r(4) * 1000))
-            call dm_dummy_observ(observs1(i), timestamp=timestamp, value=sin(r(5) * PI))
+            call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(5) * PI))
         end do
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
@@ -643,7 +643,7 @@ contains
         if (dm_db_open(db, DB_LOG) /= E_NONE) return
 
         test_block: block
-            call dm_dummy_log(log1)
+            call dm_test_dummy(log1)
 
             if (.not. dm_log_valid(log1)) then
                 print *, 'Error: invalid dummy log'
@@ -665,7 +665,7 @@ contains
             allocate (logs(NLOGS), stat=rc)
             if (rc /= 0) exit test_block
 
-            call dm_dummy_log(logs)
+            call dm_test_dummy(logs)
 
             call dm_timer_start(t)
             do i = 1, NLOGS
@@ -846,7 +846,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Adding beats ...'
-            call dm_dummy_beat(beats)
+            call dm_test_dummy(beats)
             beats(1)%node_id = 'dummy-node-1'
             beats(2)%node_id = 'dummy-node-2'
             rc = dm_db_insert(db, beats)
@@ -879,7 +879,7 @@ contains
         if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
 
         test_block: block
-            call dm_dummy_observ(observ)
+            call dm_test_dummy(observ)
 
             print *, 'Adding observation ...'
             rc = dm_db_insert_observ(db, observ)
@@ -898,7 +898,7 @@ contains
     end function test15
 
     logical function test16() result(stat)
-        !! Tests JSON output of SQLite.
+        !! Tests JSON output of SQLite (logs).
         character(len=DB_JSON_LOG_LEN), allocatable :: json_logs(:)
 
         integer          :: rc
@@ -919,7 +919,7 @@ contains
             if (.not. allocated(json_logs)) exit test_block
             if (size(json_logs) /= 1) exit test_block
 
-            print '(" Length: ", i0)', len_trim(json_logs(1))
+            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_logs(1)), DB_JSON_LOG_LEN
             print *, 'JSON:'
             print '(72("."))'
             print '(a)', trim(json_logs(1))
@@ -937,7 +937,7 @@ contains
     end function test16
 
     logical function test17() result(stat)
-        !! Tests JSON output of SQLite.
+        !! Tests JSON output of SQLite (beats).
         character(len=DB_JSON_BEAT_LEN), allocatable :: json_beats(:)
 
         integer          :: rc
@@ -958,7 +958,7 @@ contains
             if (.not. allocated(json_beats)) exit test_block
             if (size(json_beats) /= 1) exit test_block
 
-            print '(" Length: ", i0)', len_trim(json_beats(1))
+            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_beats(1)), DB_JSON_BEAT_LEN
             print *, 'JSON:'
             print '(72("."))'
             print '(a)', trim(json_beats(1))
@@ -1023,6 +1023,7 @@ contains
             rc = E_NONE
         end block test_block
 
+        call dm_error_out(rc)
         print *, 'Closing database "' // DB_LOG // '" ...'
         if (dm_db_close(db) /= E_NONE) return
         if (dm_is_error(rc)) return

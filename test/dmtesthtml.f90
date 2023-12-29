@@ -50,7 +50,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_observ(observ)
+        call dm_test_dummy(observ)
 
         print *, 'Observation to HTML ...'
         print '(72("."))'

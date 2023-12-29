@@ -24,7 +24,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_observ(observ1)
+        call dm_test_dummy(observ1)
         rc = dm_nml_from(observ1, input)
 
         print *, 'deflate ...'

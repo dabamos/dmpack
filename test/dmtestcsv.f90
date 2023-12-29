@@ -29,8 +29,8 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(nodes)
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(nodes)
+        call dm_test_dummy(observs)
 
         print *, 'Node to CSV:'
         print '(72("."))'
@@ -68,8 +68,8 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(nodes)
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(nodes)
+        call dm_test_dummy(observs)
 
         print *, 'Nodes to CSV (write):'
         print '(72("."))'
@@ -108,8 +108,8 @@ contains
         open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
         if (rc /= 0) return
 
-        call dm_dummy_observ(observs1, nrequests=OBSERV_MAX_NREQUESTS)
-        call dm_dummy_request(request)
+        call dm_test_dummy(observs1, nrequests=OBSERV_MAX_NREQUESTS)
+        call dm_test_dummy(request)
 
         response = response_type('dummy', 'none', value=999.999_r8)
         observs1(1)%requests(OBSERV_MAX_NREQUESTS)%nresponses = REQUEST_MAX_NRESPONSES
@@ -151,10 +151,10 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_node(node1)
-        call dm_dummy_sensor(sensor1)
-        call dm_dummy_target(target1)
-        call dm_dummy_log(log1)
+        call dm_test_dummy(node1)
+        call dm_test_dummy(sensor1)
+        call dm_test_dummy(target1)
+        call dm_test_dummy(log1)
 
         print *, 'Opening scratch file ...'
         open (action='readwrite', iostat=rc, newunit=fu, status='scratch')

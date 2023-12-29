@@ -26,7 +26,7 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(observs)
 
         print *, 'Creating job list ...'
         rc = dm_job_list_init(job_list, MAX_SIZE)

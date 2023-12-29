@@ -60,7 +60,7 @@ contains
             return
         end if
 
-        call dm_dummy_observ(observ1)
+        call dm_test_dummy(observ1)
 
         rc = dm_mqueue_write(mqueue, observ1)
         call dm_error_out(rc, dm_system_error_message())
@@ -107,7 +107,7 @@ contains
         if (dm_is_error(rc)) return
         print *, 'READER: Created message queue "' // MQ_NAME // '"'
 
-        call dm_dummy_observ(observ1)
+        call dm_test_dummy(observ1)
 
         rc = dm_mqueue_write(mqueue1, observ1)
         call dm_error_out(rc, dm_system_error_message())

@@ -120,7 +120,7 @@ contains
 
         ! POST request.
         allocate (observs(NOBSERVS))
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(observs)
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations via HTTP POST ...'
         call dm_timer_start(timer)
@@ -181,7 +181,7 @@ contains
         allocate (observs(NOBSERVS))
         allocate (requests(NOBSERVS))
 
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(observs)
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
         call dm_timer_start(timer)
@@ -236,7 +236,7 @@ contains
         allocate (observs(NOBSERVS))
         allocate (requests(NOBSERVS))
 
-        call dm_dummy_observ(observs)
+        call dm_test_dummy(observs)
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
         call dm_timer_start(timer)
