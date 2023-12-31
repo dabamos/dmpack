@@ -18,10 +18,11 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_INT32   = 3 !! 4-byte signed integer.
     integer, parameter, public :: RESPONSE_TYPE_LOGICAL = 4 !! Boolean.
     integer, parameter, public :: RESPONSE_TYPE_BYTE    = 5 !! Byte.
-    integer, parameter, public :: RESPONSE_TYPE_LAST    = 5 !! Never use this.
+    integer, parameter, public :: RESPONSE_TYPE_STRING  = 6 !! Byte string.
+    integer, parameter, public :: RESPONSE_TYPE_LAST    = 6 !! Never use this.
 
     character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
-        character(len=8) :: 'real64', 'real32', 'int64', 'int32', 'logical', 'byte' ] !! Response value type names.
+        character(len=7) :: 'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' ] !! Response value type names.
 
     type, public :: response_type
         !! Response of a sensor.

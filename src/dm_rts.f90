@@ -17,8 +17,8 @@ module dm_rts
     !!
     !! ```fortran
     !! real(kind=r8) :: temperature, pressure, humidity, height
-    !! real(kind=r8) :: corr, ppm, ppm1, ppm2
-    !! real(kind=r8) :: hz_dist, slope_dist
+    !! real(kind=r8) :: ppm, ppm1, ppm2
+    !! real(kind=r8) :: corr, hz_dist, slope_dist
     !!
     !! ! [...]
     !!

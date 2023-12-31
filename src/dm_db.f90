@@ -1882,7 +1882,7 @@ contains
         ! Open database.
         if (sqlite3_open_v2(trim(path), db%ptr, flag) /= SQLITE_OK) return
 
-        ! Set foreign keys constraint.
+        ! Enable foreign keys constraint.
         if (foreign_keys_) then
             rc = dm_db_set_foreign_keys(db, .true.)
             if (dm_is_error(rc)) return
@@ -4295,6 +4295,9 @@ contains
         integer     :: stat
         type(c_ptr) :: stmt
 
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
         sql_block: block
             rc = E_DB_PREPARE
             if (sqlite3_prepare_v2(db%ptr, QUERY // dm_itoa(version), stmt) /= SQLITE_OK) exit sql_block
@@ -4433,11 +4436,19 @@ contains
     end function dm_db_update_target
 
     integer function dm_db_vacuum(db, into) result(rc)
-        !! Creates online backup of given database using the VACUUM command.
+        !! Vacuums database schema `main`, or, if `into` is passed, vacuums
+        !! it into new database at given path.
+        !!
+        !! Returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_EXIST` if `into` is passed and the file exists.
         character(len=*), parameter :: QUERY = "VACUUM 'main'"
 
         type(db_type),    intent(inout)        :: db   !! Database type.
-        character(len=*), intent(in), optional :: into !! File path to backup database.
+        character(len=*), intent(in), optional :: into !! File path to vacuum database.
 
         integer     :: stat
         type(c_ptr) :: stmt

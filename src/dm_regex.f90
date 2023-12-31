@@ -6,8 +6,6 @@ module dm_regex
     use :: pcre2
     use :: dm_error
     use :: dm_kind
-    use :: dm_request
-    use :: dm_string
     implicit none (type, external)
     private
 
@@ -24,6 +22,7 @@ module dm_regex
     public :: dm_regex_group
     public :: dm_regex_match
     public :: dm_regex_request
+    public :: dm_regex_response_string
 contains
     integer function dm_regex_create(regex, pattern, err_msg, err_offset) result(rc)
         !! Creates new regular expression type from given pattern. Returns
@@ -119,8 +118,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if `regex` is invalid.
-        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
-        !!    size.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !! * `E_REGEX` if an PCRE2 library error occured.
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
@@ -161,18 +159,21 @@ contains
         !!
         !! The function sets the following request error codes and returns:
         !!
+        !! * `E_INCOMPLETE` if the request contains no pattern or no responses.
         !! * `E_INVALID` if the regular expression is invalid.
+        !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_COMPILE` if the pattern failed to compile.
-        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
-        !!    size.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
-        !! * `E_REGEX` if an PCRE2 library error occured.
         !!
         !! The function sets the following response error codes:
         !!
         !! * `E_EMPTY` if response string of regular expression group is empty.
         !! * `E_INCOMPLETE` if response could not be extracted.
         !! * `E_REGEX_NO_GROUP` if no regular expression group matches.
+        use :: dm_request
+        use :: dm_response
+        use :: dm_string
         type(request_type), intent(inout) :: request !! Request type.
 
         character(len=:), allocatable :: buffer
@@ -181,12 +182,18 @@ contains
         type(c_ptr)                   :: match_data
         type(regex_type)              :: regex
 
-        pcre_block: block
-            ! Set all response errors to `E_INCOMPLETE`.
-            do i = 1, request%nresponses
-                request%responses(i)%error = E_INCOMPLETE
-            end do
+        ! Nothing to extract.
+        rc = E_INCOMPLETE
+        if (request%nresponses == 0) return
 
+        ! Set all response errors.
+        do i = 1, request%nresponses
+            request%responses(i)%error = rc
+        end do
+
+        if (len_trim(request%pattern) == 0) return
+
+        pcre_block: block
             ! Create regular expression.
             rc = dm_regex_create(regex, trim(request%pattern))
             if (dm_is_error(rc)) exit pcre_block
@@ -212,25 +219,38 @@ contains
             if (match < 0) exit pcre_block
 
             ! Copy sub-strings to responses.
+            rc = E_NONE
+
             do i = 1, request%nresponses
-                ! Get sub-string by name.
-                request%responses(i)%error = E_REGEX_NO_GROUP
-                stat = pcre2_substring_get_byname(match_data = match_data, &
-                                                  name       = trim(request%responses(i)%name), &
-                                                  buffer     = buffer, &
-                                                  buff_len   = n)
-                if (stat /= 0) cycle
+                response_block: block
+                    ! Get sub-string by name.
+                    stat = pcre2_substring_get_byname(match_data = match_data, &
+                                                      name       = trim(request%responses(i)%name), &
+                                                      buffer     = buffer, &
+                                                      buff_len   = n)
+                    rc = E_REGEX_NO_GROUP
+                    if (stat /= 0) exit response_block
 
-                ! Check string length.
-                request%responses(i)%error = E_EMPTY
-                if (n == 0) cycle
+                    ! Check string length.
+                    rc = E_EMPTY
+                    if (n == 0) exit response_block
 
-                ! Convert string to real.
-                call dm_string_to(buffer, request%responses(i)%value, rc)
+                    ! Convert string to real.
+                    rc = E_NONE
+                    select case (request%responses(i)%type)
+                        case (RESPONSE_TYPE_BYTE)
+                            ! dm_byte_to_real64()
+                            continue
+                        case (RESPONSE_TYPE_STRING)
+                            ! Do not extract strings.
+                            continue
+                        case default
+                            call dm_string_to(buffer, request%responses(i)%value, rc)
+                    end select
+                end block response_block
+
                 request%responses(i)%error = rc
             end do
-
-            rc = E_NONE
         end block pcre_block
 
         ! Set error code of request and clean up.
@@ -238,6 +258,89 @@ contains
         if (c_associated(match_data)) call pcre2_match_data_free(match_data)
         call dm_regex_destroy(regex)
     end function dm_regex_request
+
+    integer function dm_regex_response_string(request, name, string, pattern) result(rc)
+        !! Returns response string from raw response, extracted by group name
+        !! `name`. If `pattern` is passed, it is used as the regular expression
+        !! pattern instead of the request pattern.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the response string of the group is empty.
+        !! * `E_INCOMPLETE` if the request contains no pattern.
+        !! * `E_INVALID` if the regular expression is invalid.
+        !! * `E_REGEX` if a PCRE2 library error occured.
+        !! * `E_REGEX_COMPILE` if the pattern failed to compile.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
+        !! * `E_REGEX_NO_GROUP` if `name` does not match any group.
+        !! * `E_REGEX_NO_MATCH` if the pattern does not match.
+        use :: dm_request
+        type(request_type),            intent(inout)        :: request !! Request type.
+        character(len=*),              intent(in)           :: name    !! Response name or regular expression group.
+        character(len=:), allocatable, intent(out)          :: string  !! String extracted from group `name`.
+        character(len=*),              intent(in), optional :: pattern !! Pattern to use instead of the request pattern.
+
+        integer                  :: match, stat
+        integer(kind=PCRE2_SIZE) :: n
+        type(c_ptr)              :: match_data
+        type(regex_type)         :: regex
+
+        rc = E_INCOMPLETE
+        if (present(pattern)) then
+            if (len_trim(pattern) == 0) return
+        else
+            if (len_trim(request%pattern) == 0) return
+        end if
+
+        pcre_block: block
+            ! Create regular expression.
+            if (present(pattern)) then
+                rc = dm_regex_create(regex, pattern)
+            else
+                rc = dm_regex_create(regex, trim(request%pattern))
+            end if
+
+            if (dm_is_error(rc)) exit pcre_block
+
+            ! Match regular expression.
+            match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+            match = pcre2_match(code        = regex%ptr, &
+                                subject     = request%response, &
+                                length      = len_trim(request%response, kind=PCRE2_SIZE), &
+                                startoffset = int(0, kind=PCRE2_SIZE), &
+                                options     = 0, &
+                                match_data  = match_data, &
+                                mcontext    = c_null_ptr)
+
+            ! Validate result.
+            rc = E_REGEX_EXCEEDED
+            if (match == 0) exit pcre_block
+
+            rc = E_REGEX_NO_MATCH
+            if (match == PCRE2_ERROR_NOMATCH) exit pcre_block
+
+            rc = E_REGEX
+            if (match < 0) exit pcre_block
+
+            ! Get sub-string by name.
+            stat = pcre2_substring_get_byname(match_data = match_data, &
+                                              name       = trim(name), &
+                                              buffer     = string, &
+                                              buff_len   = n)
+            rc = E_REGEX_NO_GROUP
+            if (stat /= 0) exit pcre_block
+
+            ! Check string length.
+            rc = E_EMPTY
+            if (n == 0) exit pcre_block
+
+            rc = E_NONE
+        end block pcre_block
+
+        if (.not. allocated(string)) string = ''
+        if (c_associated(match_data)) call pcre2_match_data_free(match_data)
+        call dm_regex_destroy(regex)
+    end function dm_regex_response_string
 
     subroutine dm_regex_destroy(regex)
         !! Destroys compiled regular expression.

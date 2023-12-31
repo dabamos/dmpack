@@ -14,10 +14,12 @@ module dm_rpc
     !! type(rpc_response_type)       :: response
     !!
     !! rc = dm_rpc_init()
+    !! if (dm_is_error(rc)) stop
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
-    !! rc = dm_rpc_send(request, response, observ, url)
+    !! rc  = dm_rpc_send(request, response, observ, url)
     !!
+    !! call dm_error_out(rc)
     !! call dm_rpc_destroy()
     !! ```
     !!
@@ -29,17 +31,9 @@ module dm_rpc
     !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
-    use :: dm_beat
     use :: dm_error
     use :: dm_http
     use :: dm_kind
-    use :: dm_log
-    use :: dm_mime
-    use :: dm_nml
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_sensor
-    use :: dm_target
     use :: dm_util
     use :: dm_version
     use :: dm_z
@@ -326,6 +320,15 @@ contains
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
         !! `target_type`. The function returns `E_TYPE` on any other type.
+        use :: dm_beat
+        use :: dm_kind
+        use :: dm_log
+        use :: dm_mime
+        use :: dm_nml
+        use :: dm_node
+        use :: dm_observ
+        use :: dm_sensor
+        use :: dm_target
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
@@ -418,6 +421,15 @@ contains
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
+        use :: dm_beat
+        use :: dm_kind
+        use :: dm_log
+        use :: dm_mime
+        use :: dm_nml
+        use :: dm_node
+        use :: dm_observ
+        use :: dm_sensor
+        use :: dm_target
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         class(*),                             intent(inout)        :: types(:)     !! Derived type array.

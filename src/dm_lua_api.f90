@@ -187,7 +187,7 @@ contains
     ! PUBLIC LUA INTERFACE PROCEDURES.
     ! **************************************************************************
     function dm_lua_api_deg2gon(ptr) bind(c) result(n)
-        !! Lua function `deg2gon()` that converts number from [deg] to [gon].
+        !! Lua function `deg2gon()` that converts angle from [deg] to [gon].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -200,7 +200,7 @@ contains
     end function dm_lua_api_deg2gon
 
     function dm_lua_api_deg2rad(ptr) bind(c) result(n)
-        !! Lua function `deg2rad()` that converts number from [deg] to [rad].
+        !! Lua function `deg2rad()` that converts angle from [deg] to [rad].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -213,7 +213,7 @@ contains
     end function dm_lua_api_deg2rad
 
     function dm_lua_api_gon2deg(ptr) bind(c) result(n)
-        !! Lua function `gon2deg()` that converts number from [gon] to [deg].
+        !! Lua function `gon2deg()` that converts angle from [gon] to [deg].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -226,7 +226,7 @@ contains
     end function dm_lua_api_gon2deg
 
     function dm_lua_api_gon2rad(ptr) bind(c) result(n)
-        !! Lua function `gon2rad()` that converts number from [gon] to [rad].
+        !! Lua function `gon2rad()` that converts angle from [gon] to [rad].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -239,7 +239,7 @@ contains
     end function dm_lua_api_gon2rad
 
     function dm_lua_api_rad2deg(ptr) bind(c) result(n)
-        !! Lua function `rad2deg()` that converts number from [rad] to [deg].
+        !! Lua function `rad2deg()` that converts angle from [rad] to [deg].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -252,7 +252,7 @@ contains
     end function dm_lua_api_rad2deg
 
     function dm_lua_api_rad2gon(ptr) bind(c) result(n)
-        !! Lua function `rad2gon()` that converts number from [rad] to [gon].
+        !! Lua function `rad2gon()` that converts angle from [rad] to [gon].
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 

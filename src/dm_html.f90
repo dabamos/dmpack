@@ -238,7 +238,7 @@ contains
         rc = dm_time_to_beats(now, beats_now)
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'Node ID' // H_TH_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
                H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Address' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
@@ -291,7 +291,7 @@ contains
 
         html = H_TABLE // H_THEAD // H_TR // &
                H_TH // '#'           // H_TH_END // &
-               H_TH // 'Node ID'     // H_TH_END // &
+               H_TH // 'Node'        // H_TH_END // &
                H_TH // 'Address'     // H_TH_END // &
                H_TH // 'Last Signal' // H_TH_END // &
                H_TH // 'Error'       // H_TH_END // &
@@ -860,13 +860,13 @@ contains
                H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
                H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node ID' // H_TH_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
                H_TD // nid // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Sensor ID' // H_TH_END // &
+               H_TR // H_TH // 'Sensor' // H_TH_END // &
                H_TD // sid // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Target ID' // H_TH_END // &
+               H_TR // H_TH // 'Target' // H_TH_END // &
                H_TD // tid // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Observation ID' // H_TH_END // &
+               H_TR // H_TH // 'Observation' // H_TH_END // &
                H_TD // oid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
                H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
@@ -903,7 +903,7 @@ contains
                H_TH // '#'         // H_TH_END // &
                H_TH // 'Timestamp' // H_TH_END
 
-        if (node_) html = html // H_TH // 'Node ID' // H_TH_END
+        if (node_) html = html // H_TH // 'Node' // H_TH_END
 
         html = html // H_TH // 'Source' // H_TH_END // &
                H_TH // 'Level'   // H_TH_END // &
@@ -1104,11 +1104,11 @@ contains
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node ID' // H_TH_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
                H_TD // nid // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Sensor ID' // H_TH_END // &
+               H_TR // H_TH // 'Sensor' // H_TH_END // &
                H_TD // sid // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Target ID' // H_TH_END // &
+               H_TR // H_TH // 'Target' // H_TH_END // &
                H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
@@ -1203,12 +1203,12 @@ contains
                H_TH // '#'         // H_TH_END // &
                H_TH // 'Timestamp' // H_TH_END
 
-        if (id_)        html = html // H_TH // 'ID' // H_TH_END
-        if (node_id_)   html = html // H_TH // 'Node ID' // H_TH_END
-        if (sensor_id_) html = html // H_TH // 'Sensor ID' // H_TH_END
-        if (target_id_) html = html // H_TH // 'Target ID' // H_TH_END
-        if (name_)      html = html // H_TH // 'Name' // H_TH_END
-        if (error_)     html = html // H_TH // 'Error' // H_TH_END
+        if (id_)        html = html // H_TH // 'ID'     // H_TH_END
+        if (node_id_)   html = html // H_TH // 'Node'   // H_TH_END
+        if (sensor_id_) html = html // H_TH // 'Sensor' // H_TH_END
+        if (target_id_) html = html // H_TH // 'Target' // H_TH_END
+        if (name_)      html = html // H_TH // 'Name'   // H_TH_END
+        if (error_)     html = html // H_TH // 'Error'  // H_TH_END
 
         html = html // H_TH // '#Requests' // H_TH_END // &
                        H_TR_END // H_THEAD_END // H_TBODY
@@ -1389,7 +1389,7 @@ contains
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node ID' // H_TH_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Type' // H_TH_END // &
                H_TD // trim(SENSOR_TYPE_NAMES(type)) // H_TD_END // H_TR_END // &
@@ -1425,16 +1425,16 @@ contains
         if (present(prefix)) is_anchor = .true.
 
         html = H_TABLE // H_THEAD // H_TR // &
-               H_TH // '#'       // H_TH_END // &
-               H_TH // 'ID'      // H_TH_END // &
-               H_TH // 'Node ID' // H_TH_END // &
-               H_TH // 'Name'    // H_TH_END // &
-               H_TH // 'Type'    // H_TH_END // &
-               H_TH // 'S/N'     // H_TH_END // &
-               H_TH // 'Meta'    // H_TH_END // &
-               H_TH // 'X'       // H_TH_END // &
-               H_TH // 'Y'       // H_TH_END // &
-               H_TH // 'Z'       // H_TH_END // &
+               H_TH // '#'    // H_TH_END // &
+               H_TH // 'ID'   // H_TH_END // &
+               H_TH // 'Node' // H_TH_END // &
+               H_TH // 'Name' // H_TH_END // &
+               H_TH // 'Type' // H_TH_END // &
+               H_TH // 'S/N'  // H_TH_END // &
+               H_TH // 'Meta' // H_TH_END // &
+               H_TH // 'X'    // H_TH_END // &
+               H_TH // 'Y'    // H_TH_END // &
+               H_TH // 'Z'    // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)

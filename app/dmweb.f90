@@ -1390,16 +1390,12 @@ contains
 
             call dm_cgi_out(dm_html_heading(2, 'System Status'))
             call dm_cgi_out(H_TABLE // H_TBODY // &
+                            H_TR // H_TH // 'Hostname' // H_TH_END // &
+                                    H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'Server Time' // H_TH_END // &
                                     H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'Server Uptime' // H_TH_END // &
                                     H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Hostname' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Remote Address' // H_TH_END // &
-                                    H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Remote User' // H_TH_END // &
-                                    H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'OS Name' // H_TH_END // &
                                     H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'OS Release' // H_TH_END // &
@@ -1408,14 +1404,18 @@ contains
                                     H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'OS Platform' // H_TH_END // &
                                     H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Compiler' // H_TH_END // &
-                                    H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Compiler Options' // H_TH_END // &
-                                    H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Remote Address' // H_TH_END // &
+                                    H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Remote User' // H_TH_END // &
+                                    H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'Executable Path' // H_TH_END // &
                                     H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'Executable Version' // H_TH_END // &
                                     H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Compiler' // H_TH_END // &
+                                    H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
+                            H_TR // H_TH // 'Compiler Options' // H_TH_END // &
+                                    H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
                             H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
                                     H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
                             H_TBODY_END // H_TABLE_END)

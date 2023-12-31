@@ -18,7 +18,8 @@ module dm_request
     integer, parameter, public :: REQUEST_PATTERN_LEN    = 256 !! Regular expression string length.
     integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16  !! Response array size.
 
-    integer, parameter, public :: REQUEST_MODE_NONE      = 0   !! Default mode.
+    integer, parameter, public :: REQUEST_MODE_NONE        = 0   !! Default mode.
+    integer, parameter, public :: REQUEST_MODE_GEOCOM_FILE = 512 !! GeoCOM file download mode.
 
     integer, parameter, public :: REQUEST_STATE_NONE     = 0   !! Default state.
     integer, parameter, public :: REQUEST_STATE_DISABLED = 1   !! Disabled state.
