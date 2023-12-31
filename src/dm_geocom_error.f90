@@ -37,7 +37,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_ABORT_APPL                 = 15    !! Execution of application has been aborted.
     integer, parameter, public :: GRC_LOW_POWER                  = 16    !! Operation aborted (insufficient power supply level).
     integer, parameter, public :: GRC_IVVERSION                  = 17    !! Invalid version of file.
-    integer, parameter, public :: GRC_BAT_EMPTY                  = 18    !! Battery empty.
+    integer, parameter, public :: GRC_BAT_EMPTY                  = 18    !! Battery empty, about 1 minute remaining.
     integer, parameter, public :: GRC_NO_EVENT                   = 20    !! No event pending.
     integer, parameter, public :: GRC_OUT_OF_TEMP                = 21    !! Out of temperature range.
     integer, parameter, public :: GRC_INSTRUMENT_TILT            = 22    !! Instrument tilting out of range.
@@ -334,7 +334,7 @@ contains
             case (GRC_IVVERSION)
                 str = 'invalid version of file'
             case (GRC_BAT_EMPTY)
-                str = 'battery empty'
+                str = 'battery empty, about 1 min remaining'
             case (GRC_NO_EVENT)
                 str = 'no event pending'
             case (GRC_OUT_OF_TEMP)
