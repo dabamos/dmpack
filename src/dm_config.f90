@@ -49,14 +49,21 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    integer function dm_config_open(config, path, name) result(rc)
+    integer function dm_config_open(config, path, name, geocom) result(rc)
         !! Opens configuration file and optionally loads the table of the given
         !! name if the argument has been passed.
-        use :: dm_file,    only: dm_file_exists
-        use :: dm_lua_api, only: dm_lua_api_register
+        use :: dm_file,       only: dm_file_exists
+        use :: dm_lua_api,    only: dm_lua_api_register
+        use :: dm_lua_geocom, only: dm_lua_geocom_register
         type(config_type), intent(inout)        :: config !! Config type.
         character(len=*),  intent(in)           :: path   !! Path to config file.
         character(len=*),  intent(in), optional :: name   !! Name of table. Passed name implies table loading.
+        logical,           intent(in), optional :: geocom !! Register GeoCOM API for Lua.
+
+        logical :: geocom_
+
+        geocom_ = .false.
+        if (present(geocom)) geocom_ = geocom
 
         open_block: block
             rc = E_INVALID
@@ -69,12 +76,18 @@ contains
             rc = dm_lua_init(config%lua)
             if (dm_is_error(rc)) exit open_block
 
-            ! Register Lua API of DMPACK.
+            ! Register DMPACK API for Lua.
             rc = dm_lua_api_register(config%lua, &
-                                     add_errors     = .true., &
-                                     add_levels     = .true., &
-                                     add_procedures = .true.)
+                                     add_errors     = .true., & ! Add error codes.
+                                     add_levels     = .true., & ! Add log levels.
+                                     add_procedures = .true.)   ! Add Lua procedures.
             if (dm_is_error(rc)) exit open_block
+
+            ! Register GeoCOM API for Lua.
+            if (geocom_) then
+                rc = dm_lua_geocom_register(config%lua)
+                if (dm_is_error(rc)) exit open_block
+            end if
 
             ! Load and evaluate Lua script.
             rc = dm_lua_open(config%lua, path, eval=.true.)

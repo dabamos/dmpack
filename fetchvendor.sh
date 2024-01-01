@@ -15,11 +15,12 @@
 #
 set -e
 
+VENDOR=${1-"./vendor"}
+CURL=curl
 UNZIP=unzip
-VENDOR=./vendor
-
 LIBS="curl lua54 pcre2 sqlite3 unix zlib"
 
+echo "Creating ${VENDOR} ..."
 mkdir -p ${VENDOR}
 
 for LIB in ${LIBS}; do
@@ -34,7 +35,7 @@ for LIB in ${LIBS}; do
     LIBFILE="${VENDOR}/${LIBZIP}"
     LIBDIR="${VENDOR}/${LIBNAME}"
     echo "Fetching ${LIBZIP} ..."
-    curl -L -s -o ${LIBFILE} ${LIBURL}
+    ${CURL} -L -s -o ${LIBFILE} ${LIBURL}
     echo "Unpacking ${LIBZIP} ..."
     ${UNZIP} -q -d ${VENDOR} ${LIBFILE}
     echo "Deleting ${LIBZIP} ..."

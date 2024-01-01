@@ -196,7 +196,8 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 alternatively, if raster image formats are not desired (SVG output only).
 
-Clone the DMPACK repository, or run `fetchvendor.sh`, and execute the Makefile:
+Clone the DMPACK repository recursively, or download the master branch and run
+`fetchvendor.sh`, then execute the Makefile:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack

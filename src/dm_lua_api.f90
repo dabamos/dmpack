@@ -31,10 +31,11 @@ contains
         !! of error codes, log levels, and procedures may be disabled through
         !! the dummy arguments.
         !!
-        !! All DMPACK error codes are exported if `add_errors` is `.true.`.
+        !! All DMPACK error codes are exported if `add_errors` is not
+        !! `.false.`.
         !!
         !! The following log level parameters are injected if `add_levels` is
-        !! `.true.`:
+        !! not `.false.`:
         !!
         !! * `LOG_NONE`
         !! * `LOG_DEBUG`
@@ -44,7 +45,7 @@ contains
         !! * `LOG_CRITICAL`
         !!
         !! The following Lua procedures are registered if `add_procedures` is
-        !! `.true.`:
+        !! not `.false.`:
         !!
         !! * `deg2gon(deg)`
         !! * `deg2rad(deg)`

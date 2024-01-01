@@ -23,8 +23,11 @@ module dmpack
     !! Link the program against `libdmpack.a`:
     !!
     !! ```
-    !! $ gfortran -o app app.f90 libdmpack.a
+    !! $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
     !! ```
+    !!
+    !! On Linux, change `/usr/local` to `/usr` (or the chosen installation
+    !! prefix).
     use :: dm_ansi
     use :: dm_api
     use :: dm_arg

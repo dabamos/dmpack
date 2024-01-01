@@ -34,8 +34,8 @@ end program main
 Link the program against `libdmpack.a`:
 
 ```
-$ gfortran -o app app.f90 libdmpack.a
+$ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
 ```
 
-You may have to pass the path of the include search directory containing the
-DMPACK module files (argument `-I`).
+The path of the include search directory containing the DMPACK module files has
+to be passed through argument `-I`.

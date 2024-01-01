@@ -85,7 +85,7 @@ interface for publishing and querying sensor data and meta data. Additional
 client applications enable analysis and visualisation of the measurement data.
 (GPLv2)
 link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
-monitoring and alerting solution built with MariaDB, Node.js and React. (MIT)
+monitoring and alerting solution built with Node.js, MariaDB, and React. (MIT)
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
 SensorThings (FROST) is the reference implementation of the OGC SensorThings API
 in Java. The project provides an HTTP- and MQTT-based message bus for data

@@ -18,6 +18,10 @@
 #
 #   $ make options
 #
+# Show build target descriptions:
+#
+#   $ make help
+#
 # ******************************************************************************
 #
 # DMPACK build targets:
@@ -141,7 +145,7 @@ DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
 # Common build options.
-FFLAGS  = $(RELEASE)
+FFLAGS  = $(RELEASE) -ffree-line-length-0
 CFLAGS  = $(RELEASE)
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
@@ -213,17 +217,17 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 \
       src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 \
       src/dm_request.f90 src/dm_observ.f90 src/dm_log.f90 src/dm_job.f90 \
-      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 src/dm_lua.f90 \
-      src/dm_lua_api.f90 src/dm_config.f90 src/dm_sync.f90 src/dm_beat.f90 \
-      src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 src/dm_nml.f90 \
-      src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
+      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90  src/dm_sync.f90 \
+      src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 \
+      src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
       src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 \
       src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 \
       src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 \
       src/dm_html.f90 src/dm_atom.f90 src/dm_cgi_router.f90 src/dm_la.f90 \
       src/dm_transform.f90 src/dm_geocom_error.f90 src/dm_geocom_api.f90 \
-      src/dm_geocom.f90 src/dm_lua_geocom.f90 src/dm_lua_lib.f90 \
-      src/dm_rts.f90 src/dm_mqueue_util.f90 src/dmpack.f90
+      src/dm_geocom.f90 src/dm_lua.f90 src/dm_lua_api.f90 src/dm_lua_geocom.f90 \
+      src/dm_lua_lib.f90 src/dm_config.f90 src/dm_rts.f90 src/dm_mqueue_util.f90 \
+      src/dmpack.f90
 
 # Library object files.
 OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
@@ -232,13 +236,13 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
       dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o dm_signal.o dm_system.o \
       dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o \
       dm_sensor.o dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o \
-      dm_job.o dm_plot.o dm_report.o dm_regex.o dm_lua.o dm_lua_api.o \
-      dm_config.o dm_sync.o dm_beat.o dm_mqueue.o dm_logger.o dm_test.o \
-      dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o dm_http.o \
-      dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o \
+      dm_job.o dm_plot.o dm_report.o dm_regex.o dm_sync.o dm_beat.o dm_mqueue.o \
+      dm_logger.o dm_test.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
+      dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o \
       dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o dm_cgi_router.o dm_la.o \
-      dm_transform.o dm_geocom_error.o dm_geocom_api.o dm_geocom.o \
-      dm_lua_geocom.o dm_lua_lib.o dm_rts.o dm_mqueue_util.o dmpack.o
+      dm_transform.o dm_geocom_error.o dm_geocom_api.o dm_geocom.o dm_lua.o \
+      dm_lua_api.o dm_lua_geocom.o dm_lua_lib.o dm_config.o dm_rts.o dm_mqueue_util.o \
+      dmpack.o
 
 # ******************************************************************************
 #
@@ -247,9 +251,9 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
 # ******************************************************************************
 
 # Named build targets.
-.PHONY: all app clean deinstall doc options freebsd freebsd_debug freebsd_release \
-        guide html install install_freebsd install_linux linux man pdf purge \
-        setup test
+.PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
+        help html install install_freebsd install_linux linux linux_debug \
+        linux_release man options pdf purge setup test
 
 # Library target.
 all: $(TARGET) $(SHARED) test app
@@ -318,27 +322,30 @@ linux:
 # ******************************************************************************
 
 $(LIBFCURL): setup
-	cd vendor/fortran-curl/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
+	cd vendor/fortran-curl/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
 	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
 
 $(LIBFLUA54): setup
-	cd vendor/fortran-lua54/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
+	cd vendor/fortran-lua54/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
 	cp ./vendor/fortran-lua54/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
-	cd vendor/fortran-pcre2/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
+	cd vendor/fortran-pcre2/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
 	cp ./vendor/fortran-pcre2/*.mod $(INCDIR)/
 
 $(LIBFSQLITE3): setup
-	cd vendor/fortran-sqlite3/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
+	cd vendor/fortran-sqlite3/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
 	cp ./vendor/fortran-sqlite3/*.mod $(INCDIR)/
 
 $(LIBFUNIX): setup
-	cd vendor/fortran-unix/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
+	@echo "---"
+	@echo "--- Building for $(OS) ..."
+	@echo "---"
+	cd vendor/fortran-unix/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	cp ./vendor/fortran-unix/*.mod $(INCDIR)/
 
 $(LIBFZ): setup
-	cd vendor/fortran-zlib/ && make RELEASE="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
+	cd vendor/fortran-zlib/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
 	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
 
 # ******************************************************************************
@@ -390,9 +397,6 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_plot.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sync.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue.f90
@@ -424,8 +428,11 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_error.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
@@ -658,6 +665,7 @@ guide:
 # ******************************************************************************
 
 install:
+	@echo "--- Installing DMPACK to $(PREFIX) ..."
 	install -d $(IBINDIR)
 	install -d $(IETCDIR)
 	install -d $(IINCDIR)
@@ -730,6 +738,7 @@ install_linux:
 	$(MAKE) install PREFIX=/usr
 
 deinstall:
+	@echo "--- Deleting DMPACK from $(PREFIX) ..."
 	$(RM) -r $(IINCDIR)
 	$(RM) -r $(ISHRDIR)
 	$(RM) -f $(IETCDIR)/*.conf.sample
@@ -793,20 +802,20 @@ deinstall:
 # ******************************************************************************
 
 clean:
-	@echo "--- deleting libraries ..."
+	@echo "--- Deleting libraries ..."
 	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
 	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
 	if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
-	@echo "--- deleting build files ..."
+	@echo "--- Deleting build files ..."
 	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
 	if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
 	if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
 	if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
-	@echo "--- deleting test programs ..."
+	@echo "--- Deleting tests ..."
 	if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
-	@echo "--- deleting applications ..."
+	@echo "--- Deleting programs ..."
 	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
-	@echo "--- cleaning guide ..."
+	@echo "--- Cleaning guide ..."
 	cd $(GUIDDIR) && $(MAKE) clean
 
 # ******************************************************************************
@@ -816,23 +825,23 @@ clean:
 # ******************************************************************************
 
 purge: clean
-	@echo "--- cleaning fortran-curl ..."
+	@echo "--- Cleaning fortran-curl ..."
 	cd vendor/fortran-curl/ && make clean TARGET="../../$(LIBFCURL)"
-	@echo "--- cleaning fortran-lua54 ..."
+	@echo "--- Cleaning fortran-lua54 ..."
 	cd vendor/fortran-lua54/ && make clean TARGET="../../$(LIBFLUA54)"
-	@echo "--- cleaning fortran-pcre2 ..."
+	@echo "--- Cleaning fortran-pcre2 ..."
 	cd vendor/fortran-pcre2/ && make clean TARGET="../../$(LIBFPCRE2)"
-	@echo "--- cleaning fortran-sqlite3 ..."
+	@echo "--- Cleaning fortran-sqlite3 ..."
 	cd vendor/fortran-sqlite3/ && make clean TARGET="../../$(LIBFSQLITE3)"
-	@echo "--- cleaning fortran-unix ..."
+	@echo "--- Cleaning fortran-unix ..."
 	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
-	@echo "--- cleaning fortran-zlib ..."
+	@echo "--- Cleaning fortran-zlib ..."
 	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZ)"
-	@echo "--- deleting module files ..."
+	@echo "--- Deleting module files ..."
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
-	@echo "--- deleting source code documentation ..."
+	@echo "--- Deleting source code documentation ..."
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
-	@echo "--- deleting stale test files ..."
+	@echo "--- Deleting stale test files ..."
 	if [ -e testobserv.hdf5 ]; then $(RM) testobserv.hdf5; fi
 	if [ -e testbeat.sqlite ]; then $(RM) testbeat.sqlite; fi
 	if [ -e testlog.sqlite ]; then $(RM) testlog.sqlite; fi
@@ -885,3 +894,37 @@ options:
 	@echo "LIBRT      = $(LIBRT)"
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBZ       = $(LIBZ)"
+
+# ******************************************************************************
+#
+# Print build targets.
+#
+# ******************************************************************************
+
+help:
+	@echo "The following build targets are available:"
+	@echo
+	@echo "    all             - Build DMPACK libraries, tests, and programs."
+	@echo "    app             - Build DMPACK programs."
+	@echo "    clean           - Clean DMPACK build environment."
+	@echo "    deinstall       - Deinstall DMPACK from PREFIX."
+	@echo "    doc             - Create source code documentation (requires FORD)."
+	@echo "    freebsd         - Build FreeBSD release version."
+	@echo "    freebsd_debug   - Build FreeBSD debug version."
+	@echo "    freebsd_release - Build FreeBSD release version."
+	@echo "    guide           - Convert User's Guide to HTML (requires AsciiDoctor)."
+	@echo "    help            - Show this help."
+	@echo "    html            - Convert man pages to HTML (requires mandoc)."
+	@echo "    install         - Install DMPACK to PREFIX."
+	@echo "    install_freebsd - Install DMPACK to /usr/local/."
+	@echo "    install_linux   - Install DMPACK to /usr/."
+	@echo "    linux           - Build Linux release version."
+	@echo "    linux_debug     - Build Linux debug version."
+	@echo "    linux_release   - Build Linux release version."
+	@echo "    man             - Convert man pages (requires AsciiDoctor)."
+	@echo "    options         - Show build flags and options."
+	@echo "    pdf             - Convert man pages to PDF (requires ps2pdf)."
+	@echo "    purge           - Purge DMPACK build environment (including dependencies)."
+	@echo "    setup           - Create directories."
+	@echo "    test            - Build test programs."
+	@echo

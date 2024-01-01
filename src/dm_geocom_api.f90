@@ -17,8 +17,7 @@ module dm_geocom_api
     !! * `SUP` – Supervisor
     !! * `TMC` – Theodolite Measurement and Calculation
     !!
-    !! All GeoCOM parameters and derived types start with prefix `GEOCOM_` or
-    !! `geocom_`.
+    !! All GeoCOM parameters start with prefix `GEOCOM_`.
     use :: dm_geocom_error
     use :: dm_kind
     use :: dm_request
@@ -27,47 +26,12 @@ module dm_geocom_api
     private
 
     ! **************************************************************************
-    ! GEOCOM API CONSTANTS.
+    ! PRIVATE GEOCOM API CONSTANTS.
     ! **************************************************************************
     character(len=*), parameter :: GEOCOM_DELIMITER   = '\r\n'        !! Default GeoCOM delimiter.
     character(len=*), parameter :: GEOCOM_GRC_PATTERN = '(?<grc>\d+)' !! Default GeoCOM response pattern.
 
-    type(response_type), parameter :: GEOCOM_GRC_RESPONSES(1) = [ &
-        response_type('grc', type=RESPONSE_TYPE_INT32) ] !! Default GeoCOM responses (GRC only).
-
-    ! **************************************************************************
-    ! COMMON.
-    ! **************************************************************************
-    ! ON_OFF_TYPE.
-    integer, parameter, public :: GEOCOM_OFF = 0 !! Mode off.
-    integer, parameter, public :: GEOCOM_ON  = 1 !! Mode on.
-
-    integer, parameter, public :: GEOCOM_MOT_AXES    = 2 !! Number of motor axes.
-    integer, parameter, public :: GEOCOM_MOT_HZ_AXLE = 1 !! Hz axis.
-    integer, parameter, public :: GEOCOM_MOT_V_AXLE  = 2 !! V axis.
-
-    ! **************************************************************************
-    ! AUS - ALT USER.
-    ! **************************************************************************
-    type, public :: geocom_date_type
-        !! DATE_TYPE: General date.
-        integer :: year  = 0 !! Year.
-        integer :: month = 0 !! Month in year, from 1 to 12.
-        integer :: day   = 0 !! Day in month, from 1 to 31.
-    end type geocom_date_type
-
-    type, public :: geocom_time_type
-        !! TIME_TYPE: General time.
-        integer :: hour   = 0 !! 24 hours per day, from 0 to 23.
-        integer :: minute = 0 !! Minutes, from 0 to 59.
-        integer :: second = 0 !! Seconds, from 0 to 59.
-    end type geocom_time_type
-
-    type, public :: geocom_date_time_type
-        !! DATIME: General date and time.
-        type(geocom_date_type) :: date !! Date.
-        type(geocom_time_type) :: time !! Time.
-    end type geocom_date_time_type
+    type(response_type), parameter :: GEOCOM_GRC_RESPONSES(1) = [ response_type('grc', type=RESPONSE_TYPE_INT32) ] !! Default GeoCOM responses (GRC only).
 
     ! **************************************************************************
     ! AUT - AUTOMATION.
@@ -88,43 +52,6 @@ module dm_geocom_api
 
     integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1  !! Direction close-wise.
     integer, parameter, public :: GEOCOM_AUT_ANTICLOCKWISE = -1 !! Direction counter clock-wise.
-
-    ! AUT_DETENT: Automatic detent mode.
-    type, public :: geocom_aut_detent_type
-        !! Detent data.
-        logical       :: enabled  = .false. !! Detent is active.
-        real(kind=r8) :: positive = 0.0_r8  !! Detent in positive direction.
-        real(kind=r8) :: negative = 0.0_r8  !! Detent in negative direction.
-    end type geocom_aut_detent_type
-
-    ! AUT_POSTOL: Positioning tolerance.
-    type, public :: geocom_aut_pos_tol_type
-        !! Positioning tolerance for Hz and V [rad].
-        real(kind=r8) :: axes(GEOCOM_MOT_AXES) = 0.0_r8 !! Hz and V tolerance [rad].
-    end type geocom_aut_pos_tol_type
-
-    ! AUT_SEARCH_AREA: Search area.
-    type, public :: geocom_aut_search_area_type
-        !! Search spiral.
-        logical       :: enabled   = .false. !! User defined search area is active.
-        real(kind=r8) :: center_hz = 0.0_r8  !! Hz angle of search area - center [rad].
-        real(kind=r8) :: center_v  = 0.0_r8  !! V angle of search area - center [rad].
-        real(kind=r8) :: range_hz  = 0.0_r8  !! Width of search area [rad].
-        real(kind=r8) :: range_v   = 0.0_r8  !! Max. height of search area [rad].
-    end type geocom_aut_search_area_type
-
-    ! AUT_SEARCH_SPIRAL: Search spiral.
-    type, public :: geocom_aut_search_spiral_type
-        !! Search spiral.
-        real(kind=r8) :: range_hz = 0.0_r8 !! Width of search area [rad].
-        real(kind=r8) :: range_v  = 0.0_r8 !! Max. height of search area [rad].
-    end type geocom_aut_search_spiral_type
-
-    ! AUT_TIMEOUT: Maximum position time.
-    type, public :: geocom_aut_timeout_type
-        !! Maximum positioning time for Hz and V [sec].
-        real(kind=r8) :: axes(GEOCOM_MOT_AXES) = 0.0_r8 !! Max. Hz and V positioning time [sec].
-    end type geocom_aut_timeout_type
 
     ! **************************************************************************
     ! BAP - BASIC APPLICATIONS.
@@ -183,13 +110,6 @@ module dm_geocom_api
 
     ! BAP_PRISMDEF: Prism definition.
     integer, parameter, public :: GEOCOM_BAP_PRISMNAME_LEN = 16 !! Prism name string length.
-
-    type, public :: geocom_bap_prism_type
-        !! Prism type.
-        character(len=GEOCOM_BAP_PRISMNAME_LEN) :: name      = ' '                   !! Prism name.
-        integer                                 :: refl_type = GEOCOM_BAP_REFL_UNDEF !! Reflector type.
-        real(kind=r8)                           :: add_const = 0.0_r8                !! Prism correction.
-    end type geocom_bap_prism_type
 
     ! **************************************************************************
     ! BMM - BASIC MAN-MACHINE INTERFACE.
@@ -277,13 +197,6 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_TPS_REFLESS_R400  = 3 !! Pinpoint R400.
     integer, parameter, public :: GEOCOM_TPS_REFLESS_R1000 = 4 !! Pinpoint R1000.
 
-    ! TPS_DEVICE: TPS device configuration type.
-    type, public :: geocom_tps_device_type
-        !! TPS device configuration type.
-        integer :: class = 0 !! Device precision class (`TPS_DEVICE_CLASS`).
-        integer :: type  = 0 !! Device configuration type (`TPS_DEVICE_TYPE`).
-    end type geocom_tps_device_type
-
     ! **************************************************************************
     ! EDM - ELECTRONIC DISTANCE MEASUREMENT.
     ! **************************************************************************
@@ -292,6 +205,23 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_LOW  = 1
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_MID  = 2
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_HIGH = 3
+
+    ! EDM_MODE: EDM measurement mode.
+    integer, parameter, public :: GEOCOM_EDM_MODE_NOT_USED   = 0  !! Init value.
+    integer, parameter, public :: GEOCOM_EDM_SINGLE_TAPE     = 1  !! IR Standard Reflector Tape.
+    integer, parameter, public :: GEOCOM_EDM_SINGLE_STANDARD = 2  !! IR Standard.
+    integer, parameter, public :: GEOCOM_EDM_SINGLE_FAST     = 3  !! IR Fast.
+    integer, parameter, public :: GEOCOM_EDM_SINGLE_LRANGE   = 4  !! LO Standard.
+    integer, parameter, public :: GEOCOM_EDM_SINGLE_SRANGE   = 5  !! RL Standard.
+    integer, parameter, public :: GEOCOM_EDM_CONT_STANDARD   = 6  !! Standard repeated measurement.
+    integer, parameter, public :: GEOCOM_EDM_CONT_DYNAMIC    = 7  !! IR Tacking.
+    integer, parameter, public :: GEOCOM_EDM_CONT_REFLESS    = 8  !! RL Tracking.
+    integer, parameter, public :: GEOCOM_EDM_CONT_FAST       = 9  !! Fast repeated measurement.
+    integer, parameter, public :: GEOCOM_EDM_AVERAGE_IR      = 10 !! IR Average.
+    integer, parameter, public :: GEOCOM_EDM_AVERAGE_SR      = 11 !! RL Average.
+    integer, parameter, public :: GEOCOM_EDM_AVERAGE_LR      = 12 !! LO Average.
+    integer, parameter, public :: GEOCOM_EDM_PRECISE_IR      = 13 !! IR Precise (TM30, TS30).
+    integer, parameter, public :: GEOCOM_EDM_PRECISE_TAPE    = 14 !! IR Precise Reflector Tape (TM30, TS30). 
 
     ! **************************************************************************
     ! FTR - FILE TRANSFER.
@@ -305,39 +235,6 @@ module dm_geocom_api
     ! FTR_FILETYPE: File type.
     integer, parameter, public :: GEOCOM_FTR_FILE_IMAGES = 170
 
-    ! FTR_BLOCK: Block type.
-    type, public :: geocom_ftr_block_type
-        !! Block type.
-        character :: bytes(GEOCOM_FTR_MAX_BLOCKSIZE) = ' '
-        integer   :: length                          = 0
-    end type geocom_ftr_block_type
-
-    ! FTR_MODDATE: Modification date.
-    type, public :: geocom_ftr_mod_date_type
-        !! Modification date type.
-        integer :: year  = 0 !! UTC date, year.
-        integer :: month = 0 !! UTC date, month.
-        integer :: day   = 0 !! UTC date, day.
-    end type geocom_ftr_mod_date_type
-
-    ! FTR_MODTIME: Modification time.
-    type, public :: geocom_ftr_mod_time_type
-        !! Modification time type.
-        integer :: hour        = 0 !! Hours.
-        integer :: minute      = 0 !! Minutes.
-        integer :: second      = 0 !! Seconds.
-        integer :: centisecond = 0 !! Centiseconds (0.01 sec).
-    end type geocom_ftr_mod_time_type
-
-    ! FTR_DIRINFO: Directory info.
-    type, public :: geocom_ftr_dir_info_type
-        !! Directory information type.
-        character(len=80)              :: file_name = ' '
-        integer(kind=i8)               :: file_size = 0_i8
-        type(geocom_ftr_mod_time_type) :: mod_time
-        type(geocom_ftr_mod_date_type) :: mod_date
-    end type geocom_ftr_dir_info_type
-
     ! **************************************************************************
     ! IMG - IMAGE PROCESSING.
     ! **************************************************************************
@@ -346,14 +243,6 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_IMG_PC_CARD         = int(z'1') !! External PC Card.
 
     integer, parameter, public :: GEOCOM_IMG_MAX_FILE_PREFIX_LEN = 20 !! Length of file name prefix.
-
-    type, public :: geocom_img_tcc_config_type
-        !! IMG_TCC_CONFIG: Image parameters.
-        integer(kind=i8)                              :: image_number     = 0_i8 !! Image number.
-        integer(kind=i8)                              :: quality          = 0_i8 !! Image quality.
-        integer(kind=i8)                              :: sub_funct_number = 0_i8 !!
-        character(len=GEOCOM_IMG_MAX_FILE_PREFIX_LEN) :: file_name_prefix = ' '  !! File name prefix.
-    end type geocom_img_tcc_config_type
 
     ! **************************************************************************
     ! MOT - MOTORISATION.
@@ -375,38 +264,9 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_MOT_BREAK      = 4 !! Configured as "Brake" controller.
     integer, parameter, public :: GEOCOM_MOT_TERM       = 7 !! Terminates the controller task.
 
-    type, public :: geocom_mot_com_pair_type
-        !! MOT_COM_PAIR: Speed.
-        real(kind=r8) :: axes(GEOCOM_MOT_AXES) = 0.0_r8 !! Values for horizontal (instrument) and vertical (telescope) speed.
-    end type geocom_mot_com_pair_type
-
-    ! **************************************************************************
-    ! SUP - SUPERVISOR.
-    ! **************************************************************************
-    ! SUP_AUTO_POWER: Automatic shutdown mechanism for the system.
-    integer, parameter, public :: GEOCOM_SUP_POWER_DISABLED = 0 !! Instrument remains on.
-    integer, parameter, public :: GEOCOM_SUP_POWER_OFF      = 2 !! Turns off mechanism.
-
     ! **************************************************************************
     ! TMC - THEODOLITE MEASUREMENT AND CALCULATION.
     ! **************************************************************************
-    ! EDM_MODE: EDM measurement mode.
-    integer, parameter, public :: GEOCOM_EDM_MODE_NOT_USED   = 0  !! Init value.
-    integer, parameter, public :: GEOCOM_EDM_SINGLE_TAPE     = 1  !! IR Standard Reflector Tape.
-    integer, parameter, public :: GEOCOM_EDM_SINGLE_STANDARD = 2  !! IR Standard.
-    integer, parameter, public :: GEOCOM_EDM_SINGLE_FAST     = 3  !! IR Fast.
-    integer, parameter, public :: GEOCOM_EDM_SINGLE_LRANGE   = 4  !! LO Standard.
-    integer, parameter, public :: GEOCOM_EDM_SINGLE_SRANGE   = 5  !! RL Standard.
-    integer, parameter, public :: GEOCOM_EDM_CONT_STANDARD   = 6  !! Standard repeated measurement.
-    integer, parameter, public :: GEOCOM_EDM_CONT_DYNAMIC    = 7  !! IR Tacking.
-    integer, parameter, public :: GEOCOM_EDM_CONT_REFLESS    = 8  !! RL Tracking.
-    integer, parameter, public :: GEOCOM_EDM_CONT_FAST       = 9  !! Fast repeated measurement.
-    integer, parameter, public :: GEOCOM_EDM_AVERAGE_IR      = 10 !! IR Average.
-    integer, parameter, public :: GEOCOM_EDM_AVERAGE_SR      = 11 !! RL Average.
-    integer, parameter, public :: GEOCOM_EDM_AVERAGE_LR      = 12 !! LO Average.
-    integer, parameter, public :: GEOCOM_EDM_PRECISE_IR      = 13 !! IR Precise (TM30, TS30).
-    integer, parameter, public :: GEOCOM_EDM_PRECISE_TAPE    = 14 !! IR Precise Reflector Tape (TM30, TS30).
-
     ! TMC_INCLINE_PRG: Inclination sensor measurement program.
     integer, parameter, public :: GEOCOM_TMC_MEA_INC         = 0  !! Use sensor (a priori sigma).
     integer, parameter, public :: GEOCOM_TMC_AUTO_INC        = 1  !! Automatic mode (sensor/plane).
@@ -430,96 +290,12 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_TMC_FACE_1 = 0 !! Position 1 of telescope.
     integer, parameter, public :: GEOCOM_TMC_FACE_2 = 1 !! Position 2 of telescope.
 
-    type, public :: geocom_tmc_edm_frequency_type
-        !! TMC_EDM_FREQUENCY: EDM frequency.
-        real(kind=r8)    :: frequency = 0.0_r8 !! EDM frequency in Hz.
-        integer(kind=i8) :: time      = 0_i8   !! Time of last measurement.
-    end type geocom_tmc_edm_frequency_type
-
-    type, public :: geocom_tmc_coordinate_type
-        !! TMC_COORDINATE: Calculated coordinates based on distance measurement.
-        real(kind=r8)    :: e               = 0.0_r8 !! E coordinate [m].
-        real(kind=r8)    :: n               = 0.0_r8 !! N coordinate [m].
-        real(kind=r8)    :: h               = 0.0_r8 !! H coordinate [m].
-        integer(kind=i8) :: coord_time      = 0_i8   !! Timestamp of distance measurement [ms].
-        real(kind=r8)    :: e_cont          = 0.0_r8 !! E coordinate (continuously) [m].
-        real(kind=r8)    :: n_cont          = 0.0_r8 !! N coordinate (continuously) [m].
-        real(kind=r8)    :: h_cont          = 0.0_r8 !! H coordinate (continuously) [m].
-        integer(kind=i8) :: coord_cont_time = 0_i8   !! Timestamp of measurement [ms].
-    end type geocom_tmc_coordinate_type
-
-    type, public :: geocom_tmc_hz_v_ang_type
-        !! TMC_HZ_V_ANG: Corrected angle data.
-        real(kind=r8) :: hz = 0.0_r8 !! Horizontal angle [rad].
-        real(kind=r8) :: v  = 0.0_r8 !! Vertical angle [rad].
-    end type geocom_tmc_hz_v_ang_type
-
-    type, public :: geocom_tmc_incline_type
-        !! TMC_INCLINE: Inclination data.
-        real(kind=r8)    :: cross_incline    = 0.0_r8 !! Transverse axis inclination [rad].
-        real(kind=r8)    :: length_incline   = 0.0_r8 !! Longitude axis inclination [rad].
-        real(kind=r8)    :: accuracy_incline = 0.0_r8 !! Inclination accuracy [rad].
-        integer(kind=i8) :: incline_time     = 0_i8   !! Moment of measurement [ms].
-    end type geocom_tmc_incline_type
-
-    type, public :: geocom_tmc_angle_type
-        !! TMC_ANGLE: Corrected angle data with inclination data.
-        real(kind=r8)                 :: hz             = 0.0_r8 !! Horizontal angle [rad].
-        real(kind=r8)                 :: v              = 0.0_r8 !! Vertical angle [rad].
-        real(kind=r8)                 :: angle_accuracy = 0.0_r8 !! Accuracy of angles [rad].
-        integer(kind=i8)              :: angle_time     = 0.0_r8 !! Moment of measurement [ms].
-        type(geocom_tmc_incline_type) :: incline                 !! Corresponding inclination (TMC_INCLINE).
-        integer                       :: face           = 0_i8   !! Telescope face (TMC_FACE).
-    end type geocom_tmc_angle_type
-
-    type, public :: geocom_tmc_offset_dist_type
-        !! TMC_OFFSETDIST: Offset values for correction.
-        real(kind=r8) :: length = 0.0_r8 !! Aim offset length.
-        real(kind=r8) :: cross  = 0.0_r8 !! Aim offset cross.
-        real(kind=r8) :: height = 0.0_r8 !! Aim offset height.
-    end type geocom_tmc_offset_dist_type
-
-    type, public :: geocom_tmc_height_type
-        !! TMC_HEIGHT: Reflector height.
-        real(kind=r8) :: height = 0.0_r8 !! Reflector height.
-    end type geocom_tmc_height_type
-
-    type, public :: geocom_tmc_atmos_temperature_type
-        !! TMC_ATMOS_TEMPERATURE: Atmospheric correction data.
-        real(kind=r8) :: lambda          = 0.0_r8 !! Wave length of the EDM transmitter [m].
-        real(kind=r8) :: pressure        = 0.0_r8 !! Atmospheric pressure [mbar].
-        real(kind=r8) :: dry_temperature = 0.0_r8 !! Dry temperature [°C].
-        real(kind=r8) :: wet_temperature = 0.0_r8 !! Wet temperature [°C].
-    end type geocom_tmc_atmos_temperature_type
-
-    type, public :: geocom_tmc_refraction_type
-        !! TMC_REFRACTION: Refraction control data.
-        logical       :: enabled          = .false. !! Refraction correction on/off.
-        real(kind=r8) :: earth_radius     = 0.0_r8  !! Radius of the earth [m].
-        real(kind=r8) :: refractive_scale = 0.0_r8  !! Refraction coefficient.
-    end type geocom_tmc_refraction_type
-
-    type, public :: geocom_tmc_station_type
-        !! TMC_STATION: Instrument station coordinates.
-        real(kind=r8) :: e0 = 0.0_r8 !! Station easting coordinate [m].
-        real(kind=r8) :: n0 = 0.0_r8 !! Station northing coordinate [m].
-        real(kind=r8) :: h0 = 0.0_r8 !! Station height coordinate [m].
-        real(kind=r8) :: hi = 0.0_r8 !! Instrument height [m].
-    end type geocom_tmc_station_type
-
-    type, public :: geocom_tmc_edm_signal_type
-        !! TMC_EDM_SIGNAL: EDM signal information.
-        real(kind=r8)    :: signal_intensity = 0.0_r8 !! Signal intensity of EDM [%].
-        integer(kind=i8) :: time             = 0_i8   !! Timestamp [ms].
-    end type geocom_tmc_edm_signal_type
-
-    type, public :: geocom_tmc_ang_switch_type
-        !! TMC_ANG_SWITCH: Correction switches.
-        logical :: inclination = .false. !! Inclination correction.
-        logical :: stand_axis  = .false. !! Standing axis correction.
-        logical :: collimation = .false. !! Collimation error correction.
-        logical :: tilt_axis   = .false. !! Tilting axis correction.
-    end type geocom_tmc_ang_switch_type
+    ! **************************************************************************
+    ! SUP - SUPERVISOR.
+    ! **************************************************************************
+    ! SUP_AUTO_POWER: Automatic shutdown mechanism for the system.
+    integer, parameter, public :: GEOCOM_SUP_POWER_DISABLED = 0 !! Instrument remains on.
+    integer, parameter, public :: GEOCOM_SUP_POWER_OFF      = 2 !! Turns off mechanism.
 
     ! Public procedures.
     public :: dm_geocom_api_request
@@ -665,7 +441,7 @@ contains
         end if
 
         if (present(pattern)) then
-            write (request%pattern, '("%R1P,0,0:", a, a)') trim(pattern), GEOCOM_DELIMITER
+            write (request%pattern, '("%R1P,0,0:", 2a)') trim(pattern), GEOCOM_DELIMITER
         end if
 
         if (present(mode)) request%mode = mode
@@ -846,7 +622,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_change_face
 
-    pure subroutine dm_geocom_api_request_delete(request, device_type, file_type, date, file_name)
+    pure subroutine dm_geocom_api_request_delete(request, device_type, file_type, day, month, year, file_name)
         !! Request of `FTR_Delete` procedure. Creates request for deleting one
         !! or more files.
         !!
@@ -870,13 +646,15 @@ contains
         type(request_type),     intent(out) :: request     !! Prepared request.
         integer,                intent(in)  :: device_type !! Internal memory or memory card (`FTR_DEVICETYPE`).
         integer,                intent(in)  :: file_type   !! Type of file (`FTR_FILETYPE`).
-        type(geocom_date_type), intent(in)  :: date        !! Modification date (`FTR_MODDATE`).
+        integer,                intent(in)  :: day         !! Day.
+        integer,                intent(in)  :: month       !! Month.
+        integer,                intent(in)  :: year        !! Year.
         character(len=*),       intent(in)  :: file_name   !! Name of file to delete.
 
         character(len=80)   :: args
         type(response_type) :: responses(2)
 
-        write (args, '(5(i0, ","), a)') device_type, file_type, date%day, date%month, date%year, file_name
+        write (args, '(5(i0, ","), a)') device_type, file_type, day, month, year, file_name
 
         responses = [ &
             response_type('grc',    type=RESPONSE_TYPE_INT32), &
@@ -1677,26 +1455,26 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`       – GeoCOM return code.
-        !! * `hz`        – Horizontal angle [rad].
-        !! * `v`         – Vertical angle [rad].
-        !! * `angacc`    – Accuracy of angles [rad].
-        !! * `xinc`      – Transverse axis inclination [rad].
-        !! * `linc`      – Longitude axis inclidation [rad].
-        !! * `incacc`    – Inclination accuracy [rad].
-        !! * `slopedist` – Slope distance [m].
-        !! * `disttime`  – Time of distance measurement [ms].
+        !! * `grc`      – GeoCOM return code.
+        !! * `hz`       – Horizontal angle [rad].
+        !! * `v`        – Vertical angle [rad].
+        !! * `angacc`   – Accuracy of angles [rad].
+        !! * `xinc`     – Transverse axis inclination [rad].
+        !! * `linc`     – Longitude axis inclidation [rad].
+        !! * `incacc`   – Inclination accuracy [rad].
+        !! * `sdist`    – Slope distance [m].
+        !! * `disttime` – Time of distance measurement [ms].
         !!
         !! | Property       | Values                                                                           |
         !! |----------------|----------------------------------------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                                         |
         !! | ASCII request  | `%R1Q,2167:<wait_time>,<mode>`                                                   |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<xinc>,<linc>,<incacc>,<slopedist>,<disttime>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<xinc>,<linc>,<incacc>,<sdist>,<disttime>` |
         !!
         integer,          parameter :: REQCODE = 2167
         character(len=*), parameter :: PATTERN = &
             '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<xinc>[-\d\.]+),' // &
-            '(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<slopedist>[-\d\.]+),(?<disttime>[-\d\.]+)'
+            '(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<sdist>[-\d\.]+),(?<disttime>[-\d\.]+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
@@ -1708,15 +1486,15 @@ contains
         write (args, '(i0, ",", i0)') wait_time, mode
 
         responses = [ &
-            response_type('grc',       unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
-            response_type('hz',        unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
-            response_type('v',         unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
-            response_type('angacc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
-            response_type('xinc',      unit='rad', type=RESPONSE_TYPE_REAL64), & ! Cross inclination [rad].
-            response_type('linc',      unit='rad', type=RESPONSE_TYPE_REAL64), & ! Length inclination [rad].
-            response_type('incacc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
-            response_type('slopedist', unit='m',   type=RESPONSE_TYPE_REAL64), & ! Distance measurement [m].
-            response_type('disttime',  unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [ms].
+            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
+            response_type('hz',       unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
+            response_type('v',        unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
+            response_type('angacc',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
+            response_type('xinc',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Cross inclination [rad].
+            response_type('linc',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Length inclination [rad].
+            response_type('incacc',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
+            response_type('sdist',    unit='m',   type=RESPONSE_TYPE_REAL64), & ! Distance measurement [m].
+            response_type('disttime', unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [ms].
         ]
 
         call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
@@ -2210,28 +1988,28 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`       – GeoCOM return code.
-        !! * `hz`        – Horizontal angle [rad].
-        !! * `v`         – Vertical angle [rad].
-        !! * `slopedist` – Slope distance [m].
+        !! * `grc`   – GeoCOM return code.
+        !! * `hz`    – Horizontal angle [rad].
+        !! * `v`     – Vertical angle [rad].
+        !! * `sdist` – Slope distance [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,2117:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<slopedist>`            |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`            |
         !!
         integer,          parameter :: REQCODE = 2117
-        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<slopedist>[-\d\.]+)'
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
 
         type(request_type), intent(out) :: request !! Prepared request.
         type(response_type)             :: responses(4)
 
         responses = [ &
-            response_type('grc',       unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('hz',        unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('v',         unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('slopedist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',    unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',     unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('sdist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
