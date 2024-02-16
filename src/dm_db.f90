@@ -126,10 +126,12 @@ module dm_db
         module procedure :: db_next_row_data_point
         module procedure :: db_next_row_id
         module procedure :: db_next_row_log
+        module procedure :: db_next_row_node
         module procedure :: db_next_row_observ
         module procedure :: db_next_row_observ_view
         module procedure :: db_next_row_sensor
         module procedure :: db_next_row_sync
+        module procedure :: db_next_row_target
     end interface
 
     interface dm_db_insert
@@ -310,11 +312,13 @@ module dm_db
     private :: db_insert_responses
     private :: db_insert_sync
     private :: db_next_row
+    private :: db_next_row_data_point
     private :: db_next_row_log
+    private :: db_next_row_node
     private :: db_next_row_observ
     private :: db_next_row_observ_view
     private :: db_next_row_sensor
-    private :: db_next_row_data_point
+    private :: db_next_row_target
     private :: db_query_where
     private :: db_release
     private :: db_rollback
@@ -341,8 +345,8 @@ contains
         !! * `E_DB` if closing the database failed.
         !! * `E_EXIST` if backup database exists.
         !! * `E_READ_ONLY` if database is opened read-only.
-        integer, parameter :: NSTEPS_DEFAULT     = 500
-        integer, parameter :: SLEEP_TIME_DEFAULT = 250
+        integer, parameter :: NSTEPS_DEFAULT     = 500 !! Number of steps.
+        integer, parameter :: SLEEP_TIME_DEFAULT = 250 !! Busy sleep time in ms.
 
         type(db_type),    intent(inout)           :: db         !! Database type.
         character(len=*), intent(in)              :: path       !! File path of backup database to be created.
@@ -424,8 +428,8 @@ contains
     end function dm_db_begin
 
     integer function dm_db_close(db, optimize) result(rc)
-        !! Closes connection to SQLite database. Optimises the database by
-        !! if `optimize` is `.true.`. Returns `E_DB` on error.
+        !! Closes connection to SQLite database. Optimises the database if
+        !! `optimize` is `.true.`. Returns `E_DB` on error.
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
@@ -437,6 +441,7 @@ contains
 
         rc = E_DB
         if (sqlite3_close(db%ptr) /= SQLITE_OK) return
+
         db%ptr = c_null_ptr
         rc = E_NONE
     end function dm_db_close
@@ -2008,7 +2013,6 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (present(nbeats)) nbeats = n
             if (present(limit)) n = min(limit, n)
 
             rc = E_ALLOC
@@ -2032,8 +2036,11 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, beats(i))
+                rc = db_next_row(stmt, beats(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nbeats)) nbeats = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2087,7 +2094,6 @@ contains
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            if (present(npoints)) npoints = n
             if (present(limit)) n = min(n, limit)
             allocate (dps(n), stat=stat)
             if (stat /= 0) exit sql_block
@@ -2118,8 +2124,11 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, dps(i))
+                rc = db_next_row(stmt, dps(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(npoints)) npoints = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2187,7 +2196,6 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (present(nbeats)) nbeats = n
             if (present(limit)) n = min(limit, n)
 
             rc = E_ALLOC
@@ -2212,6 +2220,7 @@ contains
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
+                ! Validate column type.
                 if (i == 1) then
                     rc = E_DB_TYPE
                     if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
@@ -2220,6 +2229,7 @@ contains
                 json_beats(i) = sqlite3_column_text(stmt, 0)
             end do
 
+            if (present(nbeats)) nbeats = n
             rc = E_NONE
         end block sql_block
 
@@ -2404,7 +2414,6 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (present(nlogs)) nlogs = n
             if (has_limit) n = min(n, limit)
 
             rc = E_ALLOC
@@ -2442,6 +2451,7 @@ contains
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
+                ! Validate column type.
                 if (i == 1) then
                     rc = E_DB_TYPE
                     if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) exit sql_block
@@ -2450,6 +2460,7 @@ contains
                 json_logs(i) = sqlite3_column_text(stmt, 0)
             end do
 
+            if (present(nlogs)) nlogs = n
             rc = E_NONE
         end block sql_block
 
@@ -2674,7 +2685,6 @@ contains
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            if (present(nlogs)) nlogs = n
             if (has_limit) n = min(n, limit)
             allocate (logs(n), stat=stat)
             if (stat /= 0) exit sql_block
@@ -2707,9 +2717,11 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, logs(i))
+                rc = db_next_row(stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nlogs)) nlogs = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2813,7 +2825,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, logs(i))
+                rc = db_next_row(stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
 
@@ -2846,22 +2858,7 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = E_DB_TYPE
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  exit sql_block
-            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)  exit sql_block
-            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)  exit sql_block
-            if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) exit sql_block
-            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) exit sql_block
-            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) exit sql_block
-
-            node%id   = sqlite3_column_text  (stmt, 0)
-            node%name = sqlite3_column_text  (stmt, 1)
-            node%meta = sqlite3_column_text  (stmt, 2)
-            node%x    = sqlite3_column_double(stmt, 3)
-            node%y    = sqlite3_column_double(stmt, 4)
-            node%z    = sqlite3_column_double(stmt, 5)
-
-            rc = E_NONE
+            rc = db_next_row(stmt, node)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2896,23 +2893,8 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-
-                rc = E_DB_TYPE
-                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  exit sql_block
-                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)  exit sql_block
-                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)  exit sql_block
-                if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) exit sql_block
-                if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) exit sql_block
-                if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) exit sql_block
-
-                nodes(i)%id   = sqlite3_column_text  (stmt, 0)
-                nodes(i)%name = sqlite3_column_text  (stmt, 1)
-                nodes(i)%meta = sqlite3_column_text  (stmt, 2)
-                nodes(i)%x    = sqlite3_column_double(stmt, 3)
-                nodes(i)%y    = sqlite3_column_double(stmt, 4)
-                nodes(i)%z    = sqlite3_column_double(stmt, 5)
-
-                rc = E_NONE
+                rc = db_next_row(stmt, nodes(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
 
             if (present(nnodes)) nnodes = n
@@ -3113,7 +3095,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, ids(i))
+                rc = db_next_row(stmt, ids(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
         end block sql_block
@@ -3196,7 +3178,6 @@ contains
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            if (present(nviews)) nviews = n
             if (present(limit)) n = min(n, limit)
             allocate (views(n), stat=stat)
             if (stat /= 0) exit sql_block
@@ -3226,8 +3207,11 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, views(i))
+                rc = db_next_row(stmt, views(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nviews)) nviews = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3353,7 +3337,6 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (present(nobservs)) nobservs = n
             if (has_limit) n = min(n, limit)
 
             rc = E_ALLOC
@@ -3384,9 +3367,11 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, observs(i))
+                rc = db_next_row(stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nobservs)) nobservs = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3492,7 +3477,6 @@ contains
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            if (present(nobservs)) nobservs = nobs
             if (present(limit)) nobs = min(nobs, limit)
             allocate (observs(nobs), stat=stat)
             if (stat /= 0) exit sql_block
@@ -3525,8 +3509,11 @@ contains
             do i = 1, nobs
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, observs(i))
+                rc = db_next_row(stmt, observs(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nobservs)) nobservs = nobs
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3582,7 +3569,6 @@ contains
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_ALLOC
-            if (present(nobservs)) nobservs = nobs
             if (present(limit)) nobs = min(nobs, limit)
             allocate (observs(nobs), stat=stat)
             if (stat /= 0) exit sql_block
@@ -3611,8 +3597,11 @@ contains
             do i = 1, nobs
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, observs(i))
+                rc = db_next_row(stmt, observs(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
+
+            if (present(nobservs)) nobservs = nobs
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3683,7 +3672,7 @@ contains
             row_loop: do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit row_loop
-                rc = db_next_row(stmt, sensors(i))
+                rc = db_next_row(stmt, sensors(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do row_loop
 
@@ -3739,7 +3728,8 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, sensors(i))
+                rc = db_next_row(stmt, sensors(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
             end do
 
             if (present(nsensors)) nsensors = n
@@ -3945,24 +3935,7 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = E_DB_TYPE
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    exit sql_block
-            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit sql_block
-            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    exit sql_block
-            if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) exit sql_block
-            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   exit sql_block
-            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   exit sql_block
-            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   exit sql_block
-
-            target%id    = sqlite3_column_text  (stmt, 0)
-            target%name  = sqlite3_column_text  (stmt, 1)
-            target%meta  = sqlite3_column_text  (stmt, 2)
-            target%state = sqlite3_column_int   (stmt, 3)
-            target%x     = sqlite3_column_double(stmt, 4)
-            target%y     = sqlite3_column_double(stmt, 5)
-            target%z     = sqlite3_column_double(stmt, 6)
-
-            rc = E_NONE
+            rc = db_next_row(stmt, target)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3995,29 +3968,12 @@ contains
             rc = E_DB_PREPARE
             if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TARGETS, stmt) /= SQLITE_OK) exit sql_block
 
-            row_loop: do i = 1, n
+            do i = 1, n
                 rc = E_DB_NO_ROWS
-                if (sqlite3_step(stmt) /= SQLITE_ROW) exit row_loop
-
-                rc = E_DB_TYPE
-                if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    exit row_loop
-                if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit row_loop
-                if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    exit row_loop
-                if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   exit sql_block
-                if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   exit sql_block
-                if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   exit sql_block
-
-                targets(i)%id    = sqlite3_column_text  (stmt, 0)
-                targets(i)%name  = sqlite3_column_text  (stmt, 1)
-                targets(i)%meta  = sqlite3_column_text  (stmt, 2)
-                targets(i)%state = sqlite3_column_int   (stmt, 3)
-                targets(i)%x     = sqlite3_column_double(stmt, 4)
-                targets(i)%y     = sqlite3_column_double(stmt, 5)
-                targets(i)%z     = sqlite3_column_double(stmt, 6)
-
-                rc = E_NONE
-            end do row_loop
+                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_next_row(stmt, targets(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
+            end do
 
             if (present(ntargets)) ntargets = n
         end block sql_block
@@ -4872,21 +4828,29 @@ contains
         stat = sqlite3_finalize(stmt)
     end function db_insert_sync
 
-    integer function db_next_row_beat(stmt, beat) result(rc)
-        !! Reads beat data from table row.
-        type(c_ptr),     intent(inout) :: stmt !! SQLite statement.
-        type(beat_type), intent(inout) :: beat !! Beat type.
+    integer function db_next_row_beat(stmt, beat, validate) result(rc)
+        !! Reads beat data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),     intent(inout)        :: stmt     !! SQLite statement.
+        type(beat_type), intent(inout)        :: beat     !! Beat type.
+        logical,         intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 5) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 6) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 7) /= SQLITE_INTEGER) return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 7) /= SQLITE_INTEGER) return
+        end if
 
         beat%node_id   = sqlite3_column_text(stmt, 0)
         beat%address   = sqlite3_column_text(stmt, 1)
@@ -4900,15 +4864,23 @@ contains
         rc = E_NONE
     end function db_next_row_beat
 
-    integer function db_next_row_data_point(stmt, dp) result(rc)
-        !! Reads observation data from table row.
-        type(c_ptr),   intent(inout) :: stmt !! SQLite statement.
-        type(dp_type), intent(inout) :: dp   !! Data point type.
+    integer function db_next_row_data_point(stmt, dp, validate) result(rc)
+        !! Reads observation data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),   intent(inout)        :: stmt     !! SQLite statement.
+        type(dp_type), intent(inout)        :: dp       !! Data point type.
+        logical,       intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  return
-        if (sqlite3_column_type(stmt, 1) /= SQLITE_FLOAT) return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_FLOAT) return
+        end if
 
         dp%x = sqlite3_column_text  (stmt, 0)
         dp%y = sqlite3_column_double(stmt, 1)
@@ -4916,36 +4888,52 @@ contains
         rc = E_NONE
     end function db_next_row_data_point
 
-    integer function db_next_row_id(stmt, id) result(rc)
-        !! Reads id from table row.
-        type(c_ptr),           intent(inout) :: stmt !! SQLite statement.
-        character(len=ID_LEN), intent(inout) :: id   !! ID.
+    integer function db_next_row_id(stmt, id, validate) result(rc)
+        !! Reads id from table row. Column types are validated by default.
+        !! The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),           intent(inout)        :: stmt     !! SQLite statement.
+        character(len=ID_LEN), intent(inout)        :: id       !! ID.
+        logical,               intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) return
+        end if
+
         id = sqlite3_column_text(stmt, 0)
-
         rc = E_NONE
     end function db_next_row_id
 
-    integer function db_next_row_log(stmt, log) result(rc)
-        !! Reads log data from table row.
-        type(c_ptr),    intent(inout) :: stmt !! SQLite statement.
-        type(log_type), intent(inout) :: log  !! Log type.
+    integer function db_next_row_log(stmt, log, validate) result(rc)
+        !! Reads log data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),    intent(inout)        :: stmt     !! SQLite statement.
+        type(log_type), intent(inout)        :: log      !! Log type.
+        logical,        intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 1) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 6) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 7) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 8) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 9) /= SQLITE_TEXT)    return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 7) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 8) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 9) /= SQLITE_TEXT)    return
+        end if
 
         log%id        = sqlite3_column_text(stmt, 0)
         log%level     = sqlite3_column_int (stmt, 1)
@@ -4961,25 +4949,65 @@ contains
         rc = E_NONE
     end function db_next_row_log
 
-    integer function db_next_row_observ(stmt, observ) result(rc)
-        !! Reads observation data from table row.
-        type(c_ptr),       intent(inout) :: stmt   !! SQLite statement.
-        type(observ_type), intent(inout) :: observ !! Observation type.
+    integer function db_next_row_node(stmt, node, validate) result(rc)
+        !! Reads node data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),     intent(inout)        :: stmt     !! SQLite statement.
+        type(node_type), intent(inout)        :: node     !! Node type.
+        logical,         intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  5) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)  return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)  return
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)  return
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) return
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) return
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) return
+        end if
+
+        node%id   = sqlite3_column_text  (stmt, 0)
+        node%name = sqlite3_column_text  (stmt, 1)
+        node%meta = sqlite3_column_text  (stmt, 2)
+        node%x    = sqlite3_column_double(stmt, 3)
+        node%y    = sqlite3_column_double(stmt, 4)
+        node%z    = sqlite3_column_double(stmt, 5)
+
+        rc = E_NONE
+    end function db_next_row_node
+
+    integer function db_next_row_observ(stmt, observ, validate) result(rc)
+        !! Reads observation data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
+        type(observ_type), intent(inout)        :: observ   !! Observation type.
+        logical,           intent(in), optional :: validate !! Validate column types.
+
+        logical :: validate_
+
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  5) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
+        end if
 
         observ%id         = sqlite3_column_text(stmt,  0)
         observ%node_id    = sqlite3_column_text(stmt,  1)
@@ -4997,26 +5025,34 @@ contains
         rc = E_NONE
     end function db_next_row_observ
 
-    integer function db_next_row_observ_view(stmt, view) result(rc)
-        !! Reads observation data from table row.
-        type(c_ptr),            intent(inout) :: stmt !! SQLite statement.
-        type(observ_view_type), intent(inout) :: view !! Observation view type.
+    integer function db_next_row_observ_view(stmt, view, validate) result(rc)
+        !! Reads observation data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),            intent(inout)        :: stmt     !! SQLite statement.
+        type(observ_view_type), intent(inout)        :: view     !! Observation view type.
+        logical,                intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  5) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt,  8) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt,  9) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 12) /= SQLITE_FLOAT)   return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  5) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  8) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  9) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 12) /= SQLITE_FLOAT)   return
+        end if
 
         view%observ_id         = sqlite3_column_text  (stmt,  0)
         view%node_id           = sqlite3_column_text  (stmt,  1)
@@ -5035,22 +5071,30 @@ contains
         rc = E_NONE
     end function db_next_row_observ_view
 
-    integer function db_next_row_sensor(stmt, sensor) result(rc)
-        !! Reads sensor data from table row.
-        type(c_ptr),       intent(inout) :: stmt   !! SQLite statement.
-        type(sensor_type), intent(inout) :: sensor !! Sensor type.
+    integer function db_next_row_sensor(stmt, sensor, validate) result(rc)
+        !! Reads sensor data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
+        type(sensor_type), intent(inout)        :: sensor   !! Sensor type.
+        logical,           intent(in), optional :: validate !! Validate column types.
 
-        rc = E_DB_TYPE
+        logical :: validate_
 
-        if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) return
-        if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
-        if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
-        if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT)   return
-        if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT)   return
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT)   return
+        end if
 
         sensor%id      = sqlite3_column_text  (stmt, 0)
         sensor%node_id = sqlite3_column_text  (stmt, 1)
@@ -5096,6 +5140,40 @@ contains
         rc = E_NONE
     end function db_next_row_sync
 
+    integer function db_next_row_target(stmt, target, validate) result(rc)
+        !! Reads target data from table row. Column types are validated by
+        !! default. The function returns `E_DB_TYPE` if the validation failed.
+        type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
+        type(target_type), intent(inout)        :: target   !! Target type.
+        logical,           intent(in), optional :: validate !! Validate column types.
+
+        logical :: validate_
+
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 2) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt, 3) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
+        end if
+
+        target%id    = sqlite3_column_text  (stmt, 0)
+        target%name  = sqlite3_column_text  (stmt, 1)
+        target%meta  = sqlite3_column_text  (stmt, 2)
+        target%state = sqlite3_column_int   (stmt, 3)
+        target%x     = sqlite3_column_double(stmt, 4)
+        target%y     = sqlite3_column_double(stmt, 5)
+        target%z     = sqlite3_column_double(stmt, 6)
+
+        rc = E_NONE
+    end function db_next_row_target
+
     integer function db_release(db, name) result(rc)
         !! Jumps back to a save point.
         type(db_type),    intent(inout) :: db   !! Database type.
@@ -5105,7 +5183,8 @@ contains
     end function db_release
 
     integer function db_rollback(db, name) result(rc)
-        !! Rolls a transaction back, optionally to save point `name`.
+        !! Rolls a transaction back, optionally to save point `name`. The
+        !! function returns `E_DB_ROLLBACK` is the rollback failed.
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in), optional :: name !! Save point name.
 
