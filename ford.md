@@ -1,5 +1,5 @@
 project:         DMPACK
-version:         0.9.2
+version:         0.9.3
 license:         isc
 doc_license:     by
 incl_src:        false
