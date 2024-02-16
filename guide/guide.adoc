@@ -367,7 +367,7 @@ _observation_.
 === Beat Entities
 
 Beat:: Short status message (heartbeat, handshake) that contains node id,
-client address, client library version, timestamp, system uptime, and last
+client address, client library version, time stamp, system uptime, and last
 connection error, sent periodically from client to server.
 
 === RPC Entities
@@ -562,7 +562,7 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 
 The *dmbeat* program is a heartbeat emitter that sends
 <<data-beat,handshake messages>> via HTTP POST to a remote <<dmapi>> service.
-The handshake messages include timestamp, system uptime, and last connection
+The handshake messages include time stamp, system uptime, and last connection
 error. The server may inspect this data to check if a client is still running
 and has network access. The RPC endpoint is expected at
 `[http|https]://<host>:<port>/api/v1/beat`.
@@ -977,7 +977,7 @@ dmfs = {
   format = "none",              -- Output format (`csv` or `jsonl`).
   jobs = {                      -- List of jobs to perform.
     {
-      disabled = false,         -- Disable to ignore job.
+      disabled = false,         -- Enable to ignore job.
       onetime = false,          -- Run job only once.
       observation = {           -- Observation to execute (required).
         name = "observ-1",      -- Observation name (required).
@@ -990,8 +990,8 @@ dmfs = {
             delay = 500,        -- Delay in mseconds.
             responses = {
               {
-                name = "temp",  -- RegEx group.
-                unit = "degC"   -- Unit.
+                name = "temp",  -- RegEx group name (max. 8 characters).
+                unit = "degC"   -- Response unit (max. 8 characters).
               }
             }
           }
@@ -1290,7 +1290,7 @@ Send a log message to the message queue of logger `dmlogger`:
 
 ....
 $ dmlog --level 3 --message "low battery" --source dmlog --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING] dmlog - low battery
+2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....
 
 The `dmlogger` process will receive the log message and store it in the log
@@ -1298,7 +1298,7 @@ database (if the log level is ≥ the minimum log level):
 
 ....
 $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING] dmlog - low battery
+2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....
 
 === dmlogger [[dmlogger]]
@@ -1523,7 +1523,7 @@ dmpipe = {
   format = "none",                  -- Output format (`csv` or `jsonl`).
   jobs = {                          -- Jobs to perform.
     {
-      disabled = false,             -- Disable to ignore job.
+      disabled = false,             -- Enable to ignore job.
       onetime = false,              -- Run job only once.
       observation = {               -- Observation to execute.
         name = "dummy-observ",      -- Observation name (required).
@@ -1536,8 +1536,8 @@ dmpipe = {
             delay = 0,              -- Delay in mseconds.
             responses = {
               {
-                name = "battery",   -- RegEx group.
-                unit = "%"          -- Unit.
+                name = "battery",   -- RegEx group name (max. 8 characters).
+                unit = "%"          -- Response unit (max. 8 characters).
               }
             }
           }
@@ -1601,7 +1601,7 @@ configuration file. The arguments overwrite settings from file.
 |===
 | Format  | Type            | Description
 
-| `block` | `observ`        | ASCII block format (timestamp and response value).
+| `block` | `observ`        | ASCII block format (time stamp and response value).
 | `csv`   | `log`, `observ` | CSV format.
 | `jsonl` | `log`, `observ` | JSON Lines format.
 | `nml`   | `log`, `observ` | Fortran 95 Namelist format.
@@ -1713,8 +1713,8 @@ observations are read from database `observ.sqlite`, the log messages from
 -- dmreport.conf
 dmreport = {
   node = "dummy-node",
-  from = "1970-01-01T00:00:00.000+00:00",
-  to = "2070-01-01T00:00:00.000+00:00",
+  from = "1970-01-01T00:00:00.000000+00:00",
+  to = "2070-01-01T00:00:00.000000+00:00",
   output = "%Y-%M-%D_dummy-report.html",
   style = "/usr/local/share/dmpack/dmreport.min.css",
   title = "Monitoring Report",
@@ -3361,7 +3361,7 @@ Atom XML:: Export of log messages in
 link:https://en.wikipedia.org/wiki/Atom_(web_standard)[Atom Syndication Format]
 (RFC 4287), with optional XSLT style sheet.
 Block:: Export of observation responses as X/Y data points in ASCII block
-format, consisting of timestamp (ISO 8601) and real value.
+format, consisting of time stamp (ISO 8601) and real value.
 CSV:: Export and import of beat, log, node, observation, sensor, and target
 data, with custom field separator and quote character. A CSV header is added
 optionally.
@@ -3401,7 +3401,7 @@ $ h5dump -H -A 0 observ.hdf5
 | `dmpack`    | string  | 32   | DMPACK library version.
 | `host`      | string  | 32   | Server host name.
 | `server`    | string  | 32   | Server software (web server).
-| `timestamp` | string  | 29   | Server date and time in ISO 8601.
+| `timestamp` | string  | 32   | Server date and time in ISO 8601.
 | `message`   | string  | 32   | Server status message (optional).
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 |===
@@ -3412,7 +3412,7 @@ version=1.0
 dmpack=1.0
 host=localhost
 server=lighttpd/1.4.70
-timestamp=1970-01-01T00:00:00.000+00:00
+timestamp=1970-01-01T00:00:00.000000+00:00
 message=online
 error=0
 ....
@@ -3427,8 +3427,8 @@ error=0
 | `node_id`   | string  | 32   | Node id (`-0-9A-Za-z`).
 | `address`   | string  | 45   | IPv4/IPv6 address of client.
 | `version`   | string  | 16   | DMPACK library version of client.
-| `time_sent` | string  | 29   | Date and time heartbeat was sent (ISO 8601).
-| `time_recv` | string  | 29   | Date and time heartbeat was received (ISO 8601).
+| `time_sent` | string  | 30   | Date and time heartbeat was sent (ISO 8601).
+| `time_recv` | string  | 30   | Date and time heartbeat was received (ISO 8601).
 | `error`     | integer | 4    | Last client connection <<error-codes,error>>.
 | `interval`  | integer | 4    | Emit interval in seconds.
 | `uptime`    | integer | 4    | Client uptime in seconds.
@@ -3456,8 +3456,8 @@ error=0
   "node_id": "dummy-node",
   "address": "127.0.0.1",
   "version": "DMPACK 1.0.0",
-  "time_sent": "1970-01-01T00:00:00.000+00:00",
-  "time_recv": "1970-01-01T00:00:00.000+00:00",
+  "time_sent": "1970-01-01T00:00:00.000000+00:00",
+  "time_recv": "1970-01-01T00:00:00.000000+00:00",
   "error": 0,
   "interval": 0,
   "uptime": 0
@@ -3471,8 +3471,8 @@ error=0
 BEAT%NODE_ID="dummy-node",
 BEAT%ADDRESS="127.0.0.1",
 BEAT%VERSION="DMPACK 1.0.0",
-BEAT%TIME_SENT="1970-01-01T00:00:00.000+00:00",
-BEAT%TIME_RECV="1970-01-01T00:00:00.000+00:00",
+BEAT%TIME_SENT="1970-01-01T00:00:00.000000+00:00",
+BEAT%TIME_RECV="1970-01-01T00:00:00.000000+00:00",
 BEAT%ERROR=0,
 BEAT%INTERVAL=0,
 BEAT%UPTIME=0,
@@ -3486,13 +3486,13 @@ BEAT%UPTIME=0,
 |===
 | Attribute | Type   | Size | Description
 
-| `x`       | string | 29   | X value (ISO 8601).
+| `x`       | string | 32   | X value (ISO 8601).
 | `y`       | double | 8    | Y value.
 |===
 
 .Block [[data-dp-block]]
 ....
-1970-01-01T00:00:00.000+00:00                0.00000000
+1970-01-01T00:00:00.000000+00:00               0.00000000
 ....
 
 .CSV [[data-dp-csv]]
@@ -3508,7 +3508,7 @@ BEAT%UPTIME=0,
 [source,json]
 ....
 {
-  "x": "1970-01-01T00:00:00.000+00:00",
+  "x": "1970-01-01T00:00:00.000000+00:00",
   "y": 0.0
 }
 ....
@@ -3523,7 +3523,7 @@ BEAT%UPTIME=0,
 | `id`        | string  | 32   | Log id (UUID4).
 | `level`     | integer | 4    | <<data-log-level,Log level>>.
 | `error`     | integer | 4    | <<error-codes,Error code>>.
-| `timestamp` | string  | 29   | Date and time (ISO 8601).
+| `timestamp` | string  | 32   | Date and time (ISO 8601).
 | `node_id`   | string  | 32   | Node id (optional).
 | `sensor_id` | string  | 32   | Sensor id (optional).
 | `target_id` | string  | 32   | Target id (optional).
@@ -3553,19 +3553,19 @@ BEAT%UPTIME=0,
 <title>DMPACK Logs</title>
 <subtitle>Log Messages Feed</subtitle>
 <id>urn:uuid:a6baaf1a-43b7-4e59-a18c-653e6ee61dfa</id>
-<updated>1970-01-01T00:00:00.000+00:00</updated>
+<updated>1970-01-01T00:00:00.000000+00:00</updated>
 <entry>
 <title>DEBUG: dummy log message</title>
 <id>urn:uuid:26462d27-d7ff-4ef1-b10e-0a2e921e638b</id>
-<published>1970-01-01T00:00:00.000+00:00</published>
-<updated>1970-01-01T00:00:00.000+00:00</updated>
+<published>1970-01-01T00:00:00.000000+00:00</published>
+<updated>1970-01-01T00:00:00.000000+00:00</updated>
 <summary>DEBUG: dummy log message</summary>
 <content type="xhtml">
 <div xmlns="http://www.w3.org/1999/xhtml">
 <table>
 <tbody>
 <tr><th>ID</th><td><code>26462d27d7ff4ef1b10e0a2e921e638b</code></td></tr>
-<tr><th>Timestamp</th><td>1970-01-01T00:00:00.000+00:00</td></tr>
+<tr><th>Timestamp</th><td>1970-01-01T00:00:00.000000+00:00</td></tr>
 <tr><th>Level</th><td>DEBUG (1)</td></tr>
 <tr><th>Error</th><td>dummy error (2)</td></tr>
 <tr><th>Node ID</th><td>dummy-node</td></tr>
@@ -3609,7 +3609,7 @@ BEAT%UPTIME=0,
   "id": "26462d27d7ff4ef1b10e0a2e921e638b",
   "level": 1,
   "error": 2,
-  "timestamp": "1970-01-01T00:00:00.000+00:00",
+  "timestamp": "1970-01-01T00:00:00.000000+00:00",
   "node_id": "dummy-node",
   "sensor_id": "dummy-sensor",
   "target_id": "dummy-target",
@@ -3624,7 +3624,7 @@ BEAT%UPTIME=0,
 LOG%ID="26462d27d7ff4ef1b10e0a2e921e638b",
 LOG%LEVEL=1,
 LOG%ERROR=2,
-LOG%TIMESTAMP="1970-01-01T00:00:00.000+00:00",
+LOG%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
 LOG%NODE_ID="dummy-node",
 LOG%SENSOR_ID="dummy-sensor",
 LOG%TARGET_ID="dummy-target",
@@ -3729,7 +3729,7 @@ NODE%Z=0.0,
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Za-z`).
 | `target_id` | string  | 32   | Target id (`-0-9A-Za-z`).
 | `name`      | string  | 32   | Observation name (`-0-9A-Za-z`).
-| `timestamp` | string  | 29   | Date and time of observation (ISO 8601).
+| `timestamp` | string  | 32   | Date and time of observation (ISO 8601).
 | `path`      | string  | 32   | Path of TTY/PTY device.
 | `priority`  | integer | 4    | Message queue priority (>= 0).
 | `error`     | integer | 4    | Observation <<error-codes,error code>>.
@@ -3737,7 +3737,7 @@ NODE%Z=0.0,
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1345 | Array of requests (8).
+| `requests`  | array   | 8{nbsp}×{nbsp}1348 | Array of requests (8).
 |===
 
 .Request derived type of an observation
@@ -3745,7 +3745,7 @@ NODE%Z=0.0,
 |===
 | Attribute    | Type    | Size | Description
 
-| `timestamp`  | string  | 29   | Date and time of request (ISO 8601).
+| `timestamp`  | string  | 32   | Date and time of request (ISO 8601).
 | `request`    | string  | 256  | Raw request to sensor. Non-printable characters have to be escaped.
 | `response`   | string  | 256  | Raw response of sensor. Non-printable characters will be escaped.
 | `delimiter`  | string  | 8    | Request delimiter. Non-printable characters have to be escaped.
@@ -3877,7 +3877,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   "sensor_id": "dummy-sensor",
   "target_id": "dummy-target",
   "name": "dummy-observ",
-  "timestamp": "1970-01-01T00:00:00.000+00:00",
+  "timestamp": "1970-01-01T00:00:00.000000+00:00",
   "path": "/dev/null",
   "priority": 0,
   "error": 0,
@@ -3890,7 +3890,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   ],
   "requests": [
     {
-      "timestamp": "1970-01-01T00:00:00.000+00:00",
+      "timestamp": "1970-01-01T00:00:00.000000+00:00",
       "request": "?\\n",
       "response": "10.0\\n",
       "delimiter": "\\n",
@@ -3924,7 +3924,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   node_id = "dummy-node",
   sensor_id = "dummy-sensor",
   target_id = "dummy-target",
-  timestamp = "1970-01-01T00:00:00.000+00:00",
+  timestamp = "1970-01-01T00:00:00.000000+00:00",
   path = "/dev/null",
   name = "dummy-observ",
   error = 0,
@@ -3935,7 +3935,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   receivers = { "dummy-receiver1", "dummy-receiver2" },
   requests = {
     {
-      timestamp = "1970-01-01T00:00:00.000+00:00",
+      timestamp = "1970-01-01T00:00:00.000000+00:00",
       request = "?\\n",
       response = "10.0\\n",
       pattern = "(?<sample>[-+0-9\\.]+)",
@@ -3969,7 +3969,7 @@ OBSERV%NODE_ID="dummy-node",
 OBSERV%SENSOR_ID="dummy-sensor",
 OBSERV%TARGET_ID="dummy-target",
 OBSERV%NAME="dummy-observ",
-OBSERV%TIMESTAMP="1970-01-01T00:00:00.000+00:00",
+OBSERV%TIMESTAMP="1970-01-01T00:00:00.0000+00:00",
 OBSERV%PATH="/dev/null",
 OBSERV%PRIORITY=0,
 OBSERV%ERROR=0,
@@ -3977,7 +3977,7 @@ OBSERV%NEXT=0,
 OBSERV%NRECEIVERS=2,
 OBSERV%NREQUESTS=1,
 OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
-OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.000+00:00",
+OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.0000+00:00",
 OBSERV%REQUESTS(1)%REQUEST="?\n",
 OBSERV%REQUESTS(1)%RESPONSE="10.0\n",
 OBSERV%REQUESTS(1)%DELIMITER="\n",

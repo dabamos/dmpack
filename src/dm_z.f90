@@ -26,11 +26,11 @@ contains
         character(len=:), allocatable, intent(out)           :: output      !! Output bytes.
         integer(kind=i8),              intent(out), optional :: output_size !! Actual output length.
 
-        integer          :: stat
-        integer(kind=i8) :: sz
+        integer               :: stat
+        integer(kind=z_ulong) :: sz
 
         if (present(output_size)) output_size = 0
-        sz = compress_bound(len(input, kind=i8))
+        sz = compress_bound(len(input, kind=z_ulong))
 
         rc = E_ALLOC
         allocate (character(len=sz) :: output, stat=stat)
@@ -40,8 +40,8 @@ contains
         if (sz == 0) return
 
         rc = E_ERROR
-        stat = compress(output, sz, input, len(input, kind=i8))
-        if (present(output_size)) output_size = sz
+        stat = compress(output, sz, input, len(input, kind=z_ulong))
+        if (present(output_size)) output_size = int(sz, kind=i8)
         if (stat /= Z_OK) return
 
         rc = E_NONE
@@ -128,13 +128,13 @@ contains
         character(len=*), intent(inout)         :: output      !! Output bytes.
         integer(kind=i8), intent(out), optional :: output_size !! Actual output length.
 
-        integer          :: stat
-        integer(kind=i8) :: sz
+        integer               :: stat
+        integer(kind=z_ulong) :: sz
 
         rc = E_ERROR
-        sz = len(output, kind=i8)
-        stat = uncompress(output, sz, input, len(input, kind=i8))
-        if (present(output_size)) output_size = sz
+        sz = len(output, kind=z_ulong)
+        stat = uncompress(output, sz, input, len(input, kind=z_ulong))
+        if (present(output_size)) output_size = int(sz, kind=i8)
         if (stat /= Z_OK) return
         rc = E_NONE
     end function dm_z_uncompress

@@ -25,7 +25,7 @@ default, the SQLite backup API is used. The program is functional equivalent to
 running the _sqlite3(1)_ command-line interface:
 
 ....
-$ sqlite3 <database> ".backup '<output>'"
+$ sqlite3 <database> ".backup '<backup>'"
 ....
 
 *dmbackup* does not replace existing backup databases.

@@ -57,8 +57,8 @@ module dm_sql
         'node_id   TEXT    NOT NULL UNIQUE,' // NL // &
         'address   TEXT,' // NL // &
         'version   TEXT,' // NL // &
-        'time_sent TEXT    NOT NULL DEFAULT ''1970-01-01T00:00:00.000+00:00'',' // NL // &
-        'time_recv TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'time_sent TEXT    NOT NULL DEFAULT ''1970-01-01T00:00:00.000000+00:00'',' // NL // &
+        'time_recv TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'error     INTEGER NOT NULL DEFAULT 0,' // NL // &
         'interval  INTEGER NOT NULL DEFAULT 0,' // NL // &
         'uptime    INTEGER NOT NULL DEFAULT 0) STRICT'
@@ -70,7 +70,7 @@ module dm_sql
         'id          TEXT    NOT NULL UNIQUE,' // NL // &
         'level       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'node_id     TEXT,' // NL // &
         'sensor_id   TEXT,' // NL // &
         'target_id   TEXT,' // NL // &
@@ -125,7 +125,7 @@ module dm_sql
         'target_id   INTEGER NOT NULL,' // NL // &
         'id          TEXT    NOT NULL UNIQUE,' // NL // &
         'name        TEXT    NOT NULL,' // NL // &
-        'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'path        TEXT,' // NL // &
         'priority    INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -189,7 +189,7 @@ module dm_sql
         'CREATE TABLE IF NOT EXISTS sync_logs(' // NL // &
         'sync_log_id  INTEGER PRIMARY KEY,' // NL // &
         'log_id       INTEGER NOT NULL UNIQUE,' // NL // &
-        'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code         INTEGER NOT NULL DEFAULT 0,' // NL // &
         'nattempts    INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (log_id) REFERENCES logs(log_id)) STRICT'
@@ -199,7 +199,7 @@ module dm_sql
         'CREATE TABLE IF NOT EXISTS sync_nodes(' // NL // &
         'sync_node_id INTEGER PRIMARY KEY,' // NL // &
         'node_id      INTEGER NOT NULL UNIQUE,' // NL // &
-        'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code         INTEGER NOT NULL DEFAULT 0,' // NL // &
         'nattempts    INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (node_id) REFERENCES nodes(node_id)) STRICT'
@@ -209,7 +209,7 @@ module dm_sql
         'CREATE TABLE IF NOT EXISTS sync_observs(' // NL // &
         'sync_observ_id INTEGER PRIMARY KEY,' // NL // &
         'observ_id      INTEGER NOT NULL UNIQUE,' // NL // &
-        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
         'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (observ_id) REFERENCES observs(observ_id)) STRICT'
@@ -219,7 +219,7 @@ module dm_sql
         'CREATE TABLE IF NOT EXISTS sync_sensors(' // NL // &
         'sync_sensor_id INTEGER PRIMARY KEY,' // NL // &
         'sensor_id      INTEGER NOT NULL UNIQUE,' // NL // &
-        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
         'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (sensor_id) REFERENCES sensors(sensor_id)) STRICT'
@@ -229,7 +229,7 @@ module dm_sql
         'CREATE TABLE IF NOT EXISTS sync_targets(' // NL // &
         'sync_target_id INTEGER PRIMARY KEY,' // NL // &
         'target_id      INTEGER NOT NULL UNIQUE,' // NL // &
-        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%Y-%m-%dT%H:%M:%f+00:00'')),' // NL // &
+        'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
         'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (target_id) REFERENCES targets(target_id)) STRICT'
@@ -353,7 +353,7 @@ module dm_sql
     ! ******************************************************************
     ! Query to upsert beat.
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
-    !         beats.time_recv, beats.interval, beats.error
+    !            beats.time_recv, beats.interval, beats.error
     character(len=*), parameter, public :: SQL_INSERT_BEAT = &
         'INSERT INTO beats(node_id, address, version, time_sent, time_recv, error, interval, uptime) ' // &
         'VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' // &
@@ -369,7 +369,7 @@ module dm_sql
 
     ! Query to insert log.
     ! Arguments: logs.level, logs.error, logs.timestamp, logs.node_id,
-    !         logs.sensor_id, logs.target_id, logs.observ_id, logs.message
+    !            logs.sensor_id, logs.target_id, logs.observ_id, logs.message
     character(len=*), parameter, public :: SQL_INSERT_LOG = &
         'INSERT OR FAIL INTO ' // &
         'logs(id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message) ' // &
@@ -382,22 +382,22 @@ module dm_sql
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
-    !         sensors.sn, sensors.meta
+    !            sensors.sn, sensors.meta
     character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
         'INSERT OR FAIL INTO sensors(id, node_id, type, name, sn, meta, x, y, z) VALUES (' // &
         '?, (SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert target.
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
-    !         targets.x, targets.y, targets.z
+    !            targets.x, targets.y, targets.z
     character(len=*), parameter, public :: SQL_INSERT_TARGET = &
         'INSERT OR FAIL INTO targets(id, name, meta, state, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert observation.
     ! Arguments: nodes.id, sensors.id, targets.id, observs.id,
-    !         observs.name, observs.timestamp, observs.path,
-    !         observs.priority, observs.error, observs.next,
-    !         observs.nreceivers, observs.nrequests
+    !            observs.name, observs.timestamp, observs.path,
+    !            observs.priority, observs.error, observs.next,
+    !            observs.nreceivers, observs.nrequests
     character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
         'INSERT OR FAIL INTO observs ' // &
         '(id, node_id, sensor_id, target_id, name, timestamp, path, ' // &
@@ -417,9 +417,9 @@ module dm_sql
 
     ! Query to insert request.
     ! Arguments: observs.id, requests.idx, requests.request, requests.response,
-    !         requests.delimiter, requests.pattern, requests.delay,
-    !         requests.error, requests.mode, requests.retries, requests.state,
-    !         requests.timeout, requests.nresponses
+    !            requests.delimiter, requests.pattern, requests.delay,
+    !            requests.error, requests.mode, requests.retries, requests.state,
+    !            requests.timeout, requests.nresponses
     character(len=*), parameter, public :: SQL_INSERT_REQUEST = &
         'INSERT OR FAIL INTO requests(observ_id, idx, request, response, delimiter, ' // &
         'pattern, timestamp, delay, error, mode, retries, state, timeout, nresponses) VALUES (' // &
@@ -427,7 +427,7 @@ module dm_sql
 
     ! Query to insert response that references observation, request index.
     ! Arguments: responses.request_id, responses.idx, responses.name,
-    !         responses.unit, response.type, responses.error, responses.value
+    !            responses.unit, response.type, responses.error, responses.value
     character(len=*), parameter, public :: SQL_INSERT_RESPONSE = &
         'INSERT OR FAIL INTO responses(request_id, idx, name, unit, type, error, value) VALUES (' // &
         '(SELECT requests.request_id FROM requests ' // &
@@ -499,7 +499,7 @@ module dm_sql
 
     ! Query to select data points (time series) by response name and time range.
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_DATA_POINTS = &
         'SELECT ' // &
         'requests.timestamp, ' // &
@@ -601,7 +601,7 @@ module dm_sql
 
     ! Query to select number of time series by time range.
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
         'SELECT COUNT(*) FROM observs ' // &
         'INNER JOIN nodes ON nodes.node_id = observs.node_id ' // &
@@ -636,14 +636,14 @@ module dm_sql
 
     ! Query to select the number of observations by time range.
     ! Arguments: nodes.id, sensors.id, targets.id,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_NOBSERVS_BY_TIME = &
         SQL_SELECT_NOBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.timestamp >= ? AND observs.timestamp < ?'
 
     ! Query to select number of request responses by timestamp range.
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_NOBSERV_VIEWS = &
         'SELECT COUNT(*) FROM observs ' // &
         'INNER JOIN nodes ON nodes.node_id = observs.node_id ' // &
@@ -721,7 +721,7 @@ module dm_sql
 
     ! Query to select observations by time range.
     ! Arguments: nodes.id, sensors.id, targets.id,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS_BY_TIME = &
         SQL_SELECT_OBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.timestamp >= ? AND observs.timestamp < ? ' // &
@@ -729,7 +729,7 @@ module dm_sql
 
     ! Query to select request responses by timestamp range.
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name,
-    !         observs.timestamp (start), observs.timestamp (end)
+    !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_OBSERV_VIEWS = &
         'SELECT ' // &
         'observs.id, ' // &
@@ -1091,7 +1091,7 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         'SELECT ' // &
         'json_object(''id'', id, ''name'', name, ''meta'', meta, ''x'', x, ''y'', y, ''z'', z) ' // &
-        'FROM nodes ORDER BY nodes.id ASC'
+        'FROM nodes ORDER BY id ASC'
 
     ! Query to select all sensors in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
@@ -1100,11 +1100,11 @@ module dm_sql
         '''sn'', sensors.sn, ''meta'', sensors.meta, ''x'', sensors.x, ''y'', sensors.y, ''z'', sensors.z) ' // &
         'FROM sensors ' // &
         'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
-        'ORDER BY sensors.id ASC'
+        'ORDER BY id ASC'
 
     ! Query to select all targets in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
         'SELECT ' // &
         'json_object(''id'', id, ''name'', name, ''meta'', meta, ''state'', state, ''x'', x, ''y'', y, ''z'', z) ' // &
-        'FROM targets ORDER BY targets.id ASC'
+        'FROM targets ORDER BY id ASC'
 end module dm_sql

@@ -158,13 +158,13 @@ contains
     logical function test07() result(stat)
         character(len=*), parameter :: JSON = &
             '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
-            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000+00:00", "path": ' // &
+            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000000+00:00", "path": ' // &
             '"/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, "nrequests": 2, "receivers": [ ' // &
             '"dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], "requests": [ { "timestamp": ' // &
-            '"1970-01-01T00:00:00.000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
+            '"1970-01-01T00:00:00.000000+00:00", "request": "A", "response": "123.45\\r\\n", "delimiter": "\\r\\n", ' // &
             '"pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, "retries": 0, "state": 0, "timeout": 500, ' // &
             '"nresponses": 1, "responses": [ { "name": "a", "unit": "none", "type": 0, "error": 0, "value": ' // &
-            '123.450000000 } ] }, { "timestamp": "1970-01-01T00:00:00.000+00:00", "request": "B", "response": ' // &
+            '123.450000000 } ] }, { "timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "B", "response": ' // &
             '"OK\\r\\n", "delimiter": "\\r\\n", "pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, ' // &
             '"state": 0, "timeout": 500, "nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, ' // &
             '"error": 0, "value": 0.990000000000 } ] } ] }'

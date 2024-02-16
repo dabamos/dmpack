@@ -55,17 +55,18 @@ contains
 
         print *, 'Validating timestamp ...'
 
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000+00:00')) return
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000-00:00')) return
+        if (.not. dm_time_valid('1970-01-01T00:00:00.000000+00:00')) return
+        if (.not. dm_time_valid('1970-01-01T00:00:00.000000-00:00')) return
         if (.not. dm_time_valid('1970-01-01T00:00:00.000')) return
         if (.not. dm_time_valid('1970-01-01T00:00:00')) return
         if (.not. dm_time_valid('1970-01-01T')) return
         if (.not. dm_time_valid('1970')) return
 
-        if (dm_time_valid('1970-01-01T00:00:00.000+00:00 UTC')) return
-        if (dm_time_valid('1970/01/01T00:00:00.000+00:00')) return
-        if (dm_time_valid('1970-01-01 00:00:00.000+00:00')) return
-        if (dm_time_valid('1970-01-01T00:00:00.000 00:00')) return
+        if (dm_time_valid('1970-01-01T00:00:00.000+00:00')) return
+        if (dm_time_valid('1970-01-01T00:00:00.000000+00:00 UTC')) return
+        if (dm_time_valid('1970/01/01T00:00:00.000000+00:00')) return
+        if (dm_time_valid('1970-01-01 00:00:00.000000+00:00')) return
+        if (dm_time_valid('1970-01-01T00:00:00.000000 00:00')) return
         if (dm_time_valid('19')) return
 
         stat = TEST_PASSED
@@ -81,7 +82,7 @@ contains
 
         ! Timestamp 1
         print *, 'Time to Epoch ...'
-        time1 = '2023-09-10T20:30:30.000+00:00'
+        time1 = '2023-09-10T20:30:30.000000+00:00'
 
         rc = dm_time_to_unix(time1, unix1)
         if (dm_is_error(rc)) return
@@ -93,7 +94,7 @@ contains
 
         ! Timestamp 2
         print *, 'Time to Epoch ...'
-        time2 = '2023-09-10T22:30:30.000+02:00'
+        time2 = '2023-09-10T22:30:30.000000+02:00'
 
         rc = dm_time_to_unix(time2, unix2)
         if (dm_is_error(rc)) return
@@ -128,8 +129,8 @@ contains
 
         stat = TEST_FAILED
 
-        time1 = '2023-09-10T20:30:30.000+00:00'
-        time2 = '2023-09-10T22:30:30.000+02:00'
+        time1 = '2023-09-10T20:30:30.000000+00:00'
+        time2 = '2023-09-10T22:30:30.000000+02:00'
 
         rc = dm_time_diff(time1, time2, diff)
 

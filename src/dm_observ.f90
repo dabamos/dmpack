@@ -165,7 +165,10 @@ contains
         if (observ1%nrequests > 0) then
             n = observ1%nrequests
             equals = all(dm_request_equals(observ1%requests(1:n), observ2%requests(1:n)))
+            return
         end if
+
+        equals = .true.
     end function dm_observ_equals
 
     integer function dm_observ_index(observ, name, request_index, response_index) result(rc)
@@ -243,7 +246,10 @@ contains
 
         if (observ%nrequests > 0) then
             valid = all(dm_request_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))
+            return
         end if
+
+        valid = .true.
     end function dm_observ_valid
 
     pure elemental logical function dm_observ_view_equals(view1, view2) result(equals)
@@ -273,8 +279,8 @@ contains
 
     subroutine dm_observ_out(observ, unit)
         !! Prints observation to standard output or given file unit.
-        type(observ_type), intent(inout)        :: observ
-        integer,           intent(in), optional :: unit
+        type(observ_type), intent(inout)        :: observ !! Observation type.
+        integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: i, j, unit_
 

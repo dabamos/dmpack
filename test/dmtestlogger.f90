@@ -19,7 +19,7 @@ contains
     logical function test01() result(stat)
         character(len=*), parameter   :: JSON = &
             '{ "id": "f5ec2dd3870a47b5be3ae397552706fe", "level": 4, "error": 1, "timestamp": ' // &
-            '"1970-01-01T00:00:00.000+00:00", "node_id": "test-node", "sensor_id": "test-sensor", ' // &
+            '"1970-01-01T00:00:00.000000+00:00", "node_id": "test-node", "sensor_id": "test-sensor", ' // &
             '"target_id": "test-target", "observ_id": "6b0ca75ae594425a8d38adfd709b11cd", "message": "test" }'
         character(len=*), parameter   :: LOGGER_NAME  = 'dmlogger'
         character(len=*), parameter   :: TEST_MESSAGE = 'test'

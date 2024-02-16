@@ -180,9 +180,9 @@ contains
 
     function atom_entry_log(log, alt) result(xml)
         !! Returns an Atom entry from given log message.
-        type(log_type),   intent(inout)        :: log  !! Log type.
-        character(len=*), intent(in), optional :: alt  !! URL to alternate content (HTML of log).
-        character(len=:), allocatable          :: xml  !! Atom XML string.
+        type(log_type),   intent(inout)        :: log !! Log type.
+        character(len=*), intent(in), optional :: alt !! URL to alternate content (HTML of log).
+        character(len=:), allocatable          :: xml !! Atom XML string.
 
         integer :: level
 

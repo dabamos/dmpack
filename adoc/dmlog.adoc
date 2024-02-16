@@ -84,7 +84,7 @@ Send a log message to the POSIX message queue of logger `dmlogger`:
 
 ....
 $ dmlog --node dummy-node --level 3 --message "low battery" --source test --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
+2022-12-09T22:50:44.161000+01:00 [WARNING ] test - low battery
 ....
 
 The logger will receive the log message and insert it into the log database (if
@@ -92,8 +92,8 @@ the log level is greater or equal the minimum log level):
 
 ....
 $ dmlogger --node dummy-node --database logs.sqlite --verbose
-2022-12-09T22:50:44.161+01:00 [WARNING ] test - low battery
-2022-12-09T22:50:44.173+01:00 [DEBUG   ] dmlogger - log [...] inserted
+2022-12-09T22:50:44.161000+01:00 [WARNING ] test - low battery
+2022-12-09T22:50:44.173000+01:00 [DEBUG   ] dmlogger - log [...] inserted
 ....
 
 == SEE ALSO

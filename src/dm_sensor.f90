@@ -33,15 +33,15 @@ module dm_sensor
 
     type, public :: sensor_type
         !! Sensor description.
-        character(len=SENSOR_ID_LEN)   :: id       = ' '              !! Sensor id (-0-9A-Za-z).
-        character(len=NODE_ID_LEN)     :: node_id  = ' '              !! Associated sensor node.
-        integer                        :: type     = SENSOR_TYPE_NONE !! Sensor type.
-        character(len=SENSOR_NAME_LEN) :: name     = ' '              !! Sensor name.
-        character(len=SENSOR_SN_LEN)   :: sn       = ' '              !! Serial number (optional).
-        character(len=SENSOR_META_LEN) :: meta     = ' '              !! Meta information (optional).
-        real(kind=r8)                  :: x        = 0.0_r8           !! Sensor x or easting (optional).
-        real(kind=r8)                  :: y        = 0.0_r8           !! Sensor y or northing (optional).
-        real(kind=r8)                  :: z        = 0.0_r8           !! Sensor z or altitude (optional).
+        character(len=SENSOR_ID_LEN)   :: id      = ' '              !! Sensor id (-0-9A-Za-z).
+        character(len=NODE_ID_LEN)     :: node_id = ' '              !! Associated sensor node.
+        integer                        :: type    = SENSOR_TYPE_NONE !! Sensor type.
+        character(len=SENSOR_NAME_LEN) :: name    = ' '              !! Sensor name.
+        character(len=SENSOR_SN_LEN)   :: sn      = ' '              !! Serial number (optional).
+        character(len=SENSOR_META_LEN) :: meta    = ' '              !! Meta information (optional).
+        real(kind=r8)                  :: x       = 0.0_r8           !! Sensor x or easting (optional).
+        real(kind=r8)                  :: y       = 0.0_r8           !! Sensor y or northing (optional).
+        real(kind=r8)                  :: z       = 0.0_r8           !! Sensor z or altitude (optional).
     end type sensor_type
 
     integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.

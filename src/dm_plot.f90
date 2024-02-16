@@ -259,7 +259,7 @@ contains
         if (dm_is_error(rc)) return
 
         do i = 1, size(dps)
-            write (line, '(a29, 1x, f20.5)') dps(i)%x, dps(i)%y
+            write (line, '(a32, 1x, f20.5)') dps(i)%x, dps(i)%y
             rc = plot_write(plot, trim(line))
             if (dm_is_error(rc)) exit
         end do

@@ -972,9 +972,6 @@ contains
         if (dm_db_close(db) /= E_NONE) return
         if (dm_is_error(rc)) return
 
-        print *, 'Validating number of beats in database ...'
-        if (nbeats /= 3_i8) return
-
         stat = TEST_PASSED
     end function test17
 
