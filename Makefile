@@ -640,7 +640,7 @@ $(DMWEB): app/dmweb.f90 $(TARGET)
 
 # Documentation from source code.
 doc:
-	$(FORD) ford.md -d ./src
+	$(FORD) ford.md
 
 # AsciiDoc to man pages.
 man:

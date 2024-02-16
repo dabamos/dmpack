@@ -2,6 +2,7 @@ project:         DMPACK
 version:         0.9.3
 license:         isc
 doc_license:     by
+source:          false
 incl_src:        false
 graph:           true
 search:          false
@@ -10,9 +11,8 @@ summary:         **Deformation Monitoring Package (DMPACK)** – A software
                  library in Fortran 2018 for automatic deformation monitoring in
                  the Internet of Things on Linux and FreeBSD.
 author:          Philipp Engel
-project_website: https://www.dabamos.de
-project_url:     https://www.dabamos.de/dmpack/doc
 project_github:  https://github.com/dabamos/dmpack
+project_website: https://www.dabamos.de
 
 This is the source code documentation of the DMPACK library. Import module
 `dmpack` to access any of the procedures in the library:
