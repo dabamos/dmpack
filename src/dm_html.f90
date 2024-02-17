@@ -242,8 +242,10 @@ contains
                H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Address' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Version' // H_TH_END // &
-               H_TD // dm_html_encode(beat%version) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Client' // H_TH_END // &
+               H_TD // dm_html_encode(beat%client) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Library' // H_TH_END // &
+               H_TD // dm_html_encode(beat%library) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
                H_TD // dm_html_encode(beat%time_sent // ' (' // trim(beats_sent) // ')') // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &

@@ -2,11 +2,11 @@
 ! Licence: ISC
 module dm_request
     !! The observation request data derived type declaration.
-    use :: dm_ascii
     use :: dm_error
     use :: dm_id
     use :: dm_kind
     use :: dm_response
+    use :: dm_string
     use :: dm_time
     use :: dm_util
     implicit none (type, external)
@@ -69,6 +69,7 @@ module dm_request
 
     public :: operator (==)
 
+    ! Public procedures.
     public :: dm_request_add
     public :: dm_request_equals
     public :: dm_request_get
@@ -78,6 +79,7 @@ module dm_request
     public :: dm_request_out
     public :: dm_request_valid
 
+    ! Private procedures.
     private :: request_set_i4
     private :: request_set_i8
     private :: request_set_l
@@ -156,7 +158,6 @@ contains
                 return
             end if
         end do
-
     end function dm_request_index
 
     integer function dm_request_set_response_error(request, error, name) result(rc)
@@ -189,7 +190,6 @@ contains
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate timestamp.
 
-        integer :: i
         logical :: timestamp_
 
         valid = .false.
@@ -201,9 +201,7 @@ contains
             if (.not. dm_time_valid(request%timestamp)) return
         end if
 
-        do i = 1, len_trim(request%request)
-            if (.not. dm_ascii_is_printable(request%request(i:i))) return
-        end do
+        if (.not. dm_string_is_printable(request%request)) return
 
         if (request%delay < 0)   return
         if (request%error < 0)   return

@@ -46,12 +46,14 @@ contains
 
     logical function test02() result(stat)
         character(len=:), allocatable :: json
-        type(beat_type)             :: beat
+        type(beat_type)               :: beat
 
         stat = TEST_FAILED
 
         beat%node_id = 'dummy-node'
         beat%address = '127.0.0.1'
+        beat%client  = 'dmtestjson ' // DM_VERSION_STRING
+        beat%library = 'DMPACK ' // DM_VERSION_STRING
 
         print *, 'Writing beat to JSON string ...'
         json = dm_json_from(beat)

@@ -48,7 +48,7 @@ program dmtestdb
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 18
+    integer, parameter :: NTESTS   = 19
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -71,6 +71,7 @@ program dmtestdb
     tests(16) = test_type('dmtestdb.test16', test16)
     tests(17) = test_type('dmtestdb.test17', test17)
     tests(18) = test_type('dmtestdb.test18', test18)
+    tests(19) = test_type('dmtestdb.test19', test19)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -976,6 +977,45 @@ contains
     end function test17
 
     logical function test18() result(stat)
+        !! Tests JSON output of SQLite (nodes).
+        character(len=DB_JSON_NODE_LEN), allocatable :: json_nodes(:)
+
+        integer          :: rc
+        integer(kind=i8) :: nnodes
+        type(db_type)    :: db
+
+        stat = TEST_FAILED
+
+        print *, 'Opening database "' // DB_OBSERV // '" ...'
+        if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
+
+        test_block: block
+            print *, 'Selecting nodes in JSON format ...'
+            rc = dm_db_select_json_nodes(db, json_nodes, limit=1_i8, nnodes=nnodes)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = E_ERROR
+            if (.not. allocated(json_nodes)) exit test_block
+            if (size(json_nodes) /= 1) exit test_block
+
+            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_nodes(1)), DB_JSON_NODE_LEN
+            print *, 'JSON:'
+            print '(72("."))'
+            print '(a)', trim(json_nodes(1))
+            print '(72("."))'
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_error_out(rc)
+        print *, 'Closing database "' // DB_OBSERV // '" ...'
+        if (dm_db_close(db) /= E_NONE) return
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test18
+
+    logical function test19() result(stat)
         !! Tests PRAGMAs.
         integer, parameter :: USER_VERSION = 1
 
@@ -1026,5 +1066,5 @@ contains
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
-    end function test18
+    end function test19
 end program dmtestdb

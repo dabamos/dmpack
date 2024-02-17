@@ -56,7 +56,8 @@ module dm_sql
         'beat_id   INTEGER PRIMARY KEY,' // NL // &
         'node_id   TEXT    NOT NULL UNIQUE,' // NL // &
         'address   TEXT,' // NL // &
-        'version   TEXT,' // NL // &
+        'client    TEXT,' // NL // &
+        'library   TEXT,' // NL // &
         'time_sent TEXT    NOT NULL DEFAULT ''1970-01-01T00:00:00.000000+00:00'',' // NL // &
         'time_recv TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'error     INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -355,12 +356,13 @@ module dm_sql
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
     !            beats.time_recv, beats.interval, beats.error
     character(len=*), parameter, public :: SQL_INSERT_BEAT = &
-        'INSERT INTO beats(node_id, address, version, time_sent, time_recv, error, interval, uptime) ' // &
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?) ' // &
+        'INSERT INTO beats(node_id, address, client, library, time_sent, time_recv, error, interval, uptime) ' // &
+        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'node_id = excluded.node_id, ' // &
         'address = excluded.address, ' // &
-        'version = excluded.version, ' // &
+        'client = excluded.client, ' // &
+        'library = excluded.library, ' // &
         'time_sent = excluded.time_sent, ' // &
         'time_recv = excluded.time_recv, ' // &
         'error = excluded.error, ' // &
@@ -489,12 +491,12 @@ module dm_sql
     ! Query to select beat by node id.
     ! Arguments: beats.node_id
     character(len=*), parameter, public :: SQL_SELECT_BEAT = &
-        'SELECT node_id, address, version, time_sent, time_recv, error, interval, uptime ' // &
+        'SELECT node_id, address, client, library, time_sent, time_recv, error, interval, uptime ' // &
         'FROM beats WHERE node_id = ?'
 
     ! Query to select all beats.
     character(len=*), parameter, public :: SQL_SELECT_BEATS = &
-        'SELECT node_id, address, version, time_sent, time_recv, error, interval, uptime ' // &
+        'SELECT node_id, address, client, library, time_sent, time_recv, error, interval, uptime ' // &
         'FROM beats ORDER BY node_id ASC'
 
     ! Query to select data points (time series) by response name and time range.
@@ -1064,20 +1066,13 @@ module dm_sql
     ! ******************************************************************
     ! JSON SELECT QUERIES.
     ! ******************************************************************
-    ! Query to select beat by node id in JSON format.
-    ! Arguments: beats.node_id
-    character(len=*), parameter, public :: SQL_SELECT_JSON_BEAT = &
-        'SELECT ' // &
-        'json_object(''node_id'', node_id, ''address'', address, ''version'', version, ''time_sent'', time_sent, ' // &
-        '''time_recv'', time_recv, ''error'', error, ''interval'', interval, ''uptime'', uptime) ' // &
-        'FROM beats WHERE node_id = ?'
-
     ! Query to select all beats in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_BEATS = &
         'SELECT ' // &
-        'json_object(''node_id'', node_id, ''address'', address, ''version'', version, ''time_sent'', time_sent, ' // &
-        '''time_recv'', time_recv, ''error'', error, ''interval'', interval, ''uptime'', uptime) ' // &
-        'FROM beats ORDER BY node_id ASC'
+        'json_object(''node_id'', node_id, ''address'', address, ''client'', client, ''library'', library, ' // &
+        '''time_sent'', time_sent, ''time_recv'', time_recv, ''error'', error, ''interval'', interval, ' // &
+        '''uptime'', uptime) ' // &
+        'FROM beats'
 
     ! Query to select all logs in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_LOGS = &
@@ -1091,7 +1086,7 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         'SELECT ' // &
         'json_object(''id'', id, ''name'', name, ''meta'', meta, ''x'', x, ''y'', y, ''z'', z) ' // &
-        'FROM nodes ORDER BY id ASC'
+        'FROM nodes'
 
     ! Query to select all sensors in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
@@ -1099,8 +1094,7 @@ module dm_sql
         'json_object(''id'', sensors.id, ''node_id'', nodes.id, ''type'', sensors.type, ''name'', ''sensors.name, ' // &
         '''sn'', sensors.sn, ''meta'', sensors.meta, ''x'', sensors.x, ''y'', sensors.y, ''z'', sensors.z) ' // &
         'FROM sensors ' // &
-        'INNER JOIN nodes ON nodes.node_id = sensors.node_id ' // &
-        'ORDER BY id ASC'
+        'INNER JOIN nodes ON nodes.node_id = sensors.node_id'
 
     ! Query to select all targets in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &

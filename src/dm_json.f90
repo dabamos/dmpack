@@ -107,11 +107,12 @@ contains
 
         json = '{ "node_id": "'  // trim(beat%node_id)     // '",' // &
                ' "address": "'   // trim(beat%address)     // '",' // &
-               ' "version": "'   // trim(beat%version)     // '",' // &
+               ' "client": "'    // trim(beat%client)      // '",' // &
+               ' "library": "'   // trim(beat%library)     // '",' // &
                ' "time_sent": "' // trim(beat%time_sent)   // '",' // &
                ' "time_recv": "' // trim(beat%time_recv)   // '",' // &
-               ' "error": '      // dm_itoa(beat%error)    // ',' // &
-               ' "interval": '   // dm_itoa(beat%interval) // ',' // &
+               ' "error": '      // dm_itoa(beat%error)    // ','  // &
+               ' "interval": '   // dm_itoa(beat%interval) // ','  // &
                ' "uptime": '     // dm_itoa(beat%uptime)   //  ' }'
     end function json_from_beat
 
@@ -188,8 +189,8 @@ contains
         character(len=:), allocatable :: json !! Alloctable JSON string.
 
         json = '{ "id": "'       // trim(log%id)        // '",' // &
-               ' "level": '      // dm_itoa(log%level)  // ',' // &
-               ' "error": '      // dm_itoa(log%error)  // ',' // &
+               ' "level": '      // dm_itoa(log%level)  // ','  // &
+               ' "error": '      // dm_itoa(log%error)  // ','  // &
                ' "timestamp": "' // trim(log%timestamp) // '",' // &
                ' "node_id": "'   // trim(log%node_id)   // '",' // &
                ' "sensor_id": "' // trim(log%sensor_id) // '",' // &
@@ -235,8 +236,8 @@ contains
         json = '{ "id": "'  // trim(node%id)   // '",' // &
                ' "name": "' // trim(node%name) // '",' // &
                ' "meta": "' // trim(node%meta) // '",' // &
-               ' "x": '     // dm_ftoa(node%x) // ',' // &
-               ' "y": '     // dm_ftoa(node%y) // ',' // &
+               ' "x": '     // dm_ftoa(node%x) // ','  // &
+               ' "y": '     // dm_ftoa(node%y) // ','  // &
                ' "z": '     // dm_ftoa(node%z) // ' }'
     end function json_from_node
 
@@ -377,12 +378,12 @@ contains
 
         json = '{ "id": "'     // trim(sensor%id)      // '",' // &
                ' "node_id": "' // trim(sensor%node_id) // '",' // &
-               ' "type": '     // dm_itoa(sensor%type) // ',' // &
+               ' "type": '     // dm_itoa(sensor%type) // ','  // &
                ' "name": "'    // trim(sensor%name)    // '",' // &
                ' "sn": "'      // trim(sensor%sn)      // '",' // &
                ' "meta": "'    // trim(sensor%meta)    // '",' // &
-               ' "x": '        // dm_ftoa(sensor%x)    // ',' // &
-               ' "y": '        // dm_ftoa(sensor%y)    // ',' // &
+               ' "x": '        // dm_ftoa(sensor%x)    // ','  // &
+               ' "y": '        // dm_ftoa(sensor%y)    // ','  // &
                ' "z": '        // dm_ftoa(sensor%z)    // ' }'
     end function json_from_sensor
 

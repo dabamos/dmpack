@@ -32,7 +32,7 @@ program dmweb
     ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 1
+    integer, parameter :: APP_PATCH = 2
 
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.

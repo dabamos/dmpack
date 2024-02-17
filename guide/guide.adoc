@@ -367,8 +367,8 @@ _observation_.
 === Beat Entities
 
 Beat:: Short status message (heartbeat, handshake) that contains node id,
-client address, client library version, time stamp, system uptime, and last
-connection error, sent periodically from client to server.
+client address, client version, time stamp, system uptime, and last connection
+error, sent periodically from client to server.
 
 === RPC Entities
 
@@ -2213,7 +2213,7 @@ auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 # extforward.headers = ( "X-Real-IP" )
 # extforward.forwarder = ( "<PROXY IP>" => "trust" )
 
-# FastCGI configuration. Run two worker processes, and pass the database paths
+# FastCGI configuration. Run 4 worker processes, and pass the database paths
 # through environment variables.
 fastcgi.server = (
   "/api/v1" => ((
@@ -3426,9 +3426,10 @@ error=0
 
 | `node_id`   | string  | 32   | Node id (`-0-9A-Za-z`).
 | `address`   | string  | 45   | IPv4/IPv6 address of client.
-| `version`   | string  | 16   | DMPACK library version of client.
-| `time_sent` | string  | 30   | Date and time heartbeat was sent (ISO 8601).
-| `time_recv` | string  | 30   | Date and time heartbeat was received (ISO 8601).
+| `client`    | string  | 16   | Client software name and version.
+| `library`   | string  | 16   | Client library name and version.
+| `time_sent` | string  | 32   | Date and time heartbeat was sent (ISO 8601).
+| `time_recv` | string  | 32   | Date and time heartbeat was received (ISO 8601).
 | `error`     | integer | 4    | Last client connection <<error-codes,error>>.
 | `interval`  | integer | 4    | Emit interval in seconds.
 | `uptime`    | integer | 4    | Client uptime in seconds.
@@ -3441,12 +3442,13 @@ error=0
 
 | 1      | `node_id`   | Node id.
 | 2      | `address`   | IP address of client.
-| 3      | `version`   | DMPACK library version of client.
-| 4      | `time_sent` | Date and time heartbeat was sent.
-| 5      | `time_recv` | Date and time heartbeat was received.
-| 6      | `error`     | Error code.
-| 7      | `interval`  | Emit interval in seconds.
-| 8      | `uptime`    | Client uptime in seconds.
+| 3      | `client`    | Client software name and version.
+| 4      | `library`   | Client library name and version.
+| 5      | `time_sent` | Date and time heartbeat was sent.
+| 6      | `time_recv` | Date and time heartbeat was received.
+| 7      | `error`     | Error code.
+| 8      | `interval`  | Emit interval in seconds.
+| 9      | `uptime`    | Client uptime in seconds.
 |===
 
 .JSON [[data-beat-json]]
@@ -3455,7 +3457,8 @@ error=0
 {
   "node_id": "dummy-node",
   "address": "127.0.0.1",
-  "version": "DMPACK 1.0.0",
+  "client": "dmbeat 1.0.0",
+  "library": "DMPACK 1.0.0",
   "time_sent": "1970-01-01T00:00:00.000000+00:00",
   "time_recv": "1970-01-01T00:00:00.000000+00:00",
   "error": 0,
@@ -3470,7 +3473,8 @@ error=0
 &DMBEAT
 BEAT%NODE_ID="dummy-node",
 BEAT%ADDRESS="127.0.0.1",
-BEAT%VERSION="DMPACK 1.0.0",
+BEAT%CLIENT="dmbeat 1.0.0",
+BEAT%LIBRARY="DMPACK 1.0.0",
 BEAT%TIME_SENT="1970-01-01T00:00:00.000000+00:00",
 BEAT%TIME_RECV="1970-01-01T00:00:00.000000+00:00",
 BEAT%ERROR=0,
@@ -3969,7 +3973,7 @@ OBSERV%NODE_ID="dummy-node",
 OBSERV%SENSOR_ID="dummy-sensor",
 OBSERV%TARGET_ID="dummy-target",
 OBSERV%NAME="dummy-observ",
-OBSERV%TIMESTAMP="1970-01-01T00:00:00.0000+00:00",
+OBSERV%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
 OBSERV%PATH="/dev/null",
 OBSERV%PRIORITY=0,
 OBSERV%ERROR=0,
@@ -3977,7 +3981,7 @@ OBSERV%NEXT=0,
 OBSERV%NRECEIVERS=2,
 OBSERV%NREQUESTS=1,
 OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
-OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.0000+00:00",
+OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
 OBSERV%REQUESTS(1)%REQUEST="?\n",
 OBSERV%REQUESTS(1)%RESPONSE="10.0\n",
 OBSERV%REQUESTS(1)%DELIMITER="\n",

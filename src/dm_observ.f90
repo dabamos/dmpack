@@ -162,8 +162,9 @@ contains
             if (observ1%receivers(i) /= observ2%receivers(i)) return
         end do
 
-        if (observ1%nrequests > 0) then
-            n = observ1%nrequests
+        n = observ1%nrequests
+
+        if (n > 0) then
             equals = all(dm_request_equals(observ1%requests(1:n), observ2%requests(1:n)))
             return
         end if

@@ -7,6 +7,26 @@ module dm_string
     implicit none (type, external)
     private
 
+    interface dm_lower
+        !! Alias for procedure.
+        module procedure :: dm_string_lower
+    end interface
+
+    interface dm_upper
+        !! Alias for procedure.
+        module procedure :: dm_string_upper
+    end interface
+
+    interface dm_to_lower
+        !! Alias for procedure.
+        module procedure :: dm_string_to_lower
+    end interface
+
+    interface dm_to_upper
+        !! Alias for procedure.
+        module procedure :: dm_string_to_upper
+    end interface
+
     interface dm_string_to
         !! Generic string to number converter.
         module procedure :: string_to_i4
@@ -29,13 +49,18 @@ module dm_string
     public :: dm_to_lower
     public :: dm_to_upper
 
+    public :: dm_string_to
+    public :: dm_string_from
+
     public :: dm_string_count_char
     public :: dm_string_count_lines
     public :: dm_string_count_substring
+    public :: dm_string_is_printable
+    public :: dm_string_lower
     public :: dm_string_split
-
-    public :: dm_string_to
-    public :: dm_string_from
+    public :: dm_string_to_lower
+    public :: dm_string_to_upper
+    public :: dm_string_upper
 
     ! Private procedures.
     private :: string_from_i4
@@ -101,7 +126,22 @@ contains
         end do
     end function dm_string_count_substring
 
-    pure elemental function dm_lower(str) result(lower)
+    pure logical function dm_string_is_printable(str) result(is_printable)
+        !! Returns `.true.` if all characters is given string are printable
+        !! ASCII characters.
+        use :: dm_ascii, only: dm_ascii_is_printable
+        character(len=*), intent(in) :: str !! String to validate.
+        integer                      :: i
+
+        is_printable = .true.
+
+        do i = 1, len_trim(str)
+            is_printable = dm_ascii_is_printable(str(i:i))
+            if (.not. is_printable) return
+        end do
+    end function dm_string_is_printable
+
+    pure elemental function dm_string_lower(str) result(lower)
         !! Returns given string in lower case.
         character(len=*), intent(in) :: str   !! String to convert.
         character(len=len(str))      :: lower !! Result.
@@ -114,9 +154,9 @@ contains
             if (a >= 'A' .and. a <= 'Z') a = achar(iachar(a) + 32)
             lower(i:i) = a
         end do
-    end function dm_lower
+    end function dm_string_lower
 
-    pure elemental function dm_upper(str) result(upper)
+    pure elemental function dm_string_upper(str) result(upper)
         !! Returns given string in upper case.
         character(len=*), intent(in) :: str   !! String to convert.
         character(len=len(str))      :: upper !! Result.
@@ -129,7 +169,7 @@ contains
             if (a >= 'a' .and. a <= 'z') a = achar(iachar(a) - 32)
             upper(i:i) = a
         end do
-    end function dm_upper
+    end function dm_string_upper
 
     subroutine dm_string_split(str, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.
@@ -161,7 +201,7 @@ contains
         if (present(n)) n = i
     end subroutine dm_string_split
 
-    subroutine dm_to_lower(str)
+    subroutine dm_string_to_lower(str)
         !! Converts given string to lower case.
         character(len=*), intent(inout) :: str !! Input/output string.
 
@@ -172,9 +212,9 @@ contains
             a = str(i:i)
             if (a >= 'A' .and. a <= 'Z') str(i:i) = achar(iachar(a) + 32)
         end do
-    end subroutine dm_to_lower
+    end subroutine dm_string_to_lower
 
-    subroutine dm_to_upper(str)
+    subroutine dm_string_to_upper(str)
         !! Converts given string to upper case.
         character(len=*), intent(inout) :: str !! Input/output string.
 
@@ -185,7 +225,7 @@ contains
             a = str(i:i)
             if (a >= 'a' .and. a <= 'z') str(i:i) = achar(iachar(a) - 32)
         end do
-    end subroutine dm_to_upper
+    end subroutine dm_string_to_upper
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

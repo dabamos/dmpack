@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
 
@@ -182,10 +182,13 @@ contains
         !! Runs main loop to emit heartbeats.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=:), allocatable :: url
-        integer                       :: last_error
-        integer                       :: i, rc, t
-        integer(kind=i8)              :: uptime
+        character(len=BEAT_CLIENT_LEN)  :: client  ! Client name and version.
+        character(len=BEAT_LIBRARY_LEN) :: library ! Library name and version.
+        character(len=:), allocatable   :: url     ! URL of HTTP-RPC API endpoint.
+
+        integer          :: last_error
+        integer          :: i, rc, t
+        integer(kind=i8) :: uptime
 
         type(api_status_type)   :: api
         type(beat_type)         :: beat
@@ -195,9 +198,13 @@ contains
 
         call dm_log(LOG_INFO, 'started ' // app%name)
 
+        ! Client and library version.
+        client  = APP_NAME // ' ' // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH)
+        library = 'DMPACK ' // DM_VERSION_STRING
+
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &
-                         port     = app%port,&
+                         port     = app%port, &
                          endpoint = RPC_ROUTE_BEAT, &
                          tls      = app%tls)
 
@@ -210,7 +217,8 @@ contains
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
-                             version   = 'DMPACK ' // DM_VERSION_STRING, &
+                             client    = client, &
+                             library   = library, &
                              time_sent = dm_time_now(), &
                              interval  = app%interval, &
                              error     = last_error)
