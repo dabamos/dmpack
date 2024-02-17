@@ -39,7 +39,7 @@ module dm_time
     public :: dm_time_zone
 contains
     pure elemental character(len=TIME_LEN) &
-    function dm_time_create(year, month, day, hour, minute, second, msecond, zone) result(str)
+    function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(str)
         !! Returns a time stamp in ISO 8601/RFC 3339 of the form
         !! `1970-01-01T00:00:00.000000+00:00`. Optional argument `zone` sets the
         !! time zone and has to be of the form `[+|-]hh:mm`, for example,
@@ -53,11 +53,11 @@ contains
         integer,          intent(in), optional :: hour    !! Hour (`hh`).
         integer,          intent(in), optional :: minute  !! Minute (`mm`).
         integer,          intent(in), optional :: second  !! Second (`ss`).
-        integer,          intent(in), optional :: msecond !! Millisecond (`ffffff`).
+        integer,          intent(in), optional :: usecond !! Microsecond (`ffffff`).
         character(len=6), intent(in), optional :: zone    !! Timezone (`[+|-]hh:mm`).
 
         integer          :: year_, month_, day_
-        integer          :: hour_, minute_, second_, msecond_
+        integer          :: hour_, minute_, second_, usecond_
         character(len=6) :: zone_
 
         year_    = 1970
@@ -66,7 +66,7 @@ contains
         hour_    = 0
         minute_  = 0
         second_  = 0
-        msecond_ = 0
+        usecond_ = 0
         zone_    = '+00:00'
 
         if (present(year))    year_    = year
@@ -75,10 +75,10 @@ contains
         if (present(hour))    hour_    = hour
         if (present(minute))  minute_  = minute
         if (present(second))  second_  = second
-        if (present(msecond)) msecond_ = msecond
+        if (present(usecond)) usecond_ = usecond
         if (present(zone))    zone_    = zone
 
-        write (str, FMT_ISO) year_, month_, day_, hour_, minute_, second_, msecond_, zone_
+        write (str, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
 
     pure elemental subroutine dm_time_delta_from_seconds(time_delta, seconds)
@@ -126,25 +126,25 @@ contains
         if (seconds_) str = str // dm_itoa(time_delta%seconds) // ' secs'
     end function dm_time_delta_to_string
 
-    impure elemental integer function dm_time_diff(time1, time2, diff) result(rc)
-        !! Returns the time delta between `time1` and `time2` as `diff` in
-        !! seconds.
-        character(len=*), intent(in)  :: time1 !! ISO 8601 time stamp.
-        character(len=*), intent(in)  :: time2 !! ISO 8601 time stamp.
-        integer(kind=i8), intent(out) :: diff  !! Time delta in seconds.
+    impure elemental integer function dm_time_diff(time1, time2, seconds) result(rc)
+        !! Returns the time delta between `time1` and `time2` as `seconds`
+        !! measured in seconds.
+        character(len=*), intent(in)  :: time1   !! ISO 8601 time stamp.
+        character(len=*), intent(in)  :: time2   !! ISO 8601 time stamp.
+        integer(kind=i8), intent(out) :: seconds !! Time delta in seconds.
 
-        integer          :: m1, m2
-        integer(kind=i8) :: t1, t2
+        integer          :: u1, u2 ! Microseconds.
+        integer(kind=i8) :: t1, t2 ! Seconds.
 
-        diff = 0_i8
+        seconds = 0_i8
 
-        rc = dm_time_to_unix(time1, t1, m1)
+        rc = dm_time_to_unix(time1, t1, u1)
         if (dm_is_error(rc)) return
 
-        rc = dm_time_to_unix(time2, t2, m2)
+        rc = dm_time_to_unix(time2, t2, u2)
         if (dm_is_error(rc)) return
 
-        diff = abs(t2 - t1) + int((m2 - m1) / 1000.0, kind=i8)
+        seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
     end function dm_time_diff
 
     impure elemental integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
@@ -262,7 +262,7 @@ contains
         write (beats, '("@", f0.2)') b
     end function dm_time_to_beats
 
-    impure elemental integer function dm_time_to_unix(time, epoch, usecond) result(rc)
+    impure elemental integer function dm_time_to_unix(time, epoch, useconds) result(rc)
         !! Converts ISO 8601/RFC 3339 time stamp to Unix time stamp (Epoch).
         !! The function calls `timegm()` internally (not in POSIX, but
         !! available since 4.3BSD), and then removes the time zone offset. The
@@ -270,48 +270,49 @@ contains
         !!
         !! The function returns `E_INVALID` if the passed ISO 8601 time stamp
         !! is invalid. If the call to `timegm()` fails, `E_SYSTEM` is returned.
-        use :: unix, only: c_timegm, c_tm
+        use :: unix
         character(len=*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i6, i3, 1x, i2)'
 
-        character(len=*), intent(in)            :: time    !! ISO 8601 time stamp.
-        integer(kind=i8), intent(out)           :: epoch   !! Unix time stamp.
-        integer,          intent(out), optional :: usecond !! Additional microseconds.
+        character(len=*), intent(in)            :: time     !! ISO 8601 time stamp.
+        integer(kind=i8), intent(out)           :: epoch    !! Unix time stamp.
+        integer,          intent(out), optional :: useconds !! Additional microseconds.
 
         integer    :: stat
-        integer    :: year, month, day
-        integer    :: hour, minute, second, usec
-        integer    :: tz, tz_hour, tz_minute
+        integer    :: tm_year, tm_mon, tm_mday
+        integer    :: tm_hour, tm_min, tm_sec, tm_usec
+        integer    :: tm_tz
+        integer    :: tz_hour, tz_min
         type(c_tm) :: tm
 
         rc = E_INVALID
 
         epoch = 0_i8
-        read (time, FMT_ISO, iostat=stat) year, month, day, &
-                                          hour, minute, second, usec, &
-                                          tz_hour, tz_minute
+        read (time, FMT_ISO, iostat=stat) tm_year, tm_mon, tm_mday, &
+                                          tm_hour, tm_min, tm_sec, tm_usec, &
+                                          tz_hour, tz_min
         if (stat /= 0) return
 
-        tm = c_tm(tm_sec  = second, &
-                  tm_min  = minute, &
-                  tm_hour = hour, &
-                  tm_mday = day, &
-                  tm_mon  = month - 1, &
-                  tm_year = year - 1900)
+        tm = c_tm(tm_sec    = tm_sec, &
+                  tm_min    = tm_min, &
+                  tm_hour   = tm_hour, &
+                  tm_mday   = tm_mday, &
+                  tm_mon    = tm_mon - 1, &
+                  tm_year   = tm_year - 1900)
 
-        tz = (tz_hour * 3600) + (tz_minute * 60)
-        epoch = c_timegm(tm) - tz
+        tm_tz = (tz_hour * 3600) + (tz_min * 60)
+        epoch = c_timegm(tm) - tm_tz
 
         rc = E_SYSTEM
         if (epoch < 0) return
 
-        if (present(usecond)) usecond = usec
+        if (present(useconds)) useconds = tm_usec
         rc = E_NONE
     end function dm_time_to_unix
 
     pure elemental logical function dm_time_valid(time) result(valid)
         !! Returns `.true.` if given time stamp follows the form of ISO 8601. The
         !! time stamp does not have to be complete to be valid. The minimum
-        !! length of a time stamp to be valid is 4.
+        !! length of a time stamp to be valid is 4 characters.
         use :: dm_ascii, only: dm_ascii_is_digit
         character(len=*), intent(in) :: time !! ISO 8601 time stamp to validate.
 

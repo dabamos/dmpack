@@ -5,7 +5,7 @@
 program dmtesttime
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 5
+    integer, parameter :: NTESTS = 6
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -15,6 +15,7 @@ program dmtesttime
     tests(3) = test_type('dmtesttime.test03', test03)
     tests(4) = test_type('dmtesttime.test04', test04)
     tests(5) = test_type('dmtesttime.test05', test05)
+    tests(6) = test_type('dmtesttime.test06', test06)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -22,19 +23,19 @@ contains
     logical function test01() result(stat)
         character(len=TIME_LEN) :: timestamp
         integer                 :: rc
-        integer                 :: mseconds
+        integer                 :: useconds
         integer(kind=i8)        :: seconds
 
         stat = TEST_FAILED
 
         timestamp = dm_time_now()
-        rc = dm_time_to_unix(timestamp, seconds, mseconds)
+        rc = dm_time_to_unix(timestamp, seconds, useconds)
         call dm_perror(rc)
         if (dm_is_error(rc)) return
 
         print '(" ISO 8601: ", a)',  timestamp
         print '(" seconds.: ", i0)', seconds
-        print '(" mseconds: ", i0)', mseconds
+        print '(" useconds: ", i0)', useconds
 
         stat = TEST_PASSED
     end function test01
@@ -141,6 +142,66 @@ contains
         if (dm_is_error(rc)) return
         if (diff /= 0) return
 
+        time1 = '2023-09-10T20:30:30.000000+00:00'
+        time2 = '2023-09-10T20:32:00.000000+00:00'
+
+        rc = dm_time_diff(time1, time2, diff)
+
+        print *, 'Time 1: ', time1
+        print *, 'Time 2: ', time2
+        print *, 'Diff:   ', diff
+
+        if (dm_is_error(rc)) return
+        if (diff /= 90) return
+
         stat = TEST_PASSED
     end function test05
+
+    logical function test06() result(stat)
+        character(len=:), allocatable :: diff_string
+        character(len=TIME_LEN)       :: time1, time2
+        integer                       :: rc
+        integer                       :: u1, u2
+        integer(kind=i8)              :: t1, t2
+        integer(kind=i8)              :: diff
+        type(time_delta_type)         :: time_delta
+
+        stat = TEST_FAILED
+
+        time1 = '2023-09-10T20:30:00.100000+01:00'
+        time2 = '2023-09-10T20:32:00.200000+01:00'
+
+        print *, 'Time 1: ', time1
+        print *, 'Time 2: ', time2
+
+        rc = dm_time_to_unix(time1, t1, u1)
+        if (dm_is_error(rc)) return
+        rc = dm_time_to_unix(time2, t2, u2)
+        if (dm_is_error(rc)) return
+
+        diff = abs(t2 - t1)
+
+        print *, 'Epoch 1: ', t1, u1
+        print *, 'Epoch 2: ', t2, u2
+        print *, 'Diff:    ', diff
+
+        if (diff /= 120) return
+
+        rc = dm_time_diff(time1, time2, diff)
+
+        print *, 'Time 1:  ', time1
+        print *, 'Time 2:  ', time2
+        print *, 'Diff:    ', diff
+
+        if (dm_is_error(rc)) return
+        if (diff /= 120) return
+
+        call dm_time_delta_from_seconds(time_delta, diff)
+        diff_string = dm_time_delta_to_string(time_delta)
+
+        print *, 'String:  ', diff_string
+        if (diff_string /= '0 days 0 hours 2 mins 0 secs') return
+
+        stat = TEST_PASSED
+    end function test06
 end program dmtesttime

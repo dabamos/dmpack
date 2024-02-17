@@ -440,7 +440,7 @@ contains
                                        hour    = int(r(2) * 23), &
                                        minute  = int(r(3) * 60), &
                                        second  = int(r(4) * 60), &
-                                       msecond = int(r(5) * 1000))
+                                       usecond = int(r(5) * 1000))
             call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(6) * PI))
         end do
 
@@ -525,7 +525,7 @@ contains
                                        hour    = int(r(1) * 23), &
                                        minute  = int(r(2) * 60), &
                                        second  = int(r(3) * 60), &
-                                       msecond = int(r(4) * 1000))
+                                       usecond = int(r(4) * 1000))
             call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(5) * PI))
         end do
 
