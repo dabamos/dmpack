@@ -5,7 +5,7 @@
 program dmtesttime
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 6
+    integer, parameter :: NTESTS = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -16,6 +16,7 @@ program dmtesttime
     tests(4) = test_type('dmtesttime.test04', test04)
     tests(5) = test_type('dmtesttime.test05', test05)
     tests(6) = test_type('dmtesttime.test06', test06)
+    tests(7) = test_type('dmtesttime.test07', test07)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -64,6 +65,7 @@ contains
         if (.not. dm_time_valid('1970')) return
 
         if (dm_time_valid('1970-01-01T00:00:00.000+00:00')) return
+        if (dm_time_valid('1970-01-01T00:00:00.000000Z')) return
         if (dm_time_valid('1970-01-01T00:00:00.000000+00:00 UTC')) return
         if (dm_time_valid('1970/01/01T00:00:00.000000+00:00')) return
         if (dm_time_valid('1970-01-01 00:00:00.000000+00:00')) return
@@ -204,4 +206,23 @@ contains
 
         stat = TEST_PASSED
     end function test06
+
+    logical function test07() result(stat)
+        character(len=TIME_LEN) :: time1
+        character(len=25)       :: time2
+
+        stat = TEST_FAILED
+
+        print *, 'Stripping useconds ...'
+
+        time1 = '2023-09-10T20:30:30.123456+00:00'
+        time2 = dm_time_strip_useconds(time1)
+
+        print *, 'Full:  ', time1
+        print *, 'Short: ', time2
+
+        if (time2 /= '2023-09-10T20:30:30+00:00') return
+
+        stat = TEST_PASSED
+    end function test07
 end program dmtesttime

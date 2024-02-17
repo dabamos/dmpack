@@ -117,6 +117,6 @@ contains
         !! Initialises DMPACK. Shall be executed once before any DMPACK
         !! routines are called to initialise the PRNG.
 
-        call random_init(.false., .false.)
+        call random_init(repeatable=.false., image_distinct=.false.)
     end subroutine dm_init
 end module dmpack

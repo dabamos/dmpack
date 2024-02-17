@@ -32,7 +32,7 @@ program dmweb
     ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 2
+    integer, parameter :: APP_PATCH = 3
 
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
@@ -921,10 +921,10 @@ contains
             integer(kind=i8)             :: nobservs
             type(cgi_param_type)         :: param
 
-            type(node_type),   allocatable  :: nodes(:)
-            type(observ_type), allocatable  :: observs(:)
-            type(sensor_type), allocatable  :: sensors(:)
-            type(target_type), allocatable  :: targets(:)
+            type(node_type),   allocatable :: nodes(:)
+            type(observ_type), allocatable :: observs(:)
+            type(sensor_type), allocatable :: sensors(:)
+            type(target_type), allocatable :: targets(:)
 
             max_results = [ 25, 50, 100, 250, 500, 1000 ]
 
@@ -1378,53 +1378,57 @@ contains
 
         ! System information.
         block
-            character(len=FILE_PATH_LEN) :: path
-            integer(kind=i8)             :: seconds
-            type(uname_type)             :: uname
-            type(time_delta_type)        :: uptime
+            character(len=:), allocatable :: content
+            character(len=FILE_PATH_LEN)  :: path
+            integer(kind=i8)              :: seconds
+            type(uname_type)              :: uname
+            type(time_delta_type)         :: uptime
 
             call dm_system_path(path)
             call dm_system_uname(uname)
             call dm_system_uptime(seconds)
             call dm_time_delta_from_seconds(uptime, seconds)
 
+            content = H_TABLE // H_TBODY // &
+                      H_TR // H_TH // 'Hostname' // H_TH_END // &
+                              H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Server Time' // H_TH_END // &
+                              H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Server Uptime' // H_TH_END // &
+                              H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Name' // H_TH_END // &
+                              H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Release' // H_TH_END // &
+                              H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Version' // H_TH_END // &
+                              H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Platform' // H_TH_END // &
+                              H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Remote Address' // H_TH_END // &
+                              H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Remote User' // H_TH_END // &
+                              H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Executable Path' // H_TH_END // &
+                              H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Executable Version' // H_TH_END // &
+                              H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
+                              H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Compiler' // H_TH_END // &
+                              H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Compiler Options' // H_TH_END // &
+                              H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
+                      H_TBODY_END // H_TABLE_END
+
             call dm_cgi_out(dm_html_heading(2, 'System Status'))
-            call dm_cgi_out(H_TABLE // H_TBODY // &
-                            H_TR // H_TH // 'Hostname' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Server Time' // H_TH_END // &
-                                    H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Server Uptime' // H_TH_END // &
-                                    H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'OS Name' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%system_name) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'OS Release' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%release) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'OS Version' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%version) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'OS Platform' // H_TH_END // &
-                                    H_TD // dm_html_encode(uname%machine) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Remote Address' // H_TH_END // &
-                                    H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Remote User' // H_TH_END // &
-                                    H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Executable Path' // H_TH_END // &
-                                    H_TD // dm_html_encode(path) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Executable Version' // H_TH_END // &
-                                    H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Compiler' // H_TH_END // &
-                                    H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'Compiler Options' // H_TH_END // &
-                                    H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
-                            H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
-                                    H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
-                            H_TBODY_END // H_TABLE_END)
+            call dm_cgi_out(content)
         end block
 
         ! Database information.
         block
-            character(len=3) :: mode
-            integer(kind=i8) :: db_beat_sz, db_log_sz, db_observ_sz
+            character(len=:), allocatable :: content
+            character(len=3)              :: mode
+            integer(kind=i8)              :: db_beat_sz, db_log_sz, db_observ_sz
 
             if (read_only) then
                 mode = 'yes'
@@ -1443,26 +1447,28 @@ contains
             if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
             if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
 
+            content = H_TABLE // H_THEAD // &
+                      H_TR // H_TH // 'Type'      // H_TH_END // &
+                              H_TH // 'Path'      // H_TH_END // &
+                              H_TH // 'Size'      // H_TH_END // &
+                              H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
+                      H_THEAD_END // H_TBODY // &
+                      H_TR // H_TD // 'Beat' // H_TD_END // &
+                              H_TD // dm_html_encode(db_beat) // H_TD_END // &
+                              H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
+                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
+                      H_TR // H_TD // 'Log' // H_TD_END // &
+                              H_TD // dm_html_encode(db_log) // H_TD_END // &
+                              H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
+                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
+                      H_TR // H_TD // 'Observation' // H_TD_END // &
+                              H_TD // dm_html_encode(db_observ) // H_TD_END // &
+                              H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
+                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
+                      H_TBODY_END // H_TABLE_END
+
             call dm_cgi_out(dm_html_heading(2, 'Database Status'))
-            call dm_cgi_out(H_TABLE // H_THEAD // &
-                            H_TR // H_TH // 'Type'      // H_TH_END // &
-                                    H_TH // 'Path'      // H_TH_END // &
-                                    H_TH // 'Size'      // H_TH_END // &
-                                    H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
-                            H_THEAD_END // H_TBODY // &
-                            H_TR // H_TD // 'Beat' // H_TD_END // &
-                                    H_TD // dm_html_encode(db_beat) // H_TD_END // &
-                                    H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
-                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                            H_TR // H_TD // 'Log' // H_TD_END // &
-                                    H_TD // dm_html_encode(db_log) // H_TD_END // &
-                                    H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
-                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                            H_TR // H_TD // 'Observation' // H_TD_END // &
-                                    H_TD // dm_html_encode(db_observ) // H_TD_END // &
-                                    H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
-                                    H_TD // trim(mode) // H_TD_END // H_TR_END // &
-                            H_TBODY_END // H_TABLE_END)
+            call dm_cgi_out(content)
         end block
 
         call html_footer()

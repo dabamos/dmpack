@@ -33,6 +33,7 @@ module dm_time
     public :: dm_time_now
     public :: dm_time_rfc2822
     public :: dm_time_strings
+    public :: dm_time_strip_useconds
     public :: dm_time_to_beats
     public :: dm_time_to_unix
     public :: dm_time_valid
@@ -239,6 +240,15 @@ contains
         write (str, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
 
+    pure elemental character(len=25) function dm_time_strip_useconds(time) result(str)
+        !! Strips the microseconds part of the given ISO 8601 time stamp and
+        !! returns a 25 characters long string. The function does not validate
+        !! the time stamp.
+        character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
+
+        write (str, '(a19, a6)') time(1:19), time(27:32)
+    end function dm_time_strip_useconds
+
     impure elemental integer function dm_time_to_beats(time, beats) result(rc)
         !! Converts ISO 8601 time stamp `time` into
         !! [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
@@ -270,7 +280,7 @@ contains
         !!
         !! The function returns `E_INVALID` if the passed ISO 8601 time stamp
         !! is invalid. If the call to `timegm()` fails, `E_SYSTEM` is returned.
-        use :: unix
+        use :: unix, only: c_timegm, c_tm
         character(len=*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i6, i3, 1x, i2)'
 
         character(len=*), intent(in)            :: time     !! ISO 8601 time stamp.
@@ -292,12 +302,12 @@ contains
                                           tz_hour, tz_min
         if (stat /= 0) return
 
-        tm = c_tm(tm_sec    = tm_sec, &
-                  tm_min    = tm_min, &
-                  tm_hour   = tm_hour, &
-                  tm_mday   = tm_mday, &
-                  tm_mon    = tm_mon - 1, &
-                  tm_year   = tm_year - 1900)
+        tm = c_tm(tm_sec  = tm_sec, &
+                  tm_min  = tm_min, &
+                  tm_hour = tm_hour, &
+                  tm_mday = tm_mday, &
+                  tm_mon  = tm_mon - 1, &
+                  tm_year = tm_year - 1900)
 
         tm_tz = (tz_hour * 3600) + (tz_min * 60)
         epoch = c_timegm(tm) - tm_tz

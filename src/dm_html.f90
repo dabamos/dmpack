@@ -126,6 +126,8 @@ module dm_html
     character(len=*), parameter, public :: H_THEAD          = '<thead>' // NL
     character(len=*), parameter, public :: H_THEAD_END      = '</thead>' // NL
     character(len=*), parameter, public :: H_TH_END         = '</th>'
+    character(len=*), parameter, public :: H_TIME           = '<time>'
+    character(len=*), parameter, public :: H_TIME_END       = '</time>'
     character(len=*), parameter, public :: H_TITLE          = '<title>'
     character(len=*), parameter, public :: H_TITLE_END      = '</title>' // NL
     character(len=*), parameter, public :: H_TR             = '<tr>'
@@ -168,6 +170,7 @@ module dm_html
     public :: dm_html_link
     public :: dm_html_log
     public :: dm_html_logs
+    public :: dm_html_mark
     public :: dm_html_nav
     public :: dm_html_node
     public :: dm_html_nodes
@@ -189,6 +192,7 @@ module dm_html
     public :: dm_html_targets
     public :: dm_html_td
     public :: dm_html_th
+    public :: dm_html_time
 contains
     pure function dm_html_anchor(anchor) result(html)
         !! Returns HTML anchor tag.
@@ -247,11 +251,11 @@ contains
                H_TR // H_TH // 'Library' // H_TH_END // &
                H_TD // dm_html_encode(beat%library) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
-               H_TD // dm_html_encode(beat%time_sent // ' (' // trim(beats_sent) // ')') // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(beat%time_sent) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &
-               H_TD // dm_html_encode(beat%time_recv // ' (' // trim(beats_recv) // ')') // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(beat%time_recv) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Now' // H_TH_END // &
-               H_TD // dm_html_encode(now // ' (' // trim(beats_now) // ')') // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(now) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Delta' // H_TH_END // &
                H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Interval' // H_TH_END // &
@@ -857,7 +861,7 @@ contains
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(log%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Level' // H_TH_END // &
                H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
@@ -919,10 +923,10 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(logs(i)%id)
-                anchor%text = dm_html_encode(logs(i)%timestamp)
+                anchor%text = dm_html_time(logs(i)%timestamp)
                 html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
             else
-                html = html // H_TD // dm_html_encode(logs(i)%timestamp) // H_TD_END
+                html = html // H_TD // dm_html_time(logs(i)%timestamp) // H_TD_END
             end if
 
             if (node_) html = html // H_TD // dm_html_encode(logs(i)%node_id) // H_TD_END
@@ -1115,7 +1119,7 @@ contains
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
@@ -1221,10 +1225,10 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(observs(i)%id)
-                anchor%text = dm_html_encode(observs(i)%timestamp)
+                anchor%text = dm_html_time(observs(i)%timestamp)
                 html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
             else
-                html = html // H_TD // dm_html_encode(observs(i)%timestamp) // H_TD_END
+                html = html // H_TD // dm_html_time(observs(i)%timestamp) // H_TD_END
             end if
 
             if (id_)        html = html // H_TD // H_CODE // dm_html_encode(observs(i)%id) // H_CODE_END // H_TD_END
@@ -1287,7 +1291,7 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(request%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(request%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Request' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Response' // H_TH_END // &
@@ -1592,6 +1596,18 @@ contains
         if (present(row_span)) html = html // ' rowspan="' // dm_itoa(row_span) // '"'
         html = html // '>' // str // H_TH_END
     end function dm_html_th
+
+    pure function dm_html_time(time) result(html)
+        !! Returns `<time>` element with `datetime` attribute, and the
+        !! encoded ISO 8601 time stamp `time` enclosed. This function does not
+        !! encode the passed time stamp. The value of the `datetime` attribute
+        !! is extracted from the time stamp.
+        use :: dm_time, only: dm_time_strip_useconds
+        character(len=*), intent(in)  :: time !! ISO 8601 time stamp.
+        character(len=:), allocatable :: html !! Generated HTML.
+
+        html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
+    end function dm_html_time
 
     pure subroutine dm_html_select_create(select, size, error)
         !! Allocates memory for arrays in select type. Returns `E_ALLOC` on
