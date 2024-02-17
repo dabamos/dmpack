@@ -135,5 +135,5 @@ _dmsend(1)_
 
 == COPYING
 
-Copyright (C) 2023 {author}. +
+Copyright (C) 2024 {author}. +
 Free use of this software is granted under the terms of the ISC Licence.

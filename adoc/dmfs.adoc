@@ -98,5 +98,5 @@ $ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf --verbose
 
 == COPYING
 
-Copyright (C) 2023 {author}. +
+Copyright (C) 2024 {author}. +
 Free use of this software is granted under the terms of the ISC Licence.
