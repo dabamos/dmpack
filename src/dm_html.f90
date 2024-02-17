@@ -923,7 +923,7 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(logs(i)%id)
-                anchor%text = dm_html_time(logs(i)%timestamp)
+                anchor%text = logs(i)%timestamp
                 html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
             else
                 html = html // H_TD // dm_html_time(logs(i)%timestamp) // H_TD_END
@@ -1225,7 +1225,7 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(observs(i)%id)
-                anchor%text = dm_html_time(observs(i)%timestamp)
+                anchor%text = observs(i)%timestamp
                 html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
             else
                 html = html // H_TD // dm_html_time(observs(i)%timestamp) // H_TD_END

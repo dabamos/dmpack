@@ -1393,7 +1393,7 @@ contains
                       H_TR // H_TH // 'Hostname' // H_TH_END // &
                               H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Server Time' // H_TH_END // &
-                              H_TD // dm_html_encode(dm_time_now()) // H_TD_END // H_TR_END // &
+                              H_TD // dm_html_time(dm_time_now()) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Server Uptime' // H_TH_END // &
                               H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'OS Name' // H_TH_END // &
