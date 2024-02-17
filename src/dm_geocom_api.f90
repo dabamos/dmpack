@@ -671,7 +671,7 @@ contains
         !! The argument `prog` may be one of the following TMC measurement
         !! modes:
         !!
-        !! * `GEOCOM_TMC_STOP
+        !! * `GEOCOM_TMC_STOP`
         !! * `GEOCOM_TMC_DEF_DIST`
         !! * `GEOCOM_TMC_CLEAR`
         !! * `GEOCOM_TMC_SIGNAL`
@@ -698,7 +698,7 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
-        !! | ASCII request  | `%R1Q,2008:<prog>,<mode>`                         |
+        !! | ASCII request  | `%R1Q,2008:<prog>,<mode>`                        |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
         integer, parameter :: REQCODE = 2008
@@ -1552,7 +1552,7 @@ contains
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,2011:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<height>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<height>`                        |
         !!
         integer,          parameter :: REQCODE = 2011
         character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<rheight>[-\d\.]+)'

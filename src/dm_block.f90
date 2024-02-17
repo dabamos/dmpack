@@ -36,7 +36,7 @@ contains
         !! Returns ASCII block representation of data point.
         type(dp_type), intent(in) :: data_point !! Data point type.
 
-        write (str, '(a29, 1x, f25.8)') data_point%x, data_point%y
+        write (str, '(a32, 1x, f25.8)') data_point%x, data_point%y
     end function block_from_data_point
 
     integer function block_write_data_point(data_point, unit) result(rc)
@@ -44,12 +44,12 @@ contains
         type(dp_type), intent(in)           :: data_point !! Data point type.
         integer,       intent(in), optional :: unit       !! File unit.
 
-        integer   :: unit_, stat
+        integer :: unit_, stat
 
         rc = E_WRITE
         unit_ = stdout
         if (present(unit)) unit_ = unit
-        write (unit_, '(a29, 1x, f25.8)', iostat=stat) data_point%x, data_point%y
+        write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_point%x, data_point%y
         if (stat /= 0) return
         rc = E_NONE
     end function block_write_data_point
@@ -66,7 +66,7 @@ contains
         if (present(unit)) unit_ = unit
 
         do i = 1, size(data_points)
-            write (unit_, '(a29, 1x, f25.8)', iostat=stat) data_points(i)%x, data_points(i)%y
+            write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_points(i)%x, data_points(i)%y
             if (stat /= 0) return
         end do
 

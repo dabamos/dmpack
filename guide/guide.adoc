@@ -336,7 +336,10 @@ $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 
 == Deformation Monitoring Entities [[entities]]
 
-The data structures used by DMPACK are based on the following entities.
+The data structures used by DMPACK are based on the following entities. The
+date and time format used internally is a 32-characters long ISO 8601 in
+microsecond resolution, with time separator `T` and mandatory GMT offset, for
+example, `1970-01-01T00:00:00.000000+00:00`.
 
 === Observation Entities
 
@@ -356,7 +359,7 @@ ordered by index. A request can contain up to 16 _responses_.
 Response:: Floating-point values in the raw response of a _sensor_ can be
 matched by regular expression groups. Each matched group is stored as a
 response. Responses reference a _request_, and are ordered by index. They
-contain name, value, unit, and an optional error code.
+contain name, type, value, unit, and an optional error code.
 
 === Log Entities
 

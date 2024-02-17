@@ -1,7 +1,8 @@
 --
 -- Example configuration file for dmfeed.
 --
--- Run `dmuuid --hyphens` to generate a valid feed id.
+-- Each Atom feed should have a distinct id. Run `dmuuid --hyphens` to
+-- generate a valid feed id.
 --
 -- The options `minlevel` and `maxlevel` may be set to one of the following
 -- named constants:
@@ -28,8 +29,8 @@
 --      output      -   Path to output file (if empty, feed is printed to standard output).
 --      subtitle    -   Subtitle of the feed (optional).
 --      title       -   Title of the feed (optional).
---      url         -   URL to the feed (optional).
---      xsl         -   URL of XSLT style sheet (optional).
+--      url         -   URL of the output feed (optional).
+--      xsl         -   URL of XSLT style sheet (optional, empty for none).
 --
 
 dmfeed = {

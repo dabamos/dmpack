@@ -142,7 +142,7 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but does not include raster graphic terminals).
+does not depend on X11 (but lacks raster graphic terminals).
 
 In order to generate the man pages and the User’s Guide, install Pygments and
 AsciiDoctor:
@@ -165,7 +165,7 @@ You can change the installation prefix with argument `PREFIX` (by default,
 `/usr/local`). To install the library and all programs system-wide, run:
 
 ```
-$ doas make install PREFIX=/usr/local
+$ doas make install PREFIX=/opt
 ```
 
 For a debug build with AddressSanitizer (ASan) to detect memory errors, run

@@ -403,7 +403,7 @@ $(OBJ): $(SRC)
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_logger.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
-	$(FC) -fPIC $(FFLAGS) $(INCHDF5) $(LDFLAGS) -c src/dm_hdf5.f90
+	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
 	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90
@@ -486,7 +486,7 @@ dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(INCHDF5) $(LDFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LDLIBS) $(LIBHDF5)
+	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LDLIBS) $(LIBHDF5)
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)

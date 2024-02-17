@@ -13,6 +13,9 @@ module dm_time
     implicit none (type, external)
     private
 
+    ! The parameter `TIME_LEN` as the length of a character string that stores a
+    ! time stamp. Make sure that hard-coded edit descriptors match the length,
+    ! for instance, in modules `dm_block` and `dm_plot`.
     integer,          parameter, public :: TIME_LEN     = 32                                 !! ISO 8601 time stamp length.
     character(len=*), parameter, public :: TIME_DEFAULT = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
