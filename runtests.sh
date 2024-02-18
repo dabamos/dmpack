@@ -46,6 +46,9 @@ for TEST in ${TESTS}; do
     ./${TEST}
     if [ $? -ne 0 ]; then
         NFAIL=`expr ${NFAIL} + 1`
+        printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+        printf "TEST ${TEST} FAILED!\n"
+        printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
     fi
 done
 
@@ -54,7 +57,7 @@ printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if [ ${NFAIL} -eq 0 ]; then
     printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${NTEST}
 else
-    printf "\033[31m%s OF %s TEST PROGRAMS FAILED!\033[39m\n" ${NFAIL} ${NTEST}
+    printf "%s OF %s TEST PROGRAMS FAILED!\n" ${NFAIL} ${NTEST}
 fi
 
 printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
