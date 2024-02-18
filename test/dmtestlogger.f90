@@ -8,14 +8,30 @@ program dmtestlogger
     implicit none (type, external)
     integer, parameter :: NTESTS = 1
 
-    type(test_type) :: tests(NTESTS)
+    logical         :: no_color
     logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
+
+    call dm_init()
 
     tests(1) = test_type('dmtestlogger.test01', test01)
 
-    call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
+    logical function skip_test() result(skip)
+        integer :: rc
+
+        rc = dm_env_get('DM_MQUEUE_SKIP', skip, .false.)
+
+        if (skip) then
+            call dm_ansi_color(COLOR_YELLOW, no_color)
+            print '("dmtestlogger:")'
+            print '("    Environment variable DM_MQUEUE_SKIP is set.")'
+            print '("    This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+        end if
+    end function skip_test
+
     logical function test01() result(stat)
         character(len=*), parameter   :: JSON = &
             '{ "id": "f5ec2dd3870a47b5be3ae397552706fe", "level": 4, "error": 1, "timestamp": ' // &
@@ -30,8 +46,10 @@ contains
         type(mqueue_type)             :: mqueue
         type(observ_type)             :: observ
 
-        stat = TEST_FAILED
+        stat = TEST_PASSED
+        if (skip_test()) return
 
+        stat = TEST_FAILED
         observ%id        = '6b0ca75ae594425a8d38adfd709b11cd'
         observ%node_id   = 'test-node'
         observ%sensor_id = 'test-sensor'
