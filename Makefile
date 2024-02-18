@@ -306,7 +306,7 @@ freebsd:
 # ******************************************************************************
 
 linux_debug:
-	$(MAKE) all OS=linux PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) all OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
 
 linux_release:
 	$(MAKE) all OS=linux PREFIX=/usr
