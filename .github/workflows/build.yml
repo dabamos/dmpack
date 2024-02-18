@@ -39,8 +39,9 @@ jobs:
         git config --global url.https://github.com/.insteadOf git://github.com/
         git clone --depth 1 https://github.com/sqlite/sqlite.git
         cd sqlite/
-        ./configure
+        ./configure --prefix=/usr
         sudo make install
+        sqlite3 --version
 
     - name: Build and Test (Linux)
       if: contains(matrix.os, 'ubuntu')
