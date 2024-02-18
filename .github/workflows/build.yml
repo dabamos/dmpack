@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-22.04 ]
     env:
       GCC_V: 13
 
@@ -30,7 +30,7 @@ jobs:
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
         sudo apt-get install -y --no-install-recommends libblas-dev liblapack-dev \
           curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
-          libhdf5 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
+          libhdf5-103-1 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
           libpcre2-dev sqlite3 libsqlite3-dev zlib1g zlib1g-dev
 
     - name: Build and Test (Linux)
