@@ -40,7 +40,7 @@ jobs:
         git clone --depth 1 https://github.com/sqlite/sqlite.git
         cd sqlite/
         ./configure
-        make install
+        sudo make install
 
     - name: Build and Test (Linux)
       if: contains(matrix.os, 'ubuntu')
