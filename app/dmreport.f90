@@ -36,7 +36,6 @@ program dmreport
     ! Create HTML report.
     call create_report(app%report, rc)
     if (dm_is_error(rc)) call dm_stop(1)
-    call dm_stop(0)
 contains
     function html_footer() result(html)
         !! Returns HTML footer with current date and time.
@@ -144,8 +143,8 @@ contains
         character(len=:), allocatable   :: html !! Generated HTML.
 
         html = H_NAV // H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_encode(from)      // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'To:'        // H_TH_END // H_TD // dm_html_encode(to)        // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(from)        // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node Meta:' // H_TH_END // H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &

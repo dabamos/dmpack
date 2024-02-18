@@ -520,6 +520,10 @@ caption {
   text-align: left;
 }
 
+code {
+  white-space: pre-wrap;
+}
+
 code, samp, kbd {
   font-family: var(--mono-font);
   font-style: normal;

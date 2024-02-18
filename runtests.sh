@@ -3,7 +3,7 @@
 # This script runs all DMPACK test programs and prints the results to standard
 # output. Simply run:
 #
-#   $ sh ./runtests.sh
+#   $ sh runtests.sh
 #
 # You may want to uncomment and set the following environment variables:
 #
@@ -14,9 +14,9 @@
 # export DM_MQTT_HOST=localhost
 # export DM_MQTT_PORT=1883
 #
-# export DM_MAIL_FROM=alice@localhost
-# export DM_MAIL_TO=bob@localhost
-# export DM_MAIL_HOST=localhost
+# export DM_MAIL_FROM=alice@example.com
+# export DM_MAIL_TO=bob@example.com
+# export DM_MAIL_HOST=example.com
 # export DM_MAIL_USERNAME=alice
 # export DM_MAIL_PASSWORD=secret
 #
@@ -47,3 +47,7 @@ printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 printf "User and system times used by this script:\n"
 times
 printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n"
+
+if [ ${NFAIL} -gt 0 ]; then
+    exit 1
+fi

@@ -26,8 +26,8 @@ create_report () {
   file_name="${prefix}_report.html"
   path="${output}${file_name}"
 
-  from="${first}T00:00:00.0000+00:00"
-  to="${last}T00:00:00.0000+00:00"
+  from="${first}T00:00:00.000000+00:00"
+  to="${last}T00:00:00.000000+00:00"
 
   echo "--- Writing report of ${prefix} to file ${path} ..."
   ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"

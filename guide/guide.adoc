@@ -183,7 +183,17 @@ The shared library `libgfortran.so` must be present on the target system if the
 DMPACK programs have been compiled with GNU Fortran.
 
 Either build with GNU/BSD Make or with the Fortran Package Manager. It is
-recommended to use _make(1)_.
+recommended to use _make(1)_. To display the available build targets, run:
+
+....
+$ make help
+....
+
+Or, to output the selected build options, run for instance:
+
+....
+$ make options PREFIX=/opt
+....
 
 === FreeBSD [[freebsd]]
 
@@ -282,8 +292,8 @@ if raster image formats are not needed (SVG output only). Depending on the
 package repository, the names of the Lua packages may differ.
 
 If Intel oneAPI Fortran will be used to compile DMPACK, you have to build HDF5
-from source as well (as the versions in the Linux package repositories were
-compiled with GNU Fortran).
+from source as well, as the versions in the Linux package repositories have been
+compiled with GNU Fortran and are therefore incompatible.
 
 ==== Make [[linux-make]]
 
