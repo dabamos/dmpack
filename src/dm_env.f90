@@ -135,9 +135,12 @@ contains
 
         integer :: i
 
-        value = default
+        value = .false.
+        if (present(default)) value = default
+
         rc = dm_env_get(name, i)
         if (rc /= E_NONE) return
+
         value = (i > 0)
         rc = E_NONE
     end function env_get_l

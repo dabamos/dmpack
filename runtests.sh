@@ -5,20 +5,30 @@
 #
 #   $ sh runtests.sh
 #
-# You may want to uncomment and set the following environment variables:
+# You may want to uncomment and set the following environment variables.
 #
-# export DM_API_HOST=localhost
-# export DM_API_USERNAME=dummy-node
-# export DM_API_PASSWORD=secret
+# HTTP-RPC API host and credentials.
 #
-# export DM_MQTT_HOST=localhost
-# export DM_MQTT_PORT=1883
+#   export DM_API_HOST=localhost
+#   export DM_API_USERNAME=dummy-node
+#   export DM_API_PASSWORD=secret
 #
-# export DM_MAIL_FROM=alice@example.com
-# export DM_MAIL_TO=bob@example.com
-# export DM_MAIL_HOST=example.com
-# export DM_MAIL_USERNAME=alice
-# export DM_MAIL_PASSWORD=secret
+# MQTT server:
+#
+#   export DM_MQTT_HOST=localhost
+#   export DM_MQTT_PORT=1883
+#
+# E-mail and SMTP details:
+#
+#   export DM_MAIL_FROM=alice@example.com
+#   export DM_MAIL_TO=bob@example.com
+#   export DM_MAIL_HOST=example.com
+#   export DM_MAIL_USERNAME=alice
+#   export DM_MAIL_PASSWORD=secret
+#
+# POSIX message queue:
+#
+#   export DM_MQUEUE_SKIP=1
 #
 TESTS="dmtestapi dmtestbase64 dmtestcgi dmtestconfig dmtestcsv dmtestdb \
 dmtestdp dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob \
