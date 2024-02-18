@@ -149,7 +149,7 @@ FFLAGS  = $(RELEASE) -ffree-line-length-0
 CFLAGS  = $(RELEASE)
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
-LDFLAGS = -I$(INCDIR) -J$(INCDIR) -z execstack
+LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L$(PREFIX)/lib -z execstack -z now
 #LDLIBS = -pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 LDLIBS  =
 
