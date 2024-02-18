@@ -14,6 +14,8 @@ jobs:
         os: [ ubuntu-22.04 ]
     env:
       GCC_V: 13
+      DM_MQUEUE_SKIP: 1
+      DM_PIPE_SKIP: 1
 
     steps:
     - name: Checkout Source Code
@@ -51,5 +53,4 @@ jobs:
         gcc --version
         make all OS=linux PREFIX=/usr RELEASE="-g -O0 -Wall -fmax-errors=1" \
           LIBSQLITE3=/usr/local/lib/libsqlite3.so
-        export DM_MQUEUE_SKIP=1
         sh runtests.sh

@@ -13,12 +13,12 @@
 #   export DM_API_USERNAME=dummy-node
 #   export DM_API_PASSWORD=secret
 #
-# MQTT server:
+# MQTT server settings:
 #
 #   export DM_MQTT_HOST=localhost
 #   export DM_MQTT_PORT=1883
 #
-# E-mail and SMTP details:
+# E-mail and SMTP settings:
 #
 #   export DM_MAIL_FROM=alice@example.com
 #   export DM_MAIL_TO=bob@example.com
@@ -26,9 +26,13 @@
 #   export DM_MAIL_USERNAME=alice
 #   export DM_MAIL_PASSWORD=secret
 #
-# POSIX message queue:
+# Skipping POSIX message queue tests:
 #
 #   export DM_MQUEUE_SKIP=1
+#
+# Skipping pipe tests:
+#
+#   export DM_PIPE_SKIP=1
 #
 TESTS="dmtestapi dmtestbase64 dmtestcgi dmtestconfig dmtestcsv dmtestdb \
 dmtestdp dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua dmtestjob \

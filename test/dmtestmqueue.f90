@@ -33,7 +33,7 @@ program dmtestmqueue
     tests(1) = test_type('dmtestmqueue.test01', test01)
     tests(2) = test_type('dmtestmqueue.test02', test02)
 
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(tests, stats, no_color)
 contains
     logical function skip_test() result(skip)
         integer :: rc

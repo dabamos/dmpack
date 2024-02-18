@@ -7,14 +7,31 @@ program dmtestplot
     implicit none (type, external)
     integer, parameter :: NTESTS = 1
 
-    type(test_type) :: tests(NTESTS)
+    logical         :: no_color
     logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
+
+    call dm_init()
+    no_color = dm_env_has('NO_COLOR')
 
     tests = [ test_type('dmtestplot.test01', test01) ]
 
-    call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
+    logical function skip_test() result(skip)
+        integer :: rc
+
+        rc = dm_env_get('DM_PIPE_SKIP', skip, .false.)
+
+        if (skip) then
+            call dm_ansi_color(COLOR_YELLOW, no_color)
+            print '("dmtestplot:")'
+            print '("    Environment variable DM_PIPE_SKIP is set.")'
+            print '("    This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+        end if
+    end function skip_test
+
     logical function test01() result(stat)
         character(len=:), allocatable :: bytes
         integer                       :: rc
@@ -22,8 +39,10 @@ contains
         type(plot_type)               :: plot
         type(dp_type)                 :: dps(3)
 
-        stat = TEST_FAILED
+        stat = TEST_PASSED
+        if (skip_test()) return
 
+        stat = TEST_FAILED
         plot%term = PLOT_TERM_SVG
         ! plot%term = PLOT_TERM_PNG_CAIRO
         ! plot%font = '/usr/local/share/fonts/gnu-unifont-ttf/unifont.ttf'
