@@ -16,12 +16,12 @@ program dmtestplot
 
     tests = [ test_type('dmtestplot.test01', test01) ]
 
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(tests, stats, no_color)
 contains
     logical function skip_test() result(skip)
         integer :: rc
 
-        rc = dm_env_get('DM_PIPE_SKIP', skip, .false.)
+        rc = dm_env_get('DM_PIPE_SKIP', skip)
 
         if (skip) then
             call dm_ansi_color(COLOR_YELLOW, no_color)

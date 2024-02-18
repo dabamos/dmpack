@@ -13,9 +13,10 @@ jobs:
       matrix:
         os: [ ubuntu-22.04 ]
     env:
-      GCC_V: 13
       DM_MQUEUE_SKIP: 1
       DM_PIPE_SKIP: 1
+      GCC_V: 13
+      NO_COLOR: 1
 
     steps:
     - name: Checkout Source Code
