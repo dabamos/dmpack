@@ -50,5 +50,5 @@ jobs:
         which gcc
         gcc --version
         make all OS=linux PREFIX=/usr RELEASE="-g -O0 -Wall -fmax-errors=1" \
-          LIBSQLITE3=/usr/local/lib/libsqlite3.a
+          LIBSQLITE3=/usr/local/lib/libsqlite3.so
         sh runtests.sh
