@@ -3,6 +3,18 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestpipe
+    !! Disabled the tests of this program by setting the following environment
+    !! variable:
+    !!
+    !!      DM_PIPE_SKIP - Skip all tests.
+    !!
+    !! For example:
+    !!
+    !!      $ export DM_PIPE_SKIP=1
+    !!      $ ./dmtestpipe
+    !!
+    !! This may be necessary on test platforms where bi-directional pipes are
+    !! not available.
     use, intrinsic :: iso_c_binding, only: c_associated
     use :: dmpack
     implicit none (type, external)

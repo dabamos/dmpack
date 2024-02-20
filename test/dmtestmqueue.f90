@@ -14,6 +14,8 @@ program dmtestmqueue
     !!      $ export DM_MQUEUE_SKIP=1
     !!      $ ./dmtestmqueue
     !!
+    !! This may be necessary on test platforms where messages queues are not
+    !! available.
     use :: dmpack
     implicit none (type, external)
 

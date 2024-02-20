@@ -3,6 +3,18 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestplot
+    !! Disabled the tests of this program by setting the following environment
+    !! variable:
+    !!
+    !!      DM_PIPE_SKIP - Skip all tests.
+    !!
+    !! For example:
+    !!
+    !!      $ export DM_PIPE_SKIP=1
+    !!      $ ./dmtestplot
+    !!
+    !! This may be necessary on test platforms where Gnuplot or bi-directional
+    !! pipes are not available.
     use :: dmpack
     implicit none (type, external)
     integer, parameter :: NTESTS = 1

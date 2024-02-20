@@ -5,15 +5,17 @@
 program dmtesthtml
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 2
+    integer, parameter :: NTESTS = 3
 
-    type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
+
+    call dm_init()
 
     tests(1) = test_type('dmtesthtml.test01', test01)
     tests(2) = test_type('dmtesthtml.test02', test02)
+    tests(3) = test_type('dmtesthtml.test03', test03)
 
-    call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
@@ -59,5 +61,17 @@ contains
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        stat = TEST_FAILED
+
+        print *, 'Basic HTML page ...'
+        print '(72("."))'
+        print '(a)', dm_html_header('Title', 'Sub-Title', 'style.css', brand='Brand')
+        print '(a)', dm_html_footer('Footer' // ASCII_LF, 'script.js')
+        print '(72("."))'
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtesthtml
 

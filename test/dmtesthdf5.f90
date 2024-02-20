@@ -10,10 +10,12 @@ program dmtesthdf5
     character(len=*), parameter :: FILE_PATH  = 'testobserv.hdf5'
     character(len=*), parameter :: GROUP_NAME = 'timeseries'
 
-    integer, parameter :: NTESTS = 6
+    integer, parameter :: NTESTS = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
+
+    call dm_init()
 
     tests(1) = test_type('dmtesthdf5.test01', test01)
     tests(2) = test_type('dmtesthdf5.test02', test02)
@@ -21,8 +23,8 @@ program dmtesthdf5
     tests(4) = test_type('dmtesthdf5.test04', test04)
     tests(5) = test_type('dmtesthdf5.test05', test05)
     tests(6) = test_type('dmtesthdf5.test06', test06)
+    tests(7) = test_type('dmtesthdf5.test07', test07)
 
-    call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
@@ -353,4 +355,36 @@ contains
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
     end function test06
+
+    logical function test07() result(stat)
+        !! Tests availale filters.
+        integer :: rc
+        logical :: avail(4)
+
+        stat = TEST_FAILED
+
+        print *, 'Initialising ...'
+        rc = dm_hdf5_init()
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        print *, 'Checking available filters ...'
+        avail = .false.
+        rc = dm_hdf5_filter_available(HDF5_FILTER_DEFLATE,    avail(HDF5_FILTER_DEFLATE));    call dm_error_out(rc)
+        rc = dm_hdf5_filter_available(HDF5_FILTER_SHUFFLE,    avail(HDF5_FILTER_SHUFFLE));    call dm_error_out(rc)
+        rc = dm_hdf5_filter_available(HDF5_FILTER_FLETCHER32, avail(HDF5_FILTER_FLETCHER32)); call dm_error_out(rc)
+        rc = dm_hdf5_filter_available(HDF5_FILTER_SZIP,       avail(HDF5_FILTER_SZIP));       call dm_error_out(rc)
+
+        print *, 'Deflate...: ', avail(HDF5_FILTER_DEFLATE)
+        print *, 'Shuffle...: ', avail(HDF5_FILTER_SHUFFLE)
+        print *, 'Fletcher32: ', avail(HDF5_FILTER_FLETCHER32)
+        print *, 'SZIP......: ', avail(HDF5_FILTER_SZIP)
+
+        print *, 'Clean-up ...'
+        rc = dm_hdf5_destroy()
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test07
 end program dmtesthdf5
