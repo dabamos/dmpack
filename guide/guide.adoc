@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.3
 :lang: en
-:docdate: 2023-12-28
+:docdate: 2024-02-18
 :doctype: book
 :url-org: https://dabamos.de/
 :url-project: {url-org}dmpack
@@ -288,8 +288,9 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
 ....
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
-if raster image formats are not needed (SVG output only). Depending on the
-package repository, the names of the Lua packages may differ.
+if raster image formats are not needed (SVG output only). The SQLite 3 package
+version must be ≥ 3.39.0. Depending on the package repository, the names of the
+HDF5 and Lua packages may differ.
 
 If Intel oneAPI Fortran will be used to compile DMPACK, you have to build HDF5
 from source as well, as the versions in the Linux package repositories have been
@@ -306,6 +307,13 @@ $ cd dmpack/
 $ make linux
 ....
 
+In case SQLite 3 has been built from source, overwrite the variable `LIBSQLITE3`
+to pass the path of shared library `libsqlite3.so`:
+
+....
+$ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -Wl,-rpath,/usr/local/lib -lsqlite3"
+....
+
 If the Intel oneAPI compilers are preferred, run instead:
 
 ....
@@ -318,7 +326,7 @@ Install the library and all programs system-wide to `/usr`:
 $ sudo make install_linux
 ....
 
-To install to a custom directory, run:
+To install to directory `/opt`, run:
 
 ....
 $ sudo make install PREFIX=/opt
@@ -346,9 +354,9 @@ $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 
 == Deformation Monitoring Entities [[entities]]
 
-The data structures used by DMPACK are based on the following entities. The
-date and time format used internally is a 32-characters long ISO 8601 in
-microsecond resolution, with time separator `T` and mandatory GMT offset, for
+The data structures of DMPACK are based on the following entities. The
+internally used date and time format is a 32-characters long ISO 8601 time stamp
+in microsecond resolution, with time separator `T` and mandatory GMT offset, for
 example, `1970-01-01T00:00:00.000000+00:00`.
 
 === Observation Entities

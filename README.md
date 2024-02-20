@@ -1,5 +1,7 @@
 # Deformation Monitoring Package (DMPACK)
 
+[![Build](https://github.com/dabamos/dmpack/actions/workflows/build.yml/badge.svg)](https://github.com/dabamos/dmpack/actions/workflows/build.yml)
+
 DMPACK is a free and open-source software package for IoT-based automatic
 deformation monitoring and distributed control measurements in engineering
 geodesy and geotechnics. The project is the successor of
@@ -239,12 +241,12 @@ Either link your programs against static library `libdmpack.a`, or `-ldmpack` if
 `libdmpack.so` is in your library search path, for example:
 
 ```
-$ gfortran -o example example.f90 /usr/local/lib/libdmpack.a
+$ gfortran -I/usr/local/include/dmpack -o example example.f90 /usr/local/lib/libdmpack.a
 ```
 
 Depending on which parts of the DMPACK library are used by third-party
-applications, additional shared libraries have to be linked. You probably have
-to pass the directory containing the DMPACK module files with argument `-I`.
+applications, additional shared libraries have to be linked. The directory
+containing the DMPACK module files is passed through argument `-I`.
 
 | Module         | Libraries     | Linker Libraries                                      |
 |----------------|---------------|-------------------------------------------------------|
@@ -349,8 +351,16 @@ $ export DM_MQTT_HOST="localhost"
 $ export DM_MQTT_PORT="1883"
 ```
 
-If not set, the affected tests will be skipped. You may want to set the
-variables permanently in `runtest.sh`. Run all test programs with:
+If not set, the affected tests will be skipped. To skip the pipe, plotting, and
+message queue tests, set:
+
+```
+$ export DM_MQUEUE_SKIP=1
+$ export DM_PIPE_SKIP=1
+```
+
+You may want to uncomment the variables in `runtest.sh`. Run all test programs
+with:
 
 ```
 $ sh runtests.sh

@@ -4,7 +4,42 @@ module dm_hdf5
     !! Abstraction layer around HDF5. Has to be linked against `-lhdf5` and
     !! `-lhdf5_fortran`.
     !!
+    !! The module provides wrapper procedures to HDF5 in order to read and
+    !! write derived types as 1-dimensional compound data sets. Only nodes,
+    !! observations, sensors, and targets are supported.
+    !!
+    !! The following example writes and reads eight empty observations to and
+    !! from file `sample.hdf5`:
+    !!
+    !! ```fortran
+    !! integer, parameter :: NOBSERVS = 8
+    !!
+    !! integer                        :: rc
+    !! type(hdf5_file_type)           :: file
+    !! type(hdf5_group_type)          :: group
+    !! type(observ_type)              :: input(NOBSERVS)
+    !! type(observ_type), allocatable :: output(:)
+    !!
+    !! ! Initialise HDF5, create file and group.
+    !! rc = dm_hdf5_init()
+    !! rc = dm_hdf5_open(file, 'sample.hdf5', create=.true.)
+    !! rc = dm_hdf5_open(file, group, 'timeseries', create=.true.)
+    !!
+    !! ! Write array to file, then read array back from file.
+    !! rc = dm_hdf5_write(group, input)
+    !! rc = dm_hdf5_read(group, output)
+    !!
+    !! ! Clean-up.
+    !! rc = dm_hdf5_close(group)
+    !! rc = dm_hdf5_close(file)
+    !! rc = dm_hdf5_destroy()
+    !! ```
+    !!
+    !! ## References
+    !!
     !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/develop/_r_m.html)
+    !! * [HDF5 Fortran Examples](https://github.com/HDFGroup/hdf5/tree/develop/fortran/examples)
+    !!
     use :: hdf5
     use :: dm_error
     use :: dm_kind
@@ -21,6 +56,12 @@ module dm_hdf5
     integer, parameter, public :: HDF5_RDONLY = 0 !! Read-only access.
     integer, parameter, public :: HDF5_RDWR   = 1 !! Read/write access.
 
+    ! HDF5 filters.
+    integer, parameter, public :: HDF5_FILTER_DEFLATE    = 1 !! gzip or deflate compression (`H5Z_FILTER_DEFLATE`).
+    integer, parameter, public :: HDF5_FILTER_SHUFFLE    = 2 !! Shuffle algorithm (`H5Z_FILTER_SHUFFLE`).
+    integer, parameter, public :: HDF5_FILTER_FLETCHER32 = 3 !! Fletcher32 checksum (`H5Z_FILTER_FLETCHER32`).
+    integer, parameter, public :: HDF5_FILTER_SZIP       = 4 !! SZIP compression (`H5Z_FILTER_SZIP`).
+
     type, public :: hdf5_id_type
         !! Opaque HDF5 id type.
         private
@@ -29,10 +70,12 @@ module dm_hdf5
 
     type, extends(hdf5_id_type), public :: hdf5_file_type
         !! Opaque HDF5 file type.
+        private
     end type hdf5_file_type
 
     type, extends(hdf5_id_type), public :: hdf5_group_type
         !! Opaque HDF5 group type.
+        private
     end type hdf5_group_type
 
     interface dm_hdf5_close
@@ -69,6 +112,7 @@ module dm_hdf5
     public :: dm_hdf5_file_free
     public :: dm_hdf5_file_path
     public :: dm_hdf5_file_valid
+    public :: dm_hdf5_filter_available
     public :: dm_hdf5_init
     public :: dm_hdf5_open
     public :: dm_hdf5_read
@@ -81,16 +125,17 @@ module dm_hdf5
     private :: hdf5_open_file
     private :: hdf5_open_group
 
+    private :: hdf5_create_node
+    private :: hdf5_create_observ
+    private :: hdf5_create_sensor
+    private :: hdf5_create_target
+
     private :: hdf5_read_nodes
     private :: hdf5_read_observs
     private :: hdf5_read_sensors
     private :: hdf5_read_targets
 
-    private :: hdf5_type_node
-    private :: hdf5_type_observ
-    private :: hdf5_type_sensor
-    private :: hdf5_type_target
-
+    private :: hdf5_write
     private :: hdf5_write_nodes
     private :: hdf5_write_observs
     private :: hdf5_write_sensors
@@ -166,8 +211,8 @@ contains
         !! Returns `E_NONE` if given file is an HDF5 file, else the appropriate
         !! error code:
         !!
-        !! * `E_FORMAT` if file is not an HDF5 file.
-        !! * `E_NOT_FOUND` if file does not exist.
+        !! * `E_FORMAT` if the file is not an HDF5 file.
+        !! * `E_NOT_FOUND` if the file does not exist.
         !! * `E_HDF5` if HDF5 library call failed.
         use :: dm_file
         character(len=*), intent(in) :: path !! File path.
@@ -187,6 +232,45 @@ contains
 
         rc = E_NONE
     end function dm_hdf5_file_valid
+
+    integer function dm_hdf5_filter_available(filter, available) result(rc)
+        !! Returns the status of the given filter in `available`. The following
+        !! filters are supported:
+        !!
+        !! * `HDF5_FILTER_DEFLATE` – gzip or deflate compression.
+        !! * `HDF5_FILTER_SHUFFLE` – Shuffle algorithm.
+        !! * `HDF5_FILTER_FLETCHER32` – Fletcher32 checksum.
+        !! * `HDF5_FILTER_SZIP` – SZIP compression.
+        !!
+        !! The function returns `E_INVALID` if the given filter is invalid, and
+        !! `E_HDF5` if the library call failed.
+        integer, intent(in)  :: filter    !! Filter enumerator.
+        logical, intent(out) :: available !! Filter is available or not.
+
+        integer :: f, stat
+
+        available = .false.
+
+        rc = E_INVALID
+        select case (filter)
+            case (HDF5_FILTER_DEFLATE)
+                f = H5Z_FILTER_DEFLATE_F
+            case (HDF5_FILTER_SHUFFLE)
+                f = H5Z_FILTER_SHUFFLE_F
+            case (HDF5_FILTER_FLETCHER32)
+                f = H5Z_FILTER_FLETCHER32_F
+            case (HDF5_FILTER_SZIP)
+                f = H5Z_FILTER_SZIP_F
+            case default
+                return
+        end select
+
+        rc = E_HDF5
+        call h5zfilter_avail_f(f, available, stat)
+        if (stat < 0) return
+
+        rc = E_NONE
+    end function dm_hdf5_filter_available
 
     integer function dm_hdf5_init() result(rc)
         !! Initialises HDF5 Fortran interface. Returns `E_HDF5` on error.
@@ -258,383 +342,7 @@ contains
         rc = E_NONE
     end function hdf5_close_group
 
-    integer function hdf5_open_file(file, path, mode, create) result(rc)
-        !! Opens HDF5 file, by default in read/write access mode, unless `mode`
-        !! is passed. If `create` is `.true.`, a new file will be created.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EXIST` if file to create already exists.
-        !! * `E_HDF5` if opening or creating the file failed.
-        !! * `E_INVALID` if file is opened already or argument `mode` is invalid.
-        !! * `E_NOT_FOUND` if file was not found.
-        use :: dm_file, only: dm_file_exists
-        type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
-        character(len=*),     intent(in)           :: path   !! Path to HDF5 file.
-        integer,              intent(in), optional :: mode   !! Open mode (`HDF5_RDONLY` or `HDF5_RDWR`).
-        logical,              intent(in), optional :: create !! Create HDF5 file.
-
-        integer :: flags, mode_
-        integer :: stat
-        logical :: create_, exists
-
-        rc = E_INVALID
-        if (file%id > -1) return
-
-        exists  = dm_file_exists(path)
-        create_ = .false.
-        if (present(create)) create_ = create
-
-        ! Create new file.
-        if (create_) then
-            rc = E_EXIST
-            if (exists) return
-
-            rc = E_HDF5
-            call h5fcreate_f(trim(path), H5F_ACC_EXCL_F, file%id, stat)
-            if (stat < 0) return
-
-            rc = E_NONE
-            return
-        end if
-
-        ! Open file.
-        mode_ = HDF5_RDWR
-        if (present(mode)) mode_ = mode
-
-        select case (mode_)
-            case (HDF5_RDONLY)
-                flags = H5F_ACC_RDONLY_F
-            case (HDF5_RDWR)
-                flags = H5F_ACC_RDWR_F
-            case default
-                rc = E_INVALID
-                return
-        end select
-
-        rc = E_NOT_FOUND
-        if (.not. exists) return
-
-        rc = E_HDF5
-        call h5fopen_f(trim(path), flags, file%id, stat)
-        if (stat < 0) return
-
-        rc = E_NONE
-    end function hdf5_open_file
-
-    integer function hdf5_open_group(id, group, name, create) result(rc)
-        !! Opens or creates group of name `name`. The function return
-        !! `E_INVALID` if file is not opened, and `E_HDF5` if group
-        !! operation failed.
-        class(hdf5_id_type),   intent(inout)        :: id     !! HDF5 file or group type.
-        type(hdf5_group_type), intent(out)          :: group  !! HDF5 group type.
-        character(len=*),      intent(in)           :: name   !! Group name.
-        logical,               intent(in), optional :: create !! Create group.
-
-        integer :: stat
-        logical :: create_
-
-        rc = E_INVALID
-        if (id%id < 0) return
-
-        create_ = .false.
-        if (present(create)) create_ = create
-
-        rc = E_HDF5
-
-        if (create_) then
-            ! Create group.
-            call h5gcreate_f(id%id, trim(name), group%id, stat)
-        else
-            ! Open group.
-            call h5gopen_f(id%id, trim(name), group%id, stat)
-        end if
-
-        if (stat < 0) return
-        rc = E_NONE
-    end function hdf5_open_group
-
-    integer function hdf5_read_nodes(id, nodes, data_set) result(rc)
-        !! Reads array of `node_type` from compound data in HDF5 file If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_NODE`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if passed `id` is invalid.
-        !! * `E_ALLOC` if allocation of array `nodes` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
-        use :: dm_node
-        class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
-        type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
-        character(len=*),                     intent(in), optional :: data_set !! Name of data set.
-
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
-
-        type_id  = -1
-        set_id   = -1
-        space_id = -1
-
-        rc = E_INVALID
-        if (id%id < 0) return
-
-        rc = E_HDF5
-
-        hdf5_block: block
-            ! Open the data set.
-            if (present(data_set)) then
-                call h5dopen_f(id%id, data_set, set_id, stat)
-            else
-                call h5dopen_f(id%id, HDF5_DATASET_NODE, set_id, stat)
-            end if
-            if (stat < 0) exit hdf5_block
-
-            ! Get data space.
-            call h5dget_space_f(set_id, space_id, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Get dimensions. On success, `stat` is set to the rank of the array.
-            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Allocate array.
-            rc = E_ALLOC
-            allocate (nodes(dims(1)), stat=stat)
-            if (stat /= 0) exit hdf5_block
-
-            ! Create memory data type.
-            rc = hdf5_type_node(type_id)
-            if (dm_is_error(rc)) exit hdf5_block
-
-            ! Read data from the data set.
-            ptr = c_loc(nodes)
-            call h5dread_f(set_id, type_id, ptr, stat)
-            if (stat < 0) exit hdf5_block
-
-            rc = E_NONE
-        end block hdf5_block
-
-        if (.not. allocated(nodes)) allocate (nodes(0))
-
-        ! Release resources.
-        if (type_id > -1)  call h5tclose_f(type_id, stat)
-        if (space_id > -1) call h5sclose_f(space_id, stat)
-        if (set_id > -1)   call h5dclose_f(set_id, stat)
-    end function hdf5_read_nodes
-
-    integer function hdf5_read_observs(id, observs, data_set) result(rc)
-        !! Reads array of `observ_type` from compound data in HDF5 file. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_OBSERV`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if passed `id` is invalid.
-        !! * `E_ALLOC` if allocation of array `observs` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
-        use :: dm_observ
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
-        type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
-
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
-
-        type_id  = -1
-        set_id   = -1
-        space_id = -1
-
-        rc = E_INVALID
-        if (id%id < 0) return
-
-        rc = E_HDF5
-
-        hdf5_block: block
-            ! Open the data set.
-            if (present(data_set)) then
-                call h5dopen_f(id%id, data_set, set_id, stat)
-            else
-                call h5dopen_f(id%id, HDF5_DATASET_OBSERV, set_id, stat)
-            end if
-            if (stat < 0) exit hdf5_block
-
-            ! Get data space.
-            call h5dget_space_f(set_id, space_id, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Get dimensions. On success, `stat` is set to the rank of the array.
-            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Allocate array.
-            rc = E_ALLOC
-            allocate (observs(dims(1)), stat=stat)
-            if (stat /= 0) exit hdf5_block
-
-            ! Create memory data type.
-            rc = hdf5_type_observ(type_id)
-            if (dm_is_error(rc)) exit hdf5_block
-
-            ! Read data from the data set.
-            ptr = c_loc(observs)
-            call h5dread_f(set_id, type_id, ptr, stat)
-            if (stat < 0) exit hdf5_block
-
-            rc = E_NONE
-        end block hdf5_block
-
-        if (.not. allocated(observs)) allocate (observs(0))
-
-        ! Release resources.
-        if (type_id > -1)  call h5tclose_f(type_id, stat)
-        if (space_id > -1) call h5sclose_f(space_id, stat)
-        if (set_id > -1)   call h5dclose_f(set_id, stat)
-    end function hdf5_read_observs
-
-    integer function hdf5_read_sensors(id, sensors, data_set) result(rc)
-        !! Reads array of `sensor_type` from compound data in HDF5 file. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_SENSOR`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if passed `id` is invalid.
-        !! * `E_ALLOC` if allocation of array `sensors` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
-        use :: dm_sensor
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
-        type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
-
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
-
-        set_id   = -1
-        space_id = -1
-        type_id  = -1
-
-        rc = E_INVALID
-        if (id%id < 0) return
-
-        rc = E_HDF5
-
-        hdf5_block: block
-            ! Open the data set.
-            if (present(data_set)) then
-                call h5dopen_f(id%id, data_set, set_id, stat)
-            else
-                call h5dopen_f(id%id, HDF5_DATASET_SENSOR, set_id, stat)
-            end if
-            if (stat < 0) exit hdf5_block
-
-            ! Get data space.
-            call h5dget_space_f(set_id, space_id, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Get dimensions. On success, `stat` is set to the rank of the array.
-            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Allocate array.
-            rc = E_ALLOC
-            allocate (sensors(dims(1)), stat=stat)
-            if (stat /= 0) exit hdf5_block
-
-            ! Create memory data type.
-            rc = hdf5_type_sensor(type_id)
-            if (dm_is_error(rc)) exit hdf5_block
-
-            ! Read data from the data set.
-            ptr = c_loc(sensors)
-            call h5dread_f(set_id, type_id, ptr, stat)
-            if (stat < 0) exit hdf5_block
-
-            rc = E_NONE
-        end block hdf5_block
-
-        if (.not. allocated(sensors)) allocate (sensors(0))
-
-        ! Release resources.
-        if (type_id > -1)  call h5tclose_f(type_id, stat)
-        if (space_id > -1) call h5sclose_f(space_id, stat)
-        if (set_id > -1)   call h5dclose_f(set_id, stat)
-    end function hdf5_read_sensors
-
-    integer function hdf5_read_targets(id, targets, data_set) result(rc)
-        !! Reads array of `target_type` from compound data in HDF5 file. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_TARGET`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if passed `id` is invalid.
-        !! * `E_ALLOC` if allocation of array `targets` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
-        use :: dm_target
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
-        type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
-
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
-
-        type_id  = -1
-        set_id   = -1
-        space_id = -1
-
-        rc = E_INVALID
-        if (id%id < 0) return
-
-        rc = E_HDF5
-
-        hdf5_block: block
-            ! Open the data set.
-            if (present(data_set)) then
-                call h5dopen_f(id%id, data_set, set_id, stat)
-            else
-                call h5dopen_f(id%id, HDF5_DATASET_TARGET, set_id, stat)
-            end if
-            if (stat < 0) exit hdf5_block
-
-            ! Get data space.
-            call h5dget_space_f(set_id, space_id, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Get dimensions. On success, `stat` is set to the rank of the array.
-            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
-            if (stat < 0) exit hdf5_block
-
-            ! Allocate array.
-            rc = E_ALLOC
-            allocate (targets(dims(1)), stat=stat)
-            if (stat /= 0) exit hdf5_block
-
-            ! Create memory data type.
-            rc = hdf5_type_target(type_id)
-            if (dm_is_error(rc)) exit hdf5_block
-
-            ! Read data from the data set.
-            ptr = c_loc(targets)
-            call h5dread_f(set_id, type_id, ptr, stat)
-            if (stat < 0) exit hdf5_block
-
-            rc = E_NONE
-        end block hdf5_block
-
-        if (.not. allocated(targets)) allocate (targets(0))
-
-        ! Release resources.
-        if (type_id > -1)  call h5tclose_f(type_id, stat)
-        if (space_id > -1) call h5sclose_f(space_id, stat)
-        if (set_id > -1)   call h5dclose_f(set_id, stat)
-    end function hdf5_read_targets
-
-    integer function hdf5_type_node(type_id) result(rc)
+    integer function hdf5_create_node(type_id) result(rc)
         !! Creates compound memory data type for derived type `node_type`.
         use :: dm_node
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
@@ -688,9 +396,9 @@ contains
         if (stat < 0) return
 
         rc = E_NONE
-    end function hdf5_type_node
+    end function hdf5_create_node
 
-    integer function hdf5_type_observ(type_id) result(rc)
+    integer function hdf5_create_observ(type_id) result(rc)
         !! Creates compound memory data type for derived type `observ_type`.
         use :: dm_observ
         use :: dm_node
@@ -913,9 +621,9 @@ contains
         end do
 
         rc = E_NONE
-    end function hdf5_type_observ
+    end function hdf5_create_observ
 
-    integer function hdf5_type_sensor(type_id) result(rc)
+    integer function hdf5_create_sensor(type_id) result(rc)
         !! Creates compound memory data type for derived type `sensor_type`.
         use :: dm_node
         use :: dm_sensor
@@ -989,9 +697,9 @@ contains
         if (stat < 0) return
 
         rc = E_NONE
-    end function hdf5_type_sensor
+    end function hdf5_create_sensor
 
-    integer function hdf5_type_target(type_id) result(rc)
+    integer function hdf5_create_target(type_id) result(rc)
         !! Creates compound memory data type for derived type `target_type`.
         use :: dm_target
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
@@ -1050,7 +758,387 @@ contains
         if (stat < 0) return
 
         rc = E_NONE
-    end function hdf5_type_target
+    end function hdf5_create_target
+
+    integer function hdf5_open_file(file, path, mode, create) result(rc)
+        !! Opens HDF5 file, by default in read/write access mode, unless `mode`
+        !! is passed. If `create` is `.true.`, a new file will be created.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if the file to create already exists.
+        !! * `E_HDF5` if opening or creating the file failed.
+        !! * `E_INVALID` if the file is opened already or argument `mode` is invalid.
+        !! * `E_NOT_FOUND` if the file was not found.
+        use :: dm_file, only: dm_file_exists
+        type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
+        character(len=*),     intent(in)           :: path   !! Path to HDF5 file.
+        integer,              intent(in), optional :: mode   !! Open mode (`HDF5_RDONLY` or `HDF5_RDWR`).
+        logical,              intent(in), optional :: create !! Create HDF5 file.
+
+        integer :: flags, mode_
+        integer :: stat
+        logical :: create_, exists
+
+        rc = E_INVALID
+        if (file%id > -1) return
+
+        exists  = dm_file_exists(path)
+        create_ = .false.
+        if (present(create)) create_ = create
+
+        ! Create new file.
+        if (create_) then
+            rc = E_EXIST
+            if (exists) return
+
+            rc = E_HDF5
+            call h5fcreate_f(trim(path), H5F_ACC_EXCL_F, file%id, stat)
+            if (stat < 0) return
+
+            rc = E_NONE
+            return
+        end if
+
+        ! Open file.
+        mode_ = HDF5_RDWR
+        if (present(mode)) mode_ = mode
+
+        select case (mode_)
+            case (HDF5_RDONLY)
+                flags = H5F_ACC_RDONLY_F
+            case (HDF5_RDWR)
+                flags = H5F_ACC_RDWR_F
+            case default
+                rc = E_INVALID
+                return
+        end select
+
+        rc = E_NOT_FOUND
+        if (.not. exists) return
+
+        rc = E_HDF5
+        call h5fopen_f(trim(path), flags, file%id, stat)
+        if (stat < 0) return
+
+        rc = E_NONE
+    end function hdf5_open_file
+
+    integer function hdf5_open_group(id, group, name, create) result(rc)
+        !! Opens or creates group of name `name`. The function returns
+        !! `E_INVALID` if the file is not opened, and `E_HDF5` if the group
+        !! operation failed.
+        class(hdf5_id_type),   intent(inout)        :: id     !! HDF5 file or group type.
+        type(hdf5_group_type), intent(out)          :: group  !! HDF5 group type.
+        character(len=*),      intent(in)           :: name   !! Group name.
+        logical,               intent(in), optional :: create !! Create group.
+
+        integer :: stat
+        logical :: create_
+
+        rc = E_INVALID
+        if (id%id < 0) return
+
+        create_ = .false.
+        if (present(create)) create_ = create
+
+        rc = E_HDF5
+
+        if (create_) then
+            ! Create group.
+            call h5gcreate_f(id%id, trim(name), group%id, stat)
+        else
+            ! Open group.
+            call h5gopen_f(id%id, trim(name), group%id, stat)
+        end if
+
+        if (stat < 0) return
+        rc = E_NONE
+    end function hdf5_open_group
+
+    integer function hdf5_read_nodes(id, nodes, data_set) result(rc)
+        !! Reads array of `node_type` from compound data in HDF5 file. If
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_NODE`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_ALLOC` if allocation of array `nodes` failed.
+        !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_node
+        class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
+        type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
+        character(len=*),                     intent(in), optional :: data_set !! Name of data set.
+
+        integer               :: stat
+        integer(kind=hid_t)   :: set_id, space_id, type_id
+        integer(kind=hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)           :: ptr
+
+        type_id  = -1
+        set_id   = -1
+        space_id = -1
+
+        rc = E_INVALID
+        if (id%id < 0) return
+
+        rc = E_HDF5
+
+        hdf5_block: block
+            ! Open the data set.
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF5_DATASET_NODE, set_id, stat)
+            end if
+            if (stat < 0) exit hdf5_block
+
+            ! Get data space.
+            call h5dget_space_f(set_id, space_id, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Get dimensions. On success, `stat` is set to the rank of the array.
+            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Allocate array.
+            rc = E_ALLOC
+            allocate (nodes(dims(1)), stat=stat)
+            if (stat /= 0) exit hdf5_block
+
+            ! Create memory data type.
+            rc = hdf5_create_node(type_id)
+            if (dm_is_error(rc)) exit hdf5_block
+
+            ! Read data from the data set.
+            ptr = c_loc(nodes)
+            call h5dread_f(set_id, type_id, ptr, stat)
+            if (stat < 0) exit hdf5_block
+
+            rc = E_NONE
+        end block hdf5_block
+
+        if (.not. allocated(nodes)) allocate (nodes(0))
+
+        ! Release resources.
+        if (type_id > -1)  call h5tclose_f(type_id, stat)
+        if (space_id > -1) call h5sclose_f(space_id, stat)
+        if (set_id > -1)   call h5dclose_f(set_id, stat)
+    end function hdf5_read_nodes
+
+    integer function hdf5_read_observs(id, observs, data_set) result(rc)
+        !! Reads array of `observ_type` from compound data in HDF5 file. If
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_OBSERV`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_ALLOC` if allocation of array `observs` failed.
+        !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_observ
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
+        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+
+        integer               :: stat
+        integer(kind=hid_t)   :: set_id, space_id, type_id
+        integer(kind=hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)           :: ptr
+
+        type_id  = -1
+        set_id   = -1
+        space_id = -1
+
+        rc = E_INVALID
+        if (id%id < 0) return
+
+        rc = E_HDF5
+
+        hdf5_block: block
+            ! Open the data set.
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF5_DATASET_OBSERV, set_id, stat)
+            end if
+            if (stat < 0) exit hdf5_block
+
+            ! Get data space.
+            call h5dget_space_f(set_id, space_id, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Get dimensions. On success, `stat` is set to the rank of the array.
+            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Allocate array.
+            rc = E_ALLOC
+            allocate (observs(dims(1)), stat=stat)
+            if (stat /= 0) exit hdf5_block
+
+            ! Create memory data type.
+            rc = hdf5_create_observ(type_id)
+            if (dm_is_error(rc)) exit hdf5_block
+
+            ! Read data from the data set.
+            ptr = c_loc(observs)
+            call h5dread_f(set_id, type_id, ptr, stat)
+            if (stat < 0) exit hdf5_block
+
+            rc = E_NONE
+        end block hdf5_block
+
+        if (.not. allocated(observs)) allocate (observs(0))
+
+        ! Release resources.
+        if (type_id > -1)  call h5tclose_f(type_id, stat)
+        if (space_id > -1) call h5sclose_f(space_id, stat)
+        if (set_id > -1)   call h5dclose_f(set_id, stat)
+    end function hdf5_read_observs
+
+    integer function hdf5_read_sensors(id, sensors, data_set) result(rc)
+        !! Reads array of `sensor_type` from compound data in HDF5 file. If
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_SENSOR`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_ALLOC` if allocation of array `sensors` failed.
+        !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_sensor
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
+        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+
+        integer               :: stat
+        integer(kind=hid_t)   :: set_id, space_id, type_id
+        integer(kind=hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)           :: ptr
+
+        set_id   = -1
+        space_id = -1
+        type_id  = -1
+
+        rc = E_INVALID
+        if (id%id < 0) return
+
+        rc = E_HDF5
+
+        hdf5_block: block
+            ! Open the data set.
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF5_DATASET_SENSOR, set_id, stat)
+            end if
+            if (stat < 0) exit hdf5_block
+
+            ! Get data space.
+            call h5dget_space_f(set_id, space_id, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Get dimensions. On success, `stat` is set to the rank of the array.
+            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Allocate array.
+            rc = E_ALLOC
+            allocate (sensors(dims(1)), stat=stat)
+            if (stat /= 0) exit hdf5_block
+
+            ! Create memory data type.
+            rc = hdf5_create_sensor(type_id)
+            if (dm_is_error(rc)) exit hdf5_block
+
+            ! Read data from the data set.
+            ptr = c_loc(sensors)
+            call h5dread_f(set_id, type_id, ptr, stat)
+            if (stat < 0) exit hdf5_block
+
+            rc = E_NONE
+        end block hdf5_block
+
+        if (.not. allocated(sensors)) allocate (sensors(0))
+
+        ! Release resources.
+        if (type_id > -1)  call h5tclose_f(type_id, stat)
+        if (space_id > -1) call h5sclose_f(space_id, stat)
+        if (set_id > -1)   call h5dclose_f(set_id, stat)
+    end function hdf5_read_sensors
+
+    integer function hdf5_read_targets(id, targets, data_set) result(rc)
+        !! Reads array of `target_type` from compound data in HDF5 file. If
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_TARGET`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_ALLOC` if allocation of array `targets` failed.
+        !! * `E_HDF5` if HDF5 library call failed.
+        use :: dm_target
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
+        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+
+        integer               :: stat
+        integer(kind=hid_t)   :: set_id, space_id, type_id
+        integer(kind=hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)           :: ptr
+
+        type_id  = -1
+        set_id   = -1
+        space_id = -1
+
+        rc = E_INVALID
+        if (id%id < 0) return
+
+        rc = E_HDF5
+
+        hdf5_block: block
+            ! Open the data set.
+            if (present(data_set)) then
+                call h5dopen_f(id%id, data_set, set_id, stat)
+            else
+                call h5dopen_f(id%id, HDF5_DATASET_TARGET, set_id, stat)
+            end if
+            if (stat < 0) exit hdf5_block
+
+            ! Get data space.
+            call h5dget_space_f(set_id, space_id, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Get dimensions. On success, `stat` is set to the rank of the array.
+            call h5sget_simple_extent_dims_f(space_id, dims, max_dims, stat)
+            if (stat < 0) exit hdf5_block
+
+            ! Allocate array.
+            rc = E_ALLOC
+            allocate (targets(dims(1)), stat=stat)
+            if (stat /= 0) exit hdf5_block
+
+            ! Create memory data type.
+            rc = hdf5_create_target(type_id)
+            if (dm_is_error(rc)) exit hdf5_block
+
+            ! Read data from the data set.
+            ptr = c_loc(targets)
+            call h5dread_f(set_id, type_id, ptr, stat)
+            if (stat < 0) exit hdf5_block
+
+            rc = E_NONE
+        end block hdf5_block
+
+        if (.not. allocated(targets)) allocate (targets(0))
+
+        ! Release resources.
+        if (type_id > -1)  call h5tclose_f(type_id, stat)
+        if (space_id > -1) call h5sclose_f(space_id, stat)
+        if (set_id > -1)   call h5dclose_f(set_id, stat)
+    end function hdf5_read_targets
 
     integer function hdf5_write(id, type_id, data_size, data_ptr, data_set) result(rc)
         !! Creates HDF5 data space and writes type array to HDF5 file or group.
@@ -1095,12 +1183,13 @@ contains
 
     integer function hdf5_write_nodes(id, nodes, data_set) result(rc)
         !! Creates HDF5 data space and writes nodes to HDF5 file or group. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_NODE`.
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_NODE`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed node array if of size 0.
+        !! * `E_EMPTY` if passed node array is of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
         use :: dm_node
         class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
@@ -1118,7 +1207,7 @@ contains
         if (size(nodes) == 0) return
 
         hdf5_block: block
-            rc = hdf5_type_node(type_id)
+            rc = hdf5_create_node(type_id)
             if (dm_is_error(rc)) exit hdf5_block
 
             data_size = size(nodes, kind=hsize_t)
@@ -1135,13 +1224,13 @@ contains
 
     integer function hdf5_write_observs(id, observs, data_set) result(rc)
         !! Creates HDF5 data space and writes observations to HDF5 file or
-        !! group. If `data_set` is not passed, the name will be set to
-        !! `HDF5_DATASET_OBSERV`.
+        !! group. If `data_set` is not passed, the name will be set to the
+        !! value of `HDF5_DATASET_OBSERV`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed observation array if of size 0.
+        !! * `E_EMPTY` if passed observation array is of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
         use :: dm_observ
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
@@ -1159,7 +1248,7 @@ contains
         if (size(observs) == 0) return
 
         hdf5_block: block
-            rc = hdf5_type_observ(type_id)
+            rc = hdf5_create_observ(type_id)
             if (dm_is_error(rc)) exit hdf5_block
 
             data_size = size(observs, kind=hsize_t)
@@ -1176,12 +1265,13 @@ contains
 
     integer function hdf5_write_sensors(id, sensors, data_set) result(rc)
         !! Creates HDF5 data space and writes sensors to HDF5 file or group. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_SENSOR`.
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_SENSOR`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed sensor array if of size 0.
+        !! * `E_EMPTY` if passed sensor array is of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
         use :: dm_sensor
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
@@ -1199,7 +1289,7 @@ contains
         if (size(sensors) == 0) return
 
         hdf5_block: block
-            rc = hdf5_type_sensor(type_id)
+            rc = hdf5_create_sensor(type_id)
             if (dm_is_error(rc)) exit hdf5_block
 
             data_size = size(sensors, kind=hsize_t)
@@ -1216,12 +1306,13 @@ contains
 
     integer function hdf5_write_targets(id, targets, data_set) result(rc)
         !! Creates HDF5 data space and writes targets to HDF5 file or group. If
-        !! `data_set` is not passed, the name will be set to `HDF5_DATASET_TARGET`.
+        !! `data_set` is not passed, the name will be set to the value of
+        !! `HDF5_DATASET_TARGET`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed target array if of size 0.
+        !! * `E_EMPTY` if passed target array is of size 0.
         !! * `E_HDF5` if HDF5 library call failed.
         use :: dm_target
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
@@ -1239,7 +1330,7 @@ contains
         if (size(targets) == 0) return
 
         hdf5_block: block
-            rc = hdf5_type_target(type_id)
+            rc = hdf5_create_target(type_id)
             if (dm_is_error(rc)) exit hdf5_block
 
             data_size = size(targets, kind=hsize_t)
