@@ -17,8 +17,8 @@ module dm_hdf5
     !! integer                        :: rc
     !! type(hdf5_file_type)           :: file
     !! type(hdf5_group_type)          :: group
-    !! type(observ_type)              :: input(NOBSERVS)
-    !! type(observ_type), allocatable :: output(:)
+    !! type(observ_type)              :: output(NOBSERVS)
+    !! type(observ_type), allocatable :: input(:)
     !!
     !! ! Initialise HDF5, create file and group.
     !! rc = dm_hdf5_init()
@@ -26,8 +26,8 @@ module dm_hdf5
     !! rc = dm_hdf5_open(file, group, 'timeseries', create=.true.)
     !!
     !! ! Write array to file, then read array back from file.
-    !! rc = dm_hdf5_write(group, input)
-    !! rc = dm_hdf5_read(group, output)
+    !! rc = dm_hdf5_write(group, output)
+    !! rc = dm_hdf5_read(group, input)
     !!
     !! ! Clean-up.
     !! rc = dm_hdf5_close(group)
@@ -113,6 +113,7 @@ module dm_hdf5
     public :: dm_hdf5_file_path
     public :: dm_hdf5_file_valid
     public :: dm_hdf5_filter_available
+    public :: dm_hdf5_group_exists
     public :: dm_hdf5_init
     public :: dm_hdf5_open
     public :: dm_hdf5_read
@@ -159,8 +160,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed HDF5 file is not opened.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the passed HDF5 file is not opened.
+        !! * `E_HDF5` if the HDF5 library call failed.
         type(hdf5_file_type), intent(inout) :: file       !! HDF5 file type.
         integer(kind=i8),     intent(out)   :: free_space !! Free space in bytes.
 
@@ -186,8 +187,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed HDF5 file is not opened.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the passed HDF5 file is not opened.
+        !! * `E_HDF5` if the HDF5 library call failed.
         type(hdf5_file_type), intent(inout)         :: file !! HDF5 file type.
         character(len=*),     intent(inout)         :: path !! Path of HDF5 file.
         integer,              intent(out), optional :: n    !! Path length.
@@ -208,12 +209,12 @@ contains
     end function dm_hdf5_file_path
 
     integer function dm_hdf5_file_valid(path) result(rc)
-        !! Returns `E_NONE` if given file is an HDF5 file, else the appropriate
-        !! error code:
+        !! Returns `E_NONE` if the given file is an HDF5 file, else the
+        !! appropriate error code:
         !!
         !! * `E_FORMAT` if the file is not an HDF5 file.
         !! * `E_NOT_FOUND` if the file does not exist.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_file
         character(len=*), intent(in) :: path !! File path.
 
@@ -233,47 +234,79 @@ contains
         rc = E_NONE
     end function dm_hdf5_file_valid
 
-    integer function dm_hdf5_filter_available(filter, available) result(rc)
-        !! Returns the status of the given filter in `available`. The following
-        !! filters are supported:
+    logical function dm_hdf5_filter_available(filter, error) result(available)
+        !! Returns the status of the given filter. The following filters are
+        !! supported:
         !!
         !! * `HDF5_FILTER_DEFLATE` – gzip or deflate compression.
         !! * `HDF5_FILTER_SHUFFLE` – Shuffle algorithm.
         !! * `HDF5_FILTER_FLETCHER32` – Fletcher32 checksum.
         !! * `HDF5_FILTER_SZIP` – SZIP compression.
         !!
-        !! The function returns `E_INVALID` if the given filter is invalid, and
-        !! `E_HDF5` if the library call failed.
-        integer, intent(in)  :: filter    !! Filter enumerator.
-        logical, intent(out) :: available !! Filter is available or not.
+        !! Argument `error` is set to `E_INVALID` if the given filter is
+        !! invalid, and to `E_HDF5` if the library call failed.
+        integer, intent(in)            :: filter !! Filter enumerator.
+        integer, intent(out), optional :: error  !! Error code.
 
-        integer :: f, stat
+        integer :: f, rc, stat
 
         available = .false.
 
-        rc = E_INVALID
-        select case (filter)
-            case (HDF5_FILTER_DEFLATE)
-                f = H5Z_FILTER_DEFLATE_F
-            case (HDF5_FILTER_SHUFFLE)
-                f = H5Z_FILTER_SHUFFLE_F
-            case (HDF5_FILTER_FLETCHER32)
-                f = H5Z_FILTER_FLETCHER32_F
-            case (HDF5_FILTER_SZIP)
-                f = H5Z_FILTER_SZIP_F
-            case default
-                return
-        end select
+        hdf5_block: block
+            rc = E_INVALID
+            select case (filter)
+                case (HDF5_FILTER_DEFLATE)
+                    f = H5Z_FILTER_DEFLATE_F
+                case (HDF5_FILTER_SHUFFLE)
+                    f = H5Z_FILTER_SHUFFLE_F
+                case (HDF5_FILTER_FLETCHER32)
+                    f = H5Z_FILTER_FLETCHER32_F
+                case (HDF5_FILTER_SZIP)
+                    f = H5Z_FILTER_SZIP_F
+                case default
+                    exit hdf5_block
+            end select
 
-        rc = E_HDF5
-        call h5zfilter_avail_f(f, available, stat)
-        if (stat < 0) return
+            rc = E_HDF5
+            call h5zfilter_avail_f(f, available, stat)
+            if (stat < 0) exit hdf5_block
 
-        rc = E_NONE
+            rc = E_NONE
+        end block hdf5_block
+
+        if (present(error)) error = rc
     end function dm_hdf5_filter_available
 
+    logical function dm_hdf5_group_exists(id, name, error) result(exists)
+        !! Returns `.true.` if group of given name `name` exists in file or
+        !! group `id`. The function returns the following error codes in
+        !! `error`:
+        !!
+        !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
+        !! * `E_HDF5` if the HDF5 library call failed.
+        class(hdf5_id_type), intent(inout)         :: id    !! HDF5 file or group type.
+        character(len=*),    intent(in)            :: name  !! Group name.
+        integer,             intent(out), optional :: error !! Error code.
+
+        integer :: rc, stat
+
+        exists = .false.
+
+        hdf5_block: block
+            rc = E_INVALID
+            if (id%id < 0) exit hdf5_block
+            call h5lexists_f(id%id, trim(name), exists, stat)
+            rc = E_HDF5
+            if (stat < 0) exit hdf5_block
+            rc = E_NONE
+        end block hdf5_block
+
+        if (present(error)) error = rc
+    end function dm_hdf5_group_exists
+
     integer function dm_hdf5_init() result(rc)
-        !! Initialises HDF5 Fortran interface. Returns `E_HDF5` on error.
+        !! Initialises HDF5 Fortran interface. The function returns `E_HDF5` on
+        !! error.
         integer :: stat
 
         rc = E_HDF5
@@ -283,7 +316,8 @@ contains
     end function dm_hdf5_init
 
     integer function dm_hdf5_version(major, minor, release) result(rc)
-        !! Returns version numbers of HDF5 library. Returns `E_HDF5` on error.
+        !! Returns version numbers of HDF5 library. The function returns
+        !! `E_HDF5` on error.
         use :: h5lib, only: h5get_libversion_f
         integer, intent(out), optional :: major   !! Major version of HDF5 library.
         integer, intent(out), optional :: minor   !! Minor version of HDF5 library.
@@ -307,7 +341,7 @@ contains
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     integer function hdf5_close_file(file) result(rc)
-        !! Closes HDF5 file. Returns `E_INVALID` if passed HDF5 file is not
+        !! Closes HDF5 file. Returns `E_INVALID` if the passed HDF5 file is not
         !! opened. Returns `E_HDF5` if closing the file failed.
         type(hdf5_file_type), intent(inout) :: file !! HDF5 file type.
 
@@ -325,7 +359,7 @@ contains
     end function hdf5_close_file
 
     integer function hdf5_close_group(group) result(rc)
-        !! Closes HDF5 group. Returns `E_INVALID` if passed HDF5 group
+        !! Closes HDF5 group. Returns `E_INVALID` if the passed HDF5 group
         !! is not opened. Returns `E_HDF5` if closing the group failed.
         type(hdf5_group_type), intent(inout) :: group !! HDF5 group type.
 
@@ -344,6 +378,7 @@ contains
 
     integer function hdf5_create_node(type_id) result(rc)
         !! Creates compound memory data type for derived type `node_type`.
+        !! The function returns `E_HDF5` in error.
         use :: dm_node
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
@@ -400,6 +435,7 @@ contains
 
     integer function hdf5_create_observ(type_id) result(rc)
         !! Creates compound memory data type for derived type `observ_type`.
+        !! The function returns `E_HDF5` in error.
         use :: dm_observ
         use :: dm_node
         use :: dm_request
@@ -625,6 +661,7 @@ contains
 
     integer function hdf5_create_sensor(type_id) result(rc)
         !! Creates compound memory data type for derived type `sensor_type`.
+        !! The function returns `E_HDF5` in error.
         use :: dm_node
         use :: dm_sensor
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
@@ -701,6 +738,7 @@ contains
 
     integer function hdf5_create_target(type_id) result(rc)
         !! Creates compound memory data type for derived type `target_type`.
+        !! The function returns `E_HDF5` in error.
         use :: dm_target
         integer(kind=hid_t), intent(out) :: type_id !! Data type id.
 
@@ -863,9 +901,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `nodes` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_node
         class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
@@ -934,9 +972,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `observs` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_observ
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
@@ -1005,9 +1043,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `sensors` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_sensor
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
@@ -1076,9 +1114,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if passed `id` is invalid.
+        !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `targets` failed.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_target
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
@@ -1143,7 +1181,7 @@ contains
     integer function hdf5_write(id, type_id, data_size, data_ptr, data_set) result(rc)
         !! Creates HDF5 data space and writes type array to HDF5 file or group.
         !! This function does not close type identifier `type_id`. Returns
-        !! `E_HDF5` if HDF5 library call failed.
+        !! `E_HDF5` if the HDF5 library call failed.
         integer(kind=hid_t),   intent(in) :: id        !! HDF5 file or group type.
         integer(kind=hid_t),   intent(in) :: type_id   !! HDF5 type id.
         integer(kind=hsize_t), intent(in) :: data_size !! Array size.
@@ -1188,9 +1226,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed node array is of size 0.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
+        !! * `E_EMPTY` if the passed node array is of size 0.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_node
         class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), target, intent(inout)        :: nodes(:) !! Node type array.
@@ -1229,9 +1267,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed observation array is of size 0.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
+        !! * `E_EMPTY` if the passed observation array is of size 0.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_observ
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), target, intent(inout)        :: observs(:) !! Observation type array.
@@ -1270,9 +1308,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed sensor array is of size 0.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
+        !! * `E_EMPTY` if the passed sensor array is of size 0.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_sensor
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), target, intent(inout)        :: sensors(:) !! Sensor type array.
@@ -1311,9 +1349,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if given HDF5 id type (file, group) is invalid.
-        !! * `E_EMPTY` if passed target array is of size 0.
-        !! * `E_HDF5` if HDF5 library call failed.
+        !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
+        !! * `E_EMPTY` if the passed target array is of size 0.
+        !! * `E_HDF5` if the HDF5 library call failed.
         use :: dm_target
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), target, intent(inout)        :: targets(:) !! Target type array.

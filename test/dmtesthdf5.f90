@@ -131,22 +131,19 @@ contains
         test_block: block
             print *, 'Creating HDF5 file ' // FILE_PATH // ' ...'
             rc = dm_hdf5_open(file, FILE_PATH, create=.true.)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating group ...'
             rc = dm_hdf5_open(file, group, GROUP_NAME, create=.true.)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
+            if (.not. dm_hdf5_group_exists(file, GROUP_NAME, error=rc)) exit test_block
 
             print *, 'Writing nodes ...'
             rc = dm_hdf5_write(group, input)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading nodes ...'
             rc = dm_hdf5_read(group, output)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Validating nodes ...'
@@ -157,14 +154,19 @@ contains
             stat = TEST_PASSED
         end block test_block
 
+        call dm_error_out(rc)
+
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
+        call dm_error_out(rc)
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
+        call dm_error_out(rc)
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
+        call dm_error_out(rc)
     end function test03
 
     logical function test04() result(stat)
@@ -194,22 +196,18 @@ contains
         test_block: block
             print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
             rc = dm_hdf5_open(file, FILE_PATH)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Opening group ...'
             rc = dm_hdf5_open(file, group, GROUP_NAME)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Writing sensors ...'
             rc = dm_hdf5_write(group, input)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading sensors ...'
             rc = dm_hdf5_read(group, output)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Validating sensors ...'
@@ -220,14 +218,19 @@ contains
             stat = TEST_PASSED
         end block test_block
 
+        call dm_error_out(rc)
+
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
+        call dm_error_out(rc)
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
+        call dm_error_out(rc)
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
+        call dm_error_out(rc)
     end function test04
 
     logical function test05() result(stat)
@@ -257,22 +260,18 @@ contains
         test_block: block
             print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
             rc = dm_hdf5_open(file, FILE_PATH)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Opening group ...'
             rc = dm_hdf5_open(file, group, GROUP_NAME)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Writing targets ...'
             rc = dm_hdf5_write(group, input)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading targets ...'
             rc = dm_hdf5_read(group, output)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Validating targets ...'
@@ -283,14 +282,19 @@ contains
             stat = TEST_PASSED
         end block test_block
 
+        call dm_error_out(rc)
+
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
+        call dm_error_out(rc)
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
+        call dm_error_out(rc)
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
+        call dm_error_out(rc)
     end function test05
 
     logical function test06() result(stat)
@@ -320,22 +324,18 @@ contains
         test_block: block
             print *, 'Opening HDF5 file ' // FILE_PATH // ' ...'
             rc = dm_hdf5_open(file, FILE_PATH)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Opening group ...'
             rc = dm_hdf5_open(file, group, GROUP_NAME)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Writing observations ...'
             rc = dm_hdf5_write(group, input)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading observations ...'
             rc = dm_hdf5_read(group, output)
-            call dm_error_out(rc)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Validating observations ...'
@@ -346,19 +346,24 @@ contains
             stat = TEST_PASSED
         end block test_block
 
+        call dm_error_out(rc)
+
         print *, 'Closing group ...'
         rc = dm_hdf5_close(group)
+        call dm_error_out(rc)
 
         print *, 'Closing file ...'
         rc = dm_hdf5_close(file)
+        call dm_error_out(rc)
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()
+        call dm_error_out(rc)
     end function test06
 
     logical function test07() result(stat)
         !! Tests availale filters.
-        integer :: rc
+        integer :: i, rc
         logical :: avail(4)
 
         stat = TEST_FAILED
@@ -370,10 +375,11 @@ contains
 
         print *, 'Checking available filters ...'
         avail = .false.
-        rc = dm_hdf5_filter_available(HDF5_FILTER_DEFLATE,    avail(HDF5_FILTER_DEFLATE));    call dm_error_out(rc)
-        rc = dm_hdf5_filter_available(HDF5_FILTER_SHUFFLE,    avail(HDF5_FILTER_SHUFFLE));    call dm_error_out(rc)
-        rc = dm_hdf5_filter_available(HDF5_FILTER_FLETCHER32, avail(HDF5_FILTER_FLETCHER32)); call dm_error_out(rc)
-        rc = dm_hdf5_filter_available(HDF5_FILTER_SZIP,       avail(HDF5_FILTER_SZIP));       call dm_error_out(rc)
+
+        do i = HDF5_FILTER_DEFLATE, HDF5_FILTER_SZIP
+            avail(i) = dm_hdf5_filter_available(i, error=rc)
+            call dm_error_out(rc)
+        end do
 
         print *, 'Deflate...: ', avail(HDF5_FILTER_DEFLATE)
         print *, 'Shuffle...: ', avail(HDF5_FILTER_SHUFFLE)
