@@ -74,7 +74,7 @@ for testing.
 
 *--interval*, *-I* _seconds_::
   Synchronisation interval in seconds. If set to `0`, only a single attempt is
-  made.
+  made (default).
 
 *--logger*, *-l* _name_::
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.

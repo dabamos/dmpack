@@ -517,6 +517,8 @@ authenticated user. For example, to store an observation of a node with the id
 `node-1`, the HTTP Basic Auth user name must equal the node id. If the
 observation is sent by any other user, it will be rejected (HTTP 401).
 
+.Environment variables of _dmapi(1)_
+[[dmapi-env]]
 [cols="4,12"]
 |===
 | Environment Variable | Description
@@ -603,7 +605,7 @@ for testing.
 | `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
-| `--interval _seconds_` | `-I`  | 60       | Emit interval in seconds.
+| `--interval _seconds_` | `-I`  | 0        | Emit interval in seconds.
 | `--logger _name_`      | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmbeat` | Optional name of instance and table in given configuration file.
 | `--node _id_`          | `-N`  | –        | Node id.
@@ -947,7 +949,7 @@ On Linux, the path to the USB adapter slightly differs:
 ....
 
 The command-line argument `-C` selects output in °C. The settings can be added
-to the _owfs(1)_ configuration file, usually at `/usr/local/etc/owfs.conf` or
+to the _owfs(1)_ configuration file, usually `/usr/local/etc/owfs.conf` or
 `/etc/owfs.conf`:
 
 ....
@@ -1222,13 +1224,10 @@ $ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
 === dminit [[dminit]]
 
 The *dminit* utility program creates beat, log, and observation databases. No
-action is performed if the specified database already exists.
-
-A synchronisation table is required for observation and log synchronisation with
-an <<dmapi>> server. The argument can be omitted if this functionality is not
-used.
-
-The journal mode Write-Ahead Logging (WAL) should be enabled for databases with
+action is performed if the specified database already exists. A synchronisation
+table is required for observation and log synchronisation with an <<dmapi>>
+server. The argument can be omitted if this functionality is not used. The
+journal mode Write-Ahead Logging (WAL) should be enabled for databases with
 multiple readers.
 
 ==== Command-Line Options
@@ -1242,7 +1241,7 @@ multiple readers.
 | `--sync`            | `-Y`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server.
 | `--type _type_`     | `-t`  | –       | Type of database, either  `beat`, `log`, or `observ`.
 | `--version`         | `-v`  | –       | Output version information and quit.
-| `--wal`             | `-W`  | off     | Enable Write-Ahead Logging (WAL).
+| `--wal`             | `-W`  | off     | Enable journal mode Write-Ahead Logging (WAL).
 |===
 
 ==== Examples
@@ -1935,7 +1934,8 @@ Alternatively, start *dmsync* with argument `--create` once.
 
 If the RPC server uses HTTP Basic Auth for authentication, the RPC user name
 must match the _node id_ of the transmitted node, sensor, observation, log, or
-beat record. Otherwise, it will be rejected by the RPC server (HTTP 401).
+beat record. Otherwise, the server will reject the record and return HTTP 401
+(Unauthorized).
 
 The database records are send in compressed Fortran 95 Namelist format via HTTP
 to the server. The program uses libcurl for data transfer. The accessed RPC API
@@ -1957,7 +1957,7 @@ for testing.
 
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--create`             | `-C`  | off      | Create database synchronisation tables if they do not exist.
-| `--database _file_`    | `-d`  | –        | Path to SQLite log or observation database.
+| `--database _file_`    | `-d`  | –        | Path to log or observation database, depending on `--type`.
 | `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
@@ -2078,13 +2078,8 @@ It may be replaced with any other classless CSS theme. For best experience, the
 link:https://github.com/IBM/plex/releases[IBM Plex] font family should be
 installed locally.
 
-.Plotting of time series through the *dmweb* user interface
-[#img-dmweb]
-image::dmweb.png[dmweb,align="center"]
-
-Environment variables are used to configure *dmweb*. Transport security and
-authentication have to be provided by the web server.
-
+.Environment variables of _dmweb(1)_
+[[dmweb-env]]
 [cols="4,12"]
 |===
 | Environment Variable | Description
@@ -2095,7 +2090,14 @@ authentication have to be provided by the web server.
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-See section <<web-web-ui>> for an example configuration.
+Copy the style sheet `dmpack.min.css` and the script `dmpack.js` manually to
+the WWW root directory, or just create symlinks. Environment variables are used
+to configure *dmweb*. Transport security and authentication have to be provided
+by the web server. See section <<web-web-ui>> for an example configuration.
+
+.Plotting of time series through the *dmweb* user interface
+[#img-dmweb]
+image::dmweb.png[dmweb,align="center"]
 
 == Web Applications
 
@@ -2344,13 +2346,19 @@ $HTTP["url"] =^ "/dmpack/" {
 }
 ....
 
-Copy the CSS file from `/usr/local/share/dmpack/dmpack.min.css` to the WWW root
-directory, in this case, `/var/www/`, or just create a symlink. If the style
-sheet has to be served from a path different from the root path, add a rewrite
-rule or alias to the web server configuration.
+Copy the CSS file `dmpack.min.css` and the JavaScript file `dmpack.js` from
+`/usr/local/share/dmpack` (`/usr/share/dmpack/` on Linux) to the WWW root
+directory, in this case, `/var/www/`, or just create symlinks:
 
-On FreeBSD, add the service to the system rc file `/etc/rc.conf` and start the
-server manually:
+....
+# cd /var/www/
+# ln -s /usr/local/share/dmpack/dmpack.min.css dmpack.min.css
+# ln -s /usr/local/share/dmpack/dmpack.js dmpack.js
+....
+
+If the files have to be served from a path other than the root path, add a
+rewrite rule or alias to the web server configuration. On FreeBSD, add the
+service to the system rc file `/etc/rc.conf` and start the web server manually:
 
 ....
 # sysrc lighttpd_enable="YES"
@@ -4271,13 +4279,15 @@ access that allows the user to execute arbitrary SQL statements. Third-party
 programs provide an additional graphical user interface:
 
 link:https://sqlitebrowser.org/[DB Browser for SQLite] (DB4S):: A
-spreadsheet-like graphical interface for Linux, Unix, macOS, and Windows.
-(MPLv2, GPLv3)
+spreadsheet-like visual interface for Linux, Unix, macOS, and Windows. (MPLv2,
+GPLv3)
 link:https://www.heidisql.com/[HeidiSQL]:: A free database administration tool
 for MariaDB, MySQL, MS SQL Server, PostgreSQL, and SQLite. For Windows only.
 (GPLv2)
 link:https://www.phpliteadmin.org/[phpLiteAdmin]:: A web front-end for SQLite
-database administration, written in PHP. (GPLv3)
+database administration written in PHP. (GPLv3)
+link:https://github.com/coleifer/sqlite-web[SQLite Web]:: A web-based SQLite
+database browser in Python. (MIT)
 
 === Entity–Relationship Model
 
@@ -4522,6 +4532,107 @@ MAILTO=/dev/null
 
 The shell script `mkreport.sh` must have the execution bits set. Update the
 script to your configuration.
+
+== Third-Party Programs
+
+=== HDFView
+
+link:[]HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
+files. Application images for Linux, macOS, and Windows are available for
+download on the website of
+link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
+program has to be compiled from source. The following build dependencies are
+required:
+
+* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
+* link:https://www.freshports.org/devel/cmake[devel/cmake]
+* link:https://www.freshports.org/devel/git[devel/git]
+* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
+* link:https://www.freshports.org/lang/gcc[lang/gcc]
+* link:https://www.freshports.org/[x11-toolkits/swt]
+
+The HDF4 and HDF5 libraries have to be built from source as well. First, clone
+the HDF4 repository and compile with CMake:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
+$ cd hdf4/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
+  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
+build directory. In the next step, clone the HDF5 repository and build with
+CMake, too:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
+$ cd hdf5/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
+  -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
+to `bin/` in the HDF5 build directory. Finally, clone the HDFView repository,
+set the build properties, and compile with _ant(1)_:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
+$ cd hdfview/
+....
+
+Set the following properties in `build.properties`:
+
+....
+hdf.lib.dir = /tmp/hdf4/build/bin
+hdf5.lib.dir = /tmp/hdf5/build/bin
+hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
+build.debug = false
+....
+
+Build with _ant(1)_:
+
+....
+$ ant run
+....
+
+The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
+`swt.jar` has to be replaced with the version installed system-wide:
+
+....
+$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
+....
+
+Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
+
+....
+java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
+  -cp "./*" hdf.view.HDFView "$@"
+....
+
+To start HDFView, run:
+
+....
+$ cd build/HDF_Group/HDFView/99.99.99/
+$ sh hdfview.sh
+....
 
 == Lua API [[lua-api]]
 
