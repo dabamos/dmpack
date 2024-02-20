@@ -136,7 +136,8 @@ module dm_html
     character(len=*), parameter, public :: H_UL_END         = '</ul>' // NL
 
     type, public :: anchor_type
-        !! HTML anchor type.
+        !! HTML anchor type. The length of link text and URL are limited to 256
+        !! characters.
         character(len=256) :: link = ' ' !! URL.
         character(len=256) :: text = ' ' !! Link text.
     end type anchor_type
@@ -180,6 +181,7 @@ module dm_html
     public :: dm_html_pre
     public :: dm_html_request
     public :: dm_html_responses
+    public :: dm_html_script
     public :: dm_html_select
     public :: dm_html_select_create
     public :: dm_html_select_destroy
@@ -194,13 +196,23 @@ module dm_html
     public :: dm_html_th
     public :: dm_html_time
 contains
-    pure function dm_html_anchor(anchor) result(html)
-        !! Returns HTML anchor tag.
-        type(anchor_type), intent(in) :: anchor !! Anchor type.
-        character(len=:), allocatable :: html   !! Generated HTML.
+    pure function dm_html_anchor(anchor, encode) result(html)
+        !! Returns HTML anchor tag. Address and inner HTML of the anchor
+        !! element are encoded by default.
+        type(anchor_type), intent(in)           :: anchor !! Anchor type.
+        logical,           intent(in), optional :: encode !! Encode address and inner HTML of anchor element.
+        character(len=:), allocatable           :: html   !! Generated HTML.
 
-        html = '<a href="' // dm_html_encode(anchor%link) // '">' // &
-                              dm_html_encode(anchor%text) // '</a>'
+        logical :: encode_
+
+        encode_ = .true.
+        if (present(encode)) encode_ = encode
+
+        if (encode_) then
+            html = '<a href="' // dm_html_encode(anchor%link) // '">' // dm_html_encode(anchor%text) // '</a>'
+        else
+            html = '<a href="' // trim(anchor%link) // '">' // trim(anchor%text) // '</a>'
+        end if
     end function dm_html_anchor
 
     function dm_html_beat(beat, delta, prefix) result(html)
@@ -325,7 +337,7 @@ contains
 
             html = html // &
                    H_TD // H_CODE // dm_html_encode(beats(i)%address) // H_CODE_END // H_TD_END // &
-                   H_TD // dm_html_encode(beats(i)%time_recv) // H_TD_END // &
+                   H_TD // dm_html_time(beats(i)%time_recv) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%error) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%interval) // ' secs' // H_TD_END // &
                    H_TD // dm_time_delta_to_string(time_delta, hours=.false., minutes=.false., seconds=.false.) // H_TD_END // &
@@ -551,18 +563,22 @@ contains
         html = html // H_FIGURE_END
     end function dm_html_figure
 
-    pure function dm_html_footer(content) result(html)
-        !! Returns HTML footer. The content will not be HTML encoded.
+    pure function dm_html_footer(content, script) result(html)
+        !! Returns HTML footer. The content and the script URL will not be HTML
+        !! encoded. The script element will be placed before the `</body>` tag.
         character(len=*), intent(in), optional :: content !! Optional footer content.
+        character(len=*), intent(in), optional :: script  !! Optional script URL.
         character(len=:), allocatable          :: html    !! Generated HTML.
 
-        if (present(content)) then
-            html = H_MAIN_END // H_FOOTER // trim(content) // H_FOOTER_END // &
-                   H_DIV_END // H_BODY_END // H_HTML_END
-            return
-        end if
+        character(len=:), allocatable :: content_, script_
 
-        html = H_MAIN_END // H_DIV_END // H_BODY_END // H_HTML_END
+        content_ = ''
+        script_  = ''
+
+        if (present(content)) content_ = H_FOOTER // trim(content) // H_FOOTER_END
+        if (present(script))  script_  = dm_html_script(script)
+
+        html = H_MAIN_END // content_ // H_DIV_END // script_ // H_BODY_END // H_HTML_END
     end function dm_html_footer
 
     function dm_html_header(title, subtitle, style, internal_style, brand, nav, mask) result(html)
@@ -861,7 +877,7 @@ contains
                H_TR // H_TH // 'ID' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_time(log%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Level' // H_TH_END // &
                H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
@@ -923,8 +939,8 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(logs(i)%id)
-                anchor%text = logs(i)%timestamp
-                html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
+                anchor%text = dm_html_time(logs(i)%timestamp)
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
                 html = html // H_TD // dm_html_time(logs(i)%timestamp) // H_TD_END
             end if
@@ -1047,7 +1063,7 @@ contains
                 ! Turn node name into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(nodes(i)%id)
                 anchor%text = dm_html_encode(nodes(i)%id)
-                html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
                 html = html // H_TD // dm_html_encode(nodes(i)%id) // H_TD_END
             end if
@@ -1084,7 +1100,7 @@ contains
         if (present(prefix_node) .and. len_trim(observ%node_id) > 0) then
             anchor%link = prefix_node // dm_html_encode(observ%node_id)
             anchor%text = dm_html_encode(observ%node_id)
-            nid = dm_html_anchor(anchor)
+            nid = dm_html_anchor(anchor, encode=.false.)
         else
             nid = dm_html_encode(observ%node_id)
         end if
@@ -1093,7 +1109,7 @@ contains
         if (present(prefix_sensor) .and. len_trim(observ%sensor_id) > 0) then
             anchor%link = prefix_sensor // dm_html_encode(observ%sensor_id)
             anchor%text = dm_html_encode(observ%sensor_id)
-            sid = dm_html_anchor(anchor)
+            sid = dm_html_anchor(anchor, encode=.false.)
         else
             sid = dm_html_encode(observ%sensor_id)
         end if
@@ -1102,7 +1118,7 @@ contains
         if (present(prefix_target) .and. len_trim(observ%target_id) > 0) then
             anchor%link = prefix_target // dm_html_encode(observ%target_id)
             anchor%text = dm_html_encode(observ%target_id)
-            tid = dm_html_anchor(anchor)
+            tid = dm_html_anchor(anchor, encode=.false.)
         else
             tid = dm_html_encode(observ%target_id)
         end if
@@ -1119,7 +1135,7 @@ contains
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_time(observ%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
@@ -1225,8 +1241,8 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(observs(i)%id)
-                anchor%text = observs(i)%timestamp
-                html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
+                anchor%text = dm_html_time(observs(i)%timestamp)
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
                 html = html // H_TD // dm_html_time(observs(i)%timestamp) // H_TD_END
             end if
@@ -1350,6 +1366,15 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_responses
 
+    pure function dm_html_script(source) result(html)
+        !! Returns `<script>` element with URL `source` to JavaScript file. The
+        !! source will be encoded.
+        character(len=*), intent(in)  :: source !! JavaScript source URL.
+        character(len=:), allocatable :: html   !! Generated HTML.
+
+        html = '<script src="' // dm_html_encode(source) // '"></script>' // NL
+    end function dm_html_script
+
     function dm_html_select(select, id, name, selected, disabled) result(html)
         !! Returns HTML select element with option values. This function does
         !! not encode or trim the arguments.
@@ -1453,7 +1478,7 @@ contains
                 ! Turn sensor name into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(sensors(i)%id)
                 anchor%text = dm_html_encode(sensors(i)%id)
-                html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
                 html = html // H_TD // dm_html_encode(sensors(i)%id) // H_TD_END
             end if
@@ -1552,7 +1577,7 @@ contains
                 ! Turn target name into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(targets(i)%id)
                 anchor%text = dm_html_encode(targets(i)%id)
-                html = html // H_TD // dm_html_anchor(anchor) // H_TD_END
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
                 html = html // H_TD // dm_html_encode(targets(i)%id) // H_TD_END
             end if

@@ -23,9 +23,9 @@ program dmweb
     !! The databases have to exist at start-up. Add the variables to the
     !! configuration file of your web server.
     !!
-    !! Copy the CSS file `share/dmpack.min.css` to the document root path
-    !! (`/var/www/`), or create a symlink. Any other classless CSS may work
-    !! as well.
+    !! Copy the CSS file `share/dmpack.min.css` and the JavaScript file
+    !! `share/dmpack.js` to the document root path (`/var/www/`), or create a
+    !! symlink. Other classless style sheets may work as well.
     use :: dmpack
     implicit none (type, external)
 
@@ -37,6 +37,7 @@ program dmweb
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
     character(len=*), parameter :: APP_CSS_PATH   = '/dmpack.min.css'  !! Path to CSS file.
+    character(len=*), parameter :: APP_JS_PATH    = '/dmpack.js'       !! Path to JavaScript file.
     character(len=*), parameter :: APP_TITLE      = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     logical,          parameter :: APP_READ_ONLY  = .false.            !! Read-only mode.
@@ -2198,7 +2199,11 @@ contains
             ' | <a href="' // APP_BASE_PATH // '/status">Status</a>' // &
             H_SMALL_END // H_P_END
 
-        call dm_cgi_out(dm_html_footer(CONTENT))
+        if (len_trim(APP_JS_PATH) > 0) then
+            call dm_cgi_out(dm_html_footer(CONTENT, APP_JS_PATH))
+        else
+            call dm_cgi_out(dm_html_footer(CONTENT))
+        end if
     end subroutine html_footer
 
     subroutine html_header(title)

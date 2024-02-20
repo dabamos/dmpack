@@ -699,14 +699,15 @@ install:
 	install -m 644 $(TARGET) $(ILIBDIR)/
 	install -m 644 $(SHARED) $(ILIBDIR)/
 	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
-	install -m 644 $(SHRDIR)/dmpack.css $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmpack.min.css $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmreport.css $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmpack.css       $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmpack.min.css   $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmreport.css     $(ISHRDIR)/
 	install -m 644 $(SHRDIR)/dmreport.min.css $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmlua.lua $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/feed.xsl $(ISHRDIR)/
-	install -m 755 $(SHRDIR)/diskfree.sh $(ISHRDIR)/
-	install -m 755 $(SHRDIR)/mkreport.sh $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmpack.js        $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmlua.lua        $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/feed.xsl         $(ISHRDIR)/
+	install -m 755 $(SHRDIR)/diskfree.sh      $(ISHRDIR)/
+	install -m 755 $(SHRDIR)/mkreport.sh      $(ISHRDIR)/
 	$(GZIP) -9 < $(MANDIR)/dmapi.1    > $(IMANDIR)/dmapi.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
