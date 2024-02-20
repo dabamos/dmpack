@@ -13,7 +13,7 @@ module dm_env
     interface dm_env_get
         !! Generic environment variable access.
         module procedure :: env_get_a
-        module procedure :: env_get_a_alloc
+        module procedure :: env_get_alloc
         module procedure :: env_get_i4
         module procedure :: env_get_i8
         module procedure :: env_get_l
@@ -25,7 +25,7 @@ module dm_env
     public :: dm_env_has
 
     private :: env_get_a
-    private :: env_get_a_alloc
+    private :: env_get_alloc
     private :: env_get_l
     private :: env_get_i4
     private :: env_get_i8
@@ -40,7 +40,7 @@ contains
         !! length in `n`.
         character(len=*), intent(in)    :: name  !! Variable name.
         character(len=*), intent(inout) :: value !! Variable value.
-        integer,          intent(out)   :: n     !! Length of string.
+        integer,          intent(out)   :: n     !! Actual length of string.
         integer                         :: stat
 
         rc = E_EMPTY
@@ -50,7 +50,7 @@ contains
         rc = E_NONE
     end function env_get_a
 
-    integer function env_get_a_alloc(name, value, default) result(rc)
+    integer function env_get_alloc(name, value, default) result(rc)
         !! Returns environment variable as allocatable string in `value`, with
         !! optional default value from `default` if the variable does not exist.
         character(len=*),              intent(in)            :: name    !! Variable name.
@@ -76,7 +76,7 @@ contains
 
         value = trim(buffer)
         rc = E_NONE
-    end function env_get_a_alloc
+    end function env_get_alloc
 
     integer function env_get_i4(name, value, default) result(rc)
         !! Returns environment variable as 4-byte integer in `value`, with

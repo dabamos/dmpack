@@ -40,7 +40,8 @@ program dmweb
     character(len=*), parameter :: APP_JS_PATH    = '/dmpack.js'       !! Path to JavaScript file.
     character(len=*), parameter :: APP_TITLE      = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    logical,          parameter :: APP_READ_ONLY  = .false.            !! Read-only mode.
+    integer,          parameter :: APP_PLOT_TERM  = PLOT_TERM_SVG      !! Plotting backend.
+    logical,          parameter :: APP_READ_ONLY  = .false.            !! Default database access mode.
 
     ! Global settings.
     character(len=FILE_PATH_LEN) :: db_beat   = ' ' ! Path to beat database.
@@ -88,7 +89,7 @@ program dmweb
         has_db_log    = dm_is_ok(dm_env_get('DM_DB_LOG',    db_log,    n)) ! Path to log database.
         has_db_observ = dm_is_ok(dm_env_get('DM_DB_OBSERV', db_observ, n)) ! Path to observ database.
 
-        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Read-only mode for web UI.
+        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Database access mode.
 
         ! Set-up router.
         rc = dm_cgi_router_set(router, routes)
@@ -1140,7 +1141,7 @@ contains
                 end if
 
                 ! Plotting via Gnuplot.
-                plot%term     = PLOT_TERM_SVG
+                plot%term     = APP_PLOT_TERM
                 plot%font     = 'sans'
                 plot%graph    = '#ffffff'
                 plot%bidirect = .true.
