@@ -455,7 +455,7 @@ contains
     end subroutine dm_geocom_api_request
 
     ! **************************************************************************
-    ! GEOCOM REQUEST PREPARATION PROCEDURES.
+    ! PUBLIC GEOCOM REQUEST PREPARATION PROCEDURES.
     ! **************************************************************************
     pure subroutine dm_geocom_api_request_abort_download(request)
         !! Request of `FTR_AbortDownload` procedure. Creates request to abort

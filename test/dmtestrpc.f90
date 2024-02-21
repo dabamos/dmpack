@@ -45,9 +45,8 @@ contains
             dm_is_error(dm_env_get('DM_API_PASSWORD', password))) then
 
             call dm_ansi_color(COLOR_YELLOW, no_color)
-            print '("dmtestrpc:")'
-            print '("    Set environment vars DM_RPC_HOST, DM_RPC_USERNAME, DM_API_PASSWORD")'
-            print '("    of the DMPACK RPC API. This test will be skipped.")'
+            print '("> Set environment vars DM_RPC_HOST, DM_RPC_USERNAME, DM_API_PASSWORD")'
+            print '("> of the DMPACK RPC API. This test will be skipped.")'
             call dm_ansi_reset(no_color)
             return
         end if

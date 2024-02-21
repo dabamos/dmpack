@@ -3,7 +3,6 @@
 module dm_mqueue
     !! Module for inter-process communication (IPC) and message passing through
     !! POSIX message queues. Has to be linked with `-lrt`.
-    use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
     use :: dm_id
@@ -49,7 +48,7 @@ module dm_mqueue
         procedure :: mqueue_write_raw
     end interface
 
-    public :: dm_mqueue_attr
+    public :: dm_mqueue_attributes
     public :: dm_mqueue_close
     public :: dm_mqueue_open
     public :: dm_mqueue_read
@@ -70,7 +69,7 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    integer function dm_mqueue_attr(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
+    integer function dm_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
         !! Returns message queue attributes.
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         integer(kind=i8),  intent(out), optional :: flags    !! Flags.
@@ -86,13 +85,13 @@ contains
         rc = E_MQUEUE
         if (c_mq_getattr(mqueue%mqd, attr) < 0) return
 
-        if (present(flags))    flags    = int(attr%mq_flags,   kind=c_long)
-        if (present(max_msg))  max_msg  = int(attr%mq_maxmsg,  kind=c_long)
-        if (present(msg_size)) msg_size = int(attr%mq_msgsize, kind=c_long)
-        if (present(cur_msgs)) cur_msgs = int(attr%mq_curmsgs, kind=c_long)
+        if (present(flags))    flags    = int(attr%mq_flags,   kind=i8)
+        if (present(max_msg))  max_msg  = int(attr%mq_maxmsg,  kind=i8)
+        if (present(msg_size)) msg_size = int(attr%mq_msgsize, kind=i8)
+        if (present(cur_msgs)) cur_msgs = int(attr%mq_curmsgs, kind=i8)
 
         rc = E_NONE
-    end function dm_mqueue_attr
+    end function dm_mqueue_attributes
 
     integer function dm_mqueue_close(mqueue) result(rc)
         !! Closes message queue.

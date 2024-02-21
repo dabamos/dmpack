@@ -38,9 +38,8 @@ contains
         if (dm_is_error(dm_env_get('DM_MQTT_HOST', host)) .or. &
             dm_is_error(dm_env_get('DM_MQTT_PORT', port))) then
             call dm_ansi_color(COLOR_YELLOW, no_color)
-            print '("dmtestmqtt:")'
-            print '("    Set environment variables DM_MQTT_HOST and DM_MQTT_PORT.")'
-            print '("    This test will be skipped.")'
+            print '("> Set environment variables DM_MQTT_HOST and DM_MQTT_PORT.")'
+            print '("> This test will be skipped.")'
             call dm_ansi_reset(no_color)
             return
         end if

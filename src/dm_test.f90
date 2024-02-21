@@ -62,10 +62,31 @@ module dm_test
     public :: dm_test_dummy_target
     public :: dm_test_function
     public :: dm_test_run
+    public :: dm_test_skip
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    logical function dm_test_skip(env_var) result(skip)
+        !! Returns `.true.` and outputs a debug message if environment variable
+        !! of name `env_var` is set to 1.
+        use :: dm_env, only: dm_env_get, dm_env_has
+        character(len=*), intent(in) :: env_var !! Name of the environment variable.
+
+        integer :: rc
+        logical :: no_color
+
+        rc = dm_env_get(env_var, skip, .false.)
+        no_color = dm_env_has('NO_COLOR')
+
+        if (skip) then
+            call dm_ansi_color(COLOR_YELLOW, no_color)
+            print '("> Environment variable ", a, " is set.")', trim(env_var)
+            print '("> This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+        end if
+    end function dm_test_skip
+
     impure elemental subroutine dm_test_dummy_beat(beat)
         !! Generates dummy beat data type.
         use :: dm_beat
@@ -297,7 +318,7 @@ contains
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color_)
 
-        print '("Time....: ", a)',    dm_time_now()
+        print '("Time....: ", a)',    dm_time_strip_useconds(dm_time_now())
         print '("System..: ", a, 1x, a, " (", a, ")")', &
             trim(uname%system_name), trim(uname%release), trim(uname%machine)
         print '("Compiler: ", a)',    compiler_version()

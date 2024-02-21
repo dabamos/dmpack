@@ -586,7 +586,8 @@ contains
         !! style sheet file and internal CSS can be added.
         !!
         !! The first heading will be set to the page title. The heading is
-        !! shown only if no navigation array is passed.
+        !! shown only if no navigation array is passed. The brand title `brand`
+        !! will be placed in a level 3 heading.
         !!
         !! The given title and sub-title are encoded by this function.
         character(len=*),  intent(in)              :: title          !! HTML page title and first heading.

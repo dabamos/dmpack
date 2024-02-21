@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_nml
-    !! Fortran namelist import/export of DMPACK derived types.
+    !! Fortran 95 Namelist import/export of DMPACK derived types.
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -19,7 +19,7 @@ module dm_nml
     integer, parameter, public :: NML_TARGET_LEN = 296       !! Max. size of `target_type` namelist in bytes.
 
     interface dm_nml_from
-        !! Converts type to static or allocatable string.
+        !! Converts type to static or allocatable namelist string.
         module procedure :: nml_from_beat
         module procedure :: nml_from_log
         module procedure :: nml_from_node
@@ -36,7 +36,7 @@ module dm_nml
     end interface
 
     interface dm_nml_to
-        !! Converts string to type.
+        !! Converts namelist string to type.
         module procedure :: nml_to_beat
         module procedure :: nml_to_log
         module procedure :: nml_to_node
@@ -46,13 +46,13 @@ module dm_nml
     end interface
 
     interface dm_nml_read
-        !! Reads type from file or standard input.
+        !! Reads namelist from file or standard input.
         module procedure :: nml_read_log
         module procedure :: nml_read_observ
     end interface
 
     interface dm_nml_write
-        !! Writes type to file or standard output.
+        !! Writes namelist to file or standard output.
         module procedure :: nml_write_log
         module procedure :: nml_write_observ
     end interface

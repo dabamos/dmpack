@@ -1,7 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_mqtt
-    !! Module for publishing messages via MQTT, using libcurl.
+    !! Module for publishing messages via MQTT, using libcurl. The libcurl
+    !! library must have been built with the MQTT option enabled.
     !!
     !! Limitations of libcurl:
     !!
@@ -29,8 +30,8 @@ module dm_mqtt
     !! # mosquitto_sub -h 127.0.0.1 -t /fortran
     !! ```
     !!
-    !! In Fortran, we can then create the URL of the topic, and publish a
-    !! message to it:
+    !! In Fortran, we then create the URL of the topic `/fortran` on host
+    !! `127.0.0.1`, and publish the message:
     !!
     !! ```fortran
     !! character(len=:), allocatable :: url
@@ -42,8 +43,7 @@ module dm_mqtt
     !! call dm_mqtt_destroy()
     !! ```
     !!
-    !! Any client that has subscribed topic `/fortran` will receive the
-    !! message.
+    !! Any client subscribing topic `/fortran` will receive the message.
     !!
     !! The procedures `dm_mqtt_init()` and `dm_mqtt_destroy()` have to be called
     !! once per process, and only if neither the RPC nor the mail backend is
@@ -69,7 +69,8 @@ contains
     end function dm_mqtt_init
 
     integer function dm_mqtt_publish(url, message, timeout, error_message, error_curl) result(rc)
-        !! Sends HTTP request by calling libcurl.
+        !! Publishes MQTT message `message` on topic with address `url` by
+        !! calling libcurl.
         character(len=*),              intent(in)            :: url           !! URL to MQTT server/topic.
         character(len=*), target,      intent(in)            :: message       !! Message to publish.
         integer,                       intent(in),  optional :: timeout       !! Connection timeout.
@@ -140,7 +141,7 @@ contains
     function dm_mqtt_url(host, topic, port) result(url)
         !! Returns allocatable string of URL to MQTT server. Uses the URL API
         !! of libcurl to create the URL. If `port` is `0`, the default port
-        !! will be used. The topic must start with a `/`.
+        !! will be used. The topic must start with a `/` character.
         !!
         !! On error, an empty string is returned.
         character(len=*), intent(in)           :: host  !! IP or FQDN of MQTT server.

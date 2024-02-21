@@ -47,9 +47,8 @@ contains
             dm_is_error(dm_env_get('DM_MAIL_PASSWORD', password))) then
 
             call dm_ansi_color(COLOR_YELLOW, no_color)
-            print '("dmtestmail:")'
-            print '("    Set environment variables DM_MAIL_FROM, DM_MAIL_TO, DM_MAIL_HOST,")'
-            print '("    DM_MAIL_USERNAME, and DM_MAIL_PASSWORD. This test will be skipped.")'
+            print '("> Set environment variables DM_MAIL_FROM, DM_MAIL_TO, DM_MAIL_HOST,")'
+            print '("> DM_MAIL_USERNAME, and DM_MAIL_PASSWORD. This test will be skipped.")'
             call dm_ansi_reset(no_color)
             return
         end if
