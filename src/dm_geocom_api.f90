@@ -1,7 +1,9 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_geocom_api
-    !! Parameters, types, and procedures for GeoCOM protocol handling.
+    !! Parameters, types, and procedures for GeoCOM protocol handling. The
+    !! routines in this module only prepare requests and responses of GeoCOM
+    !! API calls.
     !!
     !! The GeoCOM API is divided into the following sub-systems:
     !!
@@ -22,6 +24,7 @@ module dm_geocom_api
     use :: dm_kind
     use :: dm_request
     use :: dm_response
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -207,7 +210,7 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_HIGH = 3
 
     ! EDM_MODE: EDM measurement mode.
-    integer, parameter, public :: GEOCOM_EDM_MODE_NOT_USED   = 0  !! Init value.
+    integer, parameter, public :: GEOCOM_EDM_MODE_NOT_USED   = 0  !! Initial value.
     integer, parameter, public :: GEOCOM_EDM_SINGLE_TAPE     = 1  !! IR Standard Reflector Tape.
     integer, parameter, public :: GEOCOM_EDM_SINGLE_STANDARD = 2  !! IR Standard.
     integer, parameter, public :: GEOCOM_EDM_SINGLE_FAST     = 3  !! IR Fast.
@@ -221,7 +224,7 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_EDM_AVERAGE_SR      = 11 !! RL Average.
     integer, parameter, public :: GEOCOM_EDM_AVERAGE_LR      = 12 !! LO Average.
     integer, parameter, public :: GEOCOM_EDM_PRECISE_IR      = 13 !! IR Precise (TM30, TS30).
-    integer, parameter, public :: GEOCOM_EDM_PRECISE_TAPE    = 14 !! IR Precise Reflector Tape (TM30, TS30). 
+    integer, parameter, public :: GEOCOM_EDM_PRECISE_TAPE    = 14 !! IR Precise Reflector Tape (TM30, TS30).
 
     ! **************************************************************************
     ! FTR - FILE TRANSFER.
@@ -233,7 +236,8 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_FTR_DEVICE_PCPARD   = 1 !! Memory card.
 
     ! FTR_FILETYPE: File type.
-    integer, parameter, public :: GEOCOM_FTR_FILE_IMAGES = 170
+    integer, parameter, public :: GEOCOM_FTR_FILE_UNKNOWN = 0   !! Undocumented.
+    integer, parameter, public :: GEOCOM_FTR_FILE_IMAGES  = 170 !! Extension wildcard: `*.jpg`.
 
     ! **************************************************************************
     ! IMG - IMAGE PROCESSING.
@@ -253,34 +257,34 @@ module dm_geocom_api
     integer, parameter, public :: GEOCOM_MOT_PREDICTION = 2 !! Prediction mode.
 
     ! MOT_STOPMODE: Controller stop mode.
-    integer, parameter, public :: GEOCOM_MOT_NORMAL     = 0 !! Slow down with current acceleration.
-    integer, parameter, public :: GEOCOM_MOT_SHUTDOWN   = 1 !! Slow down by switch off power supply.
+    integer, parameter, public :: GEOCOM_MOT_NORMAL   = 0 !! Slow down with current acceleration.
+    integer, parameter, public :: GEOCOM_MOT_SHUTDOWN = 1 !! Slow down by switch off power supply.
 
     ! MOT_MODE: Controller configuration.
-    integer, parameter, public :: GEOCOM_MOT_POSIT      = 0 !! Configured for relative positioning.
-    integer, parameter, public :: GEOCOM_MOT_OCONST     = 1 !! Configured for constant speed.
-    integer, parameter, public :: GEOCOM_MOT_MANUPOS    = 2 !! Configured for manual positioning (default setting).
-    integer, parameter, public :: GEOCOM_MOT_LOCK       = 3 !! Configured as "Lock-In" controller.
-    integer, parameter, public :: GEOCOM_MOT_BREAK      = 4 !! Configured as "Brake" controller.
-    integer, parameter, public :: GEOCOM_MOT_TERM       = 7 !! Terminates the controller task.
+    integer, parameter, public :: GEOCOM_MOT_POSIT   = 0 !! Configured for relative positioning.
+    integer, parameter, public :: GEOCOM_MOT_OCONST  = 1 !! Configured for constant speed.
+    integer, parameter, public :: GEOCOM_MOT_MANUPOS = 2 !! Configured for manual positioning (default setting).
+    integer, parameter, public :: GEOCOM_MOT_LOCK    = 3 !! Configured as "Lock-In" controller.
+    integer, parameter, public :: GEOCOM_MOT_BREAK   = 4 !! Configured as "Brake" controller.
+    integer, parameter, public :: GEOCOM_MOT_TERM    = 7 !! Terminates the controller task.
 
     ! **************************************************************************
     ! TMC - THEODOLITE MEASUREMENT AND CALCULATION.
     ! **************************************************************************
     ! TMC_INCLINE_PRG: Inclination sensor measurement program.
-    integer, parameter, public :: GEOCOM_TMC_MEA_INC         = 0  !! Use sensor (a priori sigma).
-    integer, parameter, public :: GEOCOM_TMC_AUTO_INC        = 1  !! Automatic mode (sensor/plane).
-    integer, parameter, public :: GEOCOM_TMC_PLANE_INC       = 2  !! Use plane (a priori sigma).
+    integer, parameter, public :: GEOCOM_TMC_MEA_INC      = 0  !! Use sensor (a priori sigma).
+    integer, parameter, public :: GEOCOM_TMC_AUTO_INC     = 1  !! Automatic mode (sensor/plane).
+    integer, parameter, public :: GEOCOM_TMC_PLANE_INC    = 2  !! Use plane (a priori sigma).
 
     ! TMC_MEASURE_PRG: TMC measurement mode.
-    integer, parameter, public :: GEOCOM_TMC_STOP            = 0  !! Stop measurement program
-    integer, parameter, public :: GEOCOM_TMC_DEF_DIST        = 1  !! Default DIST-measurement program.
-    integer, parameter, public :: GEOCOM_TMC_CLEAR           = 3  !! TMC_STOP and clear data.
-    integer, parameter, public :: GEOCOM_TMC_SIGNAL          = 4  !! Signal measurement (test function).
-    integer, parameter, public :: GEOCOM_TMC_DO_MEASURE      = 6  !! (Re-)start measurement task.
-    integer, parameter, public :: GEOCOM_TMC_RTRK_DIST       = 8  !! Distance-TRK measurement program.
-    integer, parameter, public :: GEOCOM_TMC_RED_TRK_DIST    = 10 !! Reflectorless tracking.
-    integer, parameter, public :: GEOCOM_TMC_FREQUENCY       = 11 !! Frequency measurement (test).
+    integer, parameter, public :: GEOCOM_TMC_STOP         = 0  !! Stop measurement program
+    integer, parameter, public :: GEOCOM_TMC_DEF_DIST     = 1  !! Default DIST-measurement program.
+    integer, parameter, public :: GEOCOM_TMC_CLEAR        = 3  !! TMC_STOP and clear data.
+    integer, parameter, public :: GEOCOM_TMC_SIGNAL       = 4  !! Signal measurement (test function).
+    integer, parameter, public :: GEOCOM_TMC_DO_MEASURE   = 6  !! (Re-)start measurement task.
+    integer, parameter, public :: GEOCOM_TMC_RTRK_DIST    = 8  !! Distance-TRK measurement program.
+    integer, parameter, public :: GEOCOM_TMC_RED_TRK_DIST = 10 !! Reflectorless tracking.
+    integer, parameter, public :: GEOCOM_TMC_FREQUENCY    = 11 !! Frequency measurement (test).
 
     ! TMC_FACE_DEF: Face position.
     integer, parameter, public :: GEOCOM_TMC_FACE_NORMAL = 0 !! Face in normal position.
@@ -312,6 +316,7 @@ module dm_geocom_api
     public :: dm_geocom_api_request_fine_adjust
     public :: dm_geocom_api_request_get_angle
     public :: dm_geocom_api_request_get_angle_complete
+    public :: dm_geocom_api_request_get_angle_distance
     public :: dm_geocom_api_request_get_angular_correction_status
     public :: dm_geocom_api_request_get_atmospheric_correction
     public :: dm_geocom_api_request_get_atmospheric_ppm
@@ -350,11 +355,11 @@ module dm_geocom_api
     public :: dm_geocom_api_request_get_refraction_mode
     public :: dm_geocom_api_request_get_search_area
     public :: dm_geocom_api_request_get_signal
-    ! public :: dm_geocom_api_request_get_simple_coordinates
+    public :: dm_geocom_api_request_get_simple_coordinates
     ! public :: dm_geocom_api_request_get_simple_meta
     ! public :: dm_geocom_api_request_get_slope_distance_correction
     ! public :: dm_geocom_api_request_get_software_version
-    ! public :: dm_geocom_api_request_get_software_version2
+    ! public :: dm_geocom_api_request_get_software_version_v2
     ! public :: dm_geocom_api_request_get_station
     ! public :: dm_geocom_api_request_get_target_type
     ! public :: dm_geocom_api_request_get_timeout
@@ -362,10 +367,9 @@ module dm_geocom_api
     ! public :: dm_geocom_api_request_get_user_atr_mode
     ! public :: dm_geocom_api_request_get_user_local_mode
     ! public :: dm_geocom_api_request_get_user_prism_definition
-    ! public :: dm_geocom_api_request_get_user_spiral
-    ! public :: dm_geocom_api_request_list
-    ! public :: dm_geocom_api_request_lock_in
-    ! public :: dm_geocom_api_request_measure_distance_angle
+    public :: dm_geocom_api_request_get_user_spiral
+    public :: dm_geocom_api_request_list
+    public :: dm_geocom_api_request_lock_in
     public :: dm_geocom_api_request_null
     ! public :: dm_geocom_api_request_ps_enable_range
     ! public :: dm_geocom_api_request_ps_search_next
@@ -380,6 +384,7 @@ module dm_geocom_api
     ! public :: dm_geocom_api_request_set_binary_mode
     ! public :: dm_geocom_api_request_set_config
     ! public :: dm_geocom_api_request_set_date_time
+    public :: dm_geocom_api_request_set_distance
     ! public :: dm_geocom_api_request_set_double_precision
     ! public :: dm_geocom_api_request_set_edm_mode
     ! public :: dm_geocom_api_request_set_egl_intensity
@@ -388,31 +393,29 @@ module dm_geocom_api
     ! public :: dm_geocom_api_request_set_height
     ! public :: dm_geocom_api_request_set_image_config
     ! public :: dm_geocom_api_request_set_incline_correction
-    ! public :: dm_geocom_api_request_set_laser_pointer
-    ! public :: dm_geocom_api_request_set_measurement_program
-    ! public :: dm_geocom_api_request_set_offset
-    ! public :: dm_geocom_api_request_set_orientation
+    public :: dm_geocom_api_request_set_laser_pointer
+    public :: dm_geocom_api_request_set_measurement_program
+    public :: dm_geocom_api_request_set_orientation
     public :: dm_geocom_api_request_set_position
-    ! public :: dm_geocom_api_request_set_prism_constant
-    ! public :: dm_geocom_api_request_set_prism_type
-    ! public :: dm_geocom_api_request_set_prism_type_v2
-    ! public :: dm_geocom_api_request_set_reduced_atr_fov
-    ! public :: dm_geocom_api_request_set_prism_constant
-    ! public :: dm_geocom_api_request_set_refraction_mode
-    ! public :: dm_geocom_api_request_set_search_area
-    ! public :: dm_geocom_api_request_set_station
-    ! public :: dm_geocom_api_request_set_target_type
-    ! public :: dm_geocom_api_request_set_timeout
-    ! public :: dm_geocom_api_request_set_tolerance
-    ! public :: dm_geocom_api_request_set_user_atr_mode
-    ! public :: dm_geocom_api_request_set_user_local_mode
-    ! public :: dm_geocom_api_request_set_user_prism_definition
-    ! public :: dm_geocom_api_request_set_user_spiral
-    ! public :: dm_geocom_api_request_set_velocity
-    ! public :: dm_geocom_api_request_setup_download
-    ! public :: dm_geocom_api_request_setup_list
-    ! public :: dm_geocom_api_request_start_controller
-    ! public :: dm_geocom_api_request_stop_controller
+    public :: dm_geocom_api_request_set_positioning_timeout
+    public :: dm_geocom_api_request_set_prism_constant
+    public :: dm_geocom_api_request_set_prism_type
+    public :: dm_geocom_api_request_set_prism_type_v2
+    public :: dm_geocom_api_request_set_reduced_atr_fov
+    public :: dm_geocom_api_request_set_refraction_mode
+    public :: dm_geocom_api_request_set_search_area
+    public :: dm_geocom_api_request_set_station
+    public :: dm_geocom_api_request_set_target_type
+    public :: dm_geocom_api_request_set_tolerance
+    public :: dm_geocom_api_request_set_user_atr_mode
+    public :: dm_geocom_api_request_set_user_lock_mode
+    public :: dm_geocom_api_request_set_user_prism_definition
+    public :: dm_geocom_api_request_set_user_spiral
+    public :: dm_geocom_api_request_set_velocity
+    public :: dm_geocom_api_request_setup_download
+    public :: dm_geocom_api_request_setup_list
+    public :: dm_geocom_api_request_start_controller
+    public :: dm_geocom_api_request_stop_controller
     public :: dm_geocom_api_request_switch_off
     public :: dm_geocom_api_request_switch_on
     public :: dm_geocom_api_request_take_image
@@ -428,7 +431,7 @@ contains
         character(len=*),    intent(in), optional :: arguments    !! GeoCOM request arguments.
         character(len=*),    intent(in), optional :: pattern      !! Regular expression pattern that matches the raw response.
         type(response_type), intent(in), optional :: responses(:) !! Array of response types.
-        integer,             intent(in), optional :: mode         !! Request mode.
+        integer,             intent(in), optional :: mode         !! Mode of returned request (`REQUEST_MODE_*`).
 
         integer :: n
 
@@ -509,7 +512,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,11004:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -530,7 +533,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,11003:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -551,7 +554,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,20000:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -572,7 +575,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,20001:<intensity>`                         |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -606,7 +609,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9028:<pos_mode>,<atr_mode>,0`              |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -654,6 +657,7 @@ contains
         character(len=80)   :: args
         type(response_type) :: responses(2)
 
+        ! TODO: byte instead of integer
         write (args, '(5(i0, ","), a)') device_type, file_type, day, month, year, file_name
 
         responses = [ &
@@ -668,8 +672,8 @@ contains
         !! Request of `TMC_DoMeasure` procedure. Creates request for trying a
         !! distance measurement. This command does not return any values.
         !!
-        !! The argument `prog` may be one of the following TMC measurement
-        !! modes:
+        !! The argument `prog` (`TMC_MEASURE_PRG`) may be one of the following
+        !! TMC measurement modes:
         !!
         !! * `GEOCOM_TMC_STOP`
         !! * `GEOCOM_TMC_DEF_DIST`
@@ -680,8 +684,8 @@ contains
         !! * `GEOCOM_TMC_RED_TRK_DIST`
         !! * `GEOCOM_TMC_FREQUENCY`
         !!
-        !! The argument `mode` may be one of the following inclination sensor
-        !! measurement modes:
+        !! The argument `mode` (`TMC_INCLINE_PRG`) may be one of the following
+        !! inclination measurement modes:
         !!
         !! * `GEOCOM_TMC_MEA_INC`
         !! * `GEOCOM_TMC_AUTO_INC`
@@ -697,7 +701,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2008:<prog>,<mode>`                        |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -705,7 +709,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
         integer,            intent(in)  :: prog    !! TMC measurement program (`TMC_MEASURE_PRG`).
-        integer,            intent(in)  :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: mode    !! Inclination measurement mode (`TMC_INCLINE_PRG`).
 
         character(len=80) :: args
 
@@ -737,7 +741,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<blockval>,<blocklen>`           |
         !!
         integer,          parameter :: REQCODE = 23304
-        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<blockval>\d+),(?<blocklen>\d+)'
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<blockval>[0-9a-f]+),(?<blocklen>\d+)'
         integer,          parameter :: MODE    = REQUEST_MODE_GEOCOM_FILE
 
         type(request_type), intent(out) :: request      !! Prepared request.
@@ -770,7 +774,7 @@ contains
         !! the initial start position.
         !!
         !! The Fine Adjust Lock-in towards a target is terminated by this
-        !! procedure call. After positioning, the lock mode will be active. The
+        !! procedure call. After positioning, the LOCK mode will be active. The
         !! timeout of the operation is set to 5 seconds, regardless of the
         !! general position timeout settings. The position tolerance depends on
         !! the previously selected find adjust mode.
@@ -785,7 +789,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9037:<search_hz>,<search_v>`               |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -815,7 +819,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2107:<mode>`                               |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>`                        |
         !!
@@ -861,7 +865,7 @@ contains
         !!
         !! | Property       | Values                                                                               |
         !! |----------------|--------------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                             |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
         !! | ASCII request  | `%R1Q,2003:<mode>`                                                                   |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<angtime>,<xinc>,<linc>,<incacc>,<inctime>,<face>` |
         !!
@@ -894,6 +898,54 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
     end subroutine dm_geocom_api_request_get_angle_complete
 
+    pure subroutine dm_geocom_api_request_get_angle_distance(request, wait_time, mode)
+        !! Request of `TMC_GetSimpleMea` procedure. Creates request for
+        !! returning angle and distance.
+        !!
+        !! This command does not start a new distance measurement. A distance
+        !! measurement has to be started in advance. If a distance measurement
+        !! is valid the function ignores `wait_time` and returns the results. If
+        !! no valid distance measurement is available and the distance
+        !! measurement unit is not activated (by `TMC_DoMeasure` before the
+        !! `TMC_GetSimpleMea` API call), the angle measurement result is
+        !! returned after the wait time.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`   – GeoCOM return code.
+        !! * `hz`    – Horizontal angle [rad].
+        !! * `v`     – Vertical angle [rad].
+        !! * `sdist` – Slope distance [m].
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2108:<wait_time>,<mode>`                   |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
+        !!
+        integer,          parameter :: REQCODE = 2108
+        character(len=*), parameter :: PATTERN = &
+            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
+
+        type(request_type), intent(out) :: request   !! Prepared request.
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: mode      !! Angle measurement mode (`TMC_HZ_V_ANG`).
+
+        character(len=80)   :: args
+        type(response_type) :: responses(4)
+
+        write (args, '(i0, ",", i0)') wait_time, mode
+
+        responses = [ &
+            response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',    unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',     unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('sdist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+        ]
+
+        call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
+    end subroutine dm_geocom_api_request_get_angle_distance
+
     pure subroutine dm_geocom_api_request_get_angular_correction_status(request)
         !! Request of `TMC_GetAngSwitch` procedure. Creates request for
         !! getting the angular correction status.
@@ -908,7 +960,7 @@ contains
         !!
         !! | Property       | Values                                               |
         !! |----------------|------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                             |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                    |
         !! | ASCII request  | `%R1Q,2014:`                                         |
         !! | ASCII response | `%R1P,0,0:<grc>,<inccor>,<stdcor>,<colcor>,<tilcor>` |
         !!
@@ -944,7 +996,7 @@ contains
         !!
         !! | Property       | Values                                                   |
         !! |----------------|----------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                 |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                        |
         !! | ASCII request  | `%R1Q,2029:`                                             |
         !! | ASCII response | `%R1P,0,0:<grc>,<lambda>,<pressure>,<drytemp>,<wettemp>` |
         !!
@@ -1006,7 +1058,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2114:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<atrerr>`                        |
         !!
@@ -1064,7 +1116,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,113:`                                      |
         !! | ASCII response | `%R1P,0,0:<grc>,<binmode>`                       |
         !!
@@ -1096,7 +1148,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,14001:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>,0,<autopwr>,<pwrtime>`           |
         !!
@@ -1130,26 +1182,26 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `e`      – E coordinate [m].
-        !! * `n`      – N coordinate [m]
-        !! * `h`      – H coordinate [m].
-        !! * `ctime`  – Timestamp of distance measurement [ms].
-        !! * `econt`  – E coordinate (continuously) [m].
-        !! * `ncont`  – N coordinate (continuously) [m].
-        !! * `hcont`  – H coordinate (continuously) [m].
-        !! * `ctimec` – Timestamp of continuous measurement [m].
+        !! * `grc`     – GeoCOM return code.
+        !! * `east`    – E coordinate [m].
+        !! * `north`   – N coordinate [m]
+        !! * `height`  – H coordinate [m].
+        !! * `ctime`   – Timestamp of distance measurement [ms].
+        !! * `eastc`   – E coordinate (continuously) [m].
+        !! * `northc`  – N coordinate (continuously) [m].
+        !! * `heightc` – H coordinate (continuously) [m].
+        !! * `ctimec`  – Timestamp of continuous measurement [m].
         !!
-        !! | Property       | Values                                                                |
-        !! |----------------|-----------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                              |
-        !! | ASCII request  | `%R1Q,2082:<wait_time>,<mode>`                                        |
-        !! | ASCII response | `%R1P,0,0:<grc>,<e>,<n>,<h>,<ctime>,<econt>,<ncont>,<hcont>,<ctimec>` |
+        !! | Property       | Values                                                                               |
+        !! |----------------|--------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
+        !! | ASCII request  | `%R1Q,2082:<wait_time>,<mode>`                                                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>,<ctime>,<eastc>,<northc>,<heightc>,<ctimec>` |
         !!
         integer,          parameter :: REQCODE = 2082
         character(len=*), parameter :: PATTERN = &
-            '(?<grc>\d+),(?<e>[-\d\.]+),(?<n>[-\d\.]+),(?<h>[-\d\.]+),(?<ctime>\d+),' // &
-            '(?<econt>[-\d\.]+),(?<ncont>[-\d\.]+),(?<hcont>[-\d\.]+),(?<ctimec>\d+)'
+            '(?<grc>\d+),(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+),(?<ctime>\d+),' // &
+            '(?<eastc>[-\d\.]+),(?<northc>[-\d\.]+),(?<heightc>[-\d\.]+),(?<ctimec>\d+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
@@ -1161,15 +1213,15 @@ contains
         write (args, '(i0, ",", i0)') wait_time, mode
 
         responses = [ &
-            response_type('grc',    unit=' ',  type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
-            response_type('e',      unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate [m].
-            response_type('n',      unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate [m]
-            response_type('h',      unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate [m].
-            response_type('ctime',  unit='ms', type=RESPONSE_TYPE_INT64),  & ! Timestamp of distance measurement [ms].
-            response_type('econt',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate (continuously) [m].
-            response_type('ncont',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate (continuously) [m].
-            response_type('hcont',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate (continuously) [m].
-            response_type('ctimec', unit='ms', type=RESPONSE_TYPE_INT64)   & ! Timestamp of continuous measurement [m].
+            response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
+            response_type('east',    unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate [m].
+            response_type('north',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate [m]
+            response_type('height',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate [m].
+            response_type('ctime',   unit='ms', type=RESPONSE_TYPE_INT64),  & ! Timestamp of distance measurement [ms].
+            response_type('eastc',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate (continuously) [m].
+            response_type('northc',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate (continuously) [m].
+            response_type('heightc', unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate (continuously) [m].
+            response_type('ctimec',  unit='ms', type=RESPONSE_TYPE_INT64)   & ! Timestamp of continuous measurement [m].
         ]
 
         call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
@@ -1192,7 +1244,7 @@ contains
         !!
         !! | Property       | Values                                                                   |
         !! |----------------|--------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                 |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                        |
         !! | ASCII request  | `%R1Q,5008:`                                                             |
         !! | ASCII response | `%R1P,0,0:<grc>,<year>,'<month>','<day>','<hour>','<minute>','<second>'` |
         !!
@@ -1224,38 +1276,38 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `year`     – Year.
-        !! * `month`    – Month.
-        !! * `day`      – Day.
-        !! * `hour`     – Hours.
-        !! * `minute`   – Minutes.
-        !! * `second`   – Seconds.
-        !! * `centisec` – Centiseconds.
+        !! * `grc`     – GeoCOM return code.
+        !! * `year`    – Year.
+        !! * `month`   – Month.
+        !! * `day`     – Day.
+        !! * `hour`    – Hours.
+        !! * `minute`  – Minutes.
+        !! * `second`  – Seconds.
+        !! * `csecond` – Centiseconds.
         !!
-        !! | Property       | Values                                                                    |
-        !! |----------------|---------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                  |
-        !! | ASCII request  | `%R1Q,5117:`                                                              |
-        !! | ASCII response | `%R1P,0,0:<grc>,<year>,<month>,<day>,<hour>,<minute>,<second>,<centisec>` |
+        !! | Property       | Values                                                                   |
+        !! |----------------|--------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                 |
+        !! | ASCII request  | `%R1Q,5117:`                                                             |
+        !! | ASCII response | `%R1P,0,0:<grc>,<year>,<month>,<day>,<hour>,<minute>,<second>,<csecond>` |
         !!
         integer,          parameter :: REQCODE = 5117
         character(len=*), parameter :: PATTERN = &
             '(?<grc>\d+),(?<year>\d+),(?<month>\d+),(?<day>\d+),(?<hour>\d+),' // &
-            '(?<minute>\d+),(?<second>\d+),(?<centisec>\d+)'
+            '(?<minute>\d+),(?<second>\d+),(?<csecond>\d+)'
 
         type(request_type), intent(out) :: request !! Prepared request.
         type(response_type)             :: responses(8)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('year',     type=RESPONSE_TYPE_INT32), &
-            response_type('month',    type=RESPONSE_TYPE_INT32), &
-            response_type('day',      type=RESPONSE_TYPE_INT32), &
-            response_type('hour',     type=RESPONSE_TYPE_INT32), &
-            response_type('minute',   type=RESPONSE_TYPE_INT32), &
-            response_type('second',   type=RESPONSE_TYPE_INT32), &
-            response_type('centisec', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',     type=RESPONSE_TYPE_INT32), &
+            response_type('year',    type=RESPONSE_TYPE_INT32), &
+            response_type('month',   type=RESPONSE_TYPE_INT32), &
+            response_type('day',     type=RESPONSE_TYPE_INT32), &
+            response_type('hour',    type=RESPONSE_TYPE_INT32), &
+            response_type('minute',  type=RESPONSE_TYPE_INT32), &
+            response_type('second',  type=RESPONSE_TYPE_INT32), &
+            response_type('csecond', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
@@ -1273,7 +1325,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,5035:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<devclass>,<devtype>`            |
         !!
@@ -1305,7 +1357,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,108:`                                      |
         !! | ASCII response | `%R1P,0,0:<grc>,<ndigits>`                       |
         !!
@@ -1334,7 +1386,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2021:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<edmmode>`                       |
         !!
@@ -1364,7 +1416,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,1058:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<eglint>`                        |
         !!
@@ -1393,7 +1445,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2026:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<face>`                          |
         !!
@@ -1422,7 +1474,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9030:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<adjmode>`                       |
         !!
@@ -1550,7 +1602,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2011:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<height>`                        |
         !!
@@ -1593,7 +1645,8 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<imageno>,<quality>,<subfunc>,<fnprefix>` |
         !!
         integer,          parameter :: REQCODE = 23400
-        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),(?<fnprefix>.+)'
+        character(len=*), parameter :: PATTERN = &
+            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),(?<fnprefix>.+)'
 
         type(request_type), intent(out) :: request  !! Prepared request.
         integer,            intent(in)  :: mem_type !! Memory device type (`IMG_MEM_TYPE`).
@@ -1625,7 +1678,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2007:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<inccor>`                        |
         !!
@@ -1654,7 +1707,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2115:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<incerr>`                        |
         !!
@@ -1712,7 +1765,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,5003:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<serialno>`                      |
         !!
@@ -1742,7 +1795,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,5011:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<temp>`                          |
         !!
@@ -1771,7 +1824,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,6021:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<lockstat>`                      |
         !!
@@ -1800,7 +1853,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17018:`                                    |
         !! | ASCII response | `%R1P,0,0:<grc>,<measprg>`                       |
         !!
@@ -1862,7 +1915,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2023:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<reflcor>`                       |
         !!
@@ -1889,11 +1942,11 @@ contains
         !! * `grc`      – GeoCOM return code.
         !! * `reflname` – Prism name [string].
         !! * `reflcor`  – Prism correction constant [m].
-        !! * `refltype` – Prism type.
+        !! * `refltype` – Prism type (`BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17023:<type>`                              |
         !! | ASCII response | `%R1P,0,0:<grc>,<reflname>,<reflcor>,<refltype>` |
         !!
@@ -1995,9 +2048,9 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2117:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`            |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
         !!
         integer,          parameter :: REQCODE = 2117
         character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
@@ -2090,7 +2143,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2091:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<refrmode>`                      |
         !!
@@ -2126,7 +2179,7 @@ contains
         !!
         !! | Property       | Values                                                              |
         !! |----------------|---------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                            |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                   |
         !! | ASCII request  | `%R1Q,9042:`                                                        |
         !! | ASCII response | `%R1P,0,0:<grc>,<centerhz>,<centerv>,<rangehz>,<rangev>,<userarea>` |
         !!
@@ -2169,7 +2222,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2022:`                                     |
         !! | ASCII response | `%R1P,0,0:<grc>,<sigint>,<sigtime>`              |
         !!
@@ -2188,11 +2241,57 @@ contains
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
     end subroutine dm_geocom_api_request_get_signal
 
-    ! pure subroutine dm_geocom_api_request_get_simple_coordinates(wait_time, e, n, h, prog)
+    pure subroutine dm_geocom_api_request_get_simple_coordinates(request, wait_time, prog)
+        !! Request of `TMC_GetSimpleCoord` procedure. Creates request for
+        !! returning cartesian coordinates.
+        !!
+        !! The API function returns the cartesian coordinates if a valid
+        !! distance is set. The argument `wait_time` sets the maximum time to
+        !! wait for a valid distance. Without a valid distance, the coordinates
+        !! are set to 0.0, and an error is returned. The coordinate calculation
+        !! requires inclination results. The argument `prog` sets the
+        !! inclination measurement mode (`TMC_INCLINE_PRG`).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`    – GeoCOM return code.
+        !! * `east`   – Easting [m].
+        !! * `north`  – Northing [m].
+        !! * `height` – Orthometric height [m].
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2116:<wait_time>,<prog>`                   |
+        !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>`         |
+        !!
+        integer,          parameter :: REQCODE = 2116
+        character(len=*), parameter :: PATTERN = &
+            '(?<grc>\d+),(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+)'
+
+        type(request_type), intent(out) :: request   !! Prepared request.
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: prog      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+
+        character(len=80)   :: args
+        type(response_type) :: responses(4)
+
+        write (args, '(i0, ",", i0)') wait_time, prog
+
+        responses = [ &
+            response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('east',   unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('north',  unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('height', unit='m', type=RESPONSE_TYPE_REAL64)  &
+        ]
+
+        call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
+    end subroutine dm_geocom_api_request_get_simple_coordinates
+
     ! pure subroutine dm_geocom_api_request_get_simple_meta(wait_time, only_angle, slope_dist, mode)
     ! pure subroutine dm_geocom_api_request_get_slope_distance_correction(ppm_corr, prism_corr)
     ! pure subroutine dm_geocom_api_request_get_software_version(release, version, subversion)
-    ! pure subroutine dm_geocom_api_request_get_software_version2(release, version, subversion)
+    ! pure subroutine dm_geocom_api_request_get_software_version_v2(release, version, subversion)
     ! pure subroutine dm_geocom_api_request_get_station(station)
     ! pure subroutine dm_geocom_api_request_get_target_type(type)
     ! pure subroutine dm_geocom_api_request_get_timeout(hz, v)
@@ -2235,10 +2334,119 @@ contains
         call dm_geocom_api_request(request, REQCODE, name, PATTERN, responses)
     end subroutine dm_geocom_api_request_get_user_prism_definition
 
-    ! pure subroutine dm_geocom_api_request_get_user_spiral(hz, v)
-    ! pure subroutine dm_geocom_api_request_list(next, last, dir_info)
-    ! pure subroutine dm_geocom_api_request_lock_in()
-    ! pure subroutine dm_geocom_api_request_measure_distance_angle(mode, hz, v, slope_dist)
+    pure subroutine dm_geocom_api_request_get_user_spiral(request)
+        !! Request of `AUT_GetUserSpiral` procedure. Creates request for
+        !! getting the user-defined search spiral.
+        !!
+        !! The function returns the current dimensions of the searching spiral.
+        !! Requires at least a TCA instrument.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`     – GeoCOM return code.
+        !! * `rangehz` – Horizontal angle [rad]
+        !! * `rangev`  – Vertical angle [rad].
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,9040:`                                     |
+        !! | ASCII response | `%R1P,0,0:<grc>,<rangehz>,<rangev>`              |
+        !!
+        integer,          parameter :: REQCODE = 9040
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<rangehz>[-\d\.]+),(?<rangev>[-\d\.]+)'
+
+        type(request_type), intent(out) :: request !! Prepared request.
+
+        type(response_type) :: responses(3)
+
+        responses = [ &
+            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32), &
+            response_type('rangehz', unit='rad', type=RESPONSE_TYPE_INT64), &
+            response_type('rangev',  unit='rad', type=RESPONSE_TYPE_INT64)  &
+        ]
+
+        call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
+    end subroutine dm_geocom_api_request_get_user_spiral
+
+    pure subroutine dm_geocom_api_request_list(request, next)
+        !! Request of `FTR_List` procedure. Creates request for listing file
+        !! information.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`     – GeoCOM return code.
+        !! * `last`    – File is last entry [bool].
+        !! * `fname`   – File name, max. 80 characters long [string].
+        !! * `fsize`   – File size [bytes].
+        !! * `fhour`   – UTC modification hour [byte].
+        !! * `fminute` – UTC modification minute [byte].
+        !! * `fsecond` – UTC modification second [byte].
+        !! * `fday`    – UTC modification day [byte].
+        !! * `fmonth`  – UTC modification month [byte].
+        !! * `fyear`   – UTC modification year [byte].
+        !!
+        !! | Property       | Values                                                                                                 |
+        !! |----------------|--------------------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                                               |
+        !! | ASCII request  | `%R1Q,23307:<next>`                                                                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>,<last>,<fname>,<fsize>,<fhour>,<fminute>,<fsecond>,<fcsecond>,<fday>,<fmonth>,<fyear>` |
+        !!
+        integer,          parameter :: REQCODE = 23307
+        character(len=*), parameter :: PATTERN = &
+            '(?<grc>\d+),(?<last>\d+),(?<fname>.+),(?<fsize>\d+),(?<fhour>[0-9a-f]+),' // &
+            '(?<fminute>[0-9a-f]+),(?<fsecond>[0-9a-f]+),(?<fcsecond>[0-9a-f]+),' // &
+            '(?<fday>[0-9a-f]+),(?<fmonth>[0-9a-f]+),(?<fyear>[0-9a-f]+)'
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        logical,            intent(in)  :: next    !! First or next entry.
+
+        character(len=80)   :: args
+        type(response_type) :: responses(11)
+
+        write (args, '(i1)') dm_btoi(next)
+
+        responses = [ &
+            response_type('grc',      unit=' ',     type=RESPONSE_TYPE_INT32),   &
+            response_type('last',     unit=' ',     type=RESPONSE_TYPE_LOGICAL), &
+            response_type('fname',    unit=' ',     type=RESPONSE_TYPE_STRING),  &
+            response_type('fsize',    unit='bytes', type=RESPONSE_TYPE_INT64),   &
+            response_type('fhour',    unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fminute',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fsecond',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fcsecond', unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fday',     unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fmonth',   unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('fyear',    unit='utc',   type=RESPONSE_TYPE_BYTE)     &
+        ]
+
+        call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
+    end subroutine dm_geocom_api_request_list
+
+    pure subroutine dm_geocom_api_request_lock_in(request)
+        !! Request of `AUT_LockIn` procedure. Creates request for starting the
+        !! target tracking.
+        !!
+        !! The API function will start the target tracking if the LOCK mode is
+        !! activated (`AUS_SetUserLockState`). The `AUT_FineAdjust` call must
+        !! have finished successfully before executing this function.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,9013:`                                     |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 9013
+
+        type(request_type), intent(out) :: request !! Prepared request.
+
+        call dm_geocom_api_request(request, REQCODE, pattern=GEOCOM_GRC_PATTERN, responses=GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_lock_in
 
     pure subroutine dm_geocom_api_request_null(request)
         !! Request of `COM_NullProc` procedure. Creates request for checking
@@ -2250,7 +2458,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,0:`                                        |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -2274,6 +2482,48 @@ contains
     ! pure subroutine dm_geocom_api_request_set_binary_mode(available)
     ! pure subroutine dm_geocom_api_request_set_config(auto_power, timeout)
     ! pure subroutine dm_geocom_api_request_set_date_time(dt)
+
+    pure subroutine dm_geocom_api_request_set_distance(request, slope_dist, height_offset, mode)
+        !! Request of `TMC_SetHandDist` procedure. Creates request for
+        !! setting the slope distance and height offset.
+        !!
+        !! The function is used to set the manually measured slope distance and
+        !! height offset for a following measurement. Additionally, an
+        !! inclination and an angle measurement are started to determine the
+        !! coordinates of the target. The vertical angle is corrected to π/2 or
+        !! 3π/2, depending on the face of the instrument. The previously
+        !! measured distance is cleared.
+        !!
+        !! The argument `mode` (`TMC_INCLINE_PRG`) must be one of the
+        !! following:
+        !!
+        !! * `TMC_MEA_INC`   – Use sensor (a priori sigma).
+        !! * `TMC_AUTO_INC`  – Automatic mode (sensor/plane).
+        !! * `TMC_PLANE_INC` – Use plane (a priori sigma).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2019:<slope_dist>,<height_offset>,<mode>`  |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 2019
+
+        type(request_type), intent(out) :: request       !! Prepared request.
+        real(kind=r8),      intent(in)  :: slope_dist    !! Slope distance [m].
+        real(kind=r8),      intent(in)  :: height_offset !! Height offset [m].
+        integer,            intent(in)  :: mode          !! Inclination mode (`TMC_INCLINE_PRG`).
+
+        character(len=80) :: args
+
+        write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, mode
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_distance
+
     ! pure subroutine dm_geocom_api_request_set_double_precision(ndigits)
     ! pure subroutine dm_geocom_api_request_set_edm_mode(mode)
     ! pure subroutine dm_geocom_api_request_set_egl_intensity(intensity)
@@ -2282,12 +2532,98 @@ contains
     ! pure subroutine dm_geocom_api_request_set_height(height)
     ! pure subroutine dm_geocom_api_request_set_image_config(mem_type, parameters)
     ! pure subroutine dm_geocom_api_request_set_incline_correction(mode)
-    ! pure subroutine dm_geocom_api_request_set_laser_pointer(enabled)
-    ! pure subroutine dm_geocom_api_request_set_measurement_program(prog)
-    ! pure subroutine dm_geocom_api_request_set_offset(slope_dist, height, mode)
+
+    pure subroutine dm_geocom_api_request_set_laser_pointer(request, enabled)
+        !! Request of `EDM_Laserpointer` procedure. Creates request for turning
+        !! the laser pointer on or off.
+        !!
+        !! The function is only available on models which support reflectorless
+        !! distance measurement.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,1004:<enabled>`                            |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 1004
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        logical,            intent(in)  :: enabled !! Enable laser pointer.
+
+        character(len=80) :: args
+
+        write (args, '(i1)') dm_btoi(enabled)
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_laser_pointer
+
+    pure subroutine dm_geocom_api_request_set_measurement_program(request, prog)
+        !! Request of `BAP_SetMeasPrg` procedure. Creates request for setting
+        !! the distance measurement program.
+        !!
+        !! The function sets the distance measurement program, for example, for
+        !! API call `BAP_MeasDistanceAngle`. The RL EDM type programs are not
+        !! available on all instruments. Changing the measurement program may
+        !! change the EDM type as well (IR, RL).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,17019:<prog>`                              |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 17019
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        integer,            intent(in)  :: prog    !! Measurement program (`BAP_USER_MEASPRG`).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') prog
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_measurement_program
+
+    pure subroutine dm_geocom_api_request_set_orientation(request, hz)
+        !! Request of `TMC_SetOrientation` procedure. Creates request for
+        !! orientating the instrument in horizontal direction.
+        !!
+        !! The API function is a combination of an angle measurement to get the
+        !! horizontal offset and setting the angle offset afterwards, in order
+        !! to orientate to a target. Before the new orientation can be set, an
+        !! existing distance must be cleared by calling API function
+        !! `TMC_DoMeasure` with command `TMC_CLEAR`.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2113:<hz>`                                 |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 2113
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        real(kind=r8),      intent(in)  :: hz      !! Horizontal orientation [rad].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12)') hz
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_orientation
 
     pure subroutine dm_geocom_api_request_set_position(request, hz, v, pos_mode, atr_mode)
-        !! Request of `AUT_MakePositioning` procedure. Creates request for for
+        !! Request of `AUT_MakePositioning` procedure. Creates request for
         !! turning the telescope to a specified position.
         !!
         !! If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the
@@ -2305,7 +2641,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9027:<hz>,<v>,<pos_mode>,<atr_mode>,0`     |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -2323,35 +2659,99 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_position
 
-    ! pure subroutine dm_geocom_api_request_set_orientation(hz)
-    ! pure subroutine dm_geocom_api_request_set_prism_constant(prism_corr)
-    ! pure subroutine dm_geocom_api_request_set_prism_type(type)
-    ! pure subroutine dm_geocom_api_request_set_prism_type_v2(type, name)
-    ! pure subroutine dm_geocom_api_request_set_reduced_atr_fov(mode)
-    ! pure subroutine dm_geocom_api_request_set_refraction_mode(method)
-    ! pure subroutine dm_geocom_api_request_set_search_area(area)
-    ! pure subroutine dm_geocom_api_request_set_station(station)
-    ! pure subroutine dm_geocom_api_request_set_target_type(type)
-    ! pure subroutine dm_geocom_api_request_set_timeout(hz, v)
-    ! pure subroutine dm_geocom_api_request_set_tolerance(hz, v)
-    ! pure subroutine dm_geocom_api_request_set_user_atr_mode(mode)
-    ! pure subroutine dm_geocom_api_request_set_user_local_mode(mode)
-    ! pure subroutine dm_geocom_api_request_set_user_prism_definition(name, add_const, type, creator)
-    ! pure subroutine dm_geocom_api_request_set_user_spiral(hz, v)
-    ! pure subroutine dm_geocom_api_request_set_velocity(omega)
-    ! pure subroutine dm_geocom_api_request_setup_download(device_type, file_type, file_name, block_size, nblocks)
-    ! pure subroutine dm_geocom_api_request_setup_list(device_type, file_type, search_path)
-    ! pure subroutine dm_geocom_api_request_start_controller(mode)
-    ! pure subroutine dm_geocom_api_request_stop_controller(mode)
+    pure subroutine dm_geocom_api_request_set_positioning_timeout(request, hz, v)
+        !! Request of `AUT_SetTimeout` procedure. Creates request for setting
+        !! the timeout for positioning.
+        !!
+        !! This function sets the maximum time to perform a positioning. The
+        !! timeout is reset on 7 seconds after each power on. Valid value for
+        !! `hz` and `v` are between 7 [sec] and 60 [sec].
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,9011:<hz>,<v>`                             |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 9011
 
-    pure subroutine dm_geocom_api_request_switch_off(request, mode)
-        !! Request of `COM_SwitchOffTPS` procedure. Creates request for
-        !! turning the instrument off.
+        type(request_type), intent(out) :: request !! Prepared request.
+        real(kind=r8),      intent(in)  :: hz      !! Timeout in Hz direction [s].
+        real(kind=r8),      intent(in)  :: v       !! Timeout in V direction [s].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12, ",", f0.12)') hz, v
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_positioning_timeout
+
+    pure subroutine dm_geocom_api_request_set_prism_constant(request, prism_corr)
+        !! Request of `TMC_SetPrismCorr` procedure. Creates request for
+        !! setting the prism constant. The API function `BAP_SetPrismType`
+        !! overwrites this setting.
         !!
-        !! The argument `mode` has to be one of the following:
+        !! The instrument returns the following responses:
         !!
-        !! * `COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
-        !! * `COM_TPS_STOP_SLEEP`     – Sleep mode (unsupported by TPS1200).
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2024:<prism_corr>`                         |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 2024
+
+        type(request_type), intent(out) :: request    !! Prepared request.
+        real(kind=r8),      intent(in)  :: prism_corr !! Prism constant [mm].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12)') prism_corr
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_prism_constant
+
+    pure subroutine dm_geocom_api_request_set_prism_type(request, prism_type)
+        !! Request of `BAP_SetPrismType` procedure. Creates request for
+        !! setting the default prism type.
+        !!
+        !! This function sets the prism type for measurement with a reflector
+        !! (`BAP_PRISMTYPE`). It overwrites the prism constant set by API call
+        !! `TMC_SetPrimCorr`.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,17008:<prism_type>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 17008
+
+        type(request_type), intent(out) :: request    !! Prepared request.
+        integer,            intent(in)  :: prism_type !! Prism type (`BAP_PRISMTYPE`).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') prism_type
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_prism_type
+
+    pure subroutine dm_geocom_api_request_set_prism_type_v2(request, prism_type, prism_name)
+        !! Request of `BAP_SetPrismType2` procedure. Creates request for
+        !! setting the default or user prism type.
+        !!
+        !! This function sets the default or the user prism type for
+        !! measurements with a reflector. It overwrites the prism constant set
+        !! by `TMC_SetPrismCorr`. The user defined prism must have been added
+        !! with API call `BAP_SetUserPrismDef` beforehand.
         !!
         !! The instrument returns the following responses:
         !!
@@ -2360,6 +2760,526 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,17030:<prism_type>,<prism_name>`           |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 17030
+
+        type(request_type), intent(out) :: request    !! Prepared request.
+        integer,            intent(in)  :: prism_type !! Prism type (`BAP_PRISMTYPE`).
+        character(len=*),   intent(in)  :: prism_name !! Prism name (required if prism type is `BAP_PRISM_USER`).
+
+        character(len=80) :: args
+
+        write (args, '(i0, ",", a)') prism_type, prism_name
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_prism_type_v2
+
+    pure subroutine dm_geocom_api_request_set_reduced_atr_fov(request, reduced)
+        !! Request of `BAP_SetRedATRFov` procedure. Creates request for
+        !! setting the reduced ATR field of view.
+        !!
+        !! If `reduced` is `.true.`, ATR uses reduced field of view (about
+        !! 1/9), full field of view otherwise.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | ASCII request  | `%R1Q,17008:<reduced>`                           |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 17008
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        logical,            intent(in)  :: reduced !! Use reduced field of view.
+
+        character(len=80) :: args
+
+        write (args, '(i1)') dm_btoi(reduced)
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_reduced_atr_fov
+
+    pure subroutine dm_geocom_api_request_set_refraction_mode(request, mode)
+        !! Request of `TMC_SetRefractiveMethod` procedure. Creates request for
+        !! setting the refraction model.
+        !!
+        !! Mode `1` means method 1 for the rest of the world, mode `2` means
+        !! method for Australia.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,2090:<mode>`                               |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 2090
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        integer,            intent(in)  :: mode    !! Refraction data method (1 or 2).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') mode
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_refraction_mode
+
+    pure subroutine dm_geocom_api_request_set_search_area(request, center_hz, center_v, range_hz, range_v, enabled)
+        !! Request of `AUT_SetSearchArea` procedure. Creates request for
+        !! setting the PowerSearch window.
+        !!
+        !! The function sets the position and dimensions of the PowerSearch
+        !! window, and activates it. The API call is valid for all instruments,
+        !! but has effects only for those equipped with PowerSearch (requires
+        !! GeoCOM robotic licence).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                                            |
+        !! |----------------|-------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                 |
+        !! | ASCII request  | `%R1Q,9043:<center_hz>,<center_v>,<range_hz>,<range_v>,<enabled>` |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                                  |
+        !!
+        integer, parameter :: REQCODE = 9043
+
+        type(request_type), intent(out) :: request   !! Prepared request.
+        real(kind=r8),      intent(in)  :: center_hz !! Search area center Hz angle [rad].
+        real(kind=r8),      intent(in)  :: center_v  !! Search area center V angle [rad].
+        real(kind=r8),      intent(in)  :: range_hz  !! Search area range Hz angle [rad].
+        real(kind=r8),      intent(in)  :: range_v   !! Search area range V angle [rad].
+        logical,            intent(in)  :: enabled   !! Enable search area.
+
+        character(len=80) :: args
+
+        write (args, '(4(f0.12, ","), i1)') center_hz, center_v, range_hz, range_v, dm_btoi(enabled)
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_search_area
+
+    pure subroutine dm_geocom_api_request_set_station(request, easting, northing, height, instr_height)
+        !! Request of `TMC_SetStation` procedure. Creates request for setting
+        !! the station coordinates of the instrument.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                                   |
+        !! |----------------|----------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                        |
+        !! | ASCII request  | `%R1Q,2010:<easting>,<northing>,<height>,<instr_height>` |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                         |
+        !!
+        integer, parameter :: REQCODE = 2010
+
+        type(request_type), intent(out) :: request      !! Prepared request.
+        real(kind=r8),      intent(in)  :: easting      !! E coordinate [m].
+        real(kind=r8),      intent(in)  :: northing     !! N coordinate [m].
+        real(kind=r8),      intent(in)  :: height       !! H coordinate [m].
+        real(kind=r8),      intent(in)  :: instr_height !! Instrument height [m].
+
+        character(len=80) :: args
+
+        write (args, '(3(f0.12, ","), f0.12)') easting, northing, height, instr_height
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_station
+
+    pure subroutine dm_geocom_api_request_set_target_type(request, target_type)
+        !! Request of `BAP_SetTargetType` procedure. Creates request for
+        !! setting the EDM type.
+        !!
+        !! The function sets the current EDM type (`BAP_TARGET_TYPE`) for
+        !! distance measurements: reflector (IR) or reflectorless (RL). For
+        !! each EDM type, the EDM mode used last is remembered and actived if
+        !! the EDM type is changed. If EDM type IR is selected, the automation
+        !! mode used last is activated automatically. The API function
+        !! `BAP_SetMeasPrg` can also change the target type. The EDM type RL is
+        !! not available on all instruments.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,17021:<target_type>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 17021
+
+        type(request_type), intent(out) :: request     !! Prepared request.
+        integer,            intent(in)  :: target_type !! Target type (`BAP_TARGET_TYPE`).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') target_type
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_target_type
+
+    pure subroutine dm_geocom_api_request_set_tolerance(request, hz, v)
+        !! Request of `AUT_SetTol` procedure. Creates request for setting
+        !! the positioning tolerances.
+        !!
+        !! This function sets the position tolerances of the Hz and V
+        !! instrument axes (GeoCOM robotic licence required). The tolerances
+        !! must be in the range of 1 [cc] (1.57079E-06 [rad]) to 100 [cc]
+        !! (1.57079E-04 [rad]).
+        !!
+        !! The maximum resolution of the angle measurement system depends on
+        !! the instrument accuracy class. If smaller positioning tolerances are
+        !! required, the positioning time can increase drastically.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,9007:<hz>,<v>`                             |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 9007
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        real(kind=r8),      intent(in)  :: hz      !! Positioning tolerance in Hz direction [rad].
+        real(kind=r8),      intent(in)  :: v       !! Positioning tolerance in V direction [rad].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12, ",", f0.12)') hz, v
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_tolerance
+
+    pure subroutine dm_geocom_api_request_set_user_atr_mode(request, enabled)
+        !! Request of `AUS_SetUserAtrState` procedure. Creates request for
+        !! setting the status of the ATR mode.
+        !!
+        !! The function activates or deactivates the ATR mode (requires GeoCOM
+        !! robotic licence). If `enabled` is `.true.`, ATR mode is activated,
+        !! and if LOCK mode is enabled while the API call is made, LOCK mode
+        !! will change to ATR mode. If `enabled` is `.false.`, ATR mode is
+        !! deactivated, and if LOCK mode is enabled then it stays enabled.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,18005:<enabled>`                           |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 18005
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        logical,            intent(in)  :: enabled !! Enable ATR mode.
+
+        character(len=80) :: args
+
+        write (args, '(i1)') dm_btoi(enabled)
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_user_atr_mode
+
+    pure subroutine dm_geocom_api_request_set_user_lock_mode(request, enabled)
+        !! Request of `AUS_SetUserLockState` procedure. Creates request for
+        !! setting the status of the LOCK mode.
+        !!
+        !! The function activated or deactivates the LOCK mode (GeoCOM robotic
+        !! licence required). If `enabled` is `.true.`, LOCK mode is activated.
+        !! In order to lock and follow a moving target, call API function
+        !! `AUT_LockIn`. If `enabled` is `.false.`, LOCK mode is deactivated.
+        !! Tracking of a moving target will be aborted, and the manual drive
+        !! wheel is activated.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,18007:<enabled>`                           |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 18007
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        logical,            intent(in)  :: enabled !! Enable LOCK mode.
+
+        character(len=80) :: args
+
+        write (args, '(i1)') dm_btoi(enabled)
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_user_lock_mode
+
+    pure subroutine dm_geocom_api_request_set_user_prism_definition(request, prism_name, prism_const, prism_type, creator)
+        !! Request of `BAP_SetUserPrismDef` procedure. Creates request for
+        !! setting a user prism definition.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                                         |
+        !! |----------------|----------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                       |
+        !! | ASCII request  | `%R1Q,17032:<prism_name>,<prism_const>,<prism_type>,<creator>` |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                               |
+        !!
+        integer, parameter :: REQCODE = 17032
+
+        type(request_type), intent(out) :: request     !! Prepared request.
+        character(len=*),   intent(in)  :: prism_name  !! Prism name.
+        real(kind=r8),      intent(in)  :: prism_const !! Prism correction constant [m].
+        integer,            intent(in)  :: prism_type  !! Prism type (`BAP_REFLTYPE`).
+        character(len=*),   intent(in)  :: creator     !! Name of creator.
+
+        character(len=80) :: args
+
+        write (args, '(a, ",", f0.12, ",", i0, ",", a)') prism_name, prism_const, prism_type, creator
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_user_prism_definition
+
+    pure subroutine dm_geocom_api_request_set_user_spiral(request, hz, v)
+        !! Request of `AUT_SetUserSpiral` procedure. Creates request for
+        !! setting the ATR search window.
+        !!
+        !! The function sets the dimensions of the ATR search window (GeoCOM
+        !! robotic licence required).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,9041:<hz>,<v>`                             |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 9041
+
+        type(request_type), intent(out) :: request !! Prepared request.
+        real(kind=r8),      intent(in)  :: hz      !! ATR search window in Hz direction [rad].
+        real(kind=r8),      intent(in)  :: v       !! ATR search window in V direction [rad].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12, ",", f0.12)') hz, v
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_user_spiral
+
+    pure subroutine dm_geocom_api_request_set_velocity(request, omega_hz, omega_v)
+        !! Request of `MOT_SetVelocity` procedure. Creates request for
+        !! driving the instrument with constant speed.
+        !!
+        !! The function is used to set up the velocity of the motorisation
+        !! (GeoCOM robotic licence required). The API function
+        !! `MOT_StartController` must have been called with argument
+        !! `MOT_OCONST` before.
+        !!
+        !! The velocity in horizontal and vertical direction are in [rad/s].
+        !! The maximum velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s
+        !! for TPS1100/TPS1200.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,6004:<omega_hz>,<omega_v>`                 |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 6004
+
+        type(request_type), intent(out) :: request  !! Prepared request.
+        real(kind=r8),      intent(in)  :: omega_hz !! Velocity in Hz direction [rad/s].
+        real(kind=r8),      intent(in)  :: omega_v  !! Velocity in V direction [rad/s].
+
+        character(len=80) :: args
+
+        write (args, '(f0.12, ",", f0.12)') omega_hz, omega_v
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_set_velocity
+
+    pure subroutine dm_geocom_api_request_setup_download(request, device_type, file_type, file_name, block_size)
+        !! Request of `FTR_SetupDownload` procedure. Creates request for
+        !! setting up a file download.
+        !!
+        !! The function has to be called before `FTR_Download`. If the file
+        !! type is `FTR_FILE_UNKNOWN`, an additional file path is required.
+        !!
+        !! The argument `device_type` (`FTR_DEVICETYPE`) must be one of the
+        !! following:
+        !!
+        !! * `FTR_DEVICE_INTERNAL` – Internal memory (path `/ata1a/`).
+        !! * `FTR_DEVICE_PCPARD`   – CF Card (path `/ata0a/`).
+        !!
+        !! The argument `file_type` (`FTR_FILETYPE`) is usually
+        !! `FTR_FILE_IMAGES`. The maximum value for `block_size` is
+        !! `FTR_MAX_BLOCKSIZE`.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`     – GeoCOM return code.
+        !! * `nblocks` – Number of blocks required to upload the file.
+        !!
+        !! | Property       | Values                                                          |
+        !! |----------------|-----------------------------------------------------------------|
+        !! | Instruments    | TM30/TS30                                                       |
+        !! | ASCII request  | `%R1Q,23303:<device_type>,<file_type>,<file_name>,<block_size>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<nblocks>`                                      |
+        !!
+        integer,          parameter :: REQCODE = 23303
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<nblocks>\d+)'
+
+        type(request_type), intent(out) :: request     !! Prepared request.
+        integer,            intent(in)  :: device_type !! Device type (`FTR_DEVICETYPE`).
+        integer,            intent(in)  :: file_type   !! File type (`FTR_FILETYPE`).
+        character(len=*),   intent(in)  :: file_name   !! File name with extension.
+        integer,            intent(in)  :: block_size  !! Block size.
+
+        character(len=80)   :: args
+        type(response_type) :: responses(2)
+
+        responses = [ &
+            response_type('grc',     type=RESPONSE_TYPE_INT32), &
+            response_type('nblocks', type=RESPONSE_TYPE_INT32)  &
+        ]
+
+        write (args, '(2(i0, ","), a, ",", i0)') device_type, file_type, file_name, block_size
+        call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
+    end subroutine dm_geocom_api_request_setup_download
+
+    pure subroutine dm_geocom_api_request_setup_list(request, device_type, file_type, search_path)
+        !! Request of `FTR_SetupList` procedure. Creates request for
+        !! setting up file listing.
+        !!
+        !! The function sets up the device type, file type, and search path. It
+        !! has to be called before `FTR_List`.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                               |
+        !! |----------------|------------------------------------------------------|
+        !! | Instruments    | TM30/TS30                                            |
+        !! | ASCII request  | `%R1Q,23306:<device_type>,<file_type>,<search_path>` |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                     |
+        !!
+        integer, parameter :: REQCODE = 23306
+
+        type(request_type), intent(out) :: request     !! Prepared request.
+        integer,            intent(in)  :: device_type !! Device type (`FTR_DEVICETYPE`).
+        integer,            intent(in)  :: file_type   !! File type (`FTR_FILETYPE`).
+        character(len=*),   intent(in)  :: search_path !! Optional search path, required for file type `FTR_FILE_UNKNOWN`.
+
+        character(len=80) :: args
+
+        write (args, '(2(i0, ","), a)') device_type, file_type, search_path
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_setup_list
+
+    pure subroutine dm_geocom_api_request_start_controller(request, start_mode)
+        !! Request of `MOT_StartController` procedure. Creates request for
+        !! starting the motor controller.
+        !!
+        !! If this function is used in combination with API call
+        !! `MOT_SetVelocity`, the controller mode has to be `MOT_OCONST`.
+        !!
+        !! The argument `start_mode` (`MOT_MODE`) must be one of the following:
+        !!
+        !! * `MOT_POSIT`   –  Relative positioning.
+        !! * `MOT_OCONST`  –  Constant speed.
+        !! * `MOT_MANUPOS` –  Manual positioning (default setting).
+        !! * `MOT_LOCK`    –  "Lock-In" controller.
+        !! * `MOT_BREAK`   –  "Brake" controller.
+        !! * `MOT_TERM`    –  Terminates the controller task.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,6001:<start_mode>`                         |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 6001
+
+        type(request_type), intent(out) :: request    !! Prepared request.
+        integer,            intent(in)  :: start_mode !! Controller start mode (`MOT_MODE`).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') start_mode
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_start_controller
+
+    pure subroutine dm_geocom_api_request_stop_controller(request, stop_mode)
+        !! Request of `MOT_StartController` procedure. Creates request for
+        !! stopping the motor controller.
+        !!
+        !! This function stops the movement and the motor controller program.
+        !!
+        !! The argument `stop_mode` (`MOT_STOPMODE`) must be one of the following:
+        !!
+        !! * `MOT_NORMAL`   – Slow down with current acceleration.
+        !! * `MOT_SHUTDOWN` – Slow down by switching off power supply.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,6002:<stop_mode>`                          |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !!
+        integer, parameter :: REQCODE = 6002
+
+        type(request_type), intent(out) :: request   !! Prepared request.
+        integer,            intent(in)  :: stop_mode !! Controller stop mode (`MOT_STOPMODE`).
+
+        character(len=80) :: args
+
+        write (args, '(i0)') stop_mode
+        call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
+    end subroutine dm_geocom_api_request_stop_controller
+
+    pure subroutine dm_geocom_api_request_switch_off(request, mode)
+        !! Request of `COM_SwitchOffTPS` procedure. Creates request for
+        !! turning the instrument off.
+        !!
+        !! The argument `mode` has to be one of the following:
+        !!
+        !! * `COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
+        !! * `COM_TPS_STOP_SLEEP`     – Sleep mode (not supported by TPS1200).
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc` – GeoCOM return code.
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,112:<mode>`                                |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
@@ -2375,8 +3295,8 @@ contains
     end subroutine dm_geocom_api_request_switch_off
 
     pure subroutine dm_geocom_api_request_switch_on(request, mode)
-        !! Request of `COM_SwitchOffTPS` procedure. Creates request for
-        !! turning the instrument off.
+        !! Request of `COM_SwitchOnTPS` procedure. Creates request for turning
+        !! the instrument on.
         !!
         !! The argument `mode` has to be one of the following:
         !!
@@ -2389,7 +3309,7 @@ contains
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,111:<mode>`                                |
         !! | ASCII response | `%R1P,0,0:5` (if switched on)                    |
         !!

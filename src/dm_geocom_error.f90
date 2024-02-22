@@ -45,7 +45,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_NO_ACTION                  = 24    !! GRC_TYPE Input (do no action)
     integer, parameter, public :: GRC_SLEEP_MODE                 = 25    !! Instrument run into the sleep mode.
     integer, parameter, public :: GRC_NOTOK                      = 26    !! Function not successfully completed.
-    integer, parameter, public :: GRC_NA                         = 27    !! Not available.
+    integer, parameter, public :: GRC_NA                         = 27    !! Not available (licence key not available).
     integer, parameter, public :: GRC_OVERFLOW                   = 28    !! Overflow error.
     integer, parameter, public :: GRC_STOPPED                    = 29    !! System or subsystem has been stopped.
 

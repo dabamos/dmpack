@@ -78,8 +78,8 @@ module dm_geocom
     !! | `TMC_GetHeight`             | `get_height`                    |
     !! | `TMC_GetInclineSwitch`      | `get_incline_correction`        |
     !! | `TMC_GetPrismCorr`          | `get_prism_constant`            |
-    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
     !! | `TMC_GetPrismType`          | `get_prism_type`                |
+    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
     !! | `TMC_GetQuickDist`          | `get_quick_distance`            |
     !! | `TMC_GetRefractiveMethod`   | `get_refraction_mode`           |
     !! | `TMC_GetSignal`             | `get_signal`                    |
