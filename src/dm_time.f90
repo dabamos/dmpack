@@ -15,9 +15,10 @@ module dm_time
 
     ! The parameter `TIME_LEN` as the length of a character string that stores a
     ! time stamp. Make sure that hard-coded edit descriptors match the length,
-    ! for instance, in modules `dm_block` and `dm_plot`.
-    integer,          parameter, public :: TIME_LEN     = 32                                 !! ISO 8601 time stamp length.
-    character(len=*), parameter, public :: TIME_DEFAULT = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
+    ! for instance, in modules `dm_block`, `dm_dp`, and `dm_plot`.
+    integer,          parameter, public :: TIME_LEN       = 32 !! ISO 8601 time stamp length.
+    integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Human-readable time stamp length.
+    character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
     type, public :: time_delta_type
         !! Time delta type to store elapsed time.
@@ -38,6 +39,7 @@ module dm_time
     public :: dm_time_strings
     public :: dm_time_strip_useconds
     public :: dm_time_to_beats
+    public :: dm_time_to_human
     public :: dm_time_to_unix
     public :: dm_time_valid
     public :: dm_time_zone
@@ -274,6 +276,23 @@ contains
         b = (hour * 3600.0 + minute * 60.0 + second) * (1000.0 / 86400.0)
         write (beats, '("@", f0.2)') b
     end function dm_time_to_beats
+
+    pure elemental function dm_time_to_human(time) result(human)
+        !! Returns time stamp in human-readable format. Converts the given ISO
+        !! 8601 time stamp `time` in format `1970-01-01T00:00:00.000000+00:00`
+        !! to time stamp in format `1970-01-01 00:00:00 +00:00`.
+        !!
+        !! This function does not turn a time stamp into a human being.
+        character(len=*), intent(in)  :: time  !! ISO 8601 time stamp.
+        character(len=TIME_HUMAN_LEN) :: human !! Human-readable time stamp.
+
+        if (len(time) /= TIME_LEN) then
+            human = '1970-01-01 00:00:00 +00:00'
+            return
+        end if
+
+        write (human, '(2(a, " "), a)') time(1:10), time(12:19), time(27:32)
+    end function dm_time_to_human
 
     impure elemental integer function dm_time_to_unix(time, epoch, useconds) result(rc)
         !! Converts ISO 8601/RFC 3339 time stamp to Unix time stamp (Epoch).

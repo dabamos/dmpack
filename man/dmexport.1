@@ -2,12 +2,12 @@
 .\"     Title: dmexport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-02-21
 .\"    Manual: User Commands
 .\"    Source: DMEXPORT
 .\"  Language: English
 .\"
-.TH "DMEXPORT" "1" "2024-02-16" "DMEXPORT" "User Commands"
+.TH "DMEXPORT" "1" "2024-02-21" "DMEXPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -71,7 +71,7 @@ Start of time range in ISO 8601 (required for types \f(CRdb\fP, \f(CRlog\fP, \f(
 .sp
 \fB\-\-header\fP, \fB\-H\fP
 .RS 4
-Add CSV header.
+Enable CSV header.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP
@@ -101,7 +101,7 @@ Sensor id (required for types \f(CRdp\fP and \f(CRobserv\fP).
 .sp
 \fB\-\-separator\fP, \fB\-s\fP \fIchar\fP
 .RS 4
-CSV separator character.
+Single character used as separator instead of comma.
 .RE
 .sp
 \fB\-\-target\fP, \fB\-T\fP \fIid\fP

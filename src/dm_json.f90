@@ -108,7 +108,6 @@ contains
         json = '{ "node_id": "'  // trim(beat%node_id)     // '",' // &
                ' "address": "'   // trim(beat%address)     // '",' // &
                ' "client": "'    // trim(beat%client)      // '",' // &
-               ' "library": "'   // trim(beat%library)     // '",' // &
                ' "time_sent": "' // trim(beat%time_sent)   // '",' // &
                ' "time_recv": "' // trim(beat%time_recv)   // '",' // &
                ' "error": '      // dm_itoa(beat%error)    // ','  // &

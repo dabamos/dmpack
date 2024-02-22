@@ -65,11 +65,11 @@ contains
         close (fu)
     end function dm_dp_from_file
 
-    pure elemental character(len=55) function dm_dp_to_string(dp) result(str)
-        !! Returns data point as 55 characters long string. The attributes `x`
+    pure elemental character(len=58) function dm_dp_to_string(dp) result(str)
+        !! Returns data point as 58 characters long string. The attributes `x`
         !! and `y` are separated by white space.
         type(dp_type), intent(in) :: dp !! Data point type.
 
-        write (str, '(a29, 1x, f25.8)') dp%x, dp%y
+        write (str, '(a32, 1x, f25.8)') dp%x, dp%y
     end function dm_dp_to_string
 end module dm_dp

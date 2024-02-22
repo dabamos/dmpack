@@ -104,6 +104,7 @@ contains
             rc = dm_lua_eval(lua, 'E_READ_ONLY = '      // dm_itoa(E_READ_ONLY));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_CONFIG = '         // dm_itoa(E_CONFIG));         if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_DB = '             // dm_itoa(E_DB));             if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_ID = '          // dm_itoa(E_DB_ID));          if (dm_is_error(rc)) return

@@ -2090,10 +2090,10 @@ installed locally.
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-Copy the style sheet `dmpack.min.css` and the script `dmpack.js` manually to
-the WWW root directory, or just create symlinks. Environment variables are used
-to configure *dmweb*. Transport security and authentication have to be provided
-by the web server. See section <<web-web-ui>> for an example configuration.
+Copy the style sheet `dmpack.min.css` manually to the WWW root directory, or
+create a symlink. Environment variables are used to configure *dmweb*. Transport
+security and authentication have to be provided by the web server. See section
+<<web-web-ui>> for an example configuration.
 
 .Plotting of time series through the *dmweb* user interface
 [#img-dmweb]
@@ -2346,14 +2346,13 @@ $HTTP["url"] =^ "/dmpack/" {
 }
 ....
 
-Copy the CSS file `dmpack.min.css` and the JavaScript file `dmpack.js` from
-`/usr/local/share/dmpack` (`/usr/share/dmpack/` on Linux) to the WWW root
-directory, in this case, `/var/www/`, or just create symlinks:
+Copy the CSS file `dmpack.min.css` from `/usr/local/share/dmpack`
+(`/usr/share/dmpack/` on Linux) to the WWW root directory, in this case,
+`/var/www/`, or simply create a symlinks:
 
 ....
 # cd /var/www/
 # ln -s /usr/local/share/dmpack/dmpack.min.css dmpack.min.css
-# ln -s /usr/local/share/dmpack/dmpack.js dmpack.js
 ....
 
 If the files have to be served from a path other than the root path, add a
@@ -4701,6 +4700,7 @@ print(gon)
 | 20   | `E_READ_ONLY`       | Read-only access.
 | 21   | `E_CONFIG`          | Invalid configuration.
 | 22   | `E_HDF5`            | HDF5 library error.
+| 23   | `E_ZLIB`            | Zlib library error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_MEM`          | No memory or disk full.

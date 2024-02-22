@@ -18,7 +18,8 @@ module dm_timer
     public :: dm_timer_stop
 contains
     real(kind=r8) function dm_timer_delta(timer) result(dt)
-        !! Returns timer value in seconds as 8-byte real.
+        !! Returns timer value in seconds as 8-byte real. The result is 0 if the
+        !! timer has not been stopped yet.
         type(timer_type), intent(inout) :: timer !! Timer type.
 
         dt = 0_i8

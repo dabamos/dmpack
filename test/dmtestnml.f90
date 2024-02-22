@@ -61,8 +61,7 @@ contains
 
         beat1%node_id = 'dummy-node'
         beat1%address = '127.0.0.1'
-        beat1%client  = 'dmtestnml' // DM_VERSION_STRING
-        beat1%library = 'DMPACK ' // DM_VERSION_STRING
+        beat1%client  = dm_version_to_string('dmtestnml', 1, 0, 0, library=.true.)
 
         print *, 'Writing beat to namelist string ...'
         rc = dm_nml_from(beat1, str)

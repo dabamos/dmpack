@@ -12,22 +12,28 @@ module dm_rts
     !! slope distance `slope_dist` from air temperature `temperature` [°C], air
     !! pressure `pressure` [mbar], relative humidity `humidity`, and instrument
     !! EDM height `height` [m]. The horizontal distance `hz_dist` [m] is
-    !! determined using the corrected slope distance `corr` [m] and the
+    !! determined using the corrected slope distance `corr_dist` [m] and the
     !! vertical angle `v` [rad]:
     !!
     !! ```fortran
     !! real(kind=r8) :: temperature, pressure, humidity, height
     !! real(kind=r8) :: ppm, ppm1, ppm2
-    !! real(kind=r8) :: corr, hz_dist, slope_dist
+    !! real(kind=r8) :: corr_dist, hz_dist, slope_dist, v
     !!
-    !! ! [...]
+    !! temperature = 15.0_r8   ! [°C]
+    !! pressure    = 1010.0_r8 ! [mbar]
+    !! humidity    = 0.65_r8   ! [none]
+    !! height      = 100.0_r8  ! [m]
+    !! slope_dist  = 42.0_r8   ! [m]
+    !!
+    !! v = dm_gon_to_rad(101.5_r8) ! [rad]
     !!
     !! ppm1 = dm_rts_correction_atmospheric(temperature, pressure, humidity)
     !! ppm2 = dm_rts_correction_sea_level(height)
     !! ppm  = ppm1 + ppm2
-    !! corr = dm_rts_correction_distance(slope_dist, ppm, RTS_PRISM_LEICA_STANDARD)
     !!
-    !! hz_dist = dm_rts_distance_horizontal(corr, v)
+    !! corr_dist = dm_rts_correction_distance(slope_dist, ppm, RTS_PRISM_LEICA_STANDARD)
+    !! hz_dist   = dm_rts_distance_horizontal(corr_dist, v)
     !! ```
     !!
     !! Formulas are taken from the Leica TM30/TS30 User Manual.
@@ -101,7 +107,7 @@ contains
         !! User Manual, p. 76.
         real(kind=r8), intent(in)           :: temperature !! Air temperature [°C].
         real(kind=r8), intent(in)           :: pressure    !! Air pressure [mbar, hPa].
-        real(kind=r8), intent(in), optional :: humidity    !! Relative humidity from 0.0 to 1.0 [%].
+        real(kind=r8), intent(in), optional :: humidity    !! Relative humidity from 0.0 to 1.0.
 
         real(kind=r8) :: a, b, c, d, x
         real(kind=r8) :: humidity_

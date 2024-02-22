@@ -21,7 +21,7 @@ contains
         !!
         !! * `E_ALLOC` if the allocation of the output string failed.
         !! * `E_EMPTY` if the compressed size is 0.
-        !! * `E_ERROR` if the compression failed.
+        !! * `E_ZLIB` if the compression failed.
         character(len=*),              intent(inout)         :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)           :: output      !! Output bytes.
         integer(kind=i8),              intent(out), optional :: output_size !! Actual output length.
@@ -39,7 +39,7 @@ contains
         rc = E_EMPTY
         if (sz == 0) return
 
-        rc = E_ERROR
+        rc = E_ZLIB
         stat = compress(output, sz, input, len(input, kind=z_ulong))
         if (present(output_size)) output_size = int(sz, kind=i8)
         if (stat /= Z_OK) return
@@ -48,7 +48,7 @@ contains
     end function dm_z_compress
 
     integer function dm_z_deflate_mem(input, output) result(rc)
-        !! Compresses input string. Returns `E_ERROR` if the compression
+        !! Compresses input string. Returns `E_ZLIB` if the compression
         !! failed.
         character(len=*), target,      intent(inout) :: input  !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output !! Output bytes.
@@ -57,7 +57,7 @@ contains
         integer                           :: err, have
         type(z_stream)                    :: strm
 
-        rc = E_ERROR
+        rc = E_ZLIB
         output = ''
 
         if (deflate_init2(strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, &
@@ -85,7 +85,7 @@ contains
     end function dm_z_deflate_mem
 
     integer function dm_z_inflate_mem(input, output, buffer_size) result(rc)
-        !! Decompresses input string. Returns `E_ERROR` if the decompression
+        !! Decompresses input string. Returns `E_ZLIB` if the decompression
         !! failed.
         character(len=*), target,      intent(inout) :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output      !! Output bytes.
@@ -95,7 +95,7 @@ contains
         integer                            :: err, have
         type(z_stream)                     :: strm
 
-        rc = E_ERROR
+        rc = E_ZLIB
         output = ''
 
         if (inflate_init2(strm, -15) /= Z_OK) return
@@ -123,7 +123,7 @@ contains
 
     integer function dm_z_uncompress(input, output, output_size) result(rc)
         !! Uncompresses input string using the zlib utility function. Returns
-        !! `E_ERROR` if the decompression failed.
+        !! `E_ZLIB` if the decompression failed.
         character(len=*), intent(inout)         :: input       !! Input bytes.
         character(len=*), intent(inout)         :: output      !! Output bytes.
         integer(kind=i8), intent(out), optional :: output_size !! Actual output length.
@@ -131,7 +131,7 @@ contains
         integer               :: stat
         integer(kind=z_ulong) :: sz
 
-        rc = E_ERROR
+        rc = E_ZLIB
         sz = len(output, kind=z_ulong)
         stat = uncompress(output, sz, input, len(input, kind=z_ulong))
         if (present(output_size)) output_size = int(sz, kind=i8)

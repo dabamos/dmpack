@@ -182,9 +182,8 @@ contains
         !! Runs main loop to emit heartbeats.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=BEAT_CLIENT_LEN)  :: client  ! Client name and version.
-        character(len=BEAT_LIBRARY_LEN) :: library ! Library name and version.
-        character(len=:), allocatable   :: url     ! URL of HTTP-RPC API endpoint.
+        character(len=BEAT_CLIENT_LEN) :: client ! Client name and version.
+        character(len=:), allocatable  :: url    ! URL of HTTP-RPC API endpoint.
 
         integer          :: last_error
         integer          :: i, rc, t
@@ -199,8 +198,7 @@ contains
         call dm_log(LOG_INFO, 'started ' // app%name)
 
         ! Client and library version.
-        client  = APP_NAME // ' ' // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH)
-        library = 'DMPACK ' // DM_VERSION_STRING
+        client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host     = app%host, &
@@ -218,7 +216,6 @@ contains
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
                              client    = client, &
-                             library   = library, &
                              time_sent = dm_time_now(), &
                              interval  = app%interval, &
                              error     = last_error)

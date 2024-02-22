@@ -837,6 +837,7 @@ contains
 
             beat1%node_id = 'dummy-node'
             beat1%address = '127.0.0.1'
+            beat1%client  = dm_version_to_string('dmtestdb', 1, 0, 0, library=.true.)
 
             print *, 'Adding beat ...'
             rc = dm_db_insert(db, beat1)

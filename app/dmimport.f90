@@ -39,6 +39,8 @@ program dmimport
     if (dm_is_error(rc)) call dm_stop(1)
 contains
     integer function import(app) result(rc)
+        integer(kind=i8), parameter :: PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.
+
         type(app_type), intent(inout) :: app
 
         integer          :: er, fu, stat
@@ -202,7 +204,9 @@ contains
                     case (E_NONE)
                         nrecs = nrecs + 1
                         if (.not. app%verbose) cycle read_loop
-                        if (modulo(nrecs, 500_i8) == 0) print '("Imported ", i0, " records")', nrecs
+                        if (modulo(nrecs, PROGRESS_STEP_SIZE) == 0) then
+                            print '("Imported ", i0, " records")', nrecs
+                        end if
                     case (E_INVALID)
                         call dm_error_out(rc, 'invalid record in row ' // dm_itoa(nrows))
                         exit read_loop

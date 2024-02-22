@@ -8,8 +8,8 @@ module dm_error
     private
 
     ! NOTE: Any additional error code must be exported in function
-    ! `dm_lua_api_register()` in module `dm_lua_util` and in function
-    ! `luaopen_libdmpack()` in module `dm_lua_lib`.
+    ! `dm_lua_api_register()` (from module `dm_lua_api`) and in function
+    ! `luaopen_libdmpack()` (from module `dm_lua_lib`).
 
     ! Generic errors.
     integer, parameter, public :: E_NONE           =   0 !! No error.
@@ -35,6 +35,7 @@ module dm_error
     integer, parameter, public :: E_READ_ONLY      =  20 !! Read-only access.
     integer, parameter, public :: E_CONFIG         =  21 !! Invalid configuration error.
     integer, parameter, public :: E_HDF5           =  22 !! HDF5 error.
+    integer, parameter, public :: E_ZLIB           =  23 !! zlib error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -165,6 +166,8 @@ contains
                 str = 'configuration error'
             case (E_HDF5)
                 str = 'HDF5 error'
+            case (E_ZLIB)
+                str = 'zlib error'
 
             ! Database.
             case (E_DB)

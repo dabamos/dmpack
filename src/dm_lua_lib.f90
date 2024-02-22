@@ -70,6 +70,7 @@ contains
         rc = lual_dostring(ptr, 'E_READ_ONLY = '      // dm_itoa(E_READ_ONLY))
         rc = lual_dostring(ptr, 'E_CONFIG = '         // dm_itoa(E_CONFIG))
         rc = lual_dostring(ptr, 'E_HDF5 = '           // dm_itoa(E_HDF5))
+        rc = lual_dostring(ptr, 'E_ZLIB = '           // dm_itoa(E_ZLIB))
 
         rc = lual_dostring(ptr, 'E_DB = '             // dm_itoa(E_DB))
         rc = lual_dostring(ptr, 'E_DB_ID = '          // dm_itoa(E_DB_ID))

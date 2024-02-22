@@ -260,14 +260,12 @@ contains
                H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Client' // H_TH_END // &
                H_TD // dm_html_encode(beat%client) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Library' // H_TH_END // &
-               H_TD // dm_html_encode(beat%library) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
-               H_TD // dm_html_time(beat%time_sent) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(beat%time_sent, human=.true.) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &
-               H_TD // dm_html_time(beat%time_recv) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(beat%time_recv, human=.true.) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Now' // H_TH_END // &
-               H_TD // dm_html_time(now) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(now, human=.true.) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Delta' // H_TH_END // &
                H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Interval' // H_TH_END // &
@@ -337,7 +335,7 @@ contains
 
             html = html // &
                    H_TD // H_CODE // dm_html_encode(beats(i)%address) // H_CODE_END // H_TD_END // &
-                   H_TD // dm_html_time(beats(i)%time_recv) // H_TD_END // &
+                   H_TD // dm_html_time(beats(i)%time_recv, human=.true.) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%error) // H_TD_END // &
                    H_TD // dm_itoa(beats(i)%interval) // ' secs' // H_TD_END // &
                    H_TD // dm_time_delta_to_string(time_delta, hours=.false., minutes=.false., seconds=.false.) // H_TD_END // &
@@ -940,10 +938,10 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(logs(i)%id)
-                anchor%text = dm_html_time(logs(i)%timestamp)
+                anchor%text = dm_html_time(logs(i)%timestamp, human=.true.)
                 html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
-                html = html // H_TD // dm_html_time(logs(i)%timestamp) // H_TD_END
+                html = html // H_TD // dm_html_time(logs(i)%timestamp, human=.true.) // H_TD_END
             end if
 
             if (node_) html = html // H_TD // dm_html_encode(logs(i)%node_id) // H_TD_END
@@ -1242,10 +1240,10 @@ contains
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(observs(i)%id)
-                anchor%text = dm_html_time(observs(i)%timestamp)
+                anchor%text = dm_html_time(observs(i)%timestamp, human=.true.)
                 html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
             else
-                html = html // H_TD // dm_html_time(observs(i)%timestamp) // H_TD_END
+                html = html // H_TD // dm_html_time(observs(i)%timestamp, human=.true.) // H_TD_END
             end if
 
             if (id_)        html = html // H_TD // H_CODE // dm_html_encode(observs(i)%id) // H_CODE_END // H_TD_END
@@ -1308,7 +1306,7 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_time(request%timestamp) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_time(request%timestamp, human=.true.) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Request' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Response' // H_TH_END // &
@@ -1623,16 +1621,31 @@ contains
         html = html // '>' // str // H_TH_END
     end function dm_html_th
 
-    pure function dm_html_time(time) result(html)
+    pure function dm_html_time(time, human) result(html)
         !! Returns `<time>` element with `datetime` attribute, and the
         !! encoded ISO 8601 time stamp `time` enclosed. This function does not
-        !! encode the passed time stamp. The value of the `datetime` attribute
-        !! is extracted from the time stamp.
-        use :: dm_time, only: dm_time_strip_useconds
-        character(len=*), intent(in)  :: time !! ISO 8601 time stamp.
-        character(len=:), allocatable :: html !! Generated HTML.
+        !! validate or encode the passed time stamp. The value of the
+        !! `datetime` attribute is extracted from the time stamp and converted
+        !! according to the HTML specification (with microseconds stripped).
+        !!
+        !! If optional argument `human` is passed and `.true.`, the output
+        !! format of the time stamp will be changed to the slightly more
+        !! human-readable format `1970-01-01 00:00:00 +00:00`.
+        use :: dm_time, only: dm_time_strip_useconds, dm_time_to_human
+        character(len=*), intent(in)           :: time  !! ISO 8601 time stamp.
+        logical,          intent(in), optional :: human !! Turn time stamp into human-readable format.
+        character(len=:), allocatable          :: html  !! Generated HTML.
 
-        html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
+        logical :: human_
+
+        human_ = .false.
+        if (present(human)) human_ = human
+
+        if (human_) then
+            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // dm_time_to_human(time) // H_TIME_END
+        else
+            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
+        end if
     end function dm_html_time
 
     pure subroutine dm_html_select_create(select, size, error)

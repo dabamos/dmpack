@@ -14,7 +14,6 @@ module dm_logger
     use :: dm_id
     use :: dm_kind
     use :: dm_log
-    use :: dm_mqueue
     use :: dm_node
     use :: dm_observ
     use :: dm_sensor
@@ -50,7 +49,7 @@ module dm_logger
 
     interface dm_logger_log
         !! Generic interface to logging routines.
-        procedure :: dm_logger_log_message
+        procedure :: dm_logger_log_args
         procedure :: dm_logger_log_type
     end interface dm_logger_log
 
@@ -60,7 +59,7 @@ module dm_logger
     public :: dm_logger_out
     public :: dm_logger_send
 
-    private :: dm_logger_log_message
+    private :: dm_logger_log_args
     private :: dm_logger_log_type
 contains
     subroutine dm_logger_fail(message, error, source)
@@ -107,7 +106,7 @@ contains
         if (present(verbose))  LOGGER%verbose  = verbose
     end subroutine dm_logger_init
 
-    subroutine dm_logger_log_message(level, message, source, observ, timestamp, error)
+    subroutine dm_logger_log_args(level, message, source, observ, timestamp, error)
         !! Sends a log message to the message queue (fire & forget). Only the
         !! log level is validated.
         integer,           intent(in)              :: level     !! Log level.
@@ -156,7 +155,7 @@ contains
         ! Output and send log.
         if (LOGGER%verbose) call dm_logger_out(log)
         if (LOGGER%ipc)     call dm_logger_send(log)
-    end subroutine dm_logger_log_message
+    end subroutine dm_logger_log_args
 
     subroutine dm_logger_log_type(log)
         !! Sends a log data type to the message queue (send & forget). The
@@ -207,6 +206,7 @@ contains
         !! Sends log message to default log message queue (fire & forget)
         !! if `LOGGER%ipc` is true. Prints message to standard output if
         !! `LOGGER%verbose` is true.
+        use :: dm_mqueue
         type(log_type), intent(inout) :: log !! Log type.
 
         integer           :: rc

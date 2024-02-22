@@ -16,7 +16,9 @@ dmserial - reads observations from TTY/PTY
 *dmserial* --version
 
 *dmserial* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*debug*] [--*verbose*]
+[--*logger* _name_] [--*tty* _path_] [--*baudrate* _n_] [--*bytesize* _n_]
+[--*stopbits* _n_] [--*parity* _name_] [--*timeout* _n_] [--*format* _name_]
+[--*output* _file_] [--*dtr*] [--*rts*] [--*debug*] [--*verbose*]
 
 == DESCRIPTION
 

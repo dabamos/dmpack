@@ -95,8 +95,7 @@ contains
 
         beat = beat_type(node_id   = 'dummy-node', &
                          address   = '127.0.0.1', &
-                         client    = 'dmtest ' // DM_VERSION_STRING, &
-                         library   = 'DMPACK ' // DM_VERSION_STRING, &
+                         client    = dm_version_to_string('dmtest', 1, 0, 0, library=.true.), &
                          time_sent = dm_time_now(), &
                          time_recv = dm_time_now(), &
                          interval  = 60, &

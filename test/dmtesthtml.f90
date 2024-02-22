@@ -5,7 +5,7 @@
 program dmtesthtml
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 3
+    integer, parameter :: NTESTS = 4
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
@@ -15,6 +15,7 @@ program dmtesthtml
     tests(1) = test_type('dmtesthtml.test01', test01)
     tests(2) = test_type('dmtesthtml.test02', test02)
     tests(3) = test_type('dmtesthtml.test03', test03)
+    tests(4) = test_type('dmtesthtml.test04', test04)
 
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
@@ -73,5 +74,30 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        character(len=*), parameter :: ASSERT_HUMAN = '1970-01-01 00:00:00 +00:00'
+        character(len=*), parameter :: ASSERT_HTML  = &
+            '<time datetime="1970-01-01T00:00:00+00:00">1970-01-01 00:00:00 +00:00</time>'
+
+        character(len=:), allocatable :: html
+        character(len=TIME_LEN)       :: time
+        character(len=TIME_HUMAN_LEN) :: human
+
+        stat = TEST_FAILED
+
+        time  = TIME_DEFAULT
+        human = dm_time_to_human(time)
+        html  = dm_html_time(time, human=.true.)
+
+        print *, 'Time.: ', time
+        print *, 'Human: ', human
+        print *, 'HTML.: ', html
+
+        if (human /= ASSERT_HUMAN) return
+        if (html /= ASSERT_HTML) return
+
+        stat = TEST_PASSED
+    end function test04
 end program dmtesthtml
 

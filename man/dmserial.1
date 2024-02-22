@@ -2,12 +2,12 @@
 .\"     Title: dmserial
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-02-21
 .\"    Manual: User Commands
 .\"    Source: DMSERIAL
 .\"  Language: English
 .\"
-.TH "DMSERIAL" "1" "2024-02-16" "DMSERIAL" "User Commands"
+.TH "DMSERIAL" "1" "2024-02-21" "DMSERIAL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,9 @@ dmserial \- reads observations from TTY/PTY
 \fBdmserial\fP \-\-version
 .sp
 \fBdmserial\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBtty\fP \fIpath\fP] [\-\-\fBbaudrate\fP \fIn\fP] [\-\-\fBbytesize\fP \fIn\fP]
+[\-\-\fBstopbits\fP \fIn\fP] [\-\-\fBparity\fP \fIname\fP] [\-\-\fBtimeout\fP \fIn\fP] [\-\-\fBformat\fP \fIname\fP]
+[\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBdtr\fP] [\-\-\fBrts\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmserial\fP program sends requests to a sensor connected via

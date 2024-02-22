@@ -37,7 +37,7 @@ program dmweb
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
     character(len=*), parameter :: APP_CSS_PATH   = '/dmpack.min.css'  !! Path to CSS file.
-    character(len=*), parameter :: APP_JS_PATH    = '/dmpack.js'       !! Path to JavaScript file.
+    character(len=*), parameter :: APP_JS_PATH    = ' '                !! Path to optional JavaScript file.
     character(len=*), parameter :: APP_TITLE      = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer,          parameter :: APP_PLOT_TERM  = PLOT_TERM_SVG      !! Plotting backend.
@@ -59,21 +59,21 @@ program dmweb
     ! Routes to dynamic pages.
     routes = [ cgi_route_type('',         route_dashboard), &
                cgi_route_type('/',        route_dashboard), &
-               cgi_route_type('/beat',    route_beat), &
-               cgi_route_type('/beats',   route_beats), &
-               cgi_route_type('/env',     route_env), &
-               cgi_route_type('/licence', route_licence), &
-               cgi_route_type('/log',     route_log), &
-               cgi_route_type('/logs',    route_logs), &
-               cgi_route_type('/node',    route_node), &
-               cgi_route_type('/nodes',   route_nodes), &
-               cgi_route_type('/observ',  route_observ), &
-               cgi_route_type('/observs', route_observs), &
-               cgi_route_type('/plots',   route_plots), &
-               cgi_route_type('/sensor',  route_sensor), &
-               cgi_route_type('/sensors', route_sensors), &
-               cgi_route_type('/status',  route_status), &
-               cgi_route_type('/target',  route_target), &
+               cgi_route_type('/beat',    route_beat),      &
+               cgi_route_type('/beats',   route_beats),     &
+               cgi_route_type('/env',     route_env),       &
+               cgi_route_type('/licence', route_licence),   &
+               cgi_route_type('/log',     route_log),       &
+               cgi_route_type('/logs',    route_logs),      &
+               cgi_route_type('/node',    route_node),      &
+               cgi_route_type('/nodes',   route_nodes),     &
+               cgi_route_type('/observ',  route_observ),    &
+               cgi_route_type('/observs', route_observs),   &
+               cgi_route_type('/plots',   route_plots),     &
+               cgi_route_type('/sensor',  route_sensor),    &
+               cgi_route_type('/sensors', route_sensors),   &
+               cgi_route_type('/status',  route_status),    &
+               cgi_route_type('/target',  route_target),    &
                cgi_route_type('/targets', route_targets) ]
 
     ! Initialise DMPACK.
@@ -1395,7 +1395,7 @@ contains
                       H_TR // H_TH // 'Hostname' // H_TH_END // &
                               H_TD // dm_html_encode(uname%node_name) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Server Time' // H_TH_END // &
-                              H_TD // dm_html_time(dm_time_now()) // H_TD_END // H_TR_END // &
+                              H_TD // dm_html_time(dm_time_now(), human=.true.) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Server Uptime' // H_TH_END // &
                               H_TD // dm_time_delta_to_string(uptime) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'OS Name' // H_TH_END // &
@@ -1455,17 +1455,17 @@ contains
                               H_TH // 'Size'      // H_TH_END // &
                               H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
                       H_THEAD_END // H_TBODY // &
-                      H_TR // H_TD // 'Beat' // H_TD_END // &
-                              H_TD // dm_html_encode(db_beat) // H_TD_END // &
-                              H_TD // dm_itoa(db_beat_sz) // ' MiB' // H_TD_END // &
+                      H_TR // H_TD // 'Beat'                           // H_TD_END // &
+                              H_TD // dm_html_encode(db_beat)          // H_TD_END // &
+                              H_TD // dm_itoa(db_beat_sz) // ' MiB'    // H_TD_END // &
                               H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
-                      H_TR // H_TD // 'Log' // H_TD_END // &
-                              H_TD // dm_html_encode(db_log) // H_TD_END // &
-                              H_TD // dm_itoa(db_log_sz) // ' MiB' // H_TD_END // &
+                      H_TR // H_TD // 'Log'                            // H_TD_END // &
+                              H_TD // dm_html_encode(db_log)           // H_TD_END // &
+                              H_TD // dm_itoa(db_log_sz) // ' MiB'     // H_TD_END // &
                               H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
-                      H_TR // H_TD // 'Observation' // H_TD_END // &
-                              H_TD // dm_html_encode(db_observ) // H_TD_END // &
-                              H_TD // dm_itoa(db_observ_sz) // ' MiB' // H_TD_END // &
+                      H_TR // H_TD // 'Observation'                    // H_TD_END // &
+                              H_TD // dm_html_encode(db_observ)        // H_TD_END // &
+                              H_TD // dm_itoa(db_observ_sz) // ' MiB'  // H_TD_END // &
                               H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
@@ -2216,7 +2216,7 @@ contains
         logical           :: mask(NANCHORS)
         type(anchor_type) :: nav(NANCHORS)
 
-        ! HTML anchors for top navigation.
+        ! HTML anchors for sidebar navigation.
         nav = [ anchor_type(APP_BASE_PATH // '/',        'Dashboard'), &
                 anchor_type(APP_BASE_PATH // '/nodes',   'Nodes'), &
                 anchor_type(APP_BASE_PATH // '/sensors', 'Sensors'), &

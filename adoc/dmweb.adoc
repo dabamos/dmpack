@@ -30,8 +30,8 @@ This web application allows users to:
 Gnuplot is used as the plotting backend and must be present on the host.
 Responses are returned in HTML5.
 
-Copy the style sheet `dmpack.min.css` and the script `dmpack.js` manually to
-the WWW root directory, or create symlinks to them.
+Copy the style sheet `dmpack.min.css` manually to the WWW root directory, or
+create a symlink.
 
 == ENVIRONMENT
 

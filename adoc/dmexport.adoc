@@ -46,7 +46,7 @@ an empty file will be created.
   Start of time range in ISO 8601 (required for types `db`, `log`, `observ`).
 
 *--header*, *-H*::
-  Add CSV header.
+  Enable CSV header.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
@@ -64,7 +64,7 @@ an empty file will be created.
   Sensor id (required for types `dp` and `observ`).
 
 *--separator*, *-s* _char_::
-  CSV separator character.
+  Single character used as separator instead of comma.
 
 *--target*, *-T* _id_::
   Target id (required for type `dp` and `observ`).

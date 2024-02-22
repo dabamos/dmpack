@@ -52,8 +52,11 @@ contains
 
         beat%node_id = 'dummy-node'
         beat%address = '127.0.0.1'
-        beat%client  = 'dmtestjson ' // DM_VERSION_STRING
-        beat%library = 'DMPACK ' // DM_VERSION_STRING
+        beat%client  = dm_version_to_string('dmtestjson', &
+                                            DM_VERSION_MAJOR, &
+                                            DM_VERSION_MINOR, &
+                                            DM_VERSION_PATCH, &
+                                            library=.true.)
 
         print *, 'Writing beat to JSON string ...'
         json = dm_json_from(beat)

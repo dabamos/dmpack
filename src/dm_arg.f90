@@ -111,9 +111,9 @@ contains
         !! * `E_ARG_NO_VALUE` if an argument has been passed without value.
         !! * `E_ARG_LENGTH` if one of the argument values has wrong length.
         !! * `E_ARG_UNKNOWN` if one of the arguments parsed is not known.
-        type(arg_type), intent(inout)        :: args(:)       !! Arguments array.
+        type(arg_type), intent(inout)        :: args(:)        !! Arguments array.
         logical,        intent(in), optional :: ignore_unknown !! Allow unknown arguments.
-        logical,        intent(in), optional :: verbose       !! Print error messages to stderr.
+        logical,        intent(in), optional :: verbose        !! Print error messages to stderr.
 
         character(len=ARG_VALUE_LEN) :: a, value
         integer                      :: i, j, k, n, stat

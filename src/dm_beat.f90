@@ -12,15 +12,13 @@ module dm_beat
     private
 
     integer, parameter, public :: BEAT_ADDR_LEN    = 45 !! IPv6 address length.
-    integer, parameter, public :: BEAT_CLIENT_LEN  = 16 !! Client software name and version length.
-    integer, parameter, public :: BEAT_LIBRARY_LEN = 16 !! Client library name and version length.
+    integer, parameter, public :: BEAT_CLIENT_LEN  = 32 !! Client software name and version length.
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
         character(len=NODE_ID_LEN)      :: node_id   = ' '          !! Node id.
         character(len=BEAT_ADDR_LEN)    :: address   = ' '          !! Client IP address (IPv4 or IPv6).
         character(len=BEAT_CLIENT_LEN)  :: client    = ' '          !! Client software name and version.
-        character(len=BEAT_LIBRARY_LEN) :: library   = ' '          !! Client library name and version.
         character(len=TIME_LEN)         :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
         character(len=TIME_LEN)         :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
         integer                         :: error     = E_NONE       !! Client error.
@@ -50,7 +48,6 @@ contains
         if (beat1%node_id   /= beat2%node_id)   return
         if (beat1%address   /= beat2%address)   return
         if (beat1%client    /= beat2%client)    return
-        if (beat1%library   /= beat2%library)   return
         if (beat1%time_sent /= beat2%time_sent) return
         if (beat1%time_recv /= beat2%time_recv) return
         if (beat1%error     /= beat2%error)     return
@@ -66,7 +63,6 @@ contains
         valid = .false.
         if (.not. dm_id_valid(beat%node_id))            return
         if (.not. dm_string_is_printable(beat%client))  return
-        if (.not. dm_string_is_printable(beat%library)) return
         if (.not. dm_time_valid(beat%time_sent))        return
         if (.not. dm_time_valid(beat%time_recv))        return
         if (beat%interval < 0_i8) return
@@ -86,7 +82,6 @@ contains
         write (unit_, '("beat.node_id: ", a)')   trim(beat%node_id)
         write (unit_, '("beat.address: ", a)')   trim(beat%address)
         write (unit_, '("beat.client: ", a)')    trim(beat%client)
-        write (unit_, '("beat.library: ", a)')   trim(beat%library)
         write (unit_, '("beat.time_sent: ", a)') trim(beat%time_sent)
         write (unit_, '("beat.time_recv: ", a)') trim(beat%time_recv)
         write (unit_, '("beat.error: ", i0)')    beat%error
