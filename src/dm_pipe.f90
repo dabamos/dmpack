@@ -30,11 +30,11 @@ module dm_pipe
     public :: dm_pipe_write
     public :: dm_pipe_write2
 contains
-    logical function dm_pipe_connected(pipe) result(is_con)
+    logical function dm_pipe_connected(pipe) result(connected)
         !! Returns `.true.` if pipe is connected.
         type(pipe_type),  intent(inout) :: pipe !! Pipe type.
 
-        is_con = c_associated(pipe%ptr)
+        connected = c_associated(pipe%ptr)
     end function dm_pipe_connected
 
     integer function dm_pipe_open(pipe, command, access) result(rc)

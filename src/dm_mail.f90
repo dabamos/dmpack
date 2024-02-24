@@ -113,14 +113,15 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     integer function dm_mail_create_mail(mail, from, to, subject, message, cc, bcc) result(rc)
-        !! Creates new mail type and inserts passed values.
+        !! Creates new mail type and inserts passed values. The function return
+        !! `E_INVALID` if given arguments are invalid or incomplete.
         type(mail_type),   intent(out)          :: mail    !! Mail type.
         type(person_type), intent(in)           :: from    !! Mail sender.
         type(person_type), intent(in)           :: to(:)   !! Mail recipients.
         character(len=*),  intent(in)           :: subject !! Mail subject.
         character(len=*),  intent(in)           :: message !! Mail message.
-        type(person_type), intent(in), optional :: cc(:)   !! Mail recipients (CC).
-        type(person_type), intent(in), optional :: bcc(:)  !! Mail recipients (BCC).
+        type(person_type), intent(in), optional :: cc(:)   !! Mail CC recipients.
+        type(person_type), intent(in), optional :: bcc(:)  !! Mail BCC recipients.
 
         rc = E_INVALID
 

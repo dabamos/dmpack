@@ -191,11 +191,8 @@ contains
     ! **************************************************************************
     ! PRIVATE LUA INTERFACE PROCEDURES.
     ! **************************************************************************
-    function lua_geocom_beep_alarm(ptr) bind(c) result(n)
-        !! Lua function `geocom_beep_alarm()` that pushes the request table of
-        !! GeoCOM command `BMM_BeepAlarm` onto the stack.
+    integer(kind=c_int) function lua_geocom_beep_alarm(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
 
         type(lua_state_type) :: lua
         type(request_type)   :: request

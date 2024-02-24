@@ -4185,10 +4185,7 @@ contains
         if (mode < DB_AUTO_VACUUM_NONE .or. mode > DB_AUTO_VACUUM_INCREMENTAL) return
 
         sql_block: block
-            integer :: stat
-
             rc = E_DB_PREPARE
-
             select case (mode)
                 case (DB_AUTO_VACUUM_NONE)
                     stat = sqlite3_prepare_v2(db%ptr, QUERY // '0', stmt)
@@ -4197,7 +4194,6 @@ contains
                 case (DB_AUTO_VACUUM_INCREMENTAL)
                     stat = sqlite3_prepare_v2(db%ptr, QUERY // '2', stmt)
             end select
-
             if (stat /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
@@ -5646,7 +5642,7 @@ contains
         type(c_ptr) :: stmt
 
         rc = E_INVALID
-        if (type <= SYNC_TYPE_NONE .or. type >= SYNC_NTYPES) return
+        if (.not. dm_sync_type_valid(type)) return
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -5681,7 +5677,7 @@ contains
         nsyncs = 0_i8
 
         rc = E_INVALID
-        if (type <= SYNC_TYPE_NONE .or. type >= SYNC_NTYPES) return
+        if (.not. dm_sync_type_valid(type)) return
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -5735,7 +5731,7 @@ contains
     pure subroutine db_query_where(query, part, more)
         !! Sub-query builder for `WHERE` clauses that appends `part` to query
         !! string `query`. If `query` is not allocated or of length 0, or if
-        !! `more` is `.false.`, `query` will start with ` WHERE` on output.
+        !! `more` is `.false.`, `query` will start with ` WHERE` on exit.
         !!
         !! This routine may be called multiple times on succession to add more
         !! parameters to the query.

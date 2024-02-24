@@ -7,7 +7,7 @@ module dm_geocom_error
     !! The GeoCOM return codes are compatible to at least the following sensors:
     !!
     !! * Leica TPS1100
-    !! * Leica TPS1200+
+    !! * Leica TPS1200
     !! * Leica TM30/TS30
     !! * Leica Viva TS16 (FlexLine)
     !!
@@ -25,7 +25,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_IVPARAM                    = 2     !! Invalid parameter detected. Result unspecified.
     integer, parameter, public :: GRC_IVRESULT                   = 3     !! Invalid result.
     integer, parameter, public :: GRC_FATAL                      = 4     !! Fatal error.
-    integer, parameter, public :: GRC_NOT_IMPL                   = 5     !! Not implemented yet.
+    integer, parameter, public :: GRC_NOT_IMPL                   = 5     !! Not implemented.
     integer, parameter, public :: GRC_TIME_OUT                   = 6     !! Function execution timed out. Result unspecified.
     integer, parameter, public :: GRC_SET_INCOMPL                = 7     !! Parameter setup for subsystem is incomplete.
     integer, parameter, public :: GRC_ABORT                      = 8     !! Function execution has been aborted.
@@ -310,7 +310,7 @@ contains
             case (GRC_FATAL)
                 str = 'fatal error'
             case (GRC_NOT_IMPL)
-                str = 'not implemented yet'
+                str = 'not implemented'
             case (GRC_TIME_OUT)
                 str = 'function execution timed out, result unspecified'
             case (GRC_SET_INCOMPL)

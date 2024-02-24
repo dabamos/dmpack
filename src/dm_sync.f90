@@ -18,13 +18,12 @@ module dm_sync
     integer, parameter, public :: SYNC_TYPE_TARGET = 3 !! Target.
     integer, parameter, public :: SYNC_TYPE_OBSERV = 4 !! Observation.
     integer, parameter, public :: SYNC_TYPE_LOG    = 5 !! Log.
-    integer, parameter, public :: SYNC_NTYPES      = 6 !! Number of types.
+    integer, parameter, public :: SYNC_TYPE_LAST   = 5 !! Never use this.
 
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6
 
-    character(len=*), parameter, public :: SYNC_TYPE_NAMES(0:SYNC_NTYPES - 1) = [ &
-        character(len=SYNC_TYPE_NAME_LEN) :: &
-        'none', 'node', 'sensor', 'target', 'observ', 'log' ] !! Array of sync type names.
+    character(len=*), parameter, public :: SYNC_TYPE_NAMES(SYNC_TYPE_NONE:SYNC_TYPE_LAST) = [ &
+        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log' ] !! Array of sync type names.
 
     type, public :: sync_type
         !! Log, observation, node, sensor and target synchronisation type.
@@ -48,6 +47,7 @@ module dm_sync
     public :: dm_sync_name
     public :: dm_sync_out
     public :: dm_sync_type_from_name
+    public :: dm_sync_type_valid
     public :: dm_sync_valid
 contains
     pure elemental logical function dm_sync_equals(sync1, sync2) result(equals)
@@ -89,12 +89,22 @@ contains
         end select
     end function dm_sync_type_from_name
 
+    pure elemental logical function dm_sync_type_valid(type) result(valid)
+        !! Returns `.true.` if given sync type enumerator is valid. The
+        !! type `SYNC_TYPE_NONE` is invalid.
+        integer, intent(in) :: type !! Sync type enum.
+
+        valid = .false.
+        if (type <= SYNC_TYPE_NONE .or. type > SYNC_TYPE_LAST) return
+        valid = .true.
+    end function dm_sync_type_valid
+
     pure elemental logical function dm_sync_valid(sync) result(valid)
         !! Returns `.true.` if given sync data is valid.
         type(sync_type), intent(in) :: sync !! Sync type.
 
         valid = .false.
-        if (sync%type <= SYNC_TYPE_NONE .or. sync%type >= SYNC_NTYPES) return
+        if (.not. dm_sync_type_valid(sync%type)) return
         if (len_trim(sync%id) == 0) return
         valid = .true.
     end function dm_sync_valid
@@ -106,7 +116,7 @@ contains
         integer                       :: type_
 
         type_ = SYNC_TYPE_NONE
-        if (type >= 0 .and. type < SYNC_NTYPES) type_ = type
+        if (type >= SYNC_TYPE_NONE .and. type <= SYNC_TYPE_LAST) type_ = type
         name = trim(SYNC_TYPE_NAMES(type_))
     end function dm_sync_name
 
@@ -124,6 +134,6 @@ contains
         write (unit_, '("sync.id: ", a)')         trim(sync%id)
         write (unit_, '("sync.timestamp: ", a)')  sync%timestamp
         write (unit_, '("sync.code: ", i0)')      sync%code
-        write (unit_, '("sync.nattempts: ", i0)') sync%code
+        write (unit_, '("sync.nattempts: ", i0)') sync%nattempts
     end subroutine dm_sync_out
 end module dm_sync

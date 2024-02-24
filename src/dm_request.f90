@@ -253,12 +253,11 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental subroutine request_get_i4(request, name, value, unit, type, error)
-        !! Returns 4-byte integer response value of response of name `name`,
-        !! and optionally the unit, the type, and the error.
+    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status)
+        !! Returns 4-byte integer response value, unit, type, and error of
+        !! response of name `name`.
         !!
-        !! The routine returns the error code of the response in `error` if
-        !! found, or:
+        !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
@@ -273,6 +272,7 @@ contains
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
 
@@ -289,27 +289,27 @@ contains
             rc = E_TYPE
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
+            rc = E_NONE
             value = int(request%responses(i)%value, kind=i4)
-            rc = request%responses(i)%error
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
             if (present(error)) error = request%responses(i)%error
-
-            return
         end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
 
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
-        if (present(error)) error = rc
+        if (present(error)) error = E_NONE
     end subroutine request_get_i4
 
-    pure elemental subroutine request_get_i8(request, name, value, unit, type, error)
-        !! Returns 8-byte integer response value of response of name `name`,
-        !! and optionally the unit, the type, and the error.
+    pure elemental subroutine request_get_i8(request, name, value, unit, type, error, status)
+        !! Returns 8-byte integer response value, unit, type, and error of
+        !! response of name `name`.
         !!
-        !! The routine returns the error code of the response in `error` if
-        !! found, or:
+        !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
@@ -324,6 +324,7 @@ contains
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
 
@@ -340,27 +341,27 @@ contains
             rc = E_TYPE
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
+            rc = E_NONE
             value = int(request%responses(i)%value, kind=i8)
-            rc = request%responses(i)%error
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
             if (present(error)) error = request%responses(i)%error
-
-            return
         end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
 
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
-        if (present(error)) error = rc
+        if (present(error)) error = E_NONE
     end subroutine request_get_i8
 
-    pure elemental subroutine request_get_l(request, name, value, unit, type, error)
-        !! Returns logical response value of response of name `name`, and
-        !! optionally the unit, the type, and the error.
+    pure elemental subroutine request_get_l(request, name, value, unit, type, error, status)
+        !! Returns logical response value, unit, type, and error of response of
+        !! name `name`.
         !!
-        !! The routine returns the error code of the response in `error` if
-        !! found, or:
+        !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
@@ -375,6 +376,7 @@ contains
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
 
@@ -391,27 +393,27 @@ contains
             rc = E_TYPE
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
-            value = (int(request%responses(i)%value) == 1)
-            rc = request%responses(i)%error
+            rc = E_NONE
+            value = (int(request%responses(i)%value) >= 1)
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
             if (present(error)) error = request%responses(i)%error
-
-            return
         end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
 
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
-        if (present(error)) error = rc
+        if (present(error)) error = E_NONE
     end subroutine request_get_l
 
-    pure elemental subroutine request_get_r4(request, name, value, unit, type, error)
-        !! Returns 4-byte real response value of response of name `name`, and
-        !! optionally the unit, the type, and the error.
+    pure elemental subroutine request_get_r4(request, name, value, unit, type, error, status)
+        !! Returns 4-byte real response value, unit, type, and error of
+        !! response of name `name`.
         !!
-        !! The routine returns the error code of the response in `error` if
-        !! found, or:
+        !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
@@ -426,6 +428,7 @@ contains
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
 
@@ -442,27 +445,27 @@ contains
             rc = E_TYPE
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
+            rc = E_NONE
             value = real(request%responses(i)%value, kind=r4)
-            rc = request%responses(i)%error
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
             if (present(error)) error = request%responses(i)%error
-
-            return
         end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
 
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
-        if (present(error)) error = rc
+        if (present(error)) error = E_NONE
     end subroutine request_get_r4
 
-    pure elemental subroutine request_get_r8(request, name, value, unit, type, error)
-        !! Returns 8-byte real response value of response of name `name`, and
-        !! optionally the unit, the type, and the error.
+    pure elemental subroutine request_get_r8(request, name, value, unit, type, error, status)
+        !! Returns 8-byte real response value, unit, type, and error of
+        !! response of name `name`.
         !!
-        !! The routine returns the error code of the response in `error` if
-        !! found, or:
+        !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
@@ -477,6 +480,7 @@ contains
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
 
@@ -493,29 +497,34 @@ contains
             rc = E_TYPE
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
+            rc = E_NONE
             value = request%responses(i)%value
-            rc = request%responses(i)%error
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
             if (present(error)) error = request%responses(i)%error
-
-            return
         end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
 
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
-        if (present(error)) error = rc
+        if (present(error)) error = E_NONE
     end subroutine request_get_r8
 
-    pure elemental subroutine request_get_type(request, name, response, error)
-        !! Returns response of name `name`. If no response of this name exists
-        !! in the responses array of the passed request, the routine sets the
-        !! response error to `E_NOT_FOUND`.
+    pure elemental subroutine request_get_type(request, name, response, status)
+        !! Returns response of name `name`.
+        !!
+        !! The routine returns the following error codes in `status`:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
         type(request_type),  intent(inout)         :: request  !! Request type.
         character(len=*),    intent(in)            :: name     !! Response name.
         type(response_type), intent(out)           :: response !! Response type.
-        integer,             intent(out), optional :: error    !! Response error.
+        integer,             intent(out), optional :: status   !! Error code.
 
         integer :: i, rc
 
@@ -527,15 +536,11 @@ contains
             i = dm_request_index(request, name)
             if (i == 0) exit response_block
 
+            rc = E_NONE
             response = request%responses(i)
-            rc = response%error
-
-            if (present(error)) error = rc
-            return
         end block response_block
 
-        response%error = rc
-        if (present(error)) error = rc
+        if (present(status)) status = rc
     end subroutine request_get_type
 
     pure elemental subroutine request_set_i4(request, index, name, value, unit, error)

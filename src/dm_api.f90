@@ -39,7 +39,8 @@ contains
     integer function dm_api_status_from_string(api, string) result(rc)
         !! Reads API status type from given string. Only keys found in the
         !! string are overwritten in the derived type. No error is returned if
-        !! the string does not contain any of the keys.
+        !! the string does not contain any of the keys. The function return
+        !! `E_EMPTY` if the passed string is empty.
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
 
         type(api_status_type), intent(out) :: api    !! Result.
@@ -49,7 +50,7 @@ contains
         character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
         character(len=API_STATUS_LEN) :: pair(2)
 
-        rc = E_INVALID
+        rc = E_EMPTY
         if (len_trim(string) == 0) return
 
         call dm_string_split(string, lines, del=NL, n=nlines)

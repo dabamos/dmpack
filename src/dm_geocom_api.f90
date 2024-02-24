@@ -142,7 +142,6 @@ module dm_geocom_api
     !! | `TMC_SetRefractiveMethod`   | `dm_geocom_api_set_refraction_mode`           |
     !! | `TMC_SetStation`            | `dm_geocom_api_set_station`                   |
     !!
-    use :: dm_geocom_error
     use :: dm_kind
     use :: dm_request
     use :: dm_response
@@ -162,18 +161,18 @@ module dm_geocom_api
     ! AUT - AUTOMATION.
     ! **************************************************************************
     ! AUT_POSMODE: Position precision.
-    integer, parameter, public :: GEOCOM_AUT_NORMAL  = 0  !! Fast positioning mode.
-    integer, parameter, public :: GEOCOM_AUT_PRECISE = 1  !! Exact positioning mode.
-    integer, parameter, public :: GEOCOM_AUT_FAST    = 2  !! For TM30/TS30.
+    integer, parameter, public :: GEOCOM_AUT_NORMAL  = 0 !! Fast positioning mode.
+    integer, parameter, public :: GEOCOM_AUT_PRECISE = 1 !! Exact positioning mode.
+    integer, parameter, public :: GEOCOM_AUT_FAST    = 2 !! For TM30/TS30.
 
     ! AUT_ADJMODE: Fine-adjust position mode.
-    integer, parameter, public :: GEOCOM_AUT_NORM_MODE   = 0  !! Angle tolerance.
-    integer, parameter, public :: GEOCOM_AUT_POINT_MODE  = 1  !! Point tolerance.
-    integer, parameter, public :: GEOCOM_AUT_DEFINE_MODE = 2  !! System independent positioning tolerance.
+    integer, parameter, public :: GEOCOM_AUT_NORM_MODE   = 0 !! Angle tolerance.
+    integer, parameter, public :: GEOCOM_AUT_POINT_MODE  = 1 !! Point tolerance.
+    integer, parameter, public :: GEOCOM_AUT_DEFINE_MODE = 2 !! System independent positioning tolerance.
 
     ! AUT_ATRMODE: Automatic target recognition mode.
-    integer, parameter, public :: GEOCOM_AUT_POSITION = 0  !! Positioning to Hz and V angle.
-    integer, parameter, public :: GEOCOM_AUT_TARGET   = 1  !! Positioning to a target in the env. of the Hz V angle.
+    integer, parameter, public :: GEOCOM_AUT_POSITION = 0 !! Positioning to Hz and V angle.
+    integer, parameter, public :: GEOCOM_AUT_TARGET   = 1 !! Positioning to a target in the env. of the Hz V angle.
 
     integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1  !! Direction close-wise.
     integer, parameter, public :: GEOCOM_AUT_ANTICLOCKWISE = -1 !! Direction counter clock-wise.
@@ -1097,7 +1096,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`    – GeoCOM return code.
-        !! * `atmppm` – Atmospheric ppm correction factor.
+        !! * `atmppm` – Atmospheric ppm correction factor [ppm].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1667,14 +1666,14 @@ contains
         !! * `geomauto` – Geometric ppm calculation on/off [bool].
         !! * `scalefcm` – Scale factor on central meridian.
         !! * `offsetcm` – Offset from central meridian [m].
-        !! * `ppmhred`  – Height above reference ppm value [ppm].
-        !! * `ppmindi`  – Individual ppm value [ppm].
+        !! * `hredppm`  – Height above reference ppm value [ppm].
+        !! * `indippm`  – Individual ppm value [ppm].
         !!
         !! | Property       | Values                                                                |
         !! |----------------|-----------------------------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                              |
         !! | ASCII request  | `%R1Q,2154:`                                                          |
-        !! | ASCII response | `%R1P,0,0:<grc>,<geomauto>,<scalefcm>,<offsetcm>,<ppmhred>,<ppmindi>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<geomauto>,<scalefcm>,<offsetcm>,<hredppm>,<indippm>` |
         !!
         integer,          parameter :: REQCODE = 2154
         character(len=*), parameter :: PATTERN = &
@@ -1689,8 +1688,8 @@ contains
             response_type('geomauto', unit=' ',   type=RESPONSE_TYPE_LOGICAL), & ! State of geometric ppm calculation [bool].
             response_type('scalefcm', unit=' ',   type=RESPONSE_TYPE_REAL64),  & ! Scale factor on central meridian.
             response_type('offsetcm', unit='m',   type=RESPONSE_TYPE_REAL64),  & ! Offset from central meridian [m].
-            response_type('ppmhred',  unit='ppm', type=RESPONSE_TYPE_REAL64),  & ! Height above reference ppm value [ppm].
-            response_type('ppmindi',  unit='ppm', type=RESPONSE_TYPE_REAL64)   & ! Individual ppm value [ppm].
+            response_type('hredppm',  unit='ppm', type=RESPONSE_TYPE_REAL64),  & ! Height above reference ppm value [ppm].
+            response_type('indippm',  unit='ppm', type=RESPONSE_TYPE_REAL64)   & ! Individual ppm value [ppm].
         ]
 
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
@@ -2446,24 +2445,24 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `ppmcor`  – Total ppm correction factor [ppm].
+        !! * `distppm` – Total ppm correction factor [ppm].
         !! * `reflcor` – Correction factor if the reflector [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2126:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<ppmcor>,<reflcor>`              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<distppm>,<reflcor>`              |
         !!
         integer,          parameter :: REQCODE = 2126
-        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<ppmcor>[-\d\.]+),(?<reflcor>[-\d\.]+)'
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<distppm>[-\d\.]+),(?<reflcor>[-\d\.]+)'
 
         type(request_type), intent(out) :: request !! Prepared request.
         type(response_type)             :: responses(3)
 
         responses = [ &
             response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('ppmcor',  unit='ppm', type=RESPONSE_TYPE_REAL64), &
+            response_type('distppm', unit='ppm', type=RESPONSE_TYPE_REAL64), &
             response_type('reflcor', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
@@ -2549,23 +2548,23 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `tgttype` – Target type (`BAP_TARGET_TYPE`).
+        !! * `tartype` – Target type (`BAP_TARGET_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17022:`                                    |
-        !! | ASCII response | `%R1P,0,0:<tgttype>`                             |
+        !! | ASCII response | `%R1P,0,0:<tartype>`                             |
         !!
         integer,          parameter :: REQCODE = 17022
-        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<tgttype>\d+)'
+        character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<tartype>\d+)'
 
         type(request_type), intent(out) :: request !! Prepared request.
         type(response_type)             :: responses(2)
 
         responses = [ &
             response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('tgttype', type=RESPONSE_TYPE_INT32)  &
+            response_type('tartype', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
@@ -3096,7 +3095,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_set_atmospheric_correction
 
-    pure subroutine dm_geocom_api_set_atmospheric_ppm(request, ppm)
+    pure subroutine dm_geocom_api_set_atmospheric_ppm(request, atm_ppm)
         !! Request of `BAP_SetAtmPpm` procedure. Creates request for setting
         !! the atmospheric ppm correction factor.
         !!
@@ -3107,17 +3106,17 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
-        !! | ASCII request  | `%R1Q,2148:<ppm>`                                |
+        !! | ASCII request  | `%R1Q,2148:<atm_ppm>`                            |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
         integer, parameter :: REQCODE = 2148
 
         type(request_type), intent(out) :: request !! Prepared request.
-        real(kind=r8),      intent(in)  :: ppm     !! Atmospheric ppm correction factor.
+        real(kind=r8),      intent(in)  :: atm_ppm !! Atmospheric ppm correction factor [ppm].
 
         character(len=80) :: args
 
-        write (args, '(f0.12)') ppm
+        write (args, '(f0.12)') atm_ppm
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_set_atmospheric_ppm
 
@@ -3411,7 +3410,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_set_fine_adjust_mode
 
-    pure subroutine dm_geocom_api_set_geometric_ppm(request, enabled, scale_factor, offset, ppm_height, ppm_individual)
+    pure subroutine dm_geocom_api_set_geometric_ppm(request, enabled, scale_factor, offset, height_ppm, individual_ppm)
         !! Request of `TMC_SetGeoPpm` procedure. Creates request for setting the
         !! geometric ppm correction factor.
         !!
@@ -3422,7 +3421,7 @@ contains
         !! | Property       | Values                                                                      |
         !! |----------------|-----------------------------------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2153:<enabled>,<scale_factor>,<offset>,<ppm_height>,<ppm_individual>` |
+        !! | ASCII request  | `%R1Q,2153:<enabled>,<scale_factor>,<offset>,<height_ppm>,<individual_ppm>` |
         !! | ASCII response | `%R1P,0,0:<grc>`                                                            |
         !!
         integer, parameter :: REQCODE = 2153
@@ -3431,12 +3430,12 @@ contains
         logical,            intent(in)  :: enabled        !! Enable geometric ppm calculation.
         real(kind=r8),      intent(in)  :: scale_factor   !! Scale factor on central meridian.
         real(kind=r8),      intent(in)  :: offset         !! Offset from central meridian [m].
-        real(kind=r8),      intent(in)  :: ppm_height     !! Ppm value due to height above reference.
-        real(kind=r8),      intent(in)  :: ppm_individual !! Individual ppm value.
+        real(kind=r8),      intent(in)  :: height_ppm     !! Ppm value due to height above reference.
+        real(kind=r8),      intent(in)  :: individual_ppm !! Individual ppm value.
 
         character(len=80) :: args
 
-        write (args, '(i1, 4(",", f0.12))') dm_btoi(enabled), scale_factor, offset, ppm_height, ppm_individual
+        write (args, '(i1, 4(",", f0.12))') dm_btoi(enabled), scale_factor, offset, height_ppm, individual_ppm
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_set_geometric_ppm
 
