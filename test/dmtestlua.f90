@@ -396,7 +396,7 @@ contains
             if (.not. dm_lua_is_function(lua)) exit test_block
 
             print *, 'Pushing request onto Lua stack ...'
-            call dm_geocom_api_request_beep_alarm(request1)
+            call dm_geocom_api_beep_alarm(request1)
             call dm_lua_from(lua, request1)
 
             print *, 'Calling Lua function ' // FUNC_NAME // '() ...'
@@ -474,7 +474,7 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Validating request ...'
-        call dm_geocom_api_request_beep_alarm(request2)
+        call dm_geocom_api_beep_alarm(request2)
         if (.not. (request1 == request2)) return
 
         stat = TEST_PASSED

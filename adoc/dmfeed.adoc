@@ -33,6 +33,9 @@ The feed id has to be a 36 characters long UUID with hyphens. News aggregators
 use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run _dmuuid(1)_ to generate a valid UUID4.
 
+The time stamp of the feed in the updated element is set to the date and time of
+the last log message.
+
 == OPTIONS
 
 *--author*, *-A* _name_::

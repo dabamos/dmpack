@@ -820,6 +820,9 @@ The feed id has to be a 36 characters long UUID with hyphens. News aggregators
 use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
+The time stamp of the feed in the updated element is set to the date and time of
+the last log message.
+
 If an XSLT style sheet is given, web browsers may be able to display the Atom
 feed in HTML format. Set the option to the (relative) path of the public XSL on
 the web server. An example style sheet `feed.xsl` is located in
@@ -4665,6 +4668,7 @@ require("libdmpack")
 deg = 360.0
 gon = deg2gon(deg)
 print(gon)
+-- Output: 400.0
 ....
 
 == Error Codes [[error-codes]]

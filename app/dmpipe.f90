@@ -225,8 +225,7 @@ contains
 
         select case (format)
             case (FORMAT_CSV)
-                rc = dm_csv_write(observ, unit=unit, header=.false., &
-                                  separator=APP_CSV_SEPARATOR)
+                rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL)
                 rc = dm_json_write(observ, unit=unit)
             case default

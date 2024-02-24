@@ -7,8 +7,6 @@ module dm_cgi_router
     use :: dm_cgi
     use :: dm_error
     use :: dm_hash_table
-    use :: dm_html
-    use :: dm_http
     implicit none (type, external)
     private
 
@@ -78,6 +76,7 @@ contains
         !! Searches the router hash table for path in CGI environment variable
         !! `PATH_INFO`, and calls the associated subroutine of the route. If no
         !! route has been found, `HTTP_NOT_FOUND` is returned in `http_status`.
+        use :: dm_http
         type(cgi_router_type), intent(inout) :: router      !! Router type.
         type(cgi_env_type),    intent(inout) :: env         !! CGI environment variables.
         integer,               intent(out)   :: http_status !! Optional status.

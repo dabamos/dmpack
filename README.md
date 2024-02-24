@@ -146,14 +146,14 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
 does not depend on X11 (but lacks raster graphic terminals).
 
-In order to generate the man pages and the User’s Guide, install Pygments and
-AsciiDoctor:
+Optionally, install Pygments and AsciiDoctor to generate the man pages and the
+User’s Guide:
 
 ```
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 ```
 
-The Git repository has to be cloned recursively. Otherwise, your will need to
+The Git repository has to be cloned recursively. Otherwise, you will need to
 download the sub-modules manually by executing `fetchvendor.sh`. Then, run the
 Makefile:
 

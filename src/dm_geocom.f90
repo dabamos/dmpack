@@ -23,69 +23,6 @@ module dm_geocom
     !!
     !! call geocom%close()
     !! ```
-    !!
-    !! ## API
-    !!
-    !! | GeoCOM API                  | DMPACK API                      |
-    !! |-----------------------------|---------------------------------|
-    !! | `AUT_ChangeFace`            | `change_face`                   |
-    !! | `AUT_FineAdjust`            | `fine_adjust`                   |
-    !! | `AUT_GetFineAdjustMode`     | `get_fine_adjust_mode`          |
-    !! | `AUT_GetSearchArea`         | `get_search_area`               |
-    !! | `AUT_MakePositioning`       | `set_position`                  |
-    !! | `BAP_GetATRSetting`         | `get_atr_setting`               |
-    !! | `BAP_GetMeasPrg`            | `get_measurement_program`       |
-    !! | `BAP_GetPrismDef`           | `get_prism_definition`          |
-    !! | `BAP_GetRedATRFov`          | `get_reduced_atr_fov`           |
-    !! | `BAP_GetUserPrismDef`       | `get_user_prism_definition`     |
-    !! | `BMM_BeepAlarm`             | `beep_alarm`                    |
-    !! | `BMM_BeepNormal`            | `beep_normal`                   |
-    !! | `COM_GetBinaryAvailable`    | `get_binary_mode`               |
-    !! | `COM_GetDoublePrecision`    | `get_double_precision`          |
-    !! | `COM_NullProc`              | `null`                          |
-    !! | `COM_SwitchOffTPS`          | `switch_off`                    |
-    !! | `COM_SwitchOffTPS`          | `switch_on`                     |
-    !! | `CSV_CheckPower`            | `get_power`                     |
-    !! | `CSV_GetDateTimeCentiSec`   | `get_date_time_centi`           |
-    !! | `CSV_GetDateTime`           | `get_date_time`                 |
-    !! | `CSV_GetDeviceConfig`       | `get_device_config`             |
-    !! | `CSV_GetInstrumentName`     | `get_instrument_name`           |
-    !! | `CSV_GetInstrumentNo`       | `get_instrument_number`         |
-    !! | `CSV_GetIntTemp`            | `get_internal_temperature`      |
-    !! | `CSV_GetReflectorlessClass` | `get_reflectorless_class`       |
-    !! | `EDM_GetEglIntensity`       | `get_egl_intensity`             |
-    !! | `FTR_AbortDownload`         | `abort_download`                |
-    !! | `FTR_AbortList`             | `abort_list`                    |
-    !! | `FTR_Delete`                | `delete`                        |
-    !! | `FTR_Download`              | `download`                      |
-    !! | `IMG_GetTccConfig`          | `get_image_config`              |
-    !! | `IMG_TakeTccImage`          | `take_image`                    |
-    !! | `IOS_BeepOff`               | `beep_off`                      |
-    !! | `IOS_BeepOn`                | `beep_on`                       |
-    !! | `MOT_ReadLockStatus`        | `get_lock_status`               |
-    !! | `SUP_GetConfig`             | `get_config`                    |
-    !! | `TMC_DoMeasure`             | `do_measure`                    |
-    !! | `TMC_GeoPpm`                | `get_geometric_ppm`             |
-    !! | `TMC_GetAngSwitch`          | `get_angular_correction_status` |
-    !! | `TMC_GetAngle1`             | `get_angle_complete`            |
-    !! | `TMC_GetAngle5`             | `get_angle`                     |
-    !! | `TMC_GetAtmCorr`            | `get_atmospheric_correction`    |
-    !! | `TMC_GetAtmPpm`             | `get_atmospheric_ppm`           |
-    !! | `TMC_GetCoordinate`         | `get_coordinate`                |
-    !! | `TMC_GetEdmMode`            | `get_edm_mode`                  |
-    !! | `TMC_GetFace`               | `get_face`                      |
-    !! | `TMC_GetFullMeas`           | `get_full_measurement`          |
-    !! | `TMC_GetHeight`             | `get_height`                    |
-    !! | `TMC_GetInclineSwitch`      | `get_incline_correction`        |
-    !! | `TMC_GetPrismCorr`          | `get_prism_constant`            |
-    !! | `TMC_GetPrismType`          | `get_prism_type`                |
-    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
-    !! | `TMC_GetQuickDist`          | `get_quick_distance`            |
-    !! | `TMC_GetRefractiveMethod`   | `get_refraction_mode`           |
-    !! | `TMC_GetSignal`             | `get_signal`                    |
-    !! | `TMC_IfDataAzeCorrError`    | `get_atr_error`                 |
-    !! | `TMC_IfDataIncCorrError`    | `get_inclination_error`         |
-    !!
     use :: dm_error
     use :: dm_geocom_api
     use :: dm_geocom_error
@@ -220,7 +157,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_api_request_beep_alarm(request)
+        call dm_geocom_api_beep_alarm(request)
         call this%send(request)
         grc = this%grc
     end function geocom_beep_alarm
@@ -232,7 +169,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_api_request_beep_normal(request)
+        call dm_geocom_api_beep_normal(request)
         call this%send(request)
         grc = this%grc
     end function geocom_beep_normal
@@ -244,7 +181,7 @@ contains
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
         type(request_type)                 :: request
 
-        call dm_geocom_api_request_beep_off(request)
+        call dm_geocom_api_beep_off(request)
         call this%send(request)
         grc = this%grc
     end function geocom_beep_off
@@ -265,7 +202,7 @@ contains
         intensity_ = GEOCOM_IOS_BEEP_STDINTENS
         if (present(intensity)) intensity_ = max(0, min(intensity, GEOCOM_IOS_BEEP_STDINTENS))
 
-        call dm_geocom_api_request_beep_on(request, intensity_)
+        call dm_geocom_api_beep_on(request, intensity_)
         call this%send(request)
         grc = this%grc
     end function geocom_beep_on

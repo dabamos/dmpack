@@ -10,13 +10,13 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
 
-    integer, parameter :: HOST_LEN     = 80
-    integer, parameter :: USERNAME_LEN = 32
-    integer, parameter :: PASSWORD_LEN = 32
+    integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
+    integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
+    integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
 
     type :: app_type
         !! Application settings.

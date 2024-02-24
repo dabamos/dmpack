@@ -10,16 +10,16 @@ program dmsync
     character(len=*), parameter :: APP_NAME  = 'dmsync'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     integer, parameter :: APP_DB_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_SYNC_LIMIT   = 10                 !! Max. number of records to sync at once.
     logical, parameter :: APP_RPC_DEFLATE  = .true.             !! Compress RPC payload.
 
-    integer, parameter :: HOST_LEN     = 80
-    integer, parameter :: USERNAME_LEN = 32
-    integer, parameter :: PASSWORD_LEN = 32
+    integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
+    integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
+    integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
 
     type :: app_type
         !! Global application settings.
@@ -110,7 +110,7 @@ program dmsync
         rc = run(app, db, sem)
     end block init_block
 
-    call halt(min(1, rc))
+    call halt(error=rc)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -539,19 +539,19 @@ contains
         call dm_log(LOG_DEBUG, 'exiting ...')
     end function run
 
-    subroutine halt(stat)
+    subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: stat !! Exit status.
+        integer, intent(in), optional :: error !! DMPACK error code.
 
-        integer :: rc, stat_
+        integer :: rc, stat
 
-        stat_ = 0
-        if (present(stat)) stat_ = stat
+        stat = 0
+        if (present(error)) stat = min(1, error)
 
         call dm_rpc_destroy()
         if (app%ipc) rc = dm_sem_close(sem)
         rc = dm_db_close(db)
-        call dm_stop(stat_)
+        call dm_stop(stat)
     end subroutine halt
 
     subroutine signal_handler(signum) bind(c)
@@ -562,7 +562,7 @@ contains
         select case (signum)
             case default
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
-                call halt(0)
+                call halt(E_NONE)
         end select
     end subroutine signal_handler
 end program dmsync

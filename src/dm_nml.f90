@@ -3,7 +3,6 @@
 module dm_nml
     !! Fortran 95 Namelist import/export of DMPACK derived types.
     use :: dm_error
-    use :: dm_file
     use :: dm_kind
     implicit none (type, external)
     private

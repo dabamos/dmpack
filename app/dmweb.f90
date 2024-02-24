@@ -37,7 +37,6 @@ program dmweb
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
     character(len=*), parameter :: APP_CSS_PATH   = '/dmpack.min.css'  !! Path to CSS file.
-    character(len=*), parameter :: APP_JS_PATH    = ' '                !! Path to optional JavaScript file.
     character(len=*), parameter :: APP_TITLE      = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer,          parameter :: APP_PLOT_TERM  = PLOT_TERM_SVG      !! Plotting backend.
@@ -1793,13 +1792,13 @@ contains
                H_DIV_COL // &
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter node easting (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node X or easting (optional)') // &
                dm_html_label('Y', for='y') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter node northing (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter node altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter node Z or altitude (optional)') // &
                H_DIV_END // &
                H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
@@ -2077,13 +2076,13 @@ contains
                H_DIV_COL // &
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor easting (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor X or easting (optional)') // &
                dm_html_label('Y', for='y') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor northing (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter sensor Z or altitude (optional)') // &
                H_DIV_END // &
                H_DIV_END // &
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
@@ -2134,13 +2133,13 @@ contains
                H_DIV_COL // & ! column 2
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter target easting (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target X or easting (optional)') // &
                dm_html_label('Y', for='y') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='y', name='y', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter target northing (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter target altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter target Z or altitude (optional)') // &
                H_DIV_END // & ! end column 2
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
@@ -2200,11 +2199,7 @@ contains
             ' | <a href="' // APP_BASE_PATH // '/status">Status</a>' // &
             H_SMALL_END // H_P_END
 
-        if (len_trim(APP_JS_PATH) > 0) then
-            call dm_cgi_out(dm_html_footer(CONTENT, APP_JS_PATH))
-        else
-            call dm_cgi_out(dm_html_footer(CONTENT))
-        end if
+        call dm_cgi_out(dm_html_footer(CONTENT))
     end subroutine html_footer
 
     subroutine html_header(title)

@@ -51,14 +51,15 @@ module dm_atom
 
     type, public :: atom_type
         !! Atom feed attributes.
-        character(len=256)         :: alt      = ' ' !! Alternate content link.
-        character(len=256)         :: author   = ' ' !! Author name.
-        character(len=256)         :: email    = ' ' !! Author e-mail.
-        character(len=ATOM_ID_LEN) :: id       = ' ' !! Feed id.
-        character(len=256)         :: title    = ' ' !! Feed title.
-        character(len=256)         :: subtitle = ' ' !! Feed sub-title.
-        character(len=512)         :: url      = ' ' !! Feed URL.
-        character(len=512)         :: xsl      = ' ' !! Path or URL of XSLT style sheet.
+        character(len=256)         :: alt      = ' '          !! Alternate content link.
+        character(len=256)         :: author   = ' '          !! Author name.
+        character(len=256)         :: email    = ' '          !! Author e-mail.
+        character(len=ATOM_ID_LEN) :: id       = ' '          !! Feed id.
+        character(len=TIME_LEN)    :: updated  = TIME_DEFAULT !! Feed time stamp.
+        character(len=256)         :: title    = ' '          !! Feed title.
+        character(len=256)         :: subtitle = ' '          !! Feed sub-title.
+        character(len=512)         :: url      = ' '          !! Feed URL.
+        character(len=512)         :: xsl      = ' '          !! Path or URL of XSLT style sheet.
     end type atom_type
 
     interface atom_entry
@@ -87,7 +88,8 @@ contains
         type(log_type),                intent(inout) :: logs(:) !! Log array.
         character(len=:), allocatable, intent(out)   :: xml     !! Returned Atom XML string.
 
-        integer :: i, m, n
+        integer :: alt_len, author_len, email_len
+        integer :: i
 
         ! Feed header.
         xml = A_XML
@@ -125,28 +127,32 @@ contains
         if (len_trim(atom%id) > 0) then
             xml = xml // dm_html_encode(atom%id) // A_ID_END
         else
-            xml = xml // dm_uuid4_hyphenize(UUID_DEFAULT) // A_ID_END
+            xml = xml // ATOM_ID_DEFAULT // A_ID_END
         end if
 
         ! Feed timestamp
-        xml = xml // A_UPDATED // dm_time_strip_useconds(dm_time_now()) // A_UPDATED_END
+        if (len_trim(atom%updated) == 0 .or. atom%updated == TIME_DEFAULT) then
+            atom%updated = dm_time_now()
+        end if
+
+        xml = xml // A_UPDATED // dm_time_strip_useconds(atom%updated) // A_UPDATED_END
 
         ! Feed author
-        m = len_trim(atom%author)
-        n = len_trim(atom%email)
+        author_len = len_trim(atom%author)
+        email_len  = len_trim(atom%email)
 
-        if (m > 0 .or. n > 0) then
+        if (author_len > 0 .or. email_len > 0) then
             xml = xml // A_AUTHOR
-            if (m > 0) xml = xml // A_NAME // dm_html_encode(atom%author) // A_NAME_END
-            if (n > 0) xml = xml // A_EMAIL // dm_html_encode(atom%email) // A_EMAIL_END
+            if (author_len > 0) xml = xml // A_NAME // dm_html_encode(atom%author) // A_NAME_END
+            if (email_len > 0)  xml = xml // A_EMAIL // dm_html_encode(atom%email) // A_EMAIL_END
             xml = xml // A_AUTHOR_END
         end if
 
         ! Feed entries.
-        m = len_trim(atom%alt)
+        alt_len = len_trim(atom%alt)
 
         do i = 1, size(logs)
-            if (m > 0) then
+            if (alt_len > 0) then
                 xml = xml // atom_entry(logs(i), alt=trim(atom%alt) // trim(logs(i)%id))
             else
                 xml = xml // atom_entry(logs(i))

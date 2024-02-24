@@ -11,7 +11,7 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     integer, parameter :: APP_MAX_NENTRIES = 500 !! Maximum number of feed entries.
 
@@ -21,7 +21,7 @@ program dmfeed
         character(len=FILE_PATH_LEN) :: config   = ' '          !! Path to config file.
         character(len=FILE_PATH_LEN) :: database = ' '          !! Path to log database.
         character(len=FILE_PATH_LEN) :: output   = ' '          !! Output path of Atom file (stdout if empty).
-        character(len=NODE_ID_LEN)   :: node     = ' '          !! Node id.
+        character(len=NODE_ID_LEN)   :: node     = ' '          !! Optional node id.
         integer                      :: minlevel = LOG_DEBUG    !! Minimum log level
         integer                      :: maxlevel = LOG_CRITICAL !! Maximum log level.
         integer                      :: nentries = 50           !! Max. number of entries in feed.
@@ -165,10 +165,10 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine create_feed(app, stat)
+    subroutine create_feed(app, error)
         !! Creates Atom XML feed from logs in database.
-        type(app_type), intent(inout)         :: app  !! App type.
-        integer,        intent(out), optional :: stat !! Status.
+        type(app_type), intent(inout)         :: app   !! App type.
+        integer,        intent(out), optional :: error !! Error code.
 
         character(len=:), allocatable :: xml
         integer                       :: rc
@@ -211,6 +211,7 @@ contains
             end if
 
             ! Create Atom XML string.
+            app%atom%updated = logs(1)%timestamp
             call dm_atom_from_logs(app%atom, logs, xml)
 
             ! Write to file.
@@ -225,7 +226,7 @@ contains
             rc = E_NONE
         end block feed_block
 
-        if (present(stat)) stat = rc
+        if (present(error)) error = rc
         rc = dm_db_close(db)
     end subroutine create_feed
 end program dmfeed

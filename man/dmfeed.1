@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-02-23
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2024-02-16" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2024-02-23" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -51,6 +51,9 @@ standard output or file.
 The feed id has to be a 36 characters long UUID with hyphens. News aggregators
 use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run \fIdmuuid(1)\fP to generate a valid UUID4.
+.sp
+The time stamp of the feed in the updated element is set to the date and time of
+the last log message.
 .SH "OPTIONS"
 .sp
 \fB\-\-author\fP, \fB\-A\fP \fIname\fP

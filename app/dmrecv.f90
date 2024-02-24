@@ -23,7 +23,7 @@ program dmrecv
     character(len=*), parameter :: APP_NAME  = 'dmrecv'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -82,8 +82,7 @@ program dmrecv
         call run(app, mqueue)
     end block init_block
 
-    if (dm_is_error(rc)) call halt(1)
-    call halt(0)
+    call halt(rc)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -215,13 +214,18 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine halt(stat)
+    subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in) :: stat !! Exit status.
-        integer             :: rc
+        integer, intent(in), optional :: error !! DMPACK error code
+
+        integer :: rc, stat
+
+        stat = 0
+        if (present(error)) stat = min(1, error)
 
         rc = dm_mqueue_close(mqueue)
         rc = dm_mqueue_unlink(mqueue)
+
         call dm_stop(stat)
     end subroutine halt
 
@@ -388,7 +392,7 @@ contains
         select case (signum)
             case default
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
-                call halt(0)
+                call halt(E_NONE)
         end select
     end subroutine signal_handler
 end program dmrecv

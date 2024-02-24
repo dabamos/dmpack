@@ -201,7 +201,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_beep_alarm(request)
+        call dm_geocom_api_beep_alarm(request)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_beep_alarm

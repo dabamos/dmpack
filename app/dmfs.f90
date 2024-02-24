@@ -10,7 +10,7 @@ program dmfs
     character(len=*), parameter :: APP_NAME  = 'dmfs'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV separator character.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -36,7 +36,7 @@ program dmfs
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -104,30 +104,9 @@ contains
         end select
     end function output_observ
 
-    integer function write_observ(observ, unit, format) result(rc)
-        !! Writes observation to file unit, in CSV or JSON Lines format.
-        type(observ_type), intent(inout) :: observ !! Observation to write.
-        integer,           intent(in)    :: unit   !! File unit.
-        integer,           intent(in)    :: format !! Output format (`FORMAT_CSV`, `FORMAT_JSONL`).
-
-        rc = E_INVALID
-
-        select case (format)
-            case (FORMAT_CSV)
-                ! CSV format.
-                rc = dm_csv_write(observ, unit=unit, header=.false., &
-                                  separator=APP_CSV_SEPARATOR)
-            case (FORMAT_JSONL)
-                ! JSON Lines format.
-                rc = dm_json_write(observ, unit=unit)
-            case default
-                return
-        end select
-    end function write_observ
-
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(inout) :: app
+        type(app_type), intent(inout) :: app !! App settings.
         type(arg_type)                :: args(9)
 
         rc = E_NONE
@@ -235,19 +214,152 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine run(app)
-        !! Performs jobs in job list.
-        type(app_type), intent(inout) :: app
+    integer function read_observ(observ, node_id, sensor_id, debug) result(rc)
+        !! Reads observation from file.
+        type(observ_type), target, intent(inout)        :: observ    !! Observation to read.
+        character(len=*),          intent(in)           :: node_id   !! Node id of observation.
+        character(len=*),          intent(in)           :: sensor_id !! Sensor id of observation.
+        logical,                   intent(in), optional :: debug     !! Output debug messages.
 
         character(len=LOG_MESSAGE_LEN) :: message
-        integer                        :: delay, i, j, njobs
-        integer                        :: fu, rc, stat
+        integer                        :: delay, i, j, fu, stat
+        logical                        :: debug_
+        type(request_type),  pointer   :: request  ! Next request to execute.
+        type(response_type), pointer   :: response ! Single response in request.
 
-        type(job_type),      target  :: job      ! Next job to run.
-        type(observ_type),   pointer :: observ   ! Next observation to perform.
-        type(request_type),  pointer :: request  ! Next request to execute.
-        type(response_type), pointer :: response ! Response in request.
+        debug_ = .true.
+        if (present(debug)) debug_ = debug
 
+        ! Initialise observation.
+        observ%id        = dm_uuid4()
+        observ%node_id   = node_id
+        observ%sensor_id = sensor_id
+        observ%timestamp = dm_time_now()
+
+        if (observ%nrequests == 0) then
+            if (debug_) call dm_log(LOG_DEBUG, 'no requests in observ ' // observ%name, observ=observ)
+            return
+        end if
+
+        ! Read files in requests sequentially.
+        req_loop: do i = 1, observ%nrequests
+            ! Get pointer to next request.
+            request => observ%requests(i)
+
+            ! Initialise request.
+            request%timestamp = dm_time_now()
+            request%error     = E_IO
+
+            ! Check if file path passed as observation request exists.
+            if (.not. dm_file_exists(request%request)) then
+                call dm_log(LOG_ERROR, 'file ' // trim(request%request) // ' not found', &
+                            observ=observ, error=request%error)
+                cycle req_loop
+            end if
+
+            ! Try to open file for reading.
+            open (action='read', file=trim(request%request), iostat=stat, newunit=fu)
+            if (stat == 0) request%error = E_NONE
+
+            if (dm_is_error(request%error)) then
+                call dm_log(LOG_ERROR, 'failed to open ' // trim(request%request), &
+                            observ=observ, error=request%error)
+                cycle req_loop
+            end if
+
+            ! Read until the request pattern matches.
+            read_loop: do
+                rc = E_READ
+                request%response = ' '
+
+                read (fu, '(a)', iostat=stat) request%response
+                if (is_iostat_end(stat)) exit read_loop
+                if (stat /= 0) cycle read_loop
+
+                ! Try to extract the response values.
+                rc = dm_regex_request(request)
+
+                if (dm_is_error(rc)) then
+                    call dm_log(LOG_WARNING, 'failed to match response', observ=observ, error=rc)
+                    cycle read_loop
+                end if
+
+                ! Check responses.
+                do j = 1, request%nresponses
+                    response => request%responses(j)
+                    if (dm_is_ok(response%error)) cycle
+                    call dm_log(LOG_WARNING, 'failed to read response ' // response%name, &
+                                observ=observ, error=response%error)
+                end do
+
+                ! Cycle on error or exit on success.
+                if (dm_is_error(rc)) cycle read_loop
+                exit read_loop
+            end do read_loop
+
+            ! Close file.
+            close (fu)
+
+            ! Save response and return code.
+            request%response = dm_ascii_escape(request%response)
+            request%error = rc
+
+            ! Create log message and repeat.
+            if (dm_is_error(rc)) then
+                call dm_log(LOG_ERROR, 'failed to read from file ' // request%request, observ=observ, error=rc)
+                call dm_sleep(10) ! Wait grace period.
+                cycle req_loop
+            end if
+
+            if (debug) then ! Log only if needed.
+                call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
+                            dm_itoa(observ%nrequests), observ=observ)
+            end if
+
+            ! Wait the set delay time of the request.
+            delay = max(0, request%delay)
+            if (delay <= 0) cycle req_loop
+
+            if (debug) then ! Log only if needed.
+                write (message, '("next request of observ ", a, " in ", i0, " sec")') trim(observ%name), delay / 1000
+                call dm_log(LOG_DEBUG, message)
+            end if
+
+            call dm_usleep(delay * 1000)
+        end do req_loop
+    end function read_observ
+
+    integer function write_observ(observ, unit, format) result(rc)
+        !! Writes observation to file unit, in CSV or JSON Lines format.
+        type(observ_type), intent(inout) :: observ !! Observation to write.
+        integer,           intent(in)    :: unit   !! File unit.
+        integer,           intent(in)    :: format !! Output format (`FORMAT_CSV`, `FORMAT_JSONL`).
+
+        rc = E_INVALID
+
+        select case (format)
+            case (FORMAT_CSV)
+                ! CSV format.
+                rc = dm_csv_write(observ, unit=unit, header=.false., &
+                                  separator=APP_CSV_SEPARATOR)
+            case (FORMAT_JSONL)
+                ! JSON Lines format.
+                rc = dm_json_write(observ, unit=unit)
+            case default
+                return
+        end select
+    end function write_observ
+
+    subroutine run(app)
+        !! Performs jobs in job list.
+        type(app_type), intent(inout) :: app !! App settings.
+
+        integer                    :: delay, njobs, rc
+        logical                    :: debug
+        type(job_type),    target  :: job    ! Next job to run.
+        type(observ_type), pointer :: observ ! Observation of job.
+
+        debug = (app%debug .or. app%verbose)
         call dm_log(LOG_INFO, 'started ' // app%name)
 
         ! Run until no jobs are left.
@@ -269,127 +381,25 @@ contains
                 cycle job_loop
             end if
 
-            observ_if: if (job%valid) then
-                ! Get pointer to observation in job, so we don't have to write
-                ! `job%observ` all the time.
+            if (job%valid) then
                 observ => job%observ
 
-                call dm_log(LOG_DEBUG, 'starting observ ' // observ%name, observ=observ)
+                ! Read observation from file system.
+                call dm_log(LOG_DEBUG, 'starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor, observ=observ)
+                rc = read_observ(observ, app%node, app%sensor, debug=debug)
 
-                ! Initialise observation.
-                observ%id        = dm_uuid4()
-                observ%node_id   = app%node
-                observ%sensor_id = app%sensor
-                observ%timestamp = dm_time_now()
-
-                if (observ%nrequests == 0) then
-                    call dm_log(LOG_DEBUG, 'no requests in observ ' // observ%name, observ=observ)
-                    exit observ_if
-                end if
-
-                ! Read files in requests sequentially.
-                req_loop: do i = 1, observ%nrequests
-                    ! Get pointer to next request.
-                    request => observ%requests(i)
-
-                    ! Initialise request.
-                    request%timestamp = dm_time_now()
-                    request%error     = E_IO
-
-                    ! Check if file path passed as request command exists.
-                    if (.not. dm_file_exists(request%request)) then
-                        call dm_log(LOG_ERROR, 'file ' // trim(request%request) // ' not found', &
-                                    observ=observ, error=request%error)
-                        cycle req_loop
-                    end if
-
-                    ! Try to open file for reading.
-                    open (action='read', file=trim(request%request), iostat=stat, newunit=fu)
-
-                    if (stat == 0) request%error = E_NONE
-
-                    if (dm_is_error(request%error)) then
-                        call dm_log(LOG_ERROR, 'failed to open ' // trim(request%request), &
-                                    observ=observ, error=request%error)
-                        cycle req_loop
-                    end if
-
-                    ! Read until the request pattern matches.
-                    read_loop: do
-                        ! Read from file.
-                        rc = E_READ
-                        request%response = ' '
-
-                        read (fu, '(a)', iostat=stat) request%response
-
-                        if (is_iostat_end(stat)) exit read_loop
-                        if (stat /= 0) cycle read_loop
-
-                        ! Try to extract the response values.
-                        rc = dm_regex_request(request)
-
-                        if (dm_is_error(rc)) then
-                            call dm_log(LOG_WARNING, 'failed to match response', observ=observ, error=rc)
-                            cycle read_loop
-                        end if
-
-                        ! Check responses.
-                        do j = 1, request%nresponses
-                            response => request%responses(j)
-                            if (dm_is_ok(response%error)) cycle
-
-                            call dm_log(LOG_WARNING, 'failed to read response ' // response%name, &
-                                        observ=observ, error=response%error)
-                        end do
-
-                        ! Cycle on error or exit on success.
-                        if (dm_is_error(rc)) cycle read_loop
-                        exit read_loop
-                    end do read_loop
-
-                    ! Close file.
-                    close (fu)
-
-                    ! Save response and return code.
-                    request%response = dm_ascii_escape(request%response)
-                    request%error    = rc
-
-                    ! Create log message and repeat.
-                    if (dm_is_error(rc)) then
-                        call dm_log(LOG_ERROR, 'failed to read from file ' // request%request, &
-                                    observ=observ, error=rc)
-                        ! Wait grace period.
-                        call dm_sleep(10)
-                        cycle req_loop
-                    end if
-
-                    call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
-                                dm_itoa(observ%nrequests), observ=observ)
-
-                    ! Wait the set delay time of the request.
-                    delay = max(0, request%delay)
-                    if (delay <= 0) cycle req_loop
-
-                    write (message, '("next request of observ ", a, " in ", i0, " sec")') &
-                        trim(observ%name), delay / 1000
-                    call dm_log(LOG_DEBUG, message)
-                    call dm_usleep(delay * 1000)
-                end do req_loop
-
-                ! Forward observation.
-                call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
+                ! Forward observation via message queue.
+                call dm_log(LOG_DEBUG, 'finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor, observ=observ)
                 rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
-            end if observ_if
+            end if
 
-            ! Wait the set delay time of the job (absolute).
+            ! Wait delay time of the job if set (absolute).
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
-
-            write (message, '("next job in ", i0, " sec")') delay / 1000
-            call dm_log(LOG_DEBUG, message)
+            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run

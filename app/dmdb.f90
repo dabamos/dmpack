@@ -87,8 +87,7 @@ program dmdb
         call run(app, db, mqueue, sem)
     end block init_block
 
-    if (dm_is_error(rc)) call halt(1)
-    call halt(0)
+    call halt(rc)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -180,10 +179,14 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine halt(stat)
+    subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in) :: stat
-        integer             :: rc
+        integer, intent(in), optional :: error !! DMPACK error code.
+
+        integer :: rc, stat
+
+        stat = 0
+        if (present(error)) stat = min(1, error)
 
         rc = dm_db_close(db)
         rc = dm_mqueue_close(mqueue)
@@ -287,7 +290,7 @@ contains
         select case (signum)
             case default
                 call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
-                call halt(0)
+                call halt(E_NONE)
         end select
     end subroutine signal_handler
 end program dmdb
