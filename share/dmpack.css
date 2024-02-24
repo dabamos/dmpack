@@ -829,6 +829,7 @@ textarea {
 
 time {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 [type="search"] {
