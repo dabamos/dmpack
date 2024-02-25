@@ -29,15 +29,15 @@ module dm_version
     private :: dm_version_to_string_long
     private :: dm_version_to_string_short
 contains
-    pure function dm_version_to_string_app(app_name, app_major, app_minor, app_patch, library) result(str)
+    pure function dm_version_to_string_app(name, major, minor, patch, library) result(str)
         !! Returns allocatable string of application version, with optional
         !! DMPACK library version appended if `library` is `.true.`.
-        character(len=*), intent(in)           :: app_name  !! App name.
-        integer,          intent(in)           :: app_major !! App major version.
-        integer,          intent(in)           :: app_minor !! App minor version.
-        integer,          intent(in)           :: app_patch !! App patch version.
-        logical,          intent(in), optional :: library   !! Append DMPACK library version.
-        character(len=:), allocatable          :: str       !! App and library version string.
+        character(len=*), intent(in)           :: name    !! App name.
+        integer,          intent(in)           :: major   !! App major version.
+        integer,          intent(in)           :: minor   !! App minor version.
+        integer,          intent(in)           :: patch   !! App patch version.
+        logical,          intent(in), optional :: library !! Append DMPACK library version.
+        character(len=:), allocatable          :: str     !! App and library version string.
 
         logical :: library_
 
@@ -45,10 +45,10 @@ contains
         if (present(library)) library_ = library
 
         if (library_) then
-            str = trim(app_name) // ' ' // dm_version_to_string(app_major, app_minor, app_patch) // &
+            str = trim(name) // ' ' // dm_version_to_string(major, minor, patch) // &
                   ' (DMPACK ' // DM_VERSION_STRING // ')'
         else
-            str = trim(app_name) // ' ' // dm_version_to_string(app_major, app_minor, app_patch)
+            str = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
         end if
     end function dm_version_to_string_app
 

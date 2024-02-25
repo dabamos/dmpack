@@ -221,11 +221,12 @@ contains
         character(len=*),          intent(in)           :: sensor_id !! Sensor id of observation.
         logical,                   intent(in), optional :: debug     !! Output debug messages.
 
-        character(len=LOG_MESSAGE_LEN) :: message
-        integer                        :: delay, i, j, fu, stat
-        logical                        :: debug_
-        type(request_type),  pointer   :: request  ! Next request to execute.
-        type(response_type), pointer   :: response ! Single response in request.
+        integer                      :: delay
+        integer                      :: fu, stat
+        integer                      :: i, j
+        logical                      :: debug_
+        type(request_type),  pointer :: request  ! Next request to execute.
+        type(response_type), pointer :: response ! Single response in request.
 
         debug_ = .true.
         if (present(debug)) debug_ = debug
@@ -269,9 +270,7 @@ contains
 
             ! Read until the request pattern matches.
             read_loop: do
-                rc = E_READ
-                request%response = ' '
-
+                rc = E_EOF
                 read (fu, '(a)', iostat=stat) request%response
                 if (is_iostat_end(stat)) exit read_loop
                 if (stat /= 0) cycle read_loop
@@ -280,7 +279,7 @@ contains
                 rc = dm_regex_request(request)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_WARNING, 'failed to match response', observ=observ, error=rc)
+                    if (debug_) call dm_log(LOG_DEBUG, 'line does not match pattern', observ=observ, error=rc)
                     cycle read_loop
                 end if
 
@@ -288,8 +287,8 @@ contains
                 do j = 1, request%nresponses
                     response => request%responses(j)
                     if (dm_is_ok(response%error)) cycle
-                    call dm_log(LOG_WARNING, 'failed to read response ' // response%name, &
-                                observ=observ, error=response%error)
+                    call dm_log(LOG_WARNING, 'failed to extract response ' // trim(response%name) // &
+                                ' of request ' // dm_itoa(i), observ=observ, error=response%error)
                 end do
 
                 ! Cycle on error or exit on success.
@@ -302,7 +301,7 @@ contains
 
             ! Save response and return code.
             request%response = dm_ascii_escape(request%response)
-            request%error = rc
+            request%error    = rc
 
             ! Create log message and repeat.
             if (dm_is_error(rc)) then
@@ -311,7 +310,7 @@ contains
                 cycle req_loop
             end if
 
-            if (debug) then ! Log only if needed.
+            if (debug_) then
                 call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
                             dm_itoa(observ%nrequests), observ=observ)
             end if
@@ -320,9 +319,9 @@ contains
             delay = max(0, request%delay)
             if (delay <= 0) cycle req_loop
 
-            if (debug) then ! Log only if needed.
-                write (message, '("next request of observ ", a, " in ", i0, " sec")') trim(observ%name), delay / 1000
-                call dm_log(LOG_DEBUG, message)
+            if (debug_) then
+                call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
+                            ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             end if
 
             call dm_usleep(delay * 1000)
@@ -371,7 +370,7 @@ contains
                 exit job_loop
             end if
 
-            call dm_log(LOG_DEBUG, dm_itoa(njobs) // ' job(s) left in job queue')
+            if (debug) call dm_log(LOG_DEBUG, dm_itoa(njobs) // ' job(s) left in job queue')
 
             ! Get next job as deep copy.
             rc = dm_job_list_next(app%jobs, job)
@@ -384,12 +383,20 @@ contains
             if (job%valid) then
                 observ => job%observ
 
+                if (debug) then
+                    call dm_log(LOG_DEBUG, 'starting observ ' // trim(observ%name) // &
+                                ' for sensor ' // app%sensor, observ=observ)
+                end if
+
                 ! Read observation from file system.
-                call dm_log(LOG_DEBUG, 'starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor, observ=observ)
                 rc = read_observ(observ, app%node, app%sensor, debug=debug)
 
+                if (debug) then
+                    call dm_log(LOG_DEBUG, 'finished observ ' // trim(observ%name) // &
+                                ' for sensor ' // app%sensor, observ=observ)
+                end if
+
                 ! Forward observation via message queue.
-                call dm_log(LOG_DEBUG, 'finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor, observ=observ)
                 rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
@@ -399,7 +406,7 @@ contains
             ! Wait delay time of the job if set (absolute).
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
-            call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec')
+            if (debug) call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run

@@ -178,15 +178,15 @@ contains
 
         is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
 
-        ! Connect to database.
-        rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
-
-        if (dm_is_error(rc)) then
-            call dm_error_out(rc, 'failed to open database')
-            return
-        end if
-
         feed_block: block
+            ! Connect to database.
+            rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to open database')
+                exit feed_block
+            end if
+
             ! Get logs from database.
             if (len_trim(app%node) > 0) then
                 rc = dm_db_select(db        = db, &

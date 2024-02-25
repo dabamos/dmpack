@@ -22,9 +22,9 @@ module dm_fcgi
 
         ! int FCGI_getchar(void)
         function fcgi_getchar() bind(c, name='FCGI_getchar')
-            import :: c_char
+            import :: c_int
             implicit none
-            character(kind=c_char) :: fcgi_getchar
+            integer(kind=c_int) :: fcgi_getchar
         end function fcgi_getchar
 
         ! int FCGI_puts(const char *str)
@@ -51,8 +51,9 @@ contains
         !! Reads HTTP request body (POST method).
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
-        integer                                      :: stat
-        integer(kind=i8)                             :: i
+
+        integer          :: stat
+        integer(kind=i8) :: i
 
         rc = E_NONE
         if (env%content_length <= 0) return
@@ -62,7 +63,7 @@ contains
         if (stat /= 0) return
 
         do i = 1, env%content_length
-            content(i:i) = fcgi_getchar()
+            content(i:i) = achar(fcgi_getchar())
         end do
 
         rc = E_NONE
