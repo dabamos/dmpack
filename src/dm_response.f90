@@ -57,14 +57,12 @@ contains
         type(response_type), intent(in) :: response2 !! The second response.
 
         equals = .false.
-
         if (response1%name  /= response2%name)  return
         if (response1%unit  /= response2%unit)  return
         if (response1%type  /= response2%type)  return
         if (response1%error /= response2%error) return
 
         if (.not. dm_equals(response1%value, response2%value)) return
-
         equals = .true.
     end function dm_response_equals
 
@@ -92,7 +90,9 @@ contains
     end function dm_response_type_valid
 
     pure elemental logical function dm_response_valid(response) result(valid)
-        !! Returns `.true.` if given response is valid.
+        !! Returns `.true.` if given response is valid. A response is valid if
+        !! attribute _name_ is a valid id, attribute _type_ is a valid response
+        !! value type, and attribute _error_ is a valid error code.
         type(response_type), intent(in) :: response !! Response type.
 
         valid = .false.

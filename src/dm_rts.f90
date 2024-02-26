@@ -42,13 +42,13 @@ module dm_rts
     private
 
     ! Reflector constants for Leica total stations.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_STANDARD      =  0.0_r8 !! Leica Standard Prism, GPR1.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MINI          = 17.5_r8 !! Leica Mini Prism, GMP101.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360           = 23.1_r8 !! Leica 360° Prism, GRZ4/GRZ122.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360_MINI      = 30.0_r8 !! Leica 360° Mini Prism, GRZ101.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_TAPE          = 34.4_r8 !! Leica Reflector Tape S, M, L.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_REFLECTORLESS = 34.4_r8 !! Reflectorless.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MACHINE_AUTO  = 28.1_r8 !! Machine Automation Power Prism, MPR122.
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_STANDARD      =  0.0_r8 !! Leica Standard Prism, GPR1 [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MINI          = 17.5_r8 !! Leica Mini Prism, GMP101 [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360           = 23.1_r8 !! Leica 360° Prism, GRZ4/GRZ122 [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360_MINI      = 30.0_r8 !! Leica 360° Mini Prism, GRZ101 [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_TAPE          = 34.4_r8 !! Leica Reflector Tape S, M, L [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_REFLECTORLESS = 34.4_r8 !! Reflectorless [mm].
+    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MACHINE_AUTO  = 28.1_r8 !! Machine Automation Power Prism, MPR122 [mm].
 
     real(kind=r8), parameter :: EARTH_RADIUS       = 6.378_r8 * 10e6 !! Default radius of the earth.
     real(kind=r8), parameter :: MEAN_REFRACT_COEFF = 0.13_r8         !! Default mean refraction coefficient.

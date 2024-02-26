@@ -21,8 +21,8 @@ module dm_request
     integer, parameter, public :: REQUEST_MODE_NONE        = 0   !! Default mode.
     integer, parameter, public :: REQUEST_MODE_GEOCOM_FILE = 512 !! GeoCOM file download mode.
 
-    integer, parameter, public :: REQUEST_STATE_NONE     = 0   !! Default state.
-    integer, parameter, public :: REQUEST_STATE_DISABLED = 1   !! Disabled state.
+    integer, parameter, public :: REQUEST_STATE_NONE     = 0 !! Default state.
+    integer, parameter, public :: REQUEST_STATE_DISABLED = 1 !! Disabled state.
 
     type, public :: request_type
         !! Request to send to a sensor.
@@ -30,13 +30,13 @@ module dm_request
         character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Request command.
         character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response.
         character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter.
-        character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Reg Exp pattern.
-        integer                              :: delay      = 0                    !! Delay in msec.
+        character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Regular expression pattern.
+        integer                              :: delay      = 0                    !! Delay in msec (optional).
         integer                              :: error      = E_NONE               !! Error code.
-        integer                              :: mode       = REQUEST_MODE_NONE    !! Request mode.
-        integer                              :: retries    = 0                    !! Number of retries.
-        integer                              :: state      = REQUEST_STATE_NONE   !! Request state.
-        integer                              :: timeout    = 0                    !! Timeout in msec.
+        integer                              :: mode       = REQUEST_MODE_NONE    !! Request mode (optional).
+        integer                              :: retries    = 0                    !! Number of executed retries.
+        integer                              :: state      = REQUEST_STATE_NONE   !! Request state (optional).
+        integer                              :: timeout    = 0                    !! Timeout in msec (optional).
         integer                              :: nresponses = 0                    !! Number of responses.
         type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) !! Responses array.
     end type request_type
@@ -118,6 +118,8 @@ contains
         type(request_type), intent(in) :: request1 !! The first request.
         type(request_type), intent(in) :: request2 !! The second request.
 
+        integer :: n
+
         equals = .false.
 
         if (request1%timestamp  /= request2%timestamp)  return
@@ -133,9 +135,11 @@ contains
         if (request1%timeout    /= request2%timeout)    return
         if (request1%nresponses /= request2%nresponses) return
 
-        if (request1%nresponses > 0) then
-            if (.not. all(dm_response_equals(request1%responses(1:request1%nresponses), &
-                                             request2%responses(1:request2%nresponses)))) return
+        n = max(0, min(REQUEST_MAX_NRESPONSES, request1%nresponses))
+
+        if (n > 0) then
+            equals = all(dm_response_equals(request1%responses(1:n), request2%responses(1:n)))
+            return
         end if
 
         equals = .true.
@@ -148,11 +152,13 @@ contains
         type(request_type), intent(in) :: request !! Request type.
         character(len=*),   intent(in) :: name    !! Response name.
 
-        integer :: i
+        integer :: i, n
 
         index = 0
 
-        do i = 1, request%nresponses
+        n = max(0, min(REQUEST_MAX_NRESPONSES, request%nresponses))
+
+        do i = 1, n
             if (request%responses(i)%name == name) then
                 index = i
                 return
@@ -163,13 +169,15 @@ contains
     integer function dm_request_set_response_error(request, error, name) result(rc)
         !! Sets error code of all responses of the given request. If argument
         !! `name` is given, the error is set only for the first response of the
-        !! same name.
+        !! same name. The function returns `E_NOT_FOUND` is argument `name` is
+        !! given and not found within the responses.
         type(request_type), intent(inout)        :: request !! Request type.
         integer,            intent(in)           :: error   !! Error code.
         character(len=*),   intent(in), optional :: name    !! Response name.
 
-        integer :: i
+        integer :: i, n
 
+        ! Set error code for single response.
         if (present(name)) then
             rc = E_NOT_FOUND
             i = dm_request_index(request, name)
@@ -178,7 +186,10 @@ contains
             return
         end if
 
-        do i = 1, request%nresponses
+        ! Set error code for all responses.
+        n = max(0, min(REQUEST_MAX_NRESPONSES, request%nresponses))
+
+        do i = 1, n
             request%responses(i)%error = error
         end do
 
@@ -186,7 +197,18 @@ contains
     end function dm_request_set_response_error
 
     pure elemental logical function dm_request_valid(request, timestamp) result(valid)
-        !! Returns `.true.` if given observation request is valid.
+        !! Returns `.true.` if given observation request is valid. A request is
+        !! valid if it conforms to the following rules:
+        !!
+        !! * A time stamp is set and in ISO 8601 format, unless argument
+        !!   `timestamp` is passed and `.false.`.
+        !! * All characters in attribute _request_ are printable.
+        !! * The attributes _delay_, _retries_, _state_ and _timeout_ are not
+        !!   negative.
+        !! * The attribute _error_ is a valid error code.
+        !! * The attribute _nresponses_ is within the bounds of array
+        !!   _nresponses_.
+        !! * All reponses are valid.
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate timestamp.
 
@@ -203,10 +225,10 @@ contains
 
         if (.not. dm_string_is_printable(request%request)) return
 
-        if (request%delay < 0)   return
-        if (request%error < 0)   return
+        if (request%delay < 0) return
+        if (.not. dm_error_valid(request%error)) return
         if (request%retries < 0) return
-        if (request%state < 0)   return
+        if (request%state < 0) return
         if (request%timeout < 0) return
 
         if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return

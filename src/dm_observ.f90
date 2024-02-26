@@ -20,12 +20,12 @@ module dm_observ
     ! ******************************************************************
     ! OBSERVATION.
     ! ******************************************************************
-    integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN
-    integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN
-    integer, parameter, public :: OBSERV_PATH_LEN       = 32
-    integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN
-    integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16
-    integer, parameter, public :: OBSERV_MAX_NREQUESTS  = 8
+    integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Observation id length.
+    integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Observation name length.
+    integer, parameter, public :: OBSERV_PATH_LEN       = 32       !! Observation path length.
+    integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN   !! Observation receiver length.
+    integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16       !! Max. number of receivers.
+    integer, parameter, public :: OBSERV_MAX_NREQUESTS  = 8        !! Max. number of requests.
 
     type, public :: observ_type
         !! Observation with receivers, requests, and responses. Modifying this
@@ -103,17 +103,17 @@ contains
         !! Returns the following error codes:
         !!
         !! * `E_BOUNDS` if the list of receivers is full.
-        !! * `E_INVALID` if the receiver is empty or longer than the maximum.
+        !! * `E_INVALID` if the receiver name is empty, not a valid id, or
+        !!    longer than the maximum `OBSERV_RECEIVER_LEN`.
         type(observ_type), intent(inout) :: observ   !! Observation type.
-        character(len=*),  intent(in)    :: receiver !! Receiver data.
+        character(len=*),  intent(in)    :: receiver !! Receiver name.
         integer                          :: n
 
         rc = E_BOUNDS
         if (observ%nreceivers < 0 .or. observ%nreceivers >= OBSERV_MAX_NRECEIVERS) return
 
         rc = E_INVALID
-        n = len_trim(receiver)
-        if (n == 0 .or. n > OBSERV_RECEIVER_LEN) return
+        if (.not. dm_id_valid(receiver, max_len=OBSERV_RECEIVER_LEN)) return
 
         observ%nreceivers = observ%nreceivers + 1
         observ%receivers(observ%nreceivers) = receiver
@@ -162,7 +162,7 @@ contains
             if (observ1%receivers(i) /= observ2%receivers(i)) return
         end do
 
-        n = observ1%nrequests
+        n = max(0, min(OBSERV_MAX_NREQUESTS, observ1%nrequests))
 
         if (n > 0) then
             equals = all(dm_request_equals(observ1%requests(1:n), observ2%requests(1:n)))
@@ -172,25 +172,30 @@ contains
         equals = .true.
     end function dm_observ_equals
 
-    integer function dm_observ_index(observ, name, request_index, response_index) result(rc)
+    integer function dm_observ_index(observ, response_name, request_index, response_index) result(rc)
         !! Searches requests array of the observation for responses of passed name
         !! and returns the index of the first found. If no request of this name
         !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
         type(observ_type), intent(inout) :: observ         !! Observation type.
-        character(len=*),  intent(in)    :: name           !! Response name.
+        character(len=*),  intent(in)    :: response_name  !! Response name.
         integer,           intent(out)   :: request_index  !! Position of request in requests array.
         integer,           intent(out)   :: response_index !! Position of response in responses array.
 
         integer :: i, j
+        integer :: nrequests, nresponses
 
         rc = E_NONE
 
         request_index  = 0
         response_index = 0
 
-        do i = 1, observ%nrequests
-            do j = 1, observ%requests(i)%nresponses
-                if (observ%requests(i)%responses(i)%name == name) then
+        nrequests = max(0, min(OBSERV_MAX_NREQUESTS, observ%nrequests))
+
+        do i = 1, nrequests
+            nresponses = max(0, min(REQUEST_MAX_NRESPONSES, observ%requests(i)%nresponses))
+
+            do j = 1, nresponses
+                if (observ%requests(i)%responses(j)%name == response_name) then
                     request_index  = i
                     response_index = j
                     return
@@ -202,10 +207,23 @@ contains
     end function dm_observ_index
 
     pure elemental logical function dm_observ_valid(observ, id, timestamp) result(valid)
-        !! Returns `.true.` if given observation has at least a valid UUID as
-        !! id, and node id, sensor id, target id, and name set. Validating the
-        !! node, observation, sensor, and target id is optional (only if `id`
-        !! is `.true.`). Validation of timestamps in enabled by default.
+        !! Returns `.true.` if given observation is valid. An observation is
+        !! valid if it conforms to the following rules:
+        !!
+        !! * Valid observation, node, sensor and target ids are set, and the
+        !!   observation id does not equal the default UUID, unless argument
+        !!   `id` is passed and `.false.`.
+        !! * The observation name is a valid id (limited character set, no
+        !!   white spaces).
+        !! * The time stamp is in ISO 8601 format, unless argument `timestamp`
+        !!   is passed and `.false.`.
+        !! * The attributes _priority_ and _error_ are not negative.
+        !! * The attributes _next_ and _nreceivers_ are within the bounds of
+        !!   the array _receivers_, or 0.
+        !! * The attribute _nrequests_ is within the bounds of the array
+        !!   _receivers_, or 0.
+        !! * All receiver names are valid ids.
+        !! * All requests and responses are valid.
         type(observ_type), intent(in)           :: observ    !! Observation type.
         logical,           intent(in), optional :: id        !! Validate ids.
         logical,           intent(in), optional :: timestamp !! Validate timestamps.
@@ -236,7 +254,7 @@ contains
         end if
 
         if (observ%priority < 0) return
-        if (observ%error < 0) return
+        if (.not. dm_error_valid(observ%error)) return
         if (observ%next < 0 .or. observ%next > OBSERV_MAX_NRECEIVERS) return
         if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
         if (observ%nrequests < 0 .or. observ%nrequests > OBSERV_MAX_NREQUESTS) return
