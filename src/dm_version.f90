@@ -9,7 +9,7 @@ module dm_version
 
     integer, parameter, public :: DM_VERSION_MAJOR = 0 !! DMPACK major version, from 0 to 9.
     integer, parameter, public :: DM_VERSION_MINOR = 9 !! DMPACK minor version, from 0 to 9.
-    integer, parameter, public :: DM_VERSION_PATCH = 3 !! DMPACK patch level, from 0 to 9.
+    integer, parameter, public :: DM_VERSION_PATCH = 4 !! DMPACK patch level, from 0 to 9.
 
     character(len=*), parameter, public :: DM_VERSION_STRING = achar(DM_VERSION_MAJOR + 48) // '.' // &
                                                                achar(DM_VERSION_MINOR + 48) // '.' // &
