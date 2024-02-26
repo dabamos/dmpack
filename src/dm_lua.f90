@@ -115,6 +115,12 @@ module dm_lua
     public :: dm_lua_table
     public :: dm_lua_table_size
     public :: dm_lua_to
+    public :: dm_lua_to_int32
+    public :: dm_lua_to_int64
+    public :: dm_lua_to_logical
+    public :: dm_lua_to_real32
+    public :: dm_lua_to_real64
+    public :: dm_lua_to_string
     public :: dm_lua_unescape
     public :: dm_lua_version
 
@@ -205,12 +211,12 @@ contains
         end do
     end function dm_lua_escape
 
-    integer function dm_lua_eval(lua, cmd) result(rc)
+    integer function dm_lua_eval(lua, command) result(rc)
         !! Executes Lua command passed in character string `cmd`.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-        character(len=*),     intent(in)    :: cmd !! Lua command to evaluate.
+        type(lua_state_type), intent(inout) :: lua     !! Lua type.
+        character(len=*),     intent(in)    :: command !! Lua command to evaluate.
 
-        rc = dm_lua_error(lual_dostring(lua%ptr, cmd))
+        rc = dm_lua_error(lual_dostring(lua%ptr, command))
     end function dm_lua_eval
 
     integer function dm_lua_exec(lua, file_path) result(rc)
@@ -337,6 +343,55 @@ contains
 
         n = int(lua_rawlen(lua%ptr, -1), kind=i4)
     end function dm_lua_table_size
+
+    integer(kind=i4) function dm_lua_to_int32(lua, idx) result(value)
+        !! Returns 4-byte integer from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        integer,              intent(in)    :: idx !! Stack index.
+
+        value = int(lua_tointeger(lua%ptr, idx), kind=i4)
+    end function dm_lua_to_int32
+
+    integer(kind=i8) function dm_lua_to_int64(lua, idx) result(value)
+        !! Returns 8-byte integer from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        integer,              intent(in)    :: idx !! Stack index.
+
+        value = lua_tointeger(lua%ptr, idx)
+    end function dm_lua_to_int64
+
+    logical function dm_lua_to_logical(lua, idx) result(value)
+        !! Returns 8-byte integer from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        integer,              intent(in)    :: idx !! Stack index.
+
+        value = lua_toboolean(lua%ptr, idx)
+    end function dm_lua_to_logical
+
+    real(kind=r4) function dm_lua_to_real32(lua, idx) result(value)
+        !! Returns 4-byte real from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        integer,              intent(in)    :: idx !! Stack index.
+
+        value = real(lua_tonumber(lua%ptr, idx), kind=r4)
+    end function dm_lua_to_real32
+
+    real(kind=r8) function dm_lua_to_real64(lua, idx) result(value)
+        !! Returns 8-byte real from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        integer,              intent(in)    :: idx !! Stack index.
+
+        value = lua_tonumber(lua%ptr, idx)
+    end function dm_lua_to_real64
+
+    function dm_lua_to_string(lua, idx) result(value)
+        !! Returns allocatable character string from Lua stack at position `idx`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        integer,              intent(in)    :: idx   !! Stack index.
+        character(len=:), allocatable       :: value !! String value.
+
+        value = lua_tostring(lua%ptr, idx)
+    end function dm_lua_to_string
 
     function dm_lua_unescape(str) result(res)
         !! Unescapes passed character string by replacing each occurance of

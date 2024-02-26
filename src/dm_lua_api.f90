@@ -58,7 +58,7 @@ contains
         !! in module `dm_lua_geocom`.
         !!
         !! This function returns `E_INVALID` if the Lua interpreter has not been
-        !! initialised, or `E_LUA` if the export failed.
+        !! initialised, or `E_LUA` if the registration failed.
         use :: dm_log
         type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
         logical,              intent(in), optional :: add_errors     !! Export error codes.
