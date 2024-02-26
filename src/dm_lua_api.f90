@@ -3,7 +3,6 @@
 module dm_lua_api
     !! DMPACK API for Lua.
     use, intrinsic :: iso_c_binding
-    use :: lua
     use :: dm_error
     use :: dm_lua
     use :: dm_util
@@ -23,7 +22,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_lua_api_register(lua, add_errors, add_levels, add_procedures) result(rc)
+    integer function dm_lua_api_register(lua, add_errors, add_levels, add_procedures, add_response_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
         !! the given Lua session.
         !!
@@ -54,18 +53,31 @@ contains
         !! * `rad2deg(rad)`
         !! * `rad2gon(rad)`
         !!
+        !! The following response type parameters are injected if
+        !! `add_response_types` is not `.false.`:
+        !!
+        !! * `RESPONSE_TYPE_REAL64`
+        !! * `RESPONSE_TYPE_REAL32`
+        !! * `RESPONSE_TYPE_INT64`
+        !! * `RESPONSE_TYPE_INT32`
+        !! * `RESPONSE_TYPE_LOGICAL`
+        !! * `RESPONSE_TYPE_BYTE`
+        !! * `RESPONSE_TYPE_STRING`
+        !!
         !! The GeoCOM API is registered through function `dm_lua_geocom_register()`
         !! in module `dm_lua_geocom`.
         !!
         !! This function returns `E_INVALID` if the Lua interpreter has not been
         !! initialised, or `E_LUA` if the registration failed.
         use :: dm_log
-        type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
-        logical,              intent(in), optional :: add_errors     !! Export error codes.
-        logical,              intent(in), optional :: add_levels     !! Export log level.
-        logical,              intent(in), optional :: add_procedures !! Export procedures.
+        use :: dm_response
+        type(lua_state_type), intent(inout)        :: lua                !! Lua state type.
+        logical,              intent(in), optional :: add_errors         !! Export error codes.
+        logical,              intent(in), optional :: add_levels         !! Export log level.
+        logical,              intent(in), optional :: add_procedures     !! Export procedures.
+        logical,              intent(in), optional :: add_response_types !! Export response type parameters.
 
-        logical :: add_errors_, add_levels_, add_procedures_
+        logical :: add_errors_, add_levels_, add_procedures_, add_response_types_
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
@@ -78,6 +90,9 @@ contains
 
         add_procedures_ = .true.
         if (present(add_procedures)) add_procedures_ = add_procedures
+
+        add_response_types_ = .true.
+        if (present(add_response_types)) add_response_types_ = add_response_types
 
         ! Add error codes.
         if (add_errors_) then
@@ -172,6 +187,17 @@ contains
             rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL)); if (dm_is_error(rc)) return
         end if
 
+        ! Register response type parameters.
+        if (add_response_types_) then
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL64 = '  // dm_itoa(RESPONSE_TYPE_REAL64));  if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL32 = '  // dm_itoa(RESPONSE_TYPE_REAL32));  if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_INT64 = '   // dm_itoa(RESPONSE_TYPE_INT64));   if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_INT32 = '   // dm_itoa(RESPONSE_TYPE_INT32));   if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_LOGICAL = ' // dm_itoa(RESPONSE_TYPE_LOGICAL)); if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_BYTE = '    // dm_itoa(RESPONSE_TYPE_BYTE));    if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_STRING = '  // dm_itoa(RESPONSE_TYPE_STRING));  if (dm_is_error(rc)) return
+        end if
+
         ! Register procedures.
         if (add_procedures_) then
             call dm_lua_register(lua, 'deg2gon', dm_lua_api_deg2gon)
@@ -190,6 +216,7 @@ contains
     ! **************************************************************************
     function dm_lua_api_deg2gon(ptr) bind(c) result(n)
         !! Lua function `deg2gon()` that converts angle from [deg] to [gon].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -203,6 +230,7 @@ contains
 
     function dm_lua_api_deg2rad(ptr) bind(c) result(n)
         !! Lua function `deg2rad()` that converts angle from [deg] to [rad].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -216,6 +244,7 @@ contains
 
     function dm_lua_api_gon2deg(ptr) bind(c) result(n)
         !! Lua function `gon2deg()` that converts angle from [gon] to [deg].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -229,6 +258,7 @@ contains
 
     function dm_lua_api_gon2rad(ptr) bind(c) result(n)
         !! Lua function `gon2rad()` that converts angle from [gon] to [rad].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -242,6 +272,7 @@ contains
 
     function dm_lua_api_rad2deg(ptr) bind(c) result(n)
         !! Lua function `rad2deg()` that converts angle from [rad] to [deg].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
@@ -255,6 +286,7 @@ contains
 
     function dm_lua_api_rad2gon(ptr) bind(c) result(n)
         !! Lua function `rad2gon()` that converts angle from [rad] to [gon].
+        use :: lua
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
         integer(kind=c_int)            :: n   !! Number of results.
 
