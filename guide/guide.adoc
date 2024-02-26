@@ -1008,7 +1008,7 @@ dmfs = {
       observation = {           -- Observation to execute (required).
         name = "observ-1",      -- Observation name (required).
         target_id = "target-1", -- Target id (required).
-        receivers = { "dmfs", "dmdb" }, -- List of receivers (up to 16).
+        receivers = { "dmdb" }, -- List of receivers (up to 16).
         requests = {            -- List of files to read.
           {
             request = "/mnt/1wire/10.DCA98C020800/temperature", -- File path.
@@ -1551,7 +1551,7 @@ dmpipe = {
       observation = {               -- Observation to execute.
         name = "dummy-observ",      -- Observation name (required).
         target_id = "dummy-target", -- Target id (required).
-        receivers = { "dmpipe", "dmdb" }, -- List of receivers (up to 16).
+        receivers = { "dmdb" },     -- List of receivers (up to 16).
         requests = {                -- Pipes to open.
           {
             request = "sysctl hw.acpi.battery.life", -- Command to execute.
@@ -3760,7 +3760,7 @@ NODE%Z=0.0,
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Za-z`).
 | `target_id` | string  | 32   | Target id (`-0-9A-Za-z`).
 | `name`      | string  | 32   | Observation name (`-0-9A-Za-z`).
-| `source`    | string  | 32   | Observation source (`-0-9A-Za-z`).
+| `source`    | string  | 32   | Observation source or name of origin (`-0-9A-Za-z`).
 | `timestamp` | string  | 32   | Date and time of observation (ISO 8601).
 | `path`      | string  | 32   | Path of TTY/PTY device.
 | `priority`  | integer | 4    | Message queue priority (>= 0).
@@ -3869,11 +3869,11 @@ NODE%Z=0.0,
 | 41        | `nresponses` | Number of responses (0 to 16).
 | 42 – 121  | `responses`  | Array of responses (16).
 | 42 – 46   | `response`   | Response 1.
-| 42        | `name`       | Response name.
-| 43        | `unit`       | Response unit.
-| 44        | `type`       | Response value type.
-| 45        | `error`      | Response error.
-| 46        | `value`      | Response value.
+| 42        | `name`       | Response 1 name.
+| 43        | `unit`       | Response 1 unit.
+| 44        | `type`       | Response 1 value type.
+| 45        | `error`      | Response 1 error.
+| 46        | `value`      | Response 1 value.
 | 47 – 51   | `response`   | Response 2.
 | 52 – 56   | `response`   | Response 3.
 | 57 – 61   | `response`   | Response 4.
