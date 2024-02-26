@@ -1183,7 +1183,7 @@ contains
         end do
     end function dm_html_observ
 
-    function dm_html_observs(observs, prefix, id, node_id, sensor_id, target_id, name, error) result(html)
+    function dm_html_observs(observs, prefix, id, node_id, sensor_id, target_id, name, source, error) result(html)
         !! Returns table of observs in HTML format. If argument `prefix` is
         !! passed, the observation names are enclosed in HTML anchors, with the
         !! link set to `prefix`. The table always contains index and timestamp.
@@ -1197,12 +1197,13 @@ contains
         logical,           intent(in), optional :: sensor_id  !! Show sensor ids.
         logical,           intent(in), optional :: target_id  !! Show target ids.
         logical,           intent(in), optional :: name       !! Show observation names.
+        logical,           intent(in), optional :: source     !! Show observation source.
         logical,           intent(in), optional :: error      !! Show erros.
         character(len=:), allocatable           :: html       !! Generated HTML.
 
         integer           :: i
         logical           :: is_anchor
-        logical           :: id_, node_id_, sensor_id_, target_id_, name_, error_
+        logical           :: id_, node_id_, sensor_id_, target_id_, name_, source_, error_
         type(anchor_type) :: anchor
 
         is_anchor = .false.
@@ -1213,6 +1214,7 @@ contains
         sensor_id_ = .false.
         target_id_ = .false.
         name_      = .false.
+        source_    = .false.
         error_     = .false.
 
         if (present(id))        id_        = id
@@ -1220,6 +1222,7 @@ contains
         if (present(sensor_id)) sensor_id_ = sensor_id
         if (present(target_id)) target_id_ = target_id
         if (present(name))      name_      = name
+        if (present(source))    source_    = source
         if (present(error))     error_     = error
 
         html = H_TABLE // H_THEAD // H_TR // &
@@ -1231,6 +1234,7 @@ contains
         if (sensor_id_) html = html // H_TH // 'Sensor' // H_TH_END
         if (target_id_) html = html // H_TH // 'Target' // H_TH_END
         if (name_)      html = html // H_TH // 'Name'   // H_TH_END
+        if (source_)    html = html // H_TH // 'Source' // H_TH_END
         if (error_)     html = html // H_TH // 'Error'  // H_TH_END
 
         html = html // H_TH // '#Requests' // H_TH_END // &
@@ -1253,6 +1257,7 @@ contains
             if (sensor_id_) html = html // H_TD // dm_html_encode(observs(i)%sensor_id) // H_TD_END
             if (target_id_) html = html // H_TD // dm_html_encode(observs(i)%target_id) // H_TD_END
             if (name_)      html = html // H_TD // dm_html_encode(observs(i)%name) // H_TD_END
+            if (source_)    html = html // H_TD // dm_html_encode(observs(i)%source) // H_TD_END
             if (error_)     html = html // H_TD // dm_itoa(observs(i)%error) // H_TD_END
 
             html = html // H_TD // dm_itoa(observs(i)%nrequests) // H_TD_END // H_TR_END

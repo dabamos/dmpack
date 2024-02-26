@@ -343,7 +343,7 @@ contains
 
             call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
                                             node_id=.true., sensor_id=.true., target_id=.true., &
-                                            name=.true., error=.true.))
+                                            name=.true., source=.true., error=.true.))
         end if observ_if
 
         if (has_db_observ) rc = dm_db_close(db)
@@ -991,7 +991,7 @@ contains
                     call dm_cgi_out(dm_html_p('No observations found.'))
                 else
                     call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
-                                                    id=.true., name=.true., error=.true.))
+                                                    id=.true., name=.true., source=.true., error=.true.))
                 end if
 
                 call html_footer()
