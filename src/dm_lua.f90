@@ -1061,6 +1061,7 @@ contains
             rc = dm_lua_field(lua, 'target_id',  observ%target_id)
             rc = dm_lua_field(lua, 'id',         observ%id)
             rc = dm_lua_field(lua, 'name',       observ%name)
+            rc = dm_lua_field(lua, 'source',     observ%source)
             rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
             rc = dm_lua_field(lua, 'path',       observ%path, unescape=.true.)
             rc = dm_lua_field(lua, 'priority',   observ%priority)
@@ -1324,6 +1325,9 @@ contains
 
         ptr = lua_pushstring(lua%ptr, trim(observ%name))
         call lua_setfield(lua%ptr, -2, 'name')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%source))
+        call lua_setfield(lua%ptr, -2, 'source')
 
         ptr = lua_pushstring(lua%ptr, trim(observ%timestamp))
         call lua_setfield(lua%ptr, -2, 'timestamp')

@@ -166,6 +166,7 @@ contains
         observ%sensor_id = 'dummy-sensor'
         observ%target_id = 'dummy-target'
         observ%name      = 'dummy-observ'
+        observ%source    = 'dmdummy'
         observ%timestamp = dm_time_now()
         observ%path      = '/dev/null'
 

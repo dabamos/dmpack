@@ -31,7 +31,7 @@ module dm_sync
         character(len=SYNC_ID_LEN) :: id        = ' '            !! Sync data id.
         character(len=TIME_LEN)    :: timestamp = TIME_DEFAULT   !! Timestamp of last synchronisation attempt.
         integer                    :: code      = 0              !! HTTP response code of DMPACK server.
-        integer                    :: nattempts = 0              !! Number of (unsuccessful) attempts to transfer.
+        integer                    :: attempts  = 0              !! Number of (unsuccessful) attempts to transfer.
     end type sync_type
 
     integer, parameter, public :: SYNC_SIZE = storage_size(sync_type()) / 8 !! Size of `sync_type` in bytes.
@@ -60,7 +60,7 @@ contains
         if (sync1%id        /= sync2%id)        return
         if (sync1%timestamp /= sync2%timestamp) return
         if (sync1%code      /= sync2%code)      return
-        if (sync1%nattempts /= sync2%nattempts) return
+        if (sync1%attempts  /= sync2%attempts)  return
         equals = .true.
     end function dm_sync_equals
 
@@ -134,6 +134,6 @@ contains
         write (unit_, '("sync.id: ", a)')         trim(sync%id)
         write (unit_, '("sync.timestamp: ", a)')  sync%timestamp
         write (unit_, '("sync.code: ", i0)')      sync%code
-        write (unit_, '("sync.nattempts: ", i0)') sync%nattempts
+        write (unit_, '("sync.attempts: ", i0)')  sync%attempts
     end subroutine dm_sync_out
 end module dm_sync

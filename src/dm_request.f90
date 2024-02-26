@@ -202,15 +202,15 @@ contains
         !!
         !! * A time stamp is set and in ISO 8601 format, unless argument
         !!   `timestamp` is passed and `.false.`.
-        !! * All characters in attribute _request_ are printable.
+        !! * All ASCII characters in attribute _request_ are printable.
         !! * The attributes _delay_, _retries_, _state_ and _timeout_ are not
         !!   negative.
         !! * The attribute _error_ is a valid error code.
         !! * The attribute _nresponses_ is within the bounds of array
-        !!   _nresponses_.
-        !! * All reponses are valid.
+        !!   _responses_.
+        !! * All responses are valid.
         type(request_type), intent(in)           :: request   !! Request type.
-        logical,            intent(in), optional :: timestamp !! Validate timestamp.
+        logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
         logical :: timestamp_
 

@@ -5,10 +5,10 @@ module dm_log
     use :: dm_error
     use :: dm_id
     use :: dm_kind
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_sensor
-    use :: dm_target
+    use :: dm_node,   only: NODE_ID_LEN
+    use :: dm_observ, only: OBSERV_ID_LEN
+    use :: dm_sensor, only: SENSOR_ID_LEN
+    use :: dm_target, only: TARGET_ID_LEN
     use :: dm_time
     use :: dm_uuid
     implicit none (type, external)
@@ -132,7 +132,14 @@ contains
     end function dm_log_valid_level
 
     pure elemental logical function dm_log_valid_log(log) result(valid)
-        !! Returns `.true.` if given log is valid.
+        !! Returns `.true.` if given log is valid. A log is valid if it conforms
+        !! to the following rules:
+        !!
+        !! * The log level and the error code are valid.
+        !! * The log id is a valid UUID and not the default UUID.
+        !! * The time stamp is in ISO 8601 format.
+        !! * All ASCII characters of the log message are printable.
+        use :: dm_string, only: dm_string_is_printable
         type(log_type), intent(in) :: log !! Log to validate.
 
         valid = .false.
@@ -142,6 +149,7 @@ contains
         if (log%id == UUID_DEFAULT) return
         if (.not. dm_uuid4_valid(log%id)) return
         if (.not. dm_time_valid(log%timestamp)) return
+        if (.not. dm_string_is_printable(log%message)) return
 
         valid = .true.
     end function dm_log_valid_log

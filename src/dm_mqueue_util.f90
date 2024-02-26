@@ -128,8 +128,8 @@ contains
             end if
 
             if (.not. quiet_) then
-                call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' to mqueue /' // &
-                            observ%receivers(next), observ=observ)
+                call dm_log(LOG_DEBUG, 'sent observ ' // trim(observ%name) // ' from ' // &
+                            trim(observ%source) // ' to mqueue /' // observ%receivers(next), observ=observ)
             end if
         end block mqueue_block
 

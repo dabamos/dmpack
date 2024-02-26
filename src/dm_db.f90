@@ -1605,13 +1605,14 @@ contains
             if (sqlite3_bind_text(stmt,  3, trim(observ%sensor_id)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  4, trim(observ%target_id)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  5, trim(observ%name))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt,  6, trim(observ%timestamp)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt,  7, trim(observ%path))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt,  8, observ%priority)        /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt,  9, observ%error)           /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 10, observ%next)            /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 11, observ%nreceivers)      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 12, observ%nrequests)       /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  6, trim(observ%source))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  7, trim(observ%timestamp)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  8, trim(observ%path))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt,  9, observ%priority)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 10, observ%error)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 11, observ%next)            /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 12, observ%nreceivers)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 13, observ%nrequests)       /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4954,7 +4955,7 @@ contains
             if (sqlite3_bind_text(stmt, 1, trim(sync%id))        /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt, 2, trim(sync%timestamp)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt, 3, sync%code)            /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int (stmt, 4, sync%nattempts)       /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int (stmt, 4, sync%attempts)        /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -5118,11 +5119,12 @@ contains
             if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
             if (sqlite3_column_type(stmt,  5) /= SQLITE_TEXT)    return
             if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  7) /= SQLITE_TEXT)    return
             if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) return
             if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) return
             if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
             if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 12) /= SQLITE_INTEGER) return
         end if
 
         observ%id         = sqlite3_column_text(stmt,  0)
@@ -5130,13 +5132,14 @@ contains
         observ%sensor_id  = sqlite3_column_text(stmt,  2)
         observ%target_id  = sqlite3_column_text(stmt,  3)
         observ%name       = sqlite3_column_text(stmt,  4)
-        observ%timestamp  = sqlite3_column_text(stmt,  5)
-        observ%path       = sqlite3_column_text(stmt,  6)
-        observ%priority   = sqlite3_column_int (stmt,  7)
-        observ%error      = sqlite3_column_int (stmt,  8)
-        observ%next       = sqlite3_column_int (stmt,  9)
-        observ%nreceivers = sqlite3_column_int (stmt, 10)
-        observ%nrequests  = sqlite3_column_int (stmt, 11)
+        observ%source     = sqlite3_column_text(stmt,  5)
+        observ%timestamp  = sqlite3_column_text(stmt,  6)
+        observ%path       = sqlite3_column_text(stmt,  7)
+        observ%priority   = sqlite3_column_int (stmt,  8)
+        observ%error      = sqlite3_column_int (stmt,  9)
+        observ%next       = sqlite3_column_int (stmt, 10)
+        observ%nreceivers = sqlite3_column_int (stmt, 11)
+        observ%nrequests  = sqlite3_column_int (stmt, 12)
 
         rc = E_NONE
     end function db_next_row_observ
@@ -5272,9 +5275,9 @@ contains
         end if
 
         if (sqlite3_column_type(stmt, 3) == SQLITE_INTEGER) then
-            sync%nattempts = sqlite3_column_int(stmt, 3)
+            sync%attempts = sqlite3_column_int(stmt, 3)
         else
-            sync%nattempts = 0
+            sync%attempts = 0
         end if
 
         rc = E_NONE

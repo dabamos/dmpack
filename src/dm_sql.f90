@@ -125,6 +125,7 @@ module dm_sql
         'target_id   INTEGER NOT NULL,' // NL // &
         'id          TEXT    NOT NULL UNIQUE,' // NL // &
         'name        TEXT    NOT NULL,' // NL // &
+        'source      TEXT,' // NL // &
         'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'path        TEXT,' // NL // &
         'priority    INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -191,7 +192,7 @@ module dm_sql
         'log_id       INTEGER NOT NULL UNIQUE,' // NL // &
         'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code         INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'nattempts    INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'attempts     INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (log_id) REFERENCES logs(log_id)) STRICT'
 
     ! Synchronised nodes schema.
@@ -201,7 +202,7 @@ module dm_sql
         'node_id      INTEGER NOT NULL UNIQUE,' // NL // &
         'timestamp    TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code         INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'nattempts    INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'attempts     INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (node_id) REFERENCES nodes(node_id)) STRICT'
 
     ! Synchronised observations schema.
@@ -211,7 +212,7 @@ module dm_sql
         'observ_id      INTEGER NOT NULL UNIQUE,' // NL // &
         'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'attempts       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (observ_id) REFERENCES observs(observ_id)) STRICT'
 
     ! Synchronised sensors schema.
@@ -221,7 +222,7 @@ module dm_sql
         'sensor_id      INTEGER NOT NULL UNIQUE,' // NL // &
         'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'attempts       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (sensor_id) REFERENCES sensors(sensor_id)) STRICT'
 
     ! Synchronised targets schema.
@@ -231,7 +232,7 @@ module dm_sql
         'target_id      INTEGER NOT NULL UNIQUE,' // NL // &
         'timestamp      TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'code           INTEGER NOT NULL DEFAULT 0,' // NL // &
-        'nattempts      INTEGER NOT NULL DEFAULT 0,' // NL // &
+        'attempts       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (target_id) REFERENCES targets(target_id)) STRICT'
 
     ! ******************************************************************
@@ -394,20 +395,19 @@ module dm_sql
         'INSERT OR FAIL INTO targets(id, name, meta, state, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert observation.
-    ! Arguments: nodes.id, sensors.id, targets.id, observs.id,
-    !            observs.name, observs.timestamp, observs.path,
-    !            observs.priority, observs.error, observs.next,
-    !            observs.nreceivers, observs.nrequests
+    ! Arguments: nodes.id, sensors.id, targets.id, observs.id, observs.name,
+    !            observs.source, observs.timestamp, observs.path, observs.priority,
+    !            observs.error, observs.next, observs.nreceivers, observs.nrequests
     character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
         'INSERT OR FAIL INTO observs ' // &
-        '(id, node_id, sensor_id, target_id, name, timestamp, path, ' // &
+        '(id, node_id, sensor_id, target_id, name, source, timestamp, path, ' // &
         'priority, error, next, nreceivers, nrequests) ' // &
         'VALUES (' // &
         '?, ' // &
         '(SELECT node_id FROM nodes WHERE id = ?), ' // &
         '(SELECT sensor_id FROM sensors WHERE id = ?), ' // &
         '(SELECT target_id FROM targets WHERE id = ?), ' // &
-        '?, ?, ?, ?, ?, ?, ?, ?)'
+        '?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert receiver.
     ! Arguments: observs.id, receivers.idx, receivers.name
@@ -668,6 +668,7 @@ module dm_sql
         'sensors.id, ' // &
         'targets.id, ' // &
         'observs.name, ' // &
+        'observs.source, ' // &
         'observs.timestamp, ' // &
         'observs.path, ' // &
         'observs.priority, ' // &
@@ -698,6 +699,7 @@ module dm_sql
         'sensors.id, ' // &
         'targets.id, ' // &
         'observs.name, ' // &
+        'observs.source, ' // &
         'observs.timestamp, ' // &
         'observs.path, ' // &
         'observs.priority, ' // &
@@ -921,59 +923,59 @@ module dm_sql
     ! SYNC QUERIES.
     ! ******************************************************************
     ! Query to upsert sync_logs data.
-    ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
+    ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
-        'INSERT INTO sync_logs(log_id, timestamp, code, nattempts) ' // &
+        'INSERT INTO sync_logs(log_id, timestamp, code, attempts) ' // &
         'VALUES ((SELECT log_id FROM logs WHERE id = ?), ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'log_id = excluded.log_id, ' // &
         'timestamp = excluded.timestamp, ' // &
         'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
+        'attempts = excluded.attempts'
 
     ! Query to upsert sync_nodes data.
-    ! Arguments: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.nattempts
+    ! Arguments: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_NODE = &
-        'INSERT INTO sync_nodes(node_id, timestamp, code, nattempts) ' // &
+        'INSERT INTO sync_nodes(node_id, timestamp, code, attempts) ' // &
         'VALUES ((SELECT node_id FROM nodes WHERE id = ?), ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'node_id = excluded.node_id, ' // &
         'timestamp = excluded.timestamp, ' // &
         'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
+        'attempts = excluded.attempts'
 
     ! Query to upsert sync_observs data.
-    ! Arguments: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.nattempts
+    ! Arguments: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
-        'INSERT INTO sync_observs(observ_id, timestamp, code, nattempts) ' // &
+        'INSERT INTO sync_observs(observ_id, timestamp, code, attempts) ' // &
         'VALUES ((SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'observ_id = excluded.observ_id, ' // &
         'timestamp = excluded.timestamp, ' // &
         'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
+        'attempts = excluded.attempts'
 
     ! Query to upsert sync_sensors data.
-    ! Arguments: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.nattempts
+    ! Arguments: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
-        'INSERT INTO sync_sensors(sensor_id, timestamp, code, nattempts) ' // &
+        'INSERT INTO sync_sensors(sensor_id, timestamp, code, attempts) ' // &
         'VALUES ((SELECT sensor_id FROM sensors WHERE id = ?), ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'sensor_id = excluded.sensor_id, ' // &
         'timestamp = excluded.timestamp, ' // &
         'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
+        'attempts = excluded.attempts'
 
     ! Query to upsert sync_targets data.
-    ! Arguments: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.nattempts
+    ! Arguments: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
-        'INSERT INTO sync_targets(target_id, timestamp, code, nattempts) ' // &
+        'INSERT INTO sync_targets(target_id, timestamp, code, attempts) ' // &
         'VALUES ((SELECT target_id FROM targets WHERE id = ?), ?, ?, ?) ' // &
         'ON CONFLICT DO UPDATE SET ' // &
         'target_id = excluded.target_id, ' // &
         'timestamp = excluded.timestamp, ' // &
         'code = excluded.code, ' // &
-        'nattempts = excluded.nattempts'
+        'attempts = excluded.attempts'
 
     character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
         'SELECT COUNT(*) FROM logs ' // &
@@ -1006,7 +1008,7 @@ module dm_sql
         'logs.id, ' // &
         'sync_logs.timestamp, ' // &
         'sync_logs.code, ' // &
-        'sync_logs.nattempts ' // &
+        'sync_logs.attempts ' // &
         'FROM logs ' // &
         'LEFT JOIN sync_logs ON sync_logs.log_id = logs.log_id ' // &
         'WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409) ' // &
@@ -1019,7 +1021,7 @@ module dm_sql
         'nodes.id, ' // &
         'sync_nodes.timestamp, ' // &
         'sync_nodes.code, ' // &
-        'sync_nodes.nattempts ' // &
+        'sync_nodes.attempts ' // &
         'FROM nodes ' // &
         'LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.node_id ' // &
         'WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)'
@@ -1031,7 +1033,7 @@ module dm_sql
         'observs.id, ' // &
         'sync_observs.timestamp, ' // &
         'sync_observs.code, ' // &
-        'sync_observs.nattempts ' // &
+        'sync_observs.attempts ' // &
         'FROM observs ' // &
         'LEFT JOIN sync_observs ON sync_observs.observ_id = observs.observ_id ' // &
         'WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409) ' // &
@@ -1044,7 +1046,7 @@ module dm_sql
         'sensors.id, ' // &
         'sync_sensors.timestamp, ' // &
         'sync_sensors.code, ' // &
-        'sync_sensors.nattempts ' // &
+        'sync_sensors.attempts ' // &
         'FROM sensors ' // &
         'LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.sensor_id ' // &
         'WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)'
@@ -1056,7 +1058,7 @@ module dm_sql
         'targets.id, ' // &
         'sync_targets.timestamp, ' // &
         'sync_targets.code, ' // &
-        'sync_targets.nattempts ' // &
+        'sync_targets.attempts ' // &
         'FROM targets ' // &
         'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
         'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'

@@ -641,14 +641,14 @@ contains
     integer(kind=c_int) function lua_geocom_do_measure(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, prog
+        integer              :: inc_mode, prog
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        prog = dm_geocom_api_parameter_tmc_measure_prg(dm_lua_to_int32(lua, 1))
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_do_measure(request, prog, mode)
+        prog     = dm_geocom_api_parameter_tmc_measure_prg(dm_lua_to_int32(lua, 1))
+        inc_mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        call dm_geocom_api_request_do_measure(request, prog, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_do_measure
@@ -685,13 +685,13 @@ contains
     integer(kind=c_int) function lua_geocom_get_angle(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode
+        integer              :: inc_mode
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_angle(request, mode)
+        inc_mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        call dm_geocom_api_request_get_angle(request, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_angle
@@ -699,13 +699,13 @@ contains
     integer(kind=c_int) function lua_geocom_get_angle_complete(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode
+        integer              :: inc_mode
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_angle_complete(request, mode)
+        inc_mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        call dm_geocom_api_request_get_angle_complete(request, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_angle_complete
@@ -797,14 +797,14 @@ contains
     integer(kind=c_int) function lua_geocom_get_coordinate(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, wait_time
+        integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode  = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
         wait_time = max(0, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_coordinate(request, mode, wait_time)
+        call dm_geocom_api_request_get_coordinate(request, inc_mode, wait_time)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_coordinate
@@ -908,14 +908,14 @@ contains
     integer(kind=c_int) function lua_geocom_get_full_measurement(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, wait_time
+        integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode  = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
         wait_time = max(0, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_full_measurement(request, mode, wait_time)
+        call dm_geocom_api_request_get_full_measurement(request, inc_mode, wait_time)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_full_measurement
@@ -1191,14 +1191,14 @@ contains
     integer(kind=c_int) function lua_geocom_get_simple_coordinates(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, wait_time
+        integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode  = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
         wait_time = max(0, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_simple_coordinates(request, mode, wait_time)
+        call dm_geocom_api_request_get_simple_coordinates(request, inc_mode, wait_time)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_simple_coordinates
@@ -1206,14 +1206,14 @@ contains
     integer(kind=c_int) function lua_geocom_get_simple_measurement(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, wait_time
+        integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mode = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode  = dm_geocom_api_parameter_tmc_incline_prg(dm_lua_to_int32(lua, 1))
         wait_time = max(0, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_simple_measurement(request, mode, wait_time)
+        call dm_geocom_api_request_get_simple_measurement(request, inc_mode, wait_time)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_get_simple_measurement
@@ -1768,11 +1768,13 @@ contains
     integer(kind=c_int) function lua_geocom_set_reduced_atr_fov(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
+        logical              :: enabled
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        ! call dm_geocom_api_request_set_reduced_atr_fov(request, reduced)
+        enabled = dm_lua_to_logical(lua, 1)
+        call dm_geocom_api_request_set_reduced_atr_fov(request, enabled)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_set_reduced_atr_fov
@@ -1898,11 +1900,14 @@ contains
     integer(kind=c_int) function lua_geocom_set_velocity(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
+        real(kind=r8)        :: omega_hz, omega_v
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        ! call dm_geocom_api_request_set_velocity(request, omega_hz, omega_v)
+        omega_hz = dm_lua_to_real64(lua, 1)
+        omega_v  = dm_lua_to_real64(lua, 2)
+        call dm_geocom_api_request_set_velocity(request, omega_hz, omega_v)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_set_velocity
@@ -1962,7 +1967,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        ! call dm_geocom_api_request_switch_off(request, mode)
+        ! call dm_geocom_api_request_switch_off(request, stop_mode)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_switch_off
@@ -1974,7 +1979,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        ! call dm_geocom_api_request_switch_on(request, mode)
+        ! call dm_geocom_api_request_switch_on(request, start_mode)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_switch_on

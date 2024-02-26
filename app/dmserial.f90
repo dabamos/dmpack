@@ -495,6 +495,7 @@ contains
                 ! Initialise observation.
                 observ%node_id   = app%node
                 observ%sensor_id = app%sensor
+                observ%source    = app%name
                 observ%path      = trim(app%tty)
 
                 if (debug) then

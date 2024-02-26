@@ -3760,6 +3760,7 @@ NODE%Z=0.0,
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Za-z`).
 | `target_id` | string  | 32   | Target id (`-0-9A-Za-z`).
 | `name`      | string  | 32   | Observation name (`-0-9A-Za-z`).
+| `source`    | string  | 32   | Observation source (`-0-9A-Za-z`).
 | `timestamp` | string  | 32   | Date and time of observation (ISO 8601).
 | `path`      | string  | 32   | Path of TTY/PTY device.
 | `priority`  | integer | 4    | Message queue priority (>= 0).
@@ -3827,73 +3828,74 @@ NODE%Z=0.0,
 | 3         | `sensor_id`  | Sensor id.
 | 4         | `target_id`  | Target id.
 | 5         | `name`       | Observation name.
-| 6         | `timestamp`  | Date and time of observation.
-| 7         | `path`       | Path of TTY/PTY device.
-| 8         | `priority`   | Message queue priority.
-| 9         | `error`      | Error code.
-| 10        | `next`       | Cursor of receiver list (0 to 16).
-| 11        | `nreceivers` | Number of receivers (0 to 16).
-| 12        | `nrequests`  | Number of sensor requests (0 to 8).
-| 13 – 28   | `receivers`  | Array of receiver names (16).
-| 13        | `receiver`   | Receiver 1.
-| 14        | `receiver`   | Receiver 2.
-| 15        | `receiver`   | Receiver 3.
-| 16        | `receiver`   | Receiver 4.
-| 17        | `receiver`   | Receiver 5.
-| 18        | `receiver`   | Receiver 6.
-| 19        | `receiver`   | Receiver 7.
-| 20        | `receiver`   | Receiver 8.
-| 21        | `receiver`   | Receiver 9.
-| 22        | `receiver`   | Receiver 10.
-| 23        | `receiver`   | Receiver 11.
-| 24        | `receiver`   | Receiver 12.
-| 25        | `receiver`   | Receiver 13.
-| 26        | `receiver`   | Receiver 14.
-| 27        | `receiver`   | Receiver 15.
-| 28        | `receiver`   | Receiver 16.
-| 29 – 764  | `requests`   | Array of requests (8).
-| 29 – 103  | `request`    | Request 1.
-| 29        | `timestamp`  | Date and time of request.
-| 30        | `request`    | Raw request to sensor.
-| 31        | `response`   | Raw response of sensor.
-| 32        | `delimiter`  | Request delimiter.
-| 33        | `pattern`    | Regular expression pattern that describes the raw response.
-| 34        | `delay`      | Delay in mseconds to wait after the request.
-| 35        | `error`      | Error code.
-| 36        | `mode`       | Request mode.
-| 37        | `retries`    | Number of retries performed.
-| 38        | `state`      | Request state.
-| 39        | `timeout`    | Request timeout in mseconds.
-| 40        | `nresponses` | Number of responses (0 to 16).
-| 41 – 120  | `responses`  | Array of responses (16).
-| 41 – 45   | `response`   | Response 1.
-| 41        | `name`       | Response name.
-| 42        | `unit`       | Response unit.
-| 43        | `type`       | Response value type.
-| 44        | `error`      | Response error.
-| 45        | `value`      | Response value.
-| 46 – 50   | `response`   | Response 2.
-| 51 – 55   | `response`   | Response 3.
-| 56 – 60   | `response`   | Response 4.
-| 61 – 65   | `response`   | Response 5.
-| 66 – 70   | `response`   | Response 6.
-| 71 – 75   | `response`   | Response 7.
-| 76 – 80   | `response`   | Response 8.
-| 81 – 85   | `response`   | Response 9.
-| 86 – 90   | `response`   | Response 10.
-| 91 – 95   | `response`   | Response 11.
-| 96 – 100  | `response`   | Response 12.
-| 101 – 105 | `response`   | Response 13.
-| 106 – 110 | `response`   | Response 14.
-| 111 – 115 | `response`   | Response 15.
-| 116 – 120 | `response`   | Response 16.
-| 121 – 212 | `request`    | Request 2.
-| 213 – 304 | `request`    | Request 3.
-| 305 – 396 | `request`    | Request 4.
-| 397 – 488 | `request`    | Request 5.
-| 489 – 580 | `request`    | Request 6.
-| 581 – 672 | `request`    | Request 7.
-| 673 – 764 | `request`    | Request 8.
+| 6         | `source`     | Observation source.
+| 7         | `timestamp`  | Date and time of observation.
+| 8         | `path`       | Path of TTY/PTY device.
+| 9         | `priority`   | Message queue priority.
+| 10        | `error`      | Error code.
+| 11        | `next`       | Cursor of receiver list (0 to 16).
+| 12        | `nreceivers` | Number of receivers (0 to 16).
+| 13        | `nrequests`  | Number of sensor requests (0 to 8).
+| 14 – 29   | `receivers`  | Array of receiver names (16).
+| 14        | `receiver`   | Receiver 1.
+| 15        | `receiver`   | Receiver 2.
+| 16        | `receiver`   | Receiver 3.
+| 17        | `receiver`   | Receiver 4.
+| 18        | `receiver`   | Receiver 5.
+| 19        | `receiver`   | Receiver 6.
+| 20        | `receiver`   | Receiver 7.
+| 21        | `receiver`   | Receiver 8.
+| 22        | `receiver`   | Receiver 9.
+| 23        | `receiver`   | Receiver 10.
+| 24        | `receiver`   | Receiver 11.
+| 25        | `receiver`   | Receiver 12.
+| 26        | `receiver`   | Receiver 13.
+| 27        | `receiver`   | Receiver 14.
+| 28        | `receiver`   | Receiver 15.
+| 29        | `receiver`   | Receiver 16.
+| 30 – 765  | `requests`   | Array of requests (8).
+| 30 – 104  | `request`    | Request 1.
+| 30        | `timestamp`  | Date and time of request.
+| 31        | `request`    | Raw request to sensor.
+| 32        | `response`   | Raw response of sensor.
+| 33        | `delimiter`  | Request delimiter.
+| 34        | `pattern`    | Regular expression pattern that describes the raw response.
+| 35        | `delay`      | Delay in mseconds to wait after the request.
+| 36        | `error`      | Error code.
+| 37        | `mode`       | Request mode.
+| 38        | `retries`    | Number of retries performed.
+| 39        | `state`      | Request state.
+| 40        | `timeout`    | Request timeout in mseconds.
+| 41        | `nresponses` | Number of responses (0 to 16).
+| 42 – 121  | `responses`  | Array of responses (16).
+| 42 – 46   | `response`   | Response 1.
+| 42        | `name`       | Response name.
+| 43        | `unit`       | Response unit.
+| 44        | `type`       | Response value type.
+| 45        | `error`      | Response error.
+| 46        | `value`      | Response value.
+| 47 – 51   | `response`   | Response 2.
+| 52 – 56   | `response`   | Response 3.
+| 57 – 61   | `response`   | Response 4.
+| 62 – 66   | `response`   | Response 5.
+| 67 – 71   | `response`   | Response 6.
+| 72 – 76   | `response`   | Response 7.
+| 77 – 81   | `response`   | Response 8.
+| 82 – 86   | `response`   | Response 9.
+| 87 – 91   | `response`   | Response 10.
+| 92 – 96   | `response`   | Response 11.
+| 97 – 101  | `response`   | Response 12.
+| 102 – 106 | `response`   | Response 13.
+| 107 – 111 | `response`   | Response 14.
+| 112 – 116 | `response`   | Response 15.
+| 117 – 121 | `response`   | Response 16.
+| 122 – 213 | `request`    | Request 2.
+| 214 – 305 | `request`    | Request 3.
+| 306 – 397 | `request`    | Request 4.
+| 398 – 489 | `request`    | Request 5.
+| 490 – 581 | `request`    | Request 6.
+| 582 – 673 | `request`    | Request 7.
+| 674 – 765 | `request`    | Request 8.
 |===
 
 .HDF5 [[data-observ-hdf5]]
@@ -3908,6 +3910,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   "sensor_id": "dummy-sensor",
   "target_id": "dummy-target",
   "name": "dummy-observ",
+  "source": "dmdummy",
   "timestamp": "1970-01-01T00:00:00.000000+00:00",
   "path": "/dev/null",
   "priority": 0,
@@ -3955,9 +3958,10 @@ The HDF5 data-set description is too large to be fully shown in this document.
   node_id = "dummy-node",
   sensor_id = "dummy-sensor",
   target_id = "dummy-target",
+  name = "dummy-observ",
+  source = "dmdummy",
   timestamp = "1970-01-01T00:00:00.000000+00:00",
   path = "/dev/null",
-  name = "dummy-observ",
   error = 0,
   next = 1,
   priority = 0,
@@ -4000,6 +4004,7 @@ OBSERV%NODE_ID="dummy-node",
 OBSERV%SENSOR_ID="dummy-sensor",
 OBSERV%TARGET_ID="dummy-target",
 OBSERV%NAME="dummy-observ",
+OBSERV%SOURCE="dmdummy",
 OBSERV%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
 OBSERV%PATH="/dev/null",
 OBSERV%PRIORITY=0,

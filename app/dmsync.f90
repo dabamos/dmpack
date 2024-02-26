@@ -482,9 +482,9 @@ contains
                     end select code_select
 
                     ! Update sync data.
-                    syncs(i)%timestamp = dm_time_now()          ! Time of sync attempt.
-                    syncs(i)%code      = responses(i)%code      ! Server status code.
-                    syncs(i)%nattempts = syncs(i)%nattempts + 1 ! Number of sync attempts.
+                    syncs(i)%timestamp = dm_time_now()         ! Time of sync attempt.
+                    syncs(i)%code      = responses(i)%code     ! Server status code.
+                    syncs(i)%attempts  = syncs(i)%attempts + 1 ! Number of sync attempts.
 
                     ! Insert or replace the sync data in database. If the database
                     ! is busy, try up to `APP_DB_NATTEMPTS` times, then abort.

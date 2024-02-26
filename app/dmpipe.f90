@@ -281,6 +281,7 @@ contains
                 observ%id        = dm_uuid4()
                 observ%node_id   = app%node
                 observ%sensor_id = app%sensor
+                observ%source    = app%name
                 observ%timestamp = dm_time_now()
 
                 if (observ%nrequests == 0) then

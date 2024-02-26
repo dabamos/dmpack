@@ -22,6 +22,7 @@ module dm_observ
     ! ******************************************************************
     integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Observation id length.
     integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Observation name length.
+    integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Observation source length.
     integer, parameter, public :: OBSERV_PATH_LEN       = 32       !! Observation path length.
     integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN   !! Observation receiver length.
     integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16       !! Max. number of receivers.
@@ -36,6 +37,7 @@ module dm_observ
         character(len=SENSOR_ID_LEN)       :: sensor_id  = ' '          !! Sensor id.
         character(len=TARGET_ID_LEN)       :: target_id  = ' '          !! Target id.
         character(len=OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name.
+        character(len=OBSERV_SOURCE_LEN)   :: source     = ' '          !! Observation source.
         character(len=TIME_LEN)            :: timestamp  = ' '          !! ISO 8601 timestamp.
         character(len=OBSERV_PATH_LEN)     :: path       = ' '          !! TTY/PTY path.
         integer                            :: priority   = 0            !! Message queue priority (>= 0).
@@ -98,7 +100,7 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     integer function dm_observ_add_receiver(observ, receiver) result(rc)
-        !! Adds receiver to observation.
+        !! Validates and adds receiver to observation.
         !!
         !! Returns the following error codes:
         !!
@@ -107,7 +109,6 @@ contains
         !!    longer than the maximum `OBSERV_RECEIVER_LEN`.
         type(observ_type), intent(inout) :: observ   !! Observation type.
         character(len=*),  intent(in)    :: receiver !! Receiver name.
-        integer                          :: n
 
         rc = E_BOUNDS
         if (observ%nreceivers < 0 .or. observ%nreceivers >= OBSERV_MAX_NRECEIVERS) return
@@ -123,7 +124,8 @@ contains
 
     integer function dm_observ_add_request(observ, request) result(rc)
         !! Appends a request to an observation. Returns `E_BOUNDS` if the list
-        !! of requests is full.
+        !! of requests is full. The function does not validate the given
+        !! request.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
 
@@ -150,6 +152,7 @@ contains
         if (observ1%sensor_id  /= observ2%sensor_id)  return
         if (observ1%target_id  /= observ2%target_id)  return
         if (observ1%name       /= observ2%name)       return
+        if (observ1%source     /= observ2%source)     return
         if (observ1%timestamp  /= observ2%timestamp)  return
         if (observ1%path       /= observ2%path)       return
         if (observ1%priority   /= observ2%priority)   return
@@ -210,23 +213,24 @@ contains
         !! Returns `.true.` if given observation is valid. An observation is
         !! valid if it conforms to the following rules:
         !!
-        !! * Valid observation, node, sensor and target ids are set, and the
-        !!   observation id does not equal the default UUID, unless argument
-        !!   `id` is passed and `.false.`.
+        !! * A valid observation id, node id, sensor id, and target id are set,
+        !!   and the observation id does not equal the default UUID, unless
+        !!   argument `id` is passed and `.false.`.
         !! * The observation name is a valid id (limited character set, no
         !!   white spaces).
-        !! * The time stamp is in ISO 8601 format, unless argument `timestamp`
-        !!   is passed and `.false.`.
-        !! * The attributes _priority_ and _error_ are not negative.
+        !! * The attribute _timestamp_ is set and in ISO 8601 format, unless
+        !!   argument `timestamp` is passed and `.false.`.
+        !! * The attributes _priority_ is not negative.
+        !! * The attribute _error_ is a valid error code.
         !! * The attributes _next_ and _nreceivers_ are within the bounds of
         !!   the array _receivers_, or 0.
         !! * The attribute _nrequests_ is within the bounds of the array
-        !!   _receivers_, or 0.
+        !!   _requests_, or 0.
         !! * All receiver names are valid ids.
         !! * All requests and responses are valid.
         type(observ_type), intent(in)           :: observ    !! Observation type.
-        logical,           intent(in), optional :: id        !! Validate ids.
-        logical,           intent(in), optional :: timestamp !! Validate timestamps.
+        logical,           intent(in), optional :: id        !! Validate or ignore ids.
+        logical,           intent(in), optional :: timestamp !! Validate or ignore timestamps.
 
         integer :: i
         logical :: id_, timestamp_
@@ -248,6 +252,9 @@ contains
         end if
 
         if (.not. dm_id_valid(observ%name)) return
+        if (len_trim(observ%source) > 0) then
+            if (.not. dm_id_valid(observ%source)) return
+        end if
 
         if (timestamp_) then
             if (.not. dm_time_valid(observ%timestamp)) return
@@ -311,6 +318,7 @@ contains
         write (unit_, '("observ.sensor_id: ", a)')   trim(observ%sensor_id)
         write (unit_, '("observ.target_id: ", a)')   trim(observ%target_id)
         write (unit_, '("observ.name: ", a)')        trim(observ%name)
+        write (unit_, '("observ.source: ", a)')      trim(observ%source)
         write (unit_, '("observ.timestamp: ", a)')   observ%timestamp
         write (unit_, '("observ.path: ", a)')        trim(observ%path)
         write (unit_, '("observ.priority: ", i0)')   observ%priority

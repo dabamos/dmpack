@@ -341,7 +341,7 @@ contains
                               id        = observ%id, &
                               timestamp = dm_time_now(), &
                               code      = 500, &
-                              nattempts = 1)
+                              attempts = 1)
 
             print *, 'Inserting sync ...'
             rc = dm_db_insert_sync_observ(db, sync1)

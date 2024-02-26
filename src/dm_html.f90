@@ -1133,6 +1133,8 @@ contains
                H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Source' // H_TH_END // &
+               H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &

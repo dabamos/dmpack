@@ -71,7 +71,7 @@ observs = {
         --
         name = "meter",
         target_id = "meter",
-        receivers = { "dmserial", "dmdb" },
+        receivers = { "dmdb" },
         requests = {
             {
                 request = "Meter" .. del,

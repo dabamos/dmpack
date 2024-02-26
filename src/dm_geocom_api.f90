@@ -552,7 +552,8 @@ contains
     ! PUBLIC GEOCOM PARAMETER FUNCTIONS.
     ! **************************************************************************
     pure elemental integer function dm_geocom_api_parameter_aut_adjmode(param) result(n)
-        !! Returns `param` or `GEOCOM_AUT_NORM_MODE` if argument is invalid.
+        !! Parameterisation function for enumeration `AUT_ADJMODE`. Returns
+        !! `param` or `GEOCOM_AUT_NORM_MODE` if argument is invalid.
         integer, intent(in) :: param !! `AUT_ADJMODE`.
 
         select case (param)
@@ -566,7 +567,8 @@ contains
     end function dm_geocom_api_parameter_aut_adjmode
 
     pure elemental integer function dm_geocom_api_parameter_aut_atrmode(param) result(n)
-        !! Returns `param` or `GEOCOM_AUT_POSITION` if argument is invalid.
+        !! Parameterisation function for enumeration `AUT_ATRMODE`. Returns
+        !! `param` or `GEOCOM_AUT_POSITION` if argument is invalid.
         integer, intent(in) :: param !! `AUT_ATRMODE`.
 
         select case (param)
@@ -579,7 +581,8 @@ contains
     end function dm_geocom_api_parameter_aut_atrmode
 
     pure elemental integer function dm_geocom_api_parameter_aut_posmode(param) result(n)
-        !! Returns `param` or `GEOCOM_AUT_NORMAL` if argument is invalid.
+        !! Parameterisation function for enumeration `AUT_POSMODE`. Returns
+        !! `param` or `GEOCOM_AUT_NORMAL` if argument is invalid.
         integer, intent(in) :: param !! `AUT_POSMODE`.
 
         select case (param)
@@ -593,7 +596,8 @@ contains
     end function dm_geocom_api_parameter_aut_posmode
 
     pure elemental integer function dm_geocom_api_parameter_bap_prismtype(param) result(n)
-        !! Returns `param` or `GEOCOM_BAP_PRISM_ROUND` if argument is invalid.
+        !! Parameterisation function for enumeration `BAP_PRISMTYPE`. Returns
+        !! `param` or `GEOCOM_BAP_PRISM_ROUND` if argument is invalid.
         integer, intent(in) :: param !! `BAP_PRISMTYPE`.
 
         select case (param)
@@ -617,7 +621,8 @@ contains
     end function dm_geocom_api_parameter_bap_prismtype
 
     pure elemental integer function dm_geocom_api_parameter_img_mem_type(param) result(n)
-        !! Returns `param` or `GEOCOM_IMG_INTERNAL_MEMORY` if argument is invalid.
+        !! Parameterisation function for enumeration `IMG_MEM_TYPE`. Returns
+        !! `param` or `GEOCOM_IMG_INTERNAL_MEMORY` if argument is invalid.
         integer, intent(in) :: param !! `IMG_MEM_TYPE`.
 
         select case (param)
@@ -630,7 +635,8 @@ contains
     end function dm_geocom_api_parameter_img_mem_type
 
     pure elemental integer function dm_geocom_api_parameter_tmc_incline_prg(param) result(n)
-        !! Returns `param` or `GEOCOM_TMC_MEA_INC` if argument is invalid.
+        !! Parameterisation function for enumeration `TMC_INCLINE_PRG`. Returns
+        !! `param` or `GEOCOM_TMC_MEA_INC` if argument is invalid.
         integer, intent(in) :: param !! `TMC_INCLINE_PRG`.
 
         select case (param)
@@ -644,7 +650,8 @@ contains
     end function dm_geocom_api_parameter_tmc_incline_prg
 
     pure elemental integer function dm_geocom_api_parameter_tmc_measure_prg(param) result(n)
-        !! Returns `param` or `GEOCOM_TMC_DEF_DIST` if argument is invalid.
+        !! Parameterisation function for enumeration `TMC_MEASURE_PRG`. Returns
+        !! `param` or `GEOCOM_TMC_DEF_DIST` if argument is invalid.
         integer, intent(in) :: param !! `TMC_MEASURE_PRG`.
 
         select case (param)
@@ -673,7 +680,7 @@ contains
         character(len=*),    intent(in), optional :: arguments    !! GeoCOM request arguments.
         character(len=*),    intent(in), optional :: pattern      !! Regular expression pattern that matches the raw response.
         type(response_type), intent(in), optional :: responses(:) !! Array of response types.
-        integer,             intent(in), optional :: mode         !! Mode of returned request (`REQUEST_MODE_*`).
+        integer,             intent(in), optional :: mode         !! Mode of returned observation request (`REQUEST_MODE_*`).
 
         integer :: n
 
@@ -909,7 +916,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
     end subroutine dm_geocom_api_request_delete
 
-    pure subroutine dm_geocom_api_request_do_measure(request, prog, mode)
+    pure subroutine dm_geocom_api_request_do_measure(request, prog, inc_mode)
         !! Request of `TMC_DoMeasure` procedure. Creates request for trying a
         !! distance measurement. This command does not return any values.
         !!
@@ -925,8 +932,8 @@ contains
         !! * `TMC_RED_TRK_DIST`
         !! * `TMC_FREQUENCY`
         !!
-        !! The argument `mode` (`TMC_INCLINE_PRG`) may be one of the following
-        !! inclination measurement modes:
+        !! The argument `inc_mode` (`TMC_INCLINE_PRG`) may be one of the
+        !! following inclination measurement modes:
         !!
         !! * `TMC_MEA_INC`
         !! * `TMC_AUTO_INC`
@@ -942,18 +949,18 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2008:<prog>,<mode>`                        |
+        !! | ASCII request  | `%R1Q,2008:<prog>,<inc_mode>`                    |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
         integer, parameter :: REQCODE = 2008
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: prog    !! TMC measurement program (`TMC_MEASURE_PRG`).
-        integer,            intent(in)  :: mode    !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        type(request_type), intent(out) :: request  !! Prepared request.
+        integer,            intent(in)  :: prog     !! TMC measurement program (`TMC_MEASURE_PRG`).
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
 
         character(len=80) :: args
 
-        write (args, '(i0, ",", i0)') prog, mode
+        write (args, '(i0, ",", i0)') prog, inc_mode
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_do_measure
 
@@ -1045,7 +1052,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_fine_adjust
 
-    pure subroutine dm_geocom_api_request_get_angle(request, mode)
+    pure subroutine dm_geocom_api_request_get_angle(request, inc_mode)
         !! Request of `TMC_GetAngle5` procedure. Creates request for returning
         !! a simple angle measurement.
         !!
@@ -1060,19 +1067,19 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2107:<mode>`                               |
+        !! | ASCII request  | `%R1Q,2107:<inc_mode>`                           |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>`                        |
         !!
         integer,          parameter :: REQCODE = 2107
         character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<hz>[\d\.]+),(?<v>[\d\.]+)'
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
+        type(request_type), intent(out) :: request  !! Prepared request.
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(3)
 
-        write (args, '(i0)') mode
+        write (args, '(i0)') inc_mode
 
         responses = [ &
             response_type('grc', unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
@@ -1083,7 +1090,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, PATTERN, responses)
     end subroutine dm_geocom_api_request_get_angle
 
-    pure subroutine dm_geocom_api_request_get_angle_complete(request, mode)
+    pure subroutine dm_geocom_api_request_get_angle_complete(request, inc_mode)
         !! Request of `TMC_GetAngle1` procedure. Creates request for returning
         !! a complete angle measurement.
         !!
@@ -1106,7 +1113,7 @@ contains
         !! | Property       | Values                                                                               |
         !! |----------------|--------------------------------------------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2003:<mode>`                                                                   |
+        !! | ASCII request  | `%R1Q,2003:<inc_mode>`                                                               |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<angtime>,<xinc>,<linc>,<incacc>,<inctime>,<face>` |
         !!
         integer,          parameter :: REQCODE = 2003
@@ -1114,13 +1121,13 @@ contains
             '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<angtime>\d+),' // &
             '(?<xinc>[-\d\.]+),(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<inctime>\d+),(?<face>\d+)'
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: mode    !! Inclination sensor measurement mode (`TMC_INCLINE_PRG`).
+        type(request_type), intent(out) :: request  !! Prepared request.
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(10)
 
-        write (args, '(i0)') mode
+        write (args, '(i0)') inc_mode
 
         responses = [ &
             response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
@@ -1359,7 +1366,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
     end subroutine dm_geocom_api_request_get_config
 
-    pure subroutine dm_geocom_api_request_get_coordinate(request, mode, wait_time)
+    pure subroutine dm_geocom_api_request_get_coordinate(request, inc_mode, wait_time)
         !! Request of `TMC_GetCoordinate` procedure. Creates request for
         !! getting the coordinates of a measured point.
         !!
@@ -1387,7 +1394,7 @@ contains
         !! | Property       | Values                                                                               |
         !! |----------------|--------------------------------------------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2082:<wait_time>,<mode>`                                                       |
+        !! | ASCII request  | `%R1Q,2082:<wait_time>,<inc_mode>`                                                   |
         !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>,<ctime>,<eastc>,<northc>,<heightc>,<ctimec>` |
         !!
         integer,          parameter :: REQCODE = 2082
@@ -1396,13 +1403,13 @@ contains
             '(?<eastc>[-\d\.]+),(?<northc>[-\d\.]+),(?<heightc>[-\d\.]+),(?<ctimec>\d+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
-        integer,            intent(in)  :: wait_time !! Delay to wait [ms].
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
 
         character(len=80)   :: args
         type(response_type) :: responses(9)
 
-        write (args, '(i0, ",", i0)') wait_time, mode
+        write (args, '(i0, ",", i0)') wait_time, inc_mode
 
         responses = [ &
             response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
@@ -1684,7 +1691,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
     end subroutine dm_geocom_api_request_get_fine_adjust_mode
 
-    pure subroutine dm_geocom_api_request_get_full_measurement(request, mode, wait_time)
+    pure subroutine dm_geocom_api_request_get_full_measurement(request, inc_mode, wait_time)
         !! Request of `TMC_GetFullMeas` procedure. Creates request to query
         !! angle, inclination, and distance measurement values.
         !!
@@ -1709,10 +1716,10 @@ contains
         !! * `sdist`    – Slope distance [m].
         !! * `disttime` – Time of distance measurement [ms].
         !!
-        !! | Property       | Values                                                                           |
-        !! |----------------|----------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                         |
-        !! | ASCII request  | `%R1Q,2167:<wait_time>,<mode>`                                                   |
+        !! | Property       | Values                                                                       |
+        !! |----------------|------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                     |
+        !! | ASCII request  | `%R1Q,2167:<wait_time>,<inc_mode>`                                           |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<xinc>,<linc>,<incacc>,<sdist>,<disttime>` |
         !!
         integer,          parameter :: REQCODE = 2167
@@ -1721,13 +1728,13 @@ contains
             '(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<sdist>[-\d\.]+),(?<disttime>[-\d\.]+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
 
         character(len=80)   :: args
         type(response_type) :: responses(9)
 
-        write (args, '(i0, ",", i0)') wait_time, mode
+        write (args, '(i0, ",", i0)') wait_time, inc_mode
 
         responses = [ &
             response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
@@ -2466,7 +2473,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
     end subroutine dm_geocom_api_request_get_signal
 
-    pure subroutine dm_geocom_api_request_get_simple_coordinates(request, mode, wait_time)
+    pure subroutine dm_geocom_api_request_get_simple_coordinates(request, inc_mode, wait_time)
         !! Request of `TMC_GetSimpleCoord` procedure. Creates request for
         !! returning cartesian coordinates.
         !!
@@ -2487,7 +2494,7 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2116:<wait_time>,<mode>`                   |
+        !! | ASCII request  | `%R1Q,2116:<wait_time>,<inc_mode>`               |
         !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>`         |
         !!
         integer,          parameter :: REQCODE = 2116
@@ -2495,13 +2502,13 @@ contains
             '(?<grc>\d+),(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
 
         character(len=80)   :: args
         type(response_type) :: responses(4)
 
-        write (args, '(i0, ",", i0)') wait_time, mode
+        write (args, '(i0, ",", i0)') wait_time, inc_mode
 
         responses = [ &
             response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32),  &
@@ -2513,7 +2520,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, pattern=PATTERN, responses=responses)
     end subroutine dm_geocom_api_request_get_simple_coordinates
 
-    pure subroutine dm_geocom_api_request_get_simple_measurement(request, mode, wait_time)
+    pure subroutine dm_geocom_api_request_get_simple_measurement(request, inc_mode, wait_time)
         !! Request of `TMC_GetSimpleMea` procedure. Creates request for
         !! returning the values of the angle and distance measurement.
         !!
@@ -2531,20 +2538,20 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2108:<wait_time>,<mode>`                   |
+        !! | ASCII request  | `%R1Q,2108:<wait_time>,<inc_mode>`               |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
         !!
         integer,          parameter :: REQCODE = 2108
         character(len=*), parameter :: PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
 
         character(len=80)   :: args
         type(response_type) :: responses(4)
 
-        write (args, '(i0, ",", i0)') wait_time, mode
+        write (args, '(i0, ",", i0)') wait_time, inc_mode
 
         responses = [ &
             response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
@@ -3364,7 +3371,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_date_time
 
-    pure subroutine dm_geocom_api_request_set_distance(request, slope_dist, height_offset, mode)
+    pure subroutine dm_geocom_api_request_set_distance(request, slope_dist, height_offset, inc_mode)
         !! Request of `TMC_SetHandDist` procedure. Creates request for
         !! setting the slope distance and height offset.
         !!
@@ -3375,7 +3382,7 @@ contains
         !! 3π/2, depending on the face of the instrument. The previously
         !! measured distance is cleared.
         !!
-        !! The argument `mode` (`TMC_INCLINE_PRG`) must be one of the
+        !! The argument `inc_mode` (`TMC_INCLINE_PRG`) must be one of the
         !! following:
         !!
         !! * `TMC_MEA_INC`   – Use sensor (a priori sigma).
@@ -3386,22 +3393,22 @@ contains
         !!
         !! * `grc` – GeoCOM return code.
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2019:<slope_dist>,<height_offset>,<mode>`  |
-        !! | ASCII response | `%R1P,0,0:<grc>`                                 |
+        !! | Property       | Values                                               |
+        !! |----------------|------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                    |
+        !! | ASCII request  | `%R1Q,2019:<slope_dist>,<height_offset>,<inc_mode>`  |
+        !! | ASCII response | `%R1P,0,0:<grc>`                                     |
         !!
         integer, parameter :: REQCODE = 2019
 
         type(request_type), intent(out) :: request       !! Prepared request.
         real(kind=r8),      intent(in)  :: slope_dist    !! Slope distance [m].
         real(kind=r8),      intent(in)  :: height_offset !! Height offset [m].
-        integer,            intent(in)  :: mode          !! Inclination mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
 
         character(len=80) :: args
 
-        write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, mode
+        write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, inc_mode
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_distance
 
@@ -3498,7 +3505,7 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_egl_intensity
 
-    pure subroutine dm_geocom_api_request_set_fine_adjust_mode(request, mode)
+    pure subroutine dm_geocom_api_request_set_fine_adjust_mode(request, adj_mode)
         !! Request of `AUT_SetFineAdjustMode` procedure. Creates request for
         !! setting the fine adjust positioning mode.
         !!
@@ -3507,7 +3514,7 @@ contains
         !! robotic licence). If a target is near or held by hand, it is
         !! recommended to set the adjust mode to `AUT_POINT_MODE`.
         !!
-        !! The argument `mode` has to be either `AUT_NORM_MODE` or
+        !! The argument `adj_mode` has to be either `AUT_NORM_MODE` or
         !! `AUT_POINT_MODE`.
         !!
         !! The instrument returns the following responses:
@@ -3517,17 +3524,17 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,9031:<mode>`                               |
+        !! | ASCII request  | `%R1Q,9031:<adj_mode>`                           |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
         integer, parameter :: REQCODE = 9031
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: mode    !! Fine adjust positioning mode (`AUT_ADJMODE`).
+        type(request_type), intent(out) :: request  !! Prepared request.
+        integer,            intent(in)  :: adj_mode !! Fine adjust positioning mode (`AUT_ADJMODE`).
 
         character(len=80) :: args
 
-        write (args, '(i0)') mode
+        write (args, '(i0)') adj_mode
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_fine_adjust_mode
 
@@ -3889,11 +3896,11 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_prism_type_v2
 
-    pure subroutine dm_geocom_api_request_set_reduced_atr_fov(request, reduced)
+    pure subroutine dm_geocom_api_request_set_reduced_atr_fov(request, enabled)
         !! Request of `BAP_SetRedATRFov` procedure. Creates request for
         !! setting the reduced ATR field of view.
         !!
-        !! If `reduced` is `.true.`, ATR uses reduced field of view (about
+        !! If `enabled` is `.true.`, ATR uses reduced field of view (about
         !! 1/9), full field of view otherwise.
         !!
         !! The instrument returns the following responses:
@@ -3909,11 +3916,11 @@ contains
         integer, parameter :: REQCODE = 17008
 
         type(request_type), intent(out) :: request !! Prepared request.
-        logical,            intent(in)  :: reduced !! Use reduced field of view.
+        logical,            intent(in)  :: enabled !! Use reduced field of view.
 
         character(len=80) :: args
 
-        write (args, '(i1)') dm_btoi(reduced)
+        write (args, '(i1)') dm_btoi(enabled)
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_reduced_atr_fov
 
@@ -4378,11 +4385,11 @@ contains
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_stop_controller
 
-    pure subroutine dm_geocom_api_request_switch_off(request, mode)
+    pure subroutine dm_geocom_api_request_switch_off(request, stop_mode)
         !! Request of `COM_SwitchOffTPS` procedure. Creates request for
         !! turning the instrument off.
         !!
-        !! The argument `mode` has to be one of the following:
+        !! The argument `stop_mode` has to be one of the following:
         !!
         !! * `COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
         !! * `COM_TPS_STOP_SLEEP`     – Sleep mode (not supported by TPS1200).
@@ -4399,42 +4406,44 @@ contains
         !!
         integer, parameter :: REQCODE = 112
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: mode    !! Switch off mode (`COM_TPS_STOP_MODE`).
+        type(request_type), intent(out) :: request   !! Prepared request.
+        integer,            intent(in)  :: stop_mode !! Switch off mode (`COM_TPS_STOP_MODE`).
 
         character(len=80) :: args
 
-        write (args, '(i0)') mode
+        write (args, '(i0)') stop_mode
         call dm_geocom_api_request(request, REQCODE, args, GEOCOM_GRC_PATTERN, GEOCOM_GRC_RESPONSES)
     end subroutine dm_geocom_api_request_switch_off
 
-    pure subroutine dm_geocom_api_request_switch_on(request, mode)
+    pure subroutine dm_geocom_api_request_switch_on(request, start_mode)
         !! Request of `COM_SwitchOnTPS` procedure. Creates request for turning
         !! the instrument on.
         !!
-        !! The argument `mode` has to be one of the following:
+        !! The argument `start_mode` has to be one of the following:
         !!
         !! * `COM_TPS_STARTUP_LOCAL`  – Not supported by TPS1200.
         !! * `COM_TPS_STARTUP_REMOTE` – Online mode (RPC is enabled).
         !!
-        !! The instrument returns the following responses:
+        !! The instrument may return the following responses:
         !!
         !! * `grc` – GeoCOM return code.
+        !!
+        !! The response is not captured by the returned request.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,111:<mode>`                                |
+        !! | ASCII request  | `%R1Q,111:<start_mode>`                          |
         !! | ASCII response | `%R1P,0,0:5` (if switched on)                    |
         !!
         integer, parameter :: REQCODE = 111
 
-        type(request_type), intent(out) :: request !! Prepared request.
-        integer,            intent(in)  :: mode    !! Switch on mode (`COM_TPS_STARTUP_MODE`).
+        type(request_type), intent(out) :: request    !! Prepared request.
+        integer,            intent(in)  :: start_mode !! Switch on mode (`COM_TPS_STARTUP_MODE`).
 
         character(len=80) :: args
 
-        write (args, '(i0)') mode
+        write (args, '(i0)') start_mode
         call dm_geocom_api_request(request, REQCODE, args)
     end subroutine dm_geocom_api_request_switch_on
 

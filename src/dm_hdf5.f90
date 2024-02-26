@@ -493,6 +493,13 @@ contains
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
+        ! Observation source.
+        dims(1) = int(OBSERV_SOURCE_LEN, kind=hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%source))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'source', offset, tid, stat);           if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
         ! Observation timestamp.
         dims(1) = int(TIME_LEN, kind=hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%timestamp))

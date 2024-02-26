@@ -228,6 +228,7 @@ contains
                  'sensor_id'  // s // &
                  'target_id'  // s // &
                  'name'       // s // &
+                 'source'     // s // &
                  'timestamp'  // s // &
                  'tty'        // s // &
                  'priority'   // s // &
@@ -553,6 +554,7 @@ contains
               trim(observ%sensor_id)     // s // &
               trim(observ%target_id)     // s // &
               trim(observ%name)          // s // &
+              trim(observ%source)        // s // &
               trim(observ%timestamp)     // s // &
               trim(observ%path)          // s // &
               dm_itoa(observ%priority)   // s // &
@@ -1084,6 +1086,7 @@ contains
         rc = csv_next(buffer, observ%sensor_id,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%target_id,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%name,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%source,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%timestamp,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%path,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
@@ -1537,12 +1540,13 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(14a, 4(i0, a), i0)', advance='no', iostat=stat) &
+        write (unit_, '(16a, 4(i0, a), i0)', advance='no', iostat=stat) &
               trim(observ%id),        s, &
               trim(observ%node_id),   s, &
               trim(observ%sensor_id), s, &
               trim(observ%target_id), s, &
               trim(observ%name),      s, &
+              trim(observ%source),    s, &
               trim(observ%timestamp), s, &
               trim(observ%path),      s, &
               observ%priority,        s, &

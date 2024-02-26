@@ -330,6 +330,7 @@ contains
                ' "sensor_id": "' // trim(observ%sensor_id)     // '",' // &
                ' "target_id": "' // trim(observ%target_id)     // '",' // &
                ' "name": "'      // trim(observ%name)          // '",' // &
+               ' "source": "'    // trim(observ%source)        // '",' // &
                ' "timestamp": "' // trim(observ%timestamp)     // '",' // &
                ' "path": "'      // json_escape(observ%path)   // '",' // &
                ' "priority": '   // dm_itoa(observ%priority)   // ','  // &

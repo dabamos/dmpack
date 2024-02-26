@@ -214,11 +214,12 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    integer function read_observ(observ, node_id, sensor_id, debug) result(rc)
+    integer function read_observ(observ, node_id, sensor_id, source, debug) result(rc)
         !! Reads observation from file.
         type(observ_type), target, intent(inout)        :: observ    !! Observation to read.
         character(len=*),          intent(in)           :: node_id   !! Node id of observation.
         character(len=*),          intent(in)           :: sensor_id !! Sensor id of observation.
+        character(len=*),          intent(in)           :: source    !! Source of observation.
         logical,                   intent(in), optional :: debug     !! Output debug messages.
 
         integer                      :: delay
@@ -235,6 +236,7 @@ contains
         observ%id        = dm_uuid4()
         observ%node_id   = node_id
         observ%sensor_id = sensor_id
+        observ%source    = source
         observ%timestamp = dm_time_now()
 
         if (observ%nrequests == 0) then
@@ -389,7 +391,7 @@ contains
                 end if
 
                 ! Read observation from file system.
-                rc = read_observ(observ, app%node, app%sensor, debug=debug)
+                rc = read_observ(observ, app%node, app%sensor, app%name, debug=debug)
 
                 if (debug) then
                     call dm_log(LOG_DEBUG, 'finished observ ' // trim(observ%name) // &
