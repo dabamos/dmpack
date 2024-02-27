@@ -183,7 +183,7 @@ contains
         ! Open message queue.
         mqueue%mqd = c_mq_open(name  = trim(mqueue%name) // c_null_char, &
                                oflag = flag, &
-                               mode  = mode_, &
+                               mode  = int(mode_, kind=c_mode_t), &
                                attr  = c_loc(attr))
         if (mqueue%mqd < 0) return
 

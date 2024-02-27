@@ -70,7 +70,10 @@ contains
         sem%name = '/' // name
 
         rc = E_SYSTEM
-        sem%ptr = c_sem_open(trim(sem%name) // c_null_char, flag, mode_, value_)
+        sem%ptr = c_sem_open(name  = trim(sem%name) // c_null_char, &
+                             oflag = flag, &
+                             mode  = int(mode_, kind=c_mode_t), &
+                             value = value_)
         if (.not. c_associated(sem%ptr)) return
         rc = E_NONE
     end function dm_sem_open

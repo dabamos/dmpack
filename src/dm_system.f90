@@ -39,7 +39,7 @@ contains
         rc = E_SYSTEM
 
         ! Clear file creation mask.
-        mode = c_umask(0)
+        mode = c_umask(int(0, kind=c_mode_t))
 
         ! Spawn a new process and exit.
         pid = c_fork()

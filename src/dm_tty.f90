@@ -263,7 +263,7 @@ contains
 
         ! Open TTY.
         rc = E_IO
-        tty%fd = c_open(trim(tty%path) // c_null_char, flags, 0)
+        tty%fd = c_open(trim(tty%path) // c_null_char, flags, int(0, kind=c_mode_t))
         if (tty%fd < 0) return
 
         rc = dm_tty_set_attributes(tty)

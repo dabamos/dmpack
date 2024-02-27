@@ -80,7 +80,7 @@ contains
         if (present(perm)) fifo%perm = perm
 
         if (present(error)) error = E_IO
-        rc = c_mkfifo(trim(fifo%path) // c_null_char, fifo%perm)
+        rc = c_mkfifo(trim(fifo%path) // c_null_char, int(fifo%perm, kind=c_mode_t))
         if (rc < 0) return
         if (present(error)) error = E_NONE
     end subroutine dm_fifo_create
@@ -96,7 +96,7 @@ contains
         if (.not. allocated(fifo%path)) return
         if (len_trim(fifo%path) == 0) return
 
-        fifo%fd = c_open(fifo%path // c_null_char, O_RDONLY, S_IRUSR)
+        fifo%fd = c_open(fifo%path // c_null_char, O_RDONLY, int(S_IRUSR, kind=c_mode_t))
         if (fifo%fd < 0) return
         fifo%stream = c_fdopen(fifo%fd, 'r' // c_null_char)
         if (.not. c_associated(fifo%stream)) return
