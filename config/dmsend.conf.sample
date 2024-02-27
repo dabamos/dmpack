@@ -6,16 +6,15 @@
 --
 -- Settings:
 --
---      debug     -   Forward log messages of level DEBUG via IPC (if logger is set).
---      format    -   Input format (`csv`, `nml`).
---      forward   -   Forward observations to the next specified receiver.
---      input     -   Path to input file in CSV or Fortran 95 Namelist format,
---                    or `-` for standard input.
---      logger    -   Name of logger instance (implies log forwarding).
---      node      -   Optional node id.
---      receiver  -   Name of the process to send the records to (`forward` must be false).
---      type      -   Record data type (`log`, `observ`).
---      verbose   -   Print logs to standard error.
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      format   - Input format (`csv`, `nml`).
+--      forward  - Forward observations to the next specified receiver.
+--      input    - Path to input file in CSV or Fortran 95 Namelist format, or `-` for standard input.
+--      logger   - Name of logger instance (implies log forwarding).
+--      node     - Optional node id.
+--      receiver - Name of the process to send the records to (`forward` must be false).
+--      type     - Record data type (`log`, `observ`).
+--      verbose  - Print logs to standard error.
 --
 
 dmsend = {

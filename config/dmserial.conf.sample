@@ -15,22 +15,22 @@
 --
 -- Settings:
 --
---      baudrate    -   Baud rate (4800, 9600, 19200, 115200, ...).
---      bytesize    -   Byte size (5, 6, 7, 8)
---      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
---      dtr         -   DTR on/off.
---      format      -   Output format, either `csv` or `jsonl`.
---      jobs        -   List of jobs to perform.
---      logger      -   Name of logger instance (implies log forwarding).
---      node        -   Node id.
---      output      -   Path of output file, or `-` for stdout (optional).
---      parity      -   Parity (`none`, `even`, `odd`).
---      rts         -   RTS on/off.
---      sensor      -   Sensor id.
---      stopbits    -   Number of stop bits (1 or 2).
---      timeout     -   Read timeout in seconds.
---      tty         -   Path of TTY/PTY device (for example, `/dev/ttyU0`).
---      verbose     -   Print logs to standard error.
+--      baudrate - Baud rate (4800, 9600, 19200, 115200, ...).
+--      bytesize - Byte size (5, 6, 7, 8)
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      dtr      - DTR on/off.
+--      format   - Output format, either `csv` or `jsonl`.
+--      jobs     - List of jobs to perform.
+--      logger   - Name of logger instance (implies log forwarding).
+--      node     - Node id.
+--      output   - Path of output file, or `-` for stdout (optional).
+--      parity   - Parity (`none`, `even`, `odd`).
+--      rts      - RTS on/off.
+--      sensor   - Sensor id.
+--      stopbits - Number of stop bits (1 or 2).
+--      timeout  - Read timeout in seconds.
+--      tty      - Path of TTY/PTY device (for example, `/dev/ttyU0`).
+--      verbose  - Print logs to standard error.
 --
 
 --

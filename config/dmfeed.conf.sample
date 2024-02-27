@@ -18,19 +18,20 @@
 --
 -- Settings:
 --
---      author      -   Name of feed author or organisation (optional).
---      database    -   Path to DMPACK log database.
---      email       -   E-mail of feed author (optional).
---      id          -   36 characters long UUID (with hyphens) of the Atom feed.
---      maxlevel    -   Maximum log level (0 to 5, optional).
---      minlevel    -   Minimum log level (0 to 5, optional).
---      nentries    -   Maximum number of entries is feed (default 50, optional).
---      node        -   Sensor node id, selects only related logs (optional).
---      output      -   Path to output file (if empty, feed is printed to standard output).
---      subtitle    -   Subtitle of the feed (optional).
---      title       -   Title of the feed (optional).
---      url         -   URL of the output feed (optional).
---      xsl         -   URL of XSLT style sheet (optional, empty for none).
+--      author   - Name of feed author or organisation (optional).
+--      database - Path to DMPACK log database.
+--      email    - E-mail of feed author (optional).
+--      force    - Force writing of output file even if no new logs are available.
+--      id       - 36 characters long UUID (with hyphens) of the Atom feed.
+--      maxlevel - Maximum log level (0 to 5, optional).
+--      minlevel - Minimum log level (0 to 5, optional).
+--      nentries - Maximum number of entries is feed (default 50, optional).
+--      node     - Sensor node id, selects only related logs (optional).
+--      output   - Path to output file (if empty, feed is printed to standard output).
+--      subtitle - Subtitle of the feed (optional).
+--      title    - Title of the feed (optional).
+--      url      - URL of the output feed (optional).
+--      xsl      - URL of XSLT style sheet (optional, empty for none).
 --
 
 dmfeed = {
@@ -46,5 +47,6 @@ dmfeed = {
     maxlevel = LOG_CRITICAL,
     nentries = 100,
     xsl = "feed.xsl",
-    output = "/var/www/feed.xml"
+    output = "/var/www/feed.xml",
+    force = false
 }

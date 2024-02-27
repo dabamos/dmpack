@@ -10,14 +10,14 @@
 --
 -- Settings:
 --
---      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
---      format      -   Output format, either `csv` or `jsonl`.
---      jobs        -   List of jobs to perform.
---      logger      -   Name of logger instance (implies log forwarding).
---      node        -   Node id.
---      output      -   Path of output file, or `-` for stdout (optional).
---      sensor      -   Sensor id.
---      verbose     -   Print logs to standard error.
+--      debug   - Forward log messages of level DEBUG via IPC (if logger is set).
+--      format  - Output format, either `csv` or `jsonl`.
+--      jobs    - List of jobs to perform.
+--      logger  - Name of logger instance (implies log forwarding).
+--      node    - Node id.
+--      output  - Path of output file, or `-` for stdout (optional).
+--      sensor  - Sensor id.
+--      verbose - Print logs to standard error.
 --
 
 --

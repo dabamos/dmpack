@@ -15,16 +15,16 @@
 --
 -- Settings:
 --
---      from        -   Timestamp in ISO 8601 (required).
---      logs        -   Logs settings.
---      meta        -   Optional description text.
---      node        -   Node id (required).
---      output      -   Path to output file (if empty, report is printed to stdout).
---      plots       -   Plots settings.
---      style       -   Path to (minified) CSS file.
---      subtitle    -   Subtitle of the report.
---      title       -   Title of the report.
---      to          -   Timestamp in ISO 8601 (required).
+--      from     - Timestamp in ISO 8601 (required).
+--      logs     - Logs settings.
+--      meta     - Optional description text.
+--      node     - Node id (required).
+--      output   - Path to output file (if empty, report is printed to stdout).
+--      plots    - Plots settings.
+--      style    - Path to (minified) CSS file.
+--      subtitle - Subtitle of the report.
+--      title    - Title of the report.
+--      to       - Timestamp in ISO 8601 (required).
 --
 
 dmreport = {

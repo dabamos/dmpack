@@ -5,12 +5,12 @@
 --
 -- Settings:
 --
---      debug       -   Forward log messages of level DEBUG via IPC (if logger is set).
---      logger      -   Name of logger instance (implies log forwarding).
---      node        -   Node id (required).
---      procedure   -   Name of the Lua procedure (required).
---      script      -   Path to the Lua script file (required).
---      verbose     -   Print logs to standard error.
+--      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
+--      logger    - Name of logger instance (implies log forwarding).
+--      node      - Node id (required).
+--      procedure - Name of the Lua procedure (required).
+--      script    - Path to the Lua script file (required).
+--      verbose   - Print logs to standard error.
 --
 
 dmlua = {

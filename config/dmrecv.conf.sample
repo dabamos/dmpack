@@ -6,16 +6,16 @@
 --
 -- Settings:
 --
---      debug     -   Forward log messages of level DEBUG via IPC (if logger is set).
---      format    -   Output format: `block`, `csv`, `jsonl`, `nml` (required).
---      forward   -   Forward observations to the next specified receiver (disabled by default).
---      logger    -   Name of logger instance (implies log forwarding).
---      node      -   Optional node id.
---      output    -   Path of output file (standard output if empty or `-`).
---      replace   -   Replace output file instead of appending data (disabled by default).
---      response  -   Name of response in received observation (required for format `block`).
---      type      -   Data type to receive (`log`, `observ`).
---      verbose   -   Print logs to standard error.
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      format   - Output format: `block`, `csv`, `jsonl`, `nml` (required).
+--      forward  - Forward observations to the next specified receiver (disabled by default).
+--      logger   - Name of logger instance (implies log forwarding).
+--      node     - Optional node id.
+--      output   - Path of output file (standard output if empty or `-`).
+--      replace  - Replace output file instead of appending data (disabled by default).
+--      response - Name of response in received observation (required for format `block`).
+--      type     - Data type to receive (`log`, `observ`).
+--      verbose  - Print logs to standard error.
 --
 
 dmrecv = {
