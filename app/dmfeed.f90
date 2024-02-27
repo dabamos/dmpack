@@ -11,7 +11,7 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     integer, parameter :: APP_MAX_NENTRIES = 500 !! Maximum number of feed entries.
 
@@ -25,6 +25,7 @@ program dmfeed
         integer                      :: minlevel = LOG_DEBUG    !! Minimum log level
         integer                      :: maxlevel = LOG_CRITICAL !! Maximum log level.
         integer                      :: nentries = 50           !! Max. number of entries in feed.
+        logical                      :: force    = .false.      !! Force writing of output file.
         type(atom_type)              :: atom                    !! Atom type.
     end type app_type
 
@@ -42,11 +43,37 @@ program dmfeed
     call create_feed(app, rc)
     if (dm_is_error(rc)) call dm_stop(1)
 contains
+    logical function is_stale_file(path, time) result(is_stale)
+        !! Returns `.true.` if last modification time of file at `path` is
+        !! lower than `time`.
+        character(len=*),        intent(in) :: path !! Path to file.
+        character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp of last record.
+
+        integer(kind=i8)       :: epoch
+        type(file_status_type) :: file_status
+
+        is_stale = .true.
+        if (.not. dm_file_exists(path)) return
+
+        ! Read file status to get last modification time.
+        rc = dm_file_status(app%output, file_status)
+        if (dm_is_error(rc)) return
+        if (file_status%type /= FILE_TYPE_FILE) return
+
+        ! Convert ISO 8601 to Unix epoch to normalise the GMT offset.
+        rc = dm_time_to_unix(time, epoch)
+        if (dm_is_error(rc)) return
+
+        ! Last file modification time is older than given time stamp?
+        if (file_status%m_time < epoch) return
+        is_stale = .false.
+    end function is_stale_file
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and configuration
         !! from file (if `--config` is passed).
         type(app_type), intent(inout) :: app !! App type.
-        type(arg_type)                :: args(15)
+        type(arg_type)                :: args(16)
 
         rc = E_NONE
 
@@ -59,6 +86,7 @@ contains
             arg_type('minlevel', short='L', type=ARG_TYPE_INTEGER), & ! -L, --minlevel <n>
             arg_type('maxlevel', short='K', type=ARG_TYPE_INTEGER), & ! -K, --maxlevel <n>
             arg_type('nentries', short='E', type=ARG_TYPE_INTEGER), & ! -E, --nentries <n>
+            arg_type('force',    short='F', type=ARG_TYPE_BOOL),    & ! -F, --force
             arg_type('author',   short='A', type=ARG_TYPE_CHAR),    & ! -A, --author <string>
             arg_type('email',    short='M', type=ARG_TYPE_CHAR),    & ! -M, --email <string>
             arg_type('id',       short='I', type=ARG_TYPE_CHAR),    & ! -I, --id <string>
@@ -86,13 +114,14 @@ contains
         rc = dm_arg_get(args( 6), app%minlevel)
         rc = dm_arg_get(args( 7), app%maxlevel)
         rc = dm_arg_get(args( 8), app%nentries)
-        rc = dm_arg_get(args( 9), app%atom%author)
-        rc = dm_arg_get(args(10), app%atom%email)
-        rc = dm_arg_get(args(11), app%atom%id)
-        rc = dm_arg_get(args(12), app%atom%title)
-        rc = dm_arg_get(args(13), app%atom%subtitle)
-        rc = dm_arg_get(args(14), app%atom%url)
-        rc = dm_arg_get(args(15), app%atom%xsl)
+        rc = dm_arg_get(args( 9), app%force)
+        rc = dm_arg_get(args(10), app%atom%author)
+        rc = dm_arg_get(args(11), app%atom%email)
+        rc = dm_arg_get(args(12), app%atom%id)
+        rc = dm_arg_get(args(13), app%atom%title)
+        rc = dm_arg_get(args(14), app%atom%subtitle)
+        rc = dm_arg_get(args(15), app%atom%url)
+        rc = dm_arg_get(args(16), app%atom%xsl)
 
         ! Validate passed options.
         rc = E_INVALID
@@ -152,6 +181,7 @@ contains
             rc = dm_config_get(config, 'minlevel', app%minlevel)
             rc = dm_config_get(config, 'maxlevel', app%maxlevel)
             rc = dm_config_get(config, 'nentries', app%nentries)
+            rc = dm_config_get(config, 'force',    app%force)
             rc = dm_config_get(config, 'author',   app%atom%author)
             rc = dm_config_get(config, 'email',    app%atom%email)
             rc = dm_config_get(config, 'id',       app%atom%id)
@@ -210,19 +240,31 @@ contains
                 exit feed_block
             end if
 
-            ! Create Atom XML string.
-            app%atom%updated = logs(1)%timestamp
-            call dm_atom_from_logs(app%atom, logs, xml)
+            ! Time stamp of last log record.
+            if (size(logs) > 0) app%atom%updated = logs(1)%timestamp
 
-            ! Write to file.
-            if (is_file) then
-                call dm_file_write(app%output, xml, raw=.true., error=rc)
-                if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
-                exit feed_block
+            if (is_file .and. .not. app%force) then
+                ! Write output file only if the time stamp of the last log
+                ! record is greater than file modification time.
+                if (.not. is_stale_file(app%output, app%atom%updated)) then
+                    ! Nothing to do here.
+                    rc = E_NONE
+                    exit feed_block
+                end if
             end if
 
-            ! Write to standard output.
-            print '(a)', xml
+            ! Create Atom XML string.
+            call dm_atom_from_logs(app%atom, logs, xml)
+
+            if (is_file) then
+                ! Write to file.
+                call dm_file_write(app%output, xml, raw=.true., error=rc)
+                if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
+            else
+                ! Write to standard output.
+                print '(a)', xml
+            end if
+
             rc = E_NONE
         end block feed_block
 

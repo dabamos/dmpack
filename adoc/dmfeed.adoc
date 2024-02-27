@@ -16,10 +16,10 @@ dmfeed - creates Atom XML feed from log messages
 *dmfeed* --version
 
 *dmfeed* --*database* _file_ [--*output* _file_] [--*node* _id_]
-         [--*minlevel* _level_] [--*maxlevel* _level_] [--*nentries* _count_]
-         [--*author* _name_] [--*email* _address_] [--*id* _uuid_]
-         [--*title* _title_] [--*subtitle* _title_] [--*url* _url_]
-         [--*xsl* _file_]
+[--*minlevel* _level_] [--*maxlevel* _level_] [--*nentries* _count_]
+[--*author* _name_] [--*email* _address_] [--*id* _uuid_]
+[--*title* _title_] [--*subtitle* _title_] [--*url* _url_] [--*xsl* _file_]
+[--*force*]
 
 *dmfeed* --*config* _file_ [--*name* _name_]
 
@@ -49,6 +49,10 @@ the last log message.
 
 *--email*, *-M* _address_::
   E-mail address of feed author.
+
+*--force*, *-F*::
+  Force writing of output file. If not set, the output file will be updated
+  only if new log records are available.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

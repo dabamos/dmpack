@@ -266,8 +266,8 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
 
 # Tests target.
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
-      dmtestdb dmtestdp dmtesthash dmtesthdf5 dmtesthtml dmtestlogger dmtestlua \
-      dmtestjob dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml \
+      dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestlogger \
+      dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml \
       dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc \
       dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil \
       dmtestuuid dmtestz
@@ -481,6 +481,9 @@ dmtestdb: test/dmtestdb.f90 $(TARGET)
 
 dmtestdp: test/dmtestdp.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp test/dmtestdp.f90 $(TARGET) $(LDLIBS)
+
+dmtestfile: test/dmtestfile.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestfile test/dmtestfile.f90 $(TARGET) $(LDLIBS)
 
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)

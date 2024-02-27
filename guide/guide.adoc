@@ -838,6 +838,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--config _file_`     | `-c`  | –        | Path to configuration file.
 | `--database _file_`   | `-d`  | –        | Path to SQLite log database.
 | `--email _address_`   | `-M`  | –        | E-mail address of feed author.
+| `--force`             | `-F`  | –        | Force file output even if no new log records are available.
 | `--help`              | `-h`  | –        | Output available command-line arguments and quit.
 | `--id _uuid_`         | `-I`  | –        | UUID of the feed, 36 characters long with hyphens.
 | `--maxlevel _level_`  | `-K`  | 5        | Select log messages of the given maximum <<data-log-level,log level>> (between 1 and 5). Must be greater or equal the minimum level.

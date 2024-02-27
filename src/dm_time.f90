@@ -28,6 +28,12 @@ module dm_time
         integer :: seconds = 0 !! Bygone seconds.
     end type time_delta_type
 
+    interface dm_time_from_unix
+        !! Converts Unix epoch to integer or string representation.
+        module procedure :: time_from_unix_integer
+        module procedure :: time_from_unix_string
+    end interface
+
     public :: dm_time_create
     public :: dm_time_delta_from_seconds
     public :: dm_time_delta_to_string
@@ -43,7 +49,13 @@ module dm_time
     public :: dm_time_to_unix
     public :: dm_time_valid
     public :: dm_time_zone
+
+    private:: time_from_unix_integer
+    private:: time_from_unix_string
 contains
+    ! ******************************************************************
+    ! PUBLIC PROCEDURES.
+    ! ******************************************************************
     pure elemental character(len=TIME_LEN) &
     function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(str)
         !! Returns a time stamp in ISO 8601/RFC 3339 of the form
@@ -152,41 +164,6 @@ contains
 
         seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
     end function dm_time_diff
-
-    impure elemental integer function dm_time_from_unix(epoch, year, month, day, hour, minute, second) result(rc)
-        !! Converts the calendar time `epoch` in UTC to broken-down time
-        !! representation. Returns `E_SYSTEM` if the system call failed.
-        !!
-        !! The argument `epoch` is the number of seconds elapsed since the
-        !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
-        !!
-        !! The function calls `gmtime_r()` internally (SUSv2).
-        use :: unix
-        integer(kind=i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
-        integer,          intent(out), optional :: year   !! Year part of time stamp.
-        integer,          intent(out), optional :: month  !! Month part of time stamp.
-        integer,          intent(out), optional :: day    !! Day part of time stamp.
-        integer,          intent(out), optional :: hour   !! Hour part of time stamp.
-        integer,          intent(out), optional :: minute !! Minute part of time stamp.
-        integer,          intent(out), optional :: second !! Second part of time stamp.
-
-        type(c_ptr) :: ptr
-        type(c_tm)  :: tm
-
-        rc = E_SYSTEM
-
-        ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
-        if (.not. c_associated(ptr)) return
-
-        if (present(year))   year   = tm%tm_year + 1900
-        if (present(month))  month  = tm%tm_mon + 1
-        if (present(day))    day    = tm%tm_mday
-        if (present(hour))   hour   = tm%tm_hour
-        if (present(minute)) minute = tm%tm_min
-        if (present(second)) second = tm%tm_sec
-
-        rc = E_NONE
-    end function dm_time_from_unix
 
     integer(kind=i8) function dm_time_mseconds() result(mseconds)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch).
@@ -436,4 +413,76 @@ contains
         if (present(zone_minute)) write (zone_minute, '(i0.2)')         tz_minute
         if (present(zone))        write (zone,        '(sp, i0.2, ss, ":", i0.2)') tz_hour, tz_minute
     end subroutine dm_time_strings
+
+    ! ******************************************************************
+    ! PRIVATE PROCEDURES.
+    ! ******************************************************************
+    impure elemental integer function time_from_unix_integer(epoch, year, month, day, hour, minute, second) result(rc)
+        !! Converts the calendar time `epoch` in UTC to broken-down time
+        !! representation. Returns `E_SYSTEM` if the system call failed.
+        !!
+        !! The argument `epoch` is the number of seconds elapsed since the
+        !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
+        !!
+        !! The function calls `gmtime_r()` internally (SUSv2).
+        use :: unix
+        integer(kind=i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
+        integer,          intent(out), optional :: year   !! Year part of time stamp.
+        integer,          intent(out), optional :: month  !! Month part of time stamp.
+        integer,          intent(out), optional :: day    !! Day part of time stamp.
+        integer,          intent(out), optional :: hour   !! Hour part of time stamp.
+        integer,          intent(out), optional :: minute !! Minute part of time stamp.
+        integer,          intent(out), optional :: second !! Second part of time stamp.
+
+        type(c_ptr) :: ptr
+        type(c_tm)  :: tm
+
+        rc = E_SYSTEM
+
+        ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
+        if (.not. c_associated(ptr)) return
+
+        if (present(year))   year   = tm%tm_year + 1900
+        if (present(month))  month  = tm%tm_mon + 1
+        if (present(day))    day    = tm%tm_mday
+        if (present(hour))   hour   = tm%tm_hour
+        if (present(minute)) minute = tm%tm_min
+        if (present(second)) second = tm%tm_sec
+
+        rc = E_NONE
+    end function time_from_unix_integer
+
+    impure elemental integer function time_from_unix_string(epoch, time) result(rc)
+        !! Converts the calendar time `epoch` in UTC to ISO 8601
+        !! representation. Returns `E_SYSTEM` if the system call failed.
+        !!
+        !! The argument `epoch` is the number of seconds elapsed since the
+        !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
+        !!
+        !! The function calls `gmtime_r()` internally (SUSv2).
+        use :: unix
+        character(len=*), parameter :: FMT_ISO = '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".000000+00:00")'
+
+        integer(kind=i8),        intent(in)  :: epoch !! Unix time stamp in seconds (UTC).
+        character(len=TIME_LEN), intent(out) :: time  !! ISO 8601 representation.
+
+        type(c_ptr) :: ptr
+        type(c_tm)  :: tm
+
+        rc = E_SYSTEM
+        ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
+
+        if (.not. c_associated(ptr)) then
+            time = TIME_DEFAULT
+            return
+        end if
+
+        write (time, FMT_ISO) tm%tm_year + 1900, &
+                              tm%tm_mon + 1, &
+                              tm%tm_mday, &
+                              tm%tm_hour, &
+                              tm%tm_min, &
+                              tm%tm_sec
+        rc = E_NONE
+    end function time_from_unix_string
 end module dm_time

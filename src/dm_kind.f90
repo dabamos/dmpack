@@ -5,6 +5,7 @@ module dm_kind
     !!
     !! This module provides the following integer and real kinds:
     !!
+    !! * 2-byte integer: `i2` (⇒ `int16`)
     !! * 4-byte integer: `i4` (⇒ `int32`)
     !! * 8-byte integer: `i8` (⇒ `int64`)
     !! * 4-byte real:    `r4` (⇒ `real32`)
@@ -15,7 +16,8 @@ module dm_kind
     !! * standard error:  `stderr` (⇒ `error_unit`)
     !! * standard input:  `stdin`  (⇒ `input_unit`)
     !! * standard output: `stdout` (⇒ `output_unit`)
-    use, intrinsic :: iso_fortran_env, only: i4     => int32, &
+    use, intrinsic :: iso_fortran_env, only: i2     => int16, &
+                                             i4     => int32, &
                                              i8     => int64, &
                                              r4     => real32, &
                                              r8     => real64, &
@@ -25,6 +27,7 @@ module dm_kind
     implicit none (type, external)
     private
 
+    public :: i2
     public :: i4
     public :: i8
     public :: r4

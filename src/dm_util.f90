@@ -47,6 +47,12 @@ module dm_util
         module procedure :: dm_real32_to_real64
     end interface
 
+    interface dm_to_signed
+        !! Converts unsigned integer to signed integer.
+        module procedure :: dm_uint16_to_int32
+        module procedure :: dm_uint32_to_int64
+    end interface
+
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
@@ -77,6 +83,10 @@ module dm_util
     public :: dm_real64_to_int64
     public :: dm_real64_to_logical
     public :: dm_real64_to_real32
+
+    public :: dm_to_signed
+    public :: dm_uint16_to_int32
+    public :: dm_uint32_to_int64
 
     ! Private procedures.
     private :: array_has_i4
@@ -205,6 +215,26 @@ contains
         end if
     end function dm_logical_to_real64
 
+    pure elemental integer(kind=i4) function dm_uint16_to_int32(i) result(r)
+        integer(kind=i2), intent(in) :: i
+
+        if (i > 0) then
+            r = int(i, kind=i4)
+        else
+            r = 65536_i4 + int(i, kind=i4)
+        end if
+    end function dm_uint16_to_int32
+
+    pure elemental integer(kind=i8) function dm_uint32_to_int64(i) result(r)
+        integer(kind=i4), intent(in) :: i
+
+        if (i > 0) then
+            r = int(i, kind=i8)
+        else
+            r = 4294967296_i8 + int(i, kind=i8)
+        end if
+    end function dm_uint32_to_int64
+
     pure elemental function dm_real32_to_real64(f) result(r)
         !! Converts 4-byte real to 8-byte real.
         real(kind=r4), intent(in) :: f !! 4-byte real value.
@@ -265,7 +295,7 @@ contains
     end subroutine dm_usleep
 
     ! ******************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PRIVATE PROCEDURES.
     ! ****************************************************************** 
     logical function array_has_i4(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
