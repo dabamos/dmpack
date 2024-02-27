@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-23
+.\"      Date: 2024-02-27
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2024-02-23" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2024-02-27" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -38,8 +38,8 @@ dmfeed \- creates Atom XML feed from log messages
 \fBdmfeed\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBnode\fP \fIid\fP]
 [\-\-\fBminlevel\fP \fIlevel\fP] [\-\-\fBmaxlevel\fP \fIlevel\fP] [\-\-\fBnentries\fP \fIcount\fP]
 [\-\-\fBauthor\fP \fIname\fP] [\-\-\fBemail\fP \fIaddress\fP] [\-\-\fBid\fP \fIuuid\fP]
-[\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBsubtitle\fP \fItitle\fP] [\-\-\fBurl\fP \fIurl\fP]
-[\-\-\fBxsl\fP \fIfile\fP]
+[\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBsubtitle\fP \fItitle\fP] [\-\-\fBurl\fP \fIurl\fP] [\-\-\fBxsl\fP \fIfile\fP]
+[\-\-\fBforce\fP]
 .sp
 \fBdmfeed\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
@@ -53,7 +53,9 @@ use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run \fIdmuuid(1)\fP to generate a valid UUID4.
 .sp
 The time stamp of the feed in the updated element is set to the date and time of
-the last log message.
+the last log message. If no logs have been added to the database since the last
+file modification time of the feed, the output file is not updated, unless
+argument \f(CR\-\-force\fP is passed.
 .SH "OPTIONS"
 .sp
 \fB\-\-author\fP, \fB\-A\fP \fIname\fP
@@ -74,6 +76,12 @@ Path to SQLite log database.
 \fB\-\-email\fP, \fB\-M\fP \fIaddress\fP
 .RS 4
 E\-mail address of feed author.
+.RE
+.sp
+\fB\-\-force\fP, \fB\-F\fP
+.RS 4
+Force writing of output file. If not set, the output file will be updated
+only if new log records are available.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

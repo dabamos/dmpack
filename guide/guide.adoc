@@ -821,7 +821,9 @@ use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
 The time stamp of the feed in the updated element is set to the date and time of
-the last log message.
+the last log message. If no logs have been added to the database since the last
+file modification time of the feed, the output file is not updated, unless
+argument `--force` is passed.
 
 If an XSLT style sheet is given, web browsers may be able to display the Atom
 feed in HTML format. Set the option to the (relative) path of the public XSL on
