@@ -204,7 +204,7 @@ contains
     end function dm_int64_to_real64
 
     pure elemental function dm_logical_to_real64(l) result(r)
-        !! Converts logical to 8-byte real (`0.0` or `1.0`).
+        !! Converts logical to 8-byte real (`0.0` for `.false.` and `1.0` for `.true.`).
         logical, intent(in) :: l !! Logical value.
         real(kind=r8)       :: r !! Value as 8-byte real.
 
@@ -215,23 +215,27 @@ contains
         end if
     end function dm_logical_to_real64
 
-    pure elemental integer(kind=i4) function dm_uint16_to_int32(i) result(r)
-        integer(kind=i2), intent(in) :: i
+    pure elemental function dm_uint16_to_int32(u) result(s)
+        !! Converts unsigned 2-byte integer to signed 4-byte integer.
+        integer(kind=i2), intent(in) :: u !! Unsigned integer.
+        integer(kind=i4)             :: s !! Signed integer.
 
-        if (i > 0) then
-            r = int(i, kind=i4)
+        if (u > 0) then
+            s = int(u, kind=i4)
         else
-            r = 65536_i4 + int(i, kind=i4)
+            s = 65536_i4 + int(u, kind=i4)
         end if
     end function dm_uint16_to_int32
 
-    pure elemental integer(kind=i8) function dm_uint32_to_int64(i) result(r)
-        integer(kind=i4), intent(in) :: i
+    pure elemental function dm_uint32_to_int64(u) result(s)
+        !! Converts unsigned 4-byte integer to signed 8-byte integer.
+        integer(kind=i4), intent(in) :: u !! Unsigned integer.
+        integer(kind=i8)             :: s !! Signed integer.
 
-        if (i > 0) then
-            r = int(i, kind=i8)
+        if (u > 0) then
+            s = int(u, kind=i8)
         else
-            r = 4294967296_i8 + int(i, kind=i8)
+            s = 4294967296_i8 + int(u, kind=i8)
         end if
     end function dm_uint32_to_int64
 
