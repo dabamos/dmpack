@@ -1133,10 +1133,10 @@ contains
                H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Source' // H_TH_END // &
-               H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Source' // H_TH_END // &
+               H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
@@ -1155,13 +1155,10 @@ contains
 
         if (n > 0) then
             html = html // H_TR // dm_html_th('Receivers', row_span=n) // &
-                   H_TD // H_CODE // dm_html_encode(observ%receivers(1)) // &
-                   H_CODE_END // H_TD_END // H_TR_END
+                   H_TD // dm_html_encode(observ%receivers(1)) // H_TD_END // H_TR_END
 
             do i = 2, n
-                html = html // H_TR // H_TD // H_CODE // &
-                       dm_html_encode(observ%receivers(i)) // H_CODE_END // &
-                       H_TD_END // H_TR_END
+                html = html // H_TR // H_TD // dm_html_encode(observ%receivers(i)) // H_TD_END // H_TR_END
             end do
         end if
 
@@ -1312,8 +1309,10 @@ contains
         character(len=:), allocatable     :: html    !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
+               H_TR // H_TH // 'Name' // H_TH_END // &
+               H_TD // H_CODE // dm_html_encode(request%name) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_time(request%timestamp, human=.true.) // H_TD_END // H_TR_END // &
+               H_TD // dm_html_encode(request%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Request' // H_TH_END // &
                H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Response' // H_TH_END // &

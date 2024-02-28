@@ -493,18 +493,18 @@ contains
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation source.
-        dims(1) = int(OBSERV_SOURCE_LEN, kind=hsize_t)
-        offset  = h5offsetof(c_loc(observ), c_loc(observ%source))
-        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-        call h5tinsert_f(type_id, 'source', offset, tid, stat);           if (stat < 0) return
-        call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
         ! Observation timestamp.
         dims(1) = int(TIME_LEN, kind=hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%timestamp))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'timestamp', offset, tid, stat);        if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
+        ! Observation source.
+        dims(1) = int(OBSERV_SOURCE_LEN, kind=hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%source))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'source', offset, tid, stat);           if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation path.
@@ -551,6 +551,13 @@ contains
 
         ! Observation requests.
         do i = 1, OBSERV_MAX_NREQUESTS
+            write (name, '("requests_", i0, "_name")') i
+            dims(1) = int(TIME_LEN, kind=hsize_t)
+            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%name))
+            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
+            call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
             write (name, '("requests_", i0, "_timestamp")') i
             dims(1) = int(TIME_LEN, kind=hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%timestamp))

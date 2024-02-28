@@ -221,8 +221,8 @@ contains
         integer, parameter :: LEN_DP     = 4     !! Data points header length.
         integer, parameter :: LEN_LOG    = 71    !! Logs header length.
         integer, parameter :: LEN_NODE   = 19    !! Nodes header length.
-        integer, parameter :: LEN_OBSERV = 21961 !! Observations header length.
-        integer, parameter :: LEN_VIEW   = 167   !! Observation views header length.
+        integer, parameter :: LEN_OBSERV = 22097 !! Observations header length.
+        integer, parameter :: LEN_VIEW   = 180   !! Observation views header length.
         integer, parameter :: LEN_SENSOR = 35    !! Sensors header length.
         integer, parameter :: LEN_TARGET = 25    !! Targets header length.
 
@@ -235,56 +235,56 @@ contains
         print *, '-- beat'
         n = len(dm_csv_header_beat())
         if (n /= LEN_BEAT) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_BEAT, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_BEAT, n
             return
         end if
 
         print *, '-- data point'
         n = len(dm_csv_header_data_point())
         if (n /= LEN_DP) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_DP, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_DP, n
             return
         end if
 
         print *, '-- log'
         n = len(dm_csv_header_log())
         if (n /= LEN_LOG) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_LOG, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_LOG, n
             return
         end if
 
         print *, '-- node'
         n = len(dm_csv_header_node())
         if (n /= LEN_NODE) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_NODE, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_NODE, n
             return
         end if
 
         print *, '-- observ'
         n = len(dm_csv_header_observ())
         if (n /= LEN_OBSERV) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_OBSERV, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_OBSERV, n
             return
         end if
 
         print *, '-- observ_view'
         n = len(dm_csv_header_observ_view())
         if (n /= LEN_VIEW) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_VIEW, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_VIEW, n
             return
         end if
 
         print *, '-- sensor'
         n = len(dm_csv_header_sensor())
         if (n /= LEN_SENSOR) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_SENSOR, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_SENSOR, n
             return
         end if
 
         print *, '-- target'
         n = len(dm_csv_header_target())
         if (n /= LEN_TARGET) then
-            print '(" Error: expected " i0, ", got ", i0)', LEN_TARGET, n
+            print '(" Error: expected ", i0, ", got ", i0)', LEN_TARGET, n
             return
         end if
 

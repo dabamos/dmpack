@@ -144,19 +144,19 @@ contains
     end subroutine dm_test_dummy_node
 
     impure elemental subroutine dm_test_dummy_observ(observ, id, node_id, sensor_id, target_id, &
-                                                name, timestamp, nrequests, value)
+                                                name, timestamp, nrequests, response_value)
         !! Generates dummy observation data type.
         use :: dm_observ
         use :: dm_request
-        type(observ_type), intent(out)          :: observ    !! Observation type.
-        character(len=*),  intent(in), optional :: id        !! Observation id.
-        character(len=*),  intent(in), optional :: node_id   !! Node id.
-        character(len=*),  intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),  intent(in), optional :: target_id !! Target id.
-        character(len=*),  intent(in), optional :: name      !! Observation name.
-        character(len=*),  intent(in), optional :: timestamp !! Observation and request timestamp (ISO 8601).
-        integer,           intent(in), optional :: nrequests !! Number of requests.
-        real(kind=r8),     intent(in), optional :: value     !! Response value.
+        type(observ_type), intent(out)          :: observ         !! Observation type.
+        character(len=*),  intent(in), optional :: id             !! Observation id.
+        character(len=*),  intent(in), optional :: node_id        !! Node id.
+        character(len=*),  intent(in), optional :: sensor_id      !! Sensor id.
+        character(len=*),  intent(in), optional :: target_id      !! Target id.
+        character(len=*),  intent(in), optional :: name           !! Observation name.
+        character(len=*),  intent(in), optional :: timestamp      !! Observation and request timestamp (ISO 8601).
+        integer,           intent(in), optional :: nrequests      !! Number of requests.
+        real(kind=r8),     intent(in), optional :: response_value !! Response value.
 
         integer             :: i, n, rc
         type(request_type)  :: request
@@ -166,8 +166,8 @@ contains
         observ%sensor_id = 'dummy-sensor'
         observ%target_id = 'dummy-target'
         observ%name      = 'dummy-observ'
-        observ%source    = 'dmdummy'
         observ%timestamp = dm_time_now()
+        observ%source    = 'dmdummy'
         observ%path      = '/dev/null'
 
         if (present(id))        observ%id        = id
@@ -185,31 +185,37 @@ contains
         if (present(nrequests)) n = nrequests
 
         do i = 1, n
-            if (present(value)) then
-                call dm_test_dummy_request(request, observ%timestamp, name='dummy-' // dm_itoa(i), value=value)
+            if (present(response_value)) then
+                call dm_test_dummy_request(request, 'dummy-' // dm_itoa(i), observ%timestamp, &
+                                           response_name='dummy-' // dm_itoa(i), &
+                                           response_value=response_value)
             else
-                call dm_test_dummy_request(request, observ%timestamp, nresponses=REQUEST_MAX_NRESPONSES)
+                call dm_test_dummy_request(request, 'dummy-' // dm_itoa(i), observ%timestamp, &
+                                           nresponses=REQUEST_MAX_NRESPONSES)
             end if
 
             rc = dm_observ_add_request(observ, request)
         end do
     end subroutine dm_test_dummy_observ
 
-    impure elemental subroutine dm_test_dummy_request(request, timestamp, nresponses, name, value)
+    impure elemental subroutine dm_test_dummy_request(request, name, timestamp, nresponses, &
+                                                      response_name, response_value)
         !! Generates dummy request data type.
         use :: dm_request
         use :: dm_response
-        type(request_type), intent(out)          :: request    !! Request type.
-        character(len=*),   intent(in), optional :: timestamp  !! Request timestamp (ISO 8601).
-        integer,            intent(in), optional :: nresponses !! Number of responses.
-        character(len=*),   intent(in), optional :: name       !! Response name.
-        real(kind=r8),      intent(in), optional :: value      !! Response value.
+        type(request_type), intent(out)          :: request        !! Request type.
+        character(len=*),   intent(in), optional :: name           !! Request name.
+        character(len=*),   intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
+        integer,            intent(in), optional :: nresponses     !! Number of responses.
+        character(len=*),   intent(in), optional :: response_name  !! Response name.
+        real(kind=r8),      intent(in), optional :: response_value !! Response value.
 
         integer             :: i, n, rc
         type(response_type) :: response
 
         n = 1
-        request = request_type(timestamp  = dm_time_now(), &
+        request = request_type(name       = 'dummy-request', &
+                               timestamp  = dm_time_now(), &
                                request    = 'dummy', &
                                response   = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF), &
                                delimiter  = dm_ascii_escape(ASCII_CR // ASCII_LF), &
@@ -219,13 +225,14 @@ contains
                                timeout    = 500, &
                                error      = 0)
 
-        if (present(timestamp)) request%timestamp = timestamp
+        if (present(name))       request%name      = name
+        if (present(timestamp))  request%timestamp = timestamp
         if (present(nresponses)) n = max(0, min(REQUEST_MAX_NRESPONSES, nresponses))
 
         do i = 1, n
             response = response_type('dummy-' // dm_itoa(i), 'none', RESPONSE_TYPE_REAL64, E_NONE, 999.99_r8)
-            if (present(name)) response%name = name
-            if (present(value)) response%value = value
+            if (present(response_name))  response%name  = response_name
+            if (present(response_value)) response%value = response_value
             rc = dm_request_add(request, response)
         end do
     end subroutine dm_test_dummy_request

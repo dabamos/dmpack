@@ -441,7 +441,7 @@ contains
                                        minute  = int(r(3) * 60), &
                                        second  = int(r(4) * 60), &
                                        usecond = int(r(5) * 1000))
-            call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(6) * PI))
+            call dm_test_dummy(observs1(i), timestamp=timestamp, response_value=sin(r(6) * PI))
         end do
 
         observs2 = observs1
@@ -526,7 +526,7 @@ contains
                                        minute  = int(r(2) * 60), &
                                        second  = int(r(3) * 60), &
                                        usecond = int(r(4) * 1000))
-            call dm_test_dummy(observs1(i), timestamp=timestamp, value=sin(r(5) * PI))
+            call dm_test_dummy(observs1(i), timestamp=timestamp, response_value=sin(r(5) * PI))
         end do
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'

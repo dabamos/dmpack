@@ -158,6 +158,10 @@ name = "dmtestcgi"
 main = "dmtestcgi.f90"
 
 [[test]]
+name = "dmtestconfig"
+main = "dmtestconfig.f90"
+
+[[test]]
 name = "dmtestcsv"
 main = "dmtestcsv.f90"
 
@@ -169,6 +173,10 @@ link = [ "sqlite3" ]
 [[test]]
 name = "dmtestdp"
 main = "dmtestdp.f90"
+
+[[test]]
+name = "dmtestfile"
+main = "dmtestfile.f90"
 
 [[test]]
 name = "dmtesthash"
@@ -184,14 +192,8 @@ name = "dmtesthtml"
 main = "dmtesthtml.f90"
 
 [[test]]
-name = "dmtestlogger"
-main = "dmtestlogger.f90"
-link = [ "rt" ]
-
-[[test]]
-name = "dmtestlua"
-main = "dmtestlua.f90"
-link = [ "lua-5.4" ]
+name = "dmtestid"
+main = "dmtestid.f90"
 
 [[test]]
 name = "dmtestjob"
@@ -200,6 +202,16 @@ main = "dmtestjob.f90"
 [[test]]
 name = "dmtestjson"
 main = "dmtestjson.f90"
+
+[[test]]
+name = "dmtestlogger"
+main = "dmtestlogger.f90"
+link = [ "rt" ]
+
+[[test]]
+name = "dmtestlua"
+main = "dmtestlua.f90"
+link = [ "lua-5.4" ]
 
 [[test]]
 name = "dmtestmail"
@@ -242,13 +254,13 @@ main = "dmtestregex.f90"
 link = [ "pcre2-8" ]
 
 [[test]]
-name = "dmtestrouter"
-main = "dmtestrouter.f90"
-
-[[test]]
 name = "dmtestrpc"
 main = "dmtestrpc.f90"
 link = [ "curl", "z" ]
+
+[[test]]
+name = "dmtestrts"
+main = "dmtestrts.f90"
 
 [[test]]
 name = "dmteststring"

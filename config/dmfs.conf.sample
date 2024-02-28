@@ -36,6 +36,7 @@ observs = {
         receivers = { "dmdb" },
         requests = {
             {
+                name = "get-temp"
                 request = path,
                 pattern = "(?<temp>[-+0-9\\.]+)",
                 delay = 500,

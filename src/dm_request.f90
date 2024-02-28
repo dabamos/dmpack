@@ -12,24 +12,28 @@ module dm_request
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256 !! Request string length.
-    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256 !! Response string length.
+    integer, parameter, public :: REQUEST_NAME_LEN       = 32  !! Request name length.
+    integer, parameter, public :: REQUEST_REQUEST_LEN    = 256 !! Raw request string length.
+    integer, parameter, public :: REQUEST_RESPONSE_LEN   = 256 !! Raw response string length.
     integer, parameter, public :: REQUEST_DELIMITER_LEN  = 8   !! Delimiter string length.
     integer, parameter, public :: REQUEST_PATTERN_LEN    = 256 !! Regular expression string length.
     integer, parameter, public :: REQUEST_MAX_NRESPONSES = 16  !! Response array size.
 
+    ! Request modes.
     integer, parameter, public :: REQUEST_MODE_NONE        = 0   !! Default mode.
     integer, parameter, public :: REQUEST_MODE_GEOCOM_FILE = 512 !! GeoCOM file download mode.
 
+    ! Request states.
     integer, parameter, public :: REQUEST_STATE_NONE     = 0 !! Default state.
     integer, parameter, public :: REQUEST_STATE_DISABLED = 1 !! Disabled state.
 
     type, public :: request_type
         !! Request to send to a sensor.
-        character(len=TIME_LEN)              :: timestamp  = ' '                  !! ISO 8601 timestamp.
-        character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Request command.
-        character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response.
-        character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter.
+        character(len=REQUEST_NAME_LEN)      :: name       = ' '                  !! Request name (`-0-9A-Z_a-z`).
+        character(len=TIME_LEN)              :: timestamp  = ' '                  !! ISO 8601 time stamp.
+        character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Raw request command (printable).
+        character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response (printable).
+        character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter (printable).
         character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Regular expression pattern.
         integer                              :: delay      = 0                    !! Delay in msec (optional).
         integer                              :: error      = E_NONE               !! Error code.
@@ -122,6 +126,7 @@ contains
 
         equals = .false.
 
+        if (request1%name       /= request2%name)       return
         if (request1%timestamp  /= request2%timestamp)  return
         if (request1%request    /= request2%request)    return
         if (request1%response   /= request2%response)   return
@@ -200,6 +205,7 @@ contains
         !! Returns `.true.` if given observation request is valid. A request is
         !! valid if it conforms to the following rules:
         !!
+        !! * A request name is set and a valid id.
         !! * A time stamp is set and in ISO 8601 format, unless argument
         !!   `timestamp` is passed and `.false.`.
         !! * All ASCII characters in attribute _request_ are printable.
@@ -218,6 +224,8 @@ contains
 
         timestamp_ = .true.
         if (present(timestamp)) timestamp_ = timestamp
+
+        if (.not. dm_id_valid(request%name)) return
 
         if (timestamp_) then
             if (.not. dm_time_valid(request%timestamp)) return
@@ -250,6 +258,7 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
+        write (unit_, '("request.name: ", a)')        trim(request%name)
         write (unit_, '("request.timestamp: ", a)')   trim(request%timestamp)
         write (unit_, '("request.request: ", a)')     trim(request%request)
         write (unit_, '("request.response: ", a)')    trim(request%response)

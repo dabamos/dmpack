@@ -293,7 +293,8 @@ contains
 
         do i = 1, observ%nrequests
             requests = requests // &
-            ' { "timestamp": "' // trim(observ%requests(i)%timestamp)        // '",' // &
+            ' { "name": "'      // trim(observ%requests(i)%name)             // '",' // &
+            ' "timestamp": "'   // trim(observ%requests(i)%timestamp)        // '",' // &
             ' "request": "'     // json_escape(observ%requests(i)%request)   // '",' // &
             ' "response": "'    // json_escape(observ%requests(i)%response)  // '",' // &
             ' "delimiter": "'   // json_escape(observ%requests(i)%delimiter) // '",' // &
@@ -330,8 +331,8 @@ contains
                ' "sensor_id": "' // trim(observ%sensor_id)     // '",' // &
                ' "target_id": "' // trim(observ%target_id)     // '",' // &
                ' "name": "'      // trim(observ%name)          // '",' // &
-               ' "source": "'    // trim(observ%source)        // '",' // &
                ' "timestamp": "' // trim(observ%timestamp)     // '",' // &
+               ' "source": "'    // trim(observ%source)        // '",' // &
                ' "path": "'      // json_escape(observ%path)   // '",' // &
                ' "priority": '   // dm_itoa(observ%priority)   // ','  // &
                ' "error": '      // dm_itoa(observ%error)      // ','  // &

@@ -145,7 +145,7 @@ DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
 # Common build options.
-FFLAGS  = $(RELEASE) -ffree-line-length-0
+FFLAGS  = $(RELEASE) -ffree-line-length-0 -std=f2018
 CFLAGS  = $(RELEASE)
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
@@ -266,11 +266,11 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
 
 # Tests target.
 test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
-      dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestlogger \
-      dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt dmtestmqueue dmtestnml \
-      dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc \
-      dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil \
-      dmtestuuid dmtestz
+      dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
+      dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt \
+      dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
+      dmtestregex dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty \
+      dmtestunit dmtestutil dmtestuuid dmtestz
 
 # ******************************************************************************
 #
@@ -493,6 +493,9 @@ dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)
+
+dmtestid: test/dmtestid.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
 
 dmtestlogger: test/dmtestlogger.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlogger test/dmtestlogger.f90 $(TARGET) $(LDLIBS) $(LIBRT)

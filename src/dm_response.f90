@@ -12,6 +12,7 @@ module dm_response
     integer, parameter, public :: RESPONSE_NAME_LEN = 8 !! Max. response name length.
     integer, parameter, public :: RESPONSE_UNIT_LEN = 8 !! Max. response unit length.
 
+    ! Response types.
     integer, parameter, public :: RESPONSE_TYPE_REAL64  = 0 !! 8-byte signed real.
     integer, parameter, public :: RESPONSE_TYPE_REAL32  = 1 !! 4-byte signed real.
     integer, parameter, public :: RESPONSE_TYPE_INT64   = 2 !! 8-byte signed integer.
@@ -26,7 +27,7 @@ module dm_response
 
     type, public :: response_type
         !! Response of a sensor.
-        character(len=RESPONSE_NAME_LEN) :: name  = ' '                  !! Response name.
+        character(len=RESPONSE_NAME_LEN) :: name  = ' '                  !! Response name (`-0-9A-Z_a-z`).
         character(len=RESPONSE_UNIT_LEN) :: unit  = ' '                  !! Response unit.
         integer                          :: type  = RESPONSE_TYPE_REAL64 !! Response value type.
         integer                          :: error = E_NONE               !! Response error.

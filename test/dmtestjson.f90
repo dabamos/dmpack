@@ -163,16 +163,17 @@ contains
     logical function test07() result(stat)
         character(len=*), parameter :: JSON = &
             '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
-            '"target_id": "dummy-target", "name": "dummy-observ", "source": "dmdummy", "timestamp": ' // &
-            '"1970-01-01T00:00:00.000000+00:00", "path": "/dev/null", "priority": 0, "error": 0, "next": 0, ' // &
-            '"nreceivers": 3, "nrequests": 2, "receivers": [ "dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], ' // &
-            '"requests": [ { "timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "A", "response": ' // &
-            '"123.45\\r\\n", "delimiter": "\\r\\n", "pattern": "^(.*)$", "delay": 1000, "error": 0, "mode": 0, ' // &
-            '"retries": 0, "state": 0, "timeout": 500, "nresponses": 1, "responses": [ { "name": "a", "unit": "none", ' // &
-            '"type": 0, "error": 0, "value": 123.450000000 } ] }, { "timestamp": "1970-01-01T00:00:00.000000+00:00", ' // &
-            '"request": "B", "response": "OK\\r\\n", "delimiter": "\\r\\n", "pattern": "^OK", "delay": 500, ' // &
-            '"error": 1, "mode": 0, "retries": 0, "state": 0, "timeout": 500, "nresponses": 1, "responses": ' // &
-            '[ { "name": "b", "unit": "none", "type": 0, "error": 0, "value": 0.990000000000 } ] } ] }'
+            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000000+00:00", ' // &
+            '"source": "dmdummy", "path": "/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, ' // &
+            '"nrequests": 2, "receivers": [ "dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], ' // &
+            '"requests": [ { "name": "dummy-1", "timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "A", ' // &
+            '"response": "123.45\\r\\n", "delimiter": "\\r\\n", "pattern": "^(.*)$", "delay": 1000, "error": 0, ' // &
+            '"mode": 0, "retries": 0, "state": 0, "timeout": 500, "nresponses": 1, "responses": [ { "name": "a", ' // &
+            '"unit": "none", "type": 0, "error": 0, "value": 123.450000000 } ] }, { "name": "dummy-2", ' // &
+            '"timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": ' // &
+            '"\\r\\n", "pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, ' // &
+            '"timeout": 500, "nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, ' // &
+            '"value": 0.990000000000 } ] } ] }'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
@@ -190,8 +191,8 @@ contains
         observ%sensor_id = 'dummy-sensor'
         observ%target_id = 'dummy-target'
         observ%name      = 'dummy-observ'
-        observ%source    = 'dmdummy'
         observ%timestamp = TIME_DEFAULT
+        observ%source    = 'dmdummy'
         observ%path      = '/dev/null'
 
         print *, 'Adding receivers ...'
@@ -205,7 +206,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
-        request = request_type(timestamp = TIME_DEFAULT, &
+        request = request_type(name      = 'dummy-1', &
+                               timestamp = TIME_DEFAULT, &
                                request   = 'A', &
                                response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF), &
                                delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
@@ -225,7 +227,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
-        request = request_type(timestamp = TIME_DEFAULT, &
+        request = request_type(name      = 'dummy-2', &
+                               timestamp = TIME_DEFAULT, &
                                request   = 'B', &
                                response  = dm_ascii_escape('OK' // CR_LF), &
                                delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &

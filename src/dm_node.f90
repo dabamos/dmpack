@@ -13,7 +13,7 @@ module dm_node
 
     type, public :: node_type
         !! Node type.
-        character(len=NODE_ID_LEN)   :: id   = ' '    !! Node id (`-0-9A-Za-z`).
+        character(len=NODE_ID_LEN)   :: id   = ' '    !! Node id (`-0-9A-Z_a-z`).
         character(len=NODE_NAME_LEN) :: name = ' '    !! Note name.
         character(len=NODE_META_LEN) :: meta = ' '    !! Additional description text (optional).
         real(kind=r8)                :: x    = 0.0_r8 !! Node x or easting (optional).

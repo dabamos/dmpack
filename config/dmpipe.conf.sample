@@ -32,6 +32,7 @@ observ = {
         -- Read CPU temperature.
         --
         {
+            name = "get-cpu-temp",
             request = "sysctl hw.acpi.thermal.tz0.temperature",
             pattern = "hw\\.acpi\\.thermal\\.tz0\\.temperature: (?<tz0>[-+0-9\\.,]+)C",
             delay = 0,
@@ -46,6 +47,7 @@ observ = {
         -- Read laptop battery status.
         --
         {
+            name = "get-battery",
             request = "sysctl hw.acpi.battery.life",
             pattern = "hw\\.acpi\\.battery\\.life: (?<battery>[0-9]+)",
             delay = 0,

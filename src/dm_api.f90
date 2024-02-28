@@ -16,11 +16,11 @@ module dm_api
 
     type, public :: api_status_type
         !! API status type that stores an HTTP-RPC API response.
-        character(len=API_STATUS_LEN) :: version   = ' '               !! DMPACK application version.
-        character(len=API_STATUS_LEN) :: dmpack    = DM_VERSION_STRING !! DMPACK library version.
-        character(len=API_STATUS_LEN) :: host      = ' '               !! Host name.
+        character(len=API_STATUS_LEN) :: version   = ' '               !! Server application version.
+        character(len=API_STATUS_LEN) :: dmpack    = DM_VERSION_STRING !! Server library version.
+        character(len=API_STATUS_LEN) :: host      = ' '               !! Server host name.
         character(len=API_STATUS_LEN) :: server    = ' '               !! Server software (web server).
-        character(len=API_STATUS_LEN) :: timestamp = TIME_DEFAULT      !! Current date and time in ISO 8601.
+        character(len=API_STATUS_LEN) :: timestamp = TIME_DEFAULT      !! Server date and time in ISO 8601.
         character(len=API_STATUS_LEN) :: message   = ' '               !! Status message.
         integer                       :: error     = E_NONE            !! Error code.
     end type api_status_type

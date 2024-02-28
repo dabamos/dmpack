@@ -1061,8 +1061,8 @@ contains
             rc = dm_lua_field(lua, 'target_id',  observ%target_id)
             rc = dm_lua_field(lua, 'id',         observ%id)
             rc = dm_lua_field(lua, 'name',       observ%name)
-            rc = dm_lua_field(lua, 'source',     observ%source)
             rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
+            rc = dm_lua_field(lua, 'source',     observ%source)
             rc = dm_lua_field(lua, 'path',       observ%path, unescape=.true.)
             rc = dm_lua_field(lua, 'priority',   observ%priority)
             rc = dm_lua_field(lua, 'error',      observ%error)
@@ -1257,6 +1257,7 @@ contains
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit request_block
 
+            rc = dm_lua_field(lua, 'name',       request%name)
             rc = dm_lua_field(lua, 'timestamp',  request%timestamp)
             rc = dm_lua_field(lua, 'request',    request%request,   unescape=.true.)
             rc = dm_lua_field(lua, 'response',   request%response,  unescape=.true.)
@@ -1309,7 +1310,7 @@ contains
         integer     :: i
         type(c_ptr) :: ptr
 
-        call lua_createtable(lua%ptr, 0, 14)
+        call lua_createtable(lua%ptr, 0, 15)
 
         ptr = lua_pushstring(lua%ptr, trim(observ%node_id))
         call lua_setfield(lua%ptr, -2, 'node_id')
@@ -1326,11 +1327,11 @@ contains
         ptr = lua_pushstring(lua%ptr, trim(observ%name))
         call lua_setfield(lua%ptr, -2, 'name')
 
-        ptr = lua_pushstring(lua%ptr, trim(observ%source))
-        call lua_setfield(lua%ptr, -2, 'source')
-
         ptr = lua_pushstring(lua%ptr, trim(observ%timestamp))
         call lua_setfield(lua%ptr, -2, 'timestamp')
+
+        ptr = lua_pushstring(lua%ptr, trim(observ%source))
+        call lua_setfield(lua%ptr, -2, 'source')
 
         ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%path))
         call lua_setfield(lua%ptr, -2, 'path')
@@ -1382,7 +1383,10 @@ contains
         integer     :: i
         type(c_ptr) :: ptr
 
-        call lua_createtable(lua%ptr, 0, 12)
+        call lua_createtable(lua%ptr, 0, 14)
+
+        ptr = lua_pushstring(lua%ptr, trim(request%name))
+        call lua_setfield(lua%ptr, -2, 'name')
 
         ptr = lua_pushstring(lua%ptr, trim(request%timestamp))
         call lua_setfield(lua%ptr, -2, 'timestamp')
@@ -1425,7 +1429,7 @@ contains
 
         do i = 1, request%nresponses
             call lua_pushinteger(lua%ptr, int(i, kind=lua_integer))
-            call lua_createtable(lua%ptr, 0, 4)
+            call lua_createtable(lua%ptr, 0, 5)
 
             ptr = lua_pushstring(lua%ptr, trim(request%responses(i)%name))
             call lua_setfield(lua%ptr, -2, 'name')

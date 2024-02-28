@@ -822,8 +822,8 @@ different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
 The time stamp of the feed in the updated element is set to the date and time of
 the last log message. If no logs have been added to the database since the last
-file modification time of the feed, the output file is not updated, unless
-argument `--force` is passed.
+file modification of the feed, the output file is not updated, unless argument
+`--force` is passed.
 
 If an XSLT style sheet is given, web browsers may be able to display the Atom
 feed in HTML format. Set the option to the (relative) path of the public XSL on
@@ -3458,7 +3458,7 @@ error=0
 |===
 | Attribute   | Type    | Size | Description
 
-| `node_id`   | string  | 32   | Node id (`-0-9A-Za-z`).
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
 | `address`   | string  | 45   | IPv4/IPv6 address of client.
 | `client`    | string  | 32   | Client software name and version.
 | `time_sent` | string  | 32   | Date and time heartbeat was sent (ISO 8601).
@@ -3675,7 +3675,7 @@ LOG%MESSAGE="dummy log message",
 |===
 | Attribute | Type    | Size | Description
 
-| `id`      | string  | 32   | Node id (`-0-9A-Za-z`).
+| `id`      | string  | 32   | Node id (`-0-9A-Z_a-z`).
 | `name`    | string  | 32   | Node name.
 | `meta`    | string  | 32   | Node description (optional).
 | `x`       | double  | 8    | Node x or easting (optional).
@@ -3759,12 +3759,12 @@ NODE%Z=0.0,
 | Attribute   | Type    | Size | Description
 
 | `id`        | string  | 32   | Observation id (UUID4).
-| `node_id`   | string  | 32   | Node id (`-0-9A-Za-z`).
-| `sensor_id` | string  | 32   | Sensor id (`-0-9A-Za-z`).
-| `target_id` | string  | 32   | Target id (`-0-9A-Za-z`).
-| `name`      | string  | 32   | Observation name (`-0-9A-Za-z`).
-| `source`    | string  | 32   | Observation source or name of origin (`-0-9A-Za-z`).
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
+| `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).
+| `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).
+| `name`      | string  | 32   | Observation name (`-0-9A-Z_a-z`).
 | `timestamp` | string  | 32   | Date and time of observation (ISO 8601).
+| `source`    | string  | 32   | Observation source or name of origin (`-0-9A-Z_a-z`).
 | `path`      | string  | 32   | Path of TTY/PTY device.
 | `priority`  | integer | 4    | Message queue priority (>= 0).
 | `error`     | integer | 4    | Observation <<error-codes,error code>>.
@@ -3772,7 +3772,7 @@ NODE%Z=0.0,
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1348 | Array of requests (8).
+| `requests`  | array   | 8{nbsp}×{nbsp}1380 | Array of requests (8).
 |===
 
 .Request derived type of an observation
@@ -3780,6 +3780,7 @@ NODE%Z=0.0,
 |===
 | Attribute    | Type    | Size | Description
 
+| `name`       | string  | 32   | Request name (`-0-9A-Z_a-z`).
 | `timestamp`  | string  | 32   | Date and time of request (ISO 8601).
 | `request`    | string  | 256  | Raw request to sensor. Non-printable characters have to be escaped.
 | `response`   | string  | 256  | Raw response of sensor. Non-printable characters will be escaped.
@@ -3800,7 +3801,7 @@ NODE%Z=0.0,
 |===
 | Attribute | Type    | Size | Description
 
-| `name`    | string  | 8    | Response name (`-0-9A-Za-z`).
+| `name`    | string  | 8    | Response name (`-0-9A-Z_a-z`).
 | `unit`    | string  | 8    | Response unit.
 | `type`    | integer | 4    | Response <<data-response-types,value type>>.
 | `error`   | integer | 4    | Response <<error-codes,error code>>.
@@ -3831,8 +3832,8 @@ NODE%Z=0.0,
 | 3         | `sensor_id`  | Sensor id.
 | 4         | `target_id`  | Target id.
 | 5         | `name`       | Observation name.
-| 6         | `source`     | Observation source.
-| 7         | `timestamp`  | Date and time of observation.
+| 6         | `timestamp`  | Date and time of observation.
+| 7         | `source`     | Observation source.
 | 8         | `path`       | Path of TTY/PTY device.
 | 9         | `priority`   | Message queue priority.
 | 10        | `error`      | Error code.
@@ -3856,49 +3857,50 @@ NODE%Z=0.0,
 | 27        | `receiver`   | Receiver 14.
 | 28        | `receiver`   | Receiver 15.
 | 29        | `receiver`   | Receiver 16.
-| 30 – 765  | `requests`   | Array of requests (8).
-| 30 – 104  | `request`    | Request 1.
-| 30        | `timestamp`  | Date and time of request.
-| 31        | `request`    | Raw request to sensor.
-| 32        | `response`   | Raw response of sensor.
-| 33        | `delimiter`  | Request delimiter.
-| 34        | `pattern`    | Regular expression pattern that describes the raw response.
-| 35        | `delay`      | Delay in mseconds to wait after the request.
-| 36        | `error`      | Error code.
-| 37        | `mode`       | Request mode.
-| 38        | `retries`    | Number of retries performed.
-| 39        | `state`      | Request state.
-| 40        | `timeout`    | Request timeout in mseconds.
-| 41        | `nresponses` | Number of responses (0 to 16).
-| 42 – 121  | `responses`  | Array of responses (16).
-| 42 – 46   | `response`   | Response 1.
-| 42        | `name`       | Response 1 name.
-| 43        | `unit`       | Response 1 unit.
-| 44        | `type`       | Response 1 value type.
-| 45        | `error`      | Response 1 error.
-| 46        | `value`      | Response 1 value.
-| 47 – 51   | `response`   | Response 2.
-| 52 – 56   | `response`   | Response 3.
-| 57 – 61   | `response`   | Response 4.
-| 62 – 66   | `response`   | Response 5.
-| 67 – 71   | `response`   | Response 6.
-| 72 – 76   | `response`   | Response 7.
-| 77 – 81   | `response`   | Response 8.
-| 82 – 86   | `response`   | Response 9.
-| 87 – 91   | `response`   | Response 10.
-| 92 – 96   | `response`   | Response 11.
-| 97 – 101  | `response`   | Response 12.
-| 102 – 106 | `response`   | Response 13.
-| 107 – 111 | `response`   | Response 14.
-| 112 – 116 | `response`   | Response 15.
-| 117 – 121 | `response`   | Response 16.
-| 122 – 213 | `request`    | Request 2.
-| 214 – 305 | `request`    | Request 3.
-| 306 – 397 | `request`    | Request 4.
-| 398 – 489 | `request`    | Request 5.
-| 490 – 581 | `request`    | Request 6.
-| 582 – 673 | `request`    | Request 7.
-| 674 – 765 | `request`    | Request 8.
+| 30 – 773  | `requests`   | Array of requests (8).
+| 30 – 105  | `request`    | Request 1.
+| 30        | `name`       | Request name.
+| 31        | `timestamp`  | Date and time of request.
+| 32        | `request`    | Raw request to sensor.
+| 33        | `response`   | Raw response of sensor.
+| 34        | `delimiter`  | Request delimiter.
+| 35        | `pattern`    | Regular expression pattern that describes the raw response.
+| 36        | `delay`      | Delay in mseconds to wait after the request.
+| 37        | `error`      | Error code.
+| 38        | `mode`       | Request mode.
+| 39        | `retries`    | Number of retries performed.
+| 40        | `state`      | Request state.
+| 41        | `timeout`    | Request timeout in mseconds.
+| 42        | `nresponses` | Number of responses (0 to 16).
+| 43 – 122  | `responses`  | Array of responses (16).
+| 43 – 47   | `response`   | Response 1.
+| 43        | `name`       | Response 1 name.
+| 44        | `unit`       | Response 1 unit.
+| 45        | `type`       | Response 1 value type.
+| 46        | `error`      | Response 1 error.
+| 47        | `value`      | Response 1 value.
+| 48 – 52   | `response`   | Response 2.
+| 53 – 57   | `response`   | Response 3.
+| 58 – 62   | `response`   | Response 4.
+| 63 – 67   | `response`   | Response 5.
+| 68 – 72   | `response`   | Response 6.
+| 73 – 77   | `response`   | Response 7.
+| 78 – 82   | `response`   | Response 8.
+| 83 – 87   | `response`   | Response 9.
+| 88 – 92   | `response`   | Response 10.
+| 93 – 97   | `response`   | Response 11.
+| 98 – 102  | `response`   | Response 12.
+| 103 – 107 | `response`   | Response 13.
+| 108 – 112 | `response`   | Response 14.
+| 113 – 117 | `response`   | Response 15.
+| 118 – 122 | `response`   | Response 16.
+| 123 – 215 | `request`    | Request 2.
+| 216 – 308 | `request`    | Request 3.
+| 309 – 401 | `request`    | Request 4.
+| 402 – 494 | `request`    | Request 5.
+| 495 – 587 | `request`    | Request 6.
+| 588 – 680 | `request`    | Request 7.
+| 681 – 773 | `request`    | Request 8.
 |===
 
 .HDF5 [[data-observ-hdf5]]
@@ -3913,8 +3915,8 @@ The HDF5 data-set description is too large to be fully shown in this document.
   "sensor_id": "dummy-sensor",
   "target_id": "dummy-target",
   "name": "dummy-observ",
-  "source": "dmdummy",
   "timestamp": "1970-01-01T00:00:00.000000+00:00",
+  "source": "dmdummy",
   "path": "/dev/null",
   "priority": 0,
   "error": 0,
@@ -3927,6 +3929,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   ],
   "requests": [
     {
+      "name": "dummy",
       "timestamp": "1970-01-01T00:00:00.000000+00:00",
       "request": "?\\n",
       "response": "10.0\\n",
@@ -3962,8 +3965,8 @@ The HDF5 data-set description is too large to be fully shown in this document.
   sensor_id = "dummy-sensor",
   target_id = "dummy-target",
   name = "dummy-observ",
-  source = "dmdummy",
   timestamp = "1970-01-01T00:00:00.000000+00:00",
+  source = "dmdummy",
   path = "/dev/null",
   error = 0,
   next = 1,
@@ -3973,6 +3976,7 @@ The HDF5 data-set description is too large to be fully shown in this document.
   receivers = { "dummy-receiver1", "dummy-receiver2" },
   requests = {
     {
+      name = "dummy",
       timestamp = "1970-01-01T00:00:00.000000+00:00",
       request = "?\\n",
       response = "10.0\\n",
@@ -4007,8 +4011,8 @@ OBSERV%NODE_ID="dummy-node",
 OBSERV%SENSOR_ID="dummy-sensor",
 OBSERV%TARGET_ID="dummy-target",
 OBSERV%NAME="dummy-observ",
-OBSERV%SOURCE="dmdummy",
 OBSERV%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
+OBSERV%SOURCE="dmdummy",
 OBSERV%PATH="/dev/null",
 OBSERV%PRIORITY=0,
 OBSERV%ERROR=0,
@@ -4016,6 +4020,7 @@ OBSERV%NEXT=0,
 OBSERV%NRECEIVERS=2,
 OBSERV%NREQUESTS=1,
 OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
+OBSERV%REQUESTS(1)%NAME="dummy",
 OBSERV%REQUESTS(1)%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
 OBSERV%REQUESTS(1)%REQUEST="?\n",
 OBSERV%REQUESTS(1)%RESPONSE="10.0\n",
@@ -4036,7 +4041,6 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 /
 ....
 
-
 === Sensor [[data-sensor]]
 
 .Sensor derived type
@@ -4044,8 +4048,8 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 |===
 | Attribute | Type    | Size | Description
 
-| `id`      | string  | 32   | Sensor id (`-0-9A-Za-z`).
-| `node_id` | string  | 32   | Node id (`-0-9A-Za-z`).
+| `id`      | string  | 32   | Sensor id (`-0-9A-Z_a-z`).
+| `node_id` | string  | 32   | Node id (`-0-9A-Z_a-z`).
 | `type`    | integer | 4    | <<data-sensor-types,Sensor type>>.
 | `name`    | string  | 32   | Sensor name.
 | `sn`      | string  | 32   | Sensor serial number (optional).
@@ -4169,7 +4173,7 @@ SENSOR%Z=0.0,
 |===
 | Attribute | Type    | Size | Description
 
-| `id`      | string  | 32   | Target id (`-0-9A-Za-z`).
+| `id`      | string  | 32   | Target id (`-0-9A-Z_a-z`).
 | `name`    | string  | 32   | Target name.
 | `meta`    | string  | 32   | Target description (optional).
 | `state`   | integer | 4    | Target <<data-target-states,state>> (optional).
@@ -4640,20 +4644,394 @@ $ cd build/HDF_Group/HDFView/99.99.99/
 $ sh hdfview.sh
 ....
 
+== GeoCOM API
+
+All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
+
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_IOS_BEEP_STDINTENS` | Standard intensity of beep expressed as percentage.
+| `GEOCOM_AUT_CLOCKWISE`      | Direction close-wise.
+| `GEOCOM_AUT_ANTICLOCKWISE`  | Direction counter clock-wise.
+|===
+
+.GEOCOM_AUT_ADJMODE: Fine-adjust position mode [[geocom-api-aut-adjmode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_AUT_NORM_MODE`   | Angle tolerance.
+| `GEOCOM_AUT_POINT_MODE`  | Point tolerance.
+| `GEOCOM_AUT_DEFINE_MODE` | System independent positioning tolerance.
+|===
+
+.GEOCOM_AUT_ATRMODE: Automatic target recognition mode [[geocom-api-aut-atrmode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_AUT_POSITION` | Positioning to Hz and V angle.
+| `GEOCOM_AUT_TARGET`   | Positioning to a target in the env. of the Hz and V angle.
+|===
+
+.GEOCOM_AUT_POSMODE: Position precision [[geocom-api-aut-posmode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_AUT_NORMAL`  | Fast positioning mode.
+| `GEOCOM_AUT_PRECISE` | Exact positioning mode.
+| `GEOCOM_AUT_FAST`    | For TM30/TS30.
+|===
+
+.GEOCOM_BAP_ATRSETTING: ATR low-vis mode definition [[geocom-api-bap-atrsetting]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_ATRSET_NORMAL`     | ATR is using no special flags or modes.
+| `GEOCOM_BAP_ATRSET_LOWVIS_ON`  | ATR low-vis mode on.
+| `GEOCOM_BAP_ATRSET_LOWVIS_AON` | ATR low-vis mode always on.
+| `GEOCOM_BAP_ATRSET_SRANGE_ON`  | ATR high-reflectivity mode on.
+| `GEOCOM_BAP_ATRSET_SRANGE_AON` | ATR high-reflectivity mode always on.
+|===
+
+.GEOCOM_BAP_MEASURE_PRG: Measurement modes [[geocom-api-bap-measure-prg]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_NO_MEAS`    | No measurements, take last one.
+| `GEOCOM_BAP_NO_DIST`    | No distance measurement, angles only.
+| `GEOCOM_BAP_DEF_DIST`   | Default distance measurements.
+| `GEOCOM_BAP_CLEAR_DIST` | Clear distances.
+| `GEOCOM_BAP_STOP_TRK`   | Stop tracking.
+|===
+
+.GEOCOM_BAP_PRISMTYPE: Prism type definition [[geocom-api-bap-prismtype]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_PRISM_ROUND`        | Leica Circular Prism.
+| `GEOCOM_BAP_PRISM_MINI`         | Leica Mini Prism.
+| `GEOCOM_BAP_PRISM_TAPE`         | Leica Reflector Tape.
+| `GEOCOM_BAP_PRISM_360`          | Leica 360° Prism.
+| `GEOCOM_BAP_PRISM_USER1`        | Not supported by TPS1200.
+| `GEOCOM_BAP_PRISM_USER2`        | Not supported by TPS1200.
+| `GEOCOM_BAP_PRISM_USER3`        | Not supported by TPS1200.
+| `GEOCOM_BAP_PRISM_360_MINI`     | Leica Mini 360° Prism
+| `GEOCOM_BAP_PRISM_MINI_ZERO`    | Leica Mini Zero Prism.
+| `GEOCOM_BAP_PRISM_USER`         | User-defined Prism.
+| `GEOCOM_BAP_PRISM_NDS_TAPE`     | Leica HDS Target.
+| `GEOCOM_BAP_PRISM_GRZ121_ROUND` | GRZ121 360º Prism for Machine Guidance.
+| `GEOCOM_BAP_PRISM_MA_MPR122`    | MPR122 360º Prism for Machine Guidance.
+|===
+
+.GEOCOM_BAP_REFLTYPE: Reflector type definition [[geocom-api-bap-refltype]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_REFL_UNDEF` | Reflector not defined.
+| `GEOCOM_BAP_REFL_PRISM` | Reflector prism.
+| `GEOCOM_BAP_REFL_TAPE`  | Reflector tape.
+|===
+
+.GEOCOM_BAP_TARGET_TYPE: Target type definition [[geocom-api-bap-target-type]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_REFL_USE`  | With reflector.
+| `GEOCOM_BAP_REFL_LESS` | Without reflector.
+|===
+
+.GEOCOM_BAP_USER_MEASPRG: Distance measurement programs [[geocom-api-bap-user-measprg]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_BAP_SINGLE_REF_STANDARD`  | IR standard.
+| `GEOCOM_BAP_SINGLE_REF_FAST`      | IR fast.
+| `GEOCOM_BAP_SINGLE_REF_VISIBLE`   | LO standard.
+| `GEOCOM_BAP_SINGLE_RLESS_VISIBLE` | RL standard.
+| `GEOCOM_BAP_CONT_REF_STANDARD`    | IR tracking.
+| `GEOCOM_BAP_CONT_REF_FAST`        | Not supported by TPS1200.
+| `GEOCOM_BAP_CONT_RLESS_VISIBLE`   | RL fast tracking.
+| `GEOCOM_BAP_AVG_REF_STANDARD`     | IR average.
+| `GEOCOM_BAP_AVG_REF_VISIBLE`      | LO average.
+| `GEOCOM_BAP_AVG_RLESS_VISIBLE`    | RL average.
+| `GEOCOM_BAP_CONT_REF_SYNCHRO`     | IR synchro-tracking.
+| `GEOCOM_BAP_SINGLE_REF_PRECISE`   | IR precise (TM30/TS30).
+|===
+
+.GEOCOM_COM_BAUD_RATE: Baud rate [[geocom-api-com-baud-rate]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_COM_BAUD_2400`   | 2400 baud.
+| `GEOCOM_COM_BAUD_4800`   | 4800 baud.
+| `GEOCOM_COM_BAUD_9600`   | 9600 baud.
+| `GEOCOM_COM_BAUD_19200`  | 19200 baud (default).
+| `GEOCOM_COM_BAUD_38400`  | 38400 baud.
+| `GEOCOM_COM_BAUD_57600`  | 57600 baud.
+| `GEOCOM_COM_BAUD_115200` | 115200 baud.
+|===
+
+.GEOCOM_COM_FORMAT: Transmission data format [[geocom-api-com-format]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_COM_ASCII`  | ASCII protocol.
+| `GEOCOM_COM_BINARY` | Binary protocol.
+|===
+
+.GEOCOM_CSV_POWER_PATH: Power sources [[geocom-api-csv-power-path]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_CSV_EXTERNAL_POWER` | Power source is external.
+| `GEOCOM_CSV_INTERNAL_POWER` | Power source is the internal battery.
+|===
+
+.GEOCOM_COM_TPS_STARTUP_MODE: Start mode [[geocom-api-tps-startup-mode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_COM_STARTUP_LOCAL`  | Not supported by TPS1200.
+| `GEOCOM_COM_STARTUP_REMOTE` | RPC is enabled (online mode).
+|===
+
+.GEOCOM_COM_TPS_STOP_MODE: Stop mode [[geocom-api-tps-stop-mode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_COM_STOP_SHUT_DOWN` | Power down instrument.
+| `GEOCOM_COM_STOP_SLEEP`     | Not supported by TPS1200.
+|===
+
+.GEOCOM_EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight (EGL) [[geocom-api-egl-intensity-type]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_EDM_EGLINTEN_OFF`  | Off.
+| `GEOCOM_EDM_EGLINTEN_LOW`  | Low intensity.
+| `GEOCOM_EDM_EGLINTEN_MID`  | Medium intensity.
+| `GEOCOM_EDM_EGLINTEN_HIGH` | High intensity.
+|===
+
+.GEOCOM_EDM_MODE: EDM measurement mode [[geocom-api-edm-mode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_EDM_MODE_NOT_USED`   | Initial value.
+| `GEOCOM_EDM_SINGLE_TAPE`     | IR standard Reflector Tape.
+| `GEOCOM_EDM_SINGLE_STANDARD` | IR standard.
+| `GEOCOM_EDM_SINGLE_FAST`     | IR fast.
+| `GEOCOM_EDM_SINGLE_LRANGE`   | LO standard.
+| `GEOCOM_EDM_SINGLE_SRANGE`   | RL standard.
+| `GEOCOM_EDM_CONT_STANDARD`   | Standard repeated measurement.
+| `GEOCOM_EDM_CONT_DYNAMIC`    | IR tacking.
+| `GEOCOM_EDM_CONT_REFLESS`    | RL tracking.
+| `GEOCOM_EDM_CONT_FAST`       | Fast repeated measurement.
+| `GEOCOM_EDM_AVERAGE_IR`      | IR average.
+| `GEOCOM_EDM_AVERAGE_SR`      | RL average.
+| `GEOCOM_EDM_AVERAGE_LR`      | LO average.
+| `GEOCOM_EDM_PRECISE_IR`      | IR precise (TM30, TS30).
+| `GEOCOM_EDM_PRECISE_TAPE`    | IR precise Reflector Tape (TM30, TS30).
+|===
+
+.GEOCOM_FTR_DEVICETYPE: Device type [[geocom-api-ftr-devicetype]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_FTR_DEVICE_INTERNAL` | Internal memory module.
+| `GEOCOM_FTR_DEVICE_PCPARD`   | External memory card.
+|===
+
+.GEOCOM_FTR_FILETYPE: File type [[geocom-api-ftr-filetype]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_FTR_FILE_UNKNOWN` | Undocumented (0).
+| `GEOCOM_FTR_FILE_IMAGES`  | Extension wildcard: `*.jpg`.
+|===
+
+.GEOCOM_IMG_MEM_TYPE: Memory device type [[geocom-api-img-mem-type]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_IMG_INTERNAL_MEMORY` | Internal memory module.
+| `GEOCOM_IMG_PC_CARD`         | External memory card.
+|===
+
+.GEOCOM_MOT_LOCK_STATUS: Lock conditions [[geocom-api-mot-lock-status]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_MOT_LOCKED_OUT` | Locked out.
+| `GEOCOM_MOT_LOCKED_IN`  | Locked in.
+| `GEOCOM_MOT_PREDICTION` | Prediction mode.
+|===
+
+.GEOCOM_MOT_MODE: Controller configuration [[geocom-api-mot-mode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_MOT_POSIT`   | Configured for relative positioning.
+| `GEOCOM_MOT_OCONST`  | Configured for constant speed.
+| `GEOCOM_MOT_MANUPOS` | Configured for manual positioning (default setting).
+| `GEOCOM_MOT_LOCK`    | Configured as “Lock-in” controller.
+| `GEOCOM_MOT_BREAK`   | Configured as “Brake” controller.
+| `GEOCOM_MOT_TERM`    | Terminates the controller task.
+|===
+
+.GEOCOM_MOT_STOPMODE: Controller stop mode [[geocom-api-mot-stopmode]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_MOT_NORMAL`   | Slow down with current acceleration.
+| `GEOCOM_MOT_SHUTDOWN` | Slow down by switch off power supply.
+|===
+
+.GEOCOM_SUP_AUTO_POWER: Automatic shutdown mechanism for the system [[geocom-api-sup-auto-power]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_SUP_POWER_DISABLED` | Instrument remains on.
+| `GEOCOM_SUP_POWER_OFF`      | Turns off mechanism.
+|===
+
+.GEOCOM_TMC_FACE: Actual face [[geocom-api-tmc-face]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TMC_FACE_1` | Position 1 of telescope.
+| `GEOCOM_TMC_FACE_2` | Position 2 of telescope.
+|===
+
+.GEOCOM_TMC_FACE_DEF: Face position [[geocom-api-tmc-face-def]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TMC_FACE_NORMAL` | Face in normal position.
+| `GEOCOM_TMC_FACE_TURN`   | Face turned.
+|===
+
+.GEOCOM_TMC_INCLINE_PRG: Inclination sensor measurement program [[geocom-api-tmc-incline-prg]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TMC_MEA_INC`   | Use sensor (_a priori_ sigma).
+| `GEOCOM_TMC_AUTO_INC`  | Automatic mode (sensor/plane).
+| `GEOCOM_TMC_PLANE_INC` | Use plane (_a priori_ sigma).
+|===
+
+.GEOCOM_TMC_MEASURE_PRG: TMC measurement mode [[geocom-api-tmc-measure-prg]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TMC_STOP`         | Stop measurement program.
+| `GEOCOM_TMC_DEF_DIST`     | Default distance measurement program.
+| `GEOCOM_TMC_CLEAR`        | `GEOCOM_TMC_STOP` and clear data.
+| `GEOCOM_TMC_SIGNAL`       | Signal measurement (test function).
+| `GEOCOM_TMC_DO_MEASURE`   | (Re-)start measurement task.
+| `GEOCOM_TMC_RTRK_DIST`    | Distance-TRK measurement program.
+| `GEOCOM_TMC_RED_TRK_DIST` | Reflectorless tracking.
+| `GEOCOM_TMC_FREQUENCY`    | Frequency measurement (test).
+|===
+
+.GEOCOM_TPS_DEVICE_CLASS: TPS device precision class [[geocom-api-tps-device-class]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TPS_CLASS_1100` | TPS1000 family member, 1 mgon, 3 ".
+| `GEOCOM_TPS_CLASS_1700` | TPS1000 family member, 0.5 mgon, 1.5 ".
+| `GEOCOM_TPS_CLASS_1800` | TPS1000 family member, 0.3 mgon, 1 ".
+| `GEOCOM_TPS_CLASS_5000` | TPS2000 family member.
+| `GEOCOM_TPS_CLASS_6000` | TPS2000 family member.
+| `GEOCOM_TPS_CLASS_1500` | TPS1000 family member.
+| `GEOCOM_TPS_CLASS_2003` | TPS2000 family member.
+| `GEOCOM_TPS_CLASS_5005` | TPS5000 family member.
+| `GEOCOM_TPS_CLASS_5100` | TPS5000 family member.
+| `GEOCOM_TPS_CLASS_1102` | TPS1100 family member, 2 ".
+| `GEOCOM_TPS_CLASS_1103` | TPS1100 family member, 3 ".
+| `GEOCOM_TPS_CLASS_1105` | TPS1100 family member, 5 ".
+| `GEOCOM_TPS_CLASS_1101` | TPS1100 family member, 1 ".
+| `GEOCOM_TPS_CLASS_1202` | TPS1200 family member, 2 ".
+| `GEOCOM_TPS_CLASS_1203` | TPS1200 family member, 3 ".
+| `GEOCOM_TPS_CLASS_1205` | TPS1200 family member, 5 ".
+| `GEOCOM_TPS_CLASS_1201` | TPS1200 family member, 1 ".
+| `GEOCOM_TPS_CLASS_TX30` | TS30, TM30 family member, 0.5 ".
+| `GEOCOM_TPS_CLASS_TX31` | TS30, TM30 family member, 1 ".
+|===
+
+.GEOCOM_TPS_DEVICE_TYPE: TPS device configuration type [[geocom-api-tps-device-type]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TPS_DEVICE_T`      | Theodolite without built-in EDM.
+| `GEOCOM_TPS_DEVICE_MOT`    | Motorised device.
+| `GEOCOM_TPS_DEVICE_ATR`    | Automatic Target Recognition (ATR).
+| `GEOCOM_TPS_DEVICE_EGL`    | Electronic Guide Light (EGL).
+| `GEOCOM_TPS_DEVICE_DB`     | Reserved (database, not GSI).
+| `GEOCOM_TPS_DEVICE_DL`     | Diode laser.
+| `GEOCOM_TPS_DEVICE_LP`     | Laser plumbed.
+| `GEOCOM_TPS_DEVICE_TC1`    | Tachymeter (TCW1).
+| `GEOCOM_TPS_DEVICE_TC2`    | Tachymeter (TCW2).
+| `GEOCOM_TPS_DEVICE_TC`     | Tachymeter (TCW3).
+| `GEOCOM_TPS_DEVICE_TCR`    | Tachymeter (TCW3 with red laser).
+| `GEOCOM_TPS_DEVICE_ATC`    | Auto-collimation lamp (used only PMU).
+| `GEOCOM_TPS_DEVICE_LPNT`   | Laser pointer.
+| `GEOCOM_TPS_DEVICE_RL_EXT` | Reflectorless EDM with extended range (Pinpoint R100, R300).
+| `GEOCOM_TPS_DEVICE_PS`     | PowerSearch.
+| `GEOCOM_TPS_DEVICE_SIM`    | Runs on simulation, no hardware.
+|===
+
+.GEOCOM_TPS_REFLESS_CLASS: Reflectorless class [[geocom-api-tps-refless-class]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_TPS_REFLESS_NONE`  | None.
+| `GEOCOM_TPS_REFLESS_R100`  | Pinpoint R100.
+| `GEOCOM_TPS_REFLESS_R300`  | Pinpoint R300.
+| `GEOCOM_TPS_REFLESS_R400`  | Pinpoint R400.
+| `GEOCOM_TPS_REFLESS_R1000` | Pinpoint R1000.
+|===
+
 == Lua API [[lua-api]]
 
-Parts of the DMPACK library are exposed to Lua through a distinct API. All log
-levels are exported:
+Parts of the DMPACK library are exposed to Lua through a distinct API. Log
+levels and error codes are registered as named constants. The GeoCOM API
+includes functions and named parameters for request preparation.
 
-* `LOG_NONE`     – No log level (0).
-* `LOG_DEBUG`    – Debug level (1).
-* `LOG_INFO`     – Information level (2).
-* `LOG_WARNING`  – Warning level (3).
-* `LOG_ERROR`    – Error level (4).
-* `LOG_CRITICAL` – Critical error level (5).
+=== Functions
 
-Furthermore, all <<error-codes,DMPACK error codes>> are registered, starting
-with `E_NONE`, as well as the following Lua functions:
+The following utility functions are exported to convert units:
 
 * `deg2gon(deg)` – Converts degrees to gon.
 * `deg2rad(deg)` – Converts degrees to radiants.
@@ -4662,22 +5040,1140 @@ with `E_NONE`, as well as the following Lua functions:
 * `rad2deg(rad)` – Converts radiants to degrees.
 * `rad2gon(rad)` – Converts radiants to gon.
 
-At the moment, the Lua API is used only for configuration file handling and
-observation processing. Load the shared library `libdmpack.so` from Lua to
-import the functions, for example:
+The Lua functions may be called inside of configuration files. For testing, load
+the shared library `libdmpack.so` first, for example:
 
 [source,lua]
 ....
--- Import the shared library `libdmpack.so`. The file must be
--- located in the Lua search path.
+-- Import the shared library `libdmpack.so`.
+-- The file must be located in the Lua search path.
 require("libdmpack")
 
--- Convert angle from [deg] to [gon].
-deg = 360.0
-gon = deg2gon(deg)
+-- Convert angle from [deg] to [gon]. Output: 400.0
+gon = deg2gon(360.0)
 print(gon)
--- Output: 400.0
 ....
+
+=== GeoCOM
+
+The GeoCOM API for Lua is used to automate the creation of observation requests
+in DMPACK configuration files. The official GeoCOM API is divided into the
+following sub-systems:
+
+* `AUT` – Automation.
+* `BAP` – Basic Applications.
+* `BMM` – Basic Man-Machine Interface.
+* `COM` – Communication Settings.
+* `CSV` – Central Services.
+* `EDM` – Electronic Distance Measurement.
+* `FTR` – File Transfer.
+* `IMG` – Image Processing.
+* `MOT` – Motorisation.
+* `SUP` – Supervisor.
+* `TMC` – Theodolite Measurement and Calculation.
+
+The Lua function names do not match the GeoCOM API names. All functions start
+with prefix `geocom_`, all named parameters with `GEOCOM_`. The names of the
+requests are set to the name of the respective function without the prefix.
+
+[%autowidth]
+|===
+| GeoCOM API                  | Lua API
+
+| `AUS_GetUserAtrState`       | <<lua-api-geocom-get-user-atr-mode,geocom_get_user_atr_mode>>
+| `AUS_GetUserLockState`      | <<lua-api-geocom-get-user-lock-mode,geocom_get_user_lock_mode>>
+| `AUS_SetUserAtrState`       | <<lua-api-geocom-set-user-atr-mode,geocom_set_user_atr_mode>>
+| `AUS_SetUserLockState`      | <<lua-api-geocom-set-user-lock-mode,geocom_set_user_lock_mode>>
+| `AUT_ChangeFace`            | <<lua-api-geocom-change-face,geocom_change_face>>
+| `AUT_FineAdjust`            | <<lua-api-geocom-fine-adjust,geocom_fine_adjust>>
+| `AUT_GetFineAdjustMode`     | <<lua-api-geocom-get-fine-adjust-mode,geocom_get_fine_adjust_mode>>
+| `AUT_GetSearchArea`         | <<lua-api-geocom-get-search-area,geocom_get_search_area>>
+| `AUT_GetUserSpiral`         | <<lua-api-geocom-get-user-spiral,geocom_get_user_spiral>>
+| `AUT_LockIn`                | <<lua-api-geocom-lock-in,geocom_lock_in>>
+| `AUT_MakePositioning`       | <<lua-api-geocom-set-position,geocom_set_position>>
+| `AUT_PS_EnableRange`        | <<lua-api-geocom-ps-enable-range,geocom_ps_enable_range>>
+| `AUT_PS_SearchNext`         | <<lua-api-geocom-ps-search-next,geocom_ps_search_next>>
+| `AUT_PS_SearchWindow`       | <<lua-api-geocom-ps-search-window,geocom_ps_search_window>>
+| `AUT_PS_SetRange`           | <<lua-api-geocom-ps-set-range,geocom_ps_set_range>>
+| `AUT_ReadTimeout`           | <<lua-api-geocom-get-timeout,geocom_get_timeout>>
+| `AUT_ReadTol`               | <<lua-api-geocom-get-tolerance,geocom_get_tolerance>>
+| `AUT_Search`                | <<lua-api-geocom-get-search,geocom_get_search>>
+| `AUT_SetFineAdjustMode`     | <<lua-api-geocom-set-fine-adjust-mode,geocom_set_fine_adjust_mode>>
+| `AUT_SetSearchArea`         | <<lua-api-geocom-set-search-area,geocom_set_search_area>>
+| `AUT_SetTimeout`            | <<lua-api-geocom-set-positioning-timeout,geocom_set_positioning_timeout>>
+| `AUT_SetTol`                | <<lua-api-geocom-set-tolerance,geocom_set_tolerance>>
+| `AUT_SetUserSpiral`         | <<lua-api-geocom-set-user-spiral,geocom_set_user_spiral>>
+| `BAP_GetATRSetting`         | <<lua-api-geocom-get-atr-setting,geocom_get_atr_setting>>
+| `BAP_GetMeasPrg`            | <<lua-api-geocom-get-measurement-program,geocom_get_measurement_program>>
+| `BAP_GetPrismDef`           | <<lua-api-geocom-get-prism-definition,geocom_get_prism_definition>>
+| `BAP_GetRedATRFov`          | <<lua-api-geocom-get-reduced-atr-fov,geocom_get_reduced_atr_fov>>
+| `BAP_GetTargetType`         | <<lua-api-geocom-get-target-type,geocom_get_target_type>>
+| `BAP_GetUserPrismDef`       | <<lua-api-geocom-get-user-prism-definition,geocom_get_user_prism_definition>>
+| `BAP_SearchTarget`          | <<lua-api-geocom-search-target,geocom_search_target>>
+| `BAP_SetATRSetting`         | <<lua-api-geocom-set-atr-mode,geocom_set_atr_mode>>
+| `BAP_SetAtmCorr`            | <<lua-api-geocom-set-atmospheric-correction,geocom_set_atmospheric_correction>>
+| `BAP_SetAtmPpm`             | <<lua-api-geocom-set-atmospheric-ppm,geocom_set_atmospheric_ppm>>
+| `BAP_SetMeasPrg`            | <<lua-api-geocom-set-measurement-program,geocom_set_measurement_program>>
+| `BAP_SetPrismType2`         | <<lua-api-geocom-set-prism-type-v2,geocom_set_prism_type_v2>>
+| `BAP_SetPrismType`          | <<lua-api-geocom-set-prism-type,geocom_set_prism_type>>
+| `BAP_SetRedATRFov`          | <<lua-api-geocom-set-reduced-atr-fov,geocom_set_reduced_atr_fov>>
+| `BAP_SetTargetType`         | <<lua-api-geocom-set-target-type,geocom_set_target_type>>
+| `BAP_SetUserPrismDef`       | <<lua-api-geocom-set-user-prism-definition,geocom_set_user_prism_definition>>
+| `BMM_BeepAlarm`             | <<lua-api-geocom-beep-alarm,geocom_beep_alarm>>
+| `BMM_BeepNormal`            | <<lua-api-geocom-beep-normal,geocom_beep_normal>>
+| `COM_GetBinaryAvailable`    | <<lua-api-geocom-get-binary-mode,geocom_get_binary_mode>>
+| `COM_GetDoublePrecision`    | <<lua-api-geocom-get-double-precision,geocom_get_double_precision>>
+| `COM_GetSWVersion`          | <<lua-api-geocom-get-geocom-version,geocom_get_geocom_version>>
+| `COM_NullProc`              | <<lua-api-geocom-null,geocom_null>>
+| `COM_SetBinaryAvailable`    | <<lua-api-geocom-set-binary-mode,geocom_set_binary_mode>>
+| `COM_SetDoublePrecision`    | <<lua-api-geocom-set-double-precision,geocom_set_double_precision>>
+| `COM_SwitchOffTPS`          | <<lua-api-geocom-switch-off,geocom_switch_off>>
+| `COM_SwitchOffTPS`          | <<lua-api-geocom-switch-on,geocom_switch_on>>
+| `CSV_CheckPower`            | <<lua-api-geocom-get-power,geocom_get_power>>
+| `CSV_GetDateTimeCentiSec`   | <<lua-api-geocom-get-date-time-centi,geocom_get_date_time_centi>>
+| `CSV_GetDateTime`           | <<lua-api-geocom-get-date-time,geocom_get_date_time>>
+| `CSV_GetDeviceConfig`       | <<lua-api-geocom-get-device-config,geocom_get_device_config>>
+| `CSV_GetInstrumentName`     | <<lua-api-geocom-get-instrument-name,geocom_get_instrument_name>>
+| `CSV_GetInstrumentNo`       | <<lua-api-geocom-get-instrument-number,geocom_get_instrument_number>>
+| `CSV_GetIntTemp`            | <<lua-api-geocom-get-internal-temperature,geocom_get_internal_temperature>>
+| `CSV_GetReflectorlessClass` | <<lua-api-geocom-get-reflectorless-class,geocom_get_reflectorless_class>>
+| `CSV_GetSWVersion`          | <<lua-api-geocom-get-software-version,geocom_get_software_version>>
+| `CSV_SetDateTime`           | <<lua-api-geocom-set-date-time,geocom_set_date_time>>
+| `EDM_GetEglIntensity`       | <<lua-api-geocom-get-egl-intensity,geocom_get_egl_intensity>>
+| `EDM_Laserpointer`          | <<lua-api-geocom-set-laser-pointer,geocom_set_laser_pointer>>
+| `EDM_SetEglIntensity`       | <<lua-api-geocom-set-egl-intensity,geocom_set_egl_intensity>>
+| `FTR_AbortDownload`         | <<lua-api-geocom-abort-download,geocom_abort_download>>
+| `FTR_AbortList`             | <<lua-api-geocom-abort-list,geocom_abort_list>>
+| `FTR_Delete`                | <<lua-api-geocom-delete,geocom_delete>>
+| `FTR_Download`              | <<lua-api-geocom-download,geocom_download>>
+| `FTR_List`                  | <<lua-api-geocom-list,geocom_list>>
+| `FTR_SetupDownload`         | <<lua-api-geocom-setup-download,geocom_setup_download>>
+| `FTR_SetupList`             | <<lua-api-geocom-setup-list,geocom_setup_list>>
+| `IMG_GetTccConfig`          | <<lua-api-geocom-get-image-config,geocom_get_image_config>>
+| `IMG_SetTccConfig`          | <<lua-api-geocom-set-image-config,geocom_set_image_config>>
+| `IMG_TakeTccImage`          | <<lua-api-geocom-take-image,geocom_take_image>>
+| `IOS_BeepOff`               | <<lua-api-geocom-beep-off,geocom_beep_off>>
+| `IOS_BeepOn`                | <<lua-api-geocom-beep-on,geocom_beep_on>>
+| `MOT_ReadLockStatus`        | <<lua-api-geocom-get-lock-status,geocom_get_lock_status>>
+| `MOT_SetVelocity`           | <<lua-api-geocom-set-velocity,geocom_set_velocity>>
+| `MOT_StartController`       | <<lua-api-geocom-start-controller,geocom_start_controller>>
+| `MOT_StopController`        | <<lua-api-geocom-stop-controller,geocom_stop_controller>>
+| `SUP_GetConfig`             | <<lua-api-geocom-get-config,geocom_get_config>>
+| `SUP_SetConfig`             | <<lua-api-geocom-set-config,geocom_set_config>>
+| `TMC_DoMeasure`             | <<lua-api-geocom-do-measure,geocom_do_measure>>
+| `TMC_GeoPpm`                | <<lua-api-geocom-get-geometric-ppm,geocom_get_geometric_ppm>>
+| `TMC_GetAngSwitch`          | <<lua-api-geocom-get-angular-correction-status,geocom_get_angular_correction_status>>
+| `TMC_GetAngle1`             | <<lua-api-geocom-get-angle-complete,geocom_get_angle_complete>>
+| `TMC_GetAngle5`             | <<lua-api-geocom-get-angle,geocom_get_angle>>
+| `TMC_GetAtmCorr`            | <<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction>>
+| `TMC_GetAtmPpm`             | <<lua-api-geocom-get-atmospheric-ppm,geocom_get_atmospheric_ppm>>
+| `TMC_GetCoordinate`         | <<lua-api-geocom-get-coordinate,geocom_get_coordinate>>
+| `TMC_GetEdmMode`            | <<lua-api-geocom-get-edm-mode,geocom_get_edm_mode>>
+| `TMC_GetFace`               | <<lua-api-geocom-get-face,geocom_get_face>>
+| `TMC_GetFullMeas`           | <<lua-api-geocom-get-full-measurement,geocom_get_full_measurement>>
+| `TMC_GetHeight`             | <<lua-api-geocom-get-height,geocom_get_height>>
+| `TMC_GetInclineSwitch`      | <<lua-api-geocom-get-inclination-correction,geocom_get_inclination_correction>>
+| `TMC_GetPrismCorr`          | <<lua-api-geocom-get-prism-constant,geocom_get_prism_constant>>
+| `TMC_GetPrismType2`         | <<lua-api-geocom-get-prism-type-v2,geocom_get_prism_type_v2>>
+| `TMC_GetPrismType`          | <<lua-api-geocom-get-prism-type,geocom_get_prism_type>>
+| `TMC_GetQuickDist`          | <<lua-api-geocom-get-quick-distance,geocom_get_quick_distance>>
+| `TMC_GetRefractiveMethod`   | <<lua-api-geocom-get-refraction-mode,geocom_get_refraction_mode>>
+| `TMC_GetSignal`             | <<lua-api-geocom-get-signal,geocom_get_signal>>
+| `TMC_GetSimpleCoord`        | <<lua-api-geocom-get-simple-coordinates,geocom_get_simple_coordinates>>
+| `TMC_GetSimpleMea`          | <<lua-api-geocom-get-simple-measurement,geocom_get_simple_measurement>>
+| `TMC_GetSlopeDistCorr`      | <<lua-api-geocom-get-slope-distance-correction,geocom_get_slope_distance_correction>>
+| `TMC_GetStation`            | <<lua-api-geocom-get-station,geocom_get_station>>
+| `TMC_IfDataAzeCorrError`    | <<lua-api-geocom-get-atr-error,geocom_get_atr_error>>
+| `TMC_IfDataIncCorrError`    | <<lua-api-geocom-get-inclination-error,geocom_get_inclination_error>>
+| `TMC_QuickDist`             | <<lua-api-geocom-get-quick-distance,geocom_get_quick_distance>>
+| `TMC_SetAngSwitch`          | <<lua-api-geocom-set-angle-correction,geocom_set_angle_correction>>
+| `TMC_SetEdmMode`            | <<lua-api-geocom-set-edm-mode,geocom_set_edm_mode>>
+| `TMC_SetGeoPpm`             | <<lua-api-geocom-set-geometric-ppm,geocom_set_geometric_ppm>>
+| `TMC_SetHandDist`           | <<lua-api-geocom-set-distance,geocom_set_distance>>
+| `TMC_SetHeight`             | <<lua-api-geocom-set-height,geocom_set_height>>
+| `TMC_SetInclineSwitch`      | <<lua-api-geocom-set-inclination-correction,geocom_set_inclination_correction>>
+| `TMC_SetOrientation`        | <<lua-api-geocom-set-orientation,geocom_set_orientation>>
+| `TMC_SetPrismCorr`          | <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant>>
+| `TMC_SetRefractiveMethod`   | <<lua-api-geocom-set-refraction-mode,geocom_set_refraction_mode>>
+| `TMC_SetStation`            | <<lua-api-geocom-set-station,geocom_set_station>>
+|===
+
+
+==== geocom_abort_download() [[lua-api-geocom-abort-download]]
+
+Returns request of *FTR_AbortDownload* procedure. Creates request to abort or end the
+file download command.
+
+==== geocom_abort_list() [[lua-api-geocom-abort-list]]
+
+Returns request of *FTR_AbortList* procedure. Creates request to abort or end
+the file list command.
+
+==== geocom_beep_alarm() [[lua-api-geocom-beep-alarm]]
+
+Returns request of *BMM_BeepAlarm* procedure. Creates request to output an alarm
+signal (triple beep).
+
+==== geocom_beep_normal() [[lua-api-geocom-beep-normal]]
+
+Returns request of *BMM_BeepNormal* procedure. Creates request to output an
+alarm signal (single beep).
+
+==== geocom_beep_off() [[lua-api-geocom-beep-off]]
+
+Returns request of *IOS_BeepOff* procedure. Creates request to stop an active
+beep signal.
+
+==== geocom_beep_on(intensity) [[lua-api-geocom-beep-on]]
+
+* `intensity` (_integer_) – Intensity of the beep signal.
+
+Returns request of *IOS_BeepOn* procedure. Creates request for continuous beep
+signal of given `intensity` from 0 to 100. The constant
+`GEOCOM_IOS_BEEP_STDINTENS` sets the intensity to 100.
+
+==== geocom_change_face(pos_mode, atr_mode) [[lua-api-geocom-change-face]]
+
+* `pos_mode` (_integer_) – Position mode (<<geocom-api-aut-posmode,GEOCOM_AUT_POSMODE>>).
+* `atr_mode` (_integer_) – ATR mode (<<geocom-api-aut-atrmode,GEOCOM_AUT_ATRMODE>>).
+
+Returns request of *AUT_ChangeFace* procedure. Creates request for turning the
+telescope to the other face.
+
+If `pos_mode` is `GEOCOM_AUT_NORMAL`, the instrument uses the current value of
+the compensator. For positioning distances > 25 gon, this mode might tend to
+inaccuracy. If set to `GEOCOM_AUT_PRECISE`, it tries to measure the exact
+inclination of the target. Tends to long positioning time.
+
+If `atr_mode` is `GEOCOM_AUT_POSITION`, the instrument uses conventional
+positioning to other face. If set to `GEOCOM_AUT_TARGET`, it tries to position
+into a target in the destination area. This mode requires activated ATR.
+
+==== geocom_delete(device_type, file_type, day, month, year, file_name) [[lua-api-geocom-delete]]
+
+* `device_type` (_integer_) – Internal memory or memory card (<<geocom-api-ftr-devicetype,GEOCOM_FTR_DEVICETYPE>>).
+* `file_type`   (_integer_) – Type of file (<<geocom-api-ftr-filetype,GEOCOM_FTR_FILETYPE>>).
+* `day`         (_integer_) – Day (`DD`).
+* `month`       (_integer_) – Month (`MM`).
+* `year`        (_integer_) – Year (`YY`).
+* `file_name`   (_string_)  – Name of file to delete.
+
+Returns request of *FTR_Delete* procedure. Creates request for deleting one or
+more files. Wildcards may be used to delete multiple files. If the deletion date
+is valid, only files older than the deletion date are deleted.
+
+==== geocom_do_measure(tmc_prog, inc_mode) [[lua-api-geocom-do-measure]]
+
+* `tmc_prog` (_integer_) – TMC measurement program (<<geocom-api-tmc-measure-prg,GEOCOM_TMC_MEASURE_PRG>>).
+* `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_DoMeasure* procedure. Creates request for trying a
+distance measurement. This command does not return any values. If a distance
+measurement is performed in measurement program `GEOCOM_TMC_DEF_DIST`, the
+distance sensor will work with the set EDM mode.
+
+==== geocom_download(block_number) [[lua-api-geocom-download]]
+
+* `block_number` (_integer_) – Block number to download (0 – 65535).
+
+Returns request of *FTR_Download* procedure. Creates request to get a single
+block of data. The *FTR_SetupDownload* command has to be called first. The block
+sequence starts with 1. The download process will be aborted if the block number
+is set to 0. The maximum block number is 65535. The file size is therefore
+limited to 28 MiB. The function should not be used inside of configuration
+files.
+
+==== geocom_fine_adjust(search_hz, search_v) [[lua-api-geocom-fine-adjust]]
+
+* `search_hz` (_number_) – Search range, Hz axis [rad].
+* `search_v`  (_number_) – Search range, V axis [rad].
+
+Returns request of *AUT_FineAdjust* procedure. Creates request for automatic
+target positioning.
+
+The procedure positions the telescope onto the target prosm and measures the ATR
+Hz and V deviations. If the target is not within the visible area of the ATR
+sensor (field of view), a target search will be executed. The target search
+range is limited by the parameter `search_v` in V direction, and by parameter
+`search_hz` in Hz direction. If no target was found, the instrument turns back
+to the initial start position.
+
+The Fine Adjust Lock-in towards a target is terminated by this procedure call.
+After positioning, the _lock_ mode will be active. The timeout of the operation
+is set to 5 seconds, regardless of the general position timeout settings. The
+position tolerance depends on the previously selected find adjust mode.
+
+The tolerance settings have no influence to this operation. The tolerance
+settings and the ATR precision depend on the instrument class and the used EDM
+mode.
+
+==== geocom_get_angle(inc_mode) [[lua-api-geocom-get-angle]]
+
+* `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetAngle5* procedure. Creates request for returning a
+simple angle measurement. The function starts an angle measurement and returns
+the results.
+
+==== geocom_get_angle_complete(inc_mode) [[lua-api-geocom-get-angle-complete]]
+
+* `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetAngle1* procedure. Creates request for returning a
+complete angle measurement. The function starts an angle and, depending on the
+configuration, an inclination measurement, and returns the results.
+
+==== geocom_get_angular_correction_status() [[lua-api-geocom-get-angular-correction-status]]
+
+Returns request of *TMC_GetAngSwitch* procedure. Creates request for getting the
+angular correction status.
+
+==== geocom_get_atmospheric_correction() [[lua-api-geocom-get-atmospheric-correction]]
+
+Returns request of *TMC_GetAtmCorr* procedure. Creates request for getting the
+atmospheric correction parameters
+
+==== geocom_get_atmospheric_ppm() [[lua-api-geocom-get-atmospheric-ppm]]
+
+Returns request of *TMC_GetAtmPpm* procedure. Creates request for getting the
+atmospheric ppm correction factor.
+
+==== geocom_get_atr_error() [[lua-api-geocom-get-atr-error]]
+
+Returns request of *TMC_IfDataAzeCorrError* procedure. Creates request for
+getting the ATR error status.
+
+==== geocom_get_atr_setting() [[lua-api-geocom_get-atr-setting]]
+
+Returns request of *BAP_GetATRSetting* procedure. Creates request for getting
+the current ATR low-vis mode.
+
+==== geocom_get_binary_mode() [[lua-api-geocom_get-binary-mode]]
+
+Returns request of *COM_GetBinaryAvailable* procedure. Creates request for
+getting the binary attribute of the server.
+
+==== geocom_get_config() [[lua-api-geocom_get-config]]
+
+Returns request of *SUP_GetConfig* procedure. Creates request for getting the
+power management configuration status. The power timeout specifies the time
+after which the device switches into the mode indicated by response `autopwr`.
+
+==== geocom_get_coordinate(wait_time, inc_mode) [[lua-api-geocom-get-coordinate]]
+
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetCoordinate* procedure. Creates request for getting
+the coordinates of a measured point.
+
+This function conducts an angle and, in dependence of the selected `inc_mode`,
+an inclination measurement, and the calculates the coordinates of the measured
+point with the last distance. The argument `wait_time` specifies the delay to
+wait for the distance measurement to finish. Single and tracking measurements
+are supported. The quality of the result is returned in the GeoCOM return code.
+
+==== geocom_get_date_time() [[lua-api-geocom-get-date-time]]
+
+Returns request of *CSV_GetDateTime* procedure. Creates request for getting the
+current date and time of the instrument. A possible response may look like
+`%R1P,0,0:0,1996,'07','19','10','13','2f'`.
+
+==== geocom_get_date_time_centi() [[lua-api-geocom-get-date-time-centi]]
+
+Returns request of *CSV_GetDateTimeCentiSec* procedure. Creates request for
+getting the current date and time of the instrument, including centiseconds.
+
+==== geocom_get_device_config() [[lua-api-geocom-get-device-config]]
+
+Returns request of *CSV_GetDeviceConfig* procedure. Creates request for getting
+the instrument configuration.
+
+==== geocom_get_double_precision() [[lua-api-geocom-get-double-precision]]
+
+Returns request of *COM_GetDoublePrecision* procedure. Creates request for
+getting the double precision setting – the number of digits to the right of the
+decimal point – when double floating-point values are transmitted.
+
+==== geocom_get_edm_mode() [[lua-api-geocom-get-edm-mode]]
+
+Returns request of *TMC_GetEdmMode* procedure. Creates request for getting the
+EDM measurement mode.
+
+==== geocom_get_egl_intensity() [[lua-api-geocom-get-egl-intensity]]
+
+Returns request of *EDM_GetEglIntensity* procedure. Creates request for getting
+the value of the intensity of the electronic guide light (EGL).
+
+==== geocom_get_face() [[lua-api-geocom-get-face]]
+
+Returns request of *TMC_GetFace* procedure. Creates request for getting the face
+of the current telescope position.
+
+==== geocom_get_fine_adjust_mode() [[lua-api-geocom-get-fine-adjust-mode]]
+
+Returns request of *AUT_GetFineAdjustMode* procedure. Creates request for
+getting the fine adjustment positioning mode.
+
+==== geocom_get_full_measurement(wait_time, inc_mode) [[lua-api-geocom-get-full-measurement]]
+
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetFullMeas* procedure. The GeoCOM function returns
+angle, inclination, and distance measurement data, including accuracy and
+measurement time. This command does not issue a new distance measurement. A
+distance measurement has to be started in advance. If the distance is valid, the
+function ignores `wait_time` and returns the results immediately. If no valid
+distance is available, and the measurement unit is not activated, the angle
+measurement result is retuned after the waiting time.
+
+==== geocom_get_geocom_version() [[lua-api-geocom-get-geocom-version]]
+
+Returns request of *COM_GetSWVersion* procedure. Creates request for getting the
+GeoCOM server software version.
+
+==== geocom_get_geometric_ppm() [[lua-api-geocom-get-geometric-ppm]]
+
+Returns request of *TMC_GeoPpm* procedure. Creates request for getting the
+geometric ppm correction factor.
+
+==== geocom_get_height() [[lua-api-geocom-get-height]]
+
+Returns request of *TMC_GetHeight* procedure. Creates request for getting the
+current reflector height.
+
+==== geocom_get_image_config(mem_type) [[lua-api-geocom-get-image-config]]
+
+* `mem_type` (_integer_) – Memory device type (<<geocom-api-img-mem-type,GEOCOM_IMG_MEM_TYPE>>).
+
+Returns request of *IMG_GetTccConfig* procedure. Creates request to read
+the current image configuration. The response `subfunc` is a binary
+combination of the following settings:
+
+* `1` – Test image.
+* `2` – Automatic exposure time selection.
+* `4` – Two-times sub-sampling.
+* `8` – Four-times sub-sampling.
+
+==== geocom_get_inclination_correction() [[lua-api-geocom-get-inclination-correction]]
+
+Returns request of *TMC_GetInclineSwitch* procedure. Creates request for getting the
+dual-axis compensator status
+
+==== geocom_get_inclination_error() [[lua-api-geocom-get-inclination-error]]
+
+Returns request of *TMC_IfDataIncCorrError* procedure. Creates request for
+getting the inclination error status.
+
+==== geocom_get_instrument_name() [[lua-api-geocom-get-instrument-name]]
+
+Returns request of *CSV_GetInstrumentName* procedure. Creates request for
+getting the Leica-specific instrument name.
+
+==== geocom_get_instrument_number() [[lua-api-geocom-get-instrument-number]]
+
+Returns request of *CSV_GetInstrumentNo* procedure. Creates request for getting
+the factory defined instrument number.
+
+==== geocom_get_internal_temperature() [[lua-api-geocom-get-internal-temperature]]
+
+Returns request of *CSV_GetIntTemp* procedure. Creates request for getting the
+internal temperature of the instrument, measured on the mainboard side.
+
+==== geocom_get_lock_status() [[lua-api-geocom-get-lock-status]]
+
+Returns request of *MOT_ReadLockStatus* procedure. Creates request for returning
+the condition of the Lock-In control.
+
+==== geocom_get_measurement_program() [[lua-api-geocom-get-measurement-program]]
+
+Returns request of *BAP_GetMeasPrg* procedure. Creates request for getting the
+distance measurement program of the instrument.
+
+==== geocom_get_power() [[lua-api-geocom-get-power]]
+
+Returns request of *CSV_CheckPower* procedure. Creates request for checking the
+available power.
+
+==== geocom_get_prism_constant() [[lua-api-geocom-get-prism-constant]]
+
+Returns request of *TMC_GetPrismCorr* procedure. Creates request for getting the
+prism constant.
+
+==== geocom_get_prism_definition(prism_type) [[lua-api-geocom-get-prism-definition]]
+
+* `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
+
+Returns request of *BAP_GetPrismDef* procedure. Creates request for getting the
+default prism definition.
+
+==== geocom_get_prism_type() [[lua-api-geocom-get-prism-type]]
+
+Returns request of *TMC_GetPrismType* procedure. Creates request for getting the
+default prism type.
+
+==== geocom_get_prism_type_v2() [[lua-api-geocom-get-prism-type-v2]]
+
+Returns request of *TMC_GetPrismType2* procedure. Creates request for getting
+the default or user prism type.
+
+==== geocom_get_quick_distance() [[lua-api-geocom-get-quick-distance]]
+
+Returns request of *TMC_QuickDist* procedure. Creates request for returning the
+slope distance and both angles. The function starts an EDM tracking measurement,
+and waits until a distance has been measured. Then, it returns the angles and
+the slope distance, but no coordinates. If no distance could be measured, only
+angles and an error code are returned. A measurement may be aborted by calling
+*TMC_DoMeasure*.
+
+==== geocom_get_reduced_atr_fov() [[lua-api-geocom-get-reduced-atr-fov]]
+
+Returns request of *BAP_GetRedATRFov* procedure. Creates request for getting the
+reduced ATR field of view.
+
+==== geocom_get_reflectorless_class() [[lua-api-geocom-get-reflectorless-class]]
+
+Returns request of *CSV_GetReflectorlessClass* procedure. Creates request for
+getting the RL type. The function returns the class of the reflectorless and
+long-range distance measurement of the instrument.
+
+==== geocom_get_refraction_mode() [[lua-api-geocom-get-refraction_mode]]
+
+Returns request of *TMC_GetRefractiveMethod* procedure. Creates request for
+getting the refraction model. The function is used to get the current
+refraction model. Changing the method is not indicated on the interface of the
+instrument.
+
+==== geocom_get_search_area() [[lua-api-geocom-get-search-area]]
+
+Returns request of *AUT_GetSearchArea* procedure. Creates request for getting
+the dimensions of the PowerSearch window. This command is valid for all
+instruments, but has only effects for instruments equipped with PowerSearch.
+
+==== geocom_get_signal() [[lua-api-geocom-get-signal]]
+
+Returns request of *TMC_GetSignal* procedure. Creates request for getting the
+EDM signal intensity. The function returns the intensity of the EDM signal. The
+function can only perform a measurement if the signal measurement program is
+activated. Start the signal measurement program with *TMC_DoMeasure* in program
+`GEOCOM_TMC_SIGNAL`. After the measurement, the EDM must be switched off with
+program `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
+
+==== geocom_get_simple_coordinates(wait_time, inc_mode) [[lua-api-geocom-get-simple-coordinates]]
+
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetSimpleCoord* procedure. The API function returns the
+cartesian coordinates if a valid distance is set. The argument `wait_time` sets
+the maximum time to wait for a valid distance. Without a valid distance, the
+coordinates are set to 0.0, and an error is returned. The coordinate calculation
+requires inclination results. The argument `inc_mode` sets the inclination
+measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+
+==== geocom_get_simple_measurement(wait_time, inc_mode) [[lua-api-geocom-get-simple-measurement]]
+
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_GetSimpleMea* procedure. The API function returns the
+angles and distance measurement data. The argument `wait_time` sets the maximum
+time to wait for a valid distance. If a distance is available, the wait time is
+ignored.
+
+==== geocom_get_slope_distance_correction() [[lua-api-geocom-get-slope-distance-correction]]
+
+Returns request of *TMC_GetSlopeDistCorr* procedure. The function returns the
+total ppm value (atmospheric ppm + geometric ppm) plus the current prism
+constant.
+
+==== geocom_get_software_version() [[lua-api-geocom-get-software-version]]
+
+Returns request of *CSV_GetSWVersion* procedure. Creates request for getting the
+system software version of the instrument.
+
+==== geocom_get_station() [[lua-api-geocom-get-station]]
+
+Returns request of *TMC_GetStation* procedure. Creates request for getting the
+station coordinates of the instrument.
+
+==== geocom_get_target_type() [[lua-api-geocom-get-target-type]]
+
+Returns request of *BAP_GetTargetType* procedure. Creates request for getting
+the EDM type. The function returns the current EDM type
+(`GEOCOM_BAP_TARGET_TYPE`) for distance measurements: reflector (IR) or
+reflectorless (RL).
+
+==== geocom_get_timeout() [[lua-api-geocom-get-timeout]]
+
+Returns request of *AUT_ReadTimeout* procedure. Creates request for getting
+the timeout for positioning. The function returns the maximum time to perform
+positioning.
+
+==== geocom_get_tolerance() [[lua-api-geocom-get-tolerance]]
+
+Returns request of *AUT_ReadTol* procedure. The function returns the positioning
+tolerances of the Hz and V instrument axis.
+
+==== geocom_get_user_atr_mode() [[lua-api-geocom-get-user-atr-mode]]
+
+Returns request of *AUS_GetUserAtrState* procedure. Creates request for getting
+the status of the ATR mode.
+
+==== geocom_get_user_lock_mode() [[lua-api-geocom-get-user-lock-mode]]
+
+Returns request of *AUS_GetUserLockState* procedure. Creates request for getting
+the status of the _lock_ mode.
+
+==== geocom_get_user_prism_definition(name) [[lua-api-geocom-get-user-prism-definition]]
+
+* `name` (_string_) – Prism name.
+
+Returns equest of *BAP_GetUserPrismDef* procedure. Creates request for getting
+the user prism definition.
+
+==== geocom_get_user_spiral() [[lua-api-geocom-get-user-spiral]]
+
+Returns request of *AUT_GetUserSpiral* procedure. The function returns the
+current dimensions of the searching spiral. Requires at least a TCA instrument.
+
+==== geocom_list(next) [[lua-api-geocom-list]]
+
+* `next` (_bool_) – First or next entry.
+
+Returns request of *FTR_List* procedure. Creates request for listing file
+information.
+
+==== geocom_lock_in() [[lua-api-geocom-lock-in]]
+
+Returns request of *AUT_LockIn* procedure. Creates request for starting the
+target tracking. The API function will start the target tracking if the _lock_
+mode is activated (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must have
+finished successfully before executing this function.
+
+==== geocom_null() [[lua-api-geocom-null]]
+
+Returns request of *COM_NullProc* procedure. Creates request for checking the
+communication.
+
+==== geocom_ps_enable_range(enabled) [[lua-api-geocom-ps-enable-range]]
+
+* `enabled` (_bool_) – Enable PowerSearch.
+
+Returns request of *AUT_PS_EnableRange* procedure. The function enabled or
+disables the predefined PowerSearch window including the PowerSearch range
+limits set by API call *AUT_PS_SetRange* (requires GeoCOM robotic licence). If
+`enabled` is `false`, the default range is set to ≤ 400 m.
+
+==== geocom_ps_search_next(direction, swing) [[lua-api-geocom-ps-search-next]]
+
+* `direction` (_integer_) – Searching direction (`1` for clockwise, `-1` for counter-clockwise).
+* `swing`     (_bool_)    – Searching starts –10 gon to the given direction.
+
+Returns request of *AUT_PS_SearchNext* procedure. The function executes the 360°
+default PowerSearch and searches for the next targets. A previously defined
+PowerSearch window (*AUT_SetSearchArea*) is not taken into account. Use API call
+*AUT_PS_SearchWindow* first.
+
+==== geocom_ps_search_window() [[lua-api-geocom-ps-search-window]]
+
+Returns request of *AUT_PS_SearchWindow* procedure. Creates request for starting
+PowerSearch. The function starts PowerSearch in the window defined by API calls
+*AUT_SetSearchArea* and *AUT_PS_SetRange* (requires GeoCOM robotic licence).
+
+==== geocom_ps_set_range(min_dist, max_dist) [[lua-api-geocom-ps-set-range]]
+
+* `min_dist` (_integer_) – Min. distance to prism (≥ 0) [m].
+* `max_dist` (_integer_) – Max. distance to prism (≤ 400, ≥ `min_dist` + 10) [m].
+
+Returns request of *AUT_PS_SetRange* procedure. Creates request for setting the
+PowerSearch range.
+
+==== geocom_search(search_hz, search_v) [[lua-api-geocom-search]]
+
+* `search_hz` (_number_) – Horizontal search region [rad].
+* `search_v`  (_number_) – Vertical search region [rad].
+
+Returns request of *AUT_Search* procedure. The function performs an automatic
+target search within the given search area (requires GeoCOM robotic licence).
+The search is terminated once the prism appears in the field of view of the ATR
+sensor. If no prism is found in the specified area, the instrument turns back
+into the initial position. For an exact positioning onto the prism centre, use
+the fine-adjust API call afterwards (*AUT_FineAdjust*). If the search range of
+the API function *AUT_FineAdjust* is expanded, target search and fine
+positioning are done in one step.
+
+==== geocom_search_target() [[lua-api-geocom-search-target]]
+
+Returns request of *BAP_SearchTarget* procedure. Creates request for searching a
+target. The function searches for a target in the ATR search window.
+
+==== geocom_set_angle_correction(incline, stand_axis, collimation, tilt_axis) [[lua-api-geocom-set-angle-correction]]
+
+* `incline`     (_bool_) – Enable inclination correction.
+* `stand_axis`  (_bool_) – Enable standard axis correction.
+* `collimation` (_bool_) – Enable collimation correction.
+* `tilt_axis`   (_bool_) – Enable tilt axis correction.
+
+Returns request of *TMC_SetAngSwitch* procedure. Creates request for turning
+angle corrections on or off.
+
+==== geocom_set_atmospheric_correction(lambda, pressure, dry_temp, wet_temp) [[lua-api-geocom-set-atmospheric-correction]]
+
+* `lambda`   (_number_) – Wave-length of EDM transmitter [m].
+* `pressure` (_number_) – Atmospheric pressure [mbar].
+* `dry_temp` (_number_) – Dry temperature [°C].
+* `wet_temp` (_number_) – Wet temperature [°C].
+
+Returns request of *BAP_SetAtmCorr* procedure. Creates request for setting the
+atmospheric correction parameters. The argument `lambda` should be queried with
+API call *TMC_GetAtmCorr*.
+
+==== geocom_set_atmospheric_ppm(atm_ppm) [[lua-api-geocom-set-atmospheric-ppm]]
+
+* `atm_ppm` (_number_) – Atmospheric ppm correction factor [ppm].
+
+Returns request of *BAP_SetAtmPpm* procedure. Creates request for setting
+the atmospheric ppm correction factor.
+
+==== geocom_set_atr_mode(atr_mode) [[lua-api-geocom-set-atr-mode]]
+
+* `atm_mode` (_integer_) – ATR low-vis mode (<<geocom-api-bap-atrsetting,GEOCOM_BAP_ATRSETTING>>).
+
+Returns request of *BAP_SetATRSetting* procedure. Creates request for
+setting the ATR low-vis mode.
+
+==== geocom_set_binary_mode(enabled) [[lua-api-geocom-set-binary-mode]]
+
+* `enabled` (_bool_) – Enable binary communication.
+
+Returns request of *COM_SetBinaryAvailable* procedure. Creates request for
+setting the binary attribute of the server. The function sets the ability of the
+GeoCOM server to handle binary communication (not supported by DMPACK).
+
+==== geocom_set_config(auto_power, timeout) [[lua-api-geocom-set-config]]
+
+* `auto_power` (_integer_) – Power-off mode (<<geocom-api-sup-auto-power,GEOCOM_SUP_AUTO_POWER>>).
+* `timeout`    (_integer_) – Timeout [ms].
+
+Returns request of *SUP_SetConfig* procedure. Creates request for setting the
+power management configuration. The argument `timeout` sets the duration after
+which the instrument switches into the mode `auto_power`
+(`GEOCOM_SUP_AUTO_POWER`) when no user activity occured (key press, GeoCOM
+communication). The value must be between 60,000 m/s (1 min) and 6,000,000 m/s
+(100 min).
+
+==== geocom_set_date_time(year, month, day, hour, minute, second) [[lua-api-geocom-set-date-time]]
+
+* `year`   (_integer_) – Year (`YYYY`).
+* `month`  (_integer_) – Month (`MM`).
+* `day`    (_integer_) – Day of month (`DD`).
+* `hour`   (_integer_) – Hour (`hh`).
+* `minute` (_integer_) – Minute (`mm`).
+* `second` (_integer_) – Second (`ss`).
+
+Returns request of *CSV_SetDateTime* procedure. Creates request for setting the
+date and time of the instrument.
+
+==== geocom_set_distance(slope_dist, height_offset, inc_mode) [[lua-api-geocom-set-distance]]
+
+* `slope_dist`    (_number_)  – Slope distance [m].
+* `height_offset` (_number_)  – Height offset [m].
+* `inc_mode`      (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
+
+Returns request of *TMC_SetHandDist* procedure. The function is used to set the
+manually measured slope distance and height offset for a following measurement.
+Additionally, an inclination and an angle measurement are started to determine
+the coordinates of the target. The vertical angle is corrected to π/2 or 3π/2,
+depending on the face of the instrument. The previously measured distance is
+cleared.
+
+==== geocom_set_double_precision(ndigits) [[lua-api-geocom-set-double-precision]]
+
+* `ndigits` (_integer_) – Number of digits right to the comma.
+
+Returns request of *COM_SetDoublePrecision* procedure. The function sets the
+precision – the number of digits right of the decimal – when double
+floating-point values are transmitted. The default precision is 15 digits. The
+setting is only valid for the ASCII transmission mode. Trailing zeroes will not
+be sent by the instrument. For example, if `ndigits` is set to 3 and the exact
+value is 1.99975, the resulting value will be 2.0.
+
+==== geocom_set_edm_mode(edm_mode) [[lua-api-geocom-set-edm-mode]]
+
+* `edm_mode` (_integer_) – EDM measurement mode (<<geocom-api-edm-mode,GEOCOM_EDM_MODE>>).
+
+Returns request of *TMC_SetEdmMode* procedure. Creates request for setting the
+EDM measurement mode. The EDM mode set by this function is used by
+*TMC_DoMeasure(TMC_DEF_DIST)*.
+
+==== geocom_set_egl_intensity(intensity) [[lua-api-geocom-set-egl-intensity]]
+
+* `intensity` (_integer_) – EGL intensity (<<geocom-api-edm-eglintensity-type,GEOCOM_EDM_EGLINTENSITY_TYPE>>).
+
+Returns request of *EDM_SetEglIntensity* procedure. Creates request for setting
+the intensity of the electronic guide light.
+
+==== geocom_set_fine_adjust_mode(adj_mode) [[lua-api-geocom-set-fine-adjust_mode]]
+
+* `adj_mode` (_integer_) – Fine adjust positioning mode (<<geocom-api-aut-adjmode,GEOCOM_AUT_ADJMODE>>).
+
+Returns request of *AUT_SetFineAdjustMode* procedure. The function sets the
+positioning tolerances relating to angle accuracy or point accuracy for the fine
+adjust (requires GeoCOM robotic licence). If a target is near or held by hand,
+it is recommended to set the adjust mode to `GEOCOM_AUT_POINT_MODE`. The
+argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
+`GEOCOM_AUT_POINT_MODE`.
+
+==== geocom_set_geometric_ppm(enabled, scale_factor, offset, height_ppm, individual_ppm) [[lua-api-geocom-set-geometric-ppm]]
+
+* `enabled`        (_bool_)   – Enable binary communication.
+* `scale_factor`   (_number_) – Scale factor on central meridian.
+* `offset`         (_number_) – Offset from central meridian [m].
+* `height_ppm`     (_number_) – Ppm value due to height above reference.
+* `individual_ppm` (_number_) – Individual ppm value.
+
+Returns request of *TMC_SetGeoPpm* procedure. Creates request for setting the
+geometric ppm correction factor.
+
+==== geocom_set_height(height) [[lua-api-geocom-set-height]]
+
+* `height` (_number_) – Reflector height [m].
+
+Returns request of *TMC_SetHeight* procedure. Creates request for setting a new
+reflector height.
+
+==== geocom_set_image_config(mem_type, image_number, quality, sub_function, prefix) [[lua-api-geocom-set-image-config]]
+
+* `mem_type`     (_integer_) – Memory device type (<<geocom-api-img-mem-type,GEOCOM_IMG_MEM_TYPE>>).
+* `image_number` (_integer_) – Actual image number.
+* `quality`      (_integer_) – JPEG compression factor (0 – 100).
+* `sub_function` (_integer_) – Additional sub-functions to call.
+* `prefix`       (_string_)  – File name prefix.
+
+Returns request of *IMG_SetTccConfig* procedure. Creates request for setting the
+image configuration. The argument `sub_function` may be a binary combination of
+the following settings:
+
+* `1` – Test image.
+* `2` – Automatic exposure-time selection.
+* `3` – Two-times sub-sampling.
+* `4` – Four-times sub-sampling.
+
+==== geocom_set_inclination_correction(enabled) [[lua-api-geocom-set-inclination-correction]]
+
+* `enabled` (_bool_) – Enable dual-axis compensator.
+
+Returns request of *TMC_SetInclineSwitch* procedure. Creates request for turning
+the dual-axis compensator on or off.
+
+==== geocom_set_laser_pointer(enabled) [[lua-api-geocom-set-laser-pointer]]
+
+* `enabled` (_bool_) – Enable laser pointer.
+
+Returns request of *EDM_Laserpointer* procedure. Creates request for turning the
+laser pointer on or off. The function is only available on models which support
+reflectorless distance measurement.
+
+==== geocom_set_measurement_program(bap_prog) [[lua-api-geocom-set-measurement-program]]
+
+* `bap_prog` (_integer_) – Measurement program (<<geocom-api-bap-user-measprg,GEOCOM_BAP_USER_MEASPRG>>).
+
+Returns request of *BAP_SetMeasPrg* procedure. The function sets the distance
+measurement program, for example, for API call *BAP_MeasDistanceAngle*. The RL
+EDM type programs are not available on all instruments. Changing the measurement
+program may change the EDM type as well (IR, RL).
+
+==== geocom_set_orientation(hz) [[lua-api-geocom-set-orientation]]
+
+* `hz` (_number_) – Horizontal orientation [rad].
+
+Returns request of *TMC_SetOrientation* procedure. Creates request for
+orientating the instrument in horizontal direction. The API function is a
+combination of an angle measurement to get the horizontal offset and setting the
+angle offset afterwards, in order to orientate to a target. Before the new
+orientation can be set, an existing distance must be cleared by calling API
+function *TMC_DoMeasure* with command `GEOCOM_TMC_CLEAR`.
+
+==== geocom_set_position(hz, v, pos_mode, atr_mode) [[lua-api-geocom-set-position]]
+
+* `hz`       (_number_)  – Horizontal angle [rad].
+* `v`        (_number_)  – Vertical angle [rad].
+* `pos_mode` (_integer_) – Position mode (<<geocom-api-aut-posmode,GEOCOM_AUT_POSMODE>>).
+* `atr_mode` (_integer_) – ATR mode (<<geocom-api-aut-atrmode,GEOCOM_AUT_ATRMODE>>).
+
+Returns request of *AUT_MakePositioning* procedure. Creates request for turning
+the telescope to a specified position.
+
+If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the compensator.
+For positioning distances > 25 gon, this mode might tend to inaccuracy. If set
+to `GEOCOM_AUT_PRECISE`, tries to measure the exact inclination of the target
+(tends to long position time).
+
+If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to other
+face. If set to `GEOCOM_AUT_TARGET`, tries to position into a target in the
+destination area. This mode requires activated ATR.
+
+==== geocom_set_positioning_timeout(time_hz, time_v) [[lua-api-geocom-set-positioning-timeout]]
+
+* `time_hz` (_number_) – Timeout in Hz direction [s].
+* `time_v`  (_number_) – Timeout in V direction [s].
+
+Returns request of *AUT_SetTimeout* procedure. This function sets the maximum
+time to perform a positioning. The timeout is reset on 7 seconds after each
+power on. Valid value for `hz` and `v` are between 7 [sec] and 60 [sec].
+
+==== geocom_set_prism_constant(prism_const) [[lua-api-geocom-set-prism-constant]]
+
+* `prism_const` (_number_) – Prism constant [mm].
+
+Returns request of *TMC_SetPrismCorr* procedure. Creates request for setting the
+prism constant. The API function *BAP_SetPrismType* overwrites this setting.
+
+==== geocom_set_prism_type(prism_type) [[lua-api-geocom-set-prism-type]]
+
+* `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
+
+Returns request of *BAP_SetPrismType* procedure. Creates request for setting the
+default prism type. This function sets the prism type for measurement with a
+reflector (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by API
+call *TMC_SetPrimCorr*.
+
+==== geocom_set_prism_type_v2(prism_type, prism_name) [[lua-api-geocom-set-prism-type-v2]]
+
+* `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
+* `prism_name` (_string_)  – Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
+
+Returns request of *BAP_SetPrismType2* procedure. Creates request for setting
+the default or user prism type. This function sets the default or the user prism
+type for measurements with a reflector. It overwrites the prism constant set by
+*TMC_SetPrismCorr*. The user defined prism must have been added with API call
+*BAP_SetUserPrismDef* beforehand.
+
+==== geocom_set_reduced_atr_fov(enabled) [[lua-api-geocom-set-reduced-atr-fov]]
+
+* `enabled` (_bool_) – Use reduced field of view.
+
+Returns request of *BAP_SetRedATRFov* procedure. Creates request for setting the
+reduced ATR field of view. If `enabled` is `true`, ATR uses reduced field of
+view (about 1/9), full field of view otherwise.
+
+==== geocom_set_refraction_mode(mode) [[lua-api-geocom-set-refraction-mode]]
+
+* `mode` (_integer_) – Refraction data method (1 or 2).
+
+Returns request of *TMC_SetRefractiveMethod* procedure. Creates request for
+setting the refraction model. Mode `1` means method 1 for the rest of the world,
+mode `2` means method for Australia.
+
+==== geocom_set_search_area(center_hz, center_v, range_hz, range_v, enabled) [[lua-api-geocom-set-search-area]]
+
+* `center_hz` (_number_) – Search area center Hz angle [rad].
+* `center_v`  (_number_) – Search area center V angle [rad].
+* `range_v`   (_number_) – Search area range Hz angle [rad].
+* `range_v`   (_number_) – Search area range V angle [rad].
+* `enabled`   (_bool_)   – Enable search area.
+
+Returns request of *AUT_SetSearchArea* procedure. The function sets the position
+and dimensions of the PowerSearch window, and activates it. The API call is
+valid for all instruments, but has effects only for those equipped with
+PowerSearch (requires GeoCOM robotic licence).
+
+==== geocom_set_station(easting, northing, height, instr_height) [[lua-api-geocom-set-station]]
+
+* `easting`      (_number_) – E coordinate [m].
+* `northing`     (_number_) – N coordinate [m].
+* `height`       (_number_) – H coordinate [m].
+* `instr_height` (_number_) – Instrument height [m].
+
+Returns request of *TMC_SetStation* procedure. Creates request for setting the
+station coordinates of the instrument.
+
+==== geocom_set_target_type(target_type) [[lua-api-geocom-set-target-type]]
+
+* `target_type` (_integer_) – Target type (<<geocom-api-bap-target-type,GEOCOM_BAP_TARGET_TYPE>>).
+
+Returns request of *BAP_SetTargetType* procedure. Creates request for setting
+the EDM type.
+
+The function sets the current EDM type (`GEOCOM_BAP_TARGET_TYPE`) for distance
+measurements: reflector (IR) or reflectorless (RL). For each EDM type, the EDM
+mode used last is remembered and actived if the EDM type is changed. If EDM type
+IR is selected, the automation mode used last is activated automatically. The
+API function *BAP_SetMeasPrg* can also change the target type. The EDM type RL
+is not available on all instruments.
+
+==== geocom_set_tolerance(hz, v) [[lua-api-geocom-set_tolerance]]
+
+* `hz` (_number_) – Positioning tolerance in Hz direction [rad].
+* `v`  (_number_) – Positioning tolerance in V direction [rad].
+
+Returns request of *AUT_SetTol* procedure. Creates request for setting the
+positioning tolerances.
+
+This function sets the position tolerances of the Hz and V instrument axes
+(GeoCOM robotic licence required). The tolerances must be in the range of 1 [cc]
+(1.57079E-06 [rad]) to 100 [cc] (1.57079E-04 [rad]).
+
+The maximum resolution of the angle measurement system depends on the instrument
+accuracy class. If smaller positioning tolerances are required, the positioning
+time can increase drastically
+
+==== geocom_set_user_atr_mode(enabled) [[lua-api-geocom-set-user-atr-mode]]
+
+* `enabled` (_bool_) – Enable ATR state.
+
+Returns request of *AUS_SetUserAtrState* procedure. Creates request for setting
+the status of the ATR state.
+
+The function activates or deactivates the ATR mode (requires GeoCOM robotic
+licence). If `enabled` is `true`, ATR mode is activated, and if _lock_ mode is
+enabled while the API call is made, _lock_ mode will change to ATR mode. If
+`enabled` is `false`, ATR mode is deactivated, and if LOCK mode is enabled then
+it stays enabled.
+
+==== geocom_set_user_lock_mode(enabled) [[lua-api-geocom-set-user-lock-mode]]
+
+* `enabled` (_bool_) – Enable _lock_ state.
+
+Returns request of *AUS_SetUserLockState* procedure. Creates request for setting
+the status of the _lock_ state.
+
+The function activated or deactivates the _lock_ mode (GeoCOM robotic licence
+required). If `enabled` is `true`, _lock_ mode is activated. In order to lock
+and follow a moving target, call API function *AUT_LockIn*. If `enabled` is
+`false`, _lock_ mode is deactivated. Tracking of a moving target will be
+aborted, and the manual drive wheel is activated.
+
+==== geocom_set_user_prism_definition(prism_name, prism_const, prism_type, creator) [[lua-api-geocom-set-user-prism-definition]]
+
+* `prism_name`  (_string_)  – Prism name.
+* `prism_const` (_number_)  – Prism constant [mm].
+* `prism_type`  (_integer_) – Prism type (<<geocom-api-bap-refltype,GEOCOM_BAP_REFLTYPE>>).
+* `creator`     (_string_)  – Name of creator.
+
+Returns request of *BAP_SetUserPrismDef* procedure. Creates request for
+setting a user prism definition.
+
+==== geocom_set_user_spiral(hz, v) [[lua-api-geocom-set-user-spiral]]
+
+* `hz` (_number_) – ATR search window in Hz direction [rad].
+* `v`  (_number_) – ATR search window in V direction [rad].
+
+Returns request of *AUT_SetUserSpiral* procedure. The function sets the
+dimensions of the ATR search window (GeoCOM robotic licence required).
+
+==== geocom_set_velocity(omega_hz, omega_v) [[lua-api-geocom-set-velocity]]
+
+* `omega_hz` (_number_) – Velocity in Hz direction [rad/s].
+* `omega_v`  (_number_) – Velocity in V direction [rad/s].
+
+Returns request of *MOT_SetVelocity* procedure. Creates request for driving the
+instrument with constant speed.
+
+The function is used to set up the velocity of the motorisation (GeoCOM robotic
+licence required). The API function *MOT_StartController* must have been called
+with argument `GEOCOM_MOT_OCONST` before.
+
+The velocity in horizontal and vertical direction are in [rad/s]. The maximum
+velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s for TPS1100/TPS1200.
+
+==== geocom_setup_download(device_type, file_type, file_name, block_size) [[lua-api-geocom-setup-download]]
+
+* `device_type` (_integer_) – Device type (<<geocom-api-ftr-devicetype,GEOCOM_FTR_DEVICETYPE>>).
+* `file_type`   (_integer_) – File type (<<geocom-api-ftr-filetype,GEOCOM_FTR_FILETYPE>>).
+* `file_name`   (_string_)  – File name with extension.
+* `block_size`  (_integer_) – Block size.
+
+Returns request of *FTR_SetupDownload* procedure. Creates request for setting up
+a file download. The function has to be called before *FTR_Download*. If the
+file type is `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
+
+The argument `device_type` must be one of the following:
+
+* `GEOCOM_FTR_DEVICE_INTERNAL` – Internal memory module (path `/ata1a/`).
+* `GEOCOM_FTR_DEVICE_PCPARD`   – External memory card (path `/ata0a/`).
+
+The argument `file_type` is usually `GEOCOM_FTR_FILE_IMAGES`. The maximum value
+for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
+
+==== geocom_setup_list(device_type, file_type, search_path) [[lua-api-geocom-setup-list]]
+
+* `device_type` (_integer_) – Device type (<<geocom-api-ftr-devicetype,GEOCOM_FTR_DEVICETYPE>>).
+* `file_type`   (_integer_) – File type (<<geocom-api-ftr-filetype,GEOCOM_FTR_FILETYPE>>).
+* `search_path` (_string_)  – Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
+
+Returns request of *FTR_SetupList* procedure. Creates request for setting up
+file listing. The function sets up the device type, file type, and search path.
+It has to be called before *FTR_List*.
+
+==== geocom_start_controller(start_mode) [[lua-api-geocom-start-controller]]
+
+* `start_mode` (_integer_) – Controller start mode (<<geocom-api-mot-mode,GEOCOM_MOT_MODE>>).
+
+Returns request of *MOT_StartController* procedure. Creates request for starting
+the motor controller.
+
+If this function is used in combination with API call *MOT_SetVelocity*, the
+controller mode has to be `GEOCOM_MOT_OCONST`.
+
+The argument `start_mode` must be one of the following:
+
+* `GEOCOM_MOT_POSIT`   –  Relative positioning.
+* `GEOCOM_MOT_OCONST`  –  Constant speed.
+* `GEOCOM_MOT_MANUPOS` –  Manual positioning (default setting).
+* `GEOCOM_MOT_LOCK`    –  “Lock-in” controller.
+* `GEOCOM_MOT_BREAK`   –  “Brake” controller.
+* `GEOCOM_MOT_TERM`    –  Terminates the controller task.
+
+==== geocom_stop_controller(stop_mode) [[lua-api-geocom-stop-controller]]
+
+* `stop_mode` (_integer_) – Controller stop mode (<<geocom-api-mot-stopmode,GEOCOM_MOT_STOPMODE>>).
+
+Returns request of *MOT_StartController* procedure. Creates request for stopping
+the motor controller.
+
+The argument `stop_mode` must be one of the following:
+
+* `GEOCOM_MOT_NORMAL`   – Slow down with current acceleration.
+* `GEOCOM_MOT_SHUTDOWN` – Slow down by switching off power supply.
+
+==== geocom_switch_off(stop_mode) [[lua-api-geocom-switch-off]]
+
+* `stop_mode` (_integer_) – Switch-off mode (<<geocom-api-com-tps-stop-mode,GEOCOM_COM_TPS_STOP_MODE>>).
+
+Returns request of *COM_SwitchOffTPS* procedure. Creates request for turning the
+instrument off.
+
+The argument `stop_mode` has to be one of the following:
+
+* `GEOCOM_COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
+* `GEOCOM_COM_TPS_STOP_SLEEP`     – Sleep mode (not supported by TPS1200).
+
+==== geocom_switch_on(start_mode) [[lua-api-geocom-switch-on]]
+
+* `start_mode` (_integer_) – Switch-on mode (<<geocom-api-com-tps-startup-mode,GEOCOM_COM_TPS_STARTUP_MODE>>).
+
+Returns request of *COM_SwitchOnTPS* procedure. Creates request for turning the
+instrument on.
+
+The argument `start_mode` has to be one of the following:
+
+* `GEOCOM_COM_TPS_STARTUP_LOCAL`  – Not supported by TPS1200.
+* `GEOCOM_COM_TPS_STARTUP_REMOTE` – Online mode (RPC is enabled).
+
+==== geocom_take_image(mem_type) [[lua-api-geocom-take-image]]
+
+* `mem_type` (_integer_) – Memory type (`GEOCOM_IMG_MEM_TYPE`).
+
+Returns request of *IMG_TakeTccImage* procedure. Creates request for capturing a
+telescope image.
+
+The memory type `mem_type` has to be one of the following:
+
+* `GEOCOM_IMG_INTERNAL_MEMORY` – Internal memory module.
+* `GEOCOM_IMG_PC_CARD`         – External memory card.
 
 == Error Codes [[error-codes]]
 

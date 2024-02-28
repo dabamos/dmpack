@@ -13,6 +13,7 @@ module dm_sensor
     integer, parameter, public :: SENSOR_SN_LEN   = 32
     integer, parameter, public :: SENSOR_META_LEN = 32
 
+    ! Sensor types.
     integer, parameter, public :: SENSOR_TYPE_NONE    = 0 !! Unknown sensor type.
     integer, parameter, public :: SENSOR_TYPE_VIRTUAL = 1 !! Virtual sensor.
     integer, parameter, public :: SENSOR_TYPE_FS      = 2 !! File system.
@@ -33,7 +34,7 @@ module dm_sensor
 
     type, public :: sensor_type
         !! Sensor description.
-        character(len=SENSOR_ID_LEN)   :: id      = ' '              !! Sensor id (-0-9A-Za-z).
+        character(len=SENSOR_ID_LEN)   :: id      = ' '              !! Sensor id (`-0-9A-Z_a-z`).
         character(len=NODE_ID_LEN)     :: node_id = ' '              !! Associated sensor node.
         integer                        :: type    = SENSOR_TYPE_NONE !! Sensor type.
         character(len=SENSOR_NAME_LEN) :: name    = ' '              !! Sensor name.

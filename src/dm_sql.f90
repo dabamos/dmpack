@@ -125,8 +125,8 @@ module dm_sql
         'target_id   INTEGER NOT NULL,' // NL // &
         'id          TEXT    NOT NULL UNIQUE,' // NL // &
         'name        TEXT    NOT NULL,' // NL // &
-        'source      TEXT,' // NL // &
         'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
+        'source      TEXT,' // NL // &
         'path        TEXT,' // NL // &
         'priority    INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -153,11 +153,12 @@ module dm_sql
         'request_id  INTEGER PRIMARY KEY,' // NL // &
         'observ_id   INTEGER NOT NULL,' // NL // &
         'idx         INTEGER NOT NULL,' // NL // &
+        'name        TEXT    NOT NULL,' // NL // &
+        'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'request     TEXT,' // NL // &
         'response    TEXT,' // NL // &
         'delimiter   TEXT,' // NL // &
         'pattern     TEXT,' // NL // &
-        'timestamp   TEXT,' // NL // &
         'delay       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'mode        INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -253,14 +254,15 @@ module dm_sql
         'CREATE INDEX IF NOT EXISTS idx_source    ON logs(source)' &
     ]
 
-    character(len=*), parameter, public :: SQL_CREATE_OBSERVS_INDICES(11) = [ character(len=128) :: &
+    character(len=*), parameter, public :: SQL_CREATE_OBSERVS_INDICES(12) = [ character(len=128) :: &
         'CREATE INDEX IF NOT EXISTS idx_nodes_id             ON nodes(id)', &
         'CREATE INDEX IF NOT EXISTS idx_sensors_id           ON sensors(id)', &
         'CREATE INDEX IF NOT EXISTS idx_targets_id           ON targets(id)', &
-        'CREATE INDEX IF NOT EXISTS idx_observs              ON observs(timestamp, name, error)', &
+        'CREATE INDEX IF NOT EXISTS idx_observs              ON observs(name, timestamp, error)', &
         'CREATE INDEX IF NOT EXISTS idx_observs_timestamp    ON observs(timestamp)', &
         'CREATE INDEX IF NOT EXISTS idx_receivers_idx        ON receivers(idx)', &
         'CREATE INDEX IF NOT EXISTS idx_requests_idx         ON requests(idx)', &
+        'CREATE INDEX IF NOT EXISTS idx_requests_name        ON requests(name)', &
         'CREATE INDEX IF NOT EXISTS idx_requests_timestamp   ON requests(timestamp)', &
         'CREATE INDEX IF NOT EXISTS idx_responses            ON responses(request_id, idx, name, unit, type, error, value)', &
         'CREATE INDEX IF NOT EXISTS idx_responses_request_id ON responses(request_id)', &
@@ -396,11 +398,11 @@ module dm_sql
 
     ! Query to insert observation.
     ! Arguments: nodes.id, sensors.id, targets.id, observs.id, observs.name,
-    !            observs.source, observs.timestamp, observs.path, observs.priority,
+    !            observs.timestamp, observs.source, observs.path, observs.priority,
     !            observs.error, observs.next, observs.nreceivers, observs.nrequests
     character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
         'INSERT OR FAIL INTO observs ' // &
-        '(id, node_id, sensor_id, target_id, name, source, timestamp, path, ' // &
+        '(id, node_id, sensor_id, target_id, name, timestamp, source, path, ' // &
         'priority, error, next, nreceivers, nrequests) ' // &
         'VALUES (' // &
         '?, ' // &
@@ -416,14 +418,15 @@ module dm_sql
         '(SELECT observ_id FROM observs WHERE id = ?), ?, ?)'
 
     ! Query to insert request.
-    ! Arguments: observs.id, requests.idx, requests.request, requests.response,
-    !            requests.delimiter, requests.pattern, requests.delay,
-    !            requests.error, requests.mode, requests.retries, requests.state,
-    !            requests.timeout, requests.nresponses
+    ! Arguments: observs.id, requests.idx, requests.name, requests.timestamp,
+    !            requests.request, requests.response, requests.delimiter,
+    !            requests.pattern, requests.delay, requests.error, requests.mode,
+    !            requests.retries, requests.state, requests.timeout,
+    !            requests.nresponses
     character(len=*), parameter, public :: SQL_INSERT_REQUEST = &
-        'INSERT OR FAIL INTO requests(observ_id, idx, request, response, delimiter, ' // &
-        'pattern, timestamp, delay, error, mode, retries, state, timeout, nresponses) VALUES (' // &
-        '(SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT OR FAIL INTO requests(observ_id, idx, name, timestamp, request, response, ' // &
+        'delimiter, pattern, delay, error, mode, retries, state, timeout, nresponses) VALUES (' // &
+        '(SELECT observ_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert response that references observation, request index.
     ! Arguments: responses.request_id, responses.idx, responses.name,
@@ -668,8 +671,8 @@ module dm_sql
         'sensors.id, ' // &
         'targets.id, ' // &
         'observs.name, ' // &
-        'observs.source, ' // &
         'observs.timestamp, ' // &
+        'observs.source, ' // &
         'observs.path, ' // &
         'observs.priority, ' // &
         'observs.error, ' // &
@@ -699,8 +702,8 @@ module dm_sql
         'sensors.id, ' // &
         'targets.id, ' // &
         'observs.name, ' // &
-        'observs.source, ' // &
         'observs.timestamp, ' // &
+        'observs.source, ' // &
         'observs.path, ' // &
         'observs.priority, ' // &
         'observs.error, ' // &
@@ -740,6 +743,7 @@ module dm_sql
         'targets.id, ' // &
         'observs.name, ' // &
         'observs.error, ' // &
+        'requests.name, ' // &
         'requests.timestamp, ' // &
         'requests.error, ' // &
         'responses.name, ' // &
@@ -780,11 +784,12 @@ module dm_sql
     ! Arguments: observs.id, requests.idx
     character(len=*), parameter, public :: SQL_SELECT_REQUEST = &
         'SELECT ' // &
+        'requests.name, ' // &
+        'requests.timestamp, ' // &
         'requests.request, ' // &
         'requests.response, ' // &
         'requests.delimiter, ' // &
         'requests.pattern, ' // &
-        'requests.timestamp, ' // &
         'requests.delay, ' // &
         'requests.error, ' // &
         'requests.mode, ' // &
@@ -800,11 +805,12 @@ module dm_sql
     ! Arguments: observs.id
     character(len=*), parameter, public :: SQL_SELECT_REQUESTS = &
         'SELECT ' // &
+        'requests.name, ' // &
+        'requests.timestamp, ' // &
         'requests.request, ' // &
         'requests.response, ' // &
         'requests.delimiter, ' // &
         'requests.pattern, ' // &
-        'requests.timestamp, ' // &
         'requests.delay, ' // &
         'requests.error, ' // &
         'requests.mode, ' // &

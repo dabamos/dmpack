@@ -1605,8 +1605,8 @@ contains
             if (sqlite3_bind_text(stmt,  3, trim(observ%sensor_id)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  4, trim(observ%target_id)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  5, trim(observ%name))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt,  6, trim(observ%source))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt,  7, trim(observ%timestamp)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  6, trim(observ%timestamp)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  7, trim(observ%source))    /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  8, trim(observ%path))      /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt,  9, observ%priority)        /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt, 10, observ%error)           /= SQLITE_OK) exit sql_block
@@ -4871,18 +4871,19 @@ contains
                 rc = E_DB_BIND
                 if (sqlite3_bind_text(stmt,  1, trim(observ_id))             /= SQLITE_OK) exit row_loop
                 if (sqlite3_bind_int (stmt,  2, i)                           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text(stmt,  3, trim(requests(i)%request))   /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text(stmt,  4, trim(requests(i)%response))  /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text(stmt,  5, trim(requests(i)%delimiter)) /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text(stmt,  6, trim(requests(i)%pattern))   /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_text(stmt,  7, trim(requests(i)%timestamp)) /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt,  8, requests(i)%delay)           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt,  9, requests(i)%error)           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 10, requests(i)%mode)            /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 11, requests(i)%retries)         /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 12, requests(i)%state)           /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 13, requests(i)%timeout)         /= SQLITE_OK) exit row_loop
-                if (sqlite3_bind_int (stmt, 14, requests(i)%nresponses)      /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  3, trim(requests(i)%name))      /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  4, trim(requests(i)%timestamp)) /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  5, trim(requests(i)%request))   /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  6, trim(requests(i)%response))  /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  7, trim(requests(i)%delimiter)) /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_text(stmt,  8, trim(requests(i)%pattern))   /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt,  9, requests(i)%delay)           /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 10, requests(i)%error)           /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 11, requests(i)%mode)            /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 12, requests(i)%retries)         /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 13, requests(i)%state)           /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 14, requests(i)%timeout)         /= SQLITE_OK) exit row_loop
+                if (sqlite3_bind_int (stmt, 15, requests(i)%nresponses)      /= SQLITE_OK) exit row_loop
 
                 rc = E_DB_STEP
                 if (sqlite3_step(stmt) /= SQLITE_DONE) exit row_loop
@@ -5132,8 +5133,8 @@ contains
         observ%sensor_id  = sqlite3_column_text(stmt,  2)
         observ%target_id  = sqlite3_column_text(stmt,  3)
         observ%name       = sqlite3_column_text(stmt,  4)
-        observ%source     = sqlite3_column_text(stmt,  5)
-        observ%timestamp  = sqlite3_column_text(stmt,  6)
+        observ%timestamp  = sqlite3_column_text(stmt,  5)
+        observ%source     = sqlite3_column_text(stmt,  6)
         observ%path       = sqlite3_column_text(stmt,  7)
         observ%priority   = sqlite3_column_int (stmt,  8)
         observ%error      = sqlite3_column_int (stmt,  9)
@@ -5165,12 +5166,13 @@ contains
             if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
             if (sqlite3_column_type(stmt,  5) /= SQLITE_INTEGER) return
             if (sqlite3_column_type(stmt,  6) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) return
-            if (sqlite3_column_type(stmt,  8) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  7) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) return
             if (sqlite3_column_type(stmt,  9) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 10) /= SQLITE_TEXT)    return
             if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) return
-            if (sqlite3_column_type(stmt, 12) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 12) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt, 13) /= SQLITE_FLOAT)   return
         end if
 
         view%observ_id         = sqlite3_column_text  (stmt,  0)
@@ -5179,13 +5181,14 @@ contains
         view%target_id         = sqlite3_column_text  (stmt,  3)
         view%observ_name       = sqlite3_column_text  (stmt,  4)
         view%observ_error      = sqlite3_column_int   (stmt,  5)
-        view%request_timestamp = sqlite3_column_text  (stmt,  6)
-        view%request_error     = sqlite3_column_int   (stmt,  7)
-        view%response_name     = sqlite3_column_text  (stmt,  8)
-        view%response_unit     = sqlite3_column_text  (stmt,  9)
-        view%response_type     = sqlite3_column_int   (stmt, 10)
-        view%response_error    = sqlite3_column_int   (stmt, 11)
-        view%response_value    = sqlite3_column_double(stmt, 12)
+        view%request_name      = sqlite3_column_text  (stmt,  6)
+        view%request_timestamp = sqlite3_column_text  (stmt,  7)
+        view%request_error     = sqlite3_column_int   (stmt,  8)
+        view%response_name     = sqlite3_column_text  (stmt,  9)
+        view%response_unit     = sqlite3_column_text  (stmt, 10)
+        view%response_type     = sqlite3_column_int   (stmt, 11)
+        view%response_error    = sqlite3_column_int   (stmt, 12)
+        view%response_value    = sqlite3_column_double(stmt, 13)
 
         rc = E_NONE
     end function db_next_row_observ_view
@@ -5521,32 +5524,36 @@ contains
             row_loop: do i = 1, OBSERV_MAX_NREQUESTS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit row_loop
 
-                rc = E_DB_TYPE
-                if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    exit sql_block
-                if (sqlite3_column_type(stmt,  5) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt,  6) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) exit sql_block
-                if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) exit sql_block
+                if (i == 1) then
+                    rc = E_DB_TYPE
+                    if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  2) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  5) /= SQLITE_TEXT)    exit sql_block
+                    if (sqlite3_column_type(stmt,  6) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt,  7) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt,  8) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt,  9) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt, 10) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt, 11) /= SQLITE_INTEGER) exit sql_block
+                    if (sqlite3_column_type(stmt, 12) /= SQLITE_INTEGER) exit sql_block
+                end if
 
-                requests(i)%request    = sqlite3_column_text(stmt,  0)
-                requests(i)%response   = sqlite3_column_text(stmt,  1)
-                requests(i)%delimiter  = sqlite3_column_text(stmt,  2)
-                requests(i)%pattern    = sqlite3_column_text(stmt,  3)
-                requests(i)%timestamp  = sqlite3_column_text(stmt,  4)
-                requests(i)%delay      = sqlite3_column_int (stmt,  5)
-                requests(i)%error      = sqlite3_column_int (stmt,  6)
-                requests(i)%mode       = sqlite3_column_int (stmt,  7)
-                requests(i)%retries    = sqlite3_column_int (stmt,  8)
-                requests(i)%state      = sqlite3_column_int (stmt,  9)
-                requests(i)%timeout    = sqlite3_column_int (stmt, 10)
-                requests(i)%nresponses = sqlite3_column_int (stmt, 11)
+                requests(i)%name       = sqlite3_column_text(stmt,  0)
+                requests(i)%timestamp  = sqlite3_column_text(stmt,  1)
+                requests(i)%request    = sqlite3_column_text(stmt,  2)
+                requests(i)%response   = sqlite3_column_text(stmt,  3)
+                requests(i)%delimiter  = sqlite3_column_text(stmt,  4)
+                requests(i)%pattern    = sqlite3_column_text(stmt,  5)
+                requests(i)%delay      = sqlite3_column_int (stmt,  6)
+                requests(i)%error      = sqlite3_column_int (stmt,  7)
+                requests(i)%mode       = sqlite3_column_int (stmt,  8)
+                requests(i)%retries    = sqlite3_column_int (stmt,  9)
+                requests(i)%state      = sqlite3_column_int (stmt, 10)
+                requests(i)%timeout    = sqlite3_column_int (stmt, 11)
+                requests(i)%nresponses = sqlite3_column_int (stmt, 12)
 
                 nreq = nreq + 1
             end do row_loop

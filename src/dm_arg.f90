@@ -148,7 +148,7 @@ contains
             if (a(1:1) /= '-') then
                 ! Argument does not start with `-` and is therefore invalid.
                 rc = E_ARG_UNKNOWN
-                if (verbose_) call dm_error_out(rc, 'unknown command-line option "' // trim(a) // '"')
+                if (verbose_) call dm_error_out(rc, 'unknown option "' // trim(a) // '"')
                 return
             end if
 
@@ -162,7 +162,7 @@ contains
                 ! Argument has been passed already.
                 if (args(j)%passed) then
                     rc = E_ARG_INVALID
-                    if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' already set')
+                    if (verbose_) call dm_error_out(rc, 'option ' // trim(a) // ' already set')
                     return
                 end if
 
@@ -203,7 +203,7 @@ contains
             if (.not. exists .and. .not. ignore_unknown_) then
                 ! Argument starts with `-` but is unknown or unexpected.
                 rc = E_ARG_UNKNOWN
-                if (verbose_) call dm_error_out(rc, 'command-line option ' // trim(a) // ' not allowed')
+                if (verbose_) call dm_error_out(rc, 'argument ' // trim(a) // ' not allowed')
                 return
             end if
 
@@ -294,25 +294,25 @@ contains
                     cycle validate_loop
 
                 case (E_ARG_INVALID)
-                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is required')
+                    call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is required')
                     exit validate_loop
 
                 case (E_ARG_NO_VALUE)
-                    call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' requires value')
+                    call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' requires value')
                     exit validate_loop
 
                 case (E_ARG_TYPE)
                     select case (args(i)%type)
                         case (ARG_TYPE_INTEGER)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not an integer')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not an integer')
                         case (ARG_TYPE_FLOAT)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a number')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a number')
                         case (ARG_TYPE_ID)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a valid id')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid id')
                         case (ARG_TYPE_UUID)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not a valid UUID4')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid UUID4')
                         case (ARG_TYPE_TIME)
-                            call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is not in ISO 8601 format')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not in ISO 8601 format')
                         case (ARG_TYPE_FILE)
                             call dm_error_out(rc, 'file "' // trim(args(i)%value) // '" not found')
                         case (ARG_TYPE_DB)
@@ -323,10 +323,10 @@ contains
                 case (E_ARG_LENGTH)
                     n = len_trim(args(i)%value)
                     if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is too long, must be <= ' // &
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is too long, must be <= ' // &
                                           dm_itoa(args(i)%max_len))
                     else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'option --' // trim(args(i)%name) // ' is too short, must be >= ' // &
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is too short, must be >= ' // &
                                           dm_itoa(args(i)%min_len))
                     end if
                     exit validate_loop
@@ -421,8 +421,8 @@ contains
             end select
         end do
 
-        write (stdout, '(/, 4x, "-v, --version")')
-        write (stdout, '(4x, "-h, --help", /)')
+        write (stdout, '(/, 4x, "-h, --help")')
+        write (stdout, '(4x, "-v, --version", /)')
     end subroutine dm_arg_help
 
     ! ******************************************************************

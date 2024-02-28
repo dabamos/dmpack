@@ -12,6 +12,7 @@ module dm_target
     integer, parameter, public :: TARGET_NAME_LEN = 32
     integer, parameter, public :: TARGET_META_LEN = 32
 
+    ! Target states.
     integer, parameter, public :: TARGET_STATE_NONE     = 0 !! Default state.
     integer, parameter, public :: TARGET_STATE_REMOVED  = 1 !! Target was removed.
     integer, parameter, public :: TARGET_STATE_MISSING  = 2 !! Target is missing.
@@ -29,7 +30,7 @@ module dm_target
 
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (`-0-9A-Za-z`).
+        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (`-0-9A-Z_a-z`).
         character(len=TARGET_NAME_LEN) :: name  = ' '               !! Target name.
         character(len=TARGET_META_LEN) :: meta  = ' '               !! Target meta information (optional).
         integer                        :: state = TARGET_STATE_NONE !! Target state (optional).

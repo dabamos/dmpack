@@ -17,6 +17,7 @@ observ = {
     id = "00fbf0570bc54ac88041f4db64e38397",
     name = "lua-observ",
     timestamp = "1970-01-01T00:00:00.000+00:00",
+    source = "dmlua",
     tty = "/dev/ttyU0",
     priority = 1,
     error = 1,
@@ -26,6 +27,7 @@ observ = {
     receivers = { "dmdb" },
     requests = {
         {
+            name = "dummy-1",
             timestamp = "1970-01-01T00:00:00.000+00:00",
             request = "?",
             response = "123\\r\\n",

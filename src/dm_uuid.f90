@@ -7,7 +7,7 @@ module dm_uuid
     private
 
     integer,          parameter, public :: UUID_LEN      = 32 !! Hex UUID4 length.
-    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUID4 length.
+    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUID4 length (with hypens).
     character(len=*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
 
     character(len=*), parameter :: UUID_SET = '0123456789abcdef'
@@ -23,8 +23,8 @@ contains
         !! before the first invocation by calling `dm_init()` once.
         character(len=UUID_LEN) :: uuid
 
-        integer :: b(32), i, j
-        real    :: r(32)
+        integer :: b(UUID_LEN), i, j
+        real    :: r(UUID_LEN)
 
         call random_number(r)
 

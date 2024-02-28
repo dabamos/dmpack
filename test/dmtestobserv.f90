@@ -7,13 +7,16 @@ program dmtestobserv
     !! handling,
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 2
+    integer, parameter :: NTESTS = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestobserv.test01', test01)
-    tests(2) = test_type('dmtestobserv.test02', test02)
+    tests = [ &
+        test_type('dmtestobserv.test01', test01), &
+        test_type('dmtestobserv.test02', test02), &
+        test_type('dmtestobserv.test03', test03)  &
+    ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -33,8 +36,9 @@ contains
         observ1%sensor_id = 'dummy-sensor'
         observ1%target_id = 'dummy-target'
         observ1%name      = 'dummy-observ'
-        observ1%path      = '/dev/null'
         observ1%timestamp = TIME_DEFAULT
+        observ1%source    = 'dmtestobserv'
+        observ1%path      = '/dev/null'
 
         print *, 'Adding receivers ...'
         rc = dm_observ_add_receiver(observ1, 'dummy-receiver1')
@@ -47,7 +51,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
-        request = request_type(timestamp = TIME_DEFAULT, &
+        request = request_type(name      = 'dummy-1', &
+                               timestamp = TIME_DEFAULT, &
                                request   = 'A', &
                                response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF), &
                                delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
@@ -67,7 +72,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Creating request ...'
-        request = request_type(timestamp = TIME_DEFAULT, &
+        request = request_type(name      = 'dummy-2', &
+                               timestamp = TIME_DEFAULT, &
                                request   = 'B', &
                                response  = dm_ascii_escape('OK' // CR_LF), &
                                delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
@@ -147,5 +153,10 @@ contains
 
         stat = TEST_PASSED
     end function test02
-end program dmtestobserv
 
+    logical function test03() result(stat)
+        stat = TEST_PASSED
+
+        print '(" Observation size: ", i0)', OBSERV_SIZE
+    end function test03
+end program dmtestobserv

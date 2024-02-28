@@ -58,6 +58,7 @@ observs = {
         receivers = { },
         requests = {
             {
+                name = "stop",
                 request = "s" .. del,
                 delimiter = "",
                 pattern = "",
@@ -74,6 +75,7 @@ observs = {
         receivers = { "dmdb" },
         requests = {
             {
+                name = "get-values",
                 request = "Meter" .. del,
                 delimiter = del,
                 pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
