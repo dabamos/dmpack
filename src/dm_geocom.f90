@@ -26,6 +26,7 @@ module dm_geocom
     use :: dm_error
     use :: dm_geocom_api
     use :: dm_geocom_error
+    use :: dm_geocom_type
     use :: dm_kind
     use :: dm_request
     use :: dm_response
