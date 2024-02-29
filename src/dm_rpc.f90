@@ -156,25 +156,25 @@ contains
             case (CURLE_OK)
                 rc = E_NONE
 
-            case (CURLE_UNSUPPORTED_PROTOCOL)
-            case (CURLE_FAILED_INIT)
-            case (CURLE_URL_MALFORMAT)
-            case (CURLE_NOT_BUILT_IN)
-            case (CURLE_BAD_FUNCTION_ARGUMENT)
-            case (CURLE_UNKNOWN_OPTION)
-            case (CURLE_BAD_CONTENT_ENCODING)
+            case (CURLE_UNSUPPORTED_PROTOCOL,  &
+                  CURLE_FAILED_INIT,           &
+                  CURLE_URL_MALFORMAT,         &
+                  CURLE_NOT_BUILT_IN,          &
+                  CURLE_BAD_FUNCTION_ARGUMENT, &
+                  CURLE_UNKNOWN_OPTION,        &
+                  CURLE_BAD_CONTENT_ENCODING)
                 rc = E_INVALID
 
-            case (CURLE_COULDNT_RESOLVE_PROXY)
-            case (CURLE_COULDNT_RESOLVE_HOST)
-            case (CURLE_COULDNT_CONNECT)
+            case (CURLE_COULDNT_RESOLVE_PROXY, &
+                  CURLE_COULDNT_RESOLVE_HOST,  &
+                  CURLE_COULDNT_CONNECT)
                 rc = E_RPC_CONNECT
 
             case (CURLE_WEIRD_SERVER_REPLY)
                 rc = E_RPC_API
 
-            case (CURLE_REMOTE_ACCESS_DENIED)
-            case (CURLE_AUTH_ERROR)
+            case (CURLE_REMOTE_ACCESS_DENIED, &
+                  CURLE_AUTH_ERROR)
                 rc = E_RPC_AUTH
 
             case (CURLE_WRITE_ERROR)
@@ -192,20 +192,20 @@ contains
             case (CURLE_GOT_NOTHING)
                 rc = E_EMPTY
 
-            case (CURLE_SSL_CONNECT_ERROR)
-            case (CURLE_SSL_ENGINE_NOTFOUND)
-            case (CURLE_SSL_ENGINE_SETFAILED)
-            case (CURLE_SSL_CERTPROBLEM)
-            case (CURLE_SSL_CIPHER)
-            case (CURLE_PEER_FAILED_VERIFICATION)
-            case (CURLE_SSL_ENGINE_INITFAILED)
-            case (CURLE_SSL_CACERT_BADFILE)
-            case (CURLE_SSL_SHUTDOWN_FAILED)
-            case (CURLE_SSL_CRL_BADFILE)
-            case (CURLE_SSL_ISSUER_ERROR)
-            case (CURLE_SSL_PINNEDPUBKEYNOTMATCH)
-            case (CURLE_SSL_INVALIDCERTSTATUS)
-            case (CURLE_SSL_CLIENTCERT)
+            case (CURLE_SSL_CONNECT_ERROR,        &
+                  CURLE_SSL_ENGINE_NOTFOUND,      &
+                  CURLE_SSL_ENGINE_SETFAILED,     &
+                  CURLE_SSL_CERTPROBLEM,          &
+                  CURLE_SSL_CIPHER,               &
+                  CURLE_PEER_FAILED_VERIFICATION, &
+                  CURLE_SSL_ENGINE_INITFAILED,    &
+                  CURLE_SSL_CACERT_BADFILE,       &
+                  CURLE_SSL_SHUTDOWN_FAILED,      &
+                  CURLE_SSL_CRL_BADFILE,          &
+                  CURLE_SSL_ISSUER_ERROR,         &
+                  CURLE_SSL_PINNEDPUBKEYNOTMATCH, &
+                  CURLE_SSL_INVALIDCERTSTATUS,    &
+                  CURLE_SSL_CLIENTCERT)
                 rc = E_RPC_SSL
 
             case (CURLE_FILESIZE_EXCEEDED)
@@ -227,10 +227,10 @@ contains
             case (CURLM_OK)
                 rc = E_NONE
 
-            case (CURLM_BAD_HANDLE)
-            case (CURLM_BAD_EASY_HANDLE)
-            case (CURLM_BAD_FUNCTION_ARGUMENT)
-            case (CURLM_UNKNOWN_OPTION)
+            case (CURLM_BAD_HANDLE,            &
+                  CURLM_BAD_EASY_HANDLE,       &
+                  CURLM_BAD_FUNCTION_ARGUMENT, &
+                  CURLM_UNKNOWN_OPTION)
                 rc = E_INVALID
 
             case (CURLM_OUT_OF_MEMORY)

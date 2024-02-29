@@ -107,9 +107,7 @@ contains
 
         rc = E_INVALID
         select case (app%type)
-            case (TYPE_OBSERV)
-            case (TYPE_LOG)
-            case (TYPE_BEAT)
+            case (TYPE_OBSERV, TYPE_LOG, TYPE_BEAT)
                 continue
             case default
                 call dm_error_out(rc, 'invalid database type ' // trim(type) // &

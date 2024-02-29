@@ -455,14 +455,14 @@ contains
         !! Request of *AUT_ChangeFace* procedure. Creates request for turning
         !! the telescope to the other face.
         !!
-        !! If `pos_mode` is `AUT_NORMAL`, uses the current value of the
+        !! If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the
         !! compensator. For positioning distances > 25 gon, this mode might tend
-        !! to inaccuracy. If set to `AUT_PRECISE`, tries to measure the exact
+        !! to inaccuracy. If set to `GEOCOM_AUT_PRECISE`, tries to measure the exact
         !! inclination of the target. Tends to long position time.
         !!
-        !! If `atr_mode` is `AUT_POSITION`, uses conventional position to other
-        !! face. If set to `AUT_TARGET`, tries to position into a target in the
-        !! destination area. This mode requires activated ATR.
+        !! If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to
+        !! other face. If set to `GEOCOM_AUT_TARGET`, tries to position into a
+        !! target in the destination area. This mode requires activated ATR.
         !!
         !! The instrument returns the following responses:
         !!
@@ -478,8 +478,8 @@ contains
         integer,          parameter :: REQUEST_CODE = 9028
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: pos_mode !! Position mode (`AUT_POSMODE`).
-        integer,            intent(in)  :: atr_mode !! ATR mode (`AUT_ATRMODE`).
+        integer,            intent(in)  :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
+        integer,            intent(in)  :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
 
         character(len=80) :: args
 
@@ -510,8 +510,8 @@ contains
         integer,          parameter :: REQUEST_CODE    = 23309
 
         type(request_type),     intent(out) :: request     !! Prepared request.
-        integer,                intent(in)  :: device_type !! Internal memory or memory card (`FTR_DEVICETYPE`).
-        integer,                intent(in)  :: file_type   !! Type of file (`FTR_FILETYPE`).
+        integer,                intent(in)  :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
+        integer,                intent(in)  :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
         integer,                intent(in)  :: day         !! Day (`DD`).
         integer,                intent(in)  :: month       !! Month (`MM`).
         integer,                intent(in)  :: year        !! Year (`YY`).
@@ -534,27 +534,28 @@ contains
         !! Request of *TMC_DoMeasure* procedure. Creates request for trying a
         !! distance measurement. This command does not return any values.
         !!
-        !! The argument `tmc_prog` (`TMC_MEASURE_PRG`) may be one of the
-        !! following TMC measurement modes:
+        !! The argument `tmc_prog` must be one of the following TMC measurement
+        !! modes:
         !!
-        !! * `TMC_STOP`
-        !! * `TMC_DEF_DIST`
-        !! * `TMC_CLEAR`
-        !! * `TMC_SIGNAL`
-        !! * `TMC_DO_MEASURE`
-        !! * `TMC_RTRK_DIST`
-        !! * `TMC_RED_TRK_DIST`
-        !! * `TMC_FREQUENCY`
+        !! * `GEOCOM_TMC_STOP`
+        !! * `GEOCOM_TMC_DEF_DIST`
+        !! * `GEOCOM_TMC_CLEAR`
+        !! * `GEOCOM_TMC_SIGNAL`
+        !! * `GEOCOM_TMC_DO_MEASURE`
+        !! * `GEOCOM_TMC_RTRK_DIST`
+        !! * `GEOCOM_TMC_RED_TRK_DIST`
+        !! * `GEOCOM_TMC_FREQUENCY`
         !!
-        !! The argument `inc_mode` (`TMC_INCLINE_PRG`) may be one of the
-        !! following inclination measurement modes:
+        !! The argument `inc_mode` must be one of the following inclination
+        !! measurement modes:
         !!
-        !! * `TMC_MEA_INC`
-        !! * `TMC_AUTO_INC`
-        !! * `TMC_PLANE_INC`
+        !! * `GEOCOM_TMC_MEA_INC`
+        !! * `GEOCOM_TMC_AUTO_INC`
+        !! * `GEOCOM_TMC_PLANE_INC`
         !!
         !! If a distance measurement is performed in measurement program
-        !! `TMC_DEF_DIST`, the distance sensor will work with the set EDM mode.
+        !! `GEOCOM_TMC_DEF_DIST`, the distance sensor will work with the set
+        !! EDM mode.
         !!
         !! The instrument returns the following responses:
         !!
@@ -570,8 +571,8 @@ contains
         integer,          parameter :: REQUEST_CODE = 2008
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: tmc_prog !! TMC measurement program (`TMC_MEASURE_PRG`).
-        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80) :: args
 
@@ -692,7 +693,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 2107
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(3)
@@ -741,7 +742,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 2003
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(10)
@@ -905,7 +906,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`    – GeoCOM return code.
-        !! * `atrset` – ATR setting (`BAP_ATRSETTING`).
+        !! * `atrset` – ATR setting (`GEOCOM_BAP_ATRSETTING`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -967,7 +968,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `autopwr` – Currently activated shut-down mode (`SUP_AUTO_POWER`).
+        !! * `autopwr` – Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
         !! * `pwrtime` – Power timeout [ms].
         !!
         !! | Property       | Values                                           |
@@ -1031,7 +1032,7 @@ contains
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
-        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(9)
@@ -1148,8 +1149,8 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `devclass` – Device precision class (`TPS_DEVICE_CLASS`).
-        !! * `devtype`  – Device configuration type (`TPS_DEVICE_TYPE`).
+        !! * `devclass` – Device precision class (`GEOCOM_TPS_DEVICE_CLASS`).
+        !! * `devtype`  – Device configuration type (`GEOCOM_TPS_DEVICE_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1212,7 +1213,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `edmmode` – EDM mode (`EDM_MODE`).
+        !! * `edmmode` – EDM mode (`GEOCOM_EDM_MODE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1243,7 +1244,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`    – GeoCOM return code.
-        !! * `eglint` – EDM EGL intensity (`EDM_EGLINTENSITY_TYPE`).
+        !! * `eglint` – EDM EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1303,7 +1304,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `adjmode` – Fine adjustment positioning mode (`AUT_ADJMODE`).
+        !! * `adjmode` – Fine adjustment positioning mode (`GEOCOM_AUT_ADJMODE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1365,7 +1366,7 @@ contains
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
-        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(9)
@@ -1521,7 +1522,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 23400
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: mem_type !! Memory device type (`IMG_MEM_TYPE`).
+        integer,            intent(in)  :: mem_type !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
 
         character(len=80)   :: args
         type(response_type) :: responses(5)
@@ -1697,7 +1698,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `lockstat` – Lock status (`MOT_LOCK_STATUS`).
+        !! * `lockstat` – Lock status (`GEOCOM_MOT_LOCK_STATUS`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1727,7 +1728,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `measprg` – Measurement program (`BAP_USER_MEASPRG`).
+        !! * `measprg` – Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1758,8 +1759,8 @@ contains
         !!
         !! * `grc`      – GeoCOM return code.
         !! * `battlife` – Battery capacity [%].
-        !! * `pwrsrc`   – Power source (`CSV_POWER_PATH`).
-        !! * `pwrsug`   – Not supported (`CSV_POWER_PATH`).
+        !! * `pwrsrc`   – Power source (`GEOCOM_CSV_POWER_PATH`).
+        !! * `pwrsug`   – Not supported (`GEOCOM_CSV_POWER_PATH`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1823,7 +1824,7 @@ contains
         !! * `grc`      – GeoCOM return code.
         !! * `reflname` – Prism name [string].
         !! * `reflcor`  – Prism correction constant [m].
-        !! * `refltype` – Prism type (`BAP_PRISMTYPE`).
+        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1837,7 +1838,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 17023
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: prism_type !! Prism type (`BAP_PRISMTYPE`).
+        integer,            intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
 
         character(len=80)   :: args
         type(response_type) :: responses(4)
@@ -1861,7 +1862,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `refltype` – Prism type (`BAP_PRISMTYPE`).
+        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1891,7 +1892,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `refltype` – Prism type (`BAP_PRISMTYPE`).
+        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1995,7 +1996,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `rlclass` – Reflectorless class (`TPS_REFLESS_CLASS`).
+        !! * `rlclass` – Reflectorless class (`GEOCOM_TPS_REFLESS_CLASS`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -2095,15 +2096,15 @@ contains
     end subroutine dm_geocom_api_request_get_search_area
 
     pure subroutine dm_geocom_api_request_get_signal(request)
-        !! Request of *TMC_GetSignal* procedure. Creates request for
-        !! getting the EDM signal intensity.
+        !! Request of *TMC_GetSignal* procedure. Creates request for getting
+        !! the EDM signal intensity.
         !!
         !! The function returns the intensity of the EDM signal. The function
         !! can only perform a measurement if the signal measurement program is
         !! activated. Start the signal measurement program with *TMC_DoMeasure* in
-        !! program `TMC_SIGNAL`. After the measurement, the EDM must be
-        !! switched off with program `TMC_CLEAR`. While measuring, there is no
-        !! angle data available.
+        !! program `GEOCOM_TMC_SIGNAL`. After the measurement, the EDM must be
+        !! switched off with program `GEOCOM_TMC_CLEAR`. While measuring, there
+        !! is no angle data available.
         !!
         !! The instrument returns the following responses:
         !!
@@ -2142,7 +2143,7 @@ contains
         !! wait for a valid distance. Without a valid distance, the coordinates
         !! are set to 0.0, and an error is returned. The coordinate calculation
         !! requires inclination results. The argument `inc_mode` sets the
-        !! inclination measurement mode (`TMC_INCLINE_PRG`).
+        !! inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         !!
         !! The instrument returns the following responses:
         !!
@@ -2164,7 +2165,7 @@ contains
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
-        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(4)
@@ -2208,7 +2209,7 @@ contains
 
         type(request_type), intent(out) :: request   !! Prepared request.
         integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
-        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
         type(response_type) :: responses(4)
@@ -2335,13 +2336,13 @@ contains
         !! Request of *BAP_GetTargetType* procedure. Creates request for
         !! getting the EDM type.
         !!
-        !! The function returns the current EDM type (`BAP_TARGET_TYPE`) for
-        !! distance measurements: reflector (IR) or reflectorless (RL).
+        !! The function returns the current EDM type (`GEOCOM_BAP_TARGET_TYPE`)
+        !! for distance measurements: reflector (IR) or reflectorless (RL).
         !!
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `tartype` – Target type (`BAP_TARGET_TYPE`).
+        !! * `tartype` – Target type (`GEOCOM_BAP_TARGET_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -2501,7 +2502,7 @@ contains
         !!
         !! * `grc`      – GeoCOM return code.
         !! * `reflcor`  – Prism correction constant [m].
-        !! * `refltype` – Prism type (`BAP_PRISMTYPE`).
+        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !! * `refluser` – Name of creator [string].
         !!
         !! | Property       | Values                                           |
@@ -2625,7 +2626,7 @@ contains
         !! target tracking.
         !!
         !! The API function will start the target tracking if the LOCK mode is
-        !! activated (`AUS_SetUserLockState`). The *AUT_FineAdjust* call must
+        !! activated (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must
         !! have finished successfully before executing this function.
         !!
         !! The instrument returns the following responses:
@@ -2936,14 +2937,13 @@ contains
         !! Request of *BAP_SetATRSetting* procedure. Creates request for
         !! setting the ATR low-vis mode.
         !!
-        !! The argument `atr_mode` (`BAP_ATRSETTING`) must be one of the
-        !! following:
+        !! The argument `atr_mode` must be one of the following:
         !!
-        !! * `BAP_ATRSET_NORMAL`     – No special flags or modes.
-        !! * `BAP_ATRSET_LOWVIS_ON`  – ATR low-vis mode on.
-        !! * `BAP_ATRSET_LOWVIS_AON` – ATR low-vis mode always on.
-        !! * `BAP_ATRSET_SRANGE_ON`  – ATR high-reflectivity mode on.
-        !! * `BAP_ATRSET_SRANGE_AON` – ATR high-reflectivity mode always on.
+        !! * `GEOCOM_BAP_ATRSET_NORMAL`     – No special flags or modes.
+        !! * `GEOCOM_BAP_ATRSET_LOWVIS_ON`  – ATR low-vis mode on.
+        !! * `GEOCOM_BAP_ATRSET_LOWVIS_AON` – ATR low-vis mode always on.
+        !! * `GEOCOM_BAP_ATRSET_SRANGE_ON`  – ATR high-reflectivity mode on.
+        !! * `GEOCOM_BAP_ATRSET_SRANGE_AON` – ATR high-reflectivity mode always on.
         !!
         !! The instrument returns the following responses:
         !!
@@ -2959,7 +2959,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 17035
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: atr_mode !! ATR low-vis mode (`BAP_ATRSETTING`).
+        integer,            intent(in)  :: atr_mode !! ATR low-vis mode (`GEOCOM_BAP_ATRSETTING`).
 
         character(len=80) :: args
 
@@ -3001,9 +3001,9 @@ contains
         !! the power management configuration.
         !!
         !! The argument `timeout` sets the duration after which the instrument
-        !! switches into the mode `auto_power` (`SUP_AUTO_POWER`) when no user
-        !! activity occured (key press, GeoCOM communication). The value must
-        !! be between 60,000 m/s (1 min) and 6,000,000 m/s (100 min).
+        !! switches into the mode `auto_power` (`GEOCOM_SUP_AUTO_POWER`) when
+        !! no user activity occured (key press, GeoCOM communication). The
+        !! value must be between 60,000 m/s (1 min) and 6,000,000 m/s (100 min).
         !!
         !! The instrument returns the following responses:
         !!
@@ -3019,7 +3019,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 14002
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: auto_power !! Power-off mode (`SUP_AUTO_POWER`).
+        integer,            intent(in)  :: auto_power !! Power-off mode (`GEOCOM_SUP_AUTO_POWER`).
         integer,            intent(in)  :: timeout    !! Timeout [ms].
 
         character(len=80) :: args
@@ -3070,12 +3070,11 @@ contains
         !! 3π/2, depending on the face of the instrument. The previously
         !! measured distance is cleared.
         !!
-        !! The argument `inc_mode` (`TMC_INCLINE_PRG`) must be one of the
-        !! following:
+        !! The argument `inc_mode` must be one of the following:
         !!
-        !! * `TMC_MEA_INC`   – Use sensor (a priori sigma).
-        !! * `TMC_AUTO_INC`  – Automatic mode (sensor/plane).
-        !! * `TMC_PLANE_INC` – Use plane (a priori sigma).
+        !! * `GEOCOM_TMC_MEA_INC`   – Use sensor (a priori sigma).
+        !! * `GEOCOM_TMC_AUTO_INC`  – Automatic mode (sensor/plane).
+        !! * `GEOCOM_TMC_PLANE_INC` – Use plane (a priori sigma).
         !!
         !! The instrument returns the following responses:
         !!
@@ -3093,7 +3092,7 @@ contains
         type(request_type), intent(out) :: request       !! Prepared request.
         real(kind=r8),      intent(in)  :: slope_dist    !! Slope distance [m].
         real(kind=r8),      intent(in)  :: height_offset !! Height offset [m].
-        integer,            intent(in)  :: inc_mode      !! Inclination measurement mode (`TMC_INCLINE_PRG`).
+        integer,            intent(in)  :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80) :: args
 
@@ -3138,7 +3137,7 @@ contains
         !! Request of *TMC_SetEdmMode* procedure. Creates request for setting
         !! the EDM measurement mode.
         !!
-        !! The mode (`EDM_MODE`) set by this function is used by
+        !! The mode set by this API function is used by
         !! *TMC_DoMeasure(TMC_DEF_DIST)*.
         !!
         !! The instrument returns the following responses:
@@ -3155,7 +3154,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 2020
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: edm_mode !! EDM measurement mode (`EDM_MODE`).
+        integer,            intent(in)  :: edm_mode !! EDM measurement mode (`GEOCOM_EDM_MODE`).
 
         character(len=80) :: args
 
@@ -3167,13 +3166,12 @@ contains
         !! Request of *EDM_SetEglIntensity* procedure. Creates request for
         !! setting the intensity of the electronic guide light.
         !!
-        !! The argument `intensity` (`EDM_EGLINTENSITY_TYPE`) must be one of
-        !! the following:
+        !! The argument `intensity` must be one of the following:
         !!
-        !! * `EDM_EGLINTEN_OFF`
-        !! * `EDM_EGLINTEN_LOW`
-        !! * `EDM_EGLINTEN_MID`
-        !! * `EDM_EGLINTEN_HIGH`
+        !! * `GEOCOM_EDM_EGLINTEN_OFF`
+        !! * `GEOCOM_EDM_EGLINTEN_LOW`
+        !! * `GEOCOM_EDM_EGLINTEN_MID`
+        !! * `GEOCOM_EDM_EGLINTEN_HIGH`
         !!
         !! The instrument returns the following responses:
         !!
@@ -3189,7 +3187,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 1059
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: intensity !! EGL intensity (`EDM_EGLINTENSITY_TYPE`).
+        integer,            intent(in)  :: intensity !! EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
 
         character(len=80) :: args
 
@@ -3204,10 +3202,10 @@ contains
         !! The function sets the positioning tolerances relating to angle
         !! accuracy or point accuracy for the fine adjust (requires GeoCOM
         !! robotic licence). If a target is near or held by hand, it is
-        !! recommended to set the adjust mode to `AUT_POINT_MODE`.
+        !! recommended to set the adjust mode to `GEOCOM_AUT_POINT_MODE`.
         !!
-        !! The argument `adj_mode` has to be either `AUT_NORM_MODE` or
-        !! `AUT_POINT_MODE`.
+        !! The argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
+        !! `GEOCOM_AUT_POINT_MODE`.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3223,7 +3221,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 9031
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: adj_mode !! Fine adjust positioning mode (`AUT_ADJMODE`).
+        integer,            intent(in)  :: adj_mode !! Fine adjust positioning mode (`GEOCOM_AUT_ADJMODE`).
 
         character(len=80) :: args
 
@@ -3313,7 +3311,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 23401
 
         type(request_type), intent(out) :: request      !! Prepared request.
-        integer,            intent(in)  :: mem_type     !! Memory device type (`IMG_MEM_TYPE`).
+        integer,            intent(in)  :: mem_type     !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
         integer,            intent(in)  :: image_number !! Actual image number.
         integer,            intent(in)  :: quality      !! JPEG compression factor (0 – 100).
         integer,            intent(in)  :: sub_function !! Additional sub-functions to call.
@@ -3326,8 +3324,8 @@ contains
     end subroutine dm_geocom_api_request_set_image_config
 
     pure subroutine dm_geocom_api_request_set_inclination_correction(request, enabled)
-        !! Request of *TMC_SetInclineSwitch* procedure. Creates request for turning
-        !! the dual-axis compensator on or off.
+        !! Request of *TMC_SetInclineSwitch* procedure. Creates request for
+        !! turning the dual-axis compensator on or off.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3403,7 +3401,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 17019
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: bap_prog !! Measurement program (`BAP_USER_MEASPRG`).
+        integer,            intent(in)  :: bap_prog !! Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
 
         character(len=80) :: args
 
@@ -3419,7 +3417,7 @@ contains
         !! horizontal offset and setting the angle offset afterwards, in order
         !! to orientate to a target. Before the new orientation can be set, an
         !! existing distance must be cleared by calling API function
-        !! *TMC_DoMeasure* with command `TMC_CLEAR`.
+        !! *TMC_DoMeasure* with command `GEOCOM_TMC_CLEAR`.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3447,14 +3445,14 @@ contains
         !! Request of *AUT_MakePositioning* procedure. Creates request for
         !! turning the telescope to a specified position.
         !!
-        !! If `pos_mode` is `AUT_NORMAL`, uses the current value of the
+        !! If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the
         !! compensator. For positioning distances > 25 gon, this mode might tend
-        !! to inaccuracy. If set to `AUT_PRECISE`, tries to measure the exact
-        !! inclination of the target. Tends to long position time.
+        !! to inaccuracy. If set to `GEOCOM_AUT_PRECISE`, tries to measure the
+        !! exact inclination of the target. Tends to long position time.
         !!
-        !! If `atr_mode` is `AUT_POSITION`, uses conventional position to other
-        !! face. If set to `AUT_TARGET`, tries to position into a target in the
-        !! destination area. This mode requires activated ATR.
+        !! If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to
+        !! other face. If set to `GEOCOM_AUT_TARGET`, tries to position into a
+        !! target in the destination area. This mode requires activated ATR.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3472,8 +3470,8 @@ contains
         type(request_type), intent(out) :: request  !! Prepared request.
         real(kind=r8),      intent(in)  :: hz       !! Horizontal angle [rad].
         real(kind=r8),      intent(in)  :: v        !! Vertical angle [rad].
-        integer,            intent(in)  :: pos_mode !! Position mode (`AUT_POSMODE`).
-        integer,            intent(in)  :: atr_mode !! ATR mode (`AUT_ATRMODE`).
+        integer,            intent(in)  :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
+        integer,            intent(in)  :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
 
         character(len=80) :: args
 
@@ -3544,8 +3542,8 @@ contains
         !! setting the default prism type.
         !!
         !! This function sets the prism type for measurement with a reflector
-        !! (`BAP_PRISMTYPE`). It overwrites the prism constant set by API call
-        !! *TMC_SetPrimCorr*.
+        !! (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by
+        !! API call *TMC_SetPrimCorr*.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3561,7 +3559,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 17008
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: prism_type !! Prism type (`BAP_PRISMTYPE`).
+        integer,            intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
 
         character(len=80) :: args
 
@@ -3592,8 +3590,8 @@ contains
         integer,          parameter :: REQUEST_CODE = 17030
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: prism_type !! Prism type (`BAP_PRISMTYPE`).
-        character(len=*),   intent(in)  :: prism_name !! Prism name (required if prism type is `BAP_PRISM_USER`).
+        integer,            intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        character(len=*),   intent(in)  :: prism_name !! Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
 
         character(len=80) :: args
 
@@ -3727,8 +3725,8 @@ contains
         !! Request of *BAP_SetTargetType* procedure. Creates request for
         !! setting the EDM type.
         !!
-        !! The function sets the current EDM type (`BAP_TARGET_TYPE`) for
-        !! distance measurements: reflector (IR) or reflectorless (RL). For
+        !! The function sets the current EDM type (`GEOCOM_BAP_TARGET_TYPE`)
+        !! for distance measurements: reflector (IR) or reflectorless (RL). For
         !! each EDM type, the EDM mode used last is remembered and actived if
         !! the EDM type is changed. If EDM type IR is selected, the automation
         !! mode used last is activated automatically. The API function
@@ -3749,7 +3747,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 17021
 
         type(request_type), intent(out) :: request     !! Prepared request.
-        integer,            intent(in)  :: target_type !! Target type (`BAP_TARGET_TYPE`).
+        integer,            intent(in)  :: target_type !! Target type (`GEOCOM_BAP_TARGET_TYPE`).
 
         character(len=80) :: args
 
@@ -3878,7 +3876,7 @@ contains
         type(request_type), intent(out) :: request     !! Prepared request.
         character(len=*),   intent(in)  :: prism_name  !! Prism name.
         real(kind=r8),      intent(in)  :: prism_const !! Prism correction constant [mm].
-        integer,            intent(in)  :: refl_type   !! Reflector type (`BAP_REFLTYPE`).
+        integer,            intent(in)  :: refl_type   !! Reflector type (`GEOCOM_BAP_REFLTYPE`).
         character(len=*),   intent(in)  :: creator     !! Name of creator.
 
         character(len=80) :: args
@@ -3924,7 +3922,7 @@ contains
         !! The function is used to set up the velocity of the motorisation
         !! (GeoCOM robotic licence required). The API function
         !! *MOT_StartController* must have been called with argument
-        !! `MOT_OCONST` before.
+        !! `GEOCOM_MOT_OCONST` before.
         !!
         !! The velocity in horizontal and vertical direction are in [rad/s].
         !! The maximum velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s
@@ -3958,15 +3956,16 @@ contains
         !! setting up a file download.
         !!
         !! The function has to be called before *FTR_Download*. If the file
-        !! type is `FTR_FILE_UNKNOWN`, an additional file path is required.
+        !! type is `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is
+        !! required.
         !!
         !! The argument `device_type` must be one of the following:
         !!
-        !! * `FTR_DEVICE_INTERNAL` – Internal memory (path `/ata1a/`).
-        !! * `FTR_DEVICE_PCPARD`   – CF Card (path `/ata0a/`).
+        !! * `GEOCOM_FTR_DEVICE_INTERNAL` – Internal memory (path `/ata1a/`).
+        !! * `GEOCOM_FTR_DEVICE_PCPARD`   – CF Card (path `/ata0a/`).
         !!
-        !! The argument `file_type` is usually `FTR_FILE_IMAGES`. The maximum
-        !! value for `block_size` is `FTR_MAX_BLOCKSIZE`.
+        !! The argument `file_type` is usually `GEOCOM_FTR_FILE_IMAGES`. The
+        !! maximum value for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3984,8 +3983,8 @@ contains
         integer,          parameter :: REQUEST_CODE    = 23303
 
         type(request_type), intent(out) :: request     !! Prepared request.
-        integer,            intent(in)  :: device_type !! Device type (`FTR_DEVICETYPE`).
-        integer,            intent(in)  :: file_type   !! File type (`FTR_FILETYPE`).
+        integer,            intent(in)  :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
+        integer,            intent(in)  :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
         character(len=*),   intent(in)  :: file_name   !! File name with extension.
         integer,            intent(in)  :: block_size  !! Block size.
 
@@ -4022,13 +4021,13 @@ contains
         integer,          parameter :: REQUEST_CODE = 23306
 
         type(request_type), intent(out) :: request     !! Prepared request.
-        integer,            intent(in)  :: device_type !! Device type (`FTR_DEVICETYPE`).
-        integer,            intent(in)  :: file_type   !! File type (`FTR_FILETYPE`).
-        character(len=*),   intent(in)  :: search_path !! Optional search path, required for file type `FTR_FILE_UNKNOWN`.
+        integer,            intent(in)  :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
+        integer,            intent(in)  :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
+        character(len=*),   intent(in)  :: search_path !! Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
 
         character(len=80) :: args
 
-        write (args, '(2(i0, ","), a)') device_type, file_type, trim(search_path)
+        write (args, '(2(i0, ","), a)') device_type, file_type, search_path
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
     end subroutine dm_geocom_api_request_setup_list
 
@@ -4037,16 +4036,16 @@ contains
         !! starting the motor controller.
         !!
         !! If this function is used in combination with API call
-        !! *MOT_SetVelocity*, the controller mode has to be `MOT_OCONST`.
+        !! *MOT_SetVelocity*, the controller mode has to be `GEOCOM_MOT_OCONST`.
         !!
         !! The argument `start_mode` must be one of the following:
         !!
-        !! * `MOT_POSIT`   –  Relative positioning.
-        !! * `MOT_OCONST`  –  Constant speed.
-        !! * `MOT_MANUPOS` –  Manual positioning (default setting).
-        !! * `MOT_LOCK`    –  "Lock-In" controller.
-        !! * `MOT_BREAK`   –  "Brake" controller.
-        !! * `MOT_TERM`    –  Terminates the controller task.
+        !! * `GEOCOM_MOT_POSIT`   –  Relative positioning.
+        !! * `GEOCOM_MOT_OCONST`  –  Constant speed.
+        !! * `GEOCOM_MOT_MANUPOS` –  Manual positioning (default setting).
+        !! * `GEOCOM_MOT_LOCK`    –  "Lock-in" controller.
+        !! * `GEOCOM_MOT_BREAK`   –  "Brake" controller.
+        !! * `GEOCOM_MOT_TERM`    –  Terminates the controller task.
         !!
         !! The instrument returns the following responses:
         !!
@@ -4062,7 +4061,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 6001
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: start_mode !! Controller start mode (`MOT_MODE`).
+        integer,            intent(in)  :: start_mode !! Controller start mode (`GEOCOM_MOT_MODE`).
 
         character(len=80) :: args
 
@@ -4078,8 +4077,8 @@ contains
         !!
         !! The argument `stop_mode` must be one of the following:
         !!
-        !! * `MOT_NORMAL`   – Slow down with current acceleration.
-        !! * `MOT_SHUTDOWN` – Slow down by switching off power supply.
+        !! * `GEOCOM_MOT_NORMAL`   – Slow down with current acceleration.
+        !! * `GEOCOM_MOT_SHUTDOWN` – Slow down by switching off power supply.
         !!
         !! The instrument returns the following responses:
         !!
@@ -4095,7 +4094,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 6002
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: stop_mode !! Controller stop mode (`MOT_STOPMODE`).
+        integer,            intent(in)  :: stop_mode !! Controller stop mode (`GEOCOM_MOT_STOPMODE`).
 
         character(len=80) :: args
 
@@ -4109,8 +4108,8 @@ contains
         !!
         !! The argument `stop_mode` has to be one of the following:
         !!
-        !! * `COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
-        !! * `COM_TPS_STOP_SLEEP`     – Sleep mode (not supported by TPS1200).
+        !! * `GEOCOM_COM_TPS_STOP_SHUT_DOWN` – Power down instrument.
+        !! * `GEOCOM_COM_TPS_STOP_SLEEP`     – Sleep mode (not supported by TPS1200).
         !!
         !! The instrument returns the following responses:
         !!
@@ -4126,7 +4125,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 112
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: stop_mode !! Switch-off mode (`COM_TPS_STOP_MODE`).
+        integer,            intent(in)  :: stop_mode !! Switch-off mode (`GEOCOM_COM_TPS_STOP_MODE`).
 
         character(len=80) :: args
 
@@ -4140,8 +4139,8 @@ contains
         !!
         !! The argument `start_mode` has to be one of the following:
         !!
-        !! * `COM_TPS_STARTUP_LOCAL`  – Not supported by TPS1200.
-        !! * `COM_TPS_STARTUP_REMOTE` – Online mode (RPC is enabled).
+        !! * `GEOCOM_COM_TPS_STARTUP_LOCAL`  – Not supported by TPS1200.
+        !! * `GEOCOM_COM_TPS_STARTUP_REMOTE` – Online mode (RPC is enabled).
         !!
         !! The instrument may return the following responses:
         !!
@@ -4159,7 +4158,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 111
 
         type(request_type), intent(out) :: request    !! Prepared request.
-        integer,            intent(in)  :: start_mode !! Switch-on mode (`COM_TPS_STARTUP_MODE`).
+        integer,            intent(in)  :: start_mode !! Switch-on mode (`GEOCOM_COM_TPS_STARTUP_MODE`).
 
         character(len=80) :: args
 
@@ -4173,8 +4172,8 @@ contains
         !!
         !! The memory type `mem_type` has to be one of the following:
         !!
-        !! * `IMG_INTERNAL_MEMORY` – Internal memory module.
-        !! * `IMG_PC_CARD`         – External PC card.
+        !! * `GEOCOM_IMG_INTERNAL_MEMORY` – Internal memory module.
+        !! * `GEOCOM_IMG_PC_CARD`         – External PC card.
         !!
         !! The instrument returns the following responses:
         !!
@@ -4192,7 +4191,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 23402
 
         type(request_type), intent(out) :: request  !! Prepared request.
-        integer,            intent(in)  :: mem_type !! Memory type (`IMG_MEM_TYPE`).
+        integer,            intent(in)  :: mem_type !! Memory type (`GEOCOM_IMG_MEM_TYPE`).
 
         character(len=80)   :: args
         type(response_type) :: responses(2)

@@ -322,11 +322,7 @@ contains
 
         ! Validate data type.
         select case (app%type)
-            case (TYPE_NODE)
-            case (TYPE_SENSOR)
-            case (TYPE_TARGET)
-            case (TYPE_OBSERV)
-            case (TYPE_LOG)
+            case (TYPE_NODE, TYPE_SENSOR, TYPE_TARGET, TYPE_OBSERV, TYPE_LOG)
                 continue
             case default
                 call dm_error_out(rc, 'invalid type')

@@ -6046,11 +6046,11 @@ and follow a moving target, call API function *AUT_LockIn*. If `enabled` is
 `false`, _lock_ mode is deactivated. Tracking of a moving target will be
 aborted, and the manual drive wheel is activated.
 
-==== geocom_set_user_prism_definition(prism_name, prism_const, prism_type, creator) [[lua-api-geocom-set-user-prism-definition]]
+==== geocom_set_user_prism_definition(prism_name, prism_const, refl_type, creator) [[lua-api-geocom-set-user-prism-definition]]
 
 * `prism_name`  (_string_)  – Prism name.
 * `prism_const` (_number_)  – Prism constant [mm].
-* `prism_type`  (_integer_) – Prism type (<<geocom-api-bap-refltype,GEOCOM_BAP_REFLTYPE>>).
+* `refl_type`   (_integer_) – Reflector type (<<geocom-api-bap-refltype,GEOCOM_BAP_REFLTYPE>>).
 * `creator`     (_string_)  – Name of creator.
 
 Returns request of *BAP_SetUserPrismDef* procedure. Creates request for
@@ -6113,10 +6113,8 @@ It has to be called before *FTR_List*.
 * `start_mode` (_integer_) – Controller start mode (<<geocom-api-mot-mode,GEOCOM_MOT_MODE>>).
 
 Returns request of *MOT_StartController* procedure. Creates request for starting
-the motor controller.
-
-If this function is used in combination with API call *MOT_SetVelocity*, the
-controller mode has to be `GEOCOM_MOT_OCONST`.
+the motor controller. If this function is used in combination with API call
+*MOT_SetVelocity*, the controller mode has to be `GEOCOM_MOT_OCONST`.
 
 The argument `start_mode` must be one of the following:
 

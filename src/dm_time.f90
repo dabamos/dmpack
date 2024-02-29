@@ -337,27 +337,16 @@ contains
             a = time(i:i)
 
             select case (i)
-                case (1:4)
-                case (6:7)
-                case (9:10)
-                case (12:13)
-                case (15:16)
-                case (18:19)
-                case (21:26)
-                case (28:29)
-                case (31:32)
+                case (1:4, 6:7, 9:10, 12:13, 15:16, 18:19, 21:26, 28:29, 31:32)
                     if (.not. dm_ascii_is_digit(a)) return
 
-                case (5)
-                case (8)
+                case (5, 8)
                     if (a /= '-') return
 
                 case (11)
                     if (a /= 'T') return
 
-                case (14)
-                case (17)
-                case (30)
+                case (14, 17, 30)
                     if (a /= ':') return
 
                 case (20)

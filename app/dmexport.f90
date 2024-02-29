@@ -226,10 +226,7 @@ contains
 
         ! Serialisation format.
         select case (app%format)
-            case (FORMAT_BLOCK)
-            case (FORMAT_CSV)
-            case (FORMAT_JSON)
-            case (FORMAT_JSONL)
+            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL)
                 continue
             case default
                 call dm_error_out(rc, 'invalid format')
@@ -238,13 +235,7 @@ contains
 
         ! Data type.
         select case (app%type)
-            case (TYPE_NODE)
-            case (TYPE_SENSOR)
-            case (TYPE_TARGET)
-            case (TYPE_OBSERV)
-            case (TYPE_LOG)
-            case (TYPE_BEAT)
-            case (TYPE_DATA_POINT)
+            case (TYPE_NODE, TYPE_SENSOR, TYPE_TARGET, TYPE_OBSERV, TYPE_LOG, TYPE_BEAT, TYPE_DATA_POINT)
                 continue
             case default
                 call dm_error_out(rc, 'invalid type')

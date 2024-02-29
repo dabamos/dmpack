@@ -189,11 +189,7 @@ contains
         end if
 
         select case (app%type)
-            case (SYNC_TYPE_NODE)
-            case (SYNC_TYPE_SENSOR)
-            case (SYNC_TYPE_TARGET)
-            case (SYNC_TYPE_OBSERV)
-            case (SYNC_TYPE_LOG)
+            case (SYNC_TYPE_NODE, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET, SYNC_TYPE_OBSERV, SYNC_TYPE_LOG)
                 continue
             case default
                 call dm_error_out(rc, 'invalid sync type')

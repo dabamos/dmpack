@@ -1,28 +1,58 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_geocom_type
-    !! GeoCOM API enumerators. All GeoCOM named parameters start with prefix
-    !! `GEOCOM_`.
-    use :: dm_kind
-    use :: dm_request
-    use :: dm_response
-    use :: dm_util
+    !! GeoCOM API types enumerators. All GeoCOM named parameters start with
+    !! prefix `GEOCOM_`.
+    use :: dm_error
     implicit none (type, external)
     private
+
+    ! GeoCOM enumeration types.
+    integer, parameter, public :: GEOCOM_AUT_ADJMODE           = 1  !! Fine-adjust position mode.
+    integer, parameter, public :: GEOCOM_AUT_ATRMODE           = 2  !! Automatic target recognition mode.
+    integer, parameter, public :: GEOCOM_AUT_POSMODE           = 3  !! Position precision.
+    integer, parameter, public :: GEOCOM_BAP_ATRSETTING        = 4  !! ATR Low-Vis mode definition.
+    integer, parameter, public :: GEOCOM_BAP_MEASURE_PRG       = 5  !! Measurement modes.
+    integer, parameter, public :: GEOCOM_BAP_PRISMDEF          = 6  !! Prism definition.
+    integer, parameter, public :: GEOCOM_BAP_PRISMTYPE         = 7  !! Prism type definition.
+    integer, parameter, public :: GEOCOM_BAP_REFLTYPE          = 8  !! Reflector type definition.
+    integer, parameter, public :: GEOCOM_BAP_TARGET_TYPE       = 9  !! Target type definition.
+    integer, parameter, public :: GEOCOM_BAP_USER_MEASPRG      = 10 !! Distance measurement programs.
+    integer, parameter, public :: GEOCOM_COM_BAUD_RATE         = 11 !! Baud rate.
+    integer, parameter, public :: GEOCOM_COM_FORMAT            = 12 !! Transmission data format.
+    integer, parameter, public :: GEOCOM_COM_TPS_STARTUP_MODE  = 13 !! Start mode.
+    integer, parameter, public :: GEOCOM_COM_TPS_STOP_MODE     = 14 !! Stop mode.
+    integer, parameter, public :: GEOCOM_CSV_POWER_PATH        = 15 !! Power sources.
+    integer, parameter, public :: GEOCOM_EDM_EGLINTENSITY_TYPE = 16 !! Intensity of Electronic Guidelight.
+    integer, parameter, public :: GEOCOM_EDM_MODE              = 17 !! EDM measurement mode.
+    integer, parameter, public :: GEOCOM_FTR_DEVICETYPE        = 18 !! Device type.
+    integer, parameter, public :: GEOCOM_FTR_FILETYPE          = 19 !! File type.
+    integer, parameter, public :: GEOCOM_IMG_MEM_TYPE          = 20 !! Memory device type.
+    integer, parameter, public :: GEOCOM_MOT_LOCK_STATUS       = 21 !! Lock conditions.
+    integer, parameter, public :: GEOCOM_MOT_MODE              = 22 !! Controller configuration.
+    integer, parameter, public :: GEOCOM_MOT_STOPMODE          = 23 !! Controller stop mode.
+    integer, parameter, public :: GEOCOM_SUP_AUTO_POWER        = 24 !! Automatic shutdown mechanism for the system.
+    integer, parameter, public :: GEOCOM_TMC_FACE              = 25 !! Actual face.
+    integer, parameter, public :: GEOCOM_TMC_FACE_DEF          = 26 !! Face position.
+    integer, parameter, public :: GEOCOM_TMC_INCLINE_PRG       = 27 !! Inclination sensor measurement program.
+    integer, parameter, public :: GEOCOM_TMC_MEASURE_PRG       = 28 !! TMC measurement mode.
+    integer, parameter, public :: GEOCOM_TPS_DEVICE_CLASS      = 29 !! TPS device precision class.
+    integer, parameter, public :: GEOCOM_TPS_DEVICE_TYPE       = 30 !! TPS device configuration type.
+    integer, parameter, public :: GEOCOM_TPS_REFLESS_CLASS     = 31 !! Reflectorless class.
 
     ! **************************************************************************
     ! AUT - AUTOMATION.
     ! **************************************************************************
-    ! AUT_ADJMODE: Fine-adjust position mode.
+    ! GEOCOM_AUT_ADJMODE
     integer, parameter, public :: GEOCOM_AUT_NORM_MODE   = 0            !! Angle tolerance.
     integer, parameter, public :: GEOCOM_AUT_POINT_MODE  = 1            !! Point tolerance.
     integer, parameter, public :: GEOCOM_AUT_DEFINE_MODE = 2            !! System independent positioning tolerance.
 
-    ! AUT_ATRMODE: Automatic target recognition mode.
+    ! GEOCOM_AUT_ATRMODE
     integer, parameter, public :: GEOCOM_AUT_POSITION = 0               !! Positioning to Hz and V angle.
     integer, parameter, public :: GEOCOM_AUT_TARGET   = 1               !! Positioning to a target in the env. of the Hz and V angle.
 
-    ! AUT_POSMODE: Position precision.
+    ! GEOCOM_AUT_POSMODE
     integer, parameter, public :: GEOCOM_AUT_NORMAL  = 0                !! Fast positioning mode.
     integer, parameter, public :: GEOCOM_AUT_PRECISE = 1                !! Exact positioning mode.
     integer, parameter, public :: GEOCOM_AUT_FAST    = 2                !! For TM30/TS30.
@@ -33,28 +63,24 @@ module dm_geocom_type
     ! **************************************************************************
     ! BAP - BASIC APPLICATIONS.
     ! **************************************************************************
-    ! BAP_MEASURE_PRG: Measurement modes.
+    ! GEOCOM_BAP_ATRSETTING
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_NORMAL     = 0      !! ATR is using no special flags or modes.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_ON  = 1      !! ATR low vis mode on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_AON = 2      !! ATR low vis mode always on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_ON  = 3      !! ATR high reflectivity mode on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_AON = 4      !! ATR high reflectivity mode always on.
+
+    ! GEOCOM_BAP_MEASURE_PRG
     integer, parameter, public :: GEOCOM_BAP_NO_MEAS    = 0             !! No measurements, take last one.
     integer, parameter, public :: GEOCOM_BAP_NO_DIST    = 1             !! No dist. measurement, angles only.
     integer, parameter, public :: GEOCOM_BAP_DEF_DIST   = 2             !! Default distance measurements.
     integer, parameter, public :: GEOCOM_BAP_CLEAR_DIST = 5             !! Clear distances.
     integer, parameter, public :: GEOCOM_BAP_STOP_TRK   = 6             !! Stop tracking.
 
-    ! BAP_USER_MEASPRG: Distance measurement programs.
-    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_STANDARD  = 0   !! IR standard.
-    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_FAST      = 1   !! IR fast.
-    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_VISIBLE   = 2   !! LO standard.
-    integer, parameter, public :: GEOCOM_BAP_SINGLE_RLESS_VISIBLE = 3   !! RL standard.
-    integer, parameter, public :: GEOCOM_BAP_CONT_REF_STANDARD    = 4   !! IR tracking.
-    integer, parameter, public :: GEOCOM_BAP_CONT_REF_FAST        = 5   !! Not supported by TPS1200.
-    integer, parameter, public :: GEOCOM_BAP_CONT_RLESS_VISIBLE   = 6   !! RL fast tracking.
-    integer, parameter, public :: GEOCOM_BAP_AVG_REF_STANDARD     = 7   !! IR average.
-    integer, parameter, public :: GEOCOM_BAP_AVG_REF_VISIBLE      = 8   !! LO average.
-    integer, parameter, public :: GEOCOM_BAP_AVG_RLESS_VISIBLE    = 9   !! RL average.
-    integer, parameter, public :: GEOCOM_BAP_CONT_REF_SYNCHRO     = 10  !! IR synchro tracking.
-    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_PRECISE   = 11  !! IR precise (TM30/TS30).
+    ! GEOCOM_BAP_PRISMDEF
+    integer, parameter, public :: GEOCOM_BAP_PRISMNAME_LEN = 16         !! Prism name string length.
 
-    ! BAP_PRISMTYPE: Prism type definition.
+    ! GEOCOM_BAP_PRISMTYPE
     integer, parameter, public :: GEOCOM_BAP_PRISM_ROUND        = 0     !! Leica Circular Prism.
     integer, parameter, public :: GEOCOM_BAP_PRISM_MINI         = 1     !! Leica Mini Prism.
     integer, parameter, public :: GEOCOM_BAP_PRISM_TAPE         = 2     !! Leica Reflector Tape.
@@ -69,24 +95,28 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_BAP_PRISM_GRZ121_ROUND = 11    !! GRZ121 360º Prism for Machine Guidance.
     integer, parameter, public :: GEOCOM_BAP_PRISM_MA_MPR122    = 12    !! MPR122 360º Prism for Machine Guidance.
 
-    ! BAP_REFLTYPE: Reflector type definition.
+    ! GEOCOM_BAP_REFLTYPE
     integer, parameter, public :: GEOCOM_BAP_REFL_UNDEF = 0             !! Reflector not defined.
     integer, parameter, public :: GEOCOM_BAP_REFL_PRISM = 1             !! Reflector prism.
     integer, parameter, public :: GEOCOM_BAP_REFL_TAPE  = 2             !! Reflector tape.
 
-    ! BAP_TARGET_TYPE: Target type definition.
+    ! GEOCOM_BAP_USER_MEASPRG
+    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_STANDARD  = 0   !! IR standard.
+    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_FAST      = 1   !! IR fast.
+    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_VISIBLE   = 2   !! LO standard.
+    integer, parameter, public :: GEOCOM_BAP_SINGLE_RLESS_VISIBLE = 3   !! RL standard.
+    integer, parameter, public :: GEOCOM_BAP_CONT_REF_STANDARD    = 4   !! IR tracking.
+    integer, parameter, public :: GEOCOM_BAP_CONT_REF_FAST        = 5   !! Not supported by TPS1200.
+    integer, parameter, public :: GEOCOM_BAP_CONT_RLESS_VISIBLE   = 6   !! RL fast tracking.
+    integer, parameter, public :: GEOCOM_BAP_AVG_REF_STANDARD     = 7   !! IR average.
+    integer, parameter, public :: GEOCOM_BAP_AVG_REF_VISIBLE      = 8   !! LO average.
+    integer, parameter, public :: GEOCOM_BAP_AVG_RLESS_VISIBLE    = 9   !! RL average.
+    integer, parameter, public :: GEOCOM_BAP_CONT_REF_SYNCHRO     = 10  !! IR synchro tracking.
+    integer, parameter, public :: GEOCOM_BAP_SINGLE_REF_PRECISE   = 11  !! IR precise (TM30/TS30).
+
+    ! GEOCOM_BAP_TARGET_TYPE
     integer, parameter, public :: GEOCOM_BAP_REFL_USE  = 0              !! With reflector.
     integer, parameter, public :: GEOCOM_BAP_REFL_LESS = 1              !! Without reflector.
-
-    ! BAP_ATRSETTING: ATR Low-Vis mode definition.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_NORMAL     = 0      !! ATR is using no special flags or modes.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_ON  = 1      !! ATR low vis mode on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_AON = 2      !! ATR low vis mode always on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_ON  = 3      !! ATR high reflectivity mode on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_AON = 4      !! ATR high reflectivity mode always on.
-
-    ! BAP_PRISMDEF: Prism definition.
-    integer, parameter, public :: GEOCOM_BAP_PRISMNAME_LEN = 16         !! Prism name string length.
 
     ! **************************************************************************
     ! BMM - BASIC MAN-MACHINE INTERFACE.
@@ -96,11 +126,7 @@ module dm_geocom_type
     ! **************************************************************************
     ! COM - COMMUNICATION SETTINGS.
     ! **************************************************************************
-    ! COM_FORMAT: Transmission data format.
-    integer, parameter, public :: GEOCOM_COM_ASCII  = 0         !! ASCII protocol.
-    integer, parameter, public :: GEOCOM_COM_BINARY = 1         !! Binary protocol.
-
-    ! COM_BAUD_RATE: Baud rate.
+    ! GEOCOM_COM_BAUD_RATE
     integer, parameter, public :: GEOCOM_COM_BAUD_38400  = 0
     integer, parameter, public :: GEOCOM_COM_BAUD_19200  = 1    !! Default baud rate.
     integer, parameter, public :: GEOCOM_COM_BAUD_9600   = 2
@@ -109,22 +135,26 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_COM_BAUD_115200 = 5
     integer, parameter, public :: GEOCOM_COM_BAUD_57600  = 6
 
-    ! COM_TPS_STOP_MODE: Stop mode.
-    integer, parameter, public :: GEOCOM_COM_STOP_SHUT_DOWN = 0 !! Power down instrument.
-    integer, parameter, public :: GEOCOM_COM_STOP_SLEEP     = 1 !! Not supported by TPS1200.
+    ! GEOCOM_COM_FORMAT
+    integer, parameter, public :: GEOCOM_COM_ASCII  = 0         !! ASCII protocol.
+    integer, parameter, public :: GEOCOM_COM_BINARY = 1         !! Binary protocol.
 
-    ! COM_TPS_STARTUP_MODE: Start mode.
+    ! GEOCOM_COM_TPS_STARTUP_MODE
     integer, parameter, public :: GEOCOM_COM_STARTUP_LOCAL  = 0 !! Not supported by TPS1200.
     integer, parameter, public :: GEOCOM_COM_STARTUP_REMOTE = 1 !! RPC is enabled (online mode).
+
+    ! GEOCOM_COM_TPS_STOP_MODE
+    integer, parameter, public :: GEOCOM_COM_STOP_SHUT_DOWN = 0 !! Power down instrument.
+    integer, parameter, public :: GEOCOM_COM_STOP_SLEEP     = 1 !! Not supported by TPS1200.
 
     ! **************************************************************************
     ! CSV - CENTRAL SERVICES.
     ! **************************************************************************
-    ! CSV_POWER_PATH: Power sources.
+    ! GEOCOM_CSV_POWER_PATH
     integer, parameter, public :: GEOCOM_CSV_EXTERNAL_POWER = 1             !! Power source is external.
     integer, parameter, public :: GEOCOM_CSV_INTERNAL_POWER = 2             !! Power source is the internal battery.
 
-    ! TPS_DEVICE_CLASS: TPS device precision class.
+    ! GEOCOM_TPS_DEVICE_CLASS
     integer, parameter, public :: GEOCOM_TPS_CLASS_1100 = 0                 !! TPS1000 family member, 1 mgon, 3 ".
     integer, parameter, public :: GEOCOM_TPS_CLASS_1700 = 1                 !! TPS1000 family member, 0.5 mgon, 1.5 ".
     integer, parameter, public :: GEOCOM_TPS_CLASS_1800 = 2                 !! TPS1000 family member, 0.3 mgon, 1 ".
@@ -145,7 +175,7 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_TPS_CLASS_TX30 = 300               !! TS30,TM30 family member, 0.5 ".
     integer, parameter, public :: GEOCOM_TPS_CLASS_TX31 = 301               !! TS30,TM30 family member, 1 ".
 
-    ! TPS_DEVICE_TYPE: TPS device configuration type.
+    ! GEOCOM_TPS_DEVICE_TYPE
     ! -- TPS1x00 common.
     integer, parameter, public :: GEOCOM_TPS_DEVICE_T      = int(z'00000')  !! Theodolite without built-in EDM.
     integer, parameter, public :: GEOCOM_TPS_DEVICE_MOT    = int(z'00004')  !! Motorized device.
@@ -167,7 +197,7 @@ module dm_geocom_type
     ! -- TPSSim specific.
     integer, parameter, public :: GEOCOM_TPS_DEVICE_SIM    = int(z'04000')  !! Runs on simulation, no hardware.
 
-    ! TPS_REFLESS_CLASS: Reflectorless class.
+    ! GEOCOM_TPS_REFLESS_CLASS
     integer, parameter, public :: GEOCOM_TPS_REFLESS_NONE  = 0
     integer, parameter, public :: GEOCOM_TPS_REFLESS_R100  = 1              !! Pinpoint R100.
     integer, parameter, public :: GEOCOM_TPS_REFLESS_R300  = 2              !! Pinpoint R300.
@@ -177,13 +207,13 @@ module dm_geocom_type
     ! **************************************************************************
     ! EDM - ELECTRONIC DISTANCE MEASUREMENT.
     ! **************************************************************************
-    ! EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight.
+    ! GEOCOM_EDM_EGLINTENSITY_TYPE
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_OFF  = 0
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_LOW  = 1
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_MID  = 2
     integer, parameter, public :: GEOCOM_EDM_EGLINTEN_HIGH = 3
 
-    ! EDM_MODE: EDM measurement mode.
+    ! GEOCOM_EDM_MODE
     integer, parameter, public :: GEOCOM_EDM_MODE_NOT_USED   = 0    !! Initial value.
     integer, parameter, public :: GEOCOM_EDM_SINGLE_TAPE     = 1    !! IR Standard Reflector Tape.
     integer, parameter, public :: GEOCOM_EDM_SINGLE_STANDARD = 2    !! IR Standard.
@@ -205,18 +235,18 @@ module dm_geocom_type
     ! **************************************************************************
     integer, parameter, public :: GEOCOM_FTR_MAX_BLOCKSIZE = 450    !! Max. block size.
 
-    ! FTR_DEVICETYPE: Device type.
+    ! GEOCOM_FTR_DEVICETYPE
     integer, parameter, public :: GEOCOM_FTR_DEVICE_INTERNAL = 0    !! Internal memory.
     integer, parameter, public :: GEOCOM_FTR_DEVICE_PCPARD   = 1    !! Memory card.
 
-    ! FTR_FILETYPE: File type.
+    ! GEOCOM_FTR_FILETYPE
     integer, parameter, public :: GEOCOM_FTR_FILE_UNKNOWN = 0       !! Undocumented.
     integer, parameter, public :: GEOCOM_FTR_FILE_IMAGES  = 170     !! Extension wildcard: `*.jpg`.
 
     ! **************************************************************************
     ! IMG - IMAGE PROCESSING.
     ! **************************************************************************
-    ! IMG_MEM_TYPE: Memory device type.
+    ! GEOCOM_IMG_MEM_TYPE
     integer, parameter, public :: GEOCOM_IMG_INTERNAL_MEMORY = int(z'0')    !! Internal memory module.
     integer, parameter, public :: GEOCOM_IMG_PC_CARD         = int(z'1')    !! External PC Card.
 
@@ -225,16 +255,12 @@ module dm_geocom_type
     ! **************************************************************************
     ! MOT - MOTORISATION.
     ! **************************************************************************
-    ! MOT_LOCK_STATUS: Lock conditions.
+    ! GEOCOM_MOT_LOCK_STATUS
     integer, parameter, public :: GEOCOM_MOT_LOCKED_OUT = 0     !! Locked out.
     integer, parameter, public :: GEOCOM_MOT_LOCKED_IN  = 1     !! Locked in.
     integer, parameter, public :: GEOCOM_MOT_PREDICTION = 2     !! Prediction mode.
 
-    ! MOT_STOPMODE: Controller stop mode.
-    integer, parameter, public :: GEOCOM_MOT_NORMAL   = 0       !! Slow down with current acceleration.
-    integer, parameter, public :: GEOCOM_MOT_SHUTDOWN = 1       !! Slow down by switch off power supply.
-
-    ! MOT_MODE: Controller configuration.
+    ! GEOCOM_MOT_MODE
     integer, parameter, public :: GEOCOM_MOT_POSIT   = 0        !! Configured for relative positioning.
     integer, parameter, public :: GEOCOM_MOT_OCONST  = 1        !! Configured for constant speed.
     integer, parameter, public :: GEOCOM_MOT_MANUPOS = 2        !! Configured for manual positioning (default setting).
@@ -242,15 +268,34 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_MOT_BREAK   = 4        !! Configured as "Brake" controller.
     integer, parameter, public :: GEOCOM_MOT_TERM    = 7        !! Terminates the controller task.
 
+    ! GEOCOM_MOT_STOPMODE
+    integer, parameter, public :: GEOCOM_MOT_NORMAL   = 0       !! Slow down with current acceleration.
+    integer, parameter, public :: GEOCOM_MOT_SHUTDOWN = 1       !! Slow down by switch off power supply.
+
+    ! **************************************************************************
+    ! SUP - SUPERVISOR.
+    ! **************************************************************************
+    ! GEOCOM_SUP_AUTO_POWER
+    integer, parameter, public :: GEOCOM_SUP_POWER_DISABLED = 0 !! Instrument remains on.
+    integer, parameter, public :: GEOCOM_SUP_POWER_OFF      = 2 !! Turns off mechanism.
+
     ! **************************************************************************
     ! TMC - THEODOLITE MEASUREMENT AND CALCULATION.
     ! **************************************************************************
-    ! TMC_INCLINE_PRG: Inclination sensor measurement program.
+    ! GEOCOM_TMC_FACE
+    integer, parameter, public :: GEOCOM_TMC_FACE_1 = 0         !! Position 1 of telescope.
+    integer, parameter, public :: GEOCOM_TMC_FACE_2 = 1         !! Position 2 of telescope.
+
+    ! GEOCOM_TMC_FACE_DEF
+    integer, parameter, public :: GEOCOM_TMC_FACE_NORMAL = 0    !! Face in normal position.
+    integer, parameter, public :: GEOCOM_TMC_FACE_TURN   = 1    !! Face turned.
+
+    ! GEOCOM_TMC_INCLINE_PRG
     integer, parameter, public :: GEOCOM_TMC_MEA_INC      = 0   !! Use sensor (a priori sigma).
     integer, parameter, public :: GEOCOM_TMC_AUTO_INC     = 1   !! Automatic mode (sensor/plane).
     integer, parameter, public :: GEOCOM_TMC_PLANE_INC    = 2   !! Use plane (a priori sigma).
 
-    ! TMC_MEASURE_PRG: TMC measurement mode.
+    ! GEOCOM_TMC_MEASURE_PRG
     integer, parameter, public :: GEOCOM_TMC_STOP         = 0   !! Stop measurement program.
     integer, parameter, public :: GEOCOM_TMC_DEF_DIST     = 1   !! Default DIST-measurement program.
     integer, parameter, public :: GEOCOM_TMC_CLEAR        = 3   !! TMC_STOP and clear data.
@@ -260,343 +305,294 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_TMC_RED_TRK_DIST = 10  !! Reflectorless tracking.
     integer, parameter, public :: GEOCOM_TMC_FREQUENCY    = 11  !! Frequency measurement (test).
 
-    ! TMC_FACE_DEF: Face position.
-    integer, parameter, public :: GEOCOM_TMC_FACE_NORMAL = 0    !! Face in normal position.
-    integer, parameter, public :: GEOCOM_TMC_FACE_TURN   = 1    !! Face turned.
-
-    ! TMC_FACE: Actual face.
-    integer, parameter, public :: GEOCOM_TMC_FACE_1 = 0         !! Position 1 of telescope.
-    integer, parameter, public :: GEOCOM_TMC_FACE_2 = 1         !! Position 2 of telescope.
-
-    ! **************************************************************************
-    ! SUP - SUPERVISOR.
-    ! **************************************************************************
-    ! SUP_AUTO_POWER: Automatic shutdown mechanism for the system.
-    integer, parameter, public :: GEOCOM_SUP_POWER_DISABLED = 0 !! Instrument remains on.
-    integer, parameter, public :: GEOCOM_SUP_POWER_OFF      = 2 !! Turns off mechanism.
-
     ! Public procedures.
-    public :: dm_geocom_type_aut_adjmode
-    public :: dm_geocom_type_aut_atrmode
-    public :: dm_geocom_type_aut_posmode
-    public :: dm_geocom_type_bap_prismtype
-    public :: dm_geocom_type_bap_refltype
-    public :: dm_geocom_type_bap_target_type
-    public :: dm_geocom_type_bap_user_measprg
-    public :: dm_geocom_type_com_tps_startup_mode
-    public :: dm_geocom_type_com_tps_stop_mode
-    public :: dm_geocom_type_edm_eglintensity_type
-    public :: dm_geocom_type_edm_mode
-    public :: dm_geocom_type_ftr_devicetype
-    public :: dm_geocom_type_ftr_filetype
-    public :: dm_geocom_type_img_mem_type
-    public :: dm_geocom_type_mot_mode
-    public :: dm_geocom_type_mot_stopmode
-    public :: dm_geocom_type_tmc_incline_prg
-    public :: dm_geocom_type_tmc_measure_prg
+    public :: dm_geocom_type_validated
 contains
     ! **************************************************************************
-    ! PUBLIC GEOCOM PARAMETER FUNCTIONS.
+    ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure elemental integer function dm_geocom_type_aut_adjmode(param) result(n)
-        !! Parameterisation function for enumeration `AUT_ADJMODE`. Returns
-        !! `param` or `GEOCOM_AUT_NORM_MODE` if argument is invalid.
-        integer, intent(in) :: param !! `AUT_ADJMODE`.
+    integer function dm_geocom_type_validated(type, value, default, error) result(n)
+        !! Parameterisation function for GeoCOM enumeration types.
+        !!
+        !! Returns argument `value` if it is a valid enumerator of `type`, else
+        !! the default value of that type. If argument `type` is not found or
+        !! not supported, the function returns 0. If argument `default` is
+        !! passed, it is returned on error.
+        !!
+        !! If argument `default` is not passed and `type` is valid, one of the
+        !! following values is returned:
+        !!
+        !! | Type                           | Default Value                    |
+        !! |--------------------------------|----------------------------------|
+        !! | `GEOCOM_AUT_ADJMODE`           | `GEOCOM_AUT_NORM_MODE`           |
+        !! | `GEOCOM_AUT_ATRMODE`           | `GEOCOM_AUT_POSITION`            |
+        !! | `GEOCOM_AUT_POSMODE`           | `GEOCOM_AUT_NORMAL`              |
+        !! | `GEOCOM_BAP_PRISMTYPE`         | `GEOCOM_BAP_PRISM_ROUND`         |
+        !! | `GEOCOM_BAP_REFLTYPE`          | `GEOCOM_BAP_REFL_UNDEF`          |
+        !! | `GEOCOM_BAP_TARGET_TYPE`       | `GEOCOM_BAP_REFL_USE`            |
+        !! | `GEOCOM_BAP_USER_MEASPRG`      | `GEOCOM_BAP_SINGLE_REF_STANDARD` |
+        !! | `GEOCOM_COM_TPS_STARTUP_MODE`  | `GEOCOM_COM_STARTUP_REMOTE`      |
+        !! | `GEOCOM_COM_TPS_STOP_MODE`     | `GEOCOM_COM_STOP_SHUT_DOWN`      |
+        !! | `GEOCOM_EDM_EGLINTENSITY_TYPE` | `GEOCOM_EDM_EGLINTEN_OFF`        |
+        !! | `GEOCOM_EDM_MODE`              | `GEOCOM_EDM_MODE_NOT_USED`       |
+        !! | `GEOCOM_FTR_DEVICETYPE`        | `GEOCOM_FTR_DEVICE_INTERNAL`     |
+        !! | `GEOCOM_FTR_FILETYPE`          | `GEOCOM_FTR_FILE_UNKNOWN`        |
+        !! | `GEOCOM_IMG_MEM_TYPE`          | `GEOCOM_IMG_INTERNAL_MEMORY`     |
+        !! | `GEOCOM_MOT_MODE`              | `GEOCOM_MOT_MANUPOS`             |
+        !! | `GEOCOM_MOT_STOPMODE`          | `GEOCOM_MOT_NORMAL`              |
+        !! | `GEOCOM_TMC_INCLINE_PRG`       | `GEOCOM_TMC_MEA_INC`             |
+        !! | `GEOCOM_TMC_MEASURE_PRG`       | `GEOCOM_TMC_DEF_DIST`            |
+        !!
+        !! The function returns the following error codes in `error`:
+        !!
+        !! * `E_TYPE` if the type is not found or not supported.
+        !! * `E_INVALID` if the value is not of given type.
+        integer, intent(in)            :: type    !! GeoCOM enumeration type.
+        integer, intent(in)            :: value   !! Enumerator to validate.
+        integer, intent(in),  optional :: default !! Value to return on error.
+        integer, intent(out), optional :: error   !! Error code.
 
-        select case (param)
-            case (GEOCOM_AUT_NORM_MODE)
-            case (GEOCOM_AUT_POINT_MODE)
-            case (GEOCOM_AUT_DEFINE_MODE)
-                n = param
+        integer :: rc
+
+        rc = E_INVALID
+        n  = 0
+
+        select case (type)
+            case (GEOCOM_AUT_ADJMODE)
+                select case (value)
+                    case (GEOCOM_AUT_NORM_MODE,  &
+                          GEOCOM_AUT_POINT_MODE, &
+                          GEOCOM_AUT_DEFINE_MODE)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_AUT_NORM_MODE
+                end select
+
+            case (GEOCOM_AUT_ATRMODE)
+                select case (value)
+                    case (GEOCOM_AUT_POSITION, &
+                          GEOCOM_AUT_TARGET)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_AUT_POSITION
+                end select
+
+            case (GEOCOM_AUT_POSMODE)
+                select case (value)
+                    case (GEOCOM_AUT_NORMAL,  &
+                          GEOCOM_AUT_PRECISE, &
+                          GEOCOM_AUT_FAST)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_AUT_NORMAL
+                end select
+
+            case (GEOCOM_BAP_PRISMTYPE)
+                select case (value)
+                    case (GEOCOM_BAP_PRISM_ROUND,        &
+                          GEOCOM_BAP_PRISM_MINI,         &
+                          GEOCOM_BAP_PRISM_TAPE,         &
+                          GEOCOM_BAP_PRISM_360,          &
+                          GEOCOM_BAP_PRISM_USER1,        &
+                          GEOCOM_BAP_PRISM_USER2,        &
+                          GEOCOM_BAP_PRISM_USER3,        &
+                          GEOCOM_BAP_PRISM_360_MINI,     &
+                          GEOCOM_BAP_PRISM_MINI_ZERO,    &
+                          GEOCOM_BAP_PRISM_USER,         &
+                          GEOCOM_BAP_PRISM_NDS_TAPE,     &
+                          GEOCOM_BAP_PRISM_GRZ121_ROUND, &
+                          GEOCOM_BAP_PRISM_MA_MPR122)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_BAP_PRISM_ROUND
+                end select
+
+            case (GEOCOM_BAP_REFLTYPE)
+                select case (value)
+                    case (GEOCOM_BAP_REFL_UNDEF, &
+                          GEOCOM_BAP_REFL_PRISM, &
+                          GEOCOM_BAP_REFL_TAPE)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_BAP_REFL_UNDEF
+                end select
+
+            case (GEOCOM_BAP_TARGET_TYPE)
+                select case (value)
+                    case (GEOCOM_BAP_REFL_USE, &
+                          GEOCOM_BAP_REFL_LESS)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_BAP_REFL_USE
+                end select
+
+            case (GEOCOM_BAP_USER_MEASPRG)
+                select case (value)
+                    case (GEOCOM_BAP_SINGLE_REF_STANDARD,  &
+                          GEOCOM_BAP_SINGLE_REF_FAST,      &
+                          GEOCOM_BAP_SINGLE_REF_VISIBLE,   &
+                          GEOCOM_BAP_SINGLE_RLESS_VISIBLE, &
+                          GEOCOM_BAP_CONT_REF_STANDARD,    &
+                          GEOCOM_BAP_CONT_REF_FAST,        &
+                          GEOCOM_BAP_CONT_RLESS_VISIBLE,   &
+                          GEOCOM_BAP_AVG_REF_STANDARD,     &
+                          GEOCOM_BAP_AVG_REF_VISIBLE,      &
+                          GEOCOM_BAP_AVG_RLESS_VISIBLE,    &
+                          GEOCOM_BAP_CONT_REF_SYNCHRO,     &
+                          GEOCOM_BAP_SINGLE_REF_PRECISE)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_BAP_SINGLE_REF_STANDARD
+                end select
+
+            case (GEOCOM_COM_TPS_STARTUP_MODE)
+                select case (value)
+                    case (GEOCOM_COM_STARTUP_LOCAL, &
+                          GEOCOM_COM_STARTUP_REMOTE)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_COM_STARTUP_REMOTE
+                end select
+
+            case (GEOCOM_COM_TPS_STOP_MODE)
+                select case (value)
+                    case (GEOCOM_COM_STOP_SHUT_DOWN, &
+                          GEOCOM_COM_STOP_SLEEP)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_COM_STOP_SHUT_DOWN
+                end select
+
+            case (GEOCOM_EDM_EGLINTENSITY_TYPE)
+                select case (value)
+                    case (GEOCOM_EDM_EGLINTEN_OFF, &
+                          GEOCOM_EDM_EGLINTEN_LOW, &
+                          GEOCOM_EDM_EGLINTEN_MID, &
+                          GEOCOM_EDM_EGLINTEN_HIGH)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_EDM_EGLINTEN_OFF
+                end select
+
+            case (GEOCOM_EDM_MODE)
+                select case (value)
+                    case (GEOCOM_EDM_MODE_NOT_USED,   &
+                          GEOCOM_EDM_SINGLE_TAPE,     &
+                          GEOCOM_EDM_SINGLE_STANDARD, &
+                          GEOCOM_EDM_SINGLE_FAST,     &
+                          GEOCOM_EDM_SINGLE_LRANGE,   &
+                          GEOCOM_EDM_SINGLE_SRANGE,   &
+                          GEOCOM_EDM_CONT_STANDARD,   &
+                          GEOCOM_EDM_CONT_DYNAMIC,    &
+                          GEOCOM_EDM_CONT_REFLESS,    &
+                          GEOCOM_EDM_CONT_FAST,       &
+                          GEOCOM_EDM_AVERAGE_IR,      &
+                          GEOCOM_EDM_AVERAGE_SR,      &
+                          GEOCOM_EDM_AVERAGE_LR,      &
+                          GEOCOM_EDM_PRECISE_IR,      &
+                          GEOCOM_EDM_PRECISE_TAPE)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_EDM_MODE_NOT_USED
+                end select
+
+            case (GEOCOM_FTR_DEVICETYPE)
+                select case (value)
+                    case (GEOCOM_FTR_DEVICE_INTERNAL, &
+                          GEOCOM_FTR_DEVICE_PCPARD)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_FTR_DEVICE_INTERNAL
+                end select
+
+            case (GEOCOM_FTR_FILETYPE)
+                select case (value)
+                    case (GEOCOM_FTR_FILE_UNKNOWN, &
+                          GEOCOM_FTR_FILE_IMAGES)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_FTR_FILE_UNKNOWN
+                end select
+
+            case (GEOCOM_IMG_MEM_TYPE)
+                select case (value)
+                    case (GEOCOM_IMG_INTERNAL_MEMORY, &
+                          GEOCOM_IMG_PC_CARD)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_IMG_INTERNAL_MEMORY
+                end select
+
+            case (GEOCOM_MOT_MODE)
+                select case (value)
+                    case (GEOCOM_MOT_POSIT,   &
+                          GEOCOM_MOT_OCONST,  &
+                          GEOCOM_MOT_MANUPOS, &
+                          GEOCOM_MOT_LOCK,    &
+                          GEOCOM_MOT_BREAK,   &
+                          GEOCOM_MOT_TERM)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_MOT_MANUPOS
+                end select
+
+            case (GEOCOM_MOT_STOPMODE)
+                select case (value)
+                    case (GEOCOM_MOT_NORMAL, &
+                          GEOCOM_MOT_SHUTDOWN)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_MOT_NORMAL
+                end select
+
+            case (GEOCOM_TMC_INCLINE_PRG)
+                select case (value)
+                    case (GEOCOM_TMC_MEA_INC,  &
+                          GEOCOM_TMC_AUTO_INC, &
+                          GEOCOM_TMC_PLANE_INC)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_TMC_MEA_INC
+                end select
+
+            case (GEOCOM_TMC_MEASURE_PRG)
+                select case (value)
+                    case (GEOCOM_TMC_STOP,         &
+                          GEOCOM_TMC_DEF_DIST,     &
+                          GEOCOM_TMC_CLEAR,        &
+                          GEOCOM_TMC_SIGNAL,       &
+                          GEOCOM_TMC_DO_MEASURE,   &
+                          GEOCOM_TMC_RTRK_DIST,    &
+                          GEOCOM_TMC_RED_TRK_DIST, &
+                          GEOCOM_TMC_FREQUENCY)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_TMC_DEF_DIST
+                end select
+
             case default
-                n = GEOCOM_AUT_NORM_MODE
+                rc = E_TYPE
         end select
-    end function dm_geocom_type_aut_adjmode
 
-    pure elemental integer function dm_geocom_type_aut_atrmode(param) result(n)
-        !! Parameterisation function for enumeration `AUT_ATRMODE`. Returns
-        !! `param` or `GEOCOM_AUT_POSITION` if argument is invalid.
-        integer, intent(in) :: param !! `AUT_ATRMODE`.
-
-        select case (param)
-            case (GEOCOM_AUT_POSITION)
-            case (GEOCOM_AUT_TARGET)
-                n = param
-            case default
-                n = GEOCOM_AUT_POSITION
-        end select
-    end function dm_geocom_type_aut_atrmode
-
-    pure elemental integer function dm_geocom_type_aut_posmode(param) result(n)
-        !! Parameterisation function for enumeration `AUT_POSMODE`. Returns
-        !! `param` or `GEOCOM_AUT_NORMAL` if argument is invalid.
-        integer, intent(in) :: param !! `AUT_POSMODE`.
-
-        select case (param)
-            case (GEOCOM_AUT_NORMAL)
-            case (GEOCOM_AUT_PRECISE)
-            case (GEOCOM_AUT_FAST)
-                n = param
-            case default
-                n = GEOCOM_AUT_NORMAL
-        end select
-    end function dm_geocom_type_aut_posmode
-
-    pure elemental integer function dm_geocom_type_bap_prismtype(param) result(n)
-        !! Parameterisation function for enumeration `BAP_PRISMTYPE`. Returns
-        !! `param` or `GEOCOM_BAP_PRISM_ROUND` if argument is invalid.
-        integer, intent(in) :: param !! `BAP_PRISMTYPE`.
-
-        select case (param)
-            case (GEOCOM_BAP_PRISM_ROUND)
-            case (GEOCOM_BAP_PRISM_MINI)
-            case (GEOCOM_BAP_PRISM_TAPE)
-            case (GEOCOM_BAP_PRISM_360)
-            case (GEOCOM_BAP_PRISM_USER1)
-            case (GEOCOM_BAP_PRISM_USER2)
-            case (GEOCOM_BAP_PRISM_USER3)
-            case (GEOCOM_BAP_PRISM_360_MINI)
-            case (GEOCOM_BAP_PRISM_MINI_ZERO)
-            case (GEOCOM_BAP_PRISM_USER)
-            case (GEOCOM_BAP_PRISM_NDS_TAPE)
-            case (GEOCOM_BAP_PRISM_GRZ121_ROUND)
-            case (GEOCOM_BAP_PRISM_MA_MPR122)
-                n = param
-            case default
-                n = GEOCOM_BAP_PRISM_ROUND
-        end select
-    end function dm_geocom_type_bap_prismtype
-
-    pure elemental integer function dm_geocom_type_bap_refltype(param) result(n)
-        !! Parameterisation function for enumeration `BAP_REFLTYPE`. Returns
-        !! `param` or `GEOCOM_BAP_REFL_UNDEF` if argument is invalid.
-        integer, intent(in) :: param !! `BAP_REFLTYPE`.
-
-        select case (param)
-            case (GEOCOM_BAP_REFL_UNDEF)
-            case (GEOCOM_BAP_REFL_PRISM)
-            case (GEOCOM_BAP_REFL_TAPE)
-                n = param
-            case default
-                n = GEOCOM_BAP_REFL_UNDEF
-        end select
-    end function dm_geocom_type_bap_refltype
-
-    pure elemental integer function dm_geocom_type_bap_target_type(param) result(n)
-        !! Parameterisation function for enumeration `BAP_TARGET_TYPE`. Returns
-        !! `param` or `GEOCOM_BAP_REFL_USE` if argument is invalid.
-        integer, intent(in) :: param !! `BAP_TARGET_TYPE`.
-
-        select case (param)
-            case (GEOCOM_BAP_REFL_USE)
-            case (GEOCOM_BAP_REFL_LESS)
-                n = param
-            case default
-                n = GEOCOM_BAP_REFL_USE
-        end select
-    end function dm_geocom_type_bap_target_type
-
-    pure elemental integer function dm_geocom_type_bap_user_measprg(param) result(n)
-        !! Parameterisation function for enumeration `BAP_USER_MEASPRG`. Returns
-        !! `param` or `GEOCOM_BAP_SINGLE_REF_STANDARD` if argument is invalid.
-        integer, intent(in) :: param !! `BAP_USER_MEASPRG`.
-
-        select case (param)
-            case (GEOCOM_BAP_SINGLE_REF_STANDARD)
-            case (GEOCOM_BAP_SINGLE_REF_FAST)
-            case (GEOCOM_BAP_SINGLE_REF_VISIBLE)
-            case (GEOCOM_BAP_SINGLE_RLESS_VISIBLE)
-            case (GEOCOM_BAP_CONT_REF_STANDARD)
-            case (GEOCOM_BAP_CONT_REF_FAST)
-            case (GEOCOM_BAP_CONT_RLESS_VISIBLE)
-            case (GEOCOM_BAP_AVG_REF_STANDARD)
-            case (GEOCOM_BAP_AVG_REF_VISIBLE)
-            case (GEOCOM_BAP_AVG_RLESS_VISIBLE)
-            case (GEOCOM_BAP_CONT_REF_SYNCHRO)
-            case (GEOCOM_BAP_SINGLE_REF_PRECISE)
-                n = param
-            case default
-                n = GEOCOM_BAP_SINGLE_REF_STANDARD
-        end select
-    end function dm_geocom_type_bap_user_measprg
-
-    pure elemental integer function dm_geocom_type_com_tps_startup_mode(param) result(n)
-        !! Parameterisation function for enumeration `COM_TPS_STARTUP_MODE`.
-        !! Returns `param` or `GEOCOM_COM_STARTUP_REMOTE` if argument is invalid.
-        integer, intent(in) :: param !! `COM_TPS_STARTUP_MODE`.
-
-        select case (param)
-            case (GEOCOM_COM_STARTUP_LOCAL)
-            case (GEOCOM_COM_STARTUP_REMOTE)
-                n = param
-            case default
-                n = GEOCOM_COM_STARTUP_REMOTE
-        end select
-    end function dm_geocom_type_com_tps_startup_mode
-
-    pure elemental integer function dm_geocom_type_com_tps_stop_mode(param) result(n)
-        !! Parameterisation function for enumeration `COM_TPS_STOP_MODE`.
-        !! Returns `param` or `GEOCOM_COM_STOP_SHUT_DOWN` if argument is invalid.
-        integer, intent(in) :: param !! `COM_TPS_STOP_MODE`.
-
-        select case (param)
-            case (GEOCOM_COM_STOP_SHUT_DOWN)
-            case (GEOCOM_COM_STOP_SLEEP)
-                n = param
-            case default
-                n = GEOCOM_COM_STOP_SHUT_DOWN
-        end select
-    end function dm_geocom_type_com_tps_stop_mode
-
-    pure elemental integer function dm_geocom_type_edm_eglintensity_type(param) result(n)
-        !! Parameterisation function for enumeration `EDM_EGLINTENSITY_TYPE`.
-        !! Returns `param` or `GEOCOM_EDM_EGLINTEN_OFF` if argument is invalid.
-        integer, intent(in) :: param !! `EDM_EGLINTENSITY_TYPE`.
-
-        select case (param)
-            case (GEOCOM_EDM_EGLINTEN_OFF)
-            case (GEOCOM_EDM_EGLINTEN_LOW)
-            case (GEOCOM_EDM_EGLINTEN_MID)
-            case (GEOCOM_EDM_EGLINTEN_HIGH)
-                n = param
-            case default
-                n = GEOCOM_EDM_MODE_NOT_USED
-        end select
-    end function dm_geocom_type_edm_eglintensity_type
-
-    pure elemental integer function dm_geocom_type_edm_mode(param) result(n)
-        !! Parameterisation function for enumeration `EDM_MODE`. Returns
-        !! `param` or `GEOCOM_EDM_MODE_NOT_USED` if argument is invalid.
-        integer, intent(in) :: param !! `EDM_MODE`.
-
-        select case (param)
-            case (GEOCOM_EDM_MODE_NOT_USED)
-            case (GEOCOM_EDM_SINGLE_TAPE)
-            case (GEOCOM_EDM_SINGLE_STANDARD)
-            case (GEOCOM_EDM_SINGLE_FAST)
-            case (GEOCOM_EDM_SINGLE_LRANGE)
-            case (GEOCOM_EDM_SINGLE_SRANGE)
-            case (GEOCOM_EDM_CONT_STANDARD)
-            case (GEOCOM_EDM_CONT_DYNAMIC)
-            case (GEOCOM_EDM_CONT_REFLESS)
-            case (GEOCOM_EDM_CONT_FAST)
-            case (GEOCOM_EDM_AVERAGE_IR)
-            case (GEOCOM_EDM_AVERAGE_SR)
-            case (GEOCOM_EDM_AVERAGE_LR)
-            case (GEOCOM_EDM_PRECISE_IR)
-            case (GEOCOM_EDM_PRECISE_TAPE)
-                n = param
-            case default
-                n = GEOCOM_EDM_MODE_NOT_USED
-        end select
-    end function dm_geocom_type_edm_mode
-
-    pure elemental integer function dm_geocom_type_ftr_devicetype(param) result(n)
-        !! Parameterisation function for enumeration `FTR_DEVICETYPE`. Returns
-        !! `param` or `GEOCOM_FTR_DEVICE_INTERNAL` if argument is invalid.
-        integer, intent(in) :: param !! `FTR_DEVICETYPE`.
-
-        select case (param)
-            case (GEOCOM_FTR_DEVICE_INTERNAL)
-            case (GEOCOM_FTR_DEVICE_PCPARD)
-                n = param
-            case default
-                n = GEOCOM_FTR_DEVICE_INTERNAL
-        end select
-    end function dm_geocom_type_ftr_devicetype
-
-    pure elemental integer function dm_geocom_type_ftr_filetype(param) result(n)
-        !! Parameterisation function for enumeration `FTR_FILETYPE`. Returns
-        !! `param` or `GEOCOM_FTR_FILE_UNKNOWN` if argument is invalid.
-        integer, intent(in) :: param !! `FTR_FILETYPE`.
-
-        select case (param)
-            case (GEOCOM_FTR_FILE_UNKNOWN)
-            case (GEOCOM_FTR_FILE_IMAGES)
-                n = param
-            case default
-                n = GEOCOM_FTR_FILE_UNKNOWN
-        end select
-    end function dm_geocom_type_ftr_filetype
-
-    pure elemental integer function dm_geocom_type_img_mem_type(param) result(n)
-        !! Parameterisation function for enumeration `IMG_MEM_TYPE`. Returns
-        !! `param` or `GEOCOM_IMG_INTERNAL_MEMORY` if argument is invalid.
-        integer, intent(in) :: param !! `IMG_MEM_TYPE`.
-
-        select case (param)
-            case (GEOCOM_IMG_INTERNAL_MEMORY)
-            case (GEOCOM_IMG_PC_CARD)
-                n = param
-            case default
-                n = GEOCOM_IMG_INTERNAL_MEMORY
-        end select
-    end function dm_geocom_type_img_mem_type
-
-    pure elemental integer function dm_geocom_type_mot_mode(param) result(n)
-        !! Parameterisation function for enumeration `MOT_MODE`. Returns
-        !! `param` or `GEOCOM_MOT_MANUPOS` if argument is invalid.
-        integer, intent(in) :: param !! `MOT_MODE`.
-
-        select case (param)
-            case (GEOCOM_MOT_POSIT)
-            case (GEOCOM_MOT_OCONST)
-            case (GEOCOM_MOT_MANUPOS)
-            case (GEOCOM_MOT_LOCK)
-            case (GEOCOM_MOT_BREAK)
-            case (GEOCOM_MOT_TERM)
-                n = param
-            case default
-                n = GEOCOM_MOT_MANUPOS
-        end select
-    end function dm_geocom_type_mot_mode
-
-    pure elemental integer function dm_geocom_type_mot_stopmode(param) result(n)
-        !! Parameterisation function for enumeration `MOT_STOPMODE`. Returns
-        !! `param` or `GEOCOM_MOT_NORMAL` if argument is invalid.
-        integer, intent(in) :: param !! `MOT_STOPMODE`.
-
-        select case (param)
-            case (GEOCOM_MOT_NORMAL)
-            case (GEOCOM_MOT_SHUTDOWN)
-                n = param
-            case default
-                n = GEOCOM_MOT_NORMAL
-        end select
-    end function dm_geocom_type_mot_stopmode
-
-    pure elemental integer function dm_geocom_type_tmc_incline_prg(param) result(n)
-        !! Parameterisation function for enumeration `TMC_INCLINE_PRG`. Returns
-        !! `param` or `GEOCOM_TMC_MEA_INC` if argument is invalid.
-        integer, intent(in) :: param !! `TMC_INCLINE_PRG`.
-
-        select case (param)
-            case (GEOCOM_TMC_MEA_INC)
-            case (GEOCOM_TMC_AUTO_INC)
-            case (GEOCOM_TMC_PLANE_INC)
-                n = param
-            case default
-                n = GEOCOM_TMC_MEA_INC
-        end select
-    end function dm_geocom_type_tmc_incline_prg
-
-    pure elemental integer function dm_geocom_type_tmc_measure_prg(param) result(n)
-        !! Parameterisation function for enumeration `TMC_MEASURE_PRG`. Returns
-        !! `param` or `GEOCOM_TMC_DEF_DIST` if argument is invalid.
-        integer, intent(in) :: param !! `TMC_MEASURE_PRG`.
-
-        select case (param)
-            case (GEOCOM_TMC_STOP)
-            case (GEOCOM_TMC_DEF_DIST)
-            case (GEOCOM_TMC_CLEAR)
-            case (GEOCOM_TMC_SIGNAL)
-            case (GEOCOM_TMC_DO_MEASURE)
-            case (GEOCOM_TMC_RTRK_DIST)
-            case (GEOCOM_TMC_RED_TRK_DIST)
-            case (GEOCOM_TMC_FREQUENCY)
-                n = param
-            case default
-                n = GEOCOM_TMC_DEF_DIST
-        end select
-    end function dm_geocom_type_tmc_measure_prg
+        if (dm_is_error(rc) .and. present(default)) n = default
+        if (present(error)) error = rc
+    end function dm_geocom_type_validated
 end module dm_geocom_type

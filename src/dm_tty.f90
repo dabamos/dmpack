@@ -537,27 +537,27 @@ contains
         valid = .false.
 
         select case (baud_rate)
-            case (TTY_B0)
-            case (TTY_B50)
-            case (TTY_B75)
-            case (TTY_B110)
-            case (TTY_B134)
-            case (TTY_B150)
-            case (TTY_B200)
-            case (TTY_B300)
-            case (TTY_B600)
-            case (TTY_B1200)
-            case (TTY_B1800)
-            case (TTY_B2400)
-            case (TTY_B4800)
-            case (TTY_B9600)
-            case (TTY_B19200)
-            case (TTY_B38400)
-            case (TTY_B57600)
-            case (TTY_B115200)
-            case (TTY_B230400)
-            case (TTY_B460800)
-            case (TTY_B921600)
+            case (TTY_B0,      &
+                  TTY_B50,     &
+                  TTY_B75,     &
+                  TTY_B110,    &
+                  TTY_B134,    &
+                  TTY_B150,    &
+                  TTY_B200,    &
+                  TTY_B300,    &
+                  TTY_B600,    &
+                  TTY_B1200,   &
+                  TTY_B1800,   &
+                  TTY_B2400,   &
+                  TTY_B4800,   &
+                  TTY_B9600,   &
+                  TTY_B19200,  &
+                  TTY_B38400,  &
+                  TTY_B57600,  &
+                  TTY_B115200, &
+                  TTY_B230400, &
+                  TTY_B460800, &
+                  TTY_B921600)
                 valid = .true.
         end select
     end function dm_tty_valid_baud_rate
@@ -569,10 +569,7 @@ contains
         valid = .false.
 
         select case (byte_size)
-            case (TTY_BYTE_SIZE5)
-            case (TTY_BYTE_SIZE6)
-            case (TTY_BYTE_SIZE7)
-            case (TTY_BYTE_SIZE8)
+            case (TTY_BYTE_SIZE5, TTY_BYTE_SIZE6, TTY_BYTE_SIZE7, TTY_BYTE_SIZE8)
                 valid = .true.
         end select
     end function dm_tty_valid_byte_size
@@ -584,9 +581,7 @@ contains
         valid = .false.
 
         select case (parity)
-            case (TTY_PARITY_NONE)
-            case (TTY_PARITY_EVEN)
-            case (TTY_PARITY_ODD)
+            case (TTY_PARITY_NONE, TTY_PARITY_EVEN, TTY_PARITY_ODD)
                 valid = .true.
         end select
     end function dm_tty_valid_parity
@@ -598,8 +593,7 @@ contains
         valid = .false.
 
         select case (stop_bits)
-            case (TTY_STOP_BITS1)
-            case (TTY_STOP_BITS2)
+            case (TTY_STOP_BITS1, TTY_STOP_BITS2)
                 valid = .true.
         end select
     end function dm_tty_valid_stop_bits

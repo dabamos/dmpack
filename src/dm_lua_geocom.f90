@@ -620,8 +620,8 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        pos_mode = dm_geocom_type_aut_posmode(dm_lua_to_int32(lua, 1))
-        atr_mode = dm_geocom_type_aut_atrmode(dm_lua_to_int32(lua, 2))
+        pos_mode = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, dm_lua_to_int32(lua, 1))
+        atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_change_face(request, pos_mode, atr_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -637,8 +637,8 @@ contains
         type(request_type)            :: request
 
         lua = lua_state_type(ptr)
-        device_type = dm_geocom_type_ftr_devicetype(dm_lua_to_int32(lua, 1))
-        file_type   = dm_geocom_type_ftr_filetype(dm_lua_to_int32(lua, 2))
+        device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
+        file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
         day         = dm_lua_to_int32(lua, 3)
         month       = dm_lua_to_int32(lua, 4)
         year        = dm_lua_to_int32(lua, 5)
@@ -656,8 +656,8 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        tmc_prog = dm_geocom_type_tmc_measure_prg(dm_lua_to_int32(lua, 1))
-        inc_mode = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        tmc_prog = dm_geocom_type_validated(GEOCOM_TMC_MEASURE_PRG, dm_lua_to_int32(lua, 1))
+        inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_do_measure(request, tmc_prog, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -700,7 +700,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        inc_mode = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_get_angle(request, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -714,7 +714,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        inc_mode = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 1))
+        inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_get_angle_complete(request, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -813,7 +813,7 @@ contains
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
-        inc_mode  = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_get_coordinate(request, wait_time, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -924,7 +924,7 @@ contains
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
-        inc_mode  = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_get_full_measurement(request, wait_time, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -974,7 +974,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mem_type = dm_geocom_type_img_mem_type(dm_lua_to_int32(lua, 1))
+        mem_type = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_get_image_config(request, mem_type)
         call dm_lua_from(lua, request)
         n = 1
@@ -1096,7 +1096,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        prism_type = dm_geocom_type_bap_prismtype(dm_lua_to_int32(lua, 1))
+        prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_get_prism_definition(request, prism_type)
         call dm_lua_from(lua, request)
         n = 1
@@ -1207,7 +1207,7 @@ contains
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
-        inc_mode  = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_get_simple_coordinates(request, wait_time, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1222,7 +1222,7 @@ contains
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
-        inc_mode  = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 2))
+        inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
         call dm_geocom_api_request_get_simple_measurement(request, wait_time, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1529,7 +1529,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        atr_mode = dm_geocom_type_aut_atrmode(dm_lua_to_int32(lua, 1))
+        atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_atr_mode(request, atr_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1595,7 +1595,7 @@ contains
         lua = lua_state_type(ptr)
         slope_dist    = dm_lua_to_real64(lua, 1)
         height_offset = dm_lua_to_real64(lua, 2)
-        inc_mode      = dm_geocom_type_tmc_incline_prg(dm_lua_to_int32(lua, 3))
+        inc_mode      = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 3))
         call dm_geocom_api_request_set_distance(request, slope_dist, height_offset, inc_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1623,7 +1623,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        edm_mode = dm_geocom_type_edm_mode(dm_lua_to_int32(lua, 1))
+        edm_mode = dm_geocom_type_validated(GEOCOM_EDM_MODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_edm_mode(request, edm_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1637,7 +1637,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        intensity = dm_geocom_type_edm_eglintensity_type(dm_lua_to_int32(lua, 1))
+        intensity = dm_geocom_type_validated(GEOCOM_EDM_EGLINTENSITY_TYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_egl_intensity(request, intensity)
         call dm_lua_from(lua, request)
         n = 1
@@ -1651,7 +1651,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        adj_mode = dm_geocom_type_aut_adjmode(dm_lua_to_int32(lua, 1))
+        adj_mode = dm_geocom_type_validated(GEOCOM_AUT_ADJMODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_fine_adjust_mode(request, adj_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1699,7 +1699,7 @@ contains
         type(request_type)            :: request
 
         lua = lua_state_type(ptr)
-        mem_type     = dm_geocom_type_img_mem_type(dm_lua_to_int32(lua, 1))
+        mem_type     = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
         image_number = dm_lua_to_int32(lua, 2)
         quality      = dm_lua_to_int32(lua, 3)
         sub_function = dm_lua_to_int32(lua, 4)
@@ -1745,7 +1745,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        bap_prog = dm_geocom_type_bap_user_measprg(dm_lua_to_int32(lua, 1))
+        bap_prog = dm_geocom_type_validated(GEOCOM_BAP_USER_MEASPRG, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_measurement_program(request, bap_prog)
         call dm_lua_from(lua, request)
         n = 1
@@ -1776,8 +1776,8 @@ contains
         lua = lua_state_type(ptr)
         hz       = dm_lua_to_real64(lua, 1)
         v        = dm_lua_to_real64(lua, 2)
-        pos_mode = dm_geocom_type_aut_posmode(dm_lua_to_int32(lua, 3))
-        atr_mode = dm_geocom_type_aut_atrmode(dm_lua_to_int32(lua, 4))
+        pos_mode = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, dm_lua_to_int32(lua, 3))
+        atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 4))
         call dm_geocom_api_request_set_position(request, hz, v, pos_mode, atr_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -1820,7 +1820,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        prism_type = dm_geocom_type_bap_prismtype(dm_lua_to_int32(lua, 1))
+        prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_prism_type(request, prism_type)
         call dm_lua_from(lua, request)
         n = 1
@@ -1835,7 +1835,7 @@ contains
         type(request_type)            :: request
 
         lua = lua_state_type(ptr)
-        prism_type = dm_geocom_type_bap_prismtype(dm_lua_to_int32(lua, 1))
+        prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
         prism_name = dm_lua_to_string(lua, 2)
         call dm_geocom_api_request_set_prism_type_v2(request, prism_type, prism_name)
         call dm_lua_from(lua, request)
@@ -1914,7 +1914,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        target_type = dm_geocom_type_bap_target_type(dm_lua_to_int32(lua, 1))
+        target_type = dm_geocom_type_validated(GEOCOM_BAP_TARGET_TYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_target_type(request, target_type)
         call dm_lua_from(lua, request)
         n = 1
@@ -1975,7 +1975,7 @@ contains
         lua = lua_state_type(ptr)
         prism_name  = dm_lua_to_string(lua, 1)
         prism_const = dm_lua_to_real64(lua, 2)
-        refl_type   = dm_geocom_type_bap_refltype(dm_lua_to_int32(lua, 3))
+        refl_type   = dm_geocom_type_validated(GEOCOM_BAP_REFLTYPE, dm_lua_to_int32(lua, 3))
         creator     = dm_lua_to_string(lua, 4)
         call dm_geocom_api_request_set_user_prism_definition(request, prism_name, prism_const, refl_type, creator)
         call dm_lua_from(lua, request)
@@ -2021,8 +2021,8 @@ contains
         type(request_type)            :: request
 
         lua = lua_state_type(ptr)
-        device_type = dm_geocom_type_ftr_devicetype(dm_lua_to_int32(lua, 1))
-        file_type   = dm_geocom_type_ftr_filetype(dm_lua_to_int32(lua, 2))
+        device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
+        file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
         file_name   = dm_lua_to_string(lua, 3)
         block_size  = dm_lua_to_int32(lua, 4)
         call dm_geocom_api_request_setup_download(request, device_type, file_type, file_name, block_size)
@@ -2039,8 +2039,8 @@ contains
         type(request_type)            :: request
 
         lua = lua_state_type(ptr)
-        device_type = dm_geocom_type_ftr_devicetype(dm_lua_to_int32(lua, 1))
-        file_type   = dm_geocom_type_ftr_filetype(dm_lua_to_int32(lua, 2))
+        device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
+        file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
         search_path = dm_lua_to_string(lua, 3)
         call dm_geocom_api_request_setup_list(request, device_type, file_type, search_path)
         call dm_lua_from(lua, request)
@@ -2055,7 +2055,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        start_mode = dm_geocom_type_mot_mode(dm_lua_to_int32(lua, 1))
+        start_mode = dm_geocom_type_validated(GEOCOM_MOT_MODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_start_controller(request, start_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -2069,7 +2069,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        stop_mode = dm_geocom_type_mot_stopmode(dm_lua_to_int32(lua, 1))
+        stop_mode = dm_geocom_type_validated(GEOCOM_MOT_STOPMODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_stop_controller(request, stop_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -2083,7 +2083,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        stop_mode = dm_geocom_type_com_tps_stop_mode(dm_lua_to_int32(lua, 1))
+        stop_mode = dm_geocom_type_validated(GEOCOM_COM_TPS_STOP_MODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_switch_off(request, stop_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -2097,7 +2097,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        start_mode = dm_geocom_type_com_tps_startup_mode(dm_lua_to_int32(lua, 1))
+        start_mode = dm_geocom_type_validated(GEOCOM_COM_TPS_STARTUP_MODE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_switch_on(request, start_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -2111,7 +2111,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        mem_type = dm_geocom_type_img_mem_type(dm_lua_to_int32(lua, 1))
+        mem_type = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_take_image(request, mem_type)
         call dm_lua_from(lua, request)
         n = 1
