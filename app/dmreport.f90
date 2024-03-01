@@ -252,12 +252,12 @@ contains
 
         ! Validate log settings.
         if (.not. log%disabled) then
-            if (log%min_level < LOG_NONE .or. log%min_level > LOG_CRITICAL) then
+            if (.not. dm_log_valid(log%min_level)) then
                 call dm_error_out(rc, 'invalid minimum log level')
                 return
             end if
 
-            if (log%max_level < LOG_NONE .or. log%max_level > LOG_CRITICAL) then
+            if (.not. dm_log_valid(log%max_level)) then
                 call dm_error_out(rc, 'invalid maximum log level')
                 return
             end if

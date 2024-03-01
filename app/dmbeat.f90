@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmbeat
     !! Heartbeat emitter, sends status messages to the RPC API.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
@@ -58,7 +58,7 @@ program dmbeat
     rc = dm_rpc_init()
 
     if (dm_is_error(rc)) then
-        call dm_log(LOG_ERROR, 'failed to initialize libcurl', error=rc)
+        call dm_log_error('failed to initialize libcurl', error=rc)
         call dm_stop(1)
     end if
 
@@ -195,7 +195,7 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
-        call dm_log(LOG_INFO, 'started ' // app%name)
+        call dm_log_info('started ' // app%name)
 
         ! Client and library version.
         client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
@@ -211,7 +211,7 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
-            call dm_log(LOG_DEBUG, 'emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
+            call dm_log_debug('emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
@@ -234,7 +234,7 @@ contains
                              url      = url)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_DEBUG, 'failed to send beat to host ' // app%host, error=rc)
+                call dm_log_debug('failed to send beat to host ' // app%host, error=rc)
             end if
 
             last_error = rc
@@ -242,34 +242,34 @@ contains
             code_select: &
             select case (response%code)
                 case (0)
-                    call dm_log(LOG_WARNING, 'connection to host ' // trim(app%host) // ' failed: ' // &
-                                response%error_message, error=rc)
+                    call dm_log_warning('connection to host ' // trim(app%host) // ' failed: ' // &
+                                        response%error_message, error=rc)
 
                 case (HTTP_CREATED)
-                    call dm_log(LOG_DEBUG, 'beat accepted by host ' // app%host)
+                    call dm_log_debug('beat accepted by host ' // app%host)
 
                 case (HTTP_UNAUTHORIZED)
-                    call dm_log(LOG_ERROR, 'unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                    call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
 
                 case (HTTP_INTERNAL_SERVER_ERROR)
-                    call dm_log(LOG_ERROR, 'internal server error on host ' // app%host, error=E_RPC_SERVER)
+                    call dm_log_error('internal server error on host ' // app%host, error=E_RPC_SERVER)
 
                 case (HTTP_BAD_GATEWAY)
-                    call dm_log(LOG_ERROR, 'bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+                    call dm_log_error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
 
                 case default
                     ! Log response from api message if available.
                     if (response%content_type == MIME_TEXT) then
                         if (dm_is_ok(dm_api_status_from_string(api, response%payload))) then
-                            call dm_log(LOG_ERROR, 'server error on host ' // trim(app%host) // &
-                                        ' (HTTP ' // dm_itoa(response%code) // '): ' // &
-                                        api%message, error=api%error)
+                            call dm_log_error('server error on host ' // trim(app%host) // &
+                                              ' (HTTP ' // dm_itoa(response%code) // '): ' // &
+                                              api%message, error=api%error)
                             exit code_select
                         end if
                     end if
 
-                    call dm_log(LOG_WARNING, 'API call to host ' // trim(app%host) // ' failed (HTTP ' // &
-                                dm_itoa(response%code) // ')', error=E_RPC_API)
+                    call dm_log_warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
+                                        dm_itoa(response%code) // ')', error=E_RPC_API)
             end select code_select
 
             if (app%count > 0) then
@@ -278,11 +278,11 @@ contains
             end if
 
             t = max(0, int(app%interval - dm_timer_stop(timer)))
-            call dm_log(LOG_DEBUG, 'next beat in ' // dm_itoa(t) // ' sec')
+            call dm_log_debug('next beat in ' // dm_itoa(t) // ' sec')
             call dm_sleep(t)
         end do emit_loop
 
-        call dm_log(LOG_DEBUG, 'finished transmission')
+        call dm_log_debug('finished transmission')
     end subroutine run
 
     subroutine signal_handler(signum) bind(c)
@@ -293,7 +293,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_log_info('exit on signal ' // dm_itoa(signum))
                 call dm_rpc_destroy()
                 call dm_stop(0)
         end select

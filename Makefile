@@ -66,7 +66,7 @@
 #   FORD    - FORD documentation generator.
 #
 #   FFLAGS  - Fortran compiler options.
-#   CLAGS   - C compiler options.
+#   CFLAGS  - C compiler options.
 #   PPFLAGS - Pre-processor options (must be empty for Intel oneAPI).
 #   ARFLAGS - Archiver options.
 #   LDFLAGS - Linker options.
@@ -145,8 +145,8 @@ DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
 # Common build options.
-FFLAGS  = $(RELEASE) -ffree-line-length-0 -std=f2018
-CFLAGS  = $(RELEASE)
+FFLAGS  = $(RELEASE) -fPIC -ffree-line-length-0 -std=f2018
+CFLAGS  = $(RELEASE) -fPIC
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L$(PREFIX)/lib -z execstack -z now
@@ -322,30 +322,30 @@ linux:
 # ******************************************************************************
 
 $(LIBFCURL): setup
-	cd vendor/fortran-curl/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
+	cd vendor/fortran-curl/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
 	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
 
 $(LIBFLUA54): setup
-	cd vendor/fortran-lua54/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
+	cd vendor/fortran-lua54/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
 	cp ./vendor/fortran-lua54/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
-	cd vendor/fortran-pcre2/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
+	cd vendor/fortran-pcre2/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
 	cp ./vendor/fortran-pcre2/*.mod $(INCDIR)/
 
 $(LIBFSQLITE3): setup
-	cd vendor/fortran-sqlite3/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
+	cd vendor/fortran-sqlite3/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
 	cp ./vendor/fortran-sqlite3/*.mod $(INCDIR)/
 
 $(LIBFUNIX): setup
 	@echo "---"
 	@echo "--- Building for $(OS) ..."
 	@echo "---"
-	cd vendor/fortran-unix/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
+	cd vendor/fortran-unix/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	cp ./vendor/fortran-unix/*.mod $(INCDIR)/
 
 $(LIBFZ): setup
-	cd vendor/fortran-zlib/ && make CFLAGS="-fPIC $(CFLAGS)" FFLAGS="-fPIC $(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
+	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
 	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
 
 # ******************************************************************************
@@ -355,88 +355,88 @@ $(LIBFZ): setup
 # ******************************************************************************
 
 $(OBJ): $(SRC)
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_version.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_kind.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_string.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_type.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_format.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_ansi.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_env.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_util.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_time.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_timer.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_base64.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_path.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_file.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_hash.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_hash_table.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_unit.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_id.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_uuid.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_arg.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_signal.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_system.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_pipe.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_tty.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sem.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mutex.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_dp.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_fifo.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_node.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sensor.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_target.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_response.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_request.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_observ.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_log.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_job.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_plot.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sync.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_logger.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_person.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mail.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_http.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mime.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_api.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rpc.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqtt.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_cgi.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_fcgi.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_block.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_csv.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_json.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_jsonl.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_html.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_atom.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_cgi_router.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_la.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_transform.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_error.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_type.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
-	$(FC) -fPIC $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_version.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_kind.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_string.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_type.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_format.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ansi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_env.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_util.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_time.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_timer.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_base64.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_path.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_file.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_hash.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_hash_table.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_unit.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_id.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_uuid.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_arg.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_signal.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_system.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_pipe.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_tty.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sem.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mutex.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_dp.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_fifo.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_node.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sensor.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_target.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_response.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_request.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_observ.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_log.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_job.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_plot.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sync.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_logger.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_person.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mail.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_http.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mime.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_api.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rpc.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqtt.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_cgi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_fcgi.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_block.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_csv.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_json.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_jsonl.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_html.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_atom.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_cgi_router.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_la.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_transform.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_error.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_type.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
 $(TARGET): $(LIBF) $(OBJ)
@@ -451,7 +451,7 @@ $(TARGET): $(LIBF) $(OBJ)
 
 # Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
-	$(FC) -fPIC -shared $(FFLAGS) $(LDFLAGS) -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
 
 # ******************************************************************************
 #

@@ -17,7 +17,7 @@ program dmrecv
     !! Another process has to send observations to message queue "/dmrecv".
     !! Only responses of name "tz0" will be converted to ASCII block format and
     !! printed to standard output.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmrecv'
@@ -73,7 +73,7 @@ program dmrecv
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open mqueue /' // app%name, error=rc)
+            call dm_log_error('failed to open mqueue /' // app%name, error=rc)
             exit init_block
         end if
 
@@ -246,23 +246,23 @@ contains
 
         file_unit = stdout
 
-        call dm_log(LOG_INFO, 'started ' // app%name)
+        call dm_log_info('started ' // app%name)
 
         ipc_loop: do
             ! Read observation or log from POSIX message queue (blocking).
             if (app%type == TYPE_OBSERV) then
                 ! Observation.
-                call dm_log(LOG_DEBUG, 'waiting for observ on mqueue /' // app%name)
+                call dm_log_debug('waiting for observ on mqueue /' // app%name)
                 rc = dm_mqueue_read(mqueue, observ)
             else if (app%type == TYPE_LOG) then
                 ! Log.
-                call dm_log(LOG_DEBUG, 'waiting for log on mqueue /' // app%name)
+                call dm_log_debug('waiting for log on mqueue /' // app%name)
                 rc = dm_mqueue_read(mqueue, log)
             end if
 
             ! Handle message queue error.
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
+                call dm_log_error('failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
@@ -271,19 +271,19 @@ contains
             if (app%type == TYPE_OBSERV) then
                 ! Observation.
                 if (.not. dm_observ_valid(observ)) then
-                    call dm_log(LOG_ERROR, 'invalid observ received', error=E_INVALID)
+                    call dm_log_error('invalid observ received', error=E_INVALID)
                     cycle ipc_loop
                 end if
 
-                call dm_log(LOG_DEBUG, 'received observ ' // trim(observ%id))
+                call dm_log_debug('received observ ' // trim(observ%id))
             else if (app%type == TYPE_LOG) then
                 ! Log.
                 if (.not. dm_log_valid(log)) then
-                    call dm_log(LOG_ERROR, 'invalid log received', error=E_INVALID)
+                    call dm_log_error('invalid log received', error=E_INVALID)
                     cycle ipc_loop
                 end if
 
-                call dm_log(LOG_DEBUG, 'received log ' // trim(log%id))
+                call dm_log_debug('received log ' // trim(log%id))
             end if
 
             ! Open output file.
@@ -299,7 +299,7 @@ contains
                 end if
 
                 if (stat /= 0) then
-                    call dm_log(LOG_ERROR, 'failed to open file ' // app%output, error=E_IO)
+                    call dm_log_error('failed to open file ' // app%output, error=E_IO)
                     exit ipc_loop
                 end if
             end if
@@ -316,7 +316,7 @@ contains
                                          y = observ%requests(i)%responses(j)%value)
                             rc = dm_block_write(dp, unit=file_unit)
                         else
-                            call dm_log(LOG_DEBUG, 'no response of name ' // app%response, error=E_NOT_FOUND)
+                            call dm_log_debug('no response of name ' // app%response, error=E_NOT_FOUND)
                         end if
                     case (FORMAT_CSV)
                         ! CSV format.
@@ -358,10 +358,10 @@ contains
             if (dm_is_error(rc)) then
                 if (app%type == TYPE_OBSERV) then
                     ! Observation.
-                    call dm_log(LOG_ERROR, 'failed to write observ ' // observ%id, error=rc)
+                    call dm_log_error('failed to write observ ' // observ%id, error=rc)
                 else if (app%type == TYPE_LOG) then
                     ! Log.
-                    call dm_log(LOG_ERROR, 'failed to write log ' // log%id, error=rc)
+                    call dm_log_error('failed to write log ' // log%id, error=rc)
                 end if
             end if
 
@@ -369,10 +369,10 @@ contains
             if (app%file) then
                 if (app%type == TYPE_OBSERV) then
                     ! Observation.
-                    call dm_log(LOG_DEBUG, 'observ ' // trim(observ%id) // ' written to ' // app%output)
+                    call dm_log_debug('observ ' // trim(observ%id) // ' written to ' // app%output)
                 else if (app%type == TYPE_LOG) then
                     ! Log.
-                    call dm_log(LOG_DEBUG, 'log ' // trim(log%id) // ' written to ' // app%output)
+                    call dm_log_debug('log ' // trim(log%id) // ' written to ' // app%output)
                 end if
 
                 close (file_unit)
@@ -391,7 +391,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_log_info('exit on signal ' // dm_itoa(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_handler

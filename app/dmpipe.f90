@@ -7,7 +7,7 @@ program dmpipe
     !! applications. Runs a process through an anonymous pipe and forwards
     !! the parsed result as observation to the next specified process via POSIX
     !! message queue.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmpipe'
@@ -79,7 +79,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to output observ', error=rc)
+                    call dm_log_error('failed to output observ', error=rc)
                     return
                 end if
 
@@ -90,15 +90,14 @@ contains
                       newunit=fu, position='append', status='unknown')
 
                 if (stat /= 0) then
-                    call dm_log(LOG_ERROR, 'failed to open file ' // app%output, error=rc)
+                    call dm_log_error('failed to open file ' // app%output, error=rc)
                     return
                 end if
 
                 rc = write_observ(observ, unit=fu, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to write observ to file ' // &
-                                app%output, error=rc)
+                    call dm_log_error('failed to write observ to file ' // app%output, error=rc)
                 end if
 
                 close (fu)
@@ -250,24 +249,24 @@ contains
 
         debug = (app%debug .or. app%verbose)
 
-        call dm_log(LOG_INFO, 'started ' // app%name)
+        call dm_log_info('started ' // app%name)
 
         ! Run until no jobs are left.
         job_loop: do
             njobs = dm_job_list_count(app%jobs)
 
             if (njobs == 0) then
-                if (debug) call dm_log(LOG_DEBUG, 'no jobs left')
+                if (debug) call dm_log_debug('no jobs left')
                 exit job_loop
             end if
 
-            if (debug) call dm_log(LOG_DEBUG, dm_itoa(njobs) // ' job(s) left in job queue')
+            if (debug) call dm_log_debug(dm_itoa(njobs) // ' job(s) left in job queue')
 
             ! Get next job as deep copy.
             rc = dm_job_list_next(app%jobs, job)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to fetch next job', error=rc)
+                call dm_log_error('failed to fetch next job', error=rc)
                 cycle job_loop
             end if
 
@@ -275,7 +274,7 @@ contains
                 ! Get pointer to job observation.
                 observ => job%observ
 
-                if (debug) call dm_log(LOG_DEBUG, 'starting observ ' // observ%name, observ=observ)
+                if (debug) call dm_log_debug('starting observ ' // observ%name, observ=observ)
 
                 ! Initialise observation.
                 observ%id        = dm_uuid4()
@@ -285,7 +284,7 @@ contains
                 observ%timestamp = dm_time_now()
 
                 if (observ%nrequests == 0) then
-                    if (debug) call dm_log(LOG_DEBUG, 'no requests in observ ' // observ%name, observ=observ)
+                    if (debug) call dm_log_debug('no requests in observ ' // observ%name, observ=observ)
                     exit observ_if
                 end if
 
@@ -302,8 +301,8 @@ contains
 
                     if (dm_is_error(rc)) then
                         call dm_pipe_close(pipe)
-                        call dm_log(LOG_ERROR, 'failed to open pipe to ' // request%request, &
-                                    observ=observ, error=rc)
+                        call dm_log_error('failed to open pipe to ' // request%request, &
+                                          observ=observ, error=rc)
                         cycle req_loop
                     end if
 
@@ -318,8 +317,8 @@ contains
                         rc = dm_regex_request(request)
 
                         if (dm_is_error(rc)) then
-                            call dm_log(LOG_WARNING, 'response to request ' // dm_itoa(i) // ' does not match pattern', &
-                                        observ=observ, error=rc)
+                            call dm_log_warning('response to request ' // dm_itoa(i) // ' does not match pattern', &
+                                                observ=observ, error=rc)
                             cycle read_loop
                         end if
 
@@ -327,8 +326,8 @@ contains
                         do j = 1, request%nresponses
                             response => request%responses(j)
                             if (dm_is_ok(response%error)) cycle
-                            call dm_log(LOG_WARNING, 'failed to read response ' // response%name, &
-                                        observ=observ, error=response%error)
+                            call dm_log_warning('failed to read response ' // response%name, &
+                                                observ=observ, error=response%error)
                         end do
 
                         exit read_loop
@@ -340,26 +339,26 @@ contains
                     request%error    = rc
 
                     if (dm_is_error(rc)) then
-                        call dm_log(LOG_ERROR, 'failed to read from process ' // request%request, &
-                                    observ=observ, error=rc)
+                        call dm_log_error('failed to read from process ' // request%request, &
+                                          observ=observ, error=rc)
                         cycle req_loop
                     end if
 
-                    call dm_log(LOG_DEBUG, 'finished request ' // dm_itoa(i) // ' of ' // &
-                                dm_itoa(observ%nrequests), observ=observ)
+                    call dm_log_debug('finished request ' // dm_itoa(i) // ' of ' // &
+                                      dm_itoa(observ%nrequests), observ=observ)
 
                     ! Wait the set delay time of the request.
                     delay = max(0, request%delay)
                     if (delay <= 0) cycle req_loop
                     if (debug) then
-                        call dm_log(LOG_DEBUG, 'next request of observ ' // trim(observ%name) // &
-                                    ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                        call dm_log_debug('next request of observ ' // trim(observ%name) // &
+                                          ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
                     end if
                     call dm_usleep(delay * 1000)
                 end do req_loop
 
                 ! Forward observation.
-                if (debug) call dm_log(LOG_DEBUG, 'finished observ ' // observ%name, observ=observ)
+                if (debug) call dm_log_debug('finished observ ' // observ%name, observ=observ)
                 rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
@@ -369,7 +368,7 @@ contains
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
-            if (debug) call dm_log(LOG_DEBUG, 'next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+            if (debug) call dm_log_debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             call dm_usleep(delay * 1000)
         end do job_loop
     end subroutine run
@@ -381,7 +380,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_log_info('exit on signal ' // dm_itoa(signum))
                 call dm_stop(0)
         end select
     end subroutine signal_handler

@@ -4,12 +4,12 @@
 -- The option `minlevel` may be set to one of the following
 -- named constants:
 --
---      LOG_NONE     - 0
---      LOG_DEBUG    - 1
---      LOG_INFO     - 2
---      LOG_WARNING  - 3
---      LOG_ERROR    - 4
---      LOG_CRITICAL - 5
+--      LVL_NONE     - 0
+--      LVL_DEBUG    - 1
+--      LVL_INFO     - 2
+--      LVL_WARNING  - 3
+--      LVL_ERROR    - 4
+--      LVL_CRITICAL - 5
 --
 -- Rename table "dmlogger" to the instance name (parameter `--name`).
 --
@@ -25,7 +25,7 @@
 dmlogger = {
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
-    minlevel = LOG_INFO,
+    minlevel = LVL_INFO,
     ipc = false,
     verbose = true
 }

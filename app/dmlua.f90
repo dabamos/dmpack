@@ -6,7 +6,7 @@ program dmlua
     !! Lua script spawner that reads an observation from POSIX message queue,
     !! passes it to a configured Lua script, and forwards the returned
     !! observation to the next specified receiver.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmlua'
@@ -54,7 +54,7 @@ program dmlua
         rc = dm_lua_init(lua)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to init Lua interpreter', error=rc)
+            call dm_log_error('failed to init Lua interpreter', error=rc)
             exit init_block
         end if
 
@@ -62,7 +62,7 @@ program dmlua
         rc = dm_lua_api_register(lua, add_errors=.true., add_levels=.true., add_procedures=.true.)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to register Lua API', error=rc)
+            call dm_log_error('failed to register Lua API', error=rc)
             exit init_block
         end if
 
@@ -70,7 +70,7 @@ program dmlua
         rc = dm_lua_open(lua, app%script, eval=.true.)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to load Lua script', error=rc)
+            call dm_log_error('failed to load Lua script', error=rc)
             exit init_block
         end if
 
@@ -81,8 +81,8 @@ program dmlua
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(app%name) // ': ' // &
-                        dm_system_error_message(), error=rc)
+            call dm_log_error('failed to open mqueue /' // trim(app%name) // ': ' // &
+                              dm_system_error_message(), error=rc)
             exit init_block
         end if
 
@@ -220,27 +220,27 @@ contains
         integer           :: rc
         type(observ_type) :: observ_in, observ_out
 
-        call dm_log(LOG_INFO, 'started ' // app%name)
+        call dm_log_info('started ' // app%name)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
+                call dm_log_error('failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
             ! Validate observation.
             if (.not. dm_observ_valid(observ_in)) then
-                call dm_log(LOG_ERROR, 'invalid observ ' // trim(observ_in%name), &
-                            observ=observ_in, error=E_INVALID)
+                call dm_log_error('invalid observ ' // trim(observ_in%name), &
+                                  observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call dm_log(LOG_DEBUG, 'passing observ ' // trim(observ_in%name) // &
-                        ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
+            call dm_log_debug('passing observ ' // trim(observ_in%name) // &
+                              ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
 
             ! Pass the observation to the Lua function in read the returned
             ! observation.
@@ -249,13 +249,13 @@ contains
                 rc = dm_lua_read(lua, trim(app%proc))
 
                 if (dm_is_error(rc)) then
-                    call dm_log(LOG_ERROR, 'failed to load Lua function ' // trim(app%proc) // '()', error=rc)
+                    call dm_log_error('failed to load Lua function ' // trim(app%proc) // '()', error=rc)
                     exit lua_block
                 end if
 
                 if (.not. dm_lua_is_function(lua)) then
                     rc = E_INVALID
-                    call dm_log(LOG_ERROR, 'invalid Lua function ' // trim(app%proc) // '()', error=rc)
+                    call dm_log_error('invalid Lua function ' // trim(app%proc) // '()', error=rc)
                     exit lua_block
                 end if
 
@@ -265,8 +265,8 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call dm_log(LOG_ERROR, 'failed to execute Lua function ' // trim(app%proc) // '()', &
-                                observ=observ_in, error=rc)
+                    call dm_log_error('failed to execute Lua function ' // trim(app%proc) // '()', &
+                                      observ=observ_in, error=rc)
                     exit lua_block
                 end if
 
@@ -275,16 +275,16 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call dm_log(LOG_ERROR, 'failed to read observ from Lua stack', &
-                                error=rc, observ=observ_in)
+                    call dm_log_error('failed to read observ from Lua stack', &
+                                      error=rc, observ=observ_in)
                     exit lua_block
                 end if
 
                 ! Validate returned observation.
                 if (.not. dm_observ_valid(observ_out)) then
                     rc = E_INVALID
-                    call dm_log(LOG_ERROR, 'invalid observ returned from Lua function ' // &
-                                trim(app%proc) // '()', error=rc, observ=observ_in)
+                    call dm_log_error('invalid observ returned from Lua function ' // &
+                                      trim(app%proc) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
@@ -293,7 +293,7 @@ contains
             if (dm_is_error(rc)) then
                 observ_out = observ_in
             else
-                call dm_log(LOG_DEBUG, 'finished observ ' // observ_out%name, observ=observ_out)
+                call dm_log_debug('finished observ ' // observ_out%name, observ=observ_out)
             end if
 
             rc = dm_mqueue_forward(observ_out, app%name, APP_MQ_BLOCKING)
@@ -307,7 +307,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_log_info('exit on signal ' // dm_itoa(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_handler

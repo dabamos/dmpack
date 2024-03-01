@@ -12,19 +12,22 @@ program dmtestlogger
     type(test_type) :: tests(NTESTS)
 
     call dm_init()
-    tests(1) = test_type('dmtestlogger.test01', test01)
+    tests = [ test_type('dmtestlogger.test01', test01) ]
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=*), parameter   :: JSON = &
-            '{ "id": "f5ec2dd3870a47b5be3ae397552706fe", "level": 4, "error": 1, "timestamp": ' // &
+        character(len=*), parameter :: JSON = &
+            '{ "id": "f5ec2dd3870a47b5be3ae397552706fe", "level": 4, "error": 2, "timestamp": ' // &
             '"1970-01-01T00:00:00.000000+00:00", "node_id": "test-node", "sensor_id": "test-sensor", ' // &
-            '"target_id": "test-target", "observ_id": "6b0ca75ae594425a8d38adfd709b11cd", "message": "test" }'
-        character(len=*), parameter   :: LOGGER_NAME  = 'dmlogger'
-        character(len=*), parameter   :: TEST_MESSAGE = 'test'
+            '"target_id": "test-target", "observ_id": "6b0ca75ae594425a8d38adfd709b11cd", ' // &
+            '"message": "test message" }'
+        character(len=*), parameter :: LOGGER_NAME  = 'dmlogger'
+        character(len=*), parameter :: TEST_MESSAGE = 'test message'
+        integer,          parameter :: TEST_ERROR   = E_DUMMY
+        integer,          parameter :: TEST_LEVEL   = LVL_INFO
 
         character(len=:), allocatable :: buffer
-        type(log_type)                :: log1, log2
+        type(log_type)                :: log1, log2, log3
         type(log_type)                :: logs(1)
         type(mqueue_type)             :: mqueue
         type(observ_type)             :: observ
@@ -39,32 +42,41 @@ contains
         observ%target_id = 'test-target'
 
         log1%id        = 'f5ec2dd3870a47b5be3ae397552706fe'
-        log1%level     = LOG_ERROR
+        log1%level     = LVL_ERROR
         log1%message   = TEST_MESSAGE
         log1%node_id   = observ%node_id
         log1%sensor_id = observ%sensor_id
         log1%target_id = observ%target_id
         log1%observ_id = observ%id
         log1%timestamp = TIME_DEFAULT
-        log1%error     = E_ERROR
+        log1%error     = TEST_ERROR
 
         print *, 'Initialising logger ...'
-        call dm_logger_init(ipc=.true., no_color=dm_env_has('NO_COLOR'))
-
-        print *, 'Creating log message ...'
-        call dm_logger_log(log1)
+        call dm_logger_init(debug=.true., ipc=.true., no_color=.true.)
 
         print *, 'Opening log message queue ...'
         if (dm_mqueue_open(mqueue, TYPE_LOG, LOGGER_NAME, MQUEUE_RDONLY) /= E_NONE) return
 
+        print *, 'Creating log message ...'
+        call dm_logger_log(log1)
+
         print *, 'Reading from log message queue ...'
         if (dm_mqueue_read(mqueue, log2) /= E_NONE) return
 
-        print *, 'Printing log message ...'
-        call dm_logger_out(log2)
+        print *, 'Creating log message ...'
+        call dm_log_info(TEST_MESSAGE, error=TEST_ERROR, observ=observ)
+
+        print *, 'Reading from log message queue ...'
+        if (dm_mqueue_read(mqueue, log3) /= E_NONE) return
 
         print *, 'Closing log message queue ...'
         if (dm_mqueue_close(mqueue) /= E_NONE) return
+
+        print *, 'Unlinking log message queue ...'
+        if (dm_mqueue_unlink(mqueue) /= E_NONE) return
+
+        print *, 'Printing log message ...'
+        call dm_logger_out(log2)
 
         print *, 'Validating log message ...'
         if (.not. dm_log_valid(log2)) return
@@ -77,6 +89,15 @@ contains
         print *, 'Printing log array ...'
         logs(1) = log2
         print *, dm_json_from(logs)
+
+        print *, 'Printing log message ...'
+        call dm_logger_out(log3)
+
+        print *, 'Validating log message ...'
+        if (.not. dm_log_valid(log3)) return
+        if (log3%level /= TEST_LEVEL) return
+        if (log3%message /= TEST_MESSAGE) return
+        if (log3%error /= TEST_ERROR) return
 
         stat = TEST_PASSED
     end function test01

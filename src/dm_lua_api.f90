@@ -36,12 +36,12 @@ contains
         !! The following log level parameters are injected if `add_levels` is
         !! not `.false.`:
         !!
-        !! * `LOG_NONE`
-        !! * `LOG_DEBUG`
-        !! * `LOG_INFO`
-        !! * `LOG_WARNING`
-        !! * `LOG_ERROR`
-        !! * `LOG_CRITICAL`
+        !! * `LVL_NONE`
+        !! * `LVL_DEBUG`
+        !! * `LVL_INFO`
+        !! * `LVL_WARNING`
+        !! * `LVL_ERROR`
+        !! * `LVL_CRITICAL`
         !!
         !! The following Lua procedures are registered if `add_procedures` is
         !! not `.false.`:
@@ -179,12 +179,12 @@ contains
 
         ! Add log levels.
         if (add_levels_) then
-            rc = dm_lua_eval(lua, 'LOG_NONE = '     // dm_itoa(LOG_NONE));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LOG_DEBUG = '    // dm_itoa(LOG_DEBUG));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LOG_INFO = '     // dm_itoa(LOG_INFO));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LOG_WARNING = '  // dm_itoa(LOG_WARNING));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LOG_ERROR = '    // dm_itoa(LOG_ERROR));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LOG_CRITICAL = ' // dm_itoa(LOG_CRITICAL)); if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_NONE = '     // dm_itoa(LVL_NONE));     if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_DEBUG = '    // dm_itoa(LVL_DEBUG));    if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_INFO = '     // dm_itoa(LVL_INFO));     if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_WARNING = '  // dm_itoa(LVL_WARNING));  if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_ERROR = '    // dm_itoa(LVL_ERROR));    if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'LVL_CRITICAL = ' // dm_itoa(LVL_CRITICAL)); if (dm_is_error(rc)) return
         end if
 
         ! Register response type parameters.

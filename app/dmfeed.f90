@@ -17,16 +17,16 @@ program dmfeed
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name     = APP_NAME     !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN) :: config   = ' '          !! Path to config file.
-        character(len=FILE_PATH_LEN) :: database = ' '          !! Path to log database.
-        character(len=FILE_PATH_LEN) :: output   = ' '          !! Output path of Atom file (stdout if empty).
-        character(len=NODE_ID_LEN)   :: node     = ' '          !! Optional node id.
-        integer                      :: minlevel = LOG_DEBUG    !! Minimum log level
-        integer                      :: maxlevel = LOG_CRITICAL !! Maximum log level.
-        integer                      :: nentries = 50           !! Max. number of entries in feed.
-        logical                      :: force    = .false.      !! Force writing of output file.
-        type(atom_type)              :: atom                    !! Atom type.
+        character(len=ID_LEN)        :: name      = APP_NAME     !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN) :: config    = ' '          !! Path to config file.
+        character(len=FILE_PATH_LEN) :: database  = ' '          !! Path to log database.
+        character(len=FILE_PATH_LEN) :: output    = ' '          !! Output path of Atom file (stdout if empty).
+        character(len=NODE_ID_LEN)   :: node      = ' '          !! Optional node id.
+        integer                      :: min_level = LVL_DEBUG    !! Minimum log level
+        integer                      :: max_level = LVL_CRITICAL !! Maximum log level.
+        integer                      :: nentries  = 50           !! Max. number of entries in feed.
+        logical                      :: force     = .false.      !! Force writing of output file.
+        type(atom_type)              :: atom                     !! Atom type.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -111,8 +111,8 @@ contains
         rc = dm_arg_get(args( 3), app%database)
         rc = dm_arg_get(args( 4), app%output)
         rc = dm_arg_get(args( 5), app%node)
-        rc = dm_arg_get(args( 6), app%minlevel)
-        rc = dm_arg_get(args( 7), app%maxlevel)
+        rc = dm_arg_get(args( 6), app%min_level)
+        rc = dm_arg_get(args( 7), app%max_level)
         rc = dm_arg_get(args( 8), app%nentries)
         rc = dm_arg_get(args( 9), app%force)
         rc = dm_arg_get(args(10), app%atom%author)
@@ -141,17 +141,17 @@ contains
             return
         end if
 
-        if (app%minlevel < LOG_DEBUG .or. app%minlevel > LOG_CRITICAL) then
+        if (.not. dm_log_valid(app%min_level)) then
             call dm_error_out(rc, 'invalid minimum log level')
             return
         end if
 
-        if (app%maxlevel < LOG_DEBUG .or. app%maxlevel > LOG_CRITICAL) then
+        if (.not. dm_log_valid(app%max_level)) then
             call dm_error_out(rc, 'invalid maximum log level')
             return
         end if
 
-        if (app%maxlevel < app%minlevel) then
+        if (app%max_level < app%min_level) then
             call dm_error_out(rc, 'maximum level must be greater than minimum level')
             return
         end if
@@ -178,8 +178,8 @@ contains
             rc = dm_config_get(config, 'database', app%database)
             rc = dm_config_get(config, 'output',   app%output)
             rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'minlevel', app%minlevel)
-            rc = dm_config_get(config, 'maxlevel', app%maxlevel)
+            rc = dm_config_get(config, 'minlevel', app%min_level)
+            rc = dm_config_get(config, 'maxlevel', app%max_level)
             rc = dm_config_get(config, 'nentries', app%nentries)
             rc = dm_config_get(config, 'force',    app%force)
             rc = dm_config_get(config, 'author',   app%atom%author)
@@ -222,15 +222,15 @@ contains
                 rc = dm_db_select(db        = db, &
                                   logs      = logs, &
                                   node_id   = app%node, &
-                                  min_level = app%minlevel, &
-                                  max_level = app%maxlevel, &
+                                  min_level = app%min_level, &
+                                  max_level = app%max_level, &
                                   desc      = .true., &
                                   limit     = int(app%nentries, kind=i8))
             else
                 rc = dm_db_select(db        = db, &
                                   logs      = logs, &
-                                  min_level = app%minlevel, &
-                                  max_level = app%maxlevel, &
+                                  min_level = app%min_level, &
+                                  max_level = app%max_level, &
                                   desc      = .true., &
                                   limit     = int(app%nentries, kind=i8))
             end if

@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmlog
     !! Logging utility that sends log messages to a dmlogger instance.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmlog'
@@ -36,7 +36,7 @@ program dmlog
     log%id = dm_uuid4()
     log%timestamp = dm_time_now()
 
-    call dm_log(log)
+    call dm_logger_log(log)
 contains
     integer function read_args(app, log) result(rc)
         !! Reads command-line arguments.
@@ -66,7 +66,7 @@ contains
 
         rc = dm_arg_get(args( 1), app%logger)
         rc = dm_arg_get(args( 2), app%verbose)
-        rc = dm_arg_get(args( 3), log%level, LOG_INFO)
+        rc = dm_arg_get(args( 3), log%level, LVL_INFO)
         rc = dm_arg_get(args( 4), log%error)
         rc = dm_arg_get(args( 5), log%node_id)
         rc = dm_arg_get(args( 6), log%sensor_id)

@@ -361,28 +361,28 @@ example, `1970-01-01T00:00:00.000000+00:00`.
 
 === Observation Entities
 
-Node:: A unique sensor node within a sensor network. Contains id, name,
+<<data-node,Node>>:: A unique sensor node within a sensor network. Contains id,
+name, description, and optional position.
+<<data-sensor,Sensor>>:: A unique sensor attached to a _node_, with id, name,
 description, and optional position.
-Sensor:: A unique sensor attached to a _node_, with id, name, description, and
-optional position.
-Target:: A unique measurement target (point of interest, location) with id,
-name, description, and optional position. Multiple nodes and sensors may share a
-single target.
-Observation:: A single measurement identified by name and unique UUID4 that
-contains requests to and responses from a sensor, referencing a _node_, a
-_sensor_, and a _target_. An observation can contain up to 8 requests which will
-be sent to the sensor in sequential order.
-Request:: Command to send to the sensor, referencing an _observation_ and
-ordered by index. A request can contain up to 16 _responses_.
-Response:: Floating-point values in the raw response of a _sensor_ can be
-matched by regular expression groups. Each matched group is stored as a
-response. Responses reference a _request_, and are ordered by index. They
-contain name, type, value, unit, and an optional error code.
+<<data-target,Target>>:: A unique measurement target (point of interest,
+location) with id, name, description, and optional position. Multiple nodes and
+sensors may share a single target.
+<<data-observ,Observation>>:: A single measurement identified by name and unique
+UUID4 that contains requests to and responses from a sensor, referencing a
+_node_, a _sensor_, and a _target_. An observation can contain up to 8 requests
+which will be sent to the sensor in sequential order.
+<<data-request,Request>>:: Command to send to the sensor, referencing an
+_observation_ and ordered by index. A request can contain up to 16 _responses_.
+<<data-response,Response>>:: Floating-point values in the raw response of a
+_sensor_ can be matched by regular expression groups. Each matched group is
+stored as a response. Responses reference a _request_, and are ordered by index.
+They contain name, type, value, unit, and an optional error code.
 
 === Log Entities
 
-Log:: Log message of a sensor node, either of level `DEBUG`, `INFO`, `WARNING`,
-`ERROR`, or `CRITICAL`, and optionally related to a _sensor_, a _target_, and an
+Log:: Log message of a sensor node, either of level _debug_, _info_, _warning_,
+_error_, or _critical_, and optionally related to a _sensor_, a _target_, and an
 _observation_.
 
 === Beat Entities
@@ -602,7 +602,7 @@ for testing.
 
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--count _n_`          | `-C`  | 0        | Maximum number of heartbeats to send (unlimited if `0`).
-| `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`              | `-D`  | off      | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
 | `--interval _seconds_` | `-I`  | 0        | Emit interval in seconds.
@@ -645,7 +645,7 @@ equals the *dmdb* name. Only a single process may wait for the semaphore.
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database.
-| `--debug`           | `-D`  | off     | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 
 | `--ipc`
@@ -914,7 +914,7 @@ present in the database.
 | Option              | Short | Default | Description
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
-| `--debug`           | `-D`  | off     | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1185,11 +1185,11 @@ The following log levels are accepted:
 |===
 | Level | Name
 
-| 1     | `DEBUG`
-| 2     | `INFO`
-| 3     | `WARNING`
-| 4     | `ERROR`
-| 5     | `CRITICAL`
+| 1     | debug
+| 2     | info`
+| 3     | warning
+| 4     | error
+| 5     | critical
 |===
 
 ==== Command-Line Options
@@ -1256,11 +1256,11 @@ The following log levels are accepted:
 |===
 | Level | Name
 
-| 1     | `DEBUG`
-| 2     | `INFO`
-| 3     | `WARNING`
-| 4     | `ERROR`
-| 5     | `CRITICAL`
+| 1     | debug
+| 2     | info
+| 3     | warning
+| 4     | error
+| 5     | critical
 |===
 
 ==== Command-Line Options
@@ -1338,7 +1338,7 @@ the observation will be discarded.
 | Option               | Short | Default  | Description
 
 | `--config _file_`    | `-c`  | –         | Path to configuration file (optional).
-| `--debug`            | `-D`  | off       | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`            | `-D`  | off       | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--help`             | `-h`  | –         | Output available command-line arguments and quit.
 | `--logger _name_`    | `-l`  | –         | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`      | `-n`  | `dmlua`   | Name of instance and table in given configuration file.
@@ -1408,7 +1408,7 @@ database for the observation to be stored.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
-| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off      | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1585,8 +1585,8 @@ Output the plot directly to terminal, with the configuration loaded from file:
 $ dmplot --name dmplot -node --config dmplot.conf --terminal sixelgd
 ....
 
-The `sixelgd` format requires a terminal emulator with Sixel support (such as
-_xterm(1)_ or _mlterm(1)_).
+The `sixelgd` format requires a terminal emulator with Sixel support, such as
+_xterm(1)_ or _mlterm(1)_.
 
 .Plotting time series directly in XTerm
 [#img-dmplot]
@@ -1640,7 +1640,7 @@ configuration file. The arguments overwrite settings from file.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
-| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off      | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>> (`block`, `csv`, `jsonl`, `nml`).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Output available command-line arguments and quit.
@@ -1770,8 +1770,8 @@ dmreport = {
   logs = {
     disabled = false,            -- Disable logs.
     database = "log.sqlite",     -- Path to log database.
-    minlevel = LOG_WARNING,      -- Minimum log level (default: LOG_WARNING).
-    maxlevel = LOG_CRITICAL,     -- Maximum log level (default: LOG_CRITICAL).
+    minlevel = LVL_WARNING,      -- Minimum log level (default: LVL_WARNING).
+    maxlevel = LVL_CRITICAL,     -- Maximum log level (default: LVL_CRITICAL).
     title = "Logs",              -- Overwrite default heading.
     meta = "",                   -- Optional description.
   }
@@ -1832,7 +1832,7 @@ configuration file. The arguments overwrite settings from file.
 | Option              | Short | Default  | Description
 
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
-| `--debug`           | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off      | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--format _format_` | `-f`  | –        | Input format: `csv` or `nml`.
 | `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
@@ -1895,7 +1895,7 @@ The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 | `--baudrate _n_`    | `-B`  | 9600       | Number of symbols transmitted per second (4800, 9600, 115200, …).
 | `--bytesize _n_`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).
 | `--config _file_`   | `-c`  | –          | Path to configuration file (required).
-| `--debug`           | `-D`  | off        | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`           | `-D`  | off        | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--dtr`             | `-Q`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –          | Output available command-line arguments and quit.
@@ -1964,7 +1964,7 @@ for testing.
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--create`             | `-C`  | off      | Create database synchronisation tables if they do not exist.
 | `--database _file_`    | `-d`  | –        | Path to log or observation database, depending on `--type`.
-| `--debug`              | `-D`  | off      | Forward log messages of level `DEBUG` via IPC (if logger is set).
+| `--debug`              | `-D`  | off      | Forward log messages of level _debug_ via IPC (if logger is set).
 | `--help`               | `-h`  | –        | Output available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC host (for instance, `127.0.0.1` or `iot.example.com`).
 | `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds. If `0`, synchronisation is executed only once.
@@ -2912,10 +2912,10 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Status | Description
 
-| `200`  | Heartbeat is returned.
+| `200`  | Beat is returned.
 | `400`  | Invalid request.
 | `401`  | Unauthorised.
-| `404`  | Heartbeat not found.
+| `404`  | Beat not found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
@@ -2925,7 +2925,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Status | Description
 
-| `201`  | Heartbeat was accepted.
+| `201`  | Beat was accepted.
 | `400`  | Invalid request or payload.
 | `401`  | Unauthorised.
 | `413`  | Payload too large.
@@ -3571,11 +3571,11 @@ BEAT%UPTIME=0,
 |===
 | Level | Name
 
-| 1     | `DEBUG`
-| 2     | `INFO`
-| 3     | `WARNING`
-| 4     | `ERROR`
-| 5     | `CRITICAL`
+| 1     | debug
+| 2     | info
+| 3     | warning
+| 4     | error
+| 5     | critical
 |===
 
 .Atom XML [[data-log-atom]]
@@ -3775,7 +3775,7 @@ NODE%Z=0.0,
 | `requests`  | array   | 8{nbsp}×{nbsp}1380 | Array of requests (8).
 |===
 
-.Request derived type of an observation
+.Request derived type of an observation [[data-request]]
 [cols="3,2,2,14"]
 |===
 | Attribute    | Type    | Size | Description
@@ -3796,7 +3796,7 @@ NODE%Z=0.0,
 | `responses`  | array   | 16{nbsp}×{nbsp}32 | Extracted values from the raw response (16).
 |===
 
-.Response derived type of a request
+.Response derived type of a request [[data-response]]
 [cols="3,2,2,14"]
 |===
 | Attribute | Type    | Size | Description
@@ -4278,7 +4278,7 @@ Observation Database:: Stores nodes, sensors, targets, observations, observation
 receivers, observation requests, and observation responses, with optional
 synchronisation tables for all record types.
 Log Database:: Stores all log messages in single table.
-Heartbeat Database:: Stores heartbeat messages by unique node id.
+Beat Database:: Stores heartbeat messages by unique node id.
 
 The databases are usually located in directory `/var/dmpack/`.
 
@@ -4309,7 +4309,7 @@ image::log.svg[UML,align="center",scaledwidth=25%]
 [#db-uml-observ]
 image::observ.svg[UML,align="center"]
 
-.Heartbeat database
+.Beat database
 [#db-uml-beat]
 image::beat.svg[UML,align="center",scaledwidth=25%]
 

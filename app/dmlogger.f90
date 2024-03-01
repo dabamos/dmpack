@@ -5,7 +5,7 @@
 program dmlogger
     !! The logger program collects log messages from a POSIX message queue and
     !! stores them in a SQLite database.
-    use :: dmpack, dm_log => dm_logger_log
+    use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmlogger'
@@ -22,7 +22,7 @@ program dmlogger
         character(len=FILE_PATH_LEN) :: config   = ' '         !! Path to configuration file.
         character(len=FILE_PATH_LEN) :: database = ' '         !! Path to SQLite database file.
         character(len=NODE_ID_LEN)   :: node     = ' '         !! Node id.
-        integer                      :: minlevel = LOG_WARNING !! Minimum level for a log to be stored in the database.
+        integer                      :: minlevel = LVL_WARNING !! Minimum level for a log to be stored in the database.
         logical                      :: ipc      = .false.     !! Use POSIX semaphore for process synchronisation.
         logical                      :: verbose  = .false.     !! Print debug messages to stderr.
     end type app_type
@@ -52,7 +52,7 @@ program dmlogger
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open database ' // app%database, error=rc)
+            call dm_log_error('failed to open database ' // app%database, error=rc)
             exit init_block
         end if
 
@@ -63,8 +63,8 @@ program dmlogger
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log(LOG_ERROR, 'failed to open mqueue /' // trim(app%name) // ': ' // &
-                        dm_system_error_message(), error=rc)
+            call dm_log_error('failed to open mqueue /' // trim(app%name) // ': ' // &
+                              dm_system_error_message(), error=rc)
             exit init_block
         end if
 
@@ -73,7 +73,7 @@ program dmlogger
             rc = dm_sem_open(sem, app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to open semaphore /' // app%name, error=rc)
+                call dm_log_error('failed to open semaphore /' // app%name, error=rc)
                 exit init_block
             end if
         end if
@@ -202,15 +202,15 @@ contains
         type(log_type) :: log
 
         steps = 0
-        call dm_log(LOG_INFO, 'started ' // app%name)
-        call dm_log(LOG_DEBUG, 'minimum log level is set to ' // LOG_LEVEL_NAMES(app%minlevel))
+        call dm_log_info('started ' // app%name)
+        call dm_log_debug('minimum log level is set to ' // LOG_LEVEL_NAMES(app%minlevel))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)
 
             if (dm_is_error(rc)) then
-                call dm_log(LOG_ERROR, 'failed to read from mqueue /' // app%name, error=rc)
+                call dm_log_error('failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
@@ -226,7 +226,7 @@ contains
 
             ! Skip if log already exists.
             if (dm_db_exists_log(db, log%id)) then
-                call dm_log(LOG_WARNING, 'log ' // trim(log%id) // ' exists', error=E_EXIST)
+                call dm_log_warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -239,13 +239,13 @@ contains
                     rc = dm_db_error(db)
 
                     if (rc == E_DB_BUSY) then
-                        call dm_log(LOG_WARNING, 'database busy', error=rc)
+                        call dm_log_warning('database busy', error=rc)
                         call dm_db_sleep(APP_DB_TIMEOUT)
                         cycle db_loop
                     end if
 
-                    call dm_log(LOG_ERROR, 'failed to insert log ' // trim(log%id) // ': ' // &
-                                dm_db_error_message(db), error=rc)
+                    call dm_log_error('failed to insert log ' // trim(log%id) // ': ' // &
+                                      dm_db_error_message(db), error=rc)
                     exit db_loop
                 end if
 
@@ -260,9 +260,9 @@ contains
 
             if (steps == 0) then
                 ! Optimise database.
-                call dm_log(LOG_DEBUG, 'optimizing database')
+                call dm_log_debug('optimizing database')
                 rc = dm_db_optimize(db)
-                if (dm_is_error(rc)) call dm_log(LOG_ERROR, 'failed to optimize database', error=rc)
+                if (dm_is_error(rc)) call dm_log_error('failed to optimize database', error=rc)
             end if
 
             ! Increase optimise step counter.
@@ -278,7 +278,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log(LOG_INFO, 'exit on signal ' // dm_itoa(signum))
+                call dm_log_info('exit on signal ' // dm_itoa(signum))
                 call dm_sleep(2)
                 call halt(0)
         end select

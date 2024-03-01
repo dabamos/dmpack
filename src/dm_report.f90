@@ -45,8 +45,8 @@ module dm_report
     type, public :: report_log_type
         !! Section logs of report.
         logical                         :: disabled  = .false.      !! Generate plots.
-        integer                         :: min_level = LOG_WARNING  !! Minimum log level.
-        integer                         :: max_level = LOG_CRITICAL !! Maximum log level.
+        integer                         :: min_level = LVL_WARNING  !! Minimum log level.
+        integer                         :: max_level = LVL_CRITICAL !! Maximum log level.
         character(len=FILE_PATH_LEN)    :: database  = ' '          !! Path to observation database (required).
         character(len=REPORT_META_LEN)  :: meta      = ' '          !! Description text.
         character(len=REPORT_TITLE_LEN) :: title     = 'Logs'       !! Section title.
@@ -100,10 +100,8 @@ contains
         end if
 
         if (.not. report%log%disabled) then
-            if (report%log%min_level < LOG_NONE) return
-            if (report%log%min_level > LOG_CRITICAL) return
-            if (report%log%max_level < LOG_NONE) return
-            if (report%log%max_level > LOG_CRITICAL) return
+            if (.not. dm_log_valid(report%log%min_level)) return
+            if (.not. dm_log_valid(report%log%max_level)) return
             if (report%log%min_level > report%log%max_level) return
             if (len_trim(report%log%database) == 0) return
         end if

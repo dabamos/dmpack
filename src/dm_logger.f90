@@ -30,7 +30,8 @@ module dm_logger
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(0:5) = [ &
-        COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED ]
+        COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED &
+    ]
 
     type, public :: logger_type
         !! Opaque logger type.
@@ -53,9 +54,45 @@ module dm_logger
         procedure :: dm_logger_log_type
     end interface dm_logger_log
 
+    interface dm_log_critical
+        !! Alias for subroutine.
+        module procedure :: dm_logger_log_critical
+    end interface
+
+    interface dm_log_debug
+        !! Alias for subroutine.
+        module procedure :: dm_logger_log_debug
+    end interface
+
+    interface dm_log_error
+        !! Alias for subroutine.
+        module procedure :: dm_logger_log_error
+    end interface
+
+    interface dm_log_info
+        !! Alias for subroutine.
+        module procedure :: dm_logger_log_info
+    end interface
+
+    interface dm_log_warning
+        !! Alias for subroutine.
+        module procedure :: dm_logger_log_warning
+    end interface
+
+    public :: dm_log_debug
+    public :: dm_log_info
+    public :: dm_log_warning
+    public :: dm_log_error
+    public :: dm_log_critical
+
     public :: dm_logger_fail
     public :: dm_logger_init
     public :: dm_logger_log
+    public :: dm_logger_log_critical
+    public :: dm_logger_log_debug
+    public :: dm_logger_log_error
+    public :: dm_logger_log_info
+    public :: dm_logger_log_warning
     public :: dm_logger_out
     public :: dm_logger_send
 
@@ -72,7 +109,7 @@ contains
         type(log_type) :: log
 
         log = log_type(timestamp = dm_time_now(), &
-                       level     = LOG_ERROR, &
+                       level     = LVL_ERROR, &
                        message   = message, &
                        source    = LOGGER%source)
 
@@ -119,10 +156,10 @@ contains
         type(log_type) :: log
 
         ! Ignore debug messages if forwarding and output are both disabled.
-        if (level == LOG_DEBUG .and. .not. LOGGER%debug .and. .not. LOGGER%verbose) return
+        if (level == LVL_DEBUG .and. .not. LOGGER%debug .and. .not. LOGGER%verbose) return
 
-        ! Replace invalid log level with `LOG_ERROR`.
-        log%level = LOG_ERROR
+        ! Replace invalid log level with `LVL_ERROR`.
+        log%level = LVL_ERROR
         if (dm_log_valid(level)) log%level = level
 
         ! Set log data.
@@ -157,6 +194,61 @@ contains
         if (LOGGER%ipc)     call dm_logger_send(log)
     end subroutine dm_logger_log_args
 
+    subroutine dm_logger_log_critical(message, source, observ, timestamp, error)
+        !! Sends a debug log message to the message queue.
+        character(len=*),  intent(in)              :: message   !! Log message.
+        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,           intent(in),    optional :: error     !! Optional error code.
+
+        call dm_logger_log(LVL_CRITICAL, message, source, observ, timestamp, error)
+    end subroutine dm_logger_log_critical
+
+    subroutine dm_logger_log_debug(message, source, observ, timestamp, error)
+        !! Sends a debug log message to the message queue.
+        character(len=*),  intent(in)              :: message   !! Log message.
+        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,           intent(in),    optional :: error     !! Optional error code.
+
+        call dm_logger_log(LVL_DEBUG, message, source, observ, timestamp, error)
+    end subroutine dm_logger_log_debug
+
+    subroutine dm_logger_log_error(message, source, observ, timestamp, error)
+        !! Sends a error log message to the message queue.
+        character(len=*),  intent(in)              :: message   !! Log message.
+        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,           intent(in),    optional :: error     !! Optional error code.
+
+        call dm_logger_log(LVL_ERROR, message, source, observ, timestamp, error)
+    end subroutine dm_logger_log_error
+
+    subroutine dm_logger_log_info(message, source, observ, timestamp, error)
+        !! Sends a info log message to the message queue.
+        character(len=*),  intent(in)              :: message   !! Log message.
+        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,           intent(in),    optional :: error     !! Optional error code.
+
+        call dm_logger_log(LVL_INFO, message, source, observ, timestamp, error)
+    end subroutine dm_logger_log_info
+
+    subroutine dm_logger_log_warning(message, source, observ, timestamp, error)
+        !! Sends a warning log message to the message queue.
+        character(len=*),  intent(in)              :: message   !! Log message.
+        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,           intent(in),    optional :: error     !! Optional error code.
+
+        call dm_logger_log(LVL_WARNING, message, source, observ, timestamp, error)
+    end subroutine dm_logger_log_warning
+
     subroutine dm_logger_log_type(log)
         !! Sends a log data type to the message queue (send & forget). The
         !! passed log is not validated and must have id, node id, and
@@ -178,7 +270,7 @@ contains
 
         integer :: level, unit_
 
-        level = LOG_ERROR
+        level = LVL_ERROR
         if (dm_log_valid(log%level)) level = log%level
 
         unit_ = stderr
@@ -213,7 +305,7 @@ contains
         type(mqueue_type) :: mqueue
 
         if (.not. LOGGER%ipc) return
-        if (.not. LOGGER%debug .and. log%level <= LOG_DEBUG) return
+        if (.not. LOGGER%debug .and. log%level <= LVL_DEBUG) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &

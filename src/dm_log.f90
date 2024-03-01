@@ -15,29 +15,32 @@ module dm_log
     private
 
     ! Log level.
-    integer, parameter, public :: LOG_NONE     = 0 !! Invalid log level, not used by DMPACK.
-    integer, parameter, public :: LOG_DEBUG    = 1 !! For debugging purposes.
-    integer, parameter, public :: LOG_INFO     = 2 !! For information regarding normal system behaviour.
-    integer, parameter, public :: LOG_WARNING  = 3 !! For events requiring the attention of the system operator.
-    integer, parameter, public :: LOG_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
-    integer, parameter, public :: LOG_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
-    integer, parameter, public :: LOG_NLEVEL   = 6 !! Number of log level.
+    integer, parameter, public :: LVL_NONE     = 0 !! Invalid log level, not used by DMPACK.
+    integer, parameter, public :: LVL_DEBUG    = 1 !! For debugging purposes.
+    integer, parameter, public :: LVL_INFO     = 2 !! For information regarding normal system behaviour.
+    integer, parameter, public :: LVL_WARNING  = 3 !! For events requiring the attention of the system operator.
+    integer, parameter, public :: LVL_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
+    integer, parameter, public :: LVL_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
+    integer, parameter, public :: LVL_LAST     = 5 !! Never use this.
 
     ! Log parameters.
+    integer, parameter, public :: LOG_NLEVEL      = 6        !! Number of log level.
     integer, parameter, public :: LOG_ID_LEN      = UUID_LEN !! Max. log id length.
     integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN   !! Max. log source length.
     integer, parameter, public :: LOG_MESSAGE_LEN = 512      !! Max. log message length.
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LOG_NLEVEL - 1) = [ &
-        character(len=8) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' ] !! Log level strings.
+    character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LVL_LAST) = [ &
+        character(len=8) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' &
+    ] !! Log level strings.
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LOG_NLEVEL - 1) = [ &
-        character(len=8) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' ] !! Log level strings in lower-case.
+    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LVL_LAST) = [ &
+        character(len=8) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' &
+    ] !! Log level strings in lower-case.
 
     type, public :: log_type
         !! Log message type.
         character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
-        integer                        :: level     = LOG_WARNING  !! Log level (mandatory).
+        integer                        :: level     = LVL_WARNING  !! Log level (mandatory).
         integer                        :: error     = E_NONE       !! Error code (optional).
         character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
         character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node ID (optional).
@@ -121,13 +124,13 @@ contains
     ! ******************************************************************
     pure elemental logical function dm_log_valid_level(level) result(valid)
         !! Returns `.true.` if given log level is valid, i.e., either
-        !! `LOG_DEBUG`, `LOG_WARNING`, `LOG_ERROR`, or `LOG_CRITICAL`.
+        !! `LVL_DEBUG`, `LVL_WARNING`, `LVL_ERROR`, or `LVL_CRITICAL`.
         !!
-        !! The level `LOG_NONE` is invalid.
+        !! The level `LVL_NONE` is invalid.
         integer, intent(in) :: level !! Log level.
 
         valid = .false.
-        if (level < LOG_DEBUG .or. level > LOG_CRITICAL) return
+        if (level < 0 .or. level > LVL_LAST) return
         valid = .true.
     end function dm_log_valid_level
 

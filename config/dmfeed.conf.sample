@@ -7,12 +7,12 @@
 -- The options `minlevel` and `maxlevel` may be set to one of the following
 -- named constants:
 --
---      LOG_NONE     - 0
---      LOG_DEBUG    - 1
---      LOG_INFO     - 2
---      LOG_WARNING  - 3
---      LOG_ERROR    - 4
---      LOG_CRITICAL - 5
+--      LVL_NONE     - 0
+--      LVL_DEBUG    - 1
+--      LVL_INFO     - 2
+--      LVL_WARNING  - 3
+--      LVL_ERROR    - 4
+--      LVL_CRITICAL - 5
 --
 -- Rename table "dmfeed" to the instance name (parameter `--name`).
 --
@@ -43,8 +43,8 @@ dmfeed = {
     url = "https://example.com/feed.xml",
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
-    minlevel = LOG_WARNING,
-    maxlevel = LOG_CRITICAL,
+    minlevel = LVL_WARNING,
+    maxlevel = LVL_CRITICAL,
     nentries = 100,
     xsl = "feed.xsl",
     output = "/var/www/feed.xml",
