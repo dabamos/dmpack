@@ -105,7 +105,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMBEAT, iostat=stat)
+        write (str, nml=DMBEAT, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_beat
@@ -128,7 +128,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMBEAT, iostat=stat)
+        write (str, nml=DMBEAT, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_beat_alloc
@@ -146,7 +146,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMLOG, iostat=stat)
+        write (str, nml=DMLOG, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_log
@@ -169,7 +169,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMLOG, iostat=stat)
+        write (str, nml=DMLOG, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_log_alloc
@@ -187,7 +187,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMNODE, iostat=stat)
+        write (str, nml=DMNODE, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_node
@@ -210,7 +210,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMNODE, iostat=stat)
+        write (str, nml=DMNODE, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_node_alloc
@@ -228,7 +228,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMOBSERV, iostat=stat)
+        write (str, nml=DMOBSERV, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_observ
@@ -251,7 +251,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMOBSERV, iostat=stat)
+        write (str, nml=DMOBSERV, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_observ_alloc
@@ -269,7 +269,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMSENSOR, iostat=stat)
+        write (str, nml=DMSENSOR, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_sensor
@@ -292,7 +292,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMSENSOR, iostat=stat)
+        write (str, nml=DMSENSOR, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_sensor_alloc
@@ -310,7 +310,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMTARGET, iostat=stat)
+        write (str, nml=DMTARGET, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_target
@@ -333,7 +333,7 @@ contains
 
         rc = E_WRITE
         str = ' '
-        write (str, nml=DMTARGET, iostat=stat)
+        write (str, nml=DMTARGET, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_from_target_alloc
@@ -475,7 +475,7 @@ contains
         rc = E_WRITE
         unit_ = stdout
         if (present(unit)) unit_ = unit
-        write (unit_, nml=DMLOG, iostat=stat)
+        write (unit_, nml=DMLOG, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_write_log
@@ -493,7 +493,7 @@ contains
         rc = E_WRITE
         unit_ = stdout
         if (present(unit)) unit_ = unit
-        write (unit_, nml=DMOBSERV, iostat=stat)
+        write (unit_, nml=DMOBSERV, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function nml_write_observ

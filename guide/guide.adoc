@@ -307,20 +307,27 @@ $ cd dmpack/
 $ make linux
 ....
 
-In case SQLite 3 has been built from source, overwrite the variable `LIBSQLITE3`
-to pass the path of shared library `libsqlite3.so`:
+If the SQLite 3 library has been built from source and installed to
+`/usr/local/lib`, overwrite the variable `LIBSQLITE3` to pass the path of shared
+library `libsqlite3.so`:
 
 ....
 $ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -Wl,-rpath,/usr/local/lib -lsqlite3"
 ....
 
-If the Intel oneAPI compilers are preferred, run instead:
+For Intel oneAPI compilers, run instead:
 
 ....
-$ make CC=icx FC=ifx PPFLAGS= LIBHDF5=/path/to/libhdf5.a
+$ make CC=icx FC=ifx FFLAGS="-mtune=native -O2 -fpic" CFLAGS="-mtune=native -O2 -fpic" \
+  LDFLAGS="-I./include -module ./include -L/usr/lib -L/opt/lib" PPFLAGS= \
+  INCHDF5="-I/opt/include/hdf5/mod/shared" LDLIBS="-Wl,-rpath,/opt/lib"
 ....
 
-Install the library and all programs system-wide to `/usr`:
+In this case, the HDF5 libraries are installed to `/opt/lib`, and the modules
+files to `/opt/include/hdf5/mod/shared`. Change the paths to the actual
+locations.
+
+Install the DMPACK libraries and programs system-wide to `/usr`:
 
 ....
 $ sudo make install_linux

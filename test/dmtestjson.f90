@@ -173,7 +173,7 @@ contains
             '"timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": ' // &
             '"\\r\\n", "pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, ' // &
             '"timeout": 500, "nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, ' // &
-            '"value": 0.990000000000 } ] } ] }'
+            '"value": 1.00000000000 } ] } ] }'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
@@ -239,7 +239,7 @@ contains
                                error     = 1)
 
         print *, 'Adding response ...'
-        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 0.99_r8)
+        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 1.0_r8)
         rc = dm_request_add(request, response)
         if (dm_is_error(rc)) return
 
