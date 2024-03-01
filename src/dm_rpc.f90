@@ -102,7 +102,7 @@ module dm_rpc
         character(len=:), allocatable               :: password                         !! HTTP Basic Auth password.
         character(len=:), allocatable               :: url                              !! Request URL.
         character(len=:), allocatable               :: user_agent                       !! User Agent.
-        procedure(dm_rpc_callback), pointer, nopass :: callback        => dm_rpc_write_callback !! C-interoperable write callback function.
+        procedure(dm_rpc_callback), pointer, nopass :: callback        => null()        !! C-interoperable write callback function.
         type(c_ptr), private                        :: curl_ptr        = c_null_ptr     !! cURL handle.
         type(c_ptr), private                        :: list_ptr        = c_null_ptr     !! cURL list handle.
     end type rpc_request_type
@@ -140,6 +140,7 @@ module dm_rpc
     public :: dm_rpc_url
     public :: dm_rpc_write_callback
 
+    private :: rpc_payload_prepare
     private :: rpc_request
     private :: rpc_request_multi
     private :: rpc_request_prepare
@@ -262,6 +263,8 @@ contains
 
         do i = 1, size(requests)
             ! Set request parameters.
+            requests(i)%callback => dm_rpc_write_callback
+
             if (present(accept)) requests(i)%accept = trim(accept)
             if (present(method)) requests(i)%method = method
             if (present(url))    requests(i)%url    = trim(url)
@@ -293,6 +296,8 @@ contains
         logical,                 intent(in),    optional :: deflate      !! For POST only.
 
         ! Set request parameters.
+        request%callback => dm_rpc_write_callback
+
         if (present(url))     request%url     = trim(url)
         if (present(method))  request%method  = method
         if (present(accept))  request%accept  = trim(accept)
@@ -320,15 +325,7 @@ contains
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
         !! `target_type`. The function returns `E_TYPE` on any other type.
-        use :: dm_beat
-        use :: dm_kind
-        use :: dm_log
         use :: dm_mime
-        use :: dm_nml
-        use :: dm_node
-        use :: dm_observ
-        use :: dm_sensor
-        use :: dm_target
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
@@ -336,13 +333,6 @@ contains
         character(len=*),        intent(in), optional :: username !! HTTP Basic Auth user name.
         character(len=*),        intent(in), optional :: password !! HTTP Basic Auth password.
         logical,                 intent(in), optional :: deflate  !! Deflate compression.
-
-        character(len=NML_BEAT_LEN)   :: payload_beat
-        character(len=NML_LOG_LEN)    :: payload_log
-        character(len=NML_NODE_LEN)   :: payload_node
-        character(len=NML_OBSERV_LEN) :: payload_observ
-        character(len=NML_SENSOR_LEN) :: payload_sensor
-        character(len=NML_TARGET_LEN) :: payload_target
 
         request%accept       = MIME_TEXT
         request%content_type = MIME_NML
@@ -358,55 +348,9 @@ contains
         end if
 
         ! Convert derived type to Namelist representation.
-        if (request%deflate) then
-            select type (t => type)
-                type is (beat_type)
-                    rc = dm_nml_from(t, payload_beat)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_beat, request%payload)
-                type is (log_type)
-                    rc = dm_nml_from(t, payload_log)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_log, request%payload)
-                type is (node_type)
-                    rc = dm_nml_from(t, payload_node)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_node, request%payload)
-                type is (observ_type)
-                    rc = dm_nml_from(t, payload_observ)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_observ, request%payload)
-                type is (sensor_type)
-                    rc = dm_nml_from(t, payload_sensor)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_sensor, request%payload)
-                type is (target_type)
-                    rc = dm_nml_from(t, payload_target)
-                    if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_target, request%payload)
-                class default
-                    rc = E_TYPE
-            end select
-        else
-            select type (t => type)
-                type is (beat_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_beat))
-                type is (log_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_log))
-                type is (node_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_node))
-                type is (observ_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_observ))
-                type is (sensor_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_sensor))
-                type is (target_type)
-                    rc = dm_nml_from(t, request%payload, len(payload_target))
-                class default
-                    rc = E_TYPE
-            end select
-        end if
-
+        rc = rpc_payload_prepare(type, request%payload, request%deflate)
         if (dm_is_error(rc)) return
+
         rc = rpc_request(request, response)
     end function dm_rpc_send_type
 
@@ -421,15 +365,7 @@ contains
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
-        use :: dm_beat
-        use :: dm_kind
-        use :: dm_log
         use :: dm_mime
-        use :: dm_nml
-        use :: dm_node
-        use :: dm_observ
-        use :: dm_sensor
-        use :: dm_target
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         class(*),                             intent(inout)        :: types(:)     !! Derived type array.
@@ -438,13 +374,6 @@ contains
         character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
         logical,                              intent(in), optional :: deflate      !! Deflate compression.
         logical,                              intent(in), optional :: sequential   !! Sequential instead of concurrent transfer.
-
-        character(len=NML_BEAT_LEN)   :: payload_beat
-        character(len=NML_LOG_LEN)    :: payload_log
-        character(len=NML_NODE_LEN)   :: payload_node
-        character(len=NML_OBSERV_LEN) :: payload_observ
-        character(len=NML_SENSOR_LEN) :: payload_sensor
-        character(len=NML_TARGET_LEN) :: payload_target
 
         integer :: i, n, stat
         logical :: sequential_
@@ -465,6 +394,7 @@ contains
 
         ! Prepare all requests.
         do i = 1, n
+            requests(i)%callback     => dm_rpc_write_callback
             requests(i)%accept       = MIME_TEXT
             requests(i)%content_type = MIME_NML
             requests(i)%method       = RPC_METHOD_POST
@@ -479,56 +409,7 @@ contains
             end if
 
             ! Convert derived type to Namelist representation.
-            if (requests(i)%deflate) then
-                ! Set compressed payload.
-                select type (t => types(i))
-                    type is (beat_type)
-                        rc = dm_nml_from(t, payload_beat)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_beat, requests(i)%payload)
-                    type is (log_type)
-                        rc = dm_nml_from(t, payload_log)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_log, requests(i)%payload)
-                    type is (node_type)
-                        rc = dm_nml_from(t, payload_node)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_node, requests(i)%payload)
-                    type is (observ_type)
-                        rc = dm_nml_from(t, payload_observ)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_observ, requests(i)%payload)
-                    type is (sensor_type)
-                        rc = dm_nml_from(t, payload_sensor)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_sensor, requests(i)%payload)
-                    type is (target_type)
-                        rc = dm_nml_from(t, payload_target)
-                        if (dm_is_error(rc)) return
-                        rc = dm_z_compress(payload_target, requests(i)%payload)
-                    class default
-                        rc = E_TYPE
-                end select
-            else
-                ! Set uncompressed payload.
-                select type (t => types(i))
-                    type is (beat_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_beat))
-                    type is (log_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_log))
-                    type is (node_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_node))
-                    type is (observ_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_observ))
-                    type is (sensor_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_sensor))
-                    type is (target_type)
-                        rc = dm_nml_from(t, requests(i)%payload, len(payload_target))
-                    class default
-                        rc = E_TYPE
-                end select
-            end if
-
+            rc = rpc_payload_prepare(types(i), requests(i)%payload, requests(i)%deflate)
             if (dm_is_error(rc)) return
         end do
 
@@ -626,7 +507,8 @@ contains
     integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes the
         !! received response chunks to `rpc_response_type` pointer that has to
-        !! be passed through C pointer `data`.
+        !! be passed through C pointer `data`. Do not call this function
+        !! directly.
         type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
         integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
         integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
@@ -667,6 +549,96 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
+    integer function rpc_payload_prepare(type, payload, deflate) result(rc)
+        !! Serialises given derived type `type` to Namelist format, with
+        !! optional deflate compression.
+        !!
+        !! The following derived types are supported:
+        !!
+        !! | Type          | Payload Length   |
+        !! |---------------|------------------|
+        !! | `beat_type`   | `NML_BEAT_LEN`   |
+        !! | `log_type`    | `NML_LOG_LEN`    |
+        !! | `node_type`   | `NML_NODE_LEN`   |
+        !! | `observ_type` | `NML_OBSERV_LEN` |
+        !! | `sensor_type` | `NML_SENSOR_LEN` |
+        !! | `target_type` | `NML_TARGET_LEN` |
+        !!
+        !! If any other type is passed, the function returns `E_TYPE`.
+        use :: dm_beat
+        use :: dm_log
+        use :: dm_nml
+        use :: dm_node
+        use :: dm_observ
+        use :: dm_sensor
+        use :: dm_target
+        class(*),                      intent(inout)        :: type    !! Derived type.
+        character(len=:), allocatable, intent(out)          :: payload !! Serialised type.
+        logical,                       intent(in), optional :: deflate !! Enable deflate compression.
+
+        character(len=NML_BEAT_LEN)   :: payload_beat
+        character(len=NML_LOG_LEN)    :: payload_log
+        character(len=NML_NODE_LEN)   :: payload_node
+        character(len=NML_OBSERV_LEN) :: payload_observ
+        character(len=NML_SENSOR_LEN) :: payload_sensor
+        character(len=NML_TARGET_LEN) :: payload_target
+
+        logical :: deflate_
+
+        deflate_ = .false.
+        if (present(deflate)) deflate_ = deflate
+
+        if (deflate_) then
+            ! Compressed payload.
+            select type (t => type)
+                type is (beat_type)
+                    rc = dm_nml_from(t, payload_beat)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_beat, payload)
+                type is (log_type)
+                    rc = dm_nml_from(t, payload_log)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_log, payload)
+                type is (node_type)
+                    rc = dm_nml_from(t, payload_node)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_node, payload)
+                type is (observ_type)
+                    rc = dm_nml_from(t, payload_observ)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_observ, payload)
+                type is (sensor_type)
+                    rc = dm_nml_from(t, payload_sensor)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_sensor, payload)
+                type is (target_type)
+                    rc = dm_nml_from(t, payload_target)
+                    if (dm_is_error(rc)) return
+                    rc = dm_z_compress(payload_target, payload)
+                class default
+                    rc = E_TYPE
+            end select
+        else
+            ! Uncompressed payload.
+            select type (t => type)
+                type is (beat_type)
+                    rc = dm_nml_from(t, payload, len(payload_beat))
+                type is (log_type)
+                    rc = dm_nml_from(t, payload, len(payload_log))
+                type is (node_type)
+                    rc = dm_nml_from(t, payload, len(payload_node))
+                type is (observ_type)
+                    rc = dm_nml_from(t, payload, len(payload_observ))
+                type is (sensor_type)
+                    rc = dm_nml_from(t, payload, len(payload_sensor))
+                type is (target_type)
+                    rc = dm_nml_from(t, payload, len(payload_target))
+                class default
+                    rc = E_TYPE
+            end select
+        end if
+    end function rpc_payload_prepare
+
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout in msec.

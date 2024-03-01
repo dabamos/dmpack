@@ -271,6 +271,10 @@ manually. The library and programs will be installed to `~/.local/` by default.
 
 === Linux [[linux]]
 
+If Intel oneAPI will be used to compile DMPACK, it is necessary to build HDF5
+from source as well, as the versions in the Linux package repositories have been
+compiled with GNU Fortran and are therefore incompatible.
+
 On Debian, install GCC, GNU Fortran, and the rest of the build environment
 first:
 
@@ -291,10 +295,6 @@ Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 if raster image formats are not needed (SVG output only). The SQLite 3 package
 version must be ≥ 3.39.0. Depending on the package repository, the names of the
 HDF5 and Lua packages may differ.
-
-If Intel oneAPI Fortran will be used to compile DMPACK, you have to build HDF5
-from source as well, as the versions in the Linux package repositories have been
-compiled with GNU Fortran and are therefore incompatible.
 
 ==== Make [[linux-make]]
 
