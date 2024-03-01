@@ -256,8 +256,8 @@ containing the DMPACK module files is passed through argument `-I`.
 | `dm_config`     | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_db`         | SQLite 3      | `pkg-config --libs sqlite3`                           |
 | `dm_fcgi`       | FastCGI       | `-lfcgi`                                              |
-| `dm_hdf5`       | HDF5          | `pkg-config --libs hdf5`, `-lhdf5_fortran`            |
-| `dm_la`         | BLAS, LAPACK  | `-llapack`, `-lblas`                                  |
+| `dm_hdf5`       | HDF5          | `pkg-config --libs hdf5_fortran`                      |
+| `dm_la`         | BLAS, LAPACK  | `pkg-config --libs lapack blas`                       |
 | `dm_lua`        | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_lua_api`    | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
 | `dm_lua_geocom` | Lua 5.4       | `pkg-config --libs lua-5.4`                           |
@@ -268,7 +268,7 @@ containing the DMPACK module files is passed through argument `-I`.
 | `dm_regex`      | PCRE2         | `pkg-config --libs libpcre2-8`                        |
 | `dm_rpc`        | libcurl, zlib | `curl-config --libs`, `pkg-config --libs zlib`        |
 | `dm_sem`        | POSIX         | `-lpthread`                                           |
-| `dm_transform`  | BLAS, LAPACK  | `-llapack`, `-lblas`                                  |
+| `dm_transform`  | BLAS, LAPACK  | `pkg-config --libs lapack blas`                       |
 | `dm_z`          | zlib          | `pkg-config --libs zlib`                              |
 
 ## Source Code Structure

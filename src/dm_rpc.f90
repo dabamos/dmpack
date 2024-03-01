@@ -34,6 +34,7 @@ module dm_rpc
     use :: dm_error
     use :: dm_http
     use :: dm_kind
+    use :: dm_mime
     use :: dm_util
     use :: dm_version
     use :: dm_z
@@ -263,7 +264,7 @@ contains
 
         do i = 1, size(requests)
             ! Set request parameters.
-            requests(i)%callback => dm_rpc_write_callback
+            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
 
             if (present(accept)) requests(i)%accept = trim(accept)
             if (present(method)) requests(i)%method = method
@@ -296,7 +297,7 @@ contains
         logical,                 intent(in),    optional :: deflate      !! For POST only.
 
         ! Set request parameters.
-        request%callback => dm_rpc_write_callback
+        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
 
         if (present(url))     request%url     = trim(url)
         if (present(method))  request%method  = method
@@ -325,7 +326,6 @@ contains
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
         !! `target_type`. The function returns `E_TYPE` on any other type.
-        use :: dm_mime
         type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
         type(rpc_response_type), intent(out)          :: response !! RPC response type.
         class(*),                intent(inout)        :: type     !! Derived type.
@@ -365,7 +365,6 @@ contains
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
-        use :: dm_mime
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         class(*),                             intent(inout)        :: types(:)     !! Derived type array.
@@ -394,7 +393,8 @@ contains
 
         ! Prepare all requests.
         do i = 1, n
-            requests(i)%callback     => dm_rpc_write_callback
+            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
+
             requests(i)%accept       = MIME_TEXT
             requests(i)%content_type = MIME_NML
             requests(i)%method       = RPC_METHOD_POST
@@ -707,6 +707,7 @@ contains
                 end if
             end do
 
+            ! Get DMPACK error code from cURL error.
             rc = dm_rpc_error_multi(error)
 
             ! Get status of each transfer.
@@ -908,7 +909,6 @@ contains
         end block ua_block
 
         if (stat /= CURLE_OK) return
-
         rc = E_NONE
     end function rpc_request_prepare
 

@@ -205,10 +205,8 @@ $ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/cur
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but lacks the raster graphic terminals).
-
-Optionally, install Pygments and AsciiDoctor to generate the man pages and the
-User’s Guide:
+does not depend on X11 (but lacks the raster graphic terminals). Optionally,
+install Pygments and AsciiDoctor to generate the man pages and the User’s Guide:
 
 ....
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
@@ -261,7 +259,9 @@ Then, run:
 
 ....
 $ cd dmpack/
-$ fpm build --profile release --flag "-D__FreeBSD__ -I/usr/local/include"
+$ export FFLAGS="-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+$ fpm build --profile release --flag "${FFLAGS}"
+$ fpm test --flag "${FFLAGS}"
 $ fpm install
 ....
 
@@ -307,26 +307,6 @@ $ cd dmpack/
 $ make linux
 ....
 
-If the SQLite 3 library has been built from source and installed to
-`/usr/local/lib`, overwrite the variable `LIBSQLITE3` to pass the path of shared
-library `libsqlite3.so`:
-
-....
-$ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -Wl,-rpath,/usr/local/lib -lsqlite3"
-....
-
-For Intel oneAPI compilers, run instead:
-
-....
-$ make CC=icx FC=ifx FFLAGS="-mtune=native -O2 -fpic" CFLAGS="-mtune=native -O2 -fpic" \
-  LDFLAGS="-I./include -module ./include -L/usr/lib -L/opt/lib" PPFLAGS= \
-  INCHDF5="-I/opt/include/hdf5/mod/shared" LDLIBS="-Wl,-rpath,/opt/lib"
-....
-
-In this case, the HDF5 libraries are installed to `/opt/lib`, and the modules
-files to `/opt/include/hdf5/mod/shared`. Change the paths to the actual
-locations.
-
 Install the DMPACK libraries and programs system-wide to `/usr`:
 
 ....
@@ -339,6 +319,34 @@ To install to directory `/opt`, run:
 $ sudo make install PREFIX=/opt
 ....
 
+[NOTE]
+.Custom SQLite 3
+====
+If the SQLite 3 library has been built from source and installed to
+`/usr/local/lib`, overwrite the variable `LIBSQLITE3` to pass the path of shared
+library `libsqlite3.so`:
+
+....
+$ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -lsqlite3"
+....
+====
+
+[NOTE]
+.Intel oneAPI Compilers
+====
+If Intel oneAPI is used instead of GCC, run:
+....
+$ make CC=icx FC=ifx CFLAGS="-mtune=native -O2 -fpic" \
+  FFLAGS="-mtune=native -O2 -fpic" PPFLAGS= \
+  LDFLAGS="-I./include -module ./include -L/usr/lib -L/opt/lib" \
+  INCHDF5="-I/opt/include/hdf5/mod/shared"
+....
+
+In this case, the HDF5 libraries are installed to `/opt/lib`, and the modules
+files to `/opt/include/hdf5/mod/shared`. Change the paths to the actual
+locations.
+====
+
 ==== Fortran Package Manager [[linux-fpm]]
 
 To build DMPACK with the Fortran Package Manager, change to the cloned or
@@ -346,7 +354,9 @@ fetched repository, then run:
 
 ....
 $ cd dmpack/
-$ fpm build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5`"
+$ export FFLAGS="-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+$ fpm build --profile release --flag "${FFLAGS}"
+$ fpm test --flag "${FFLAGS}"
 $ fpm install
 ....
 

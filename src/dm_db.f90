@@ -444,7 +444,7 @@ contains
         if (optimize_) rc = dm_db_optimize(db)
 
         rc = E_DB
-        if (sqlite3_close(db%ptr) /= SQLITE_OK) return
+        if (sqlite3_close_v2(db%ptr) /= SQLITE_OK) return
 
         db%ptr = c_null_ptr
         rc = E_NONE

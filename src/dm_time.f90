@@ -182,12 +182,13 @@ contains
         character(len=*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, sp, i0.2, ss, ":", i0.2)'
 
-        integer         :: rc, tz_hour, tz_minute
-        type(c_ptr)     :: ptr
-        type(c_timeval) :: tv
-        type(c_tm)      :: tm
+        integer          :: rc, tz_hour, tz_minute
+        type(c_ptr)      :: ptr
+        type(c_timeval)  :: tv
+        type(c_timezone) :: tz
+        type(c_tm)       :: tm
 
-        rc  = c_gettimeofday(tv, c_null_ptr)
+        rc  = c_gettimeofday(tv, tz)
         ptr = c_localtime_r(tv%tv_sec, tm)
 
         tz_hour   = int(tm%tm_gmtoff) / 3600
@@ -380,12 +381,13 @@ contains
         character(len=2), intent(out), optional :: zone_minute !! Current time zone (`mm`).
         character(len=6), intent(out), optional :: zone        !! Current time zone (`[+|-]hh:mm`).
 
-        integer         :: rc, tz_hour, tz_minute
-        type(c_ptr)     :: ptr
-        type(c_timeval) :: tv
-        type(c_tm)      :: tm
+        integer          :: rc, tz_hour, tz_minute
+        type(c_ptr)      :: ptr
+        type(c_timeval)  :: tv
+        type(c_timezone) :: tz
+        type(c_tm)       :: tm
 
-        rc  = c_gettimeofday(tv, c_null_ptr)
+        rc  = c_gettimeofday(tv, tz)
         ptr = c_localtime_r(tv%tv_sec, tm)
 
         tz_hour   = int(tm%tm_gmtoff) / 3600
