@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: dmgraph
+.\"     Title: dmplot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-03-01
 .\"    Manual: User Commands
-.\"    Source: DMGRAPH
+.\"    Source: DMPLOT
 .\"  Language: English
 .\"
-.TH "DMGRAPH" "1" "2024-02-16" "DMGRAPH" "User Commands"
+.TH "DMPLOT" "1" "2024-03-01" "DMPLOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,23 +28,23 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmgraph \- creates plots from observations in database
+dmplot \- creates plots from observations in database
 .SH "SYNOPSIS"
 .sp
-\fBdmgraph\fP \-\-help
+\fBdmplot\fP \-\-help
 .sp
-\fBdmgraph\fP \-\-version
+\fBdmplot\fP \-\-version
 .sp
-\fBdmgraph\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP
+\fBdmplot\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP
 \-\-\fBresponse\fP \fIname\fP \-\-\fBfrom\fP \fItimestamp\fP \-\-\fBto\fP \fItimestamp\fP
 \-\-\fBterminal\fP \fIterminal\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBbackground\fP \fIcolor\fP]
 [\-\-\fBforeground\fP \fIcolor\fP] [\-\-\fBfont\fP \fIname\fP] [\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBwidth\fP \fIn\fP]
 [\-\-\fBheight\fP \fIn\fP]
 .sp
-\fBdmgraph\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+\fBdmplot\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
-The \fBdmgraph\fP program is a front\-end to \fIgnuplot(1)\fP that creates plots of
+The \fBdmplot\fP program is a front\-end to \fIgnuplot(1)\fP that creates plots of
 observations read from database. Plots are either written to file or displayed
 in terminal or X11 window.
 .sp
@@ -105,7 +105,7 @@ Output available command\-line arguments and quit.
 .sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
-Name of program instance and configuration (default is \f(CRdmgraph\fP).
+Name of program instance and configuration (default is \f(CRdmplot\fP).
 .RE
 .sp
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP
@@ -181,7 +181,7 @@ terminal, and write the file to \f(CR/tmp/plot.png\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmgraph \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
+$ dmplot \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
   \-\-response dummy \-\-from 2020 \-\-to 2021 \-\-database observ.sqlite \(rs
   \-\-terminal pngcairo \-\-output /tmp/plot.png
 .fam
@@ -193,7 +193,7 @@ Output the plot directly to terminal, with the configuration loaded from file:
 .if n .RS 4
 .nf
 .fam C
-$ dmgraph \-\-name dmgraph \-\-config dmgraph.conf \-\-terminal sixelgd
+$ dmplot \-\-name dmplot \-\-config dmplot.conf \-\-terminal sixelgd
 .fam
 .fi
 .if n .RE

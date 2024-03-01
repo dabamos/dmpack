@@ -25,7 +25,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmexport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfeed.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfs.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmgraph.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmplot.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmimport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminfo.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminit.adoc
@@ -51,7 +51,7 @@ pdf: man
 	$(MAN) -t $(MANDIR)/dmexport.1 | $(PS2PDF) - $(PDFDIR)/dmexport.pdf
 	$(MAN) -t $(MANDIR)/dmfeed.1   | $(PS2PDF) - $(PDFDIR)/dmfeed.pdf
 	$(MAN) -t $(MANDIR)/dmfs.1     | $(PS2PDF) - $(PDFDIR)/dmfs.pdf
-	$(MAN) -t $(MANDIR)/dmgraph.1  | $(PS2PDF) - $(PDFDIR)/dmgraph.pdf
+	$(MAN) -t $(MANDIR)/dmplot.1  | $(PS2PDF) - $(PDFDIR)/dmplot.pdf
 	$(MAN) -t $(MANDIR)/dmimport.1 | $(PS2PDF) - $(PDFDIR)/dmimport.pdf
 	$(MAN) -t $(MANDIR)/dminfo.1   | $(PS2PDF) - $(PDFDIR)/dminfo.pdf
 	$(MAN) -t $(MANDIR)/dminit.1   | $(PS2PDF) - $(PDFDIR)/dminit.pdf
@@ -77,7 +77,6 @@ html: man
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmexport.1 > $(HTMLDIR)/dmexport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfeed.1   > $(HTMLDIR)/dmfeed.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfs.1     > $(HTMLDIR)/dmfs.html
-	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmgraph.1  > $(HTMLDIR)/dmgraph.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmimport.1 > $(HTMLDIR)/dmimport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dminfo.1   > $(HTMLDIR)/dminfo.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dminit.1   > $(HTMLDIR)/dminit.html
@@ -85,6 +84,7 @@ html: man
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmlogger.1 > $(HTMLDIR)/dmlogger.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmlua.1    > $(HTMLDIR)/dmlua.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmpipe.1   > $(HTMLDIR)/dmpipe.html
+	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmplot.1   > $(HTMLDIR)/dmplot.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmrecv.1   > $(HTMLDIR)/dmrecv.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmreport.1 > $(HTMLDIR)/dmreport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmsend.1   > $(HTMLDIR)/dmsend.html

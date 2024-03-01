@@ -113,7 +113,6 @@ The following programs are based on the DMPACK library.
 | [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
 | [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
-| [dmgraph](adoc/dmgraph.adoc)   | Generates plots from observations in database.                      |
 | [dmimport](adoc/dmimport.adoc) | Imports CSV file into database.                                     |
 | [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key-value pairs.          |
 | [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |
@@ -121,6 +120,7 @@ The following programs are based on the DMPACK library.
 | [dmlogger](adoc/dmlogger.adoc) | Stores log messages received from message queue in database.        |
 | [dmlua](adoc/dmlua.adoc)       | Runs Lua script to handle observations received from message queue. |
 | [dmpipe](adoc/dmpipe.adoc)     | Reads sensor values from sub-process.                               |
+| [dmplot](adoc/dmplot.adoc)     | Generates plots from observations in database.                      |
 | [dmrecv](adoc/dmrecv.adoc)     | Receives logs and observations from message queue.                  |
 | [dmreport](adoc/dmreport.adoc) | Creates HTML reports of plots and/or log messages.                  |
 | [dmsend](adoc/dmsend.adoc)     | Sends observations and logs to message queue.                       |

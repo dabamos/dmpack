@@ -1,31 +1,31 @@
-= dmgraph(1)
+= dmplot(1)
 Philipp Engel
 v1.0.0
 :doctype: manpage
 :manmanual: User Commands
-:mansource: DMGRAPH
+:mansource: DMPLOT
 
 == NAME
 
-dmgraph - creates plots from observations in database
+dmplot - creates plots from observations in database
 
 == SYNOPSIS
 
-*dmgraph* --help
+*dmplot* --help
 
-*dmgraph* --version
+*dmplot* --version
 
-*dmgraph* --*database* _file_ --*node* _id_ --*sensor* _id_ --*target* _id_
+*dmplot* --*database* _file_ --*node* _id_ --*sensor* _id_ --*target* _id_
 --*response* _name_ --*from* _timestamp_ --*to* _timestamp_
 --*terminal* _terminal_ [--*output* _file_] [--*background* _color_]
 [--*foreground* _color_] [--*font* _name_] [--*title* _title_] [--*width* _n_]
 [--*height* _n_]
 
-*dmgraph* --*config* _file_ [--*name* _name_]
+*dmplot* --*config* _file_ [--*name* _name_]
 
 == DESCRIPTION
 
-The *dmgraph* program is a front-end to _gnuplot(1)_ that creates plots of
+The *dmplot* program is a front-end to _gnuplot(1)_ that creates plots of
 observations read from database. Plots are either written to file or displayed
 in terminal or X11 window.
 
@@ -66,7 +66,7 @@ configuration file.
   Output available command-line arguments and quit.
 
 *--name*, *-n* _name_::
-  Name of program instance and configuration (default is `dmgraph`).
+  Name of program instance and configuration (default is `dmplot`).
 
 *--node*, *-N* _id_::
   Node id.
@@ -117,7 +117,7 @@ Create a plot of observations selected from database `observ.sqlite` in PNG
 terminal, and write the file to `/tmp/plot.png`:
 
 ....
-$ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target \
+$ dmplot --node dummy-node --sensor dummy-sensor --target dummy-target \
   --response dummy --from 2020 --to 2021 --database observ.sqlite \
   --terminal pngcairo --output /tmp/plot.png
 ....
@@ -125,7 +125,7 @@ $ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target \
 Output the plot directly to terminal, with the configuration loaded from file:
 
 ....
-$ dmgraph --name dmgraph --config dmgraph.conf --terminal sixelgd
+$ dmplot --name dmplot --config dmplot.conf --terminal sixelgd
 ....
 
 Output in `sixelgd` format requires a terminal emulator with Sixel support.

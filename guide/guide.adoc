@@ -436,7 +436,7 @@ to the next specified receiver.
 
 === Plots & Reports
 
-<<dmgraph>>:: Creates line plots of time series read from database, with output
+<<dmplot>>:: Creates line plots of time series read from database, with output
 to file, terminal, or X11 window. Uses _gnuplot(1)_ internally as plotting
 backend.
 <<dmreport>>:: Creates HTML reports containing plots and optionally log
@@ -1054,104 +1054,6 @@ Start *dmfs* to execute the configured job:
 $ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf
 ....
 
-=== dmgraph [[dmgraph]]
-
-The *dmgraph* program is a front-end to _gnuplot(1)_ that creates plots of
-observations read from database. Plots are either written to file or displayed
-in terminal or X11 window.
-
-Depending on the selected terminal backend, you may have to set the environment
-variable `GDFONTPATH` to the local font directory first:
-
-....
-$ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
-....
-
-The output file is ignored when using the terminals `sixelgd` and `x11`.
-Plotting parameters passed via command-line have priority over those from
-configuration file.
-
-.Terminals supported by *dmgraph*
-[[dmgraph-format]]
-[cols="1,7"]
-|===
-| Terminal   | Description
-
-| `ansi`     | ASCII format, in ANSI colours.
-| `ascii`    | ASCII format.
-| `gif`      | GIF format (_libgd_).
-| `png`      | PNG format (_libgd_).
-| `pngcairo` | PNG format (_libcairo_), created from vector graphics.
-| `sixelgd`  | Sixel format (_libgd_), originally for DEC terminals.
-| `svg`      | W3C Scalable Vector Graphics (SVG) format.
-| `x11`      | Persistent X11 window (_libX11_).
-|===
-
-.Format descriptors allowed in the output file name
-[[dmgraph-descript]]
-[cols="1,7"]
-|===
-| Descriptor | Description (Format)
-
-| `%Y`       | year (YYYY)
-| `%M`       | month (MM)
-| `%D`       | day (DD)
-| `%h`       | hour (hh)
-| `%m`       | minute (mm)
-| `%s`       | second (ss)
-|===
-
-==== Command-Line Options
-
-[cols="3,1,1,6"]
-|===
-| Option                  | Short | Default   | Description
-
-| `--background _color_`  | `-G`  | –         | Background colour (for example, `#ffffff` or `white`).
-| `--config _file_`       | `-c`  | –         | Path to configuration file.
-| `--database _file_`     | `-d`  | –         | Path to SQLite observation database.
-| `--font _name_`         | `-A`  | –         | Font name or file path (for example, `Open Sans`, `arial.ttf`, `monospace`).
-| `--foreground _color_`  | `-P`  | `#3b4cc0` | Foreground colour (for example, `#ff0000` or `red`).
-| `--from _timestamp_`    | `-B`  | –         | Start of time range in ISO 8601.
-| `--height _n_`          | `-H`  | 400       | Plot height.
-| `--help`                | `-h`  | –         | Output available command-line arguments and quit.
-| `--name _name_`         | `-n`  | `dmgraph` | Name of table in configuration file.
-| `--node _id_`           | `-N`  | –         | Node id.
-| `--output _file_`       | `-o`  | –         | File path of plot image. May include <<dmgraph-descript,format descriptors>>.
-| `--response _name_`     | `-R`  | –         | Response name.
-| `--sensor _id_`         | `-S`  | –         | Sensor id.
-| `--target _id_`         | `-T`  | –         | Target id.
-| `--terminal _terminal_` | `-m`  | –         | <<dmgraph-format,Plot format>>.
-| `--title _title_`       | `-C`  | –         | Plot title.
-| `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
-| `--version`             | `-v`  | –         | Output version information and quit.
-| `--width _n_`           | `-W`  | 1000      | Plot width.
-|===
-
-==== Examples
-
-Create a plot of observations selected from database `observ.sqlite` in PNG
-format, and write the file to `/tmp/plot.png`:
-
-....
-$ dmgraph --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --response dummy --from 2020 --to 2024 --database observ.sqlite \
-  --terminal pngcairo --output /tmp/plot.png
-....
-
-Output the plot directly to terminal, with the configuration loaded from file:
-
-....
-$ dmgraph --name dmgraph -node --config dmgraph.conf --terminal sixelgd
-....
-
-The `sixelgd` format requires a terminal emulator with Sixel support (such as
-_xterm(1)_ or _mlterm(1)_).
-
-.Plotting time series directly in XTerm
-[#img-dmgraph]
-image::dmgraph.png[dmgraph,align="center"]
-
 === dminfo [[dminfo]]
 
 The *dminfo* utility program prints build, database, and system information to
@@ -1591,6 +1493,104 @@ regular expression pattern:
 $ export LANG=C
 $ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf
 ....
+
+=== dmplot [[dmplot]]
+
+The *dmplot* program is a front-end to _gnuplot(1)_ that creates plots of
+observations read from database. Plots are either written to file or displayed
+in terminal or X11 window.
+
+Depending on the selected terminal backend, you may have to set the environment
+variable `GDFONTPATH` to the local font directory first:
+
+....
+$ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
+....
+
+The output file is ignored when using the terminals `sixelgd` and `x11`.
+Plotting parameters passed via command-line have priority over those from
+configuration file.
+
+.Terminals supported by *dmplot*
+[[dmplot-format]]
+[cols="1,7"]
+|===
+| Terminal   | Description
+
+| `ansi`     | ASCII format, in ANSI colours.
+| `ascii`    | ASCII format.
+| `gif`      | GIF format (_libgd_).
+| `png`      | PNG format (_libgd_).
+| `pngcairo` | PNG format (_libcairo_), created from vector graphics.
+| `sixelgd`  | Sixel format (_libgd_), originally for DEC terminals.
+| `svg`      | W3C Scalable Vector Graphics (SVG) format.
+| `x11`      | Persistent X11 window (_libX11_).
+|===
+
+.Format descriptors allowed in the output file name
+[[dmplot-descript]]
+[cols="1,7"]
+|===
+| Descriptor | Description (Format)
+
+| `%Y`       | year (YYYY)
+| `%M`       | month (MM)
+| `%D`       | day (DD)
+| `%h`       | hour (hh)
+| `%m`       | minute (mm)
+| `%s`       | second (ss)
+|===
+
+==== Command-Line Options
+
+[cols="3,1,1,6"]
+|===
+| Option                  | Short | Default   | Description
+
+| `--background _color_`  | `-G`  | –         | Background colour (for example, `#ffffff` or `white`).
+| `--config _file_`       | `-c`  | –         | Path to configuration file.
+| `--database _file_`     | `-d`  | –         | Path to SQLite observation database.
+| `--font _name_`         | `-A`  | –         | Font name or file path (for example, `Open Sans`, `arial.ttf`, `monospace`).
+| `--foreground _color_`  | `-P`  | `#3b4cc0` | Foreground colour (for example, `#ff0000` or `red`).
+| `--from _timestamp_`    | `-B`  | –         | Start of time range in ISO 8601.
+| `--height _n_`          | `-H`  | 400       | Plot height.
+| `--help`                | `-h`  | –         | Output available command-line arguments and quit.
+| `--name _name_`         | `-n`  | `dmplot`  | Name of table in configuration file.
+| `--node _id_`           | `-N`  | –         | Node id.
+| `--output _file_`       | `-o`  | –         | File path of plot image. May include <<dmplot-descript,format descriptors>>.
+| `--response _name_`     | `-R`  | –         | Response name.
+| `--sensor _id_`         | `-S`  | –         | Sensor id.
+| `--target _id_`         | `-T`  | –         | Target id.
+| `--terminal _terminal_` | `-m`  | –         | <<dmplot-format,Plot format>>.
+| `--title _title_`       | `-C`  | –         | Plot title.
+| `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
+| `--version`             | `-v`  | –         | Output version information and quit.
+| `--width _n_`           | `-W`  | 1000      | Plot width.
+|===
+
+==== Examples
+
+Create a plot of observations selected from database `observ.sqlite` in PNG
+format, and write the file to `/tmp/plot.png`:
+
+....
+$ dmplot --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --response dummy --from 2020 --to 2024 --database observ.sqlite \
+  --terminal pngcairo --output /tmp/plot.png
+....
+
+Output the plot directly to terminal, with the configuration loaded from file:
+
+....
+$ dmplot --name dmplot -node --config dmplot.conf --terminal sixelgd
+....
+
+The `sixelgd` format requires a terminal emulator with Sixel support (such as
+_xterm(1)_ or _mlterm(1)_).
+
+.Plotting time series directly in XTerm
+[#img-dmplot]
+image::dmplot.png[dmplot,align="center"]
 
 === dmrecv [[dmrecv]]
 

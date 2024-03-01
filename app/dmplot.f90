@@ -1,13 +1,13 @@
-! dmgraph.f90
+! dmplot.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmgraph
+program dmplot
     !! Creates plots from time series.
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmgraph'
+    character(len=*), parameter :: APP_NAME  = 'dmplot'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 0
@@ -313,4 +313,4 @@ contains
 
         rc = max(dm_db_close(db), rc)
     end function read_data_points
-end program dmgraph
+end program dmplot

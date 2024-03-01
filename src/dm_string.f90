@@ -7,6 +7,11 @@ module dm_string
     implicit none (type, external)
     private
 
+    type, public :: string_type
+        !! Derived type of allocatable character to be stored in an array.
+        character(len=:), allocatable :: data
+    end type string_type
+
     interface dm_lower
         !! Alias for procedure.
         module procedure :: dm_string_lower
@@ -61,6 +66,9 @@ module dm_string
     public :: dm_string_to_lower
     public :: dm_string_to_upper
     public :: dm_string_upper
+
+    public :: dm_string_allocate
+    public :: dm_string_destroy
 
     ! Private procedures.
     private :: string_from_i4
@@ -133,12 +141,13 @@ contains
         character(len=*), intent(in) :: str !! String to validate.
         integer                      :: i
 
-        is_printable = .true.
+        is_printable = .false.
 
         do i = 1, len_trim(str)
-            is_printable = dm_ascii_is_printable(str(i:i))
-            if (.not. is_printable) return
+            if (.not. dm_ascii_is_printable(str(i:i))) return
         end do
+
+        is_printable = .true.
     end function dm_string_is_printable
 
     pure elemental function dm_string_lower(str) result(lower)
@@ -170,6 +179,26 @@ contains
             upper(i:i) = a
         end do
     end function dm_string_upper
+
+    pure elemental subroutine dm_string_allocate(string, n)
+        !! Allocates string type to empty character of length 0 or `n`, if not
+        !! allocated already.
+        type(string_type), intent(inout)        :: string !! String type.
+        integer,           intent(in), optional :: n      !! Length of string data.
+
+        integer :: n_
+
+        n_ = 0
+        if (present(n)) n_ = n
+        if (.not. allocated(string%data)) allocate (character(len=n_) :: string%data)
+    end subroutine dm_string_allocate
+
+    pure elemental subroutine dm_string_destroy(string)
+        !! Deallocates allocatable character inside of string type.
+        type(string_type), intent(inout) :: string !! String type.
+
+        if (allocated(string%data)) deallocate (string%data)
+    end subroutine dm_string_destroy
 
     subroutine dm_string_split(str, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.

@@ -190,7 +190,6 @@ DMDBCTL  = $(DISTDIR)/dmdbctl
 DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
-DMGRAPH  = $(DISTDIR)/dmgraph
 DMIMPORT = $(DISTDIR)/dmimport
 DMINFO   = $(DISTDIR)/dminfo
 DMINIT   = $(DISTDIR)/dminit
@@ -198,6 +197,7 @@ DMLOG    = $(DISTDIR)/dmlog
 DMLOGGER = $(DISTDIR)/dmlogger
 DMLUA    = $(DISTDIR)/dmlua
 DMPIPE   = $(DISTDIR)/dmpipe
+DMPLOT   = $(DISTDIR)/dmplot
 DMRECV   = $(DISTDIR)/dmrecv
 DMREPORT = $(DISTDIR)/dmreport
 DMSEND   = $(DISTDIR)/dmsend
@@ -260,8 +260,8 @@ all: $(TARGET) $(SHARED) test app
 
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
-     $(DMFS) $(DMGRAPH) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
-     $(DMLUA) $(DMPIPE) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
+     $(DMFS) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
+     $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
@@ -594,9 +594,6 @@ $(DMFEED): app/dmfeed.f90 $(TARGET)
 $(DMFS): app/dmfs.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
 
-$(DMGRAPH): app/dmgraph.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRAPH) app/dmgraph.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
-
 $(DMIMPORT): app/dmimport.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMIMPORT) app/dmimport.f90 $(TARGET) $(LDLIBS) $(LIBSQLITE3)
 
@@ -617,6 +614,9 @@ $(DMLUA): app/dmlua.f90 $(TARGET)
 
 $(DMPIPE): app/dmpipe.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBPCRE2) $(LIBRT)
+
+$(DMPLOT): app/dmplot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPLOT) app/dmplot.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBSQLITE3)
 
 $(DMRECV): app/dmrecv.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LDLIBS) $(LIBLUA54) $(LIBRT)
@@ -687,7 +687,7 @@ install:
 	install -m 755 $(DMEXPORT) $(IBINDIR)/
 	install -m 755 $(DMFEED)   $(IBINDIR)/
 	install -m 755 $(DMFS)     $(IBINDIR)/
-	install -m 755 $(DMGRAPH)  $(IBINDIR)/
+	install -m 755 $(DMPLOT)   $(IBINDIR)/
 	install -m 755 $(DMIMPORT) $(IBINDIR)/
 	install -m 755 $(DMINFO)   $(IBINDIR)/
 	install -m 755 $(DMINIT)   $(IBINDIR)/
@@ -722,7 +722,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmexport.1 > $(IMANDIR)/dmexport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfeed.1   > $(IMANDIR)/dmfeed.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfs.1     > $(IMANDIR)/dmfs.1.gz
-	$(GZIP) -9 < $(MANDIR)/dmgraph.1  > $(IMANDIR)/dmgraph.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmplot.1  > $(IMANDIR)/dmplot.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmimport.1 > $(IMANDIR)/dmimport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dminfo.1   > $(IMANDIR)/dminfo.1.gz
 	$(GZIP) -9 < $(MANDIR)/dminit.1   > $(IMANDIR)/dminit.1.gz
@@ -759,7 +759,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmexport
 	$(RM) -f $(IBINDIR)/dmfeed
 	$(RM) -f $(IBINDIR)/dmfs
-	$(RM) -f $(IBINDIR)/dmgraph
+	$(RM) -f $(IBINDIR)/dmplot
 	$(RM) -f $(IBINDIR)/dmimport
 	$(RM) -f $(IBINDIR)/dminfo
 	$(RM) -f $(IBINDIR)/dminit
@@ -782,7 +782,6 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmexport.1.gz
 	$(RM) -f $(IMANDIR)/dmfeed.1.gz
 	$(RM) -f $(IMANDIR)/dmfs.1.gz
-	$(RM) -f $(IMANDIR)/dmgraph.1.gz
 	$(RM) -f $(IMANDIR)/dmimport.1.gz
 	$(RM) -f $(IMANDIR)/dminfo.1.gz
 	$(RM) -f $(IMANDIR)/dminit.1.gz
@@ -790,6 +789,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmlogger.1.gz
 	$(RM) -f $(IMANDIR)/dmlua.1.gz
 	$(RM) -f $(IMANDIR)/dmpipe.1.gz
+	$(RM) -f $(IMANDIR)/dmplot.1.gz
 	$(RM) -f $(IMANDIR)/dmrecv.1.gz
 	$(RM) -f $(IMANDIR)/dmreport.1.gz
 	$(RM) -f $(IMANDIR)/dmsend.1.gz
