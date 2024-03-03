@@ -336,15 +336,15 @@ $ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -lsqlite3"
 ====
 If Intel oneAPI is used instead of GCC, run:
 ....
-$ make CC=icx FC=ifx CFLAGS="-mtune=native -O2 -fpic" \
-  FFLAGS="-mtune=native -O2 -fpic" PPFLAGS= \
-  LDFLAGS="-I./include -module ./include -L/usr/lib -L/opt/lib" \
-  INCHDF5="-I/opt/include/hdf5/mod/shared"
+$ make CC=icx FC=ifx PPFLAGS= \
+  CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
+  LDFLAGS="-module ./include -I./include" \
+  INCHDF5="-I/opt/include" \
+  LIBHDF5="-Wl,-rpath,/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
 ....
 
-In this case, the HDF5 libraries are installed to `/opt/lib`, and the modules
-files to `/opt/include/hdf5/mod/shared`. Change the paths to the actual
-locations.
+In this case, the HDF5 libraries are installed to `/opt/lib/`, and the HDF5
+modules files to `/opt/include/`. Change the paths to the actual locations.
 ====
 
 ==== Fortran Package Manager [[linux-fpm]]

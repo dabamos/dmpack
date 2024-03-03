@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-03-02
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2024-02-16" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2024-03-02" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -42,8 +42,31 @@ dmdbctl \- command\-line interface to DMPACK observation databases
 .SH "DESCRIPTION"
 .sp
 The \fBdmdbctl\fP utility program performs create, read, update, or delete
-operations on the observation databasae. Only nodes, sensors, and targets are
-supported. Data attributes are passed through command\-line arguments.
+operations on the observation database:
+.sp
+Create
+.RS 4
+Add nodes, sensors, and targets to the database.
+.RE
+.sp
+Read
+.RS 4
+Read nodes, sensors, and targets from database. Print the records to standard
+output.
+.RE
+.sp
+Update
+.RS 4
+Update nodes, sensors, and targets in the database.
+.RE
+.sp
+Delete
+.RS 4
+Delete nodes, sensors, and targets from the database.
+.RE
+.sp
+Only nodes, sensors, and targets are supported. All data attributes are passed
+through command\-line arguments.
 .SH "OPTIONS"
 .sp
 \fB\-\-altitude\fP, \fB\-Z\fP \fIz\fP

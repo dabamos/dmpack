@@ -2,43 +2,9 @@
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dmtestdb_aux
-    use, intrinsic :: iso_c_binding
-    implicit none (type, external)
-    private
-
-    public :: backup_handler
-    public :: log_handler
-contains
-    subroutine backup_handler(remaining, page_count)
-        integer, intent(in) :: remaining
-        integer, intent(in) :: page_count
-
-        print '("Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
-    end subroutine backup_handler
-
-    subroutine log_handler(client_data, err_code, err_msg_ptr) bind(c)
-        !! Callback for SQLite error logs.
-        use :: sqlite3_util, only: c_f_str_ptr
-        type(c_ptr),         intent(in), value :: client_data
-        integer(kind=c_int), intent(in), value :: err_code
-        type(c_ptr),         intent(in), value :: err_msg_ptr
-
-        character(len=:), allocatable :: err_msg
-
-        if (.not. c_associated(err_msg_ptr)) return
-        call c_f_str_ptr(err_msg_ptr, err_msg)
-        if (.not. allocated(err_msg)) return
-        print '("Error ", i0, ": ", a)', err_code, err_msg
-        deallocate (err_msg)
-    end subroutine log_handler
-end module dmtestdb_aux
-
 program dmtestdb
     !! Tests database access using `dm_db` module.
-    use, intrinsic :: iso_c_binding
     use :: dmpack
-    use :: dmtestdb_aux
     implicit none (type, external)
     character(len=*), parameter :: DB_BEAT          = 'testbeat.sqlite'
     character(len=*), parameter :: DB_LOG           = 'testlog.sqlite'
@@ -53,27 +19,30 @@ program dmtestdb
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests( 1) = test_type('dmtestdb.test01', test01)
-    tests( 2) = test_type('dmtestdb.test02', test02)
-    tests( 3) = test_type('dmtestdb.test03', test03)
-    tests( 4) = test_type('dmtestdb.test04', test04)
-    tests( 5) = test_type('dmtestdb.test05', test05)
-    tests( 6) = test_type('dmtestdb.test06', test06)
-    tests( 7) = test_type('dmtestdb.test07', test07)
-    tests( 8) = test_type('dmtestdb.test08', test08)
-    tests( 9) = test_type('dmtestdb.test09', test09)
-    tests(10) = test_type('dmtestdb.test10', test10)
-    tests(11) = test_type('dmtestdb.test11', test11)
-    tests(12) = test_type('dmtestdb.test12', test12)
-    tests(13) = test_type('dmtestdb.test13', test13)
-    tests(14) = test_type('dmtestdb.test14', test14)
-    tests(15) = test_type('dmtestdb.test15', test15)
-    tests(16) = test_type('dmtestdb.test16', test16)
-    tests(17) = test_type('dmtestdb.test17', test17)
-    tests(18) = test_type('dmtestdb.test18', test18)
-    tests(19) = test_type('dmtestdb.test19', test19)
-
     call dm_init()
+
+    tests = [ &
+        test_type('dmtestdb.test01', test01), &
+        test_type('dmtestdb.test02', test02), &
+        test_type('dmtestdb.test03', test03), &
+        test_type('dmtestdb.test04', test04), &
+        test_type('dmtestdb.test05', test05), &
+        test_type('dmtestdb.test06', test06), &
+        test_type('dmtestdb.test07', test07), &
+        test_type('dmtestdb.test08', test08), &
+        test_type('dmtestdb.test09', test09), &
+        test_type('dmtestdb.test10', test10), &
+        test_type('dmtestdb.test11', test11), &
+        test_type('dmtestdb.test12', test12), &
+        test_type('dmtestdb.test13', test13), &
+        test_type('dmtestdb.test14', test14), &
+        test_type('dmtestdb.test15', test15), &
+        test_type('dmtestdb.test16', test16), &
+        test_type('dmtestdb.test17', test17), &
+        test_type('dmtestdb.test18', test18), &
+        test_type('dmtestdb.test19', test19)  &
+    ]
+
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
@@ -1068,4 +1037,28 @@ contains
 
         stat = TEST_PASSED
     end function test19
+
+    subroutine backup_handler(remaining, page_count)
+        integer, intent(in) :: remaining
+        integer, intent(in) :: page_count
+
+        print '("Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
+    end subroutine backup_handler
+
+    subroutine log_handler(client_data, err_code, err_msg_ptr) bind(c)
+        !! Callback for SQLite error logs.
+        use, intrinsic :: iso_c_binding
+        use :: sqlite3_util, only: c_f_str_ptr
+        type(c_ptr),         intent(in), value :: client_data
+        integer(kind=c_int), intent(in), value :: err_code
+        type(c_ptr),         intent(in), value :: err_msg_ptr
+
+        character(len=:), allocatable :: err_msg
+
+        if (.not. c_associated(err_msg_ptr)) return
+        call c_f_str_ptr(err_msg_ptr, err_msg)
+        if (.not. allocated(err_msg)) return
+        print '("Error ", i0, ": ", a)', err_code, err_msg
+        deallocate (err_msg)
+    end subroutine log_handler
 end program dmtestdb

@@ -23,8 +23,23 @@ _meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_] [--*state* _n_]
 == DESCRIPTION
 
 The *dmdbctl* utility program performs create, read, update, or delete
-operations on the observation databasae. Only nodes, sensors, and targets are
-supported. Data attributes are passed through command-line arguments.
+operations on the observation database:
+
+Create::
+  Add nodes, sensors, and targets to the database.
+
+Read::
+  Read nodes, sensors, and targets from database. Print the records to standard
+  output.
+
+Update::
+  Update nodes, sensors, and targets in the database.
+
+Delete::
+  Delete nodes, sensors, and targets from the database.
+
+Only nodes, sensors, and targets are supported. All data attributes are passed
+through command-line arguments.
 
 == OPTIONS
 

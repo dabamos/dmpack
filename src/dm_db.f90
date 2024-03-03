@@ -1965,6 +1965,7 @@ contains
         if (threaded_) flag = ior(flag, SQLITE_OPEN_FULLMUTEX)
 
         ! Open database.
+        if (sqlite3_initialize() /= SQLITE_OK) return
         if (sqlite3_open_v2(trim(path), db%ptr, flag) /= SQLITE_OK) return
 
         ! Enable foreign keys constraint.
