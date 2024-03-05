@@ -52,7 +52,7 @@ contains
         log1%error     = TEST_ERROR
 
         print *, 'Initialising logger ...'
-        call dm_logger_init(debug=.true., ipc=.true., no_color=.true.)
+        call dm_logger_init(name=LOGGER_NAME, debug=.true., ipc=.true., no_color=.true.)
 
         print *, 'Opening log message queue ...'
         if (dm_mqueue_open(mqueue, TYPE_LOG, LOGGER_NAME, MQUEUE_RDONLY) /= E_NONE) return
