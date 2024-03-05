@@ -213,11 +213,11 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 src/dm_path.f90 \
       src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 src/dm_hdf5.f90 \
       src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_arg.f90 \
-      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 src/dm_tty.f90 \
-      src/dm_sem.f90 src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 \
-      src/dm_node.f90 src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 \
-      src/dm_request.f90 src/dm_observ.f90 src/dm_log.f90 src/dm_job.f90 \
-      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90  src/dm_sync.f90 \
+      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 src/dm_sem.f90 \
+      src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 \
+      src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 \
+      src/dm_observ.f90 src/dm_log.f90 src/dm_job.f90 src/dm_tty.f90 \
+      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 src/dm_sync.f90 \
       src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 \
       src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
       src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 \
@@ -234,9 +234,9 @@ OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
       dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o dm_util.o dm_time.o \
       dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o dm_hash_table.o \
       dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o dm_signal.o dm_system.o \
-      dm_pipe.o dm_tty.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o \
-      dm_sensor.o dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o \
-      dm_job.o dm_plot.o dm_report.o dm_regex.o dm_sync.o dm_beat.o dm_mqueue.o \
+      dm_pipe.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o dm_sensor.o \
+      dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o dm_job.o \
+      dm_tty.o dm_plot.o dm_report.o dm_regex.o dm_sync.o dm_beat.o dm_mqueue.o \
       dm_logger.o dm_test.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
       dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o \
       dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o dm_cgi_router.o dm_la.o \
@@ -381,7 +381,6 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_signal.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_system.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_pipe.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_tty.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sem.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mutex.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_dp.f90
@@ -394,6 +393,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_observ.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_log.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_job.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_tty.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_plot.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_report.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_regex.f90

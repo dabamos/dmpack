@@ -282,20 +282,20 @@ contains
 
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
-        use :: unix, only: c_usleep
-        integer, intent(in) :: sec !! Delay in sec.
+        use :: unix, only: c_useconds_t, c_usleep
+        integer, intent(in) :: sec !! Delay in seconds [s].
         integer             :: rc
 
-        rc = c_usleep(sec * 10**6)
+        rc = c_usleep(int(sec * 10**6, kind=c_useconds_t))
     end subroutine dm_sleep
 
     subroutine dm_usleep(usec)
         !! Pauses program execution for given time in useconds.
-        use :: unix, only: c_usleep
-        integer, intent(in) :: usec !! Delay in usec.
+        use :: unix, only: c_useconds_t, c_usleep
+        integer, intent(in) :: usec !! Delay in useconds [us].
         integer             :: rc
 
-        rc = c_usleep(usec)
+        rc = c_usleep(int(usec, kind=c_useconds_t))
     end subroutine dm_usleep
 
     ! ******************************************************************

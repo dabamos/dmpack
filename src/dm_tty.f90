@@ -71,6 +71,18 @@ module dm_tty
         integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
     end type tty_type
 
+    interface dm_tty_read
+        !! Generic TTY read function.
+        module procedure :: dm_tty_read_bytes
+        module procedure :: dm_tty_read_request
+    end interface
+
+    interface dm_tty_write
+        !! Generic TTY write function.
+        module procedure :: dm_tty_write_bytes
+        module procedure :: dm_tty_write_request
+    end interface
+
     ! Public procedures.
     public :: dm_tty_baud_rate_from_value
     public :: dm_tty_byte_size_from_value
@@ -80,7 +92,9 @@ module dm_tty
     public :: dm_tty_open
     public :: dm_tty_parity_from_name
     public :: dm_tty_read
+    public :: dm_tty_read_bytes
     public :: dm_tty_read_raw
+    public :: dm_tty_read_request
     public :: dm_tty_set_attributes
     public :: dm_tty_stop_bits_from_value
     public :: dm_tty_valid_baud_rate
@@ -89,6 +103,8 @@ module dm_tty
     public :: dm_tty_valid_stop_bits
     public :: dm_tty_valid_timeout
     public :: dm_tty_write
+    public :: dm_tty_write_bytes
+    public :: dm_tty_write_request
 contains
     integer function dm_tty_baud_rate_from_value(value, error) result(baud_rate)
         !! Returns baud rate enumerator from numeric value. If the value is
@@ -226,27 +242,55 @@ contains
         rc = E_NONE
     end function dm_tty_flush
 
-    integer function dm_tty_open(tty) result(rc)
+    integer function dm_tty_open(tty, path, baud_rate, byte_size, parity, stop_bits) result(rc)
         !! Opens TTY/PTS device in set access mode and applies serial port
-        !! attributes.
+        !! attributes. The arguments `baud_rate`, `byte_size`, `parity`, and
+        !! `stop_bits` must be valid enumerators.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_EXIST` if the TTY is already connected.
-        !! * `E_INVALID` if the TTY flags are invalid.
+        !! * `E_INVALID` if the TTY parameters or flags are invalid.
         !! * `E_IO` if opening the TTY failed.
-        !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers
-        !!   failed.
+        !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         use :: unix
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        type(tty_type)  , intent(inout)        :: tty       !! TTY type.
+        character(len=*), intent(in), optional :: path      !! Device path.
+        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B_*`).
+        integer,          intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
+        integer,          intent(in), optional :: parity    !! Parity enumerator (`TTY_PARITY_*`).
+        integer,          intent(in), optional :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
 
         integer(kind=c_int) :: flags
 
         rc = E_EXIST
         if (dm_tty_connected(tty)) return
 
-        ! Set flags.
+        ! Set arguments.
         rc = E_INVALID
+        if (present(path)) tty%path = path
+
+        if (present(baud_rate)) then
+            if (.not. dm_tty_valid_baud_rate(baud_rate)) return
+            tty%baud_rate = baud_rate
+        end if
+
+        if (present(byte_size)) then
+            if (.not. dm_tty_valid_byte_size(byte_size)) return
+            tty%byte_size = byte_size
+        end if
+
+        if (present(parity)) then
+            if (.not. dm_tty_valid_parity(parity)) return
+            tty%parity = parity
+        end if
+
+        if (present(stop_bits)) then
+            if (.not. dm_tty_valid_stop_bits(stop_bits)) return
+            tty%stop_bits = stop_bits
+        end if
+
+        ! Set flags.
         flags = ior(O_NOCTTY, O_SYNC)
         flags = ior(flags, O_NONBLOCK)
 
@@ -296,9 +340,14 @@ contains
         if (present(error)) error = E_NONE
     end function dm_tty_parity_from_name
 
-    integer function dm_tty_read(tty, buffer, del, nbytes) result(rc)
+    integer function dm_tty_read_bytes(tty, buffer, del, nbytes) result(rc)
         !! Reads from TTY into `buf` until delimiter `del` occurs. The
         !! number of bytes read is returned in `n`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if end of buffer is reached.
+        !! * `E_READ` if the read operation failed.
         type(tty_type),   intent(inout)         :: tty    !! TTY type.
         character(len=*), intent(inout)         :: buffer !! Input buffer.
         character(len=*), intent(in)            :: del    !! Delimiter.
@@ -307,8 +356,6 @@ contains
         character        :: a
         integer          :: i, j, k
         integer(kind=i8) :: n, sz
-
-        rc = E_READ
 
         i = 1
         j = len(buffer)
@@ -336,16 +383,42 @@ contains
         end do
 
         if (present(nbytes)) nbytes = n
-    end function dm_tty_read
+    end function dm_tty_read_bytes
 
     integer(kind=i8) function dm_tty_read_raw(tty, byte) result(n)
-        !! Reads single byte from file descriptor.
+        !! Reads single byte from file descriptor, and returns `1_i0` on
+        !! success.
         use :: unix, only: c_read
         type(tty_type),    intent(inout) :: tty  !! TTY type.
         character, target, intent(out)   :: byte !! Byte read.
 
-        n = int(c_read(tty%fd, c_loc(byte), int(1, kind=c_size_t)), kind=i8)
+        n = int(c_read(tty%fd, c_loc(byte), 1_c_size_t), kind=i8)
     end function dm_tty_read_raw
+
+    integer function dm_tty_read_request(tty, request) result(rc)
+        !! Reads TTY response into request. The request delimiter is unescaped.
+        !! The response is escaped before being stored in the request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if the response is longer than `REQUEST_RESPONSE_LEN`.
+        !! * `E_READ` if reading from TTY failed.
+        use :: dm_ascii, only: dm_ascii_escape, dm_ascii_unescape
+        use :: dm_request
+        type(tty_type),     intent(inout) :: tty     !! TTY type.
+        type(request_type), intent(inout) :: request !! Request type.
+
+        character(len=REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
+        character(len=REQUEST_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
+
+        del = dm_ascii_unescape(request%delimiter)
+        raw = ' '
+
+        rc = dm_tty_read(tty, raw, trim(del))
+
+        request%error    = rc
+        request%response = dm_ascii_escape(raw)
+    end function dm_tty_read_request
 
     integer function dm_tty_set_attributes(tty) result(rc)
         !! Sets terminal attributes. Returns `E_INVALID` if the passed TTY is
@@ -606,26 +679,70 @@ contains
         if (timeout >= 0) valid = .true.
     end function dm_tty_valid_timeout
 
-    integer function dm_tty_write(tty, bytes) result(rc)
-        !! Writes given string to TTY. Returns `E_WRITE` on error.
+    integer function dm_tty_write_bytes(tty, bytes, n, flush) result(rc)
+        !! Writes given string to TTY. Returns `E_WRITE` on error. The function
+        !! may cause an access violation if `n` is greater than the length of
+        !! `bytes`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_SYSTEM` if flushing the input buffer failed.
+        !! * `E_WRITE` if writing to TTY failed.
         use :: unix, only: c_write
-        type(tty_type),   intent(inout) :: tty   !! TTY type.
-        character(len=*), intent(in)    :: bytes !! Bytes to send.
+        type(tty_type),   intent(inout)        :: tty   !! TTY type.
+        character(len=*), intent(in)           :: bytes !! Bytes to send.
+        integer,          intent(in), optional :: n     !! Number of bytes to send.
+        logical,          intent(in), optional :: flush !! Flush input buffer.
 
         character(kind=c_char), target :: a
-        integer                        :: i
-        integer(kind=c_size_t)         :: n
+        integer                        :: i, n_
+        integer(kind=c_size_t)         :: k
+
+        if (present(n)) then
+            n_ = n
+        else
+            n_ = len(bytes)
+        end if
+
+        if (present(flush)) then
+            rc = dm_tty_flush(tty, input=flush, output=.false.)
+            if (dm_is_error(rc)) return
+        end if
 
         rc = E_WRITE
-
-        do i = 1, len(bytes)
+        do i = 1, n_
             a = bytes(i:i)
-            n = c_write(tty%fd, c_loc(a), int(1, kind=c_size_t))
-            if (n /= 1) return
+            k = c_write(tty%fd, c_loc(a), 1_c_size_t)
+            if (k /= 1) return
         end do
 
         rc = E_NONE
-    end function dm_tty_write
+    end function dm_tty_write_bytes
+
+    integer function dm_tty_write_request(tty, request, flush) result(rc)
+        !! Writes given request to TTY. The function unescapes the request
+        !! string. If `flush` is `.true.`, the input buffer is flushed first.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_SYSTEM` if flushing the input buffer failed.
+        !! * `E_WRITE` if writing to TTY failed.
+        use :: dm_ascii, only: dm_ascii_unescape
+        use :: dm_request
+        type(tty_type),     intent(inout)        :: tty     !! TTY type.
+        type(request_type), intent(inout)        :: request !! Request type
+        logical,            intent(in), optional :: flush   !! Flush input buffer.
+
+        character(len=REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
+
+        if (present(flush)) then
+            rc = dm_tty_flush(tty, input=flush, output=.false.)
+            if (dm_is_error(rc)) return
+        end if
+
+        raw = dm_ascii_unescape(request%request)
+        rc  = dm_tty_write(tty, trim(raw))
+    end function dm_tty_write_request
 
     subroutine dm_tty_close(tty)
         !! Closes file descriptor.

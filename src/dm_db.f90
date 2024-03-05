@@ -1311,7 +1311,7 @@ contains
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !! * `E_INVALID` if argument `table` is invalid.
         type(db_type), intent(inout)         :: db    !! Database type.
-        integer,       intent(in)            :: table !! Table enum.
+        integer,       intent(in)            :: table !! Table enumerator.
         logical,       intent(out), optional :: has   !! Boolean result.
 
         integer     :: stat

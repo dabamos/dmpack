@@ -214,6 +214,154 @@ contains
         call dm_config_close(config)
     end function read_config
 
+    integer function read_observ(pipe, observ, node_id, sensor_id, source, debug) result(rc)
+        !! Reads observation from pipe.
+        type(pipe_type),           intent(inout)        :: pipe      !! Pipe to read from.
+        type(observ_type), target, intent(inout)        :: observ    !! Observation to read.
+        character(len=*),          intent(in)           :: node_id   !! Node id of observation.
+        character(len=*),          intent(in)           :: sensor_id !! Sensor id of observation.
+        character(len=*),          intent(in)           :: source    !! Source of observation.
+        logical,                   intent(in), optional :: debug     !! Output debug messages.
+
+        character(len=REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
+
+        integer          :: delay
+        integer          :: i, j, n
+        integer(kind=i8) :: sz
+        logical          :: debug_
+
+        type(request_type),  pointer :: request  ! Next request to execute.
+        type(response_type), pointer :: response ! Response in request.
+
+        rc = E_EMPTY
+
+        debug_ = .true.
+        if (present(debug)) debug_ = debug
+
+        ! Initialise observation.
+        observ%id        = dm_uuid4()
+        observ%node_id   = node_id
+        observ%sensor_id = sensor_id
+        observ%source    = source
+        observ%timestamp = dm_time_now()
+
+        n = observ%nrequests
+
+        if (n == 0) then
+            if (debug_) call dm_log_debug('no requests in observ ' // observ%name, observ=observ)
+            observ%error = rc
+            return
+        end if
+
+        ! Read files in requests sequentially.
+        req_loop: do i = 1, n
+            ! Get pointer to next request.
+            request => observ%requests(i)
+
+            if (debug_) call dm_log_debug('starting ' // request_name_string(request%name, i, n), observ=observ)
+
+            ! Initialise request.
+            request%timestamp = dm_time_now()
+            request%error     = E_IO
+
+            ! Open pipe.
+            rc = dm_pipe_open(pipe, request%request, PIPE_RDONLY)
+
+            if (dm_is_error(rc)) then
+                call dm_pipe_close(pipe)
+                call dm_log_error('failed to open pipe to ' // request%request, observ=observ, error=rc)
+                cycle req_loop
+            end if
+
+            ! Read until the request pattern matches or end is reached.
+            pipe_loop: do
+                ! Read from pipe.
+                rc = E_READ
+                sz = dm_pipe_read(pipe, raw)
+                if (sz == 0) exit pipe_loop
+
+                request%response = dm_ascii_escape(raw)
+
+                ! Try to extract the response values.
+                if (debug_) then
+                    call dm_log_debug('parsing response of ' // request_name_string(request%name, i), &
+                                      observ=observ)
+                end if
+
+                rc = dm_regex_request(request)
+
+                if (dm_is_error(rc)) then
+                    if (debug_) then
+                        call dm_log_debug('response of ' // request_name_string(request%name, i) // &
+                                          ' does not match pattern', observ=observ, error=request%error)
+                    end if
+
+                    cycle pipe_loop
+                end if
+
+                ! Check responses.
+                do j = 1, request%nresponses
+                    response => request%responses(j)
+                    if (dm_is_ok(response%error)) cycle
+
+                    call dm_log_warning('failed to extract response ' // trim(response%name) // &
+                                        ' of ' // request_name_string(request%name, i), &
+                                        observ=observ, error=response%error)
+                end do
+
+                ! Cycle on error.
+                if (dm_is_error(rc)) cycle pipe_loop
+
+                exit pipe_loop
+            end do pipe_loop
+
+            ! Close pipe.
+            call dm_pipe_close(pipe)
+
+            request%error = rc
+
+            if (dm_is_error(rc)) then
+                call dm_log_error('failed to read from process ' // request%request, observ=observ, error=rc)
+                call dm_sleep(10) ! Wait grace period.
+                cycle req_loop
+            end if
+
+            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n), observ=observ)
+
+            ! Wait the set delay time of the request.
+            delay = max(0, request%delay)
+            if (delay <= 0) cycle req_loop
+
+            if (debug_ .and. i < n) then
+                call dm_log_debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
+                                  ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+            else if (debug_) then
+                call dm_log_debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+            end if
+
+            call dm_usleep(delay * 1000) ! [msec] to [us].
+        end do req_loop
+    end function read_observ
+
+    pure function request_name_string(request_name, i, n, observ_name) result(str)
+        !! Returns string of request name and index for logging.
+        character(len=*), intent(in)           :: request_name !! Request name.
+        integer,          intent(in)           :: i            !! Request index.
+        integer,          intent(in), optional :: n            !! Number of requests in observation.
+        character(len=*), intent(in), optional :: observ_name  !! Observation name.
+        character(len=:), allocatable          :: str          !! Result.
+
+        if (present(n)) then
+            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
+        else
+            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ' of ' // dm_itoa(n) // ')'
+        end if
+
+        if (present(observ_name)) then
+            str = str // ' of observ ' // trim(observ_name)
+        end if
+    end function request_name_string
+
     integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
         type(observ_type), intent(inout) :: observ
@@ -236,16 +384,13 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer          :: delay, njobs
-        integer          :: i, j, rc
-        integer(kind=i8) :: sz
-        logical          :: debug
+        integer :: delay, njobs
+        integer :: rc
+        logical :: debug
 
-        type(job_type),      target  :: job      ! Next job to run.
-        type(pipe_type)              :: pipe     ! Pipe to process.
-        type(observ_type),   pointer :: observ   ! Next observation to perform.
-        type(request_type),  pointer :: request  ! Next request to execute.
-        type(response_type), pointer :: response ! Response in request.
+        type(job_type),    target  :: job    ! Next job to run.
+        type(pipe_type)            :: pipe   ! Pipe to process.
+        type(observ_type), pointer :: observ ! Next observation to perform.
 
         debug = (app%debug .or. app%verbose)
 
@@ -273,96 +418,18 @@ contains
             observ_if: if (job%valid) then
                 ! Get pointer to job observation.
                 observ => job%observ
-
                 if (debug) call dm_log_debug('starting observ ' // observ%name, observ=observ)
 
-                ! Initialise observation.
-                observ%id        = dm_uuid4()
-                observ%node_id   = app%node
-                observ%sensor_id = app%sensor
-                observ%source    = app%name
-                observ%timestamp = dm_time_now()
-
-                if (observ%nrequests == 0) then
-                    if (debug) call dm_log_debug('no requests in observ ' // observ%name, observ=observ)
-                    exit observ_if
-                end if
-
-                ! Read files in requests sequentially.
-                req_loop: do i = 1, observ%nrequests
-                    ! Get pointer to next request.
-                    request => observ%requests(i)
-
-                    ! Initialise request.
-                    request%timestamp = dm_time_now()
-                    request%error = E_IO
-
-                    rc = dm_pipe_open(pipe, request%request, PIPE_RDONLY)
-
-                    if (dm_is_error(rc)) then
-                        call dm_pipe_close(pipe)
-                        call dm_log_error('failed to open pipe to ' // request%request, &
-                                          observ=observ, error=rc)
-                        cycle req_loop
-                    end if
-
-                    ! Read until the request pattern matches.
-                    read_loop: do
-                        ! Read from pipe.
-                        rc = E_READ
-                        sz = dm_pipe_read(pipe, request%response)
-                        if (sz == 0) exit read_loop
-
-                        ! Try to extract the response values.
-                        rc = dm_regex_request(request)
-
-                        if (dm_is_error(rc)) then
-                            call dm_log_warning('response to request ' // dm_itoa(i) // ' does not match pattern', &
-                                                observ=observ, error=rc)
-                            cycle read_loop
-                        end if
-
-                        ! Check responses.
-                        do j = 1, request%nresponses
-                            response => request%responses(j)
-                            if (dm_is_ok(response%error)) cycle
-                            call dm_log_warning('failed to read response ' // response%name, &
-                                                observ=observ, error=response%error)
-                        end do
-
-                        exit read_loop
-                    end do read_loop
-
-                    call dm_pipe_close(pipe)
-
-                    request%response = dm_ascii_escape(request%response)
-                    request%error    = rc
-
-                    if (dm_is_error(rc)) then
-                        call dm_log_error('failed to read from process ' // request%request, &
-                                          observ=observ, error=rc)
-                        cycle req_loop
-                    end if
-
-                    call dm_log_debug('finished request ' // dm_itoa(i) // ' of ' // &
-                                      dm_itoa(observ%nrequests), observ=observ)
-
-                    ! Wait the set delay time of the request.
-                    delay = max(0, request%delay)
-                    if (delay <= 0) cycle req_loop
-                    if (debug) then
-                        call dm_log_debug('next request of observ ' // trim(observ%name) // &
-                                          ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
-                    end if
-                    call dm_usleep(delay * 1000)
-                end do req_loop
+                ! Read observation.
+                rc = read_observ(pipe, observ, app%node, app%sensor, app%name, debug=debug)
 
                 ! Forward observation.
-                if (debug) call dm_log_debug('finished observ ' // observ%name, observ=observ)
                 rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
+
+                if (debug) call dm_log_debug('finished observ ' // observ%name, observ=observ)
             end if observ_if
 
             ! Wait the set delay time of the job (absolute).

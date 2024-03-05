@@ -24,6 +24,7 @@ module dm_geocom
     !! call geocom%close()
     !! ```
     use :: dm_error
+    use :: dm_file
     use :: dm_geocom_api
     use :: dm_geocom_error
     use :: dm_geocom_type
@@ -31,6 +32,7 @@ module dm_geocom
     use :: dm_request
     use :: dm_response
     use :: dm_tty
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -104,29 +106,74 @@ contains
         if (dm_tty_connected(this%tty)) call dm_tty_close(this%tty)
     end subroutine geocom_close
 
-    subroutine geocom_open(this, path, baud_rate, nretries, error)
+    subroutine geocom_open(this, path, baud_rate, retries, error)
         !! Opens TTY connection to robotic total station.
+        !!
+        !! The argument `baud_rate` must be one of the following:
+        !!
+        !! * `GEOCOM_COM_BAUD_2400`
+        !! * `GEOCOM_COM_BAUD_4800`
+        !! * `GEOCOM_COM_BAUD_9600`
+        !! * `GEOCOM_COM_BAUD_19200`
+        !! * `GEOCOM_COM_BAUD_38400`
+        !! * `GEOCOM_COM_BAUD_57600`
+        !! * `GEOCOM_COM_BAUD_115200`
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_EXIST` if the TTY is already connected.
         !! * `E_INVALID` if baud rate is invalid.
+        !! * `E_NOT_FOUND` if path does no exist.
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
         character(len=*),    intent(in)            :: path      !! Path of TTY.
-        integer,             intent(in)            :: baud_rate !! Baud rate enumerator.
-        integer,             intent(in),  optional :: nretries  !! Number of retries
+        integer,             intent(in)            :: baud_rate !! Baud rate value.
+        integer,             intent(in),  optional :: retries   !! Number of retries
         integer,             intent(out), optional :: error     !! DMPACK error code
 
-        integer :: nretries_, rc
+        integer :: baud, i, retries_, rc
 
-        nretries_ = 0
-        if (present(nretries)) nretries_ = nretries
+        i = 0
+        retries_ = 0
+        if (present(retries)) retries_ = retries
 
-        rc = E_INVALID
-        if (.not. dm_tty_valid_baud_rate(baud_rate)) return
+        tty_block: block
+            rc = E_INVALID
+            select case (baud_rate)
+                case (GEOCOM_COM_BAUD_2400)
+                    baud = TTY_B2400
+                case (GEOCOM_COM_BAUD_4800)
+                    baud = TTY_B4800
+                case (GEOCOM_COM_BAUD_9600)
+                    baud = TTY_B9600
+                case (GEOCOM_COM_BAUD_19200)
+                    baud = TTY_B19200
+                case (GEOCOM_COM_BAUD_38400)
+                    baud = TTY_B38400
+                case (GEOCOM_COM_BAUD_57600)
+                    baud = TTY_B57600
+                case (GEOCOM_COM_BAUD_115200)
+                    baud = TTY_B115200
+                    continue
+                case default
+                    exit tty_block
+            end select
 
-        rc = E_NONE
+            rc = E_NOT_FOUND
+            if (.not. dm_file_exists(path)) exit tty_block
 
-        !! ... TODO ...
+            rc = E_EXIST
+            if (dm_tty_connected(this%tty)) exit tty_block
+
+            do
+                ! Try to open TTY.
+                if (i > retries_) exit
+                rc = dm_tty_open(this%tty, path, baud, TTY_BYTE_SIZE8, TTY_PARITY_NONE, TTY_STOP_BITS1)
+                if (dm_is_ok(rc)) exit
+                call dm_sleep(1)
+            end do
+        end block tty_block
+
+        if (present(error)) error = rc
     end subroutine geocom_open
 
     subroutine geocom_send(this, request, error)
@@ -137,15 +184,23 @@ contains
 
         integer :: grc, rc
 
-        !! Send request to sensor.
-        !! ... TODO ...
-
+        this%grc = GRC_UNDEFINED
         this%request = request
 
-        !! Get GeoCOM return code from response.
-        this%grc = GRC_UNDEFINED
-        call dm_request_get(request, 'grc', grc, error=rc)
-        if (dm_is_ok(rc)) this%grc = grc
+        tty_block: block
+            rc = E_IO
+            if (.not. dm_tty_connected(this%tty)) exit tty_block
+
+            ! Send request to sensor.
+            rc = dm_tty_write(this%tty, this%request, flush=.true.)
+            if (dm_is_error(rc)) exit tty_block
+
+            ! Get GeoCOM return code from response.
+            call dm_request_get(request, 'grc', grc, error=rc)
+            if (dm_is_ok(rc)) this%grc = grc
+        end block tty_block
+
+        if (present(error)) error = rc
     end subroutine geocom_send
 
     ! **************************************************************************

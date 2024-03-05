@@ -179,8 +179,8 @@ The shell script requires _curl(1)_ and _unzip(1)_.
 This section describes how to build the DMPACK library and programs from source,
 with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
 (FPM). At the moment, support for the Fortran Package Manager is experimental.
-The shared library `libgfortran.so` must be present on the target system if the
-DMPACK programs have been compiled with GNU Fortran.
+The shared libraries `libgfortran.so` and `libquadmath.so` must be present on
+the target system if the DMPACK programs have been compiled with GNU Fortran.
 
 Either build with GNU/BSD Make or with the Fortran Package Manager. It is
 recommended to use _make(1)_. To display the available build targets, run:
@@ -194,6 +194,9 @@ Or, to output the selected build options, run for instance:
 ....
 $ make options PREFIX=/opt
 ....
+
+See section <<system-configuration>> on how to configure the operating system
+after the installation.
 
 === FreeBSD [[freebsd]]
 
@@ -4367,7 +4370,7 @@ Dump only table `logs` of a log database:
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
 
-== System Configuration
+== System Configuration [[system-configuration]]
 
 Additional changes to the system configuration should be considered to prevent
 issues while conducting a long-term monitoring.
@@ -4578,6 +4581,25 @@ script to your configuration.
 
 == GeoCOM API
 
+The official GeoCOM API is divided into the following sub-systems:
+
+[cols="1,4"]
+|===
+| Acronym | Name
+
+| `AUT`   | Automation
+| `BAP`   | Basic Applications
+| `BMM`   | Basic Man–Machine Interface
+| `COM`   | Communication Settings
+| `CSV`   | Central Services
+| `EDM`   | Electronic Distance Measurement
+| `FTR`   | File Transfer
+| `IMG`   | Image Processing
+| `MOT`   | Motorisation
+| `SUP`   | Supervisor
+| `TMC`   | Theodolite Measurement and Calculation
+|===
+
 All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 
 [%autowidth]
@@ -4698,6 +4720,20 @@ All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 | `GEOCOM_BAP_AVG_RLESS_VISIBLE`    | RL average.
 | `GEOCOM_BAP_CONT_REF_SYNCHRO`     | IR synchro-tracking.
 | `GEOCOM_BAP_SINGLE_REF_PRECISE`   | IR precise (TM30/TS30).
+|===
+
+.GEOCOM_COM_BAUD_RATE: Baud rate [[geocom-api-com-baud-rate]]
+[%autowidth]
+|===
+| Name | Description
+
+| `GEOCOM_COM_BAUD_2400`   | 2400 baud.
+| `GEOCOM_COM_BAUD_4800`   | 4800 baud.
+| `GEOCOM_COM_BAUD_9600`   | 9600 baud.
+| `GEOCOM_COM_BAUD_19200`  | 19200 baud (default).
+| `GEOCOM_COM_BAUD_38400`  | 38400 baud.
+| `GEOCOM_COM_BAUD_57600`  | 57600 baud.
+| `GEOCOM_COM_BAUD_115200` | 115200 baud.
 |===
 
 .GEOCOM_COM_FORMAT: Transmission data format [[geocom-api-com-format]]
@@ -4952,41 +4988,49 @@ table of observations to perform, for example:
 
 [source,lua]
 ....
-observs = {
+jobs = {
   {
     --
     -- Start and initialisation of station p99.
+    -- Attribute `onetime` must be enabled!
     --
-    name = "init",
-    target_id = "p99",
-    receivers = { "dmdb" },
-    requests = {
-      geocom_beep_normal(),
-      geocom_set_refraction_mode(1),
-      geocom_set_inclination_correction(true),
-      geocom_set_user_atr_mode(true),
-      geocom_set_target_type(GEOCOM_BAP_REFL_USE),
-      geocom_set_prism_type(GEOCOM_BAP_PRISM_ROUND)
+    onetime = true,
+    delay = 5 * 1000,
+    observation = {
+      name = "init_tps",
+      target_id = "p99",
+      receivers = { "dmdb" },
+      requests = {
+        geocom_beep_normal(),
+        geocom_set_refraction_mode(1),
+        geocom_set_inclination_correction(true),
+        geocom_set_user_atr_mode(true),
+        geocom_set_target_type(GEOCOM_BAP_REFL_USE),
+        geocom_set_prism_type(GEOCOM_BAP_PRISM_ROUND)
     }
   },
   {
     --
     -- Single measurement of target p01.
     --
-    name = "get_p01",
-    target_id = "p01",
-    receivers = { "dmdb" },
-    requests = {
-      geocom_set_position(gon2rad(0.0), gon2rad(100.0), GEOCOM_AUT_NORMAL, GEOCOM_AUT_TARGET),
-      geocom_do_measure(GEOCOM_TMC_DEF_DIST, GEOCOM_TMC_AUTO_INC),
-      geocom_get_simple_measurement(3000, GEOCOM_TMC_AUTO_INC)
+    onetime = false,
+    delay = 10 * 1000,
+    observation = {
+      name = "get_p01",
+      target_id = "p01",
+      receivers = { "dmdb" },
+      requests = {
+        geocom_set_position(gon2rad(0.0), gon2rad(100.0), GEOCOM_AUT_NORMAL, GEOCOM_AUT_TARGET),
+        geocom_do_measure(GEOCOM_TMC_DEF_DIST, GEOCOM_TMC_AUTO_INC),
+        geocom_get_simple_measurement(3000, GEOCOM_TMC_AUTO_INC)
+      }
     }
   }
 }
 ....
 
-The targets `p01` and `p99` have to exist in the observation database.
-  
+The targets `p01` and `p99` have to exist in the observation database. The
+performed observations are forwarded to <<dmdb>>.
 
 === Parameters
 
@@ -5045,29 +5089,10 @@ print(gon)
 === GeoCOM
 
 The GeoCOM API for Lua is used to automate the creation of observation requests
-in DMPACK configuration files. The official GeoCOM API is divided into the
-following sub-systems:
-
-[cols="1,4"]
-|===
-| Acronym | Name
-
-| `AUT`   | Automation
-| `BAP`   | Basic Applications
-| `BMM`   | Basic Man–Machine Interface
-| `COM`   | Communication Settings
-| `CSV`   | Central Services
-| `EDM`   | Electronic Distance Measurement
-| `FTR`   | File Transfer
-| `IMG`   | Image Processing
-| `MOT`   | Motorisation
-| `SUP`   | Supervisor
-| `TMC`   | Theodolite Measurement and Calculation
-|===
-
-The Lua function names do not match the GeoCOM API names. All functions start
-with prefix `geocom_`, all named parameters with `GEOCOM_`. The names of the
-requests are set to the name of the respective function without the prefix.
+in DMPACK configuration files. The Lua function names do not match the official
+GeoCOM API names. All functions start with prefix `geocom_`, all named
+parameters with `GEOCOM_`. The names of the requests are set to the name of the
+respective function without prefix.
 
 .Comparison of the DMPACK Lua API and the official GeoCOM API
 [cols="3,2"]
@@ -5263,7 +5288,7 @@ is valid, only files older than the deletion date are deleted.
 Returns request of *TMC_DoMeasure* procedure. Creates request for trying a
 distance measurement. This command does not return any values. If a distance
 measurement is performed in measurement program `GEOCOM_TMC_DEF_DIST`, the
-distance sensor will work with the set EDM mode.
+distance sensor will work in the set EDM mode.
 
 ==== geocom_download(block_number) [[lua-api-geocom-download]]
 
@@ -5482,7 +5507,7 @@ the condition of the Lock-In control.
 ==== geocom_get_measurement_program() [[lua-api-geocom-get-measurement-program]]
 
 Returns request of *BAP_GetMeasPrg* procedure. Creates request for getting the
-distance measurement program of the instrument.
+distance measurement mode of the instrument.
 
 ==== geocom_get_power() [[lua-api-geocom-get-power]]
 
@@ -5548,10 +5573,10 @@ instruments, but has only effects for instruments equipped with PowerSearch.
 
 Returns request of *TMC_GetSignal* procedure. Creates request for getting the
 EDM signal intensity. The function can only perform a measurement if the signal
-measurement program is activated. Start the signal measurement program with
-<<lua-api-geocom-do-measure,geocom_do_measure()>> in program
-`GEOCOM_TMC_SIGNAL`. After the measurement, the EDM must be switched off with
-program `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
+measurement mode is activated. Start the signal measurement with
+<<lua-api-geocom-do-measure,geocom_do_measure()>> in mode `GEOCOM_TMC_SIGNAL`.
+After the measurement, the EDM must be switched off with mode
+`GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
 
 ==== geocom_get_simple_coordinates(wait_time, inc_mode) [[lua-api-geocom-get-simple-coordinates]]
 
@@ -5680,15 +5705,17 @@ is set to ≤ 400 m.
 Returns request of *AUT_PS_SearchNext* procedure. The function executes the 360°
 default PowerSearch and searches for the next targets. A previously defined
 PowerSearch window of
-<<lua-api-geocom-set-search-area,geocom_ps_set_search_area()>> is not taken
+<<lua-api-geocom-set-search-area,geocom_set_search_area()>> is not taken
 into account. Use API call
-<<lua-api-geocom-ps-set-search-window,geocom_ps_set_search_window()>> first.
+<<lua-api-geocom-ps-search-window,geocom_ps_search_window()>> first.
 
 ==== geocom_ps_search_window() [[lua-api-geocom-ps-search-window]]
 
 Returns request of *AUT_PS_SearchWindow* procedure. Creates request for starting
 PowerSearch. The function starts PowerSearch in the window defined by API calls
-*AUT_SetSearchArea* and *AUT_PS_SetRange* (requires GeoCOM robotic licence).
+<<lua-api-geocom-set-search-area,geocom_set_search_area()>> and
+<<lua-api-geocom-ps-set-range,geocom_ps_set_range()>> (requires GeoCOM robotic
+licence).
 
 ==== geocom_ps_set_range(min_dist, max_dist) [[lua-api-geocom-ps-set-range]]
 
@@ -5769,10 +5796,9 @@ GeoCOM server to handle binary communication (not supported by DMPACK).
 
 Returns request of *SUP_SetConfig* procedure. Creates request for setting the
 power management configuration. The argument `timeout` sets the duration after
-which the instrument switches into the mode `auto_power`
-(`GEOCOM_SUP_AUTO_POWER`) when no user activity occured (key press, GeoCOM
-communication). The value must be between 60,000 m/s (1 min) and 6,000,000 m/s
-(100 min).
+which the instrument switches into the mode `auto_power` when no user activity
+occured (key press, GeoCOM communication). The value must be between 60,000 m/s
+(1 min) and 6,000,000 m/s (100 min).
 
 ==== geocom_set_date_time(year, month, day, hour, minute, second) [[lua-api-geocom-set-date-time]]
 
@@ -5816,8 +5842,7 @@ value is 1.99975, the resulting value will be 2.0.
 
 Returns request of *TMC_SetEdmMode* procedure. Creates request for setting the
 EDM measurement mode. The EDM mode set by this function is used by
-<<lua-api-geocom-do-measure,geocom_do_measure()>> in program
-`GEOCOM_TMC_DEF_DIST`.
+<<lua-api-geocom-do-measure,geocom_do_measure()>> in mode `GEOCOM_TMC_DEF_DIST`.
 
 ==== geocom_set_egl_intensity(intensity) [[lua-api-geocom-set-egl-intensity]]
 
