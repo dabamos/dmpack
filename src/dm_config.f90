@@ -73,14 +73,15 @@ contains
             if (.not. dm_file_exists(path)) exit open_block
 
             ! Initialise Lua interpreter.
-            rc = dm_lua_init(config%lua)
+            rc = dm_lua_init(config%lua, libs=.true.)
             if (dm_is_error(rc)) exit open_block
 
             ! Register DMPACK API for Lua.
             rc = dm_lua_api_register(config%lua, &
-                                     add_errors     = .true., & ! Add error codes.
-                                     add_levels     = .true., & ! Add log levels.
-                                     add_procedures = .true.)   ! Add Lua procedures.
+                                     add_errors         = .true., & ! Add error codes.
+                                     add_log_levels     = .true., & ! Add log levels.
+                                     add_procedures     = .true., & ! Add Lua procedures.
+                                     add_response_types = .true.)   ! Add response types.
             if (dm_is_error(rc)) exit open_block
 
             ! Register GeoCOM API for Lua.

@@ -444,7 +444,7 @@ contains
         if (optimize_) rc = dm_db_optimize(db)
 
         rc = E_DB
-        if (sqlite3_close_v2(db%ptr) /= SQLITE_OK) return
+        if (sqlite3_close(db%ptr) /= SQLITE_OK) return
 
         db%ptr = c_null_ptr
         rc = E_NONE
@@ -765,7 +765,7 @@ contains
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_INVALID` if node id is invalid.
+        !! * `E_INVALID` if log id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id.
@@ -847,7 +847,7 @@ contains
         !! * `E_DB_ROLLBACK` if transaction rollback failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TRANSACTION` if transaction failed.
-        !! * `E_INVALID` if node id is invalid.
+        !! * `E_INVALID` if observation id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
@@ -899,7 +899,7 @@ contains
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_INVALID` if node id is invalid.
+        !! * `E_INVALID` if sensor id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
@@ -937,7 +937,7 @@ contains
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_INVALID` if node id is invalid.
+        !! * `E_INVALID` if target id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.

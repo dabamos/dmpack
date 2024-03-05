@@ -29,16 +29,16 @@ module dm_test
     integer,          parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
 
     abstract interface
-        logical function dm_test_function()
+        logical function dm_test_callback()
             !! Logical test function that either returns `TEST_PASSED` or
             !! `TEST_FAILED`.
-        end function dm_test_function
+        end function dm_test_callback
     end interface
 
     type, public :: test_type
         !! Test type.
-        character(len=TEST_NAME_LEN)                 :: name = 'N/A' !! Test name.
-        procedure(dm_test_function), pointer, nopass :: proc         !! Test procedure.
+        character(len=TEST_NAME_LEN)                 :: name = 'N/A'   !! Test name.
+        procedure(dm_test_callback), pointer, nopass :: proc => null() !! Test procedure.
     end type test_type
 
     interface dm_test_dummy
@@ -52,6 +52,7 @@ module dm_test
         module procedure :: dm_test_dummy_target
     end interface
 
+    public :: dm_test_callback
     public :: dm_test_dummy
     public :: dm_test_dummy_beat
     public :: dm_test_dummy_log
@@ -60,7 +61,6 @@ module dm_test
     public :: dm_test_dummy_request
     public :: dm_test_dummy_sensor
     public :: dm_test_dummy_target
-    public :: dm_test_function
     public :: dm_test_run
     public :: dm_test_skip
 contains

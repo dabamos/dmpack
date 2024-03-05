@@ -290,7 +290,7 @@ contains
         rc = E_NONE
         if (len_trim(app%config) == 0) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
             rc = dm_config_get(config, 'baudrate', app%baud_rate)
