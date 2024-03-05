@@ -126,7 +126,7 @@ and Surveying of the Budapest University of Technology and Economics. (GPLv2)
 
 DMPACK has the following requirements:
 
-* Linux (_glibc_) or FreeBSD operating system
+* Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
 * Fortran 2018 and ANSI C compiler (GCC, Intel oneAPI)
 
@@ -137,10 +137,10 @@ package:
 * Gnuplot
 * HDF5
 * LAPACK
-* libcurl
+* libcurl (≥ 8.5)
 * Lua 5.4
 * PCRE2
-* SQLite 3
+* SQLite 3 (≥ 3.39.0)
 * zlib
 
 To generate the man pages, the User’s Guide, and the source code documentation,
@@ -335,6 +335,7 @@ $ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -lsqlite3"
 .Intel oneAPI Compilers
 ====
 If Intel oneAPI is used instead of GCC, run:
+
 ....
 $ make CC=icx FC=ifx PPFLAGS= \
   CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
@@ -398,20 +399,20 @@ They contain name, type, value, unit, and an optional error code.
 
 === Log Entities
 
-Log:: Log message of a sensor node, either of level _debug_, _info_, _warning_,
-_error_, or _critical_, and optionally related to a _sensor_, a _target_, and an
-_observation_.
+<<data-log,Log>>:: Log message of a sensor node, either of level _debug_,
+_info_, _warning_, _error_, or _critical_, and optionally related to a _sensor_,
+a _target_, and an _observation_.
 
 === Beat Entities
 
-Beat:: Short status message (heartbeat, handshake) that contains node id,
-client address, client version, time stamp, system uptime, and last connection
-error, sent periodically from client to server.
+<<data-beat,Beat>>:: Short status message (heartbeat, handshake) that contains
+node id, client address, client version, time stamp, system uptime, and last
+connection error, sent periodically from client to server.
 
 === RPC Entities
 
-API Status:: Short key–value response of the HTTP-RPC API service in plain-text
-format.
+<<data-api,API Status>>:: Short key–value response of the HTTP-RPC API service
+in plain-text format.
 
 == Program Overview
 
@@ -600,11 +601,11 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 
 === dmbeat [[dmbeat]]
 
-The *dmbeat* program is a heartbeat emitter that sends
-<<data-beat,handshake messages>> via HTTP POST to a remote <<dmapi>> service.
-The handshake messages include time stamp, system uptime, and last connection
-error. The server may inspect this data to check if a client is still running
-and has network access. The RPC endpoint is expected at
+The *dmbeat* program is a heartbeat emitter that sends <<data-beat,heartbeats>>
+or handshakes via HTTP POST to a remote <<dmapi>> service.  The heartbeat
+messages include time stamp, system uptime, and last connection error. The
+server may inspect this data to check if a client is still running and has
+network access. The RPC endpoint is expected at
 `[http|https]://<host>:<port>/api/v1/beat`.
 
 Passing the server credentials via the command-line arguments `--username` and
@@ -704,8 +705,23 @@ Log messages and observation ids are printed to _stdout_.
 === dmdbctl [[dmdbctl]]
 
 The *dmdbctl* utility program performs create, read, update, or delete
-operations (CRUD) on the observation database. Only nodes, sensors, and targets
-are supported. Data attributes are passed through command-line arguments.
+operations (CRUD) on the observation database.
+
+Create::
+  Add nodes, sensors, and targets to the database.
+
+Read::
+  Read nodes, sensors, and targets from database. Print the records to standard
+  output.
+
+Update::
+  Update nodes, sensors, and targets in the database.
+
+Delete::
+  Delete nodes, sensors, and targets from the database.
+
+Only nodes, sensors, and targets are supported. All data attributes are passed
+through command-line arguments.
 
 ==== Command-Line Options
 
@@ -1198,12 +1214,12 @@ level is INFO. Pass the name of the _dmlogger_ instance through argument
 
 The following log levels are accepted:
 
-[cols="1,9"]
+[cols="1,3"]
 |===
 | Level | Name
 
 | 1     | debug
-| 2     | info`
+| 2     | info
 | 3     | warning
 | 4     | error
 | 5     | critical
@@ -1269,7 +1285,7 @@ command-line argument `--wait`.
 
 The following log levels are accepted:
 
-[cols="1,9"]
+[cols="1,3"]
 |===
 | Level | Name
 
@@ -1381,12 +1397,12 @@ end
 
 function dump(o)
    if type(o) == 'table' then
-      local s = '{ '
+      local s = '{\n'
       for k, v in pairs(o) do
          if type(k) ~= 'number' then k = '"' .. k .. '"' end
-         s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
+         s = s .. '[' .. k .. '] = ' .. dump(v) .. ',\n'
       end
-      return s .. '} '
+      return s .. '}'
    else
       return tostring(o)
    end
@@ -1552,7 +1568,7 @@ configuration file.
 
 | `%Y`       | year (YYYY)
 | `%M`       | month (MM)
-| `%D`       | day (DD)
+| `%D`       | day of month (DD)
 | `%h`       | hour (hh)
 | `%m`       | minute (mm)
 | `%s`       | second (ss)
@@ -1722,7 +1738,7 @@ priority over settings in the configuration file.
 
 | `%Y`       | year (YYYY)
 | `%M`       | month (MM)
-| `%D`       | day (DD)
+| `%D`       | day of month (DD)
 | `%h`       | hour (hh)
 | `%m`       | minute (mm)
 | `%s`       | second (ss)
@@ -2466,7 +2482,7 @@ JSON Lines format from database.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2522,7 +2538,7 @@ range are mandatory.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2582,7 +2598,7 @@ Lines format from database.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2638,7 +2654,7 @@ format.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2705,7 +2721,7 @@ JSON Lines format from database.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2761,7 +2777,7 @@ JSON Lines format from database.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2818,7 +2834,7 @@ response, selected by name.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type    | Description
 
@@ -2896,7 +2912,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -2984,7 +3000,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3073,7 +3089,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3163,7 +3179,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3253,7 +3269,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3340,7 +3356,7 @@ accepted.
 
 ==== Request Parameters
 
-[cols="2,1,8"]
+[cols="3,2,5"]
 |===
 | GET Parameter | Type   | Description
 
@@ -3584,7 +3600,7 @@ BEAT%UPTIME=0,
 |===
 
 .Log level [[data-log-level]]
-[cols="1,9"]
+[cols="1,3"]
 |===
 | Level | Name
 
@@ -4448,7 +4464,7 @@ On error, try to reconfigure the NTP service:
 
 On Linux, power saving for USB devices may be enabled by default. This can cause
 issues if sensors are attached through an USB adapter. USB power saving is
-enabled if the kernel boot parameter `usbcore.autosuspend` is not equal `-1`:
+enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
 
 ....
 # cat /sys/module/usbcore/parameters/autosuspend
@@ -4559,107 +4575,6 @@ MAILTO=/dev/null
 
 The shell script `mkreport.sh` must have the execution bits set. Update the
 script to your configuration.
-
-== Third-Party Programs
-
-=== HDFView
-
-link:[]HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
-files. Application images for Linux, macOS, and Windows are available for
-download on the website of
-link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
-program has to be compiled from source. The following build dependencies are
-required:
-
-* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
-* link:https://www.freshports.org/devel/cmake[devel/cmake]
-* link:https://www.freshports.org/devel/git[devel/git]
-* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
-* link:https://www.freshports.org/lang/gcc[lang/gcc]
-* link:https://www.freshports.org/[x11-toolkits/swt]
-
-The HDF4 and HDF5 libraries have to be built from source as well. First, clone
-the HDF4 repository and compile with CMake:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
-$ cd hdf4/
-$ mkdir build && cd build/
-$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
-  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
-  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
-  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
-  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
-  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
-$ cmake --build . --config Release
-....
-
-Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
-build directory. In the next step, clone the HDF5 repository and build with
-CMake, too:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
-$ cd hdf5/
-$ mkdir build && cd build/
-$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
-  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
-  -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
-  -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
-  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
-  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
-$ cmake --build . --config Release
-....
-
-Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
-to `bin/` in the HDF5 build directory. Finally, clone the HDFView repository,
-set the build properties, and compile with _ant(1)_:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
-$ cd hdfview/
-....
-
-Set the following properties in `build.properties`:
-
-....
-hdf.lib.dir = /tmp/hdf4/build/bin
-hdf5.lib.dir = /tmp/hdf5/build/bin
-hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
-build.debug = false
-....
-
-Build with _ant(1)_:
-
-....
-$ ant run
-....
-
-The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
-`swt.jar` has to be replaced with the version installed system-wide:
-
-....
-$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
-....
-
-Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
-
-....
-java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
-  -cp "./*" hdf.view.HDFView "$@"
-....
-
-To start HDFView, run:
-
-....
-$ cd build/HDF_Group/HDFView/99.99.99/
-$ sh hdfview.sh
-....
 
 == GeoCOM API
 
@@ -4783,20 +4698,6 @@ All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 | `GEOCOM_BAP_AVG_RLESS_VISIBLE`    | RL average.
 | `GEOCOM_BAP_CONT_REF_SYNCHRO`     | IR synchro-tracking.
 | `GEOCOM_BAP_SINGLE_REF_PRECISE`   | IR precise (TM30/TS30).
-|===
-
-.GEOCOM_COM_BAUD_RATE: Baud rate [[geocom-api-com-baud-rate]]
-[%autowidth]
-|===
-| Name | Description
-
-| `GEOCOM_COM_BAUD_2400`   | 2400 baud.
-| `GEOCOM_COM_BAUD_4800`   | 4800 baud.
-| `GEOCOM_COM_BAUD_9600`   | 9600 baud.
-| `GEOCOM_COM_BAUD_19200`  | 19200 baud (default).
-| `GEOCOM_COM_BAUD_38400`  | 38400 baud.
-| `GEOCOM_COM_BAUD_57600`  | 57600 baud.
-| `GEOCOM_COM_BAUD_115200` | 115200 baud.
 |===
 
 .GEOCOM_COM_FORMAT: Transmission data format [[geocom-api-com-format]]
@@ -5043,8 +4944,78 @@ All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 == Lua API [[lua-api]]
 
 Parts of the DMPACK library are exposed to Lua through a distinct API. Log
-levels and error codes are registered as named constants. The GeoCOM API
+levels and error codes are registered as named parameters. The GeoCOM API
 includes functions and named parameters for request preparation.
+
+The GeoCOM functions can be called from DMPACK configuration files to fill the
+table of observations to perform, for example:
+
+[source,lua]
+....
+observs = {
+  {
+    --
+    -- Start and initialisation of station p99.
+    --
+    name = "init",
+    target_id = "p99",
+    receivers = { "dmdb" },
+    requests = {
+      geocom_beep_normal(),
+      geocom_set_refraction_mode(1),
+      geocom_set_inclination_correction(true),
+      geocom_set_user_atr_mode(true),
+      geocom_set_target_type(GEOCOM_BAP_REFL_USE),
+      geocom_set_prism_type(GEOCOM_BAP_PRISM_ROUND)
+    }
+  },
+  {
+    --
+    -- Single measurement of target p01.
+    --
+    name = "get_p01",
+    target_id = "p01",
+    receivers = { "dmdb" },
+    requests = {
+      geocom_set_position(gon2rad(0.0), gon2rad(100.0), GEOCOM_AUT_NORMAL, GEOCOM_AUT_TARGET),
+      geocom_do_measure(GEOCOM_TMC_DEF_DIST, GEOCOM_TMC_AUTO_INC),
+      geocom_get_simple_measurement(3000, GEOCOM_TMC_AUTO_INC)
+    }
+  }
+}
+....
+
+The targets `p01` and `p99` have to exist in the observation database.
+  
+
+=== Parameters
+
+.Named log level parameters
+[cols="1,4,8"]
+|===
+| # | Name           | Description
+
+| 0 | `LVL_NONE`     | invalid level
+| 1 | `LVL_DEBUG`    | debug level
+| 2 | `LVL_INFO`     | info level
+| 3 | `LVL_WARNING`  | warning level
+| 4 | `LVL_ERROR`    | error level
+| 5 | `LVL_CRITICAL` | critical level
+|===
+
+.Named response value type parameters
+[cols="1,6,8"]
+|===
+| # | Name                    | Description
+
+| 0 | `RESPONSE_TYPE_REAL64`  | 8-byte signed real
+| 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real
+| 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer
+| 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer
+| 4 | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean
+| 5 | `RESPONSE_TYPE_BYTE`    | Byte
+| 6 | `RESPONSE_TYPE_STRING`  | Byte string
+|===
 
 === Functions
 
@@ -5077,144 +5048,149 @@ The GeoCOM API for Lua is used to automate the creation of observation requests
 in DMPACK configuration files. The official GeoCOM API is divided into the
 following sub-systems:
 
-* `AUT` – Automation.
-* `BAP` – Basic Applications.
-* `BMM` – Basic Man-Machine Interface.
-* `COM` – Communication Settings.
-* `CSV` – Central Services.
-* `EDM` – Electronic Distance Measurement.
-* `FTR` – File Transfer.
-* `IMG` – Image Processing.
-* `MOT` – Motorisation.
-* `SUP` – Supervisor.
-* `TMC` – Theodolite Measurement and Calculation.
+[cols="1,4"]
+|===
+| Acronym | Name
+
+| `AUT`   | Automation
+| `BAP`   | Basic Applications
+| `BMM`   | Basic Man–Machine Interface
+| `COM`   | Communication Settings
+| `CSV`   | Central Services
+| `EDM`   | Electronic Distance Measurement
+| `FTR`   | File Transfer
+| `IMG`   | Image Processing
+| `MOT`   | Motorisation
+| `SUP`   | Supervisor
+| `TMC`   | Theodolite Measurement and Calculation
+|===
 
 The Lua function names do not match the GeoCOM API names. All functions start
 with prefix `geocom_`, all named parameters with `GEOCOM_`. The names of the
 requests are set to the name of the respective function without the prefix.
 
-[%autowidth]
+.Comparison of the DMPACK Lua API and the official GeoCOM API
+[cols="3,2"]
 |===
-| GeoCOM API                  | Lua API
+| Lua API                                                                               | GeoCOM API
 
-| `AUS_GetUserAtrState`       | <<lua-api-geocom-get-user-atr-mode,geocom_get_user_atr_mode>>
-| `AUS_GetUserLockState`      | <<lua-api-geocom-get-user-lock-mode,geocom_get_user_lock_mode>>
-| `AUS_SetUserAtrState`       | <<lua-api-geocom-set-user-atr-mode,geocom_set_user_atr_mode>>
-| `AUS_SetUserLockState`      | <<lua-api-geocom-set-user-lock-mode,geocom_set_user_lock_mode>>
-| `AUT_ChangeFace`            | <<lua-api-geocom-change-face,geocom_change_face>>
-| `AUT_FineAdjust`            | <<lua-api-geocom-fine-adjust,geocom_fine_adjust>>
-| `AUT_GetFineAdjustMode`     | <<lua-api-geocom-get-fine-adjust-mode,geocom_get_fine_adjust_mode>>
-| `AUT_GetSearchArea`         | <<lua-api-geocom-get-search-area,geocom_get_search_area>>
-| `AUT_GetUserSpiral`         | <<lua-api-geocom-get-user-spiral,geocom_get_user_spiral>>
-| `AUT_LockIn`                | <<lua-api-geocom-lock-in,geocom_lock_in>>
-| `AUT_MakePositioning`       | <<lua-api-geocom-set-position,geocom_set_position>>
-| `AUT_PS_EnableRange`        | <<lua-api-geocom-ps-enable-range,geocom_ps_enable_range>>
-| `AUT_PS_SearchNext`         | <<lua-api-geocom-ps-search-next,geocom_ps_search_next>>
-| `AUT_PS_SearchWindow`       | <<lua-api-geocom-ps-search-window,geocom_ps_search_window>>
-| `AUT_PS_SetRange`           | <<lua-api-geocom-ps-set-range,geocom_ps_set_range>>
-| `AUT_ReadTimeout`           | <<lua-api-geocom-get-timeout,geocom_get_timeout>>
-| `AUT_ReadTol`               | <<lua-api-geocom-get-tolerance,geocom_get_tolerance>>
-| `AUT_Search`                | <<lua-api-geocom-get-search,geocom_get_search>>
-| `AUT_SetFineAdjustMode`     | <<lua-api-geocom-set-fine-adjust-mode,geocom_set_fine_adjust_mode>>
-| `AUT_SetSearchArea`         | <<lua-api-geocom-set-search-area,geocom_set_search_area>>
-| `AUT_SetTimeout`            | <<lua-api-geocom-set-positioning-timeout,geocom_set_positioning_timeout>>
-| `AUT_SetTol`                | <<lua-api-geocom-set-tolerance,geocom_set_tolerance>>
-| `AUT_SetUserSpiral`         | <<lua-api-geocom-set-user-spiral,geocom_set_user_spiral>>
-| `BAP_GetATRSetting`         | <<lua-api-geocom-get-atr-setting,geocom_get_atr_setting>>
-| `BAP_GetMeasPrg`            | <<lua-api-geocom-get-measurement-program,geocom_get_measurement_program>>
-| `BAP_GetPrismDef`           | <<lua-api-geocom-get-prism-definition,geocom_get_prism_definition>>
-| `BAP_GetRedATRFov`          | <<lua-api-geocom-get-reduced-atr-fov,geocom_get_reduced_atr_fov>>
-| `BAP_GetTargetType`         | <<lua-api-geocom-get-target-type,geocom_get_target_type>>
-| `BAP_GetUserPrismDef`       | <<lua-api-geocom-get-user-prism-definition,geocom_get_user_prism_definition>>
-| `BAP_SearchTarget`          | <<lua-api-geocom-search-target,geocom_search_target>>
-| `BAP_SetATRSetting`         | <<lua-api-geocom-set-atr-mode,geocom_set_atr_mode>>
-| `BAP_SetAtmCorr`            | <<lua-api-geocom-set-atmospheric-correction,geocom_set_atmospheric_correction>>
-| `BAP_SetAtmPpm`             | <<lua-api-geocom-set-atmospheric-ppm,geocom_set_atmospheric_ppm>>
-| `BAP_SetMeasPrg`            | <<lua-api-geocom-set-measurement-program,geocom_set_measurement_program>>
-| `BAP_SetPrismType2`         | <<lua-api-geocom-set-prism-type-v2,geocom_set_prism_type_v2>>
-| `BAP_SetPrismType`          | <<lua-api-geocom-set-prism-type,geocom_set_prism_type>>
-| `BAP_SetRedATRFov`          | <<lua-api-geocom-set-reduced-atr-fov,geocom_set_reduced_atr_fov>>
-| `BAP_SetTargetType`         | <<lua-api-geocom-set-target-type,geocom_set_target_type>>
-| `BAP_SetUserPrismDef`       | <<lua-api-geocom-set-user-prism-definition,geocom_set_user_prism_definition>>
-| `BMM_BeepAlarm`             | <<lua-api-geocom-beep-alarm,geocom_beep_alarm>>
-| `BMM_BeepNormal`            | <<lua-api-geocom-beep-normal,geocom_beep_normal>>
-| `COM_GetBinaryAvailable`    | <<lua-api-geocom-get-binary-mode,geocom_get_binary_mode>>
-| `COM_GetDoublePrecision`    | <<lua-api-geocom-get-double-precision,geocom_get_double_precision>>
-| `COM_GetSWVersion`          | <<lua-api-geocom-get-geocom-version,geocom_get_geocom_version>>
-| `COM_NullProc`              | <<lua-api-geocom-null,geocom_null>>
-| `COM_SetBinaryAvailable`    | <<lua-api-geocom-set-binary-mode,geocom_set_binary_mode>>
-| `COM_SetDoublePrecision`    | <<lua-api-geocom-set-double-precision,geocom_set_double_precision>>
-| `COM_SwitchOffTPS`          | <<lua-api-geocom-switch-off,geocom_switch_off>>
-| `COM_SwitchOffTPS`          | <<lua-api-geocom-switch-on,geocom_switch_on>>
-| `CSV_CheckPower`            | <<lua-api-geocom-get-power,geocom_get_power>>
-| `CSV_GetDateTimeCentiSec`   | <<lua-api-geocom-get-date-time-centi,geocom_get_date_time_centi>>
-| `CSV_GetDateTime`           | <<lua-api-geocom-get-date-time,geocom_get_date_time>>
-| `CSV_GetDeviceConfig`       | <<lua-api-geocom-get-device-config,geocom_get_device_config>>
-| `CSV_GetInstrumentName`     | <<lua-api-geocom-get-instrument-name,geocom_get_instrument_name>>
-| `CSV_GetInstrumentNo`       | <<lua-api-geocom-get-instrument-number,geocom_get_instrument_number>>
-| `CSV_GetIntTemp`            | <<lua-api-geocom-get-internal-temperature,geocom_get_internal_temperature>>
-| `CSV_GetReflectorlessClass` | <<lua-api-geocom-get-reflectorless-class,geocom_get_reflectorless_class>>
-| `CSV_GetSWVersion`          | <<lua-api-geocom-get-software-version,geocom_get_software_version>>
-| `CSV_SetDateTime`           | <<lua-api-geocom-set-date-time,geocom_set_date_time>>
-| `EDM_GetEglIntensity`       | <<lua-api-geocom-get-egl-intensity,geocom_get_egl_intensity>>
-| `EDM_Laserpointer`          | <<lua-api-geocom-set-laser-pointer,geocom_set_laser_pointer>>
-| `EDM_SetEglIntensity`       | <<lua-api-geocom-set-egl-intensity,geocom_set_egl_intensity>>
-| `FTR_AbortDownload`         | <<lua-api-geocom-abort-download,geocom_abort_download>>
-| `FTR_AbortList`             | <<lua-api-geocom-abort-list,geocom_abort_list>>
-| `FTR_Delete`                | <<lua-api-geocom-delete,geocom_delete>>
-| `FTR_Download`              | <<lua-api-geocom-download,geocom_download>>
-| `FTR_List`                  | <<lua-api-geocom-list,geocom_list>>
-| `FTR_SetupDownload`         | <<lua-api-geocom-setup-download,geocom_setup_download>>
-| `FTR_SetupList`             | <<lua-api-geocom-setup-list,geocom_setup_list>>
-| `IMG_GetTccConfig`          | <<lua-api-geocom-get-image-config,geocom_get_image_config>>
-| `IMG_SetTccConfig`          | <<lua-api-geocom-set-image-config,geocom_set_image_config>>
-| `IMG_TakeTccImage`          | <<lua-api-geocom-take-image,geocom_take_image>>
-| `IOS_BeepOff`               | <<lua-api-geocom-beep-off,geocom_beep_off>>
-| `IOS_BeepOn`                | <<lua-api-geocom-beep-on,geocom_beep_on>>
-| `MOT_ReadLockStatus`        | <<lua-api-geocom-get-lock-status,geocom_get_lock_status>>
-| `MOT_SetVelocity`           | <<lua-api-geocom-set-velocity,geocom_set_velocity>>
-| `MOT_StartController`       | <<lua-api-geocom-start-controller,geocom_start_controller>>
-| `MOT_StopController`        | <<lua-api-geocom-stop-controller,geocom_stop_controller>>
-| `SUP_GetConfig`             | <<lua-api-geocom-get-config,geocom_get_config>>
-| `SUP_SetConfig`             | <<lua-api-geocom-set-config,geocom_set_config>>
-| `TMC_DoMeasure`             | <<lua-api-geocom-do-measure,geocom_do_measure>>
-| `TMC_GeoPpm`                | <<lua-api-geocom-get-geometric-ppm,geocom_get_geometric_ppm>>
-| `TMC_GetAngSwitch`          | <<lua-api-geocom-get-angular-correction-status,geocom_get_angular_correction_status>>
-| `TMC_GetAngle1`             | <<lua-api-geocom-get-angle-complete,geocom_get_angle_complete>>
-| `TMC_GetAngle5`             | <<lua-api-geocom-get-angle,geocom_get_angle>>
-| `TMC_GetAtmCorr`            | <<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction>>
-| `TMC_GetAtmPpm`             | <<lua-api-geocom-get-atmospheric-ppm,geocom_get_atmospheric_ppm>>
-| `TMC_GetCoordinate`         | <<lua-api-geocom-get-coordinate,geocom_get_coordinate>>
-| `TMC_GetEdmMode`            | <<lua-api-geocom-get-edm-mode,geocom_get_edm_mode>>
-| `TMC_GetFace`               | <<lua-api-geocom-get-face,geocom_get_face>>
-| `TMC_GetFullMeas`           | <<lua-api-geocom-get-full-measurement,geocom_get_full_measurement>>
-| `TMC_GetHeight`             | <<lua-api-geocom-get-height,geocom_get_height>>
-| `TMC_GetInclineSwitch`      | <<lua-api-geocom-get-inclination-correction,geocom_get_inclination_correction>>
-| `TMC_GetPrismCorr`          | <<lua-api-geocom-get-prism-constant,geocom_get_prism_constant>>
-| `TMC_GetPrismType2`         | <<lua-api-geocom-get-prism-type-v2,geocom_get_prism_type_v2>>
-| `TMC_GetPrismType`          | <<lua-api-geocom-get-prism-type,geocom_get_prism_type>>
-| `TMC_GetQuickDist`          | <<lua-api-geocom-get-quick-distance,geocom_get_quick_distance>>
-| `TMC_GetRefractiveMethod`   | <<lua-api-geocom-get-refraction-mode,geocom_get_refraction_mode>>
-| `TMC_GetSignal`             | <<lua-api-geocom-get-signal,geocom_get_signal>>
-| `TMC_GetSimpleCoord`        | <<lua-api-geocom-get-simple-coordinates,geocom_get_simple_coordinates>>
-| `TMC_GetSimpleMea`          | <<lua-api-geocom-get-simple-measurement,geocom_get_simple_measurement>>
-| `TMC_GetSlopeDistCorr`      | <<lua-api-geocom-get-slope-distance-correction,geocom_get_slope_distance_correction>>
-| `TMC_GetStation`            | <<lua-api-geocom-get-station,geocom_get_station>>
-| `TMC_IfDataAzeCorrError`    | <<lua-api-geocom-get-atr-error,geocom_get_atr_error>>
-| `TMC_IfDataIncCorrError`    | <<lua-api-geocom-get-inclination-error,geocom_get_inclination_error>>
-| `TMC_QuickDist`             | <<lua-api-geocom-get-quick-distance,geocom_get_quick_distance>>
-| `TMC_SetAngSwitch`          | <<lua-api-geocom-set-angle-correction,geocom_set_angle_correction>>
-| `TMC_SetEdmMode`            | <<lua-api-geocom-set-edm-mode,geocom_set_edm_mode>>
-| `TMC_SetGeoPpm`             | <<lua-api-geocom-set-geometric-ppm,geocom_set_geometric_ppm>>
-| `TMC_SetHandDist`           | <<lua-api-geocom-set-distance,geocom_set_distance>>
-| `TMC_SetHeight`             | <<lua-api-geocom-set-height,geocom_set_height>>
-| `TMC_SetInclineSwitch`      | <<lua-api-geocom-set-inclination-correction,geocom_set_inclination_correction>>
-| `TMC_SetOrientation`        | <<lua-api-geocom-set-orientation,geocom_set_orientation>>
-| `TMC_SetPrismCorr`          | <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant>>
-| `TMC_SetRefractiveMethod`   | <<lua-api-geocom-set-refraction-mode,geocom_set_refraction_mode>>
-| `TMC_SetStation`            | <<lua-api-geocom-set-station,geocom_set_station>>
+| <<lua-api-geocom-abort-download,geocom_abort_download>>                               | `FTR_AbortDownload`
+| <<lua-api-geocom-abort-list,geocom_abort_list>>                                       | `FTR_AbortList`
+| <<lua-api-geocom-beep-alarm,geocom_beep_alarm>>                                       | `BMM_BeepAlarm`
+| <<lua-api-geocom-beep-normal,geocom_beep_normal>>                                     | `BMM_BeepNormal`
+| <<lua-api-geocom-beep-off,geocom_beep_off>>                                           | `IOS_BeepOff`
+| <<lua-api-geocom-beep-on,geocom_beep_on>>                                             | `IOS_BeepOn`
+| <<lua-api-geocom-change-face,geocom_change_face>>                                     | `AUT_ChangeFace`
+| <<lua-api-geocom-delete,geocom_delete>>                                               | `FTR_Delete`
+| <<lua-api-geocom-do-measure,geocom_do_measure>>                                       | `TMC_DoMeasure`
+| <<lua-api-geocom-download,geocom_download>>                                           | `FTR_Download`
+| <<lua-api-geocom-fine-adjust,geocom_fine_adjust>>                                     | `AUT_FineAdjust`
+| <<lua-api-geocom-get-angle,geocom_get_angle>>                                         | `TMC_GetAngle5`
+| <<lua-api-geocom-get-angle-complete,geocom_get_angle_complete>>                       | `TMC_GetAngle1`
+| <<lua-api-geocom-get-angular-correction-status,geocom_get_angular_correction_status>> | `TMC_GetAngSwitch`
+| <<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction>>       | `TMC_GetAtmCorr`
+| <<lua-api-geocom-get-atmospheric-ppm,geocom_get_atmospheric_ppm>>                     | `TMC_GetAtmPpm`
+| <<lua-api-geocom-get-atr-error,geocom_get_atr_error>>                                 | `TMC_IfDataAzeCorrError`
+| <<lua-api-geocom-get-atr-setting,geocom_get_atr_setting>>                             | `BAP_GetATRSetting`
+| <<lua-api-geocom-get-binary-mode,geocom_get_binary_mode>>                             | `COM_GetBinaryAvailable`
+| <<lua-api-geocom-get-config,geocom_get_config>>                                       | `SUP_GetConfig`
+| <<lua-api-geocom-get-coordinate,geocom_get_coordinate>>                               | `TMC_GetCoordinate`
+| <<lua-api-geocom-get-date-time,geocom_get_date_time>>                                 | `CSV_GetDateTime`
+| <<lua-api-geocom-get-date-time-centi,geocom_get_date_time_centi>>                     | `CSV_GetDateTimeCentiSec`
+| <<lua-api-geocom-get-device-config,geocom_get_device_config>>                         | `CSV_GetDeviceConfig`
+| <<lua-api-geocom-get-double-precision,geocom_get_double_precision>>                   | `COM_GetDoublePrecision`
+| <<lua-api-geocom-get-edm-mode,geocom_get_edm_mode>>                                   | `TMC_GetEdmMode`
+| <<lua-api-geocom-get-egl-intensity,geocom_get_egl_intensity>>                         | `EDM_GetEglIntensity`
+| <<lua-api-geocom-get-face,geocom_get_face>>                                           | `TMC_GetFace`
+| <<lua-api-geocom-get-fine-adjust-mode,geocom_get_fine_adjust_mode>>                   | `AUT_GetFineAdjustMode`
+| <<lua-api-geocom-get-full-measurement,geocom_get_full_measurement>>                   | `TMC_GetFullMeas`
+| <<lua-api-geocom-get-geocom-version,geocom_get_geocom_version>>                       | `COM_GetSWVersion`
+| <<lua-api-geocom-get-geometric-ppm,geocom_get_geometric_ppm>>                         | `TMC_GeoPpm`
+| <<lua-api-geocom-get-height,geocom_get_height>>                                       | `TMC_GetHeight`
+| <<lua-api-geocom-get-image-config,geocom_get_image_config>>                           | `IMG_GetTccConfig`
+| <<lua-api-geocom-get-inclination-correction,geocom_get_inclination_correction>>       | `TMC_GetInclineSwitch`
+| <<lua-api-geocom-get-inclination-error,geocom_get_inclination_error>>                 | `TMC_IfDataIncCorrError`
+| <<lua-api-geocom-get-instrument-name,geocom_get_instrument_name>>                     | `CSV_GetInstrumentName`
+| <<lua-api-geocom-get-instrument-number,geocom_get_instrument_number>>                 | `CSV_GetInstrumentNo`
+| <<lua-api-geocom-get-internal-temperature,geocom_get_internal_temperature>>           | `CSV_GetIntTemp`
+| <<lua-api-geocom-get-lock-status,geocom_get_lock_status>>                             | `MOT_ReadLockStatus`
+| <<lua-api-geocom-get-measurement-program,geocom_get_measurement_program>>             | `BAP_GetMeasPrg`
+| <<lua-api-geocom-get-power,geocom_get_power>>                                         | `CSV_CheckPower`
+| <<lua-api-geocom-get-prism-constant,geocom_get_prism_constant>>                       | `TMC_GetPrismCorr`
+| <<lua-api-geocom-get-prism-definition,geocom_get_prism_definition>>                   | `BAP_GetPrismDef`
+| <<lua-api-geocom-get-prism-type,geocom_get_prism_type>>                               | `TMC_GetPrismType`
+| <<lua-api-geocom-get-prism-type-v2,geocom_get_prism_type_v2>>                         | `TMC_GetPrismType2`
+| <<lua-api-geocom-get-quick-distance,geocom_get_quick_distance>>                       | `TMC_QuickDist`
+| <<lua-api-geocom-get-reduced-atr-fov,geocom_get_reduced_atr_fov>>                     | `BAP_GetRedATRFov`
+| <<lua-api-geocom-get-reflectorless-class,geocom_get_reflectorless_class>>             | `CSV_GetReflectorlessClass`
+| <<lua-api-geocom-get-refraction-mode,geocom_get_refraction_mode>>                     | `TMC_GetRefractiveMethod`
+| <<lua-api-geocom-get-search,geocom_get_search>>                                       | `AUT_Search`
+| <<lua-api-geocom-get-search-area,geocom_get_search_area>>                             | `AUT_GetSearchArea`
+| <<lua-api-geocom-get-signal,geocom_get_signal>>                                       | `TMC_GetSignal`
+| <<lua-api-geocom-get-simple-coordinates,geocom_get_simple_coordinates>>               | `TMC_GetSimpleCoord`
+| <<lua-api-geocom-get-simple-measurement,geocom_get_simple_measurement>>               | `TMC_GetSimpleMea`
+| <<lua-api-geocom-get-slope-distance-correction,geocom_get_slope_distance_correction>> | `TMC_GetSlopeDistCorr`
+| <<lua-api-geocom-get-software-version,geocom_get_software_version>>                   | `CSV_GetSWVersion`
+| <<lua-api-geocom-get-station,geocom_get_station>>                                     | `TMC_GetStation`
+| <<lua-api-geocom-get-target-type,geocom_get_target_type>>                             | `BAP_GetTargetType`
+| <<lua-api-geocom-get-timeout,geocom_get_timeout>>                                     | `AUT_ReadTimeout`
+| <<lua-api-geocom-get-tolerance,geocom_get_tolerance>>                                 | `AUT_ReadTol`
+| <<lua-api-geocom-get-user-atr-mode,geocom_get_user_atr_mode>>                         | `AUS_GetUserAtrState`
+| <<lua-api-geocom-get-user-lock-mode,geocom_get_user_lock_mode>>                       | `AUS_GetUserLockState`
+| <<lua-api-geocom-get-user-prism-definition,geocom_get_user_prism_definition>>         | `BAP_GetUserPrismDef`
+| <<lua-api-geocom-get-user-spiral,geocom_get_user_spiral>>                             | `AUT_GetUserSpiral`
+| <<lua-api-geocom-list,geocom_list>>                                                   | `FTR_List`
+| <<lua-api-geocom-lock-in,geocom_lock_in>>                                             | `AUT_LockIn`
+| <<lua-api-geocom-measure-distance-angle,geocom_measure_distance_angle>>               | `BAP_MeasDistanceAngle`
+| <<lua-api-geocom-null,geocom_null>>                                                   | `COM_NullProc`
+| <<lua-api-geocom-ps-enable-range,geocom_ps_enable_range>>                             | `AUT_PS_EnableRange`
+| <<lua-api-geocom-ps-search-next,geocom_ps_search_next>>                               | `AUT_PS_SearchNext`
+| <<lua-api-geocom-ps-search-window,geocom_ps_search_window>>                           | `AUT_PS_SearchWindow`
+| <<lua-api-geocom-ps-set-range,geocom_ps_set_range>>                                   | `AUT_PS_SetRange`
+| <<lua-api-geocom-search-target,geocom_search_target>>                                 | `BAP_SearchTarget`
+| <<lua-api-geocom-set-angle-correction,geocom_set_angle_correction>>                   | `TMC_SetAngSwitch`
+| <<lua-api-geocom-set-atmospheric-correction,geocom_set_atmospheric_correction>>       | `BAP_SetAtmCorr`
+| <<lua-api-geocom-set-atmospheric-ppm,geocom_set_atmospheric_ppm>>                     | `BAP_SetAtmPpm`
+| <<lua-api-geocom-set-atr-mode,geocom_set_atr_mode>>                                   | `BAP_SetATRSetting`
+| <<lua-api-geocom-set-binary-mode,geocom_set_binary_mode>>                             | `COM_SetBinaryAvailable`
+| <<lua-api-geocom-set-config,geocom_set_config>>                                       | `SUP_SetConfig`
+| <<lua-api-geocom-set-date-time,geocom_set_date_time>>                                 | `CSV_SetDateTime`
+| <<lua-api-geocom-set-distance,geocom_set_distance>>                                   | `TMC_SetHandDist`
+| <<lua-api-geocom-set-double-precision,geocom_set_double_precision>>                   | `COM_SetDoublePrecision`
+| <<lua-api-geocom-set-edm-mode,geocom_set_edm_mode>>                                   | `TMC_SetEdmMode`
+| <<lua-api-geocom-set-egl-intensity,geocom_set_egl_intensity>>                         | `EDM_SetEglIntensity`
+| <<lua-api-geocom-set-fine-adjust-mode,geocom_set_fine_adjust_mode>>                   | `AUT_SetFineAdjustMode`
+| <<lua-api-geocom-set-geometric-ppm,geocom_set_geometric_ppm>>                         | `TMC_SetGeoPpm`
+| <<lua-api-geocom-set-height,geocom_set_height>>                                       | `TMC_SetHeight`
+| <<lua-api-geocom-set-image-config,geocom_set_image_config>>                           | `IMG_SetTccConfig`
+| <<lua-api-geocom-set-inclination-correction,geocom_set_inclination_correction>>       | `TMC_SetInclineSwitch`
+| <<lua-api-geocom-set-laser-pointer,geocom_set_laser_pointer>>                         | `EDM_Laserpointer`
+| <<lua-api-geocom-set-measurement-program,geocom_set_measurement_program>>             | `BAP_SetMeasPrg`
+| <<lua-api-geocom-set-orientation,geocom_set_orientation>>                             | `TMC_SetOrientation`
+| <<lua-api-geocom-set-position,geocom_set_position>>                                   | `AUT_MakePositioning`
+| <<lua-api-geocom-set-positioning-timeout,geocom_set_positioning_timeout>>             | `AUT_SetTimeout`
+| <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant>>                       | `TMC_SetPrismCorr`
+| <<lua-api-geocom-set-prism-type,geocom_set_prism_type>>                               | `BAP_SetPrismType`
+| <<lua-api-geocom-set-prism-type-v2,geocom_set_prism_type_v2>>                         | `BAP_SetPrismType2`
+| <<lua-api-geocom-set-reduced-atr-fov,geocom_set_reduced_atr_fov>>                     | `BAP_SetRedATRFov`
+| <<lua-api-geocom-set-refraction-mode,geocom_set_refraction_mode>>                     | `TMC_SetRefractiveMethod`
+| <<lua-api-geocom-set-search-area,geocom_set_search_area>>                             | `AUT_SetSearchArea`
+| <<lua-api-geocom-set-station,geocom_set_station>>                                     | `TMC_SetStation`
+| <<lua-api-geocom-set-target-type,geocom_set_target_type>>                             | `BAP_SetTargetType`
+| <<lua-api-geocom-set-tolerance,geocom_set_tolerance>>                                 | `AUT_SetTol`
+| <<lua-api-geocom-set-user-atr-mode,geocom_set_user_atr_mode>>                         | `AUS_SetUserAtrState`
+| <<lua-api-geocom-set-user-lock-mode,geocom_set_user_lock_mode>>                       | `AUS_SetUserLockState`
+| <<lua-api-geocom-set-user-prism-definition,geocom_set_user_prism_definition>>         | `BAP_SetUserPrismDef`
+| <<lua-api-geocom-set-user-spiral,geocom_set_user_spiral>>                             | `AUT_SetUserSpiral`
+| <<lua-api-geocom-set-velocity,geocom_set_velocity>>                                   | `MOT_SetVelocity`
+| <<lua-api-geocom-setup-download,geocom_setup_download>>                               | `FTR_SetupDownload`
+| <<lua-api-geocom-setup-list,geocom_setup_list>>                                       | `FTR_SetupList`
+| <<lua-api-geocom-start-controller,geocom_start_controller>>                           | `MOT_StartController`
+| <<lua-api-geocom-stop-controller,geocom_stop_controller>>                             | `MOT_StopController`
+| <<lua-api-geocom-switch-off,geocom_switch_off>>                                       | `COM_SwitchOffTPS`
+| <<lua-api-geocom-switch-on,geocom_switch_on>>                                         | `COM_SwitchOffTPS`
+| <<lua-api-geocom-take-image,geocom_take_image>>                                       | `IMG_TakeTccImage`
 |===
-
 
 ==== geocom_abort_download() [[lua-api-geocom-abort-download]]
 
@@ -5270,7 +5246,7 @@ into a target in the destination area. This mode requires activated ATR.
 
 * `device_type` (_integer_) – Internal memory or memory card (<<geocom-api-ftr-devicetype,GEOCOM_FTR_DEVICETYPE>>).
 * `file_type`   (_integer_) – Type of file (<<geocom-api-ftr-filetype,GEOCOM_FTR_FILETYPE>>).
-* `day`         (_integer_) – Day (`DD`).
+* `day`         (_integer_) – Day of month (`DD`).
 * `month`       (_integer_) – Month (`MM`).
 * `year`        (_integer_) – Year (`YY`).
 * `file_name`   (_string_)  – Name of file to delete.
@@ -5281,7 +5257,7 @@ is valid, only files older than the deletion date are deleted.
 
 ==== geocom_do_measure(tmc_prog, inc_mode) [[lua-api-geocom-do-measure]]
 
-* `tmc_prog` (_integer_) – TMC measurement program (<<geocom-api-tmc-measure-prg,GEOCOM_TMC_MEASURE_PRG>>).
+* `tmc_prog` (_integer_) – Measurement program (<<geocom-api-tmc-measure-prg,GEOCOM_TMC_MEASURE_PRG>>).
 * `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
 Returns request of *TMC_DoMeasure* procedure. Creates request for trying a
@@ -5294,11 +5270,11 @@ distance sensor will work with the set EDM mode.
 * `block_number` (_integer_) – Block number to download (0 – 65535).
 
 Returns request of *FTR_Download* procedure. Creates request to get a single
-block of data. The *FTR_SetupDownload* command has to be called first. The block
-sequence starts with 1. The download process will be aborted if the block number
-is set to 0. The maximum block number is 65535. The file size is therefore
-limited to 28 MiB. The function should not be used inside of configuration
-files.
+block of data. The <<lua-api-geocom-setup-download,geocom_setup_download()>>
+function has to be called first. The block sequence starts with 1. The download
+process will be aborted if the block number is set to 0. The maximum block
+number is 65535. The file size is therefore limited to 28 MiB. The function
+should not be used inside of configuration files.
 
 ==== geocom_fine_adjust(search_hz, search_v) [[lua-api-geocom-fine-adjust]]
 
@@ -5542,7 +5518,7 @@ slope distance and both angles. The function starts an EDM tracking measurement,
 and waits until a distance has been measured. Then, it returns the angles and
 the slope distance, but no coordinates. If no distance could be measured, only
 angles and an error code are returned. A measurement may be aborted by calling
-*TMC_DoMeasure*.
+<<lua-api-geocom-do-measure,geocom_do_measure()>>.
 
 ==== geocom_get_reduced_atr_fov() [[lua-api-geocom-get-reduced-atr-fov]]
 
@@ -5571,9 +5547,9 @@ instruments, but has only effects for instruments equipped with PowerSearch.
 ==== geocom_get_signal() [[lua-api-geocom-get-signal]]
 
 Returns request of *TMC_GetSignal* procedure. Creates request for getting the
-EDM signal intensity. The function returns the intensity of the EDM signal. The
-function can only perform a measurement if the signal measurement program is
-activated. Start the signal measurement program with *TMC_DoMeasure* in program
+EDM signal intensity. The function can only perform a measurement if the signal
+measurement program is activated. Start the signal measurement program with
+<<lua-api-geocom-do-measure,geocom_do_measure()>> in program
 `GEOCOM_TMC_SIGNAL`. After the measurement, the EDM must be switched off with
 program `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
 
@@ -5587,7 +5563,7 @@ cartesian coordinates if a valid distance is set. The argument `wait_time` sets
 the maximum time to wait for a valid distance. Without a valid distance, the
 coordinates are set to 0.0, and an error is returned. The coordinate calculation
 requires inclination results. The argument `inc_mode` sets the inclination
-measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+measurement mode.
 
 ==== geocom_get_simple_measurement(wait_time, inc_mode) [[lua-api-geocom-get-simple-measurement]]
 
@@ -5666,8 +5642,20 @@ information.
 
 Returns request of *AUT_LockIn* procedure. Creates request for starting the
 target tracking. The API function will start the target tracking if the _lock_
-mode is activated (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must have
-finished successfully before executing this function.
+mode has been activated through
+<<lua-api-geocom-set-user-lock-mode,geocom_set_user_lock_mode()>>. The
+<<lua-api-geocom-fine-adjust,geocom_fine_adjust()>> call must have finished
+successfully before executing this function.
+
+==== geocom_measure_distance_angle(dist_mode) [[lua-api-geocom-measure-distance-angle]]
+
+* `dist_mode` (_integer_) – Distance measurement program (`GEOCOM_BAP_MEASURE_PRG`).
+
+Returns request of *BAP_MeasDistanceAngle* procedure. Creates request for
+measuring Hz, V angles and a single distance. The API function measures angles
+and a single distance depending on the distance measurement mode `dist_mode`.
+It is not suited for continuous measurements (_lock_ mode and TRK mode), and
+uses the current automation settings.
 
 ==== geocom_null() [[lua-api-geocom-null]]
 
@@ -5680,18 +5668,21 @@ communication.
 
 Returns request of *AUT_PS_EnableRange* procedure. The function enabled or
 disables the predefined PowerSearch window including the PowerSearch range
-limits set by API call *AUT_PS_SetRange* (requires GeoCOM robotic licence). If
-`enabled` is `false`, the default range is set to ≤ 400 m.
+limits set by API call <<lua-api-geocom-ps-set-range,geocom_ps_set_range()>>
+(requires GeoCOM robotic licence). If `enabled` is `false`, the default range
+is set to ≤ 400 m.
 
 ==== geocom_ps_search_next(direction, swing) [[lua-api-geocom-ps-search-next]]
 
-* `direction` (_integer_) – Searching direction (`1` for clockwise, `-1` for counter-clockwise).
+* `direction` (_integer_) – Searching direction (`GEOCOM_AUT_CLOCKWISE` or `GEOCOM_AUT_ANTICLOCKWISE`).
 * `swing`     (_bool_)    – Searching starts –10 gon to the given direction.
 
 Returns request of *AUT_PS_SearchNext* procedure. The function executes the 360°
 default PowerSearch and searches for the next targets. A previously defined
-PowerSearch window (*AUT_SetSearchArea*) is not taken into account. Use API call
-*AUT_PS_SearchWindow* first.
+PowerSearch window of
+<<lua-api-geocom-set-search-area,geocom_ps_set_search_area()>> is not taken
+into account. Use API call
+<<lua-api-geocom-ps-set-search-window,geocom_ps_set_search_window()>> first.
 
 ==== geocom_ps_search_window() [[lua-api-geocom-ps-search-window]]
 
@@ -5717,9 +5708,10 @@ target search within the given search area (requires GeoCOM robotic licence).
 The search is terminated once the prism appears in the field of view of the ATR
 sensor. If no prism is found in the specified area, the instrument turns back
 into the initial position. For an exact positioning onto the prism centre, use
-the fine-adjust API call afterwards (*AUT_FineAdjust*). If the search range of
-the API function *AUT_FineAdjust* is expanded, target search and fine
-positioning are done in one step.
+the fine-adjust API call <<lua-api-geocom-fine-adjust,geocom_fine_adjust()>>
+afterwards. If the search range of the API function
+<<lua-api-geocom-fine-adjust,geocom_fine_adjust()>> is expanded, target search
+and fine positioning are done in one step.
 
 ==== geocom_search_target() [[lua-api-geocom-search-target]]
 
@@ -5745,7 +5737,8 @@ angle corrections on or off.
 
 Returns request of *BAP_SetAtmCorr* procedure. Creates request for setting the
 atmospheric correction parameters. The argument `lambda` should be queried with
-API call *TMC_GetAtmCorr*.
+API call
+<<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction()>>.
 
 ==== geocom_set_atmospheric_ppm(atm_ppm) [[lua-api-geocom-set-atmospheric-ppm]]
 
@@ -5823,7 +5816,8 @@ value is 1.99975, the resulting value will be 2.0.
 
 Returns request of *TMC_SetEdmMode* procedure. Creates request for setting the
 EDM measurement mode. The EDM mode set by this function is used by
-*TMC_DoMeasure(TMC_DEF_DIST)*.
+<<lua-api-geocom-do-measure,geocom_do_measure()>> in program
+`GEOCOM_TMC_DEF_DIST`.
 
 ==== geocom_set_egl_intensity(intensity) [[lua-api-geocom-set-egl-intensity]]
 
@@ -5898,9 +5892,10 @@ reflectorless distance measurement.
 * `bap_prog` (_integer_) – Measurement program (<<geocom-api-bap-user-measprg,GEOCOM_BAP_USER_MEASPRG>>).
 
 Returns request of *BAP_SetMeasPrg* procedure. The function sets the distance
-measurement program, for example, for API call *BAP_MeasDistanceAngle*. The RL
-EDM type programs are not available on all instruments. Changing the measurement
-program may change the EDM type as well (IR, RL).
+measurement program, for example, for API call
+<<lua-api-geocom-measure-distance-angle,geocom_measure_distance_angle()>>. The
+RL EDM type programs are not available on all instruments. Changing the
+measurement program may change the EDM type as well (IR, RL).
 
 ==== geocom_set_orientation(hz) [[lua-api-geocom-set-orientation]]
 
@@ -5911,7 +5906,8 @@ orientating the instrument in horizontal direction. The API function is a
 combination of an angle measurement to get the horizontal offset and setting the
 angle offset afterwards, in order to orientate to a target. Before the new
 orientation can be set, an existing distance must be cleared by calling API
-function *TMC_DoMeasure* with command `GEOCOM_TMC_CLEAR`.
+function <<lua-api-geocom-do-measure,geocom_do_measure()>> with argument
+`GEOCOM_TMC_CLEAR`.
 
 ==== geocom_set_position(hz, v, pos_mode, atr_mode) [[lua-api-geocom-set-position]]
 
@@ -5946,7 +5942,9 @@ power on. Valid value for `hz` and `v` are between 7 [sec] and 60 [sec].
 * `prism_const` (_number_) – Prism constant [mm].
 
 Returns request of *TMC_SetPrismCorr* procedure. Creates request for setting the
-prism constant. The API function *BAP_SetPrismType* overwrites this setting.
+prism constant. The API function
+<<lua-api-geocom-set-prism-type,geocom_set_prism_type()>> overwrites this
+setting.
 
 ==== geocom_set_prism_type(prism_type) [[lua-api-geocom-set-prism-type]]
 
@@ -5955,7 +5953,7 @@ prism constant. The API function *BAP_SetPrismType* overwrites this setting.
 Returns request of *BAP_SetPrismType* procedure. Creates request for setting the
 default prism type. This function sets the prism type for measurement with a
 reflector (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by API
-call *TMC_SetPrimCorr*.
+call <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant()>>.
 
 ==== geocom_set_prism_type_v2(prism_type, prism_name) [[lua-api-geocom-set-prism-type-v2]]
 
@@ -5965,8 +5963,10 @@ call *TMC_SetPrimCorr*.
 Returns request of *BAP_SetPrismType2* procedure. Creates request for setting
 the default or user prism type. This function sets the default or the user prism
 type for measurements with a reflector. It overwrites the prism constant set by
-*TMC_SetPrismCorr*. The user defined prism must have been added with API call
-*BAP_SetUserPrismDef* beforehand.
+<<lua-api-geocom-set-prism-constant,geocom_set_prism_constant()>>. The user
+defined prism must have been added with API call
+<<lua-api-geocom-set-user-prism-definition,geocom_set_user_prism_definition()>>
+beforehand.
 
 ==== geocom_set_reduced_atr_fov(enabled) [[lua-api-geocom-set-reduced-atr-fov]]
 
@@ -6018,8 +6018,10 @@ The function sets the current EDM type (`GEOCOM_BAP_TARGET_TYPE`) for distance
 measurements: reflector (IR) or reflectorless (RL). For each EDM type, the EDM
 mode used last is remembered and actived if the EDM type is changed. If EDM type
 IR is selected, the automation mode used last is activated automatically. The
-API function *BAP_SetMeasPrg* can also change the target type. The EDM type RL
-is not available on all instruments.
+API function
+<<lua-api-geocom-set-measurement-program,geocom_set_measurement_program()>> can
+also change the target type. The EDM type RL is not available on all
+instruments.
 
 ==== geocom_set_tolerance(hz, v) [[lua-api-geocom-set_tolerance]]
 
@@ -6059,9 +6061,10 @@ the status of the _lock_ state.
 
 The function activated or deactivates the _lock_ mode (GeoCOM robotic licence
 required). If `enabled` is `true`, _lock_ mode is activated. In order to lock
-and follow a moving target, call API function *AUT_LockIn*. If `enabled` is
-`false`, _lock_ mode is deactivated. Tracking of a moving target will be
-aborted, and the manual drive wheel is activated.
+and follow a moving target, call API function
+<<lua-api-geocom-lock-in,geocom_lock_in()>>. If `enabled` is `false`, _lock_
+mode is deactivated. Tracking of a moving target will be aborted, and the manual
+drive wheel is activated.
 
 ==== geocom_set_user_prism_definition(prism_name, prism_const, refl_type, creator) [[lua-api-geocom-set-user-prism-definition]]
 
@@ -6090,8 +6093,9 @@ Returns request of *MOT_SetVelocity* procedure. Creates request for driving the
 instrument with constant speed.
 
 The function is used to set up the velocity of the motorisation (GeoCOM robotic
-licence required). The API function *MOT_StartController* must have been called
-with argument `GEOCOM_MOT_OCONST` before.
+licence required). The API function
+<<lua-api-geocom-start-controller,geocom_start_controller()>> must have been
+called with argument `GEOCOM_MOT_OCONST` before.
 
 The velocity in horizontal and vertical direction are in [rad/s]. The maximum
 velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s for TPS1100/TPS1200.
@@ -6104,8 +6108,9 @@ velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s for TPS1100/TPS1200.
 * `block_size`  (_integer_) – Block size.
 
 Returns request of *FTR_SetupDownload* procedure. Creates request for setting up
-a file download. The function has to be called before *FTR_Download*. If the
-file type is `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
+a file download. The function has to be called before
+<<lua-api-geocom-download,geocom_download()>>. If the file type is
+`GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
 
 The argument `device_type` must be one of the following:
 
@@ -6123,7 +6128,7 @@ for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
 
 Returns request of *FTR_SetupList* procedure. Creates request for setting up
 file listing. The function sets up the device type, file type, and search path.
-It has to be called before *FTR_List*.
+It has to be called before <<lua-api-geocom-list,geocom_list()>>.
 
 ==== geocom_start_controller(start_mode) [[lua-api-geocom-start-controller]]
 
@@ -6131,7 +6136,8 @@ It has to be called before *FTR_List*.
 
 Returns request of *MOT_StartController* procedure. Creates request for starting
 the motor controller. If this function is used in combination with API call
-*MOT_SetVelocity*, the controller mode has to be `GEOCOM_MOT_OCONST`.
+<<lua-api-geocom-set-velocity,geocom_set_velocity()>>, the controller mode has
+to be `GEOCOM_MOT_OCONST`.
 
 The argument `start_mode` must be one of the following:
 
@@ -6189,6 +6195,107 @@ The memory type `mem_type` has to be one of the following:
 
 * `GEOCOM_IMG_INTERNAL_MEMORY` – Internal memory module.
 * `GEOCOM_IMG_PC_CARD`         – External memory card.
+
+== Third-Party Programs
+
+=== HDFView
+
+link:[]HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
+files. Application images for Linux, macOS, and Windows are available for
+download on the website of
+link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
+program has to be compiled from source. The following build dependencies are
+required:
+
+* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
+* link:https://www.freshports.org/devel/cmake[devel/cmake]
+* link:https://www.freshports.org/devel/git[devel/git]
+* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
+* link:https://www.freshports.org/lang/gcc[lang/gcc]
+* link:https://www.freshports.org/[x11-toolkits/swt]
+
+The HDF4 and HDF5 libraries have to be built from source as well. First, clone
+the HDF4 repository and compile with CMake:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
+$ cd hdf4/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
+  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
+build directory. In the next step, clone the HDF5 repository and build with
+CMake, too:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
+$ cd hdf5/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
+  -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
+to `bin/` in the HDF5 build directory. Finally, clone the HDFView repository,
+set the build properties, and compile with _ant(1)_:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
+$ cd hdfview/
+....
+
+Set the following properties in `build.properties`:
+
+....
+hdf.lib.dir = /tmp/hdf4/build/bin
+hdf5.lib.dir = /tmp/hdf5/build/bin
+hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
+build.debug = false
+....
+
+Build with _ant(1)_:
+
+....
+$ ant run
+....
+
+The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
+`swt.jar` has to be replaced with the version installed system-wide:
+
+....
+$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
+....
+
+Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
+
+....
+java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
+  -cp "./*" hdf.view.HDFView "$@"
+....
+
+To start HDFView, run:
+
+....
+$ cd build/HDF_Group/HDFView/99.99.99/
+$ sh hdfview.sh
+....
 
 == Error Codes [[error-codes]]
 

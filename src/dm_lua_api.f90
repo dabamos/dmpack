@@ -22,7 +22,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_lua_api_register(lua, add_errors, add_levels, add_procedures, add_response_types) result(rc)
+    integer function dm_lua_api_register(lua, add_errors, add_log_levels, add_procedures, add_response_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
         !! the given Lua session.
         !!
@@ -33,7 +33,7 @@ contains
         !! All DMPACK error codes are exported if `add_errors` is not
         !! `.false.`.
         !!
-        !! The following log level parameters are injected if `add_levels` is
+        !! The following log level parameters are injected if `add_log_levels` is
         !! not `.false.`:
         !!
         !! * `LVL_NONE`
@@ -73,25 +73,23 @@ contains
         use :: dm_response
         type(lua_state_type), intent(inout)        :: lua                !! Lua state type.
         logical,              intent(in), optional :: add_errors         !! Export error codes.
-        logical,              intent(in), optional :: add_levels         !! Export log level.
+        logical,              intent(in), optional :: add_log_levels     !! Export log level.
         logical,              intent(in), optional :: add_procedures     !! Export procedures.
         logical,              intent(in), optional :: add_response_types !! Export response type parameters.
 
-        logical :: add_errors_, add_levels_, add_procedures_, add_response_types_
+        logical :: add_errors_, add_log_levels_, add_procedures_, add_response_types_
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
 
-        add_errors_ = .true.
-        if (present(add_errors)) add_errors_ = add_errors
-
-        add_levels_ = .true.
-        if (present(add_levels)) add_levels_ = add_levels
-
-        add_procedures_ = .true.
-        if (present(add_procedures)) add_procedures_ = add_procedures
-
+        add_errors_         = .true.
+        add_log_levels_     = .true.
+        add_procedures_     = .true.
         add_response_types_ = .true.
+
+        if (present(add_errors))         add_errors_         = add_errors
+        if (present(add_log_levels))     add_log_levels_     = add_log_levels
+        if (present(add_procedures))     add_procedures_     = add_procedures
         if (present(add_response_types)) add_response_types_ = add_response_types
 
         ! Add error codes.
@@ -178,7 +176,7 @@ contains
         end if
 
         ! Add log levels.
-        if (add_levels_) then
+        if (add_log_levels_) then
             rc = dm_lua_eval(lua, 'LVL_NONE = '     // dm_itoa(LVL_NONE));     if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'LVL_DEBUG = '    // dm_itoa(LVL_DEBUG));    if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'LVL_INFO = '     // dm_itoa(LVL_INFO));     if (dm_is_error(rc)) return

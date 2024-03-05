@@ -51,6 +51,7 @@ module dm_geocom_api
     !! | `BAP_GetRedATRFov`          | `dm_geocom_api_request_get_reduced_atr_fov`           |
     !! | `BAP_GetTargetType`         | `dm_geocom_api_request_get_target_type`               |
     !! | `BAP_GetUserPrismDef`       | `dm_geocom_api_request_get_user_prism_definition`     |
+    !! | `BAP_MeasDistanceAngle`     | `dm_geocom_api_request_measure_distance_angle`        |
     !! | `BAP_SearchTarget`          | `dm_geocom_api_request_search_target`                 |
     !! | `BAP_SetATRSetting`         | `dm_geocom_api_request_set_atr_mode`                  |
     !! | `BAP_SetAtmCorr`            | `dm_geocom_api_request_set_atmospheric_correction`    |
@@ -223,6 +224,7 @@ module dm_geocom_api
     public :: dm_geocom_api_request_get_user_spiral
     public :: dm_geocom_api_request_list
     public :: dm_geocom_api_request_lock_in
+    public :: dm_geocom_api_request_measure_distance_angle
     public :: dm_geocom_api_request_null
     public :: dm_geocom_api_request_ps_enable_range
     public :: dm_geocom_api_request_ps_search_next
@@ -604,7 +606,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<blockval>,<blocklen>`           |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'download'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<blockval>[0-9a-f]+),(?<blocklen>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = "(?<grc>\d+),'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
         integer,          parameter :: REQUEST_CODE    = 23304
         integer,          parameter :: MODE    = REQUEST_MODE_GEOCOM_FILE
 
@@ -1518,7 +1520,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_image_config'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),(?<fnprefix>.+)'
+            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
         integer,          parameter :: REQUEST_CODE    = 23400
 
         type(request_type), intent(out) :: request  !! Prepared request.
@@ -1616,7 +1618,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<name>`                          |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_instrument_name'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<name>.+)'
+        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),"(?<name>.+)"'
         integer,          parameter :: REQUEST_CODE    = 5004
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1822,19 +1824,19 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `reflname` – Prism name [string].
-        !! * `reflcor`  – Prism correction constant [m].
-        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `prsmname` – Prism name [string].
+        !! * `prsmcor`  – Prism correction constant [m].
+        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17023:<prism_type>`                        |
-        !! | ASCII response | `%R1P,0,0:<grc>,<reflname>,<reflcor>,<refltype>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prsmname>,<prsmcor>,<prsmtype>` |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_definition'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<reflname>.+),(?<reflcor>[-\d\.]+),(?<refltype>\d+)'
+            '(?<grc>\d+),"(?<prsmname>.+)",(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17023
 
         type(request_type), intent(out) :: request    !! Prepared request.
@@ -1847,9 +1849,9 @@ contains
 
         responses = [ &
             response_type('grc',      unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('reflname', unit=' ', type=RESPONSE_TYPE_STRING), &
-            response_type('reflcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('refltype', unit=' ', type=RESPONSE_TYPE_INT32)   &
+            response_type('prsmname', unit=' ', type=RESPONSE_TYPE_STRING), &
+            response_type('prsmcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('prsmtype', unit=' ', type=RESPONSE_TYPE_INT32)   &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, REQUEST_PATTERN, responses)
@@ -1862,16 +1864,16 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17009:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<refltype>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<pristype>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_type'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<refltype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17009
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1879,7 +1881,7 @@ contains
 
         responses = [ &
             response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('refltype', type=RESPONSE_TYPE_INT32)  &
+            response_type('prsmtype', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -1892,16 +1894,16 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17031:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<refltype>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prsmtype>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_type_v2'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<refltype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17031
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1909,7 +1911,7 @@ contains
 
         responses = [ &
             response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('refltype', type=RESPONSE_TYPE_INT32)  &
+            response_type('prsmtype', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -2501,18 +2503,18 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`      – GeoCOM return code.
-        !! * `reflcor`  – Prism correction constant [m].
-        !! * `refltype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
-        !! * `refluser` – Name of creator [string].
+        !! * `prsmcor`  – Prism correction constant [m].
+        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `prsmuser` – Name of creator [string].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17033:<name>`                              |
-        !! | ASCII response | `%R1P,0,0:<grc>,<reflcor>,<refltype>,<refluser>` |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prsmcor>,<prsmtype>,<prsmuser>` |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_prism_definition'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<reflcor>[-\d\.]+),(?<refltype>\d+),(?<refluser>.+)'
+        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"'
         integer,          parameter :: REQUEST_CODE    = 17033
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2522,9 +2524,9 @@ contains
 
         responses = [ &
             response_type('grc',      unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('reflcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('refltype', unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('refluser', unit=' ', type=RESPONSE_TYPE_STRING)  &
+            response_type('prsmcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('prsmtype', unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('prsmuser', unit=' ', type=RESPONSE_TYPE_STRING)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, name, REQUEST_PATTERN, responses)
@@ -2592,9 +2594,9 @@ contains
         character(len=*), parameter :: REQUEST_NAME = 'list'
         integer,          parameter :: REQUEST_CODE = 23307
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<last>\d+),(?<fname>.+),(?<fsize>\d+),(?<fhour>[0-9a-f]+),' // &
-            '(?<fminute>[0-9a-f]+),(?<fsecond>[0-9a-f]+),(?<fcsecond>[0-9a-f]+),' // &
-            '(?<fday>[0-9a-f]+),(?<fmonth>[0-9a-f]+),(?<fyear>[0-9a-f]+)'
+            "(?<grc>\d+),(?<last>\d+),""(?<fname>.+)"",(?<fsize>\d+),'(?<fhour>[0-9a-f]+)'," // &
+            "'(?<fminute>[0-9a-f]+)','(?<fsecond>[0-9a-f]+)','(?<fcsecond>[0-9a-f]+)'," // &
+            "'(?<fday>[0-9a-f]+)','(?<fmonth>[0-9a-f]+)','(?<fyear>[0-9a-f]+)'"
 
         type(request_type), intent(out) :: request !! Prepared request.
         logical,            intent(in)  :: next    !! First or next entry.
@@ -2646,6 +2648,52 @@ contains
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
     end subroutine dm_geocom_api_request_lock_in
+
+    pure subroutine dm_geocom_api_request_measure_distance_angle(request, dist_mode)
+        !! Request of *BAP_MeasDistanceAngle* procedure. Creates request for
+        !! measuring Hz, V angles and a single distance.
+        !!
+        !! The API function measures angles and a single distance depending on
+        !! the distance measurement mode `dist_mode`. It is not suited for
+        !! continuous measurements (LOCK mode and TRK mode), and uses the
+        !! current automation settings.
+        !!
+        !! The instrument returns the following responses:
+        !!
+        !! * `grc`      – GeoCOM return code.
+        !! * `hz`       – Horizontal angle [rad].
+        !! * `v`        – Vertical angle [rad].
+        !! * `sdist`    – Slope distance [m].
+        !! * `distmode` – Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
+        !!
+        !! | Property       | Values                                           |
+        !! |----------------|--------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
+        !! | ASCII request  | `%R1Q,17017:<dist_mode>`                         |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>,<distmode>`     |
+        !!
+        character(len=*), parameter :: REQUEST_NAME    = 'measure_distance_angle'
+        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+),(?<distmode>\d+)'
+        integer,          parameter :: REQUEST_CODE    = 17017
+
+        type(request_type), intent(out) :: request   !! Prepared request.
+        integer,            intent(in)  :: dist_mode !! Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
+
+        character(len=80)   :: args
+        type(response_type) :: responses(5)
+
+        write (args, '(i0)') dist_mode
+
+        responses = [ &
+            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',       unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',        unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('sdist',    unit='m',   type=RESPONSE_TYPE_REAL64), &
+            response_type('distmode', unit=' ',   type=RESPONSE_TYPE_INT32)   &
+        ]
+
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
+    end subroutine dm_geocom_api_request_measure_distance_angle
 
     pure subroutine dm_geocom_api_request_null(request)
         !! Request of *COM_NullProc* procedure. Creates request for checking
@@ -3319,7 +3367,7 @@ contains
 
         character(len=80) :: args
 
-        write (args, '(4(i0, ","), a)') mem_type, image_number, quality, sub_function, trim(prefix)
+        write (args, '(4(i0, ","), """", a, """")') mem_type, image_number, quality, sub_function, trim(prefix)
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
     end subroutine dm_geocom_api_request_set_image_config
 
@@ -3867,7 +3915,7 @@ contains
         !! | Property       | Values                                                         |
         !! |----------------|----------------------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                       |
-        !! | ASCII request  | `%R1Q,17032:<prism_name>,<prism_const>,<prism_type>,<creator>` |
+        !! | ASCII request  | `%R1Q,17032:<prism_name>,<prism_const>,<refl_type>,<creator>`  |
         !! | ASCII response | `%R1P,0,0:<grc>`                                               |
         !!
         character(len=*), parameter :: REQUEST_NAME = 'set_user_prism_definition'
@@ -3881,7 +3929,8 @@ contains
 
         character(len=80) :: args
 
-        write (args, '(a, ",", f0.12, ",", i0, ",", a)') trim(prism_name), prism_const, refl_type, trim(creator)
+        write (args, '("""", a, """,", f0.12, ",", i0, ", """, a, """")') &
+            trim(prism_name), prism_const, refl_type, trim(creator)
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
     end subroutine dm_geocom_api_request_set_user_prism_definition
 
@@ -3996,7 +4045,7 @@ contains
             response_type('nblocks', type=RESPONSE_TYPE_INT32)  &
         ]
 
-        write (args, '(2(i0, ","), a, ",", i0)') device_type, file_type, trim(file_name), block_size
+        write (args, '(2(i0, ","), """", a, """,", i0)') device_type, file_type, trim(file_name), block_size
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, REQUEST_PATTERN, responses)
     end subroutine dm_geocom_api_request_setup_download
 

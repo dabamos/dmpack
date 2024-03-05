@@ -82,6 +82,7 @@ module dm_lua_geocom
     private :: lua_geocom_get_user_spiral
     private :: lua_geocom_list
     private :: lua_geocom_lock_in
+    private :: lua_geocom_measure_distance_angle
     private :: lua_geocom_null
     private :: lua_geocom_ps_enable_range
     private :: lua_geocom_ps_search_next
@@ -208,6 +209,7 @@ contains
         !! * `geocom_get_user_spiral()`
         !! * `geocom_list()`
         !! * `geocom_lock_in()`
+        !! * `geocom_measure_distance_angle()`
         !! * `geocom_null()`
         !! * `geocom_ps_enable_range()`
         !! * `geocom_ps_search_next()`
@@ -482,6 +484,7 @@ contains
         call dm_lua_register(lua, 'geocom_get_user_spiral',               lua_geocom_get_user_spiral)
         call dm_lua_register(lua, 'geocom_list',                          lua_geocom_list)
         call dm_lua_register(lua, 'geocom_lock_in',                       lua_geocom_lock_in)
+        call dm_lua_register(lua, 'geocom_measure_distance_angle',        lua_geocom_measure_distance_angle)
         call dm_lua_register(lua, 'geocom_null',                          lua_geocom_null)
         call dm_lua_register(lua, 'geocom_ps_enable_range',               lua_geocom_ps_enable_range)
         call dm_lua_register(lua, 'geocom_ps_search_next',                lua_geocom_ps_search_next)
@@ -1376,6 +1379,20 @@ contains
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_lock_in
+
+    integer(kind=c_int) function lua_geocom_measure_distance_angle(ptr) bind(c) result(n)
+        type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
+
+        integer              :: dist_mode
+        type(lua_state_type) :: lua
+        type(request_type)   :: request
+
+        lua = lua_state_type(ptr)
+        dist_mode = dm_geocom_type_validated(GEOCOM_BAP_MEASURE_PRG, dm_lua_to_int32(lua, 1))
+        call dm_geocom_api_request_measure_distance_angle(request, dist_mode)
+        call dm_lua_from(lua, request)
+        n = 1
+    end function lua_geocom_measure_distance_angle
 
     integer(kind=c_int) function lua_geocom_null(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
