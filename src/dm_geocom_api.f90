@@ -1276,7 +1276,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`  – GeoCOM return code.
-        !! * `face` – Telescope face (`TMC_FACE`).
+        !! * `face` – Telescope face (`GEOCOM_TMC_FACE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|

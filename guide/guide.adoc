@@ -605,7 +605,7 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 === dmbeat [[dmbeat]]
 
 The *dmbeat* program is a heartbeat emitter that sends <<data-beat,heartbeats>>
-or handshakes via HTTP POST to a remote <<dmapi>> service.  The heartbeat
+or handshakes via HTTP POST to a remote <<dmapi>> service. The heartbeat
 messages include time stamp, system uptime, and last connection error. The
 server may inspect this data to check if a client is still running and has
 network access. The RPC endpoint is expected at
@@ -916,8 +916,9 @@ $ cp /usr/local/share/dmpack/feed.xsl /var/www/
 ....
 
 If `/var/www/` is served by a web server, feed readers can subscribe to the
-feed. Furthermore, we may translate feed and style sheet into a single HTML
-document `feed.html`, using an arbitrary XSLT processor, for instance:
+feed. To update the feed periodically, add *dmfeed* to <<Cron,crontab>>.
+Furthermore, we may translate feed and style sheet into a single HTML document
+`feed.html`, using an arbitrary XSLT processor, for instance:
 
 ....
 $ xsltproc --output feed.html /var/www/feed.xsl /var/www/feed.xml
@@ -1615,10 +1616,10 @@ $ dmplot --node dummy-node --sensor dummy-sensor --target dummy-target \
   --terminal pngcairo --output /tmp/plot.png
 ....
 
-Output the plot directly to terminal, with the configuration loaded from file:
+Output the plot directly to terminal, using the configuration in `dmplot.conf`:
 
 ....
-$ dmplot --name dmplot -node --config dmplot.conf --terminal sixelgd
+$ dmplot --name dmplot --config dmplot.conf --terminal sixelgd
 ....
 
 The `sixelgd` format requires a terminal emulator with Sixel support, such as
@@ -4577,9 +4578,8 @@ MAILTO=/dev/null
 ....
 
 The shell script `mkreport.sh` must have the execution bits set. Update the
-script to your configuration.
-
-Furthermore, we can update an Atom XML feed of logs with <<dmfeed>>:
+script to your configuration. Furthermore, we can update an Atom XML feed of
+logs with <<dmfeed>>:
 
 [source,crontab]
 ....

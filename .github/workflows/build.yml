@@ -23,12 +23,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Configure System (Linux)
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        sudo sysctl fs.mqueue.msg_max=100
-        sudo sysctl fs.mqueue.msgsize_max=16384
-
     - name: Install Dependencies (Linux)
       if: contains(matrix.os, 'ubuntu')
       run: |
@@ -52,6 +46,14 @@ jobs:
         ./configure
         sudo make install
         /usr/local/bin/sqlite3 --version
+
+    - name: Configure System (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo sysctl fs.mqueue.msg_max=100
+        sudo sysctl fs.mqueue.msgsize_max=16384
+        alias gnuplot="gnuplot-nox"
+        gnuplot --version
 
     - name: Build and Test (Linux)
       if: contains(matrix.os, 'ubuntu')
