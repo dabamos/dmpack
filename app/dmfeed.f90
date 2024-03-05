@@ -11,9 +11,9 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
-    integer, parameter :: APP_MAX_NENTRIES = 500 !! Maximum number of feed entries.
+    integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 
     type :: app_type
         !! Application settings.
@@ -24,7 +24,7 @@ program dmfeed
         character(len=NODE_ID_LEN)   :: node      = ' '          !! Optional node id.
         integer                      :: min_level = LVL_DEBUG    !! Minimum log level
         integer                      :: max_level = LVL_CRITICAL !! Maximum log level.
-        integer                      :: nentries  = 50           !! Max. number of entries in feed.
+        integer                      :: entries   = 50           !! Max. number of entries in feed.
         logical                      :: force     = .false.      !! Force writing of output file.
         type(atom_type)              :: atom                     !! Atom type.
     end type app_type
@@ -85,7 +85,7 @@ contains
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
             arg_type('minlevel', short='L', type=ARG_TYPE_INTEGER), & ! -L, --minlevel <n>
             arg_type('maxlevel', short='K', type=ARG_TYPE_INTEGER), & ! -K, --maxlevel <n>
-            arg_type('nentries', short='E', type=ARG_TYPE_INTEGER), & ! -E, --nentries <n>
+            arg_type('entries',  short='E', type=ARG_TYPE_INTEGER), & ! -E, --entries <n>
             arg_type('force',    short='F', type=ARG_TYPE_BOOL),    & ! -F, --force
             arg_type('author',   short='A', type=ARG_TYPE_CHAR),    & ! -A, --author <string>
             arg_type('email',    short='M', type=ARG_TYPE_CHAR),    & ! -M, --email <string>
@@ -113,7 +113,7 @@ contains
         rc = dm_arg_get(args( 5), app%node)
         rc = dm_arg_get(args( 6), app%min_level)
         rc = dm_arg_get(args( 7), app%max_level)
-        rc = dm_arg_get(args( 8), app%nentries)
+        rc = dm_arg_get(args( 8), app%entries)
         rc = dm_arg_get(args( 9), app%force)
         rc = dm_arg_get(args(10), app%atom%author)
         rc = dm_arg_get(args(11), app%atom%email)
@@ -156,7 +156,7 @@ contains
             return
         end if
 
-        if (app%nentries < 1 .or. app%nentries > APP_MAX_NENTRIES) then
+        if (app%entries < 1 .or. app%entries > APP_MAX_ENTRIES) then
             call dm_error_out(rc, 'invalid number of entries')
             return
         end if
@@ -180,7 +180,7 @@ contains
             rc = dm_config_get(config, 'node',     app%node)
             rc = dm_config_get(config, 'minlevel', app%min_level)
             rc = dm_config_get(config, 'maxlevel', app%max_level)
-            rc = dm_config_get(config, 'nentries', app%nentries)
+            rc = dm_config_get(config, 'entries',  app%entries)
             rc = dm_config_get(config, 'force',    app%force)
             rc = dm_config_get(config, 'author',   app%atom%author)
             rc = dm_config_get(config, 'email',    app%atom%email)
@@ -225,14 +225,14 @@ contains
                                   min_level = app%min_level, &
                                   max_level = app%max_level, &
                                   desc      = .true., &
-                                  limit     = int(app%nentries, kind=i8))
+                                  limit     = int(app%entries, kind=i8))
             else
                 rc = dm_db_select(db        = db, &
                                   logs      = logs, &
                                   min_level = app%min_level, &
                                   max_level = app%max_level, &
                                   desc      = .true., &
-                                  limit     = int(app%nentries, kind=i8))
+                                  limit     = int(app%entries, kind=i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then

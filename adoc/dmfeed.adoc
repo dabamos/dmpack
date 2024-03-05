@@ -16,7 +16,7 @@ dmfeed - creates Atom XML feed from log messages
 *dmfeed* --version
 
 *dmfeed* --*database* _file_ [--*output* _file_] [--*node* _id_]
-[--*minlevel* _level_] [--*maxlevel* _level_] [--*nentries* _count_]
+[--*minlevel* _level_] [--*maxlevel* _level_] [--*entries* _count_]
 [--*author* _name_] [--*email* _address_] [--*id* _uuid_]
 [--*title* _title_] [--*subtitle* _title_] [--*url* _url_] [--*xsl* _file_]
 [--*force*]
@@ -72,7 +72,7 @@ file modification of the feed, the output file is not updated, unless argument
 *--name*, *-n* _name_::
   Name of instance and table in given configuration file (default is `dmfeed`).
 
-*--nentries*, *-E* _count_::
+*--entries*, *-E* _count_::
   Maximum number of entries in feed (default is 50).
 
 *--node*, *-N* _id_::

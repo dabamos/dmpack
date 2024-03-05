@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-28
+.\"      Date: 2024-03-05
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2024-02-28" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2024-03-05" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmfeed \- creates Atom XML feed from log messages
 \fBdmfeed\fP \-\-version
 .sp
 \fBdmfeed\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBnode\fP \fIid\fP]
-[\-\-\fBminlevel\fP \fIlevel\fP] [\-\-\fBmaxlevel\fP \fIlevel\fP] [\-\-\fBnentries\fP \fIcount\fP]
+[\-\-\fBminlevel\fP \fIlevel\fP] [\-\-\fBmaxlevel\fP \fIlevel\fP] [\-\-\fBentries\fP \fIcount\fP]
 [\-\-\fBauthor\fP \fIname\fP] [\-\-\fBemail\fP \fIaddress\fP] [\-\-\fBid\fP \fIuuid\fP]
 [\-\-\fBtitle\fP \fItitle\fP] [\-\-\fBsubtitle\fP \fItitle\fP] [\-\-\fBurl\fP \fIurl\fP] [\-\-\fBxsl\fP \fIfile\fP]
 [\-\-\fBforce\fP]
@@ -110,7 +110,7 @@ Select log messages of the given minimum log level (from 1 to 5).
 Name of instance and table in given configuration file (default is \f(CRdmfeed\fP).
 .RE
 .sp
-\fB\-\-nentries\fP, \fB\-E\fP \fIcount\fP
+\fB\-\-entries\fP, \fB\-E\fP \fIcount\fP
 .RS 4
 Maximum number of entries in feed (default is 50).
 .RE

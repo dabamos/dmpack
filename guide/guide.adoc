@@ -882,7 +882,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--maxlevel _level_`  | `-K`  | 5        | Select log messages of the given maximum <<data-log-level,log level>> (between 1 and 5). Must be greater or equal the minimum level.
 | `--minlevel _level_`  | `-L`  | 1        | Select log messages of the given minimum <<data-log-level,log level>> (between 1 and 5).
 | `--name _name_`       | `-n`  | `dmfeed` | Name of instance and table in given configuration file.
-| `--nentries _count_`  | `-E`  | 50       | Maximum number of entries in feed (max. 500).
+| `--entries _count_`   | `-E`  | 50       | Maximum number of entries in feed (max. 500).
 | `--node _id_`         | `-N`  | –        | Select log messages of the given node id.
 | `--output _file_`     | `-o`  | _stdout_ | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
 | `--subtitle _string_` | `-G`  | –        | Sub-title of feed.
@@ -4578,6 +4578,15 @@ MAILTO=/dev/null
 
 The shell script `mkreport.sh` must have the execution bits set. Update the
 script to your configuration.
+
+Furthermore, we can update an Atom XML feed of logs with <<dmfeed>>:
+
+[source,crontab]
+....
+*/5 * * * * -q /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
+....
+
+The feed is updated every five minutes if new logs have arrived.
 
 == GeoCOM API
 
