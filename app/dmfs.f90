@@ -351,9 +351,9 @@ contains
         character(len=:), allocatable          :: str          !! Result.
 
         if (present(n)) then
-            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
-        else
             str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ' of ' // dm_itoa(n) // ')'
+        else
+            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
         end if
 
         if (present(observ_name)) then

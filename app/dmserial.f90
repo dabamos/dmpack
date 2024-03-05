@@ -433,11 +433,6 @@ contains
                                         observ=observ, error=response%error)
                     cycle
                 end if
-
-                if (debug_) then
-                    call dm_log_debug('extracted response ' // trim(response%name) // ' of ' // &
-                                      request_name_string(request%name, i), observ=observ)
-                end if
             end do
 
             if (debug_) then
@@ -468,9 +463,9 @@ contains
         character(len=:), allocatable          :: str          !! Result.
 
         if (present(n)) then
-            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
-        else
             str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ' of ' // dm_itoa(n) // ')'
+        else
+            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
         end if
 
         if (present(observ_name)) then

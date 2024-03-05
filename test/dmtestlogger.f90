@@ -21,7 +21,7 @@ contains
             '"1970-01-01T00:00:00.000000+00:00", "node_id": "test-node", "sensor_id": "test-sensor", ' // &
             '"target_id": "test-target", "observ_id": "6b0ca75ae594425a8d38adfd709b11cd", ' // &
             '"message": "test message" }'
-        character(len=*), parameter :: LOGGER_NAME  = 'dmlogger'
+        character(len=*), parameter :: LOGGER_NAME  = 'dmtestlogger'
         character(len=*), parameter :: TEST_MESSAGE = 'test message'
         integer,          parameter :: TEST_ERROR   = E_DUMMY
         integer,          parameter :: TEST_LEVEL   = LVL_INFO
