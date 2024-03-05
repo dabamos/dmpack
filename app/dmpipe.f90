@@ -248,8 +248,8 @@ contains
         n = observ%nrequests
 
         if (n == 0) then
-            if (debug_) call dm_log_debug('no requests in observ ' // observ%name, observ=observ)
             observ%error = rc
+            if (debug_) call dm_log_debug('no requests in observ ' // observ%name, observ=observ)
             return
         end if
 
@@ -258,7 +258,7 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
-            if (debug_) call dm_log_debug('starting ' // request_name_string(request%name, i, n), observ=observ)
+            if (debug_) call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Initialise request.
             request%timestamp = dm_time_now()
@@ -283,9 +283,10 @@ contains
                 request%response = dm_ascii_escape(raw)
 
                 ! Try to extract the response values.
-                if (debug_) then
-                    call dm_log_debug('parsing response of ' // request_name_string(request%name, i), &
-                                      observ=observ)
+                if (len_trim(request%pattern) == 0) then
+                    rc = E_NONE
+                    if (debug_) call dm_log_debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
+                    exit pipe_loop
                 end if
 
                 rc = dm_regex_request(request)
@@ -295,7 +296,6 @@ contains
                         call dm_log_debug('response of ' // request_name_string(request%name, i) // &
                                           ' does not match pattern', observ=observ, error=request%error)
                     end if
-
                     cycle pipe_loop
                 end if
 
@@ -303,13 +303,12 @@ contains
                 do j = 1, request%nresponses
                     response => request%responses(j)
                     if (dm_is_ok(response%error)) cycle
-
                     call dm_log_warning('failed to extract response ' // trim(response%name) // &
                                         ' of ' // request_name_string(request%name, i), &
                                         observ=observ, error=response%error)
                 end do
 
-                ! Cycle on error.
+                ! Re-read on error.
                 if (dm_is_error(rc)) cycle pipe_loop
 
                 exit pipe_loop
@@ -326,7 +325,7 @@ contains
                 cycle req_loop
             end if
 
-            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n), observ=observ)
+            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)

@@ -346,8 +346,8 @@ contains
         n = observ%nrequests
 
         if (n == 0) then
-            call dm_log_info('no requests in observ ' // observ%name, observ=observ)
             observ%error = rc
+            call dm_log_info('no requests in observ ' // observ%name, observ=observ)
             return
         end if
 
@@ -356,8 +356,7 @@ contains
             request => observ%requests(i)
 
             if (debug_) then
-                call dm_log_debug('sending ' // request_name_string(request%name, i, n) // &
-                                  ': ' // request%request, observ=observ)
+                call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
             end if
 
             ! Prepare request.
@@ -367,9 +366,14 @@ contains
             request%timestamp = dm_time_now()
 
             ! Send request to sensor.
+            if (debug_) then
+                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // &
+                                  request%request, observ=observ)
+            end if
+
             rc = dm_tty_write(tty, request, flush=.true.)
 
-            if (dm_is_error(request%error)) then
+            if (dm_is_error(rc)) then
                 request%error = rc
                 call dm_log_error('failed to write ' // request_name_string(request%name, i) // &
                                   ' to TTY ' // app%tty, observ=observ, error=rc)
@@ -378,10 +382,7 @@ contains
 
             ! Ignore sensor response if no delimiter is set.
             if (len_trim(request%delimiter) == 0) then
-                if (debug_) then
-                    call dm_log_debug('no delimiter in ' // request_name_string(request%name, i), observ=observ)
-                end if
-
+                if (debug_) call dm_log_debug('no delimiter in ' // request_name_string(request%name, i), observ=observ)
                 cycle req_loop
             end if
 
@@ -396,8 +397,8 @@ contains
             end if
 
             if (debug_) then
-                call dm_log_debug('received response for ' // request_name_string(request%name, i) // &
-                                  ': ' // request%response, observ=observ)
+                call dm_log_debug('received response from TTY ' // trim(app%tty) // ': ' // &
+                                  request%response, observ=observ)
             end if
 
             ! Do not extract responses if no pattern is set.
@@ -409,17 +410,12 @@ contains
             end if
 
             ! Try to extract the response values if a regex pattern is given.
-            if (debug_) then
-                call dm_log_debug('parsing response of ' // request_name_string(request%name, i), &
-                                  observ=observ)
-            end if
-
             rc = dm_regex_request(request)
 
             if (dm_is_error(rc)) then
                 request%error = rc
-                call dm_log_warning('response of ' // request_name_string(request%name, i) // &
-                                    ' does not match pattern', observ=observ, error=request%error)
+                call dm_log_warning('response of ' // request_name_string(request%name, i) // ' does not match pattern', &
+                                    observ=observ, error=request%error)
                 cycle req_loop
             end if
 
@@ -428,16 +424,13 @@ contains
                 response => request%responses(j)
 
                 if (dm_is_error(response%error)) then
-                    call dm_log_warning('failed to extract response ' // trim(response%name) // &
-                                        ' of ' // request_name_string(request%name, i), &
-                                        observ=observ, error=response%error)
+                    call dm_log_warning('failed to extract response ' // trim(response%name) // ' of ' // &
+                                        request_name_string(request%name, i), observ=observ, error=response%error)
                     cycle
                 end if
             end do
 
-            if (debug_) then
-                call dm_log_debug('finished ' // request_name_string(request%name, i, n), observ=observ)
-            end if
+            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)

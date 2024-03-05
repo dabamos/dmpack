@@ -255,7 +255,7 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
-            if (debug_) call dm_log_debug('starting ' // request_name_string(request%name, i, n), observ=observ)
+            if (debug_) call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Initialise request.
             request%timestamp = dm_time_now()
@@ -263,8 +263,7 @@ contains
 
             ! Check if file path passed as observation request exists.
             if (.not. dm_file_exists(request%request)) then
-                call dm_log_error('file ' // trim(request%request) // ' not found', &
-                                  observ=observ, error=request%error)
+                call dm_log_error('file ' // trim(request%request) // ' not found', observ=observ, error=request%error)
                 cycle req_loop
             end if
 
@@ -273,8 +272,7 @@ contains
             if (stat == 0) request%error = E_NONE
 
             if (dm_is_error(request%error)) then
-                call dm_log_error('failed to open file ' // trim(request%request), &
-                                  observ=observ, error=request%error)
+                call dm_log_error('failed to open file ' // trim(request%request), observ=observ, error=request%error)
                 cycle req_loop
             end if
 
@@ -285,8 +283,15 @@ contains
                 if (is_iostat_end(stat)) exit read_loop
                 if (stat /= 0) cycle read_loop
 
-                ! Try to extract the response values.
                 request%response = dm_ascii_escape(raw)
+
+                ! Try to extract the response values.
+                if (len_trim(request%pattern) == 0) then
+                    rc = E_NONE
+                    if (debug_) call dm_log_debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
+                    exit read_loop
+                end if
+
                 rc = dm_regex_request(request)
 
                 if (dm_is_error(rc)) then
@@ -303,9 +308,8 @@ contains
                     response => request%responses(j)
                     if (dm_is_ok(response%error)) cycle
 
-                    call dm_log_warning('failed to extract response ' // trim(response%name) // &
-                                        ' of ' // request_name_string(request%name, i), &
-                                        observ=observ, error=response%error)
+                    call dm_log_warning('failed to extract response ' // trim(response%name) // ' of ' // &
+                                        request_name_string(request%name, i), observ=observ, error=response%error)
                 end do
 
                 ! Cycle on error or exit on success.
@@ -325,7 +329,7 @@ contains
                 cycle req_loop
             end if
 
-            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n), observ=observ)
+            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)
