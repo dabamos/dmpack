@@ -13,7 +13,6 @@ jobs:
       matrix:
         os: [ ubuntu-22.04 ]
     env:
-      DM_PIPE_SKIP: 1
       GCC_V: 13
       NO_COLOR: 1
 

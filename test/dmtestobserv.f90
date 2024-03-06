@@ -143,6 +143,7 @@ contains
         if (.not. dm_equals(rval8, 1.0_r8)) return
 
         print *, 'Calling get routine ...'
+        ival4 = huge(0_i4)
         call dm_request_get(request, 'invalid', ival4, status=rc)
         if (ival4 /= huge(0_i4)) return
         if (rc /= E_NOT_FOUND) return

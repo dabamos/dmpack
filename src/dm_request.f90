@@ -54,6 +54,7 @@ module dm_request
 
     interface dm_request_get
         !! Generic function to get value, unit, type, and error of a response.
+        module procedure :: request_get_byte
         module procedure :: request_get_i4
         module procedure :: request_get_i8
         module procedure :: request_get_l
@@ -284,9 +285,9 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status)
-        !! Returns 4-byte integer response value, unit, type, and error of
-        !! response of name `name`.
+    pure elemental subroutine request_get_byte(request, name, value, unit, type, error, status)
+        !! Returns byte response as single character value, unit, type, and error
+        !! of response of name `name`.
         !!
         !! The routine returns the following error codes in `status`:
         !!
@@ -294,20 +295,18 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! If no response is found, `value` will be set to `huge(0_i4)`.
-        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT32
+        !! On error, `value` will not be modified.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_BYTE
 
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        integer(kind=i4),                 intent(out)           :: value   !! Response value.
+        character,                        intent(inout)         :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
-
-        value = huge(0_i4)
 
         response_block: block
             rc = E_EMPTY
@@ -321,7 +320,57 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
-            value = int(request%responses(i)%value, kind=i4)
+            value = achar(floor(request%responses(i)%value, kind=i4))
+
+            if (present(unit))  unit  = request%responses(i)%unit
+            if (present(type))  type  = request%responses(i)%type
+            if (present(error)) error = request%responses(i)%error
+        end block response_block
+
+        if (present(status)) status = rc
+        if (rc == E_NONE) return
+
+        if (present(unit))  unit  = ' '
+        if (present(type))  type  = VALUE_TYPE
+        if (present(error)) error = E_NONE
+    end subroutine request_get_byte
+
+    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status)
+        !! Returns 4-byte integer response value, unit, type, and error of
+        !! response of name `name`.
+        !!
+        !! The routine returns the following error codes in `status`:
+        !!
+        !! * `E_EMPTY` if the request has no responses.
+        !! * `E_NOT_FOUND` if a response of the given name does not exist.
+        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! On error, `value` will not be modified.
+        integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT32
+
+        type(request_type),               intent(inout)         :: request !! Request type.
+        character(len=*),                 intent(in)            :: name    !! Response name.
+        integer(kind=i4),                 intent(inout)         :: value   !! Response value.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
+        integer,                          intent(out), optional :: type    !! Response value type.
+        integer,                          intent(out), optional :: error   !! Response error.
+        integer,                          intent(out), optional :: status  !! Error code.
+
+        integer :: i, rc
+
+        response_block: block
+            rc = E_EMPTY
+            if (request%nresponses == 0) exit response_block
+
+            rc = E_NOT_FOUND
+            i = dm_request_index(request, name)
+            if (i == 0) exit response_block
+
+            rc = E_TYPE
+            if (request%responses(i)%type /= VALUE_TYPE) exit response_block
+
+            rc = E_NONE
+            value = floor(request%responses(i)%value, kind=i4)
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
@@ -346,20 +395,18 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! If no response is found, `value` will be set to `huge(0_i8)`.
+        !! On error, `value` will not be modified.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT64
 
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        integer(kind=i8),                 intent(out)           :: value   !! Response value.
+        integer(kind=i8),                 intent(inout)         :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
-
-        value = huge(0_i8)
 
         response_block: block
             rc = E_EMPTY
@@ -373,7 +420,7 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
-            value = int(request%responses(i)%value, kind=i8)
+            value = floor(request%responses(i)%value, kind=i8)
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
@@ -398,20 +445,18 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! If no response is found, `value` will be set to `.false.`.
+        !! On error, `value` will not be modified.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_LOGICAL
 
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        logical,                          intent(out)           :: value   !! Response value.
+        logical,                          intent(inout)         :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
-
-        value = .false.
 
         response_block: block
             rc = E_EMPTY
@@ -425,7 +470,7 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
-            value = (int(request%responses(i)%value) >= 1)
+            value = (floor(request%responses(i)%value) >= 1)
 
             if (present(unit))  unit  = request%responses(i)%unit
             if (present(type))  type  = request%responses(i)%type
@@ -450,20 +495,18 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! If no response is found, `value` will be set to `huge(0.0_r4)`.
+        !! On error, `value` will not be modified.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL32
 
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        real(kind=r4),                    intent(out)           :: value   !! Response value.
+        real(kind=r4),                    intent(inout)         :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
-
-        value = huge(0.0_r4)
 
         response_block: block
             rc = E_EMPTY
@@ -502,20 +545,18 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! If no response is found, `value` will be set to `huge(0.0_r8)`.
+        !! On error, `value` will not be modified.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL64
 
         type(request_type),               intent(inout)         :: request !! Request type.
         character(len=*),                 intent(in)            :: name    !! Response name.
-        real(kind=r8),                    intent(out)           :: value   !! Response value.
+        real(kind=r8),                    intent(inout)         :: value   !! Response value.
         character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
 
         integer :: i, rc
-
-        value = huge(0.0_r8)
 
         response_block: block
             rc = E_EMPTY

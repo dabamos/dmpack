@@ -494,7 +494,7 @@ contains
         !! or more files.
         !!
         !! Wildcards may be used to delete multiple files. If the deletion date
-        !! is valid, only files older than the deletion date are deleted.
+        !! is valid, only files older than the date are deleted.
         !!
         !! The instrument returns the following responses:
         !!
@@ -608,7 +608,7 @@ contains
         character(len=*), parameter :: REQUEST_NAME    = 'download'
         character(len=*), parameter :: REQUEST_PATTERN = "(?<grc>\d+),'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
         integer,          parameter :: REQUEST_CODE    = 23304
-        integer,          parameter :: MODE    = REQUEST_MODE_GEOCOM_FILE
+        integer,          parameter :: MODE            = REQUEST_MODE_GEOCOM_FILE
 
         type(request_type), intent(out) :: request      !! Prepared request.
         integer,            intent(in)  :: block_number !! Block number.

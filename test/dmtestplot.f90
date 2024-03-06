@@ -15,6 +15,12 @@ program dmtestplot
     !!
     !! This may be necessary on test platforms where Gnuplot or bi-directional
     !! pipes are not available.
+    !!
+    !! If _gnuplot(1)_ is not available under the name `gnuplot`, set an alias:
+    !!
+    !!      $ alias gnuplot="gnuplot-nox"
+    !!
+    !! Otherwise, the tests in this program will fail.
     use :: dmpack
     implicit none (type, external)
     integer, parameter :: NTESTS = 1

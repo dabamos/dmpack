@@ -288,6 +288,8 @@ module dm_geocom_error
 
     ! Public procedures.
     public :: dm_geocom_error_message
+    public :: dm_geocom_is_error
+    public :: dm_geocom_is_ok
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -834,4 +836,18 @@ contains
                 str = 'unknown GeoCOM code'
         end select
     end function dm_geocom_error_message
+
+    pure elemental logical function dm_geocom_is_error(grc) result(is_error)
+        !! Returns `.true.` if given GeoCOM code is an error.
+        integer, intent(in) :: grc !! GeoCOM code.
+
+        is_error = (grc /= GRC_OK)
+    end function dm_geocom_is_error
+
+    pure elemental logical function dm_geocom_is_ok(grc) result(is_ok)
+        !! Returns `.true.` if given GeoCOM code is not an error.
+        integer, intent(in) :: grc !! GeoCOM code.
+
+        is_ok = (grc == GRC_OK)
+    end function dm_geocom_is_ok
 end module dm_geocom_error
