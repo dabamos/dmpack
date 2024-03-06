@@ -297,6 +297,7 @@ contains
         ! Set flags.
         flags = ior(O_NOCTTY, O_SYNC)
         flags = ior(flags, O_NONBLOCK)
+        flags = ior(flags, O_NDELAY)
 
         select case (tty%access)
             case (TTY_RDONLY)
