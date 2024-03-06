@@ -52,6 +52,9 @@ file modification of the feed, the output file is not updated, unless argument
 *--email*, *-M* _address_::
   E-mail address of feed author.
 
+*--entries*, *-E* _count_::
+  Maximum number of entries in feed (default is 50).
+
 *--force*, *-F*::
   Force writing of output file. If not set, the output file will be updated
   only if new log records are available.
@@ -71,9 +74,6 @@ file modification of the feed, the output file is not updated, unless argument
 
 *--name*, *-n* _name_::
   Name of instance and table in given configuration file (default is `dmfeed`).
-
-*--entries*, *-E* _count_::
-  Maximum number of entries in feed (default is 50).
 
 *--node*, *-N* _id_::
   Select log messages of the given node id.

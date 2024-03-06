@@ -92,10 +92,12 @@ module dm_tty
     public :: dm_tty_open
     public :: dm_tty_parity_from_name
     public :: dm_tty_read
+    public :: dm_tty_read_byte
     public :: dm_tty_read_bytes
-    public :: dm_tty_read_raw
     public :: dm_tty_read_request
     public :: dm_tty_set_attributes
+    public :: dm_tty_set_blocking
+    public :: dm_tty_set_timeout
     public :: dm_tty_stop_bits_from_value
     public :: dm_tty_valid_baud_rate
     public :: dm_tty_valid_byte_size
@@ -205,6 +207,7 @@ contains
         !! passed `tty` type is invalid, or `E_SYSTEM` if the system call
         !! failed.
         use :: unix, only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
+
         type(tty_type), intent(inout)        :: tty    !! TTY type.
         logical,        intent(in), optional :: input  !! Flush input buffer.
         logical,        intent(in), optional :: output !! Flush output buffer.
@@ -254,6 +257,7 @@ contains
         !! * `E_IO` if opening the TTY failed.
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         use :: unix
+
         type(tty_type)  , intent(inout)        :: tty       !! TTY type.
         character(len=*), intent(in), optional :: path      !! Device path.
         integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B_*`).
@@ -307,7 +311,7 @@ contains
 
         ! Open TTY.
         rc = E_IO
-        tty%fd = c_open(trim(tty%path) // c_null_char, flags, int(0, kind=c_mode_t))
+        tty%fd = c_open(trim(tty%path) // c_null_char, flags, 0_c_mode_t)
         if (tty%fd < 0) return
 
         rc = dm_tty_set_attributes(tty)
@@ -340,7 +344,22 @@ contains
         if (present(error)) error = E_NONE
     end function dm_tty_parity_from_name
 
-    integer function dm_tty_read_bytes(tty, buffer, del, nbytes) result(rc)
+    integer function dm_tty_read_byte(tty, byte) result(rc)
+        !! Reads single byte from file descriptor.
+        use :: unix
+
+        type(tty_type),    intent(inout) :: tty  !! TTY type.
+        character, target, intent(out)   :: byte !! Byte read.
+
+        integer(kind=c_size_t) :: sz
+
+        rc = E_READ
+        sz = c_read(tty%fd, c_loc(byte), 1_c_size_t)
+        if (sz <= 0) return
+        rc = E_NONE
+    end function dm_tty_read_byte
+
+    integer function dm_tty_read_bytes(tty, bytes, del, nbytes) result(rc)
         !! Reads from TTY into `buf` until delimiter `del` occurs. The
         !! number of bytes read is returned in `n`.
         !!
@@ -349,16 +368,16 @@ contains
         !! * `E_BOUNDS` if end of buffer is reached.
         !! * `E_READ` if the read operation failed.
         type(tty_type),   intent(inout)         :: tty    !! TTY type.
-        character(len=*), intent(inout)         :: buffer !! Input buffer.
+        character(len=*), intent(inout)         :: bytes  !! Input buffer.
         character(len=*), intent(in)            :: del    !! Delimiter.
         integer(kind=i8), intent(out), optional :: nbytes !! Number of bytes read.
 
         character        :: a
         integer          :: i, j, k
-        integer(kind=i8) :: n, sz
+        integer(kind=i8) :: n
 
         i = 1
-        j = len(buffer)
+        j = len(bytes)
         k = len(del)
         n = 0_i8
 
@@ -366,34 +385,20 @@ contains
             rc = E_BOUNDS
             if (i > j) exit
 
-            rc = E_READ
-            sz = dm_tty_read_raw(tty, a)
+            rc = dm_tty_read_byte(tty, a)
+            if (dm_is_error(rc)) exit
 
-            if (sz > 0) then
-                buffer(i:i) = a
-                i = i + 1
-                n = n + 1
+            bytes(i:i) = a
+            i = i + 1
+            n = n + 1
 
-                rc = E_NONE
-                if (buffer(i - k:i) == del) exit
-                cycle
-            end if
-
-            exit
+            rc = E_NONE
+            if (bytes(i - k:i) == del) exit
+            cycle
         end do
 
         if (present(nbytes)) nbytes = n
     end function dm_tty_read_bytes
-
-    integer(kind=i8) function dm_tty_read_raw(tty, byte) result(n)
-        !! Reads single byte from file descriptor, and returns `1_i0` on
-        !! success.
-        use :: unix, only: c_read
-        type(tty_type),    intent(inout) :: tty  !! TTY type.
-        character, target, intent(out)   :: byte !! Byte read.
-
-        n = int(c_read(tty%fd, c_loc(byte), 1_c_size_t), kind=i8)
-    end function dm_tty_read_raw
 
     integer function dm_tty_read_request(tty, request) result(rc)
         !! Reads TTY response into request. The request delimiter is unescaped.
@@ -405,6 +410,7 @@ contains
         !! * `E_READ` if reading from TTY failed.
         use :: dm_ascii, only: dm_ascii_escape, dm_ascii_unescape
         use :: dm_request
+
         type(tty_type),     intent(inout) :: tty     !! TTY type.
         type(request_type), intent(inout) :: request !! Request type.
 
@@ -421,16 +427,20 @@ contains
     end function dm_tty_read_request
 
     integer function dm_tty_set_attributes(tty) result(rc)
-        !! Sets terminal attributes. Returns `E_INVALID` if the passed TTY is
-        !! invalid, or `E_SYSTEM` if one of the system calls failed.
+        !! Sets terminal attributes.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if TTY is not connected.
+        !! * `E_SYSTEM` if system calls failed.
         use :: unix
+
         type(tty_type), intent(inout) :: tty !! TTY type.
 
         integer(kind=c_speed_t)     :: baud_rate
         integer(kind=c_int)         :: byte_size
         integer(kind=c_int)         :: parity
         integer(kind=c_int)         :: stop_bits
-        integer(kind=c_int)         :: flags
         integer(kind=c_int), target :: stat
         type(c_termios)             :: termios
 
@@ -541,10 +551,10 @@ contains
         termios%c_cflag = iand(termios%c_cflag, not(CSIZE))                 ! Unset byte size.
         termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))                ! Unset stop bits.
         termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))       ! Unset parity.
-        termios%c_cflag = ior(termios%c_cflag, byte_size)                   ! Set byte size.
-        termios%c_cflag = ior(termios%c_cflag, stop_bits)                   ! Set stop bits.
-        termios%c_cflag = ior(termios%c_cflag, parity)                      ! Set parity.
-        termios%c_cflag = ior(termios%c_cflag, ior(CLOCAL, CREAD))          ! Ignore modem controls, enable reading.
+        termios%c_cflag = ior (termios%c_cflag, byte_size)                  ! Set byte size.
+        termios%c_cflag = ior (termios%c_cflag, stop_bits)                  ! Set stop bits.
+        termios%c_cflag = ior (termios%c_cflag, parity)                     ! Set parity.
+        termios%c_cflag = ior (termios%c_cflag, ior(CLOCAL, CREAD))         ! Ignore modem controls, enable reading.
 
         ! Local modes.
         termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL)) ! No echo.
@@ -559,27 +569,82 @@ contains
         else
             ! Timeout in deciseconds for non-canonical read.
             termios%c_cc(VMIN)  = 0
-            termios%c_cc(VTIME) = int(min(255, tty%timeout * 10), kind=c_cc_t)
+            termios%c_cc(VTIME) = int(max(0, min(255, tty%timeout * 10)), kind=c_cc_t)
         end if
 
         ! Set attributes.
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
 
         ! Set RTS, DTR.
-        if (c_ioctl(tty%fd, int(TIOCMGET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
-        if (tty%rts) stat = ior(stat, TIOCM_RTS)
-        if (tty%dtr) stat = ior(stat, TIOCM_DTR)
-        if (c_ioctl(tty%fd, int(TIOCMSET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
-
-        ! Set blocking read.
-        if (tty%blocking) then
-            flags = c_fcntl(tty%fd, F_GETFL, 0)
-            flags = iand(flags, not(O_NONBLOCK))
-            if (c_fcntl(tty%fd, F_SETFL, flags) /= 0) return
+        if (tty%rts .or. tty%dtr) then
+            stat = 0
+            if (c_ioctl(tty%fd, int(TIOCMGET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
+            if (tty%rts) stat = ior(stat, TIOCM_RTS)
+            if (tty%dtr) stat = ior(stat, TIOCM_DTR)
+            if (c_ioctl(tty%fd, int(TIOCMSET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
         end if
 
-        rc = E_NONE
+        ! Set blocking read.
+        rc = dm_tty_set_blocking(tty, tty%blocking)
     end function dm_tty_set_attributes
+
+    integer function dm_tty_set_blocking(tty, blocking) result(rc)
+        !! Sets TTY to blocking or non-blocking.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if TTY is not connected.
+        !! * `E_SYSTEM` if system calls failed.
+        use :: unix
+
+        type(tty_type), intent(inout) :: tty      !! TTY type.
+        logical,        intent(in)    :: blocking !! Blocking mode.
+
+        integer(kind=c_int) :: flags
+
+        rc = E_INVALID
+        if (tty%fd < 0) return
+
+        rc = E_SYSTEM
+        flags = c_fcntl(tty%fd, F_GETFL, 0)
+
+        if (blocking) then
+            flags = iand(flags, not(O_NONBLOCK))
+        else
+            flags = ior(flags, O_NONBLOCK)
+        end if
+
+        if (c_fcntl(tty%fd, F_SETFL, flags) /= 0) return
+        tty%blocking = blocking
+        rc = E_NONE
+    end function dm_tty_set_blocking
+
+    integer function dm_tty_set_timeout(tty, timeout) result(rc)
+        !! Sets timeout of given TTY. A timeout of 0 results in blocking read
+        !! without timeout. The minimum timeout is 0 seconds, the maximum is 25
+        !! seconds.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if TTY is not connected.
+        !! * `E_SYSTEM` if system calls failed.
+        use :: unix
+
+        type(tty_type), intent(inout) :: tty     !! TTY type.
+        integer,        intent(in)    :: timeout !! Timeout in seconds.
+
+        type(c_termios) :: termios
+
+        rc = E_INVALID
+        if (tty%fd < 0) return
+
+        rc = E_SYSTEM
+        if (c_tcgetattr(tty%fd, termios) /= 0) return
+        termios%c_cc(VTIME) = int(max(0, min(255, timeout * 10)), kind=c_cc_t)
+        if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
+
+        tty%timeout = timeout
+    end function dm_tty_set_timeout
 
     integer function dm_tty_stop_bits_from_value(value, error) result(stop_bits)
         !! Returns stop bits enumerator from numeric value. If the value is
@@ -679,29 +744,28 @@ contains
         if (timeout >= 0) valid = .true.
     end function dm_tty_valid_timeout
 
-    integer function dm_tty_write_bytes(tty, bytes, n, flush) result(rc)
+    integer function dm_tty_write_bytes(tty, bytes, nbytes, flush) result(rc)
         !! Writes given string to TTY. Returns `E_WRITE` on error. The function
-        !! may cause an access violation if `n` is greater than the length of
-        !! `bytes`.
+        !! may cause an access violation if `nbytes` is greater than the length
+        !! of `bytes`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_SYSTEM` if flushing the input buffer failed.
         !! * `E_WRITE` if writing to TTY failed.
         use :: unix, only: c_write
-        type(tty_type),   intent(inout)        :: tty   !! TTY type.
-        character(len=*), intent(in)           :: bytes !! Bytes to send.
-        integer,          intent(in), optional :: n     !! Number of bytes to send.
-        logical,          intent(in), optional :: flush !! Flush input buffer.
 
-        character(kind=c_char), target :: a
-        integer                        :: i, n_
-        integer(kind=c_size_t)         :: k
+        type(tty_type),           intent(inout)        :: tty    !! TTY type.
+        character(len=*), target, intent(in)           :: bytes  !! Bytes to send.
+        integer,                  intent(in), optional :: nbytes !! Number of bytes to send.
+        logical,                  intent(in), optional :: flush  !! Flush input buffer.
 
-        if (present(n)) then
-            n_ = n
+        integer(kind=c_size_t) :: n, sz
+
+        if (present(nbytes)) then
+            n = int(nbytes, kind=c_size_t)
         else
-            n_ = len(bytes)
+            n = len(bytes, kind=c_size_t)
         end if
 
         if (present(flush)) then
@@ -709,12 +773,12 @@ contains
             if (dm_is_error(rc)) return
         end if
 
+        rc = E_NONE
+        if (n == 0) return
+
         rc = E_WRITE
-        do i = 1, n_
-            a = bytes(i:i)
-            k = c_write(tty%fd, c_loc(a), 1_c_size_t)
-            if (k /= 1) return
-        end do
+        sz = c_write(tty%fd, c_loc(bytes), n)
+        if (sz /= n) return
 
         rc = E_NONE
     end function dm_tty_write_bytes
@@ -729,6 +793,7 @@ contains
         !! * `E_WRITE` if writing to TTY failed.
         use :: dm_ascii, only: dm_ascii_unescape
         use :: dm_request
+
         type(tty_type),     intent(inout)        :: tty     !! TTY type.
         type(request_type), intent(inout)        :: request !! Request type
         logical,            intent(in), optional :: flush   !! Flush input buffer.
@@ -741,12 +806,13 @@ contains
         end if
 
         raw = dm_ascii_unescape(request%request)
-        rc  = dm_tty_write(tty, trim(raw))
+        rc  = dm_tty_write(tty, raw, nbytes=len_trim(raw))
     end function dm_tty_write_request
 
     subroutine dm_tty_close(tty)
         !! Closes file descriptor.
         use :: unix, only: c_close
+
         type(tty_type), intent(inout) :: tty !! TTY type.
 
         if (c_close(tty%fd) == 0) tty%fd = -1

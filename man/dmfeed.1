@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-03-05
+.\"      Date: 2024-03-06
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2024-03-05" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2024-03-06" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -78,6 +78,11 @@ Path to SQLite log database.
 E\-mail address of feed author.
 .RE
 .sp
+\fB\-\-entries\fP, \fB\-E\fP \fIcount\fP
+.RS 4
+Maximum number of entries in feed (default is 50).
+.RE
+.sp
 \fB\-\-force\fP, \fB\-F\fP
 .RS 4
 Force writing of output file. If not set, the output file will be updated
@@ -108,11 +113,6 @@ Select log messages of the given minimum log level (from 1 to 5).
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
 Name of instance and table in given configuration file (default is \f(CRdmfeed\fP).
-.RE
-.sp
-\fB\-\-entries\fP, \fB\-E\fP \fIcount\fP
-.RS 4
-Maximum number of entries in feed (default is 50).
 .RE
 .sp
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP

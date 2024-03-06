@@ -21,11 +21,11 @@
 --      author   - Name of feed author or organisation (optional).
 --      database - Path to DMPACK log database.
 --      email    - E-mail of feed author (optional).
+--      entries  - Maximum number of entries is feed (default 50, optional).
 --      force    - Force writing of output file even if no new logs are available.
 --      id       - 36 characters long UUID (with hyphens) of the Atom feed.
 --      maxlevel - Maximum log level (0 to 5, optional).
 --      minlevel - Minimum log level (0 to 5, optional).
---      nentries - Maximum number of entries is feed (default 50, optional).
 --      node     - Sensor node id, selects only related logs (optional).
 --      output   - Path to output file (if empty, feed is printed to standard output).
 --      subtitle - Subtitle of the feed (optional).
@@ -43,9 +43,9 @@ dmfeed = {
     url = "https://example.com/feed.xml",
     database = "/var/dmpack/log.sqlite",
     node = "dummy-node",
+    entries = 100,
     minlevel = LVL_WARNING,
     maxlevel = LVL_CRITICAL,
-    nentries = 100,
     xsl = "feed.xsl",
     output = "/var/www/feed.xml",
     force = false

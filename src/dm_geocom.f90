@@ -15,7 +15,7 @@ module dm_geocom
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
-    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, error=rc)
+    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, verbose=.true. error=rc)
     !!
     !! if (dm_is_error(rc)) then
     !!     dm_error_out(rc)
@@ -46,8 +46,8 @@ module dm_geocom
         integer            :: rc      = E_NONE !! Last DMPACK return code.
         integer            :: grc     = GRC_OK !! Last GeoCOM return code.
         logical            :: verbose = .true. !! Print error messages to stderr.
-        type(request_type) :: request          !! Last request.
-        type(tty_type)     :: tty              !! TTY type for serial connection to sensor.
+        type(request_type) :: request          !! Last request sent to sensor.
+        type(tty_type)     :: tty              !! TTY type for serial connection.
     contains
         ! Public class methods.
         procedure, public :: close        => geocom_close
@@ -258,8 +258,8 @@ contains
 
     subroutine geocom_send(this, request, error)
         !! Sends request to configured TTY.
-        use :: dm_regex
-        use :: dm_time
+        use :: dm_regex, only: dm_regex_request
+        use :: dm_time,  only: dm_time_now
 
         class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
         type(request_type),  intent(inout)         :: request !! Request to send.
@@ -489,6 +489,9 @@ contains
         !! If a distance measurement is performed in measurement program
         !! `GEOCOM_TMC_DEF_DIST`, the distance sensor will work with the set
         !! EDM mode.
+        !!
+        !! This function sets measurement program `GEOCOM_TMC_DEF_DIST` and
+        !! inclination mode `GEOCOM_TMC_MEA_INC` by default.
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
         integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
@@ -522,7 +525,6 @@ contains
         integer,             intent(out)   :: block_length !! Block length.
 
         integer            :: block_number_
-        integer            :: rc
         type(request_type) :: request
 
         block_value   = achar(0)
@@ -569,7 +571,8 @@ contains
 
     subroutine geocom_get_angle(this, hz, v, inc_mode)
         !! Sends *TMC_GetAngle5* request to sensor. Starts an angle measurement
-        !! and returns the results.
+        !! and returns the results. This function sets inclination mode
+        !! `GEOCOM_TMC_MEA_INC` by default.
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         real(kind=r8),       intent(out)          :: hz       !! Horizontal angle [rad].
         real(kind=r8),       intent(out)          :: v        !! Vertical angle [rad].
@@ -583,6 +586,9 @@ contains
 
         call dm_geocom_api_request_get_angle(request, inc_mode)
         call this%send(request)
+
+        call dm_request_get(this%request, 'hz', hz)
+        call dm_request_get(this%request, 'v',  v)
     end subroutine geocom_get_angle
 
     subroutine geocom_get_angle_complete(this, hz, v, angle_accuracy, angle_time, trans_inc, long_inc, &
@@ -590,6 +596,7 @@ contains
         !! Sends *TMC_GetAngle1* request to sensor. Performs a complete angle
         !! measurement. The function starts an angle and, depending on the
         !! configuration, an inclination measurement, and returns the results.
+        !! This function sets inclination mode `GEOCOM_TMC_MEA_INC` by default.
         class(geocom_class), intent(inout)         :: this           !! GeoCOM object.
         real(kind=r8),       intent(out)           :: hz             !! Horizontal angle [rad].
         real(kind=r8),       intent(out)           :: v              !! Vertical angle [rad].

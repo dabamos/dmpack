@@ -22,9 +22,9 @@ program dmfeed
         character(len=FILE_PATH_LEN) :: database  = ' '          !! Path to log database.
         character(len=FILE_PATH_LEN) :: output    = ' '          !! Output path of Atom file (stdout if empty).
         character(len=NODE_ID_LEN)   :: node      = ' '          !! Optional node id.
+        integer                      :: entries   = 50           !! Max. number of entries in feed.
         integer                      :: min_level = LVL_DEBUG    !! Minimum log level
         integer                      :: max_level = LVL_CRITICAL !! Maximum log level.
-        integer                      :: entries   = 50           !! Max. number of entries in feed.
         logical                      :: force     = .false.      !! Force writing of output file.
         type(atom_type)              :: atom                     !! Atom type.
     end type app_type
@@ -83,9 +83,9 @@ contains
             arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
             arg_type('output',   short='o', type=ARG_TYPE_CHAR),    & ! -o, --output <path>
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('entries',  short='E', type=ARG_TYPE_INTEGER), & ! -E, --entries <n>
             arg_type('minlevel', short='L', type=ARG_TYPE_INTEGER), & ! -L, --minlevel <n>
             arg_type('maxlevel', short='K', type=ARG_TYPE_INTEGER), & ! -K, --maxlevel <n>
-            arg_type('entries',  short='E', type=ARG_TYPE_INTEGER), & ! -E, --entries <n>
             arg_type('force',    short='F', type=ARG_TYPE_BOOL),    & ! -F, --force
             arg_type('author',   short='A', type=ARG_TYPE_CHAR),    & ! -A, --author <string>
             arg_type('email',    short='M', type=ARG_TYPE_CHAR),    & ! -M, --email <string>
@@ -111,9 +111,9 @@ contains
         rc = dm_arg_get(args( 3), app%database)
         rc = dm_arg_get(args( 4), app%output)
         rc = dm_arg_get(args( 5), app%node)
-        rc = dm_arg_get(args( 6), app%min_level)
-        rc = dm_arg_get(args( 7), app%max_level)
-        rc = dm_arg_get(args( 8), app%entries)
+        rc = dm_arg_get(args( 6), app%entries)
+        rc = dm_arg_get(args( 7), app%min_level)
+        rc = dm_arg_get(args( 8), app%max_level)
         rc = dm_arg_get(args( 9), app%force)
         rc = dm_arg_get(args(10), app%atom%author)
         rc = dm_arg_get(args(11), app%atom%email)
@@ -178,9 +178,9 @@ contains
             rc = dm_config_get(config, 'database', app%database)
             rc = dm_config_get(config, 'output',   app%output)
             rc = dm_config_get(config, 'node',     app%node)
+            rc = dm_config_get(config, 'entries',  app%entries)
             rc = dm_config_get(config, 'minlevel', app%min_level)
             rc = dm_config_get(config, 'maxlevel', app%max_level)
-            rc = dm_config_get(config, 'entries',  app%entries)
             rc = dm_config_get(config, 'force',    app%force)
             rc = dm_config_get(config, 'author',   app%atom%author)
             rc = dm_config_get(config, 'email',    app%atom%email)

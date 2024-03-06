@@ -848,18 +848,19 @@ $ dmexport --database observ.sqlite --type observ --format csv --node dummy-node
 
 === dmfeed [[dmfeed]]
 
-This program creates a web feed from log messages in Atom Syndication Format.
-The log messages are read from database and written as XML to standard output
-or file.
+The *dmfeed* program creates a web feed from log messages in Atom Syndication
+Format. The log messages are read from database and written as XML to standard
+output or file.
 
 The feed id has to be a 36 characters long UUID with hyphens. News aggregators
 use the id to identify the feed. Therefore, the id should not be reused among
 different feeds. Run <<dmuuid>> to generate a valid UUID4.
 
-The time stamp of the feed in the updated element is set to the date and time of
+The time stamp of the feed in element _updated_ is set to the date and time of
 the last log message. If no logs have been added to the database since the last
 file modification of the feed, the output file is not updated, unless argument
-`--force` is passed.
+`--force` is passed. To update the feed periodically, add *dmfeed* to
+<<Cron,crontab>>.
 
 If an XSLT style sheet is given, web browsers may be able to display the Atom
 feed in HTML format. Set the option to the (relative) path of the public XSL on
@@ -876,13 +877,13 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--config _file_`     | `-c`  | –        | Path to configuration file.
 | `--database _file_`   | `-d`  | –        | Path to SQLite log database.
 | `--email _address_`   | `-M`  | –        | E-mail address of feed author.
+| `--entries _count_`   | `-E`  | 50       | Maximum number of entries in feed (max. 500).
 | `--force`             | `-F`  | –        | Force file output even if no new log records are available.
 | `--help`              | `-h`  | –        | Output available command-line arguments and quit.
 | `--id _uuid_`         | `-I`  | –        | UUID of the feed, 36 characters long with hyphens.
 | `--maxlevel _level_`  | `-K`  | 5        | Select log messages of the given maximum <<data-log-level,log level>> (between 1 and 5). Must be greater or equal the minimum level.
 | `--minlevel _level_`  | `-L`  | 1        | Select log messages of the given minimum <<data-log-level,log level>> (between 1 and 5).
 | `--name _name_`       | `-n`  | `dmfeed` | Name of instance and table in given configuration file.
-| `--entries _count_`   | `-E`  | 50       | Maximum number of entries in feed (max. 500).
 | `--node _id_`         | `-N`  | –        | Select log messages of the given node id.
 | `--output _file_`     | `-o`  | _stdout_ | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
 | `--subtitle _string_` | `-G`  | –        | Sub-title of feed.
@@ -916,9 +917,8 @@ $ cp /usr/local/share/dmpack/feed.xsl /var/www/
 ....
 
 If `/var/www/` is served by a web server, feed readers can subscribe to the
-feed. To update the feed periodically, add *dmfeed* to <<Cron,crontab>>.
-Furthermore, we may translate feed and style sheet into a single HTML document
-`feed.html`, using an arbitrary XSLT processor, for instance:
+feed. Additionally, we may translate feed and style sheet into a single HTML
+document `feed.html`, using an arbitrary XSLT processor, for instance:
 
 ....
 $ xsltproc --output feed.html /var/www/feed.xsl /var/www/feed.xml
@@ -4557,17 +4557,18 @@ The maximum message size has to be at least 16384 bytes.
 === Cron
 
 On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
-usually used to run jobs periodically. For example, in order to update an XML
+usually used to run jobs periodically. For instance, in order to update an XML
 feed, or to generate HTML reports, add a schedule of the task to perform to the
-local _crontab(5)_ file.
+_crontab(5)_ file of a local user.
 
-For example, we can edit the cron jobs of user `www` with _crontab(1)_:
+Edit the cron jobs of user `www` with _crontab(1)_:
 
 ....
 # crontab -u www -e
 ....
 
-The following _crontab(5)_ file adds a task to generate reports every hour:
+The following _crontab(5)_ entry adds a task to generate reports every hour,
+using utility script `mkreport.sh`:
 
 [source,crontab]
 ....
@@ -4577,16 +4578,19 @@ MAILTO=/dev/null
 @hourly -q /usr/local/share/dmpack/mkreport.sh
 ....
 
-The shell script `mkreport.sh` must have the execution bits set. Update the
-script to your configuration. Furthermore, we can update an Atom XML feed of
-logs with <<dmfeed>>:
+Status mails and logging are disabled. The shell script `mkreport.sh` must have
+the execution bits set. Modify the script according to your set-up.
+
+Additionally, we may update an Atom XML feed of logs by running <<dmfeed>> every
+five minutes:
 
 [source,crontab]
 ....
 */5 * * * * -q /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
 ....
 
-The feed is updated every five minutes if new logs have arrived.
+The feed is updated only if new logs have arrived in the meantime, unless option
+_force_ is enabled.
 
 == GeoCOM API
 
