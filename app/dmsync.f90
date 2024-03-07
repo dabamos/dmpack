@@ -22,7 +22,7 @@ program dmsync
     integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
 
     type :: app_type
-        !! Global application settings.
+        !! Application settings.
         character(len=ID_LEN)          :: name      = APP_NAME       !! Name of instance/configuration.
         character(len=FILE_PATH_LEN)   :: config    = ' '            !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger    = ' '            !! Name of logger.
@@ -44,7 +44,7 @@ program dmsync
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
     type(db_type)  :: db  ! Database type.
     type(sem_type) :: sem ! POSIX semaphore type.
 

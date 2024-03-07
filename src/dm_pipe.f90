@@ -17,8 +17,8 @@ module dm_pipe
     type, public :: pipe_type
         !! Opaque pipe type. Stores the C pointer of uni-directional pipe.
         private
-        integer     :: access = 0
-        type(c_ptr) :: ptr    = c_null_ptr
+        integer     :: access = 0          !! `PIPE_RDONLY` or `PIPE_WRONLY`.
+        type(c_ptr) :: ptr    = c_null_ptr !! Pointer of pipe.
     end type pipe_type
 
     public :: dm_pipe_connected
@@ -123,14 +123,15 @@ contains
     end function dm_pipe_open2
 
     integer(kind=i8) function dm_pipe_read(pipe, bytes) result(sz)
-        !! Reads from pipe to buffer `bytes` (binary).
+        !! Reads from pipe to buffer `bytes` (binary) and returns number of
+        !! bytes written to buffer.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(inout) :: bytes !! Output buffer.
 
         sz = 0_i8
         bytes = ' '
         if (pipe%access == PIPE_WRONLY) return
-        sz = c_fread(c_loc(bytes), int(1, kind=c_size_t), len(bytes, kind=c_size_t), pipe%ptr)
+        sz = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ptr)
     end function dm_pipe_read
 
     integer function dm_pipe_write(pipe, str) result(rc)
@@ -155,7 +156,7 @@ contains
 
         sz = 0_i8
         if (pipe%access == PIPE_RDONLY) return
-        sz = c_fwrite(c_loc(bytes), int(1, kind=c_size_t), len(bytes, kind=c_size_t), pipe%ptr)
+        sz = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ptr)
     end function dm_pipe_write2
 
     subroutine dm_pipe_close(pipe)

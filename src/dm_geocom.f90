@@ -5,22 +5,18 @@ module dm_geocom
     !!
     !! The API provided by DMPACK does not follow the official Leica GeoCOM API
     !! for C/C++ and Visual Basic. Structured types and functions are simplified
-    !! and given more memorable names. Function names do not contain a sub-system
-    !! prefix.
+    !! and given more memorable names. Function names do not contain any
+    !! sub-system prefix.
     !!
-    !! The following example opens the TTY `/dev/ttyUSB0` at 115,200 baud and
-    !! calls the null procedure of the instrument:
+    !! The following example opens the TTY `/dev/ttyUSB0` at 115,200 baud, and
+    !! calls the null procedure of the instrument (`COM_NullProc`):
     !!
     !! ```fortran
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
     !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, verbose=.true. error=rc)
-    !!
-    !! if (dm_is_error(rc)) then
-    !!     dm_error_out(rc)
-    !!     stop
-    !! end if
+    !! if (dm_is_error(rc)) error stop
     !!
     !! call geocom%null()
     !! print '(i0, ": ", a)', geocom%code(), geocom%message()
@@ -28,6 +24,7 @@ module dm_geocom
     !! call geocom%close()
     !! ```
     use :: dm_error
+    use :: dm_file
     use :: dm_geocom_api
     use :: dm_geocom_error
     use :: dm_geocom_type
@@ -43,21 +40,25 @@ module dm_geocom
         !! GeoCOM class for TTY access and GeoCOM API handling through the
         !! public methods. Objects of this class are not thread-safe.
         private
-        integer            :: rc      = E_NONE !! Last DMPACK return code.
-        integer            :: grc     = GRC_OK !! Last GeoCOM return code.
-        logical            :: verbose = .true. !! Print error messages to stderr.
-        type(request_type) :: request          !! Last request sent to sensor.
-        type(tty_type)     :: tty              !! TTY type for serial connection.
+        character(len=FILE_PATH_LEN) :: path      = ' '                   !! TTY device path.
+        integer                      :: baud_rate = GEOCOM_COM_BAUD_19200 !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+        integer                      :: grc       = GRC_OK                !! Last GeoCOM return code.
+        integer                      :: rc        = E_NONE                !! Last DMPACK return code.
+        logical                      :: verbose   = .false.               !! Print error messages to stderr.
+        type(request_type)           :: request                           !! Last request sent to sensor.
+        type(tty_type)               :: tty                               !! TTY type for serial connection.
     contains
         ! Public class methods.
-        procedure, public :: close        => geocom_close
-        procedure, public :: code         => geocom_code
-        procedure, public :: error        => geocom_error
-        procedure, public :: last_request => geocom_last_request
-        procedure, public :: message      => geocom_message
-        procedure, public :: open         => geocom_open
-        procedure, public :: send         => geocom_send
-        procedure, public :: set_verbose  => geocom_set_verbose
+        procedure, public :: close         => geocom_close
+        procedure, public :: code          => geocom_code
+        procedure, public :: error         => geocom_error
+        procedure, public :: get_baud_rate => geocom_get_baud_rate
+        procedure, public :: get_path      => geocom_get_path
+        procedure, public :: last_request  => geocom_last_request
+        procedure, public :: message       => geocom_message
+        procedure, public :: open          => geocom_open
+        procedure, public :: send          => geocom_send
+        procedure, public :: set_verbose   => geocom_set_verbose
 
         ! Public GeoCOM-specific methods.
         procedure, public :: abort_download     => geocom_abort_download
@@ -80,6 +81,8 @@ module dm_geocom
     private :: geocom_close
     private :: geocom_code
     private :: geocom_error
+    private :: geocom_get_baud_rate
+    private :: geocom_get_path
     private :: geocom_last_request
     private :: geocom_message
     private :: geocom_open
@@ -141,6 +144,23 @@ contains
         if (dm_tty_connected(this%tty)) call dm_tty_close(this%tty)
     end subroutine geocom_close
 
+    subroutine geocom_get_baud_rate(this, baud_rate)
+        !! Returns current baud rate enumerator (`GEOCOM_COM_BAUD_RATE`) of TTY
+        !! in `baud_rate`.
+        class(geocom_class), intent(inout) :: this      !! GeoCOM object.
+        integer,             intent(out)   :: baud_rate !! Baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+
+        baud_rate = this%baud_rate
+    end subroutine geocom_get_baud_rate
+
+    subroutine geocom_get_path(this, path)
+        !! Returns TTY device path in allocatable character string `path`.
+        class(geocom_class),           intent(inout) :: this !! GeoCOM object.
+        character(len=:), allocatable, intent(out)   :: path !! TTY device path.
+
+        path = trim(this%path)
+    end subroutine geocom_get_path
+
     subroutine geocom_last_request(this, request)
         !! Returns the last request sent to the sensor in `request`. If no
         !! request has been sent, the derived type is uninitialised and the time
@@ -154,15 +174,16 @@ contains
     subroutine geocom_open(this, path, baud_rate, retries, verbose, error)
         !! Opens TTY connection to robotic total station.
         !!
-        !! The argument `baud_rate` must be one of the following:
+        !! The argument `baud_rate` must be one of the following
+        !! `GEOCOM_COM_BAUD_RATE` enumerators:
         !!
-        !! * `GEOCOM_COM_BAUD_2400`
-        !! * `GEOCOM_COM_BAUD_4800`
-        !! * `GEOCOM_COM_BAUD_9600`
-        !! * `GEOCOM_COM_BAUD_19200`
-        !! * `GEOCOM_COM_BAUD_38400`
-        !! * `GEOCOM_COM_BAUD_57600`
-        !! * `GEOCOM_COM_BAUD_115200`
+        !! * `GEOCOM_COM_BAUD_2400` – 2400 baud.
+        !! * `GEOCOM_COM_BAUD_4800` – 4800 baud.
+        !! * `GEOCOM_COM_BAUD_9600` – 9600 baud.
+        !! * `GEOCOM_COM_BAUD_19200` – 19200 baud (default).
+        !! * `GEOCOM_COM_BAUD_38400` – 38400 baud.
+        !! * `GEOCOM_COM_BAUD_57600` – 57600 baud.
+        !! * `GEOCOM_COM_BAUD_115200` – 115200 baud.
         !!
         !! Argument `retries` specifies the number of attempts to make to
         !! connect to the sensor. If `verbose` is `.true.`, error messages are
@@ -177,23 +198,16 @@ contains
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         use :: dm_file, only: dm_file_exists
 
+        integer, parameter :: WAIT_TIME = 3 !! Retry wait time in [sec].
+
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
-        character(len=*),    intent(in)            :: path      !! Path of TTY.
-        integer,             intent(in)            :: baud_rate !! Baud rate value.
-        integer,             intent(in),  optional :: retries   !! Number of retries
+        character(len=*),    intent(in)            :: path      !! Path of TTY (for example, `/dev/ttyUSB0`).
+        integer,             intent(in)            :: baud_rate !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+        integer,             intent(in),  optional :: retries   !! Number of retries.
         logical,             intent(in),  optional :: verbose   !! Print errors to standard error.
         integer,             intent(out), optional :: error     !! DMPACK error code
 
-        integer :: baud, i, retries_, rc
-
-        this%rc      = E_NONE
-        this%grc     = GRC_OK
-        this%verbose = .false.
-        this%request = request_type()
-
-        retries_ = 0
-        if (present(retries)) retries_ = max(0, retries)
-        if (present(verbose)) this%verbose = verbose
+        integer :: i, n, rc
 
         tty_block: block
             rc = E_EXIST
@@ -202,53 +216,47 @@ contains
                 exit tty_block
             end if
 
-            rc = E_INVALID
-            select case (baud_rate)
-                case (GEOCOM_COM_BAUD_2400)
-                    baud = TTY_B2400
-                case (GEOCOM_COM_BAUD_4800)
-                    baud = TTY_B4800
-                case (GEOCOM_COM_BAUD_9600)
-                    baud = TTY_B9600
-                case (GEOCOM_COM_BAUD_19200)
-                    baud = TTY_B19200
-                case (GEOCOM_COM_BAUD_38400)
-                    baud = TTY_B38400
-                case (GEOCOM_COM_BAUD_57600)
-                    baud = TTY_B57600
-                case (GEOCOM_COM_BAUD_115200)
-                    baud = TTY_B115200
-                case default
-                    if (this%verbose) call dm_error_out(rc, 'invalid baud rate')
-                    exit tty_block
-            end select
+            ! Initialise TTY type.
+            this%path    = path
+            this%grc     = GRC_OK
+            this%rc      = E_NONE
+            this%request = request_type()
+            this%verbose = .false.
+            if (present(verbose)) this%verbose = verbose
 
-            rc = E_NOT_FOUND
-            if (.not. dm_file_exists(path)) then
-                if (this%verbose) call dm_error_out(rc, 'TTY ' // trim(path) // ' not found')
+            ! Validate and set baud rate.
+            this%baud_rate = dm_geocom_type_validated(GEOCOM_COM_BAUD_RATE, baud_rate, error=rc)
+
+            if (dm_is_error(rc)) then
+                if (this%verbose) call dm_error_out(rc, 'invalid baud rate')
                 exit tty_block
             end if
 
-            i = 0
+            ! Verify TTY device exists.
+            rc = E_NOT_FOUND
+            if (.not. dm_file_exists(this%path)) then
+                if (this%verbose) call dm_error_out(rc, 'TTY ' // trim(this%path) // ' not found')
+                exit tty_block
+            end if
 
-            do
-                if (i > retries_) exit
+            n = 0
+            if (present(retries)) n = max(0, retries)
 
-                ! Try to open TTY.
+            ! Try to open TTY.
+            do i = 0, n
                 rc = dm_tty_open(tty       = this%tty, &
-                                 path      = path, &
-                                 baud_rate = baud, &
+                                 path      = this%path, &
+                                 baud_rate = this%baud_rate, &
                                  byte_size = TTY_BYTE_SIZE8, &
                                  parity    = TTY_PARITY_NONE, &
                                  stop_bits = TTY_STOP_BITS1)
 
                 ! Exit on success.
                 if (dm_is_ok(rc)) exit
-                if (this%verbose) call dm_error_out(rc, 'failed to open TTY ' // trim(path))
+                if (this%verbose) call dm_error_out(rc, 'failed to open TTY ' // trim(this%path))
 
-                ! Re-try in 3 seconds.
-                i = i + 1
-                call dm_sleep(3)
+                ! Try again.
+                if (i < n) call dm_sleep(WAIT_TIME)
             end do
         end block tty_block
 
@@ -256,23 +264,22 @@ contains
         if (present(error)) error = rc
     end subroutine geocom_open
 
-    subroutine geocom_send(this, request, error)
+    subroutine geocom_send(this, request, delay, error)
         !! Sends request to configured TTY.
         use :: dm_regex, only: dm_regex_request
         use :: dm_time,  only: dm_time_now
 
         class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
         type(request_type),  intent(inout)         :: request !! Request to send.
+        integer,             intent(in),  optional :: delay   !! Request delay [msec].
         integer,             intent(out), optional :: error   !! DMPACK error code
 
-        integer :: grc, rc
+        integer :: rc
 
         this%grc = GRC_UNDEFINED
 
         tty_block: block
-            ! Prepare request.
-            request%timestamp = dm_time_now()
-
+            ! Verify that TTY is not connected yet.
             rc = E_IO
             if (.not. dm_tty_connected(this%tty)) then
                 if (this%verbose) call dm_error_out(rc, 'TTY not connected')
@@ -286,6 +293,9 @@ contains
                 if (this%verbose) call dm_error_out(rc, 'failed to initialize responses')
                 exit tty_block
             end if
+
+            ! Prepare request.
+            request%timestamp = dm_time_now()
 
             ! Send request to sensor.
             rc = dm_tty_write(this%tty, request, flush=.true.)
@@ -312,7 +322,10 @@ contains
             end if
 
             ! Get GeoCOM return code from response.
-            call dm_request_get(request, 'grc', grc)
+            call dm_request_get(request, 'grc', this%grc)
+
+            ! Wait additional delay.
+            if (present(delay)) call dm_usleep(max(0, delay) * 1000)
         end block tty_block
 
         this%rc      = rc
@@ -332,66 +345,72 @@ contains
     ! **************************************************************************
     ! PUBLIC GEOCOM METHODS.
     ! **************************************************************************
-    subroutine geocom_abort_download(this)
+    subroutine geocom_abort_download(this, delay)
         !! Sends *FTR_AbortDownload* request to sensor. Aborts or ends the file
         !! download command.
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_abort_download(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_abort_download
 
-    subroutine geocom_abort_list(this)
+    subroutine geocom_abort_list(this, delay)
         !! Sends *FTR_AbortList* request to sensor. Aborts or ends the file
         !! list command.
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_abort_list(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_abort_list
 
-    subroutine geocom_beep_alarm(this)
+    subroutine geocom_beep_alarm(this, delay)
         !! Sends *BMM_BeepAlarm* request to sensor. Outputs an alarm signal
         !! (triple beep).
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_beep_alarm(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_beep_alarm
 
-    subroutine geocom_beep_normal(this)
+    subroutine geocom_beep_normal(this, delay)
         !! Sends *BMM_BeepNormal* request to sensor. Outputs an alarm signal
         !! (single beep).
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_beep_normal(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_beep_normal
 
-    subroutine geocom_beep_off(this)
+    subroutine geocom_beep_off(this, delay)
         !! Sends *IOS_BeepOff* request to sensor. Stops an active beep signal.
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_beep_off(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_beep_off
 
-    subroutine geocom_beep_on(this, intensity)
+    subroutine geocom_beep_on(this, intensity, delay)
         !! Sends *IOS_BeepOn* request to sensor. Outputs continuous beep signal
         !! of given intensity (between 0 and 100).  If no intensity is given,
         !! the default `GEOCOM_IOS_BEEP_STDINTENS` is used.
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         integer,             intent(in), optional :: intensity !! Intensity of beep, from 0 to 100.
+        integer,             intent(in), optional :: delay     !! Request delay [msec].
 
         integer            :: intensity_
         type(request_type) :: request
@@ -400,10 +419,10 @@ contains
         if (present(intensity)) intensity_ = max(0, min(100, intensity))
 
         call dm_geocom_api_request_beep_on(request, intensity_)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_beep_on
 
-    subroutine geocom_change_face(this, pos_mode, atr_mode)
+    subroutine geocom_change_face(this, pos_mode, atr_mode, delay)
         !! Sends *AUT_ChangeFace* request to sensor. Turns the telescope to the
         !! other face.
         !!
@@ -415,9 +434,10 @@ contains
         !! If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to
         !! other face. If set to `GEOCOM_AUT_TARGET`, tries to position into a
         !! target in the destination area. This mode requires activated ATR.
-        class(geocom_class), intent(inout) :: this     !! GeoCOM object.
-        integer,             intent(in)    :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
-        integer,             intent(in)    :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
+        class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
+        integer,             intent(in)           :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
+        integer,             intent(in)           :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
+        integer,             intent(in), optional :: delay    !! Request delay [msec].
 
         integer            :: atr_mode_, pos_mode_
         type(request_type) :: request
@@ -426,10 +446,10 @@ contains
         atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode)
 
         call dm_geocom_api_request_change_face(request, pos_mode_, atr_mode_)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_change_face
 
-    subroutine geocom_delete(this, device_type, file_type, day, month, year, file_name, nfiles)
+    subroutine geocom_delete(this, device_type, file_type, day, month, year, file_name, nfiles, delay)
         !! Sends *FTR_Delete* request to sensor. Deletes one or more files.
         !!
         !! Wildcards may be used to delete multiple files. If the deletion date
@@ -438,11 +458,12 @@ contains
         class(geocom_class), intent(inout)         :: this        !! GeoCOM object.
         integer,             intent(in)            :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
         integer,             intent(in)            :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
-        integer,             intent(in)            :: day         !! Day (`DD`).
+        integer,             intent(in)            :: day         !! Day of month (`DD`).
         integer,             intent(in)            :: month       !! Month (`MM`).
         integer,             intent(in)            :: year        !! Year (`YY`).
         character(len=*),    intent(in)            :: file_name   !! Name of file to delete.
         integer,             intent(out), optional :: nfiles      !! Number of files deleted.
+        integer,             intent(in),  optional :: delay       !! Request delay [msec].
 
         integer            :: device_type_, file_type_
         integer            :: day_, month_, year_
@@ -458,12 +479,12 @@ contains
         if (present(nfiles)) nfiles = 0
 
         call dm_geocom_api_request_delete(request, device_type_, file_type_, day_, month_, year_, file_name)
-        call this%send(request)
+        call this%send(request, delay)
 
         if (present(nfiles)) call dm_request_get(this%request, 'nfiles', nfiles)
     end subroutine geocom_delete
 
-    subroutine geocom_do_measure(this, tmc_prog, inc_mode)
+    subroutine geocom_do_measure(this, tmc_prog, inc_mode, delay)
         !! Sends *TMC_DoMeasure* request to sensor. The API procedure tries a
         !! distance measurement. This command does not return any values.
         !!
@@ -495,6 +516,7 @@ contains
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
         integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: delay    !! Request delay [msec].
 
         integer            :: inc_mode_, tmc_prog_
         type(request_type) :: request
@@ -505,24 +527,25 @@ contains
         if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
 
         call dm_geocom_api_request_do_measure(request, tmc_prog_, inc_mode_)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_do_measure
 
-    subroutine geocom_download(this, block_number, block_value, block_length)
+    subroutine geocom_download(this, block_number, block_value, block_length, delay)
         !! Sends *FTR_Download* request to sensor. Reads a single block of
         !! data. The *FTR_SetupDownload* command has to be called first.
         !!
         !! The block sequence starts with 1. The download process will be
-        !! aborted if the block number is set to 0.
+        !! aborted if the block number is 0.
         !!
         !! The maximum block number is 65535. The file size is therefore
         !! limited to 28 MiB.
         !!
         !! On error, `block_value` is `NULL`, and `block_length` is 0.
-        class(geocom_class), intent(inout) :: this         !! GeoCOM object.
-        integer,             intent(in)    :: block_number !! Block number, from 0 to 65535.
-        character,           intent(out)   :: block_value  !! Block value [byte].
-        integer,             intent(out)   :: block_length !! Block length.
+        class(geocom_class), intent(inout)        :: this         !! GeoCOM object.
+        integer,             intent(in)           :: block_number !! Block number, from 0 to 65535.
+        character,           intent(out)          :: block_value  !! Block value [byte].
+        integer,             intent(out)          :: block_length !! Block length.
+        integer,             intent(in), optional :: delay        !! Request delay [msec].
 
         integer            :: block_number_
         type(request_type) :: request
@@ -532,13 +555,13 @@ contains
         block_number_ = max(0, min(65535, block_number))
 
         call dm_geocom_api_request_download(request, block_number_)
-        call this%send(request)
+        call this%send(request, delay)
 
         call dm_request_get(this%request, 'blockval', block_value)
         call dm_request_get(this%request, 'blocklen', block_length)
     end subroutine geocom_download
 
-    subroutine geocom_fine_adjust(this, search_hz, search_v)
+    subroutine geocom_fine_adjust(this, search_hz, search_v, delay)
         !! Sends *AUT_FineAdjust* request to sensor to perform automatic target
         !! positioning.
         !!
@@ -559,17 +582,18 @@ contains
         !! The tolerance settings have no influence to this operation. The
         !! tolerance settings and the ATR precision depend on the instrument
         !! class and the used EDM mode.
-        class(geocom_class), intent(inout) :: this      !! GeoCOM object.
-        real(kind=r8),       intent(in)    :: search_hz !! Search range, Hz axis [rad].
-        real(kind=r8),       intent(in)    :: search_v  !! Search range, V axis [rad].
+        class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
+        real(kind=r8),       intent(in)           :: search_hz !! Search range, Hz axis [rad].
+        real(kind=r8),       intent(in)           :: search_v  !! Search range, V axis [rad].
+        integer,             intent(in), optional :: delay     !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_fine_adjust(request, search_hz, search_v)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_fine_adjust
 
-    subroutine geocom_get_angle(this, hz, v, inc_mode)
+    subroutine geocom_get_angle(this, hz, v, inc_mode, delay)
         !! Sends *TMC_GetAngle5* request to sensor. Starts an angle measurement
         !! and returns the results. This function sets inclination mode
         !! `GEOCOM_TMC_MEA_INC` by default.
@@ -577,6 +601,7 @@ contains
         real(kind=r8),       intent(out)          :: hz       !! Horizontal angle [rad].
         real(kind=r8),       intent(out)          :: v        !! Vertical angle [rad].
         integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: delay    !! Request delay [msec].
 
         integer            :: inc_mode_
         type(request_type) :: request
@@ -585,14 +610,14 @@ contains
         if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
 
         call dm_geocom_api_request_get_angle(request, inc_mode)
-        call this%send(request)
+        call this%send(request, delay)
 
         call dm_request_get(this%request, 'hz', hz)
         call dm_request_get(this%request, 'v',  v)
     end subroutine geocom_get_angle
 
     subroutine geocom_get_angle_complete(this, hz, v, angle_accuracy, angle_time, trans_inc, long_inc, &
-                                         inc_accuracy, inc_time, face, inc_mode)
+                                         inc_accuracy, inc_time, face, inc_mode, delay)
         !! Sends *TMC_GetAngle1* request to sensor. Performs a complete angle
         !! measurement. The function starts an angle and, depending on the
         !! configuration, an inclination measurement, and returns the results.
@@ -608,6 +633,7 @@ contains
         integer(kind=i8),    intent(out), optional :: inc_time       !! Moment of measurement [ms].
         integer,             intent(out), optional :: face           !! Face position of telescope (`GEOCOM_TMC_FACE`).
         integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: delay          !! Request delay [msec].
 
         integer            :: inc_mode_
         type(request_type) :: request
@@ -627,7 +653,7 @@ contains
         if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
 
         call dm_geocom_api_request_get_angle_complete(request, inc_mode_)
-        call this%send(request)
+        call this%send(request, delay)
 
         call dm_request_get(this%request, 'hz', hz)
         call dm_request_get(this%request, 'v',  v)
@@ -641,14 +667,15 @@ contains
         if (present(face))           call dm_request_get(this%request, 'face',    face)
     end subroutine geocom_get_angle_complete
 
-    subroutine geocom_null(this)
+    subroutine geocom_null(this, delay)
         !! Sends *COM_NullProc* request to sensor. API call for checking the
         !! communication.
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(in), optional :: delay !! Request delay [msec].
 
         type(request_type) :: request
 
         call dm_geocom_api_request_null(request)
-        call this%send(request)
+        call this%send(request, delay)
     end subroutine geocom_null
 end module dm_geocom

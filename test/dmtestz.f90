@@ -28,11 +28,11 @@ contains
         rc = dm_nml_from(observ1, input)
 
         print *, 'deflate ...'
-        rc = dm_z_deflate_mem(input, output1)
+        rc = dm_z_deflate(input, output1)
         if (dm_is_error(rc)) return
 
         print *, 'inflate ...'
-        rc = dm_z_inflate_mem(output1, output2, len(input))
+        rc = dm_z_inflate(output1, output2, len(input))
         if (dm_is_error(rc)) return
 
         print '(" source size.: ", i0)', len(input)

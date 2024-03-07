@@ -43,7 +43,7 @@ contains
 
         type(app_type), intent(inout) :: app
 
-        integer          :: er, fu, stat
+        integer          :: er, stat, unit
         integer(kind=i8) :: nrecs, nrows
         logical          :: exists, valid
         real(kind=r8)    :: dt
@@ -58,7 +58,7 @@ contains
 
         ! Try to open input file.
         rc = E_IO
-        open (action='read', file=trim(app%input), iostat=stat, newunit=fu)
+        open (action='read', file=trim(app%input), iostat=stat, newunit=unit)
 
         if (stat /= 0) then
             call dm_error_out(rc, 'failed to open file ' // trim(app%input))
@@ -132,15 +132,15 @@ contains
                 ! Read record from file.
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_csv_read(node, fu, app%separator, app%quote)
+                        rc = dm_csv_read(node, unit, app%separator, app%quote)
                     case (TYPE_SENSOR)
-                        rc = dm_csv_read(sensor, fu, app%separator, app%quote)
+                        rc = dm_csv_read(sensor, unit, app%separator, app%quote)
                     case (TYPE_TARGET)
-                        rc = dm_csv_read(target, fu, app%separator, app%quote)
+                        rc = dm_csv_read(target, unit, app%separator, app%quote)
                     case (TYPE_OBSERV)
-                        rc = dm_csv_read(observ, fu, app%separator, app%quote)
+                        rc = dm_csv_read(observ, unit, app%separator, app%quote)
                     case (TYPE_LOG)
-                        rc = dm_csv_read(log, fu, app%separator, app%quote)
+                        rc = dm_csv_read(log, unit, app%separator, app%quote)
                 end select
 
                 ! Ignore comments and empty rows.
@@ -266,7 +266,7 @@ contains
         end if
 
         ! Close file.
-        close (fu)
+        close (unit)
         if (app%verbose) print '("Closed file ", a)', trim(app%input)
 
         if (dm_is_error(rc)) return

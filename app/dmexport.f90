@@ -11,12 +11,12 @@ program dmexport
     character(len=*), parameter :: APP_NAME  = 'dmexport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     type :: app_type
         !! Command-line arguments.
         character(len=FILE_PATH_LEN)     :: database  = ' '         !! Path to database.
-        character(len=FILE_PATH_LEN)     :: output    = ' '         !! Output file path.
+        character(len=FILE_PATH_LEN)     :: output    = ' '         !! Output file path, empty or '-' for stdout.
         character(len=NODE_ID_LEN)       :: node      = ' '         !! Node id.
         character(len=SENSOR_ID_LEN)     :: sensor    = ' '         !! Sensor id.
         character(len=TARGET_ID_LEN)     :: target    = ' '         !! Target id.
@@ -30,7 +30,7 @@ program dmexport
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App type.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -46,7 +46,7 @@ contains
     integer function export(app) result(rc)
         type(app_type), intent(inout) :: app
 
-        integer        :: fu, stat
+        integer        :: stat, unit
         logical        :: is_file
         type (db_type) :: db
 
@@ -60,7 +60,7 @@ contains
         type(target_type), allocatable :: targets(:)
 
         is_file = .false.
-        if (len_trim(app%output) > 0) is_file = .true.
+        if (len_trim(app%output) > 0 .and. app%output /= '-') is_file = .true.
 
         rc = dm_db_open(db, app%database, read_only=.true., validate=.true.)
 
@@ -90,7 +90,7 @@ contains
                                   target_id=app%target, from=app%from, to=app%to)
             case (TYPE_BEAT)
                 rc = dm_db_select(db, beats)
-            case (TYPE_DATA_POINT)
+            case (TYPE_DP)
                 rc = dm_db_select(db, data_points, node_id=app%node, sensor_id=app%sensor, &
                                   target_id=app%target, response_name=app%response, &
                                   from=app%from, to=app%to)
@@ -100,13 +100,16 @@ contains
         if (dm_is_error(dm_db_close(db))) rc = E_DB
         if (dm_is_error(rc)) return
 
-        fu = stdout
+        unit = stdout
 
         ! Open file.
         if (is_file) then
             rc = E_IO
-            open (action='write', file=trim(app%output), iostat=stat, newunit=fu, &
-                  status='replace')
+            open (action  = 'write', &
+                  file    = trim(app%output), &
+                  iostat  = stat, &
+                  newunit = unit, &
+                  status = 'replace')
             if (stat /= 0) return
         end if
 
@@ -114,63 +117,66 @@ contains
         select case (app%format)
             case (FORMAT_BLOCK)
                 rc = E_INVALID
-                if (app%type == TYPE_DATA_POINT) then
-                    rc = dm_block_write(data_points, fu)
+                if (app%type == TYPE_DP) then
+                    rc = dm_block_write(data_points, unit)
                 end if
+
             case (FORMAT_CSV)
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_csv_write(nodes, fu, app%header, app%separator)
+                        rc = dm_csv_write(nodes, unit, app%header, app%separator)
                     case (TYPE_SENSOR)
-                        rc = dm_csv_write(sensors, fu, app%header, app%separator)
+                        rc = dm_csv_write(sensors, unit, app%header, app%separator)
                     case (TYPE_TARGET)
-                        rc = dm_csv_write(targets, fu, app%header, app%separator)
+                        rc = dm_csv_write(targets, unit, app%header, app%separator)
                     case (TYPE_OBSERV)
-                        rc = dm_csv_write(observs, fu, app%header, app%separator)
+                        rc = dm_csv_write(observs, unit, app%header, app%separator)
                     case (TYPE_LOG)
-                        rc = dm_csv_write(logs, fu, app%header, app%separator)
+                        rc = dm_csv_write(logs, unit, app%header, app%separator)
                     case (TYPE_BEAT)
-                        rc = dm_csv_write(beats, fu, app%header, app%separator)
-                    case (TYPE_DATA_POINT)
-                        rc = dm_csv_write(data_points, fu, app%header, app%separator)
+                        rc = dm_csv_write(beats, unit, app%header, app%separator)
+                    case (TYPE_DP)
+                        rc = dm_csv_write(data_points, unit, app%header, app%separator)
                 end select
+
             case (FORMAT_JSON)
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_json_write(nodes, fu)
+                        rc = dm_json_write(nodes, unit)
                     case (TYPE_SENSOR)
-                        rc = dm_json_write(sensors, fu)
+                        rc = dm_json_write(sensors, unit)
                     case (TYPE_TARGET)
-                        rc = dm_json_write(targets, fu)
+                        rc = dm_json_write(targets, unit)
                     case (TYPE_OBSERV)
-                        rc = dm_json_write(observs, fu)
+                        rc = dm_json_write(observs, unit)
                     case (TYPE_LOG)
-                        rc = dm_json_write(logs, fu)
+                        rc = dm_json_write(logs, unit)
                     case (TYPE_BEAT)
-                        rc = dm_json_write(beats, fu)
-                    case (TYPE_DATA_POINT)
-                        rc = dm_json_write(data_points, fu)
+                        rc = dm_json_write(beats, unit)
+                    case (TYPE_DP)
+                        rc = dm_json_write(data_points, unit)
                 end select
+
             case (FORMAT_JSONL)
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_jsonl_write(nodes, fu)
+                        rc = dm_jsonl_write(nodes, unit)
                     case (TYPE_SENSOR)
-                        rc = dm_jsonl_write(sensors, fu)
+                        rc = dm_jsonl_write(sensors, unit)
                     case (TYPE_TARGET)
-                        rc = dm_jsonl_write(targets, fu)
+                        rc = dm_jsonl_write(targets, unit)
                     case (TYPE_OBSERV)
-                        rc = dm_jsonl_write(observs, fu)
+                        rc = dm_jsonl_write(observs, unit)
                     case (TYPE_LOG)
-                        rc = dm_jsonl_write(logs, fu)
+                        rc = dm_jsonl_write(logs, unit)
                     case (TYPE_BEAT)
-                        rc = dm_jsonl_write(beats, fu)
-                    case (TYPE_DATA_POINT)
-                        rc = dm_jsonl_write(data_points, fu)
+                        rc = dm_jsonl_write(beats, unit)
+                    case (TYPE_DP)
+                        rc = dm_jsonl_write(data_points, unit)
                 end select
         end select
 
-        if (is_file) close (fu)
+        if (is_file) close (unit)
 
         if (dm_is_error(rc)) then
             call dm_error_out(rc, 'failed to write data')
@@ -195,9 +201,9 @@ contains
             arg_type('target',    short='T', type=ARG_TYPE_ID), &                  ! -T, --target <id>
             arg_type('from',      short='B', type=ARG_TYPE_TIME), &                ! -F, --from <timestamp>
             arg_type('to',        short='E', type=ARG_TYPE_TIME), &                ! -T, --to <timestamp>
-            arg_type('response',  short='R', type=ARG_TYPE_ID,   max_len=RESPONSE_NAME_LEN), & ! -R, --response <name>
+            arg_type('response',  short='R', type=ARG_TYPE_ID,   max_len=RESPONSE_NAME_LEN),                & ! -R, --response <name>
             arg_type('format',    short='f', type=ARG_TYPE_CHAR, max_len=FORMAT_NAME_LEN, required=.true.), & ! -f, --format <string>
-            arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), &   ! -t, --type <string>
+            arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN,   required=.true.), & ! -t, --type <string>
             arg_type('header',    short='H', type=ARG_TYPE_BOOL), &                ! -H, --header
             arg_type('separator', short='s', type=ARG_TYPE_CHAR, max_len=1) &      ! -a, --separator <char>
         ]
@@ -235,7 +241,7 @@ contains
 
         ! Data type.
         select case (app%type)
-            case (TYPE_NODE, TYPE_SENSOR, TYPE_TARGET, TYPE_OBSERV, TYPE_LOG, TYPE_BEAT, TYPE_DATA_POINT)
+            case (TYPE_NODE, TYPE_SENSOR, TYPE_TARGET, TYPE_OBSERV, TYPE_LOG, TYPE_BEAT, TYPE_DP)
                 continue
             case default
                 call dm_error_out(rc, 'invalid type')
@@ -243,41 +249,40 @@ contains
         end select
 
         ! Log, observation, and data point.
-        if (app%type == TYPE_LOG .or. app%type == TYPE_OBSERV .or. &
-            app%type == TYPE_DATA_POINT) then
+        if (app%type == TYPE_LOG .or. app%type == TYPE_OBSERV .or. app%type == TYPE_DP) then
             if (.not. dm_time_valid(app%from)) then
-                call dm_error_out(rc, 'missing argument --from')
+                call dm_error_out(rc, 'invalid or missing argument --from')
                 return
             end if
 
             if (.not. dm_time_valid(app%to)) then
-                call dm_error_out(rc, 'missing argument --to')
+                call dm_error_out(rc, 'invalid or missing argument --to')
                 return
             end if
         end if
 
         ! Observation and data point.
-        if (app%type == TYPE_OBSERV .or. app%type == TYPE_DATA_POINT) then
+        if (app%type == TYPE_OBSERV .or. app%type == TYPE_DP) then
             if (.not. dm_id_valid(app%node)) then
-                 call dm_error_out(rc, 'missing argument --node')
+                 call dm_error_out(rc, 'invalid or missing argument --node')
                  return
             end if
 
             if (.not. dm_id_valid(app%sensor)) then
-                call dm_error_out(rc, 'missing argument --sensor')
+                call dm_error_out(rc, 'invalid or missing argument --sensor')
                 return
             end if
 
             if (.not. dm_id_valid(app%target)) then
-                call dm_error_out(rc, 'missing argument --target')
+                call dm_error_out(rc, 'invalid or missing argument --target')
                 return
             end if
         end if
 
         ! Data point.
-        if (app%type == TYPE_DATA_POINT) then
+        if (app%type == TYPE_DP) then
             if (.not. dm_id_valid(app%response)) then
-                 call dm_error_out(rc, 'missing argument --response')
+                 call dm_error_out(rc, 'invalid or missing argument --response')
                  return
             end if
         else

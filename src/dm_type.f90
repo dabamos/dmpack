@@ -15,7 +15,7 @@ module dm_type
     integer, parameter, public :: TYPE_RESPONSE   = 6 !! Response of request.
     integer, parameter, public :: TYPE_LOG        = 7 !! Log.
     integer, parameter, public :: TYPE_BEAT       = 8 !! Heartbeat.
-    integer, parameter, public :: TYPE_DATA_POINT = 9 !! X/Y data point.
+    integer, parameter, public :: TYPE_DP         = 9 !! X/Y data point.
     integer, parameter, public :: TYPE_LAST       = 9 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
@@ -56,8 +56,8 @@ contains
                 type = TYPE_LOG
             case (TYPE_NAMES(TYPE_BEAT))
                 type = TYPE_BEAT
-            case (TYPE_NAMES(TYPE_DATA_POINT))
-                type = TYPE_DATA_POINT
+            case (TYPE_NAMES(TYPE_DP))
+                type = TYPE_DP
             case default
                 type = TYPE_NONE
         end select

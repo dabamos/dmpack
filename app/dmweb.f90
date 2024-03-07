@@ -1908,7 +1908,7 @@ contains
     end function html_form_observs
 
     function html_form_plots(nodes, sensors, targets, max_results, node_id, sensor_id, &
-            target_id, response_name, from, to, nresults) result(html)
+                             target_id, response_name, from, to, nresults) result(html)
         !! Returns HTML form for plot selection.
         type(node_type),   intent(inout)        :: nodes(:)       !! Node types.
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.

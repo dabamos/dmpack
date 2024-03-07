@@ -101,15 +101,18 @@ contains
         call get_command_argument(0, path)
     end subroutine dm_system_path
 
-    subroutine dm_system_uname(uname, stat)
+    subroutine dm_system_uname(uname, error)
         !! Returns uname information (operating system, hostname, ...).
         type(uname_type), intent(out)           :: uname !! Uname type.
-        integer,          intent(out), optional :: stat  !! Error code.
+        integer,          intent(out), optional :: error !! Error code.
 
+        integer         :: stat
         type(c_utsname) :: utsname
 
-        if (present(stat)) stat = E_SYSTEM
-        if (c_uname(utsname) /= 0) return
+        if (present(error)) error = E_SYSTEM
+
+        stat = c_uname(utsname)
+        if (stat /= 0) return
 
         call c_f_str_chars(utsname%sysname,  uname%system_name)
         call c_f_str_chars(utsname%nodename, uname%node_name)
@@ -117,20 +120,25 @@ contains
         call c_f_str_chars(utsname%version,  uname%version)
         call c_f_str_chars(utsname%machine,  uname%machine)
 
-        if (present(stat)) stat = E_NONE
+        if (present(error)) error = E_NONE
     end subroutine dm_system_uname
 
-    subroutine dm_system_uptime(time, stat)
+    subroutine dm_system_uptime(time, error)
         !! Returns system uptime.
         integer(kind=i8), intent(out)           :: time
-        integer,          intent(out), optional :: stat
+        integer,          intent(out), optional :: error
 
+        integer          :: stat
         type(c_timespec) :: tp
 
-        if (present(stat)) stat = E_SYSTEM
-        if (c_clock_gettime(CLOCK_MONOTONIC, tp) /= 0) return
+        if (present(error)) error = E_SYSTEM
+
+        stat = c_clock_gettime(CLOCK_MONOTONIC, tp)
+        if (stat /= 0) return
+
         time = int(tp%tv_sec, kind=i8)
         if (time > 60) time = time + 30
-        if (present(stat)) stat = E_NONE
+
+        if (present(error)) error = E_NONE
     end subroutine dm_system_uptime
 end module dm_system

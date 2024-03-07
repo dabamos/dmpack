@@ -15,7 +15,7 @@ program dmpipe
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 0
 
-    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
+    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0 !! No output.

@@ -35,12 +35,12 @@ module dm_request
         character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response (printable).
         character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter (printable).
         character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Regular expression pattern.
-        integer                              :: delay      = 0                    !! Delay in msec (optional).
+        integer                              :: delay      = 0                    !! Delay in [msec] (optional).
         integer                              :: error      = E_NONE               !! Error code.
         integer                              :: mode       = REQUEST_MODE_NONE    !! Request mode (optional).
         integer                              :: retries    = 0                    !! Number of executed retries.
         integer                              :: state      = REQUEST_STATE_NONE   !! Request state (optional).
-        integer                              :: timeout    = 0                    !! Timeout in msec (optional).
+        integer                              :: timeout    = 0                    !! Timeout in [msec] (optional).
         integer                              :: nresponses = 0                    !! Number of responses.
         type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) !! Responses array.
     end type request_type

@@ -10,8 +10,8 @@ module dm_z
     private
 
     public :: dm_z_compress
-    public :: dm_z_deflate_mem
-    public :: dm_z_inflate_mem
+    public :: dm_z_deflate
+    public :: dm_z_inflate
     public :: dm_z_uncompress
 contains
     integer function dm_z_compress(input, output, output_size) result(rc)
@@ -47,21 +47,21 @@ contains
         rc = E_NONE
     end function dm_z_compress
 
-    integer function dm_z_deflate_mem(input, output) result(rc)
+    integer function dm_z_deflate(input, output) result(rc)
         !! Compresses input string. Returns `E_ZLIB` if the compression
         !! failed.
         character(len=*), target,      intent(inout) :: input  !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output !! Output bytes.
 
         character(len=len(input)), target :: buffer
-        integer                           :: err, have
+        integer                           :: have, stat
         type(z_stream)                    :: strm
 
         rc = E_ZLIB
         output = ''
 
-        if (deflate_init2(strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, &
-                          -15, 8, Z_DEFAULT_STRATEGY) /= Z_OK) return
+        stat = deflate_init2(strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY)
+        if (stat /= Z_OK) return
 
         def_block: block
             strm%avail_in = len(input)
@@ -72,33 +72,35 @@ contains
             strm%total_out = strm%avail_in
             strm%next_out  = c_loc(buffer)
 
-            err = deflate(strm, Z_FINISH)
-            if (err == Z_STREAM_ERROR) exit def_block
+            stat = deflate(strm, Z_FINISH)
+            if (stat == Z_STREAM_ERROR) exit def_block
             have = len(buffer) - strm%avail_out
             output = buffer(1:have)
 
-            if (err /= Z_STREAM_END) exit def_block
+            if (stat /= Z_STREAM_END) exit def_block
             rc = E_NONE
         end block def_block
 
-        err = deflate_end(strm)
-    end function dm_z_deflate_mem
+        stat = deflate_end(strm)
+    end function dm_z_deflate
 
-    integer function dm_z_inflate_mem(input, output, buffer_size) result(rc)
-        !! Decompresses input string. Returns `E_ZLIB` if the decompression
-        !! failed.
+    integer function dm_z_inflate(input, output, buffer_size) result(rc)
+        !! Decompresses input string. The argument `buffer_size` specifies the
+        !! size of the inflate buffer and must be large enough for the buffer
+        !! to hold the result. Returns `E_ZLIB` if the decompression failed.
         character(len=*), target,      intent(inout) :: input       !! Input bytes.
         character(len=:), allocatable, intent(out)   :: output      !! Output bytes.
         integer,                       intent(in)    :: buffer_size !! Buffer size.
 
         character(len=buffer_size), target :: buffer
-        integer                            :: err, have
+        integer                            :: have, stat
         type(z_stream)                     :: strm
 
         rc = E_ZLIB
         output = ''
 
-        if (inflate_init2(strm, -15) /= Z_OK) return
+        stat = inflate_init2(strm, -15)
+        if (stat /= Z_OK) return
 
         inf_block: block
             strm%avail_in = len(input)
@@ -109,20 +111,21 @@ contains
             strm%total_out = strm%avail_out
             strm%next_out  = c_loc(buffer)
 
-            err = inflate(strm, Z_FINISH)
-            if (err == Z_STREAM_ERROR) exit inf_block
+            stat = inflate(strm, Z_FINISH)
+            if (stat == Z_STREAM_ERROR) exit inf_block
             have = len(buffer) - strm%avail_out
             output = buffer(1:have)
 
-            if (err /= Z_STREAM_END) exit inf_block
+            if (stat /= Z_STREAM_END) exit inf_block
             rc = E_NONE
         end block inf_block
 
-        err = inflate_end(strm)
-    end function dm_z_inflate_mem
+        stat = inflate_end(strm)
+    end function dm_z_inflate
 
     integer function dm_z_uncompress(input, output, output_size) result(rc)
-        !! Uncompresses input string using the zlib utility function. Returns
+        !! Uncompresses input string using the zlib utility function. The output
+        !! buffer must be large enough to hold the uncompressed result. Returns
         !! `E_ZLIB` if the decompression failed.
         character(len=*), intent(inout)         :: input       !! Input bytes.
         character(len=*), intent(inout)         :: output      !! Output bytes.

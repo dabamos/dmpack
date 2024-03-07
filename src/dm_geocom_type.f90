@@ -314,13 +314,14 @@ contains
     integer function dm_geocom_type_validated(type, value, default, error) result(n)
         !! Parameterisation function for GeoCOM enumeration types.
         !!
-        !! Returns argument `value` if it is a valid enumerator of `type`, else
-        !! the default value of that type. If argument `type` is not found or
-        !! not supported, the function returns 0. If argument `default` is
-        !! passed, it is returned on error.
+        !! Returns argument `value` if it is a valid enumerator of enumeration
+        !! `type`, else the default value of that type. If argument `type` is not
+        !! found or not supported, the function returns 0. If argument `default`
+        !! is passed, it is returned on error.
         !!
-        !! If argument `default` is not passed and `type` is valid, one of the
-        !! following values is returned:
+        !! If argument `type` is valid, argument `value` is invalid, and argument
+        !! `default` is not passed, the default value from the following table is
+        !! returned:
         !!
         !! | Type                           | Default Value                    |
         !! |--------------------------------|----------------------------------|
@@ -332,6 +333,7 @@ contains
         !! | `GEOCOM_BAP_REFLTYPE`          | `GEOCOM_BAP_REFL_UNDEF`          |
         !! | `GEOCOM_BAP_TARGET_TYPE`       | `GEOCOM_BAP_REFL_USE`            |
         !! | `GEOCOM_BAP_USER_MEASPRG`      | `GEOCOM_BAP_SINGLE_REF_STANDARD` |
+        !! | `GEOCOM_COM_BAUD_RATE`         | `GEOCOM_COM_BAUD_19200`          |
         !! | `GEOCOM_COM_TPS_STARTUP_MODE`  | `GEOCOM_COM_STARTUP_REMOTE`      |
         !! | `GEOCOM_COM_TPS_STOP_MODE`     | `GEOCOM_COM_STOP_SHUT_DOWN`      |
         !! | `GEOCOM_EDM_EGLINTENSITY_TYPE` | `GEOCOM_EDM_EGLINTEN_OFF`        |
@@ -464,6 +466,21 @@ contains
                         n  = value
                     case default
                         n = GEOCOM_BAP_SINGLE_REF_STANDARD
+                end select
+
+            case (GEOCOM_COM_BAUD_RATE)
+                select case (value)
+                    case (GEOCOM_COM_BAUD_38400,  &
+                          GEOCOM_COM_BAUD_19200,  &
+                          GEOCOM_COM_BAUD_9600,   &
+                          GEOCOM_COM_BAUD_4800,   &
+                          GEOCOM_COM_BAUD_2400,   &
+                          GEOCOM_COM_BAUD_115200, &
+                          GEOCOM_COM_BAUD_57600)
+                        rc = E_NONE
+                        n  = value
+                    case default
+                        n = GEOCOM_COM_BAUD_19200
                 end select
 
             case (GEOCOM_COM_TPS_STARTUP_MODE)

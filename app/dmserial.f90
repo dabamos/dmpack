@@ -12,7 +12,7 @@ program dmserial
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 1
 
-    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV seperator character.
+    character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     integer, parameter :: OUTPUT_NONE   = 0 !! No output.
@@ -55,7 +55,14 @@ program dmserial
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Create TTY type.
-    rc = create_tty(tty, app)
+    rc = create_tty(tty       = tty, &
+                    path      = app%tty, &
+                    baud_rate = app%baud_rate, &
+                    byte_size = app%byte_size, &
+                    parity    = app%parity, &
+                    stop_bits = app%stop_bits, &
+                    dtr       = app%dtr, &
+                    rts       = app%rts)
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
@@ -75,28 +82,34 @@ program dmserial
 
     call dm_stop(0)
 contains
-    integer function create_tty(tty, app) result(rc)
+    integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
         !! Creates TTY type from application settings.
-        type(tty_type), intent(inout) :: tty !! TTY type.
-        type(app_type), intent(inout) :: app !! App type.
+        type(tty_type),   intent(out) :: tty       !! TTY type.
+        character(len=*), intent(in)  :: path      !! Device path.
+        integer,          intent(in)  :: baud_rate !! Numeric baud rate.
+        integer,          intent(in)  :: byte_size !! Numeric byte size.
+        character(len=*), intent(in)  :: parity    !! Parity string.
+        integer,          intent(in)  :: stop_bits !! Numeric stop bits.
+        logical,          intent(in)  :: dtr       !! DTR enabled.
+        logical,          intent(in)  :: rts       !! RTS enabled.
 
         tty_block: block
-            tty%path = app%tty
+            tty%path = path
 
-            tty%baud_rate = dm_tty_baud_rate_from_value(app%baud_rate, error=rc)
+            tty%baud_rate = dm_tty_baud_rate_from_value(baud_rate, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%byte_size = dm_tty_byte_size_from_value(app%byte_size, error=rc)
+            tty%byte_size = dm_tty_byte_size_from_value(byte_size, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%parity = dm_tty_parity_from_name(app%parity, error=rc)
+            tty%parity = dm_tty_parity_from_name(parity, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%stop_bits = dm_tty_stop_bits_from_value(app%stop_bits, error=rc)
+            tty%stop_bits = dm_tty_stop_bits_from_value(stop_bits, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%dtr = app%dtr
-            tty%rts = app%rts
+            tty%dtr = dtr
+            tty%rts = rts
         end block tty_block
 
         if (dm_is_error(rc)) call dm_error_out(rc, 'invalid TTY parameters')

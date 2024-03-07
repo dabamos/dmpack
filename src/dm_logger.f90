@@ -9,18 +9,13 @@ module dm_logger
     !! Be aware that only a single receiver is allowed (but multiple senders).
     !! Otherwise, the messages are passed in round-robin fashion to the receivers.
     use :: dm_ansi
-    use :: dm_ascii
     use :: dm_error
     use :: dm_id
     use :: dm_kind
     use :: dm_log
     use :: dm_node
     use :: dm_observ
-    use :: dm_sensor
-    use :: dm_target
-    use :: dm_time
     use :: dm_type
-    use :: dm_uuid
     implicit none (type, external)
     private
 
@@ -29,9 +24,9 @@ module dm_logger
     character(len=*), parameter, public :: LOGGER_NAME_DEFAULT = 'dmlogger' !! Default name of logger process.
 
     ! ANSI colours of log level.
-    integer, parameter :: LOGGER_COLORS(0:5) = [ &
+    integer, parameter :: LOGGER_COLORS(LVL_NONE:LVL_LAST) = [ &
         COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED &
-    ]
+    ] !! Colours associated with log level.
 
     type, public :: logger_type
         !! Opaque logger type.
@@ -102,6 +97,8 @@ contains
     subroutine dm_logger_fail(message, error, source)
         !! Prints critical error message to standard error, with optional
         !! DMPACK error code.
+        use :: dm_time
+
         character(len=*), intent(in)           :: message !! Error message.
         integer,          intent(in), optional :: error   !! Optional error code.
         character(len=*), intent(in), optional :: source  !! Optional source of log.
@@ -146,6 +143,10 @@ contains
     subroutine dm_logger_log_args(level, message, source, observ, timestamp, error)
         !! Sends a log message to the message queue (fire & forget). Only the
         !! log level is validated.
+        use :: dm_ascii
+        use :: dm_time
+        use :: dm_uuid
+
         integer,           intent(in)              :: level     !! Log level.
         character(len=*),  intent(in)              :: message   !! Log message.
         character(len=*),  intent(in),    optional :: source    !! Optional source of log.
@@ -299,6 +300,7 @@ contains
         !! if `LOGGER%ipc` is true. Prints message to standard output if
         !! `LOGGER%verbose` is true.
         use :: dm_mqueue
+
         type(log_type), intent(inout) :: log !! Log type.
 
         integer           :: rc

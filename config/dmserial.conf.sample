@@ -34,59 +34,48 @@
 --
 
 --
--- Request and response delimiter (carriage return). It may be necessary to
--- change the delimiter to `\\n` (line feed).
+-- The observations to be used in jobs list. The attribute `receivers` may
+-- contain a list of up to 16 processes to forward the observation to.
 --
-del = "\\r"
-
---
--- Table of observations to be used in jobs list. The attribute `receivers`
--- contains a list of up to 16 processes to forward the observation to.
---
-observs = {
+observ_stop = {
     --
-    -- Sensor commands of DKRF400 from Driesen + Kern GmbH.
+    -- Stop "Meter Mode".
+    -- The sensor response is not read if the delimiter is empty (as the
+    -- DKRF400 does not always return a response to command `s\r`).
     --
-    {
-        --
-        -- Stop "Meter Mode".
-        -- The sensor response is not read if the delimiter is empty (as the
-        -- DKRF400 does not always return a response to command `s\r`).
-        --
-        name = "stop",
-        target_id = "meter",
-        receivers = { },
-        requests = {
-            {
-                name = "stop",
-                request = "s" .. del,
-                delimiter = "",
-                pattern = "",
-                delay = 0
-            }
+    name = "stop",
+    target_id = "meter",
+    receivers = { },
+    requests = {
+        {
+            name = "stop",
+            request = "s\\r",
+            delimiter = "",
+            pattern = "",
+            delay = 0
         }
-    },
-    {
-        --
-        -- Single measurement.
-        --
-        name = "meter",
-        target_id = "meter",
-        receivers = { "dmdb" },
-        requests = {
-            {
-                name = "get-values",
-                request = "Meter" .. del,
-                delimiter = del,
-                pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
-                delay = 0,
-                responses = {
-                    { name = "temp",    unit = "degC" }, -- Temperature.
-                    { name = "humrel",  unit = "%"    }, -- Relative humidity.
-                    { name = "humabs",  unit = "g/m3" }, -- Absolute humidity.
-                    { name = "dew",     unit = "degC" }, -- Dew point.
-                    { name = "wetbulb", unit = "degC" }  -- Wet-bulb temperature.
-                }
+}
+
+observ_meter = {
+    --
+    -- Single measurement.
+    --
+    name = "meter",
+    target_id = "meter",
+    receivers = { "dmdb" },
+    requests = {
+        {
+            name = "get-values",
+            request = "Meter\\r",
+            delimiter = "\\n",
+            pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
+            delay = 0,
+            responses = {
+                { name = "temp",    unit = "degC", type = RESPONSE_TYPE_REAL64 }, -- Temperature.
+                { name = "humrel",  unit = "%",    type = RESPONSE_TYPE_REAL64 }, -- Relative humidity.
+                { name = "humabs",  unit = "g/m3", type = RESPONSE_TYPE_REAL64 }, -- Absolute humidity.
+                { name = "dew",     unit = "degC", type = RESPONSE_TYPE_REAL64 }, -- Dew point.
+                { name = "wetbulb", unit = "degC", type = RESPONSE_TYPE_REAL64 }  -- Wet-bulb temperature.
             }
         }
     }
@@ -113,7 +102,7 @@ dmserial = {
             --
             disabled = false,
             onetime = true,
-            observation = observs[1],
+            observation = observ_stop,
             delay = 500
         },
         {
@@ -122,7 +111,7 @@ dmserial = {
             --
             disabled = false,
             onetime = false,
-            observation = observs[2],
+            observation = observ_meter,
             delay = 5 * 1000
         }
     },

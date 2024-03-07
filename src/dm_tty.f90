@@ -258,7 +258,7 @@ contains
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         use :: unix
 
-        type(tty_type)  , intent(inout)        :: tty       !! TTY type.
+        type(tty_type),   intent(inout)        :: tty       !! TTY type.
         character(len=*), intent(in), optional :: path      !! Device path.
         integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B_*`).
         integer,          intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).

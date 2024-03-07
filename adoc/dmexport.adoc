@@ -55,7 +55,7 @@ an empty file will be created.
   Node id (required).
 
 *--output*, *-o* _file_::
-  Path of output file.
+  Path of output file. Empty or `-` for standard output.
 
 *--response*, *-R* _name_::
   Response name (required for type `dp`).
