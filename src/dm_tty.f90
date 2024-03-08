@@ -439,10 +439,10 @@ contains
 
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer(kind=c_speed_t) :: baud_rate
-        integer(kind=c_int64_t) :: byte_size
-        integer(kind=c_int64_t) :: parity
-        integer(kind=c_int64_t) :: stop_bits
+        integer :: baud_rate
+        integer :: byte_size
+        integer :: parity
+        integer :: stop_bits
 
         integer(kind=c_int), target :: stat
 
@@ -536,19 +536,19 @@ contains
         rc = E_SYSTEM
 
         termios_block: block
-            integer(kind=c_int64_t) :: c_cflag
-            integer(kind=c_int64_t) :: c_iflag
-            integer(kind=c_int64_t) :: c_lflag
-            integer(kind=c_int64_t) :: c_oflag
-            type(c_termios)         :: termios
+            integer(kind=i8) :: c_cflag
+            integer(kind=i8) :: c_iflag
+            integer(kind=i8) :: c_lflag
+            integer(kind=i8) :: c_oflag
+            type(c_termios)  :: termios
 
             ! Get current attributes.
             stat = c_tcgetattr(tty%fd, termios)
             if (stat /= 0) return
 
             ! Set baud rate (I/O).
-            stat = c_cfsetispeed(termios, baud_rate); if (stat /= 0) return
-            stat = c_cfsetospeed(termios, baud_rate); if (stat /= 0) return
+            stat = c_cfsetispeed(termios, int(baud_rate, kind=c_speed_t)); if (stat /= 0) return
+            stat = c_cfsetospeed(termios, int(baud_rate, kind=c_speed_t)); if (stat /= 0) return
 
             ! The joy of working with unsigned integers in Fortran ...
             c_iflag = dm_to_signed(termios%c_iflag)
@@ -557,26 +557,26 @@ contains
             c_lflag = dm_to_signed(termios%c_lflag)
 
             ! Input modes.
-            c_iflag = iand(c_iflag, not(int(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL, kind=c_int64_t))) ! No special handling of received bytes.
-            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY,                                      kind=c_int64_t))) ! Turn XON/XOFF control off.
+            c_iflag = iand(c_iflag, not(int(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL, kind=i8))) ! No special handling of received bytes.
+            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY,                                      kind=i8))) ! Turn XON/XOFF control off.
 
             ! Output modes.
-            c_oflag = iand(c_oflag, not(int(OPOST, kind=c_int64_t))) ! No special interpretation of output bytes.
+            c_oflag = iand(c_oflag, not(int(OPOST, kind=i8))) ! No special interpretation of output bytes.
 
             ! Control modes.
-            c_cflag = iand(c_cflag, not(int(CSIZE,           kind=c_int64_t))) ! Unset byte size.
-            c_cflag = iand(c_cflag, not(int(CSTOPB,          kind=c_int64_t))) ! Unset stop bits.
-            c_cflag = iand(c_cflag, not(int(PARENB + PARODD, kind=c_int64_t))) ! Unset parity.
-            c_cflag = ior (c_cflag, byte_size)                                 ! Set byte size.
-            c_cflag = ior (c_cflag, stop_bits)                                 ! Set stop bits.
-            c_cflag = ior (c_cflag, parity)                                    ! Set parity.
-            c_cflag = ior (c_cflag, int(CLOCAL + CREAD,      kind=c_int64_t))  ! Ignore modem controls, enable reading.
+            c_cflag = iand(c_cflag, not(int(CSIZE,           kind=i8))) ! Unset byte size.
+            c_cflag = iand(c_cflag, not(int(CSTOPB,          kind=i8))) ! Unset stop bits.
+            c_cflag = iand(c_cflag, not(int(PARENB + PARODD, kind=i8))) ! Unset parity.
+            c_cflag = ior (c_cflag, int(byte_size,           kind=i8))  ! Set byte size.
+            c_cflag = ior (c_cflag, int(stop_bits,           kind=i8))  ! Set stop bits.
+            c_cflag = ior (c_cflag, int(parity,              kind=i8))  ! Set parity.
+            c_cflag = ior (c_cflag, int(CLOCAL + CREAD,      kind=i8))  ! Ignore modem controls, enable reading.
 
             ! Local modes.
-            c_lflag = iand(c_lflag, not(int(ECHO + ECHOE + ECHONL, kind=c_int64_t))) ! No echo.
-            c_lflag = iand(c_lflag, not(int(IEXTEN,                kind=c_int64_t))) ! No implementation-defined input processing.
-            c_lflag = iand(c_lflag, not(int(ICANON,                kind=c_int64_t))) ! No canonical processing.
-            c_lflag = iand(c_lflag, not(int(ISIG,                  kind=c_int64_t))) ! No signal chars.
+            c_lflag = iand(c_lflag, not(int(ECHO + ECHOE + ECHONL, kind=i8))) ! No echo.
+            c_lflag = iand(c_lflag, not(int(IEXTEN,                kind=i8))) ! No implementation-defined input processing.
+            c_lflag = iand(c_lflag, not(int(ICANON,                kind=i8))) ! No canonical processing.
+            c_lflag = iand(c_lflag, not(int(ISIG,                  kind=i8))) ! No signal chars.
 
             termios%c_iflag = dm_to_unsigned(c_iflag)
             termios%c_oflag = dm_to_unsigned(c_oflag)

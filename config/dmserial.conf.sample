@@ -2,12 +2,8 @@
 -- Example configuration file for dmserial to read temperature values from a
 -- DKRF400 sensor connected through USB/RS-232 on TTY `/dev/ttyU0` (9600 8N2).
 --
--- Observations are forwarded to process `dmdb` via POSIX message queue. The
--- node `node-1`, the sensor `dkrf400`, and the target `meter` have to exist in
--- the database!
---
--- To run dmserial as a sole data logger, remove the receiver from the
--- observation, and set output file and format.
+-- To run dmserial as a sole data logger, remove the receiver `dmdb` from
+-- observation `observ_meter`, and set output file and format.
 --
 -- All backslashes `\` in this file have to be escaped as `\\`.
 --
@@ -32,19 +28,54 @@
 --      tty      - Path of TTY/PTY device (for example, `/dev/ttyU0`).
 --      verbose  - Print logs to standard error.
 --
+-- Optionally, import an additional Lua file `myfile.lua` by adding the
+-- following line to the configuration:
+--
+--      dofile("myfile.lua")
+--
+-- Or, if the file is a library and in the Lua search path:
+--
+--      require("myfile")
+--
+
+--
+-- The following node id, sensor id, and target id must exist in the database,
+-- or be set accordingly.
+--
+local node_id   = "dummy-node"
+local sensor_id = "dkrf400"
+local target_id = "meter"
 
 --
 -- The observations to be used in jobs list. The attribute `receivers` may
 -- contain a list of up to 16 processes to forward the observation to.
 --
+observ_start = {
+    --
+    -- Enable sensor by sending a carriage return.
+    -- Reads the response of the sensor but does not parse it.
+    --
+    name = "start",
+    target_id = target_id,
+    receivers = { },
+    requests = {
+        {
+            name = "stop",
+            request = "\\r",
+            delimiter = "\\n",
+            pattern = "",
+            delay = 500
+        }
+    }
+}
+
 observ_stop = {
     --
-    -- Stop "Meter Mode".
-    -- The sensor response is not read if the delimiter is empty (as the
-    -- DKRF400 does not always return a response to command `s\r`).
+    -- Stop "Meter Mode". The sensor response is not read if the delimiter is
+    -- empty (as the DKRF400 does not always return a response to command `s\r`).
     --
     name = "stop",
-    target_id = "meter",
+    target_id = target_id,
     receivers = { },
     requests = {
         {
@@ -52,16 +83,19 @@ observ_stop = {
             request = "s\\r",
             delimiter = "",
             pattern = "",
-            delay = 0
+            delay = 500
         }
+    }
 }
 
 observ_meter = {
     --
-    -- Single measurement.
+    -- Single measurement. Reads temperature, rel. and abs. humidity, dew
+    -- point, and wet-bulb temperature. The names of the responses are limited
+    -- to 8 characters.
     --
     name = "meter",
-    target_id = "meter",
+    target_id = target_id,
     receivers = { "dmdb" },
     requests = {
         {
@@ -83,8 +117,8 @@ observ_meter = {
 
 dmserial = {
     logger = "",
-    node = "dummy-node",
-    sensor = "dkrf400",
+    node = node_id,
+    sensor = sensor_id,
     output = "",
     format = "",
     tty = "/dev/ttyU0",
@@ -92,10 +126,19 @@ dmserial = {
     bytesize = 8,
     parity = "none",
     stopbits = 2,
-    timeout = 5,
+    timeout = 0,
     dtr = true,
     rts = true,
     jobs = {
+        {
+            --
+            -- Start sensor.
+            --
+            disabled = false,
+            onetime = true,
+            observation = observ_start,
+            delay = 1000
+        },
         {
             --
             -- Stop "Meter Mode".
@@ -103,11 +146,11 @@ dmserial = {
             disabled = false,
             onetime = true,
             observation = observ_stop,
-            delay = 500
+            delay = 1000
         },
         {
             --
-            -- Measure values, wait 5 seconds, repeat.
+            -- Read sensor values, wait 5 seconds, repeat.
             --
             disabled = false,
             onetime = false,
