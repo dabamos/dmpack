@@ -438,10 +438,16 @@ contains
 
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer(kind=c_speed_t)     :: baud_rate
-        integer(kind=c_int)         :: byte_size
-        integer(kind=c_int)         :: parity
-        integer(kind=c_int)         :: stop_bits
+        integer(kind=c_tcflag_t) :: c_cflag
+        integer(kind=c_tcflag_t) :: c_iflag
+        integer(kind=c_tcflag_t) :: c_lflag
+        integer(kind=c_tcflag_t) :: c_oflag
+
+        integer(kind=c_speed_t) :: baud_rate
+        integer(kind=c_int)     :: byte_size
+        integer(kind=c_int)     :: parity
+        integer(kind=c_int)     :: stop_bits
+
         integer(kind=c_int), target :: stat
         type(c_termios)             :: termios
 
@@ -535,46 +541,59 @@ contains
         rc = E_SYSTEM
 
         ! Get current attributes.
-        if (c_tcgetattr(tty%fd, termios) /= 0) return
+        stat = c_tcgetattr(tty%fd, termios)
+        if (stat /= 0) return
 
         ! Set baud rate (I/O).
-        if (c_cfsetispeed(termios, baud_rate) /= 0) return
-        if (c_cfsetospeed(termios, baud_rate) /= 0) return
+        stat = c_cfsetispeed(termios, baud_rate); if (stat /= 0) return
+        stat = c_cfsetospeed(termios, baud_rate); if (stat /= 0) return
+
+        ! Modes.
+        c_iflag = int(c_uint_to_int(termios%c_iflag), kind=c_tcflag_t)
+        c_oflag = int(c_uint_to_int(termios%c_oflag), kind=c_tcflag_t)
+        c_cflag = int(c_uint_to_int(termios%c_cflag), kind=c_tcflag_t)
+        c_lflag = int(c_uint_to_int(termios%c_lflag), kind=c_tcflag_t)
 
         ! Input modes.
-        termios%c_iflag = iand(termios%c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL)) ! No special handling of received bytes.
-        termios%c_iflag = iand(termios%c_iflag, not(IXON + IXOFF + IXANY))  ! Turn XON/XOFF control off.
+        c_iflag = iand(c_iflag, not(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL)) ! No special handling of received bytes.
+        c_iflag = iand(c_iflag, not(IXON + IXOFF + IXANY))  ! Turn XON/XOFF control off.
 
         ! Output modes.
-        termios%c_oflag = iand(termios%c_oflag, not(OPOST))                 ! No special interpretation of output bytes.
+        c_oflag = iand(c_oflag, not(OPOST))                 ! No special interpretation of output bytes.
 
         ! Control modes.
-        termios%c_cflag = iand(termios%c_cflag, not(CSIZE))                 ! Unset byte size.
-        termios%c_cflag = iand(termios%c_cflag, not(CSTOPB))                ! Unset stop bits.
-        termios%c_cflag = iand(termios%c_cflag, not(PARENB + PARODD))       ! Unset parity.
-        termios%c_cflag = ior (termios%c_cflag, byte_size)                  ! Set byte size.
-        termios%c_cflag = ior (termios%c_cflag, stop_bits)                  ! Set stop bits.
-        termios%c_cflag = ior (termios%c_cflag, parity)                     ! Set parity.
-        termios%c_cflag = ior (termios%c_cflag, ior(CLOCAL, CREAD))         ! Ignore modem controls, enable reading.
+        c_cflag = iand(c_cflag, not(CSIZE))                 ! Unset byte size.
+        c_cflag = iand(c_cflag, not(CSTOPB))                ! Unset stop bits.
+        c_cflag = iand(c_cflag, not(ior(PARENB, PARODD)))   ! Unset parity.
+        c_cflag = ior (c_cflag, byte_size)                  ! Set byte size.
+        c_cflag = ior (c_cflag, stop_bits)                  ! Set stop bits.
+        c_cflag = ior (c_cflag, parity)                     ! Set parity.
+        c_cflag = ior (c_cflag, ior(CLOCAL, CREAD))         ! Ignore modem controls, enable reading.
 
         ! Local modes.
-        termios%c_lflag = iand(termios%c_lflag, not(ECHO + ECHOE + ECHONL)) ! No echo.
-        termios%c_lflag = iand(termios%c_lflag, not(IEXTEN))                ! No implementation-defined input processing.
-        termios%c_lflag = iand(termios%c_lflag, not(ICANON))                ! No canonical processing.
-        termios%c_lflag = iand(termios%c_lflag, not(ISIG))                  ! No signal chars.
+        c_lflag = iand(c_lflag, not(ECHO + ECHOE + ECHONL)) ! No echo.
+        c_lflag = iand(c_lflag, not(IEXTEN))                ! No implementation-defined input processing.
+        c_lflag = iand(c_lflag, not(ICANON))                ! No canonical processing.
+        c_lflag = iand(c_lflag, not(ISIG))                  ! No signal chars.
+
+        termios%c_iflag = c_iflag
+        termios%c_oflag = c_oflag
+        termios%c_cflag = c_cflag
+        termios%c_lflag = c_lflag
 
         if (tty%blocking) then
             ! Minimum number of characters for non-canonical read.
-            termios%c_cc(VMIN)  = 1
-            termios%c_cc(VTIME) = 0
+            termios%c_cc(VMIN)  = 1_c_cc_t
+            termios%c_cc(VTIME) = 0_c_cc_t
         else
             ! Timeout in deciseconds for non-canonical read.
-            termios%c_cc(VMIN)  = 0
+            termios%c_cc(VMIN)  = 0_c_cc_t
             termios%c_cc(VTIME) = int(max(0, min(255, tty%timeout * 10)), kind=c_cc_t)
         end if
 
         ! Set attributes.
-        if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
+        stat = c_tcsetattr(tty%fd, TCSANOW, termios)
+        if (stat /= 0) return
 
         ! Set RTS, DTR.
         if (tty%rts .or. tty%dtr) then

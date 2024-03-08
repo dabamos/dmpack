@@ -92,7 +92,7 @@ this package:
 * zlib
 
 On Linux, additional development headers are required for the build step. To
-generate the [man pages](adoc/README.md), the [user’s guide](guide/README.md),
+generate the [man pages](adoc/README.md), the [User’s Guide](guide/README.md),
 and the source code documentation, you will need to install:
 
 * [AsciiDoctor](https://asciidoctor.org/), [Pygments](https://pygments.org/), and
@@ -301,7 +301,7 @@ The output files are written to `man/`.
 
 ## User’s Guide
 
-To convert the [User’s Guide](guide/guide.adoc) from AsciiDoc to HTML, run:
+To convert the [User’s Guide](guide/README.md) from AsciiDoc to HTML, run:
 
 ```
 $ make guide

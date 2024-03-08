@@ -24,7 +24,6 @@ module dm_geocom
     !! call geocom%close()
     !! ```
     use :: dm_error
-    use :: dm_file
     use :: dm_geocom_api
     use :: dm_geocom_error
     use :: dm_geocom_type
@@ -40,25 +39,23 @@ module dm_geocom
         !! GeoCOM class for TTY access and GeoCOM API handling through the
         !! public methods. Objects of this class are not thread-safe.
         private
-        character(len=FILE_PATH_LEN) :: path      = ' '                   !! TTY device path.
-        integer                      :: baud_rate = GEOCOM_COM_BAUD_19200 !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
-        integer                      :: grc       = GRC_OK                !! Last GeoCOM return code.
-        integer                      :: rc        = E_NONE                !! Last DMPACK return code.
-        logical                      :: verbose   = .false.               !! Print error messages to stderr.
-        type(request_type)           :: request                           !! Last request sent to sensor.
-        type(tty_type)               :: tty                               !! TTY type for serial connection.
+        integer            :: baud    = GEOCOM_COM_BAUD_19200 !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+        integer            :: grc     = GRC_OK                !! Last GeoCOM return code.
+        integer            :: rc      = E_NONE                !! Last DMPACK return code.
+        logical            :: verbose = .false.               !! Print error messages to stderr.
+        type(request_type) :: request                         !! Last request sent to sensor.
+        type(tty_type)     :: tty                             !! TTY type for serial connection.
     contains
         ! Public class methods.
-        procedure, public :: close         => geocom_close
-        procedure, public :: code          => geocom_code
-        procedure, public :: error         => geocom_error
-        procedure, public :: get_baud_rate => geocom_get_baud_rate
-        procedure, public :: get_path      => geocom_get_path
-        procedure, public :: last_request  => geocom_last_request
-        procedure, public :: message       => geocom_message
-        procedure, public :: open          => geocom_open
-        procedure, public :: send          => geocom_send
-        procedure, public :: set_verbose   => geocom_set_verbose
+        procedure, public :: baud_rate    => geocom_baud_rate
+        procedure, public :: close        => geocom_close
+        procedure, public :: code         => geocom_code
+        procedure, public :: error        => geocom_error
+        procedure, public :: last_request => geocom_last_request
+        procedure, public :: message      => geocom_message
+        procedure, public :: open         => geocom_open
+        procedure, public :: path         => geocom_path
+        procedure, public :: send         => geocom_send
 
         ! Public GeoCOM-specific methods.
         procedure, public :: abort_download     => geocom_abort_download
@@ -81,13 +78,12 @@ module dm_geocom
     private :: geocom_close
     private :: geocom_code
     private :: geocom_error
-    private :: geocom_get_baud_rate
-    private :: geocom_get_path
+    private :: geocom_baud_rate
+    private :: geocom_path
     private :: geocom_last_request
     private :: geocom_message
     private :: geocom_open
     private :: geocom_send
-    private :: geocom_set_verbose
 
     ! Private GeoCOM procedures.
     private :: geocom_abort_download
@@ -108,6 +104,22 @@ contains
     ! **************************************************************************
     ! PUBLIC METHODS.
     ! **************************************************************************
+    subroutine geocom_baud_rate(this, baud_rate)
+        !! Returns current baud rate enumerator (`GEOCOM_COM_BAUD_RATE`) of TTY
+        !! in `baud_rate`.
+        class(geocom_class), intent(inout) :: this      !! GeoCOM object.
+        integer,             intent(out)   :: baud_rate !! Baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+
+        baud_rate = this%baud
+    end subroutine geocom_baud_rate
+
+    subroutine geocom_close(this)
+        !! Closes TTY connection.
+        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+
+        if (dm_tty_connected(this%tty)) call dm_tty_close(this%tty)
+    end subroutine geocom_close
+
     integer function geocom_code(this) result(grc)
         !! Returns last GeoCOM return code.
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
@@ -121,6 +133,16 @@ contains
 
         rc = this%rc
     end function geocom_error
+
+    subroutine geocom_last_request(this, request)
+        !! Returns the last request sent to the sensor in `request`. If no
+        !! request has been sent, the derived type is uninitialised and the time
+        !! stamp has the default value.
+        class(geocom_class), intent(inout) :: this    !! GeoCOM object.
+        type(request_type),  intent(out)   :: request !! Last request sent to sensor.
+
+        request = this%request
+    end subroutine geocom_last_request
 
     function geocom_message(this, grc) result(message)
         !! Returns message associated with given GeoCOM return code `grc` as
@@ -137,52 +159,18 @@ contains
         end if
     end function geocom_message
 
-    subroutine geocom_close(this)
-        !! Closes TTY connection.
-        class(geocom_class), intent(inout) :: this !! GeoCOM object.
-
-        if (dm_tty_connected(this%tty)) call dm_tty_close(this%tty)
-    end subroutine geocom_close
-
-    subroutine geocom_get_baud_rate(this, baud_rate)
-        !! Returns current baud rate enumerator (`GEOCOM_COM_BAUD_RATE`) of TTY
-        !! in `baud_rate`.
-        class(geocom_class), intent(inout) :: this      !! GeoCOM object.
-        integer,             intent(out)   :: baud_rate !! Baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
-
-        baud_rate = this%baud_rate
-    end subroutine geocom_get_baud_rate
-
-    subroutine geocom_get_path(this, path)
-        !! Returns TTY device path in allocatable character string `path`.
-        class(geocom_class),           intent(inout) :: this !! GeoCOM object.
-        character(len=:), allocatable, intent(out)   :: path !! TTY device path.
-
-        path = trim(this%path)
-    end subroutine geocom_get_path
-
-    subroutine geocom_last_request(this, request)
-        !! Returns the last request sent to the sensor in `request`. If no
-        !! request has been sent, the derived type is uninitialised and the time
-        !! stamp has the default value.
-        class(geocom_class), intent(inout) :: this    !! GeoCOM object.
-        type(request_type),  intent(out)   :: request !! Last request sent to sensor.
-
-        request = this%request
-    end subroutine geocom_last_request
-
     subroutine geocom_open(this, path, baud_rate, retries, verbose, error)
         !! Opens TTY connection to robotic total station.
         !!
         !! The argument `baud_rate` must be one of the following
         !! `GEOCOM_COM_BAUD_RATE` enumerators:
         !!
-        !! * `GEOCOM_COM_BAUD_2400` – 2400 baud.
-        !! * `GEOCOM_COM_BAUD_4800` – 4800 baud.
-        !! * `GEOCOM_COM_BAUD_9600` – 9600 baud.
-        !! * `GEOCOM_COM_BAUD_19200` – 19200 baud (default).
-        !! * `GEOCOM_COM_BAUD_38400` – 38400 baud.
-        !! * `GEOCOM_COM_BAUD_57600` – 57600 baud.
+        !! * `GEOCOM_COM_BAUD_2400`   –   2400 baud.
+        !! * `GEOCOM_COM_BAUD_4800`   –   4800 baud.
+        !! * `GEOCOM_COM_BAUD_9600`   –   9600 baud.
+        !! * `GEOCOM_COM_BAUD_19200`  –  19200 baud (default).
+        !! * `GEOCOM_COM_BAUD_38400`  –  38400 baud.
+        !! * `GEOCOM_COM_BAUD_57600`  –  57600 baud.
         !! * `GEOCOM_COM_BAUD_115200` – 115200 baud.
         !!
         !! Argument `retries` specifies the number of attempts to make to
@@ -217,7 +205,6 @@ contains
             end if
 
             ! Initialise TTY type.
-            this%path    = path
             this%grc     = GRC_OK
             this%rc      = E_NONE
             this%request = request_type()
@@ -225,7 +212,7 @@ contains
             if (present(verbose)) this%verbose = verbose
 
             ! Validate and set baud rate.
-            this%baud_rate = dm_geocom_type_validated(GEOCOM_COM_BAUD_RATE, baud_rate, error=rc)
+            this%baud = dm_geocom_type_validated(GEOCOM_COM_BAUD_RATE, baud_rate, error=rc)
 
             if (dm_is_error(rc)) then
                 if (this%verbose) call dm_error_out(rc, 'invalid baud rate')
@@ -234,8 +221,8 @@ contains
 
             ! Verify TTY device exists.
             rc = E_NOT_FOUND
-            if (.not. dm_file_exists(this%path)) then
-                if (this%verbose) call dm_error_out(rc, 'TTY ' // trim(this%path) // ' not found')
+            if (.not. dm_file_exists(path)) then
+                if (this%verbose) call dm_error_out(rc, 'TTY ' // trim(path) // ' not found')
                 exit tty_block
             end if
 
@@ -245,15 +232,15 @@ contains
             ! Try to open TTY.
             do i = 0, n
                 rc = dm_tty_open(tty       = this%tty, &
-                                 path      = this%path, &
-                                 baud_rate = this%baud_rate, &
+                                 path      = path, &
+                                 baud_rate = this%baud, &
                                  byte_size = TTY_BYTE_SIZE8, &
                                  parity    = TTY_PARITY_NONE, &
                                  stop_bits = TTY_STOP_BITS1)
 
                 ! Exit on success.
                 if (dm_is_ok(rc)) exit
-                if (this%verbose) call dm_error_out(rc, 'failed to open TTY ' // trim(this%path))
+                if (this%verbose) call dm_error_out(rc, 'failed to open TTY ' // trim(path))
 
                 ! Try again.
                 if (i < n) call dm_sleep(WAIT_TIME)
@@ -263,6 +250,14 @@ contains
         this%rc = rc
         if (present(error)) error = rc
     end subroutine geocom_open
+
+    subroutine geocom_path(this, path)
+        !! Returns TTY device path in allocatable character string `path`.
+        class(geocom_class),           intent(inout) :: this !! GeoCOM object.
+        character(len=:), allocatable, intent(out)   :: path !! TTY device path.
+
+        path = trim(this%tty%path)
+    end subroutine geocom_path
 
     subroutine geocom_send(this, request, delay, error)
         !! Sends request to configured TTY.
@@ -325,7 +320,7 @@ contains
             call dm_request_get(request, 'grc', this%grc)
 
             ! Wait additional delay.
-            if (present(delay)) call dm_usleep(max(0, delay) * 1000)
+            if (present(delay)) call dm_usleep(max(0, delay * 1000))
         end block tty_block
 
         this%rc      = rc
@@ -333,14 +328,6 @@ contains
 
         if (present(error)) error = rc
     end subroutine geocom_send
-
-    subroutine geocom_set_verbose(this, verbose)
-        !! Enables or disables verbose mode.
-        class(geocom_class), intent(inout) :: this    !! GeoCOM object.
-        logical,             intent(in)    :: verbose !! Verbose mode.
-
-        this%verbose = verbose
-    end subroutine geocom_set_verbose
 
     ! **************************************************************************
     ! PUBLIC GEOCOM METHODS.

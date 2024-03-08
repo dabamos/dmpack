@@ -186,7 +186,7 @@ contains
                 rc = E_READ
 
             case (CURLE_OUT_OF_MEMORY)
-                rc = E_ALLOC
+                rc = E_LIMIT
 
             case (CURLE_OPERATION_TIMEDOUT)
                 rc = E_TIMEOUT
@@ -211,7 +211,7 @@ contains
                 rc = E_RPC_SSL
 
             case (CURLE_FILESIZE_EXCEEDED)
-                rc = E_LIMIT
+                rc = E_BOUNDS
 
             case (CURLE_REMOTE_FILE_NOT_FOUND)
                 rc = E_NOT_FOUND
@@ -236,7 +236,7 @@ contains
                 rc = E_INVALID
 
             case (CURLM_OUT_OF_MEMORY)
-                rc = E_ALLOC
+                rc = E_LIMIT
 
             case default
                 rc = E_RPC
@@ -641,6 +641,15 @@ contains
 
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if RPC response array allocation failed.
+        !! * `E_EMPTY` if no RPC requests are given.
+        !! * `E_RPC` if RPC backend initialisation failed.
+        !!
+        !! Other DMPACK errors may occur, depending on the result of the
+        !! transmission.
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout in msec.
 
         type(rpc_request_type),               intent(inout) :: requests(:)  !! Request type array.
@@ -669,7 +678,7 @@ contains
         multi_ptr = c_null_ptr
 
         curl_block: block
-            rc = E_IO
+            rc = E_RPC
 
             ! Create and prepare transfer handles.
             do i = 1, n
@@ -753,10 +762,10 @@ contains
                     responses(i)%error_message = ''
                 end if
 
-                ! Clean-up requests.
                 if (.not. allocated(responses(i)%content_type)) responses(i)%content_type = ''
-                if (.not. allocated(responses(i)%payload)) responses(i)%payload = ''
+                if (.not. allocated(responses(i)%payload))      responses(i)%payload      = ''
 
+                ! Clean-up requests.
                 stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl_ptr)
                 call curl_slist_free_all(requests(i)%list_ptr)
                 call curl_easy_cleanup(requests(i)%curl_ptr)
@@ -919,7 +928,7 @@ contains
 
         integer :: error, stat
 
-        rc = E_IO
+        rc = E_RPC
 
         ! Initialise libcurl.
         if (.not. c_associated(request%curl_ptr)) then

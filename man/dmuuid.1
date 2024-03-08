@@ -2,12 +2,12 @@
 .\"     Title: dmuuid
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-16
+.\"      Date: 2024-03-07
 .\"    Manual: User Commands
 .\"    Source: DMUUID
 .\"  Language: English
 .\"
-.TH "DMUUID" "1" "2024-02-16" "DMUUID" "User Commands"
+.TH "DMUUID" "1" "2024-03-07" "DMUUID" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -40,11 +40,11 @@ dmuuid \- generates pseudo\-random UUID4s
 \fBdmuuid\fP \-\-\fBconvert\fP < \fIfile\fP
 .SH "DESCRIPTION"
 .sp
-The \fBdmuuid\fP program generates pseudo\-random UUID4s. By default, DMPACK uses
-32 characters long UUID4s in hexadecimal format (without hyphens). Hyphens can
-be added by a command\-line flag. The option \f(CR\-\-convert\fP expects UUID4s to be
-passed via standard input. Invalid UUID4s will be replaced with the default
-UUID4.
+The \fBdmuuid\fP program generates pseudo\-random UUID4s. By default, DMPACK uses 32
+characters long identifers in hexadecimal format (without hyphens). If
+command\-line flag \f(CR\-\-hyphens\fP is set, 36 characters long identifiers with
+hyphens are returned. The option \f(CR\-\-convert\fP expects UUID4s to be passed via
+standard input. Invalid identifiers will be replaced with the default UUID4.
 .SH "OPTIONS"
 .sp
 \fB\-\-convert\fP, \fB\-C\fP
@@ -86,7 +86,7 @@ UUID generation failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Create three random UUIDs:
+Create three random identifiers:
 .sp
 .if n .RS 4
 .nf

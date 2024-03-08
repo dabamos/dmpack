@@ -151,10 +151,10 @@ module dm_geocom_api
     ! **************************************************************************
     ! PRIVATE GEOCOM API CONSTANTS.
     ! **************************************************************************
-    character(len=*), parameter :: GEOCOM_DELIMITER = '\r\n'        !! Default GeoCOM delimiter.
-    character(len=*), parameter :: GEOCOM_PATTERN   = '(?<grc>\d+)' !! Default GeoCOM response pattern.
+    character(len=*), parameter :: GEOCOM_DELIMITER = '\r\n' !! Default GeoCOM delimiter.
 
-    type(response_type), parameter :: GEOCOM_RESPONSES(1) = [ response_type('grc', type=RESPONSE_TYPE_INT32) ] !! Default GeoCOM responses (GRC only).
+    character(len=*),    parameter :: GRC_PATTERN      = '(?<grc>\d+)' !! Default response pattern (GRC only).
+    type(response_type), parameter :: GRC_RESPONSES(1) = [ response_type('grc', type=RESPONSE_TYPE_INT32) ] !! Default responses (GRC only).
 
     ! Public procedures.
     public :: dm_geocom_api_request
@@ -336,7 +336,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_abort_download
 
     pure subroutine dm_geocom_api_request_abort_list(request)
@@ -358,7 +358,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_abort_list
 
     pure subroutine dm_geocom_api_request_beep_alarm(request)
@@ -380,7 +380,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_beep_alarm
 
     pure subroutine dm_geocom_api_request_beep_normal(request)
@@ -402,7 +402,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_beep_normal
 
     pure subroutine dm_geocom_api_request_beep_off(request)
@@ -424,7 +424,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_beep_off
 
     pure subroutine dm_geocom_api_request_beep_on(request, intensity)
@@ -450,7 +450,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') intensity
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_beep_on
 
     pure subroutine dm_geocom_api_request_change_face(request, pos_mode, atr_mode)
@@ -486,7 +486,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, ",", i0, ",0")') pos_mode, atr_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_change_face
 
     pure subroutine dm_geocom_api_request_delete(request, device_type, file_type, day, month, year, file_name)
@@ -579,7 +579,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, ",", i0)') tmc_prog, inc_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_do_measure
 
     pure subroutine dm_geocom_api_request_download(request, block_number)
@@ -669,7 +669,7 @@ contains
         character(len=80) :: args
 
         write (args, '(2(f0.12, ","), "0")') search_hz, search_v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_fine_adjust
 
     pure subroutine dm_geocom_api_request_get_angle(request, inc_mode)
@@ -2646,7 +2646,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_lock_in
 
     pure subroutine dm_geocom_api_request_measure_distance_angle(request, dist_mode)
@@ -2714,7 +2714,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_null
 
     pure subroutine dm_geocom_api_request_ps_enable_range(request, enabled)
@@ -2745,7 +2745,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_ps_enable_range
 
     pure subroutine dm_geocom_api_request_ps_search_next(request, direction, swing)
@@ -2777,7 +2777,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, ",", i1)') direction, dm_btoi(swing)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_ps_search_next
 
     pure subroutine dm_geocom_api_request_ps_search_window(request)
@@ -2803,7 +2803,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_ps_search_window
 
     pure subroutine dm_geocom_api_request_ps_set_range(request, min_dist, max_dist)
@@ -2830,7 +2830,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, ",", i0)') min_dist, max_dist
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_ps_set_range
 
     pure subroutine dm_geocom_api_request_search(request, search_hz, search_v)
@@ -2868,7 +2868,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12, ",", f0.12, ",0")') search_hz, search_v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_search
 
     pure subroutine dm_geocom_api_request_search_target(request)
@@ -2892,7 +2892,7 @@ contains
 
         type(request_type), intent(out) :: request !! Prepared request.
 
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GEOCOM_PATTERN, responses=GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_request_search_target
 
     pure subroutine dm_geocom_api_request_set_angle_correction(request, incline, stand_axis, collimation, tilt_axis)
@@ -2921,7 +2921,7 @@ contains
         character(len=80) :: args
 
         write (args, '(3(i1, ","), i1)') dm_btoi(incline), dm_btoi(stand_axis), dm_btoi(collimation), dm_btoi(tilt_axis)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_angle_correction
 
     pure subroutine dm_geocom_api_request_set_atmospheric_correction(request, lambda, pressure, dry_temp, wet_temp)
@@ -2952,7 +2952,7 @@ contains
         character(len=80) :: args
 
         write (args, '(4(f0.12, ","), f0.12)') lambda, pressure, dry_temp, wet_temp
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_atmospheric_correction
 
     pure subroutine dm_geocom_api_request_set_atmospheric_ppm(request, atm_ppm)
@@ -2978,7 +2978,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12)') atm_ppm
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_atmospheric_ppm
 
     pure subroutine dm_geocom_api_request_set_atr_mode(request, atr_mode)
@@ -3012,7 +3012,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') atr_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_atr_mode
 
     pure subroutine dm_geocom_api_request_set_binary_mode(request, enabled)
@@ -3041,7 +3041,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_binary_mode
 
     pure subroutine dm_geocom_api_request_set_config(request, auto_power, timeout)
@@ -3073,7 +3073,7 @@ contains
         character(len=80) :: args
 
         write (args, '("0", 2(",", i0))') auto_power, timeout
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_config
 
     pure subroutine dm_geocom_api_request_set_date_time(request, year, month, day, hour, minute, second)
@@ -3104,7 +3104,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, 5(",", z2.2))') year, month, day, hour, minute, second
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_date_time
 
     pure subroutine dm_geocom_api_request_set_distance(request, slope_dist, height_offset, inc_mode)
@@ -3145,7 +3145,7 @@ contains
         character(len=80) :: args
 
         write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, inc_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_distance
 
     pure subroutine dm_geocom_api_request_set_double_precision(request, ndigits)
@@ -3178,7 +3178,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') ndigits
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_double_precision
 
     pure subroutine dm_geocom_api_request_set_edm_mode(request, edm_mode)
@@ -3207,7 +3207,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') edm_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_edm_mode
 
     pure subroutine dm_geocom_api_request_set_egl_intensity(request, intensity)
@@ -3240,7 +3240,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') intensity
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_egl_intensity
 
     pure subroutine dm_geocom_api_request_set_fine_adjust_mode(request, adj_mode)
@@ -3274,7 +3274,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') adj_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_fine_adjust_mode
 
     pure subroutine dm_geocom_api_request_set_geometric_ppm(request, enabled, scale_factor, offset, height_ppm, individual_ppm)
@@ -3304,7 +3304,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1, 4(",", f0.12))') dm_btoi(enabled), scale_factor, offset, height_ppm, individual_ppm
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_geometric_ppm
 
     pure subroutine dm_geocom_api_request_set_height(request, height)
@@ -3330,7 +3330,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12)') height
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_height
 
     pure subroutine dm_geocom_api_request_set_image_config(request, mem_type, image_number, quality, sub_function, prefix)
@@ -3368,7 +3368,7 @@ contains
         character(len=80) :: args
 
         write (args, '(4(i0, ","), """", a, """")') mem_type, image_number, quality, sub_function, trim(prefix)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_image_config
 
     pure subroutine dm_geocom_api_request_set_inclination_correction(request, enabled)
@@ -3394,7 +3394,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_inclination_correction
 
     pure subroutine dm_geocom_api_request_set_laser_pointer(request, enabled)
@@ -3423,7 +3423,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_laser_pointer
 
     pure subroutine dm_geocom_api_request_set_measurement_program(request, bap_prog)
@@ -3454,7 +3454,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') bap_prog
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_measurement_program
 
     pure subroutine dm_geocom_api_request_set_orientation(request, hz)
@@ -3486,7 +3486,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12)') hz
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_orientation
 
     pure subroutine dm_geocom_api_request_set_position(request, hz, v, pos_mode, atr_mode)
@@ -3524,7 +3524,7 @@ contains
         character(len=80) :: args
 
         write (args, '(2(f0.12, ","), 2(i0, ","), "0")') hz, v, pos_mode, atr_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_position
 
     pure subroutine dm_geocom_api_request_set_positioning_timeout(request, time_hz, time_v)
@@ -3555,7 +3555,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12, ",", f0.12)') time_hz, time_v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_positioning_timeout
 
     pure subroutine dm_geocom_api_request_set_prism_constant(request, prism_const)
@@ -3582,7 +3582,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12)') prism_const
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_prism_constant
 
     pure subroutine dm_geocom_api_request_set_prism_type(request, prism_type)
@@ -3612,7 +3612,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') prism_type
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_prism_type
 
     pure subroutine dm_geocom_api_request_set_prism_type_v2(request, prism_type, prism_name)
@@ -3644,7 +3644,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0, ",", a)') prism_type, prism_name
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_prism_type_v2
 
     pure subroutine dm_geocom_api_request_set_reduced_atr_fov(request, enabled)
@@ -3673,7 +3673,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_reduced_atr_fov
 
     pure subroutine dm_geocom_api_request_set_refraction_mode(request, mode)
@@ -3702,7 +3702,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_refraction_mode
 
     pure subroutine dm_geocom_api_request_set_search_area(request, center_hz, center_v, range_hz, range_v, enabled)
@@ -3737,7 +3737,7 @@ contains
         character(len=80) :: args
 
         write (args, '(4(f0.12, ","), i1)') center_hz, center_v, range_hz, range_v, dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_search_area
 
     pure subroutine dm_geocom_api_request_set_station(request, easting, northing, height, instr_height)
@@ -3766,7 +3766,7 @@ contains
         character(len=80) :: args
 
         write (args, '(3(f0.12, ","), f0.12)') easting, northing, height, instr_height
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_station
 
     pure subroutine dm_geocom_api_request_set_target_type(request, target_type)
@@ -3800,7 +3800,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') target_type
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_target_type
 
     pure subroutine dm_geocom_api_request_set_tolerance(request, hz, v)
@@ -3836,7 +3836,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12, ",", f0.12)') hz, v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_tolerance
 
     pure subroutine dm_geocom_api_request_set_user_atr_mode(request, enabled)
@@ -3868,7 +3868,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_user_atr_mode
 
     pure subroutine dm_geocom_api_request_set_user_lock_mode(request, enabled)
@@ -3901,7 +3901,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i1)') dm_btoi(enabled)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_user_lock_mode
 
     pure subroutine dm_geocom_api_request_set_user_prism_definition(request, prism_name, prism_const, refl_type, creator)
@@ -3931,7 +3931,7 @@ contains
 
         write (args, '("""", a, """,", f0.12, ",", i0, ", """, a, """")') &
             trim(prism_name), prism_const, refl_type, trim(creator)
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_user_prism_definition
 
     pure subroutine dm_geocom_api_request_set_user_spiral(request, hz, v)
@@ -3961,7 +3961,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12, ",", f0.12)') hz, v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_user_spiral
 
     pure subroutine dm_geocom_api_request_set_velocity(request, omega_hz, omega_v)
@@ -3997,7 +3997,7 @@ contains
         character(len=80) :: args
 
         write (args, '(f0.12, ",", f0.12)') omega_hz, omega_v
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_set_velocity
 
     pure subroutine dm_geocom_api_request_setup_download(request, device_type, file_type, file_name, block_size)
@@ -4077,7 +4077,7 @@ contains
         character(len=80) :: args
 
         write (args, '(2(i0, ","), a)') device_type, file_type, search_path
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_setup_list
 
     pure subroutine dm_geocom_api_request_start_controller(request, start_mode)
@@ -4115,7 +4115,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') start_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_start_controller
 
     pure subroutine dm_geocom_api_request_stop_controller(request, stop_mode)
@@ -4148,7 +4148,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') stop_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_stop_controller
 
     pure subroutine dm_geocom_api_request_switch_off(request, stop_mode)
@@ -4179,7 +4179,7 @@ contains
         character(len=80) :: args
 
         write (args, '(i0)') stop_mode
-        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GEOCOM_PATTERN, GEOCOM_RESPONSES)
+        call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_switch_off
 
     pure subroutine dm_geocom_api_request_switch_on(request, start_mode)
