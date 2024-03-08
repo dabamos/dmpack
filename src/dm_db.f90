@@ -63,11 +63,6 @@ module dm_db
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31')   !! Application id of DMPACK databases (`DM1` in ASCII).
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000             !! Default SQLite 3 busy timeout in mseconds.
 
-    ! JSON string lengths.
-    integer, parameter, public :: DB_JSON_BEAT_LEN = 320                !! Max. length of beat in JSON format.
-    integer, parameter, public :: DB_JSON_LOG_LEN  = 1024               !! Max. length of log in JSON format.
-    integer, parameter, public :: DB_JSON_NODE_LEN = 256                !! Max. length of node in JSON format.
-
     type, public :: db_type
         !! Opaque SQLite database connectivity type.
         private
@@ -123,6 +118,8 @@ module dm_db
 
     interface db_next_row
         !! Generic table row access function.
+        module procedure :: db_next_row_allocatable
+        module procedure :: db_next_row_character
         module procedure :: db_next_row_beat
         module procedure :: db_next_row_data_point
         module procedure :: db_next_row_log
@@ -150,8 +147,10 @@ module dm_db
     interface dm_db_select
         !! Generic database select function.
         module procedure :: dm_db_select_beat
-        module procedure :: dm_db_select_beats
-        module procedure :: dm_db_select_data_points
+        module procedure :: dm_db_select_beats_array
+        module procedure :: dm_db_select_beats_iter
+        module procedure :: dm_db_select_data_points_array
+        module procedure :: dm_db_select_data_points_iter
         module procedure :: dm_db_select_log
         module procedure :: dm_db_select_logs
         module procedure :: dm_db_select_node
@@ -165,6 +164,30 @@ module dm_db
         module procedure :: dm_db_select_sensors
         module procedure :: dm_db_select_target
         module procedure :: dm_db_select_targets
+    end interface
+
+    interface dm_db_select_beats
+        !! Generic beats select function.
+        module procedure :: dm_db_select_beats_array
+        module procedure :: dm_db_select_beats_iter
+    end interface
+
+    interface dm_db_select_data_points
+        !! Generic data points select function.
+        module procedure :: dm_db_select_data_points_array
+        module procedure :: dm_db_select_data_points_iter
+    end interface
+
+    interface dm_db_select_json_beats
+        !! Generic JSON logs select function.
+        module procedure :: dm_db_select_json_beats_array
+        module procedure :: dm_db_select_json_beats_iter
+    end interface
+
+    interface dm_db_select_json_logs
+        !! Generic JSON logs select function.
+        module procedure :: dm_db_select_json_logs_array
+        module procedure :: dm_db_select_json_logs_iter
     end interface
 
     interface dm_db_update
@@ -246,12 +269,18 @@ module dm_db
     public :: dm_db_rollback
     public :: dm_db_select
     public :: dm_db_select_beat
-    public :: dm_db_select_beats
-    public :: dm_db_select_data_points
+    public :: dm_db_select_beats_array
+    public :: dm_db_select_beats_iter
+    public :: dm_db_select_data_points_array
+    public :: dm_db_select_data_points_iter
     public :: dm_db_select_json_beat
     public :: dm_db_select_json_beats
+    public :: dm_db_select_json_beats_array
+    public :: dm_db_select_json_beats_iter
     public :: dm_db_select_json_log
     public :: dm_db_select_json_logs
+    public :: dm_db_select_json_logs_array
+    public :: dm_db_select_json_logs_iter
     public :: dm_db_select_json_node
     public :: dm_db_select_json_nodes
     public :: dm_db_select_log
@@ -315,6 +344,8 @@ module dm_db
     private :: db_insert_responses
     private :: db_insert_sync
     private :: db_next_row
+    private :: db_next_row_allocatable
+    private :: db_next_row_character
     private :: db_next_row_data_point
     private :: db_next_row_log
     private :: db_next_row_node
@@ -2081,7 +2112,7 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_beat
 
-    integer function dm_db_select_beats(db, beats, limit, nbeats) result(rc)
+    integer function dm_db_select_beats_array(db, beats, limit, nbeats) result(rc)
         !! Returns heatbeats from database in array `beats`. An optional limit
         !! may be passed in `limit`.
         !!
@@ -2142,10 +2173,45 @@ contains
         end block alloc_block
 
         if (.not. allocated(beats)) allocate (beats(0))
-    end function dm_db_select_beats
+    end function dm_db_select_beats_array
 
-    integer function dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response_name, &
-                                              from, to, error, limit, npoints) result(rc)
+    integer function dm_db_select_beats_iter(db, db_stmt, beat, limit) result(rc)
+        !! Iterator function that returns heatbeats from database in `beat`. An
+        !! optional limit may be passed in `limit`. The statement `db_stmt`
+        !! must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no more rows are available.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        type(db_type),      intent(inout)         :: db      !! Database type.
+        type(db_stmt_type), intent(inout)         :: db_stmt !! Database statement type.
+        type(beat_type),    intent(out)           :: beat    !! Returned beat type.
+        integer(kind=i8),   intent(in),  optional :: limit   !! Max. number of beats.
+
+        if (.not. c_associated(db_stmt%ptr)) then
+            if (present(limit)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+
+                rc = E_DB_BIND
+                if (sqlite3_bind_int64(db_stmt%ptr, 1, limit) /= SQLITE_OK) return
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, db_stmt%ptr) /= SQLITE_OK) return
+            end if
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, beat)
+    end function dm_db_select_beats_iter
+
+    integer function dm_db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
+                                                    from, to, error, limit, npoints) result(rc)
         !! Returns data points from observations database in `dps`. This
         !! function selects only responses of error `E_NONE`, unless argument
         !! `error` is passed, then only of the given error code.
@@ -2239,11 +2305,69 @@ contains
 
         stat = sqlite3_finalize(stmt)
         if (.not. allocated(dps)) allocate (dps(0))
-    end function dm_db_select_data_points
+    end function dm_db_select_data_points_array
 
-    integer function dm_db_select_json_beat(db, json_beat, node_id) result(rc)
+    integer function dm_db_select_data_points_iter(db, db_stmt, dp, node_id, sensor_id, target_id, response_name, &
+                                                   from, to, error, limit) result(rc)
+        !! Iterator function that returns data points from observations
+        !! database in `dp`. This function selects only responses of error
+        !! `E_NONE`, unless argument `error` is passed, then only of the given
+        !! error code. The statement `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no more rows are available.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        type(db_type),      intent(inout)        :: db            !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt       !! Database statement type.
+        type(dp_type),      intent(out)          :: dp            !! Returned data point.
+        character(len=*),   intent(in)           :: node_id       !! Node id.
+        character(len=*),   intent(in)           :: sensor_id     !! Sensor id.
+        character(len=*),   intent(in)           :: target_id     !! Target id.
+        character(len=*),   intent(in)           :: response_name !! Response name.
+        character(len=*),   intent(in)           :: from          !! Beginning of time span.
+        character(len=*),   intent(in)           :: to            !! End of time span.
+        integer,            intent(in), optional :: error         !! Response error code.
+        integer(kind=i8),   intent(in), optional :: limit         !! Max. number of data points.
+
+        integer :: error_
+
+        error_ = E_NONE
+        if (present(error)) error_ = error
+
+        if (.not. c_associated(db_stmt%ptr)) then
+            rc = E_DB_PREPARE
+            if (present(limit)) then
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+            else
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS, db_stmt%ptr) /= SQLITE_OK) return
+            end if
+
+            rc = E_DB_BIND
+            if (sqlite3_bind_text(db_stmt%ptr, 1, trim(node_id))       /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ptr, 2, trim(sensor_id))     /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ptr, 3, trim(target_id))     /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ptr, 4, trim(response_name)) /= SQLITE_OK) return
+            if (sqlite3_bind_int (db_stmt%ptr, 5, error_)              /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ptr, 6, trim(from))          /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ptr, 7, trim(to))            /= SQLITE_OK) return
+
+            if (present(limit)) then
+                if (sqlite3_bind_int64(db_stmt%ptr, 8, limit) /= SQLITE_OK) return
+            end if
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, dp)
+    end function dm_db_select_data_points_iter
+
+    integer function dm_db_select_json_beat(db, json, node_id) result(rc)
         !! Returns heartbeat associated with given node id as allocatable
-        !! character `json_beat` in JSON format.
+        !! character `json` in JSON format.
         !!
         !! The function returns the following error codes:
         !!
@@ -2253,9 +2377,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         character(len=*), parameter :: QUERY = ' WHERE node_id = ?'
 
-        type(db_type),                 intent(inout) :: db        !! Database type.
-        character(len=:), allocatable, intent(out)   :: json_beat !! Returned JSON.
-        character(len=*),              intent(in)    :: node_id   !! Node id.
+        type(db_type),                 intent(inout) :: db      !! Database type.
+        character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
+        character(len=*),              intent(in)    :: node_id !! Node id.
 
         integer     :: stat
         type(c_ptr) :: stmt
@@ -2270,17 +2394,16 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = db_next_row(stmt, json_beat)
+            rc = db_next_row(stmt, json)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
-        if (.not. allocated(json_beat)) json_beat = ''
+        if (.not. allocated(json)) json = ''
     end function dm_db_select_json_beat
 
-    integer function dm_db_select_json_beats(db, json_beats, limit, nbeats) result(rc)
-        !! Returns beats in JSON format in allocatable character array
-        !! `json_beats`, each of length `DB_JSON_BEAT_LEN`. The actual length
-        !! of the JSON object may be less than the maximum character length.
+    integer function dm_db_select_json_beats_array(db, strings, limit, nbeats) result(rc)
+        !! Returns beats in JSON format in allocatable string type array
+        !! `strings`.
         !!
         !! If no beats have been found, the array will be empty, and the
         !! function returns `E_DB_NO_ROWS`.
@@ -2292,10 +2415,11 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
-        type(db_type),                                intent(inout)         :: db            !! Database type.
-        character(len=DB_JSON_BEAT_LEN), allocatable, intent(out)           :: json_beats(:) !! Returned JSON array.
-        integer(kind=i8),                             intent(in),  optional :: limit         !! Max. number of beats.
-        integer(kind=i8),                             intent(out), optional :: nbeats        !! Number of beats.
+        use :: dm_string, only: string_type
+        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
+        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of beats.
+        integer(kind=i8),               intent(out), optional :: nbeats     !! Number of beats.
 
         integer          :: stat
         integer(kind=i8) :: i, n
@@ -2310,7 +2434,7 @@ contains
             if (present(limit)) n = min(n, limit)
 
             rc = E_ALLOC
-            allocate (json_beats(n), stat=stat)
+            allocate (strings(n), stat=stat)
             if (stat /= 0) exit alloc_block
 
             rc = E_DB_NO_ROWS
@@ -2331,7 +2455,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                    rc = db_next_row(stmt, json_beats(i), (i == 1))
+                    rc = db_next_row(stmt, strings(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
 
@@ -2342,12 +2466,52 @@ contains
             stat = sqlite3_finalize(stmt)
         end block alloc_block
 
-        if (.not. allocated(json_beats)) allocate (json_beats(0))
-    end function dm_db_select_json_beats
+        if (.not. allocated(strings)) allocate (strings(0))
+    end function dm_db_select_json_beats_array
 
-    integer function dm_db_select_json_log(db, json_log, log_id) result(rc)
+    integer function dm_db_select_json_beats_iter(db, db_stmt, json, limit) result(rc)
+        !! Iterator function that returns beats in JSON format in allocatable
+        !! string `json`. The statement `db_stmt` must be finalised once
+        !! finished.
+        !!
+        !! If no beats have been found, the string will be empty, and the
+        !! function returns `E_DB_NO_ROWS`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        type(db_type),                 intent(inout)        :: db      !! Database type.
+        type(db_stmt_type),            intent(inout)        :: db_stmt !! Database statement type.
+        character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
+        integer(kind=i8),              intent(in), optional :: limit   !! Max. number of beats.
+
+        integer :: n
+
+        if (.not. c_associated(db_stmt%ptr)) then
+            if (present(limit)) then
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+
+                rc = E_DB_BIND
+                if (sqlite3_bind_int64(db_stmt%ptr, 1, limit) /= SQLITE_OK) return
+            else
+                rc = E_DB_PREPARE
+                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS, db_stmt%ptr) /= SQLITE_OK) return
+            end if
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, json, n)
+    end function dm_db_select_json_beats_iter
+
+    integer function dm_db_select_json_log(db, json, log_id) result(rc)
         !! Returns log associated with given id as allocatable character in
-        !! JSON format in `json_log`. If no log has been found, the string will
+        !! JSON format in `json`. If no log has been found, the string will
         !! be empty and the function returns `E_DB_NO_ROWS`.
         !!
         !! The function returns the following error codes:
@@ -2358,9 +2522,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         character(len=*), parameter :: QUERY = ' WHERE id = ?'
 
-        type(db_type),                 intent(inout) :: db       !! Database type.
-        character(len=:), allocatable, intent(out)   :: json_log !! Returned JSON.
-        character(len=*),              intent(in)    :: log_id   !! Log id.
+        type(db_type),                 intent(inout) :: db     !! Database type.
+        character(len=:), allocatable, intent(out)   :: json   !! Returned JSON.
+        character(len=*),              intent(in)    :: log_id !! Log id.
 
         integer     :: stat
         type(c_ptr) :: stmt
@@ -2375,18 +2539,17 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = db_next_row(stmt, json_log)
+            rc = db_next_row(stmt, json)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
-        if (.not. allocated(json_log)) json_log = ''
+        if (.not. allocated(json)) json = ''
     end function dm_db_select_json_log
 
-    integer function dm_db_select_json_logs(db, json_logs, node_id, sensor_id, target_id, source, &
-                                            from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
-        !! Returns logs in JSON format in allocatable character array
-        !! `json_logs`, each of length `DB_JSON_LOG_LEN`. The actual length of
-        !! the JSON object may be less than the maximum character length.
+    integer function dm_db_select_json_logs_array(db, strings, node_id, sensor_id, target_id, source, &
+                                                  from, to, min_level, max_level, error, desc, limit, nlogs) result(rc)
+        !! Returns logs in JSON format in allocatable string type array
+        !! `strings`.
         !!
         !! If no logs have been found, the array will be empty, and the
         !! function returns `E_DB_NO_ROWS`.
@@ -2399,20 +2562,21 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
-        type(db_type),                               intent(inout)         :: db           !! Database type.
-        character(len=DB_JSON_LOG_LEN), allocatable, intent(out)           :: json_logs(:) !! Returned JSON array.
-        character(len=*),                            intent(in),  optional :: node_id      !! Node id.
-        character(len=*),                            intent(in),  optional :: sensor_id    !! Sensor id.
-        character(len=*),                            intent(in),  optional :: target_id    !! Target id.
-        character(len=*),                            intent(in),  optional :: source       !! Source name.
-        character(len=*),                            intent(in),  optional :: from         !! Begin of time range.
-        character(len=*),                            intent(in),  optional :: to           !! End of time range.
-        integer,                                     intent(in),  optional :: min_level    !! Minimum log level.
-        integer,                                     intent(in),  optional :: max_level    !! Maximum log level.
-        integer,                                     intent(in),  optional :: error        !! Error code.
-        logical,                                     intent(in),  optional :: desc         !! Descending order.
-        integer(kind=i8),                            intent(in),  optional :: limit        !! Max. numbers of logs.
-        integer(kind=i8),                            intent(out), optional :: nlogs        !! Number of logs.
+        use :: dm_string, only: string_type
+        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
+        character(len=*),               intent(in),  optional :: node_id    !! Node id.
+        character(len=*),               intent(in),  optional :: sensor_id  !! Sensor id.
+        character(len=*),               intent(in),  optional :: target_id  !! Target id.
+        character(len=*),               intent(in),  optional :: source     !! Source name.
+        character(len=*),               intent(in),  optional :: from       !! Begin of time range.
+        character(len=*),               intent(in),  optional :: to         !! End of time range.
+        integer,                        intent(in),  optional :: min_level  !! Minimum log level.
+        integer,                        intent(in),  optional :: max_level  !! Maximum log level.
+        integer,                        intent(in),  optional :: error      !! Error code.
+        logical,                        intent(in),  optional :: desc       !! Descending order.
+        integer(kind=i8),               intent(in),  optional :: limit      !! Max. numbers of logs.
+        integer(kind=i8),               intent(out), optional :: nlogs      !! Number of logs.
 
         character(len=:), allocatable :: query
         integer                       :: k, stat
@@ -2423,19 +2587,10 @@ contains
         logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
         logical :: desc_order, more
 
-        has_param     = .false.
-        has_node_id   = .false.
-        has_sensor_id = .false.
-        has_target_id = .false.
-        has_source    = .false.
-        has_from      = .false.
-        has_to        = .false.
-        has_min_level = .false.
-        has_max_level = .false.
-        has_error     = .false.
-        has_limit     = .false.
-
-        desc_order = .false.
+        has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
+        has_target_id = .false.; has_source    = .false.; has_from      = .false.
+        has_to        = .false.; has_min_level = .false.; has_max_level = .false.
+        has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
         if (present(node_id)) then
             if (len_trim(node_id) > 0) then
@@ -2536,7 +2691,7 @@ contains
             if (has_limit) n = min(n, limit)
 
             rc = E_ALLOC
-            allocate (json_logs(n), stat=stat)
+            allocate (strings(n), stat=stat)
             if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2569,7 +2724,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                rc = db_next_row(stmt, json_logs(i), (i == 1))
+                rc = db_next_row(stmt, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
 
@@ -2578,7 +2733,7 @@ contains
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
-        if (.not. allocated(json_logs)) allocate (json_logs(0))
+        if (.not. allocated(strings)) allocate (strings(0))
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -2633,11 +2788,215 @@ contains
 
             rc = E_NONE
         end function db_bind_logs
-    end function dm_db_select_json_logs
+    end function dm_db_select_json_logs_array
 
-    integer function dm_db_select_json_node(db, json_node, node_id) result(rc)
+    integer function dm_db_select_json_logs_iter(db, db_stmt, json, node_id, sensor_id, target_id, source, &
+                                                 from, to, min_level, max_level, error, desc, limit) result(rc)
+        !! Iterator function that returns logs in JSON format in allocatable
+        !! character `json`. The statement `db_stmt` must be finalised once
+        !! finished.
+        !!
+        !! If no logs have been found, the string will be empty, and the
+        !! function returns `E_DB_NO_ROWS`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        type(db_type),                 intent(inout)         :: db        !! Database type.
+        type(db_stmt_type),            intent(inout)         :: db_stmt   !! Database statement type.
+        character(len=:), allocatable, intent(out)           :: json      !! Returned JSON.
+        character(len=*),              intent(in),  optional :: node_id   !! Node id.
+        character(len=*),              intent(in),  optional :: sensor_id !! Sensor id.
+        character(len=*),              intent(in),  optional :: target_id !! Target id.
+        character(len=*),              intent(in),  optional :: source    !! Source name.
+        character(len=*),              intent(in),  optional :: from      !! Begin of time range.
+        character(len=*),              intent(in),  optional :: to        !! End of time range.
+        integer,                       intent(in),  optional :: min_level !! Minimum log level.
+        integer,                       intent(in),  optional :: max_level !! Maximum log level.
+        integer,                       intent(in),  optional :: error     !! Error code.
+        logical,                       intent(in),  optional :: desc      !! Descending order.
+        integer(kind=i8),              intent(in),  optional :: limit     !! Max. numbers of logs.
+
+        character(len=:), allocatable :: query
+        integer                       :: k, n
+
+        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
+        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
+        logical :: desc_order, more
+
+        if (.not. c_associated(db_stmt%ptr)) then
+            has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
+            has_target_id = .false.; has_source    = .false.; has_from      = .false.
+            has_to        = .false.; has_min_level = .false.; has_max_level = .false.
+            has_error     = .false.; has_limit     = .false.; desc_order    = .false.
+
+            if (present(node_id)) then
+                if (len_trim(node_id) > 0) then
+                    has_param = .true.
+                    has_node_id = .true.
+                end if
+            end if
+
+            if (present(sensor_id)) then
+                if (len_trim(sensor_id) > 0) then
+                    has_param = .true.
+                    has_sensor_id = .true.
+                end if
+            end if
+
+            if (present(target_id)) then
+                if (len_trim(target_id) > 0) then
+                    has_param = .true.
+                    has_target_id = .true.
+                end if
+            end if
+
+            if (present(source)) then
+                if (len_trim(source) > 0) then
+                    has_param = .true.
+                    has_source = .true.
+                end if
+            end if
+
+            if (present(from)) then
+                if (len_trim(from) > 0) then
+                    has_param = .true.
+                    has_from = .true.
+                end if
+            end if
+
+            if (present(to)) then
+                if (len_trim(to) > 0) then
+                    has_param = .true.
+                    has_to = .true.
+                end if
+            end if
+
+            if (present(min_level)) then
+                has_param = .true.
+                has_min_level = .true.
+            end if
+
+            if (present(max_level)) then
+                has_param = .true.
+                has_max_level = .true.
+            end if
+
+            if (present(error)) then
+                has_param = .true.
+                has_error = .true.
+            end if
+
+            if (present(desc)) desc_order = desc
+            if (present(limit)) has_limit = .true.
+
+            ! Build SQL query.
+            query = ''
+
+            if (has_param) then
+                more = .false.
+                if (has_min_level) call db_query_where(query, 'level >= ?',     more)
+                if (has_max_level) call db_query_where(query, 'level <= ?',     more)
+                if (has_error)     call db_query_where(query, 'error = ?',      more)
+                if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
+                if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+                if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
+                if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
+                if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
+                if (has_source)    call db_query_where(query, 'source = ?',     more)
+            end if
+
+            if (desc_order) then
+                query = query // ' ORDER BY timestamp DESC'
+            else
+                query = query // ' ORDER BY timestamp ASC'
+            end if
+
+            if (has_limit) query = query // ' LIMIT ?'
+
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // query, db_stmt%ptr) /= SQLITE_OK) return
+
+            rc = E_DB_BIND
+            k  = 1
+
+            if (has_param) then
+                ! Bind query parameters.
+                if (dm_is_error(db_bind_logs(k))) return
+            end if
+
+            if (has_limit) then
+                ! Bind limit.
+                if (sqlite3_bind_int64(db_stmt%ptr, k, limit) /= SQLITE_OK) return
+            end if
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, json, n)
+    contains
+        integer function db_bind_logs(i) result(rc)
+            integer, intent(out) :: i
+
+            rc = E_DB_BIND
+            i = 1
+
+            if (has_min_level) then
+                if (sqlite3_bind_int(db_stmt%ptr, i, min_level) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_max_level) then
+                if (sqlite3_bind_int(db_stmt%ptr, i, max_level) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_error) then
+                if (sqlite3_bind_int(db_stmt%ptr, i, error) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_from) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(from)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_to) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(to)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_node_id) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(node_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_sensor_id) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(sensor_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_target_id) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(target_id)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            if (has_source) then
+                if (sqlite3_bind_text(db_stmt%ptr, i, trim(source)) /= SQLITE_OK) return
+                i = i + 1
+            end if
+
+            rc = E_NONE
+        end function db_bind_logs
+    end function dm_db_select_json_logs_iter
+
+    integer function dm_db_select_json_node(db, json, node_id) result(rc)
         !! Returns nodes associated with given node id as allocatable character
-        !! `json_node` in JSON format.
+        !! `json` in JSON format.
         !!
         !! The function returns the following error codes:
         !!
@@ -2647,9 +3006,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         character(len=*), parameter :: QUERY = ' WHERE node_id = ?'
 
-        type(db_type),                 intent(inout) :: db        !! Database type.
-        character(len=:), allocatable, intent(out)   :: json_node !! Returned JSON.
-        character(len=*),              intent(in)    :: node_id   !! Node id.
+        type(db_type),                 intent(inout) :: db      !! Database type.
+        character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
+        character(len=*),              intent(in)    :: node_id !! Node id.
 
         integer     :: stat
         type(c_ptr) :: stmt
@@ -2664,17 +3023,16 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = db_next_row(stmt, json_node)
+            rc = db_next_row(stmt, json)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
-        if (.not. allocated(json_node)) json_node = ''
+        if (.not. allocated(json)) json = ''
     end function dm_db_select_json_node
 
-    integer function dm_db_select_json_nodes(db, json_nodes, limit, nnodes) result(rc)
-        !! Returns nodes in JSON format in allocatable character array
-        !! `json_nodes`, each of length `DB_JSON_NODE_LEN`. The actual length
-        !! of the JSON object may be less than the maximum character length.
+    integer function dm_db_select_json_nodes(db, strings, limit, nnodes) result(rc)
+        !! Returns nodes in JSON format in allocatable string type array
+        !! `strings`.
         !!
         !! If no nodes have been found, the array will be empty, and the
         !! function returns `E_DB_NO_ROWS`.
@@ -2686,12 +3044,13 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
+        use :: dm_string, only: string_type
         character(len=*), parameter :: QUERY = ' ORDER BY nodes.node_id ASC'
 
-        type(db_type),                                intent(inout)         :: db            !! Database type.
-        character(len=DB_JSON_NODE_LEN), allocatable, intent(out)           :: json_nodes(:) !! Returned JSON array.
-        integer(kind=i8),                             intent(in),  optional :: limit         !! Max. number of nodes.
-        integer(kind=i8),                             intent(out), optional :: nnodes        !! Number of nodes.
+        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
+        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of nodes.
+        integer(kind=i8),               intent(out), optional :: nnodes     !! Number of nodes.
 
         integer          :: stat
         integer(kind=i8) :: i, n
@@ -2706,7 +3065,7 @@ contains
             if (present(limit)) n = min(n, limit)
 
             rc = E_ALLOC
-            allocate (json_nodes(n), stat=stat)
+            allocate (strings(n), stat=stat)
             if (stat /= 0) exit alloc_block
 
             rc = E_DB_NO_ROWS
@@ -2727,7 +3086,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-                    rc = db_next_row(stmt, json_nodes(i), (i == 1))
+                    rc = db_next_row(stmt, strings(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
 
@@ -2738,7 +3097,7 @@ contains
             stat = sqlite3_finalize(stmt)
         end block alloc_block
 
-        if (.not. allocated(json_nodes)) allocate (json_nodes(0))
+        if (.not. allocated(strings)) allocate (strings(0))
     end function dm_db_select_json_nodes
 
     integer function dm_db_select_log(db, log, log_id) result(rc)
@@ -2809,19 +3168,10 @@ contains
         logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
         logical :: desc_order, more
 
-        has_param     = .false.
-        has_node_id   = .false.
-        has_sensor_id = .false.
-        has_target_id = .false.
-        has_source    = .false.
-        has_from      = .false.
-        has_to        = .false.
-        has_min_level = .false.
-        has_max_level = .false.
-        has_error     = .false.
-        has_limit     = .false.
-
-        desc_order = .false.
+        has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
+        has_target_id = .false.; has_source    = .false.; has_from      = .false.
+        has_to        = .false.; has_min_level = .false.; has_max_level = .false.
+        has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
         if (present(node_id)) then
             if (len_trim(node_id) > 0) then
@@ -3264,15 +3614,9 @@ contains
 
         if (present(nids)) nids = 0_i8
 
-        has_param     = .false.
-        has_node_id   = .false.
-        has_sensor_id = .false.
-        has_target_id = .false.
-        has_from      = .false.
-        has_to        = .false.
-        has_limit     = .false.
-
-        desc_order = .false.
+        has_param     = .false.; has_node_id = .false.; has_sensor_id = .false.
+        has_target_id = .false.; has_from    = .false.; has_to        = .false.
+        has_limit     = .false.; desc_order  = .false.
 
         if (present(node_id)) then
             if (len_trim(node_id) > 0) then
@@ -3553,16 +3897,9 @@ contains
 
         if (present(nobservs)) nobservs = 0_i8
 
-        has_param     = .false.
-        has_node_id   = .false.
-        has_sensor_id = .false.
-        has_target_id = .false.
-        has_from      = .false.
-        has_to        = .false.
-        has_limit     = .false.
-
-        desc_order = .false.
-        stub_view  = .false.
+        has_param     = .false.; has_node_id = .false.; has_sensor_id = .false.
+        has_target_id = .false.; has_from    = .false.; has_to        = .false.
+        has_limit     = .false.; desc_order  = .false.; stub_view     = .false.
 
         if (present(node_id)) then
             if (len_trim(node_id) > 0) then
@@ -5410,6 +5747,61 @@ contains
         stat = sqlite3_finalize(stmt)
     end function db_insert_sync
 
+    integer function db_next_row_allocatable(stmt, str, n, validate) result(rc)
+        !! Reads string from table row and returns it as allocatable character
+        !! string. Column types are validated by default. Returns `E_DB_TYPE`
+        !! if the validation failed.
+        type(c_ptr),                   intent(inout)        :: stmt     !! SQLite statement.
+        character(len=:), allocatable, intent(out)          :: str      !! Allocatable character string.
+        integer,                       intent(out)          :: n        !! String length.
+        logical,                       intent(in), optional :: validate !! Validate column types.
+
+        logical :: validate_
+
+        n = 0
+
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) then
+                str = ''
+                return
+            end if
+        end if
+
+        str = sqlite3_column_text(stmt, 0)
+        n   = len(str)
+
+        rc = E_NONE
+    end function db_next_row_allocatable
+
+    integer function db_next_row_character(stmt, str, validate) result(rc)
+        !! Reads string from table row. The passed argument `str` must be
+        !! allocated! Column types are validated by default. Returns
+        !! `E_DB_TYPE` if the validation failed.
+        type(c_ptr),      intent(inout)        :: stmt     !! SQLite statement.
+        character(len=*), intent(inout)        :: str      !! Character string.
+        logical,          intent(in), optional :: validate !! Validate column types.
+
+        logical :: validate_
+
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_DB_TYPE
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) then
+                str = ''
+                return
+            end if
+        end if
+
+        str = sqlite3_column_text(stmt, 0)
+        rc = E_NONE
+    end function db_next_row_character
+
     integer function db_next_row_beat(stmt, beat, validate) result(rc)
         !! Reads beat data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
@@ -5674,12 +6066,14 @@ contains
         rc = E_NONE
     end function db_next_row_sensor
 
-    integer function db_next_row_string(stmt, str, validate) result(rc)
-        !! Reads string from table row. Column types are validated by default.
-        !! Returns `E_DB_TYPE` if the validation failed.
-        type(c_ptr),      intent(inout)        :: stmt     !! SQLite statement.
-        character(len=*), intent(inout)        :: str      !! Character string.
-        logical,          intent(in), optional :: validate !! Validate column types.
+    integer function db_next_row_string(stmt, string, validate) result(rc)
+        !! Reads string from table row and returns it as derived type
+        !! `string_type`. Column types are validated by default. Returns
+        !! `E_DB_TYPE` if the validation failed.
+        use :: dm_string, only: string_type
+        type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
+        type(string_type), intent(out)          :: string   !! String type.
+        logical,           intent(in), optional :: validate !! Validate column types.
 
         logical :: validate_
 
@@ -5689,12 +6083,12 @@ contains
         if (validate_) then
             rc = E_DB_TYPE
             if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT) then
-                str = ''
+                string%data = ''
                 return
             end if
         end if
 
-        str = sqlite3_column_text(stmt, 0)
+        string%data = sqlite3_column_text(stmt, 0)
         rc = E_NONE
     end function db_next_row_string
 

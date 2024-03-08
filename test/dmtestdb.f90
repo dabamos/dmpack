@@ -870,11 +870,10 @@ contains
 
     logical function test16() result(stat)
         !! Tests JSON output of SQLite (logs).
-        character(len=DB_JSON_LOG_LEN), allocatable :: json_logs(:)
-
-        integer          :: rc
-        integer(kind=i8) :: nlogs
-        type(db_type)    :: db
+        integer                        :: rc
+        integer(kind=i8)               :: nlogs
+        type(db_type)                  :: db
+        type(string_type), allocatable :: strings(:)
 
         stat = TEST_FAILED
 
@@ -883,17 +882,16 @@ contains
 
         test_block: block
             print *, 'Selecting logs in JSON format ...'
-            rc = dm_db_select_json_logs(db, json_logs, limit=1_i8, nlogs=nlogs)
+            rc = dm_db_select_json_logs(db, strings, limit=1_i8, nlogs=nlogs)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
-            if (.not. allocated(json_logs)) exit test_block
-            if (size(json_logs) /= 1) exit test_block
+            if (.not. allocated(strings)) exit test_block
+            if (size(strings) /= 1) exit test_block
+            if (.not. allocated(strings(1)%data)) exit test_block
 
-            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_logs(1)), DB_JSON_LOG_LEN
-            print *, 'JSON:'
             print '(72("."))'
-            print '(a)', trim(json_logs(1))
+            print '(a)', strings(1)%data
             print '(72("."))'
 
             rc = E_NONE
@@ -909,11 +907,13 @@ contains
 
     logical function test17() result(stat)
         !! Tests JSON output of SQLite (beats).
-        character(len=DB_JSON_BEAT_LEN), allocatable :: json_beats(:)
+        integer            :: rc
+        integer(kind=i8)   :: nbeats
+        type(db_type)      :: db
+        type(db_stmt_type) :: db_stmt
 
-        integer          :: rc
-        integer(kind=i8) :: nbeats
-        type(db_type)    :: db
+        character(len=:),  allocatable :: json
+        type(string_type), allocatable :: strings(:)
 
         stat = TEST_FAILED
 
@@ -922,23 +922,42 @@ contains
 
         test_block: block
             print *, 'Selecting beats in JSON format ...'
-            rc = dm_db_select_json_beats(db, json_beats, limit=1_i8, nbeats=nbeats)
+            rc = dm_db_select_json_beats(db, strings, limit=1_i8, nbeats=nbeats)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
-            if (.not. allocated(json_beats)) exit test_block
-            if (size(json_beats) /= 1) exit test_block
+            if (.not. allocated(strings)) exit test_block
+            if (size(strings) /= 1) exit test_block
+            if (.not. allocated(strings(1)%data)) exit test_block
 
-            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_beats(1)), DB_JSON_BEAT_LEN
-            print *, 'JSON:'
             print '(72("."))'
-            print '(a)', trim(json_beats(1))
+            print '(a)', strings(1)%data
+            print '(72("."))'
+
+            print *, 'Selecting beats in JSON format iterative ...'
+            rc = dm_db_select_json_beats(db, db_stmt, json)
+            if (dm_is_error(rc)) exit test_block
+
+            print '(72("."))'
+            print '(a)', json
+            print '(72("."))'
+
+            if (json /= strings(1)%data) exit test_block
+
+            print *, 'Selecting more ...'
+            rc = dm_db_select_json_beats(db, db_stmt, json)
+            if (dm_is_error(rc)) exit test_block
+
+            print '(72("."))'
+            print '(a)', json
             print '(72("."))'
 
             rc = E_NONE
         end block test_block
 
         call dm_error_out(rc)
+        rc = dm_db_finalize(db_stmt)
+
         print *, 'Closing database "' // DB_BEAT // '" ...'
         if (dm_db_close(db) /= E_NONE) return
         if (dm_is_error(rc)) return
@@ -948,11 +967,10 @@ contains
 
     logical function test18() result(stat)
         !! Tests JSON output of SQLite (nodes).
-        character(len=DB_JSON_NODE_LEN), allocatable :: json_nodes(:)
-
-        integer          :: rc
-        integer(kind=i8) :: nnodes
-        type(db_type)    :: db
+        integer                        :: rc
+        integer(kind=i8)               :: nnodes
+        type(db_type)                  :: db
+        type(string_type), allocatable :: strings(:)
 
         stat = TEST_FAILED
 
@@ -961,17 +979,16 @@ contains
 
         test_block: block
             print *, 'Selecting nodes in JSON format ...'
-            rc = dm_db_select_json_nodes(db, json_nodes, limit=1_i8, nnodes=nnodes)
+            rc = dm_db_select_json_nodes(db, strings, limit=1_i8, nnodes=nnodes)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
-            if (.not. allocated(json_nodes)) exit test_block
-            if (size(json_nodes) /= 1) exit test_block
+            if (.not. allocated(strings)) exit test_block
+            if (size(strings) /= 1) exit test_block
+            if (.not. allocated(strings(1)%data)) exit test_block
 
-            print '(" Length: ", i0, " (", i0, ")")', len_trim(json_nodes(1)), DB_JSON_NODE_LEN
-            print *, 'JSON:'
             print '(72("."))'
-            print '(a)', trim(json_nodes(1))
+            print '(a)', strings(1)%data
             print '(72("."))'
 
             rc = E_NONE

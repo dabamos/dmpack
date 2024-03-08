@@ -1544,6 +1544,13 @@ variable `GDFONTPATH` to the local font directory first:
 $ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 ....
 
+If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
+`gnuplot-nox`, an alias has to be added to the global profile:
+
+....
+alias gnuplot="gnuplot-nox"
+....
+
 The output file is ignored when using the terminals `sixelgd` and `x11`.
 Plotting parameters passed via command-line have priority over those from
 configuration file.
@@ -1729,6 +1736,13 @@ calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
 base64-encoded data URI. Any style sheet file with classless CSS can be
 included to alter the presentation of the report. The output of *dmreport* is a
 single HTML file.
+
+If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
+`gnuplot-nox`, an alias has to be added to the global profile:
+
+....
+alias gnuplot="gnuplot-nox"
+....
 
 A configuration file is mandatory to create reports. Only a few parameters can
 be set through command-line arguments. Passed command-line arguments have
@@ -1917,7 +1931,8 @@ to _stdout_, else to file.
 
 A configuration file is required to configure the jobs to perform. Each
 observation must have a valid target id. The database must contain the specified
-node, sensor, and targets.
+node, sensor, and targets. Parameters and functions of the <<lua-api,Lua API>>
+may be used in the configuration file.
 
 The following baud rates are supported: 50, 75, 110, 134, 150, 200, 300, 600,
 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
@@ -2120,6 +2135,13 @@ The style sheet of *dmweb* is based on https://missing.style/[missing.css].
 It may be replaced with any other classless CSS theme. For best experience, the
 link:https://github.com/IBM/plex/releases[IBM Plex] font family should be
 installed locally.
+
+If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
+`gnuplot-nox`, an alias has to be added to the global profile:
+
+....
+alias gnuplot="gnuplot-nox"
+....
 
 .Environment variables of _dmweb(1)_
 [[dmweb-env]]
@@ -4992,12 +5014,11 @@ All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 
 == Lua API [[lua-api]]
 
-Parts of the DMPACK library are exposed to Lua through a distinct API. Log
+Parts of the DMPACK library are exposed to Lua through the following API. Log
 levels and error codes are registered as named parameters. The GeoCOM API
-includes functions and named parameters for request preparation.
-
-The GeoCOM functions can be called from DMPACK configuration files to fill the
-table of observations to perform, for example:
+includes named parameters and functions for request preparation. The GeoCOM
+functions may be called from the configuration file of <<dmserial>> to
+initialise the job observations, for example:
 
 [source,lua]
 ....
