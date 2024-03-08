@@ -91,15 +91,15 @@ contains
                 ! Check for appropriate database table.
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_db_has_table(db, SQL_TABLE_NODES, exists)
+                        rc = dm_db_table_exists(db, SQL_TABLE_NODES, exists)
                     case (TYPE_SENSOR)
-                        rc = dm_db_has_table(db, SQL_TABLE_SENSORS, exists)
+                        rc = dm_db_table_exists(db, SQL_TABLE_SENSORS, exists)
                     case (TYPE_TARGET)
-                        rc = dm_db_has_table(db, SQL_TABLE_TARGETS, exists)
+                        rc = dm_db_table_exists(db, SQL_TABLE_TARGETS, exists)
                     case (TYPE_OBSERV)
-                        rc = dm_db_has_table(db, SQL_TABLE_OBSERVS, exists)
+                        rc = dm_db_table_exists(db, SQL_TABLE_OBSERVS, exists)
                     case (TYPE_LOG)
-                        rc = dm_db_has_table(db, SQL_TABLE_LOGS, exists)
+                        rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
                 end select
 
                 if (dm_is_error(rc) .or. .not. exists) then

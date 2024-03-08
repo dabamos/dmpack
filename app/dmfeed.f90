@@ -219,20 +219,20 @@ contains
 
             ! Get logs from database.
             if (len_trim(app%node) > 0) then
-                rc = dm_db_select(db        = db, &
-                                  logs      = logs, &
-                                  node_id   = app%node, &
-                                  min_level = app%min_level, &
-                                  max_level = app%max_level, &
-                                  desc      = .true., &
-                                  limit     = int(app%entries, kind=i8))
+                rc = dm_db_select_logs(db        = db, &
+                                       logs      = logs, &
+                                       node_id   = app%node, &
+                                       min_level = app%min_level, &
+                                       max_level = app%max_level, &
+                                       desc      = .true., &
+                                       limit     = int(app%entries, kind=i8))
             else
-                rc = dm_db_select(db        = db, &
-                                  logs      = logs, &
-                                  min_level = app%min_level, &
-                                  max_level = app%max_level, &
-                                  desc      = .true., &
-                                  limit     = int(app%entries, kind=i8))
+                rc = dm_db_select_logs(db        = db, &
+                                       logs      = logs, &
+                                       min_level = app%min_level, &
+                                       max_level = app%max_level, &
+                                       desc      = .true., &
+                                       limit     = int(app%entries, kind=i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then

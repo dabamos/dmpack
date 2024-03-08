@@ -77,23 +77,23 @@ contains
         ! Select records from database.
         select case (app%type)
             case (TYPE_NODE)
-                rc = dm_db_select(db, nodes)
+                rc = dm_db_select_nodes(db, nodes)
             case (TYPE_SENSOR)
-                rc = dm_db_select(db, sensors)
+                rc = dm_db_select_sensors(db, sensors)
             case (TYPE_TARGET)
-                rc = dm_db_select(db, targets)
+                rc = dm_db_select_targets(db, targets)
             case (TYPE_OBSERV)
-                rc = dm_db_select(db, observs, node_id=app%node, sensor_id=app%sensor, &
-                                  target_id=app%target, from=app%from, to=app%to)
+                rc = dm_db_select_observs(db, observs, node_id=app%node, sensor_id=app%sensor, &
+                                          target_id=app%target, from=app%from, to=app%to)
             case (TYPE_LOG)
-                rc = dm_db_select(db, logs, node_id=app%node, sensor_id=app%sensor, &
-                                  target_id=app%target, from=app%from, to=app%to)
+                rc = dm_db_select_logs(db, logs, node_id=app%node, sensor_id=app%sensor, &
+                                       target_id=app%target, from=app%from, to=app%to)
             case (TYPE_BEAT)
-                rc = dm_db_select(db, beats)
+                rc = dm_db_select_beats(db, beats)
             case (TYPE_DP)
-                rc = dm_db_select(db, data_points, node_id=app%node, sensor_id=app%sensor, &
-                                  target_id=app%target, response_name=app%response, &
-                                  from=app%from, to=app%to)
+                rc = dm_db_select_data_points(db, data_points, node_id=app%node, sensor_id=app%sensor, &
+                                              target_id=app%target, response_name=app%response, &
+                                              from=app%from, to=app%to)
         end select
 
         if (dm_is_error(rc)) call dm_error_out(rc, 'failed to select from database')

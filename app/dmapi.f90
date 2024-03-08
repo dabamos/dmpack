@@ -310,7 +310,7 @@ contains
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             ! Select all beats from database.
-            rc = dm_db_select(db, beats)
+            rc = dm_db_select_beats(db, beats)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -599,7 +599,7 @@ contains
             end if
 
             ! Select logs from database.
-            rc = dm_db_select(db, logs, node_id=node_id, from=from, to=to, limit=limit)
+            rc = dm_db_select_logs(db, logs, node_id=node_id, from=from, to=to, limit=limit)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -857,7 +857,7 @@ contains
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             ! Select all nodes from database.
-            rc = dm_db_select(db, nodes)
+            rc = dm_db_select_nodes(db, nodes)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1172,8 +1172,8 @@ contains
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             ! Select observations from database.
-            rc = dm_db_select(db, observs, node_id, sensor_id, target_id, &
-                              from, to, limit=int(limit, kind=i8))
+            rc = dm_db_select_observs(db, observs, node_id, sensor_id, target_id, &
+                                      from, to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1482,7 +1482,7 @@ contains
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             ! Select all sensors from database.
-            rc = dm_db_select(db, sensors)
+            rc = dm_db_select_sensors(db, sensors)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1711,7 +1711,7 @@ contains
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             ! Select all targets from database.
-            rc = dm_db_select(db, targets)
+            rc = dm_db_select_targets(db, targets)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1879,12 +1879,12 @@ contains
 
             if (view) then
                 ! Select observation views from database.
-                rc = dm_db_select(db, views, node_id, sensor_id, target_id, response, &
-                                  from, to, limit=int(limit, kind=i8))
+                rc = dm_db_select_observ_views(db, views, node_id, sensor_id, target_id, response, &
+                                               from, to, limit=int(limit, kind=i8))
             else
                 ! Select data points from database.
-                rc = dm_db_select(db, dps, node_id, sensor_id, target_id, response, &
-                                  from, to, limit=int(limit, kind=i8))
+                rc = dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response, &
+                                              from, to, limit=int(limit, kind=i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then

@@ -56,14 +56,14 @@ contains
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode
         integer(kind=i8)              :: n, sz
-        logical                       :: has, has_db
+        logical                       :: exists, with_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
         ! Try to open database.
-        has_db = (len_trim(app%database) > 0)
+        with_db = (len_trim(app%database) > 0)
 
-        if (has_db) then
+        if (with_db) then
             sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
 
@@ -78,12 +78,12 @@ contains
         print '("build.options: ", a)',  compiler_options()
 
         ! Database information.
-        if (has_db) then
+        if (with_db) then
             rc = dm_db_get_application_id(db, app_id)
             print '("db.application_id: ", z0)', app_id
 
-            rc = dm_db_get_foreign_keys(db, has)
-            print '("db.foreign_keys: ", l)', has
+            rc = dm_db_get_foreign_keys(db, exists)
+            print '("db.foreign_keys: ", l)', exists
 
             rc = dm_db_get_journal_mode(db, mode, mode_name)
             print '("db.journal_mode: ", a)', mode_name
@@ -91,49 +91,49 @@ contains
             print '("db.path: ", a)', trim(app%database)
             print '("db.size: ", i0)', sz
 
-            rc = dm_db_has_table(db, SQL_TABLE_BEATS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_BEATS, exists)
             rc = dm_db_count_beats(db, n)
-            print '("db.table.beats: ", l)', has
+            print '("db.table.beats: ", l)', exists
             print '("db.table.beats.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_LOGS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
             rc = dm_db_count_logs(db, n)
-            print '("db.table.logs: ", l)', has
+            print '("db.table.logs: ", l)', exists
             print '("db.table.logs.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_NODES, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_NODES, exists)
             rc = dm_db_count_nodes(db, n)
-            print '("db.table.nodes: ", l)', has
+            print '("db.table.nodes: ", l)', exists
             print '("db.table.nodes.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_OBSERVS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_OBSERVS, exists)
             rc = dm_db_count_observs(db, n)
-            print '("db.table.observs: ", l)', has
+            print '("db.table.observs: ", l)', exists
             print '("db.table.observs.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_RECEIVERS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_RECEIVERS, exists)
             rc = dm_db_count_receivers(db, n)
-            print '("db.table.receivers: ", l)', has
+            print '("db.table.receivers: ", l)', exists
             print '("db.table.receivers.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_REQUESTS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_REQUESTS, exists)
             rc = dm_db_count_requests(db, n)
-            print '("db.table.requests: ", l)', has
+            print '("db.table.requests: ", l)', exists
             print '("db.table.requests.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_RESPONSES, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_RESPONSES, exists)
             rc = dm_db_count_responses(db, n)
-            print '("db.table.responses: ", l)', has
+            print '("db.table.responses: ", l)', exists
             print '("db.table.responses.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_SENSORS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_SENSORS, exists)
             rc = dm_db_count_sensors(db, n)
-            print '("db.table.sensors: ", l)', has
+            print '("db.table.sensors: ", l)', exists
             print '("db.table.sensors.rows: ", i0)', n
 
-            rc = dm_db_has_table(db, SQL_TABLE_TARGETS, has)
+            rc = dm_db_table_exists(db, SQL_TABLE_TARGETS, exists)
             rc = dm_db_count_targets(db, n)
-            print '("db.table.targets: ", l)', has
+            print '("db.table.targets: ", l)', exists
             print '("db.table.targets.rows: ", i0)', n
 
             rc = dm_db_close(db)

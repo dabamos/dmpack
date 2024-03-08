@@ -314,7 +314,7 @@ contains
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.)
             if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select(db, data_points, node, sensor, target, response, from, to)
+            rc = dm_db_select_data_points(db, data_points, node, sensor, target, response, from, to)
         end block db_block
 
         rc = max(dm_db_close(db), rc)
@@ -335,8 +335,8 @@ contains
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.)
             if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select(db, logs, node_id=node, from=from, to=to, &
-                              min_level=min_level, max_level=max_level)
+            rc = dm_db_select_logs(db, logs, node_id=node, from=from, to=to, &
+                                   min_level=min_level, max_level=max_level)
         end block db_block
 
         rc = max(dm_db_close(db), rc)
