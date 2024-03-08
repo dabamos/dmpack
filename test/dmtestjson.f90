@@ -162,18 +162,18 @@ contains
 
     logical function test07() result(stat)
         character(len=*), parameter :: JSON = &
-            '{ "id": "9273ab62f9a349b6a4da6dd274ee83e7", "node_id": "dummy-node", "sensor_id": "dummy-sensor", ' // &
-            '"target_id": "dummy-target", "name": "dummy-observ", "timestamp": "1970-01-01T00:00:00.000000+00:00", ' // &
-            '"source": "dmdummy", "path": "/dev/null", "priority": 0, "error": 0, "next": 0, "nreceivers": 3, ' // &
-            '"nrequests": 2, "receivers": [ "dummy-receiver1", "dummy-receiver2", "dummy-receiver3" ], ' // &
-            '"requests": [ { "name": "dummy-1", "timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "A", ' // &
-            '"response": "123.45\\r\\n", "delimiter": "\\r\\n", "pattern": "^(.*)$", "delay": 1000, "error": 0, ' // &
-            '"mode": 0, "retries": 0, "state": 0, "timeout": 500, "nresponses": 1, "responses": [ { "name": "a", ' // &
-            '"unit": "none", "type": 0, "error": 0, "value": 123.450000000 } ] }, { "name": "dummy-2", ' // &
-            '"timestamp": "1970-01-01T00:00:00.000000+00:00", "request": "B", "response": "OK\\r\\n", "delimiter": ' // &
-            '"\\r\\n", "pattern": "^OK", "delay": 500, "error": 1, "mode": 0, "retries": 0, "state": 0, ' // &
-            '"timeout": 500, "nresponses": 1, "responses": [ { "name": "b", "unit": "none", "type": 0, "error": 0, ' // &
-            '"value": 1.00000000000 } ] } ] }'
+            '{"id":"9273ab62f9a349b6a4da6dd274ee83e7","node_id":"dummy-node","sensor_id":"dummy-sensor",' // &
+            '"target_id":"dummy-target","name":"dummy-observ","timestamp":"1970-01-01T00:00:00.000000+00:00",' // &
+            '"source":"dmdummy","path":"/dev/null","priority":0,"error":0,"next":0,"nreceivers":3,' // &
+            '"nrequests":2,"receivers":["dummy-receiver1","dummy-receiver2","dummy-receiver3"],' // &
+            '"requests":[{"name":"dummy-1","timestamp":"1970-01-01T00:00:00.000000+00:00","request":"A",' // &
+            '"response":"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,' // &
+            '"mode":0,"retries":0,"state":0,"timeout":500,"nresponses":1,"responses":[{"name":"a",' // &
+            '"unit":"none","type":0,"error":0,"value":123.450000000}]},{"name":"dummy-2",' // &
+            '"timestamp":"1970-01-01T00:00:00.000000+00:00","request":"B","response":"OK\\r\\n","delimiter":' // &
+            '"\\r\\n","pattern":"^OK","delay":500,"error":1,"mode":0,"retries":0,"state":0,' // &
+            '"timeout":500,"nresponses":1,"responses":[{"name":"b","unit":"none","type":0,"error":0,' // &
+            '"value":1.00000000000}]}]}'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
@@ -275,8 +275,8 @@ contains
 
     logical function test08() result(stat)
         character(len=*), parameter :: JSON = &
-            '{ "id": "dummy-node", "name": "Dummy Node", "meta": "", ' // &
-            '"x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+            '{"id":"dummy-node","name":"Dummy Node","meta":"",' // &
+            '"x":1000.00000000,"y":2000.00000000,"z":10.0000000000}'
 
         character(len=:), allocatable :: buf
         type(node_type)               :: node
@@ -311,8 +311,8 @@ contains
 
     logical function test09() result(stat)
         character(len=*), parameter :: JSON = &
-            '{ "id": "dummy-sensor", "node_id": "dummy-node", "type": 0, "name": "Dummy Sensor", ' // &
-            '"sn": "12345", "meta": "", "x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+            '{"id":"dummy-sensor","node_id":"dummy-node","type":0,"name":"Dummy Sensor",' // &
+            '"sn":"12345","meta":"","x":1000.00000000,"y":2000.00000000,"z":10.0000000000}'
 
         character(len=:), allocatable :: buf
         type(sensor_type)             :: sensor
@@ -350,8 +350,8 @@ contains
 
     logical function test10() result(stat)
         character(len=*), parameter :: JSON = &
-            '{ "id": "dummy-target", "name": "Dummy Target", "meta": "", ' // &
-            '"state": 1, "x": 1000.00000000, "y": 2000.00000000, "z": 10.0000000000 }'
+            '{"id":"dummy-target","name":"Dummy Target","meta":"",' // &
+            '"state":1,"x":1000.00000000,"y":2000.00000000,"z":10.0000000000}'
 
         character(len=:), allocatable :: buf
         type(target_type)             :: target

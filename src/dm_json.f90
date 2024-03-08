@@ -105,14 +105,14 @@ contains
         type(beat_type), intent(inout) :: beat !! Beat type.
         character(len=:), allocatable  :: json !! Alloctable JSON string.
 
-        json = '{ "node_id": "'  // trim(beat%node_id)     // '",' // &
-               ' "address": "'   // trim(beat%address)     // '",' // &
-               ' "client": "'    // trim(beat%client)      // '",' // &
-               ' "time_sent": "' // trim(beat%time_sent)   // '",' // &
-               ' "time_recv": "' // trim(beat%time_recv)   // '",' // &
-               ' "error": '      // dm_itoa(beat%error)    // ','  // &
-               ' "interval": '   // dm_itoa(beat%interval) // ','  // &
-               ' "uptime": '     // dm_itoa(beat%uptime)   //  ' }'
+        json = '{"node_id":"'  // trim(beat%node_id)     // '",' // &
+               '"address":"'   // trim(beat%address)     // '",' // &
+               '"client":"'    // trim(beat%client)      // '",' // &
+               '"time_sent":"' // trim(beat%time_sent)   // '",' // &
+               '"time_recv":"' // trim(beat%time_recv)   // '",' // &
+               '"error":'      // dm_itoa(beat%error)    // ','  // &
+               '"interval":'   // dm_itoa(beat%interval) // ','  // &
+               '"uptime":'     // dm_itoa(beat%uptime)   // '}'
     end function json_from_beat
 
     function json_from_beats(beats) result(json)
@@ -134,13 +134,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(beats(i)) // ','
+                json = json // dm_json_from(beats(i)) // ','
             else
-                json = json // ' ' // dm_json_from(beats(i))
+                json = json // dm_json_from(beats(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_beats
 
     function json_from_data_point(data_point) result(json)
@@ -149,8 +149,8 @@ contains
         type(dp_type), intent(inout)  :: data_point !! Data point type.
         character(len=:), allocatable :: json       !! Alloctable JSON string.
 
-        json = '{ "x": "' // trim(data_point%x)    // '",' // &
-               ' "y": '   // dm_ftoa(data_point%y) // ' }'
+        json = '{"x":"' // trim(data_point%x)    // '",' // &
+               '"y":'   // dm_ftoa(data_point%y) // '}'
     end function json_from_data_point
 
     function json_from_data_points(data_points) result(json)
@@ -172,13 +172,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(data_points(i)) // ','
+                json = json // dm_json_from(data_points(i)) // ','
             else
-                json = json // ' ' // dm_json_from(data_points(i))
+                json = json // dm_json_from(data_points(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_data_points
 
     function json_from_log(log) result(json)
@@ -187,15 +187,15 @@ contains
         type(log_type), intent(inout) :: log  !! Log type.
         character(len=:), allocatable :: json !! Alloctable JSON string.
 
-        json = '{ "id": "'       // trim(log%id)        // '",' // &
-               ' "level": '      // dm_itoa(log%level)  // ','  // &
-               ' "error": '      // dm_itoa(log%error)  // ','  // &
-               ' "timestamp": "' // trim(log%timestamp) // '",' // &
-               ' "node_id": "'   // trim(log%node_id)   // '",' // &
-               ' "sensor_id": "' // trim(log%sensor_id) // '",' // &
-               ' "target_id": "' // trim(log%target_id) // '",' // &
-               ' "observ_id": "' // trim(log%observ_id) // '",' // &
-               ' "message": "'   // trim(log%message)   // '" }'
+        json = '{"id":"'       // trim(log%id)        // '",' // &
+               '"level":'      // dm_itoa(log%level)  // ','  // &
+               '"error":'      // dm_itoa(log%error)  // ','  // &
+               '"timestamp":"' // trim(log%timestamp) // '",' // &
+               '"node_id":"'   // trim(log%node_id)   // '",' // &
+               '"sensor_id":"' // trim(log%sensor_id) // '",' // &
+               '"target_id":"' // trim(log%target_id) // '",' // &
+               '"observ_id":"' // trim(log%observ_id) // '",' // &
+               '"message":"'   // trim(log%message)   // '"}'
     end function json_from_log
 
     function json_from_logs(logs) result(json)
@@ -217,13 +217,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(logs(i)) // ','
+                json = json // dm_json_from(logs(i)) // ','
             else
-                json = json // ' ' // dm_json_from(logs(i))
+                json = json // dm_json_from(logs(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_logs
 
     function json_from_node(node) result(json)
@@ -232,12 +232,12 @@ contains
         type(node_type), intent(inout) :: node !! Node type.
         character(len=:), allocatable  :: json !! Alloctable JSON string.
 
-        json = '{ "id": "'  // trim(node%id)   // '",' // &
-               ' "name": "' // trim(node%name) // '",' // &
-               ' "meta": "' // trim(node%meta) // '",' // &
-               ' "x": '     // dm_ftoa(node%x) // ','  // &
-               ' "y": '     // dm_ftoa(node%y) // ','  // &
-               ' "z": '     // dm_ftoa(node%z) // ' }'
+        json = '{"id":"'  // trim(node%id)   // '",' // &
+               '"name":"' // trim(node%name) // '",' // &
+               '"meta":"' // trim(node%meta) // '",' // &
+               '"x":'     // dm_ftoa(node%x) // ','  // &
+               '"y":'     // dm_ftoa(node%y) // ','  // &
+               '"z":'     // dm_ftoa(node%z) // '}'
     end function json_from_node
 
     function json_from_nodes(nodes) result(json)
@@ -259,13 +259,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(nodes(i)) // ','
+                json = json // dm_json_from(nodes(i)) // ','
             else
-                json = json // ' ' // dm_json_from(nodes(i))
+                json = json // dm_json_from(nodes(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_nodes
 
     function json_from_observ(observ) result(json)
@@ -282,65 +282,65 @@ contains
         receivers = '['
 
         do i = 1, observ%nreceivers
-            receivers = receivers // ' "' // trim(observ%receivers(i)) // '"'
+            receivers = receivers // '"' // trim(observ%receivers(i)) // '"'
             if (i < observ%nreceivers) receivers = receivers // ','
         end do
 
-        receivers = receivers // ' ]'
+        receivers = receivers // ']'
 
         ! Requests and responses,
         requests = '['
 
         do i = 1, observ%nrequests
             requests = requests // &
-            ' { "name": "'      // trim(observ%requests(i)%name)             // '",' // &
-            ' "timestamp": "'   // trim(observ%requests(i)%timestamp)        // '",' // &
-            ' "request": "'     // json_escape(observ%requests(i)%request)   // '",' // &
-            ' "response": "'    // json_escape(observ%requests(i)%response)  // '",' // &
-            ' "delimiter": "'   // json_escape(observ%requests(i)%delimiter) // '",' // &
-            ' "pattern": "'     // json_escape(observ%requests(i)%pattern)   // '",' // &
-            ' "delay": '        // dm_itoa(observ%requests(i)%delay)         // ','  // &
-            ' "error": '        // dm_itoa(observ%requests(i)%error)         // ','  // &
-            ' "mode": '         // dm_itoa(observ%requests(i)%mode)          // ','  // &
-            ' "retries": '      // dm_itoa(observ%requests(i)%retries)       // ','  // &
-            ' "state": '        // dm_itoa(observ%requests(i)%state)         // ','  // &
-            ' "timeout": '      // dm_itoa(observ%requests(i)%timeout)       // ','  // &
-            ' "nresponses": '   // dm_itoa(observ%requests(i)%nresponses)    // ','  // &
-            ' "responses": ['
+            '{"name":"'      // trim(observ%requests(i)%name)             // '",' // &
+            '"timestamp":"'  // trim(observ%requests(i)%timestamp)        // '",' // &
+            '"request":"'    // json_escape(observ%requests(i)%request)   // '",' // &
+            '"response":"'   // json_escape(observ%requests(i)%response)  // '",' // &
+            '"delimiter":"'  // json_escape(observ%requests(i)%delimiter) // '",' // &
+            '"pattern":"'    // json_escape(observ%requests(i)%pattern)   // '",' // &
+            '"delay":'       // dm_itoa(observ%requests(i)%delay)         // ','  // &
+            '"error":'       // dm_itoa(observ%requests(i)%error)         // ','  // &
+            '"mode":'        // dm_itoa(observ%requests(i)%mode)          // ','  // &
+            '"retries":'     // dm_itoa(observ%requests(i)%retries)       // ','  // &
+            '"state":'       // dm_itoa(observ%requests(i)%state)         // ','  // &
+            '"timeout":'     // dm_itoa(observ%requests(i)%timeout)       // ','  // &
+            '"nresponses":'  // dm_itoa(observ%requests(i)%nresponses)    // ','  // &
+            '"responses":['
 
             do j = 1, observ%requests(i)%nresponses
                 requests = requests // &
-                ' { "name": "' // trim(observ%requests(i)%responses(j)%name)     // '",' // &
-                ' "unit": "'   // trim(observ%requests(i)%responses(j)%unit)     // '",' // &
-                ' "type": '    // dm_itoa(observ%requests(i)%responses(j)%type)  // ','  // &
-                ' "error": '   // dm_itoa(observ%requests(i)%responses(j)%error) // ','  // &
-                ' "value": '   // dm_ftoa(observ%requests(i)%responses(j)%value) // ' }'
+                '{"name":"' // trim(observ%requests(i)%responses(j)%name)     // '",' // &
+                '"unit":"'  // trim(observ%requests(i)%responses(j)%unit)     // '",' // &
+                '"type":'   // dm_itoa(observ%requests(i)%responses(j)%type)  // ','  // &
+                '"error":'  // dm_itoa(observ%requests(i)%responses(j)%error) // ','  // &
+                '"value":'  // dm_ftoa(observ%requests(i)%responses(j)%value) // '}'
 
                 if (j < observ%requests(i)%nresponses) requests = requests // ','
             end do
 
-            requests = requests // ' ]' // ' }'
+            requests = requests // ']' // '}'
             if (i < observ%nrequests) requests = requests // ','
         end do
 
-        requests = requests // ' ]'
+        requests = requests // ']'
 
         ! Complete JSON.
-        json = '{ "id": "'       // trim(observ%id)            // '",' // &
-               ' "node_id": "'   // trim(observ%node_id)       // '",' // &
-               ' "sensor_id": "' // trim(observ%sensor_id)     // '",' // &
-               ' "target_id": "' // trim(observ%target_id)     // '",' // &
-               ' "name": "'      // trim(observ%name)          // '",' // &
-               ' "timestamp": "' // trim(observ%timestamp)     // '",' // &
-               ' "source": "'    // trim(observ%source)        // '",' // &
-               ' "path": "'      // json_escape(observ%path)   // '",' // &
-               ' "priority": '   // dm_itoa(observ%priority)   // ','  // &
-               ' "error": '      // dm_itoa(observ%error)      // ','  // &
-               ' "next": '       // dm_itoa(observ%next)       // ','  // &
-               ' "nreceivers": ' // dm_itoa(observ%nreceivers) // ','  // &
-               ' "nrequests": '  // dm_itoa(observ%nrequests)  // ','  // &
-               ' "receivers": '  // receivers                  // ','  // &
-               ' "requests": '   // requests                   // ' }'
+        json = '{"id":"'       // trim(observ%id)            // '",' // &
+               '"node_id":"'   // trim(observ%node_id)       // '",' // &
+               '"sensor_id":"' // trim(observ%sensor_id)     // '",' // &
+               '"target_id":"' // trim(observ%target_id)     // '",' // &
+               '"name":"'      // trim(observ%name)          // '",' // &
+               '"timestamp":"' // trim(observ%timestamp)     // '",' // &
+               '"source":"'    // trim(observ%source)        // '",' // &
+               '"path":"'      // json_escape(observ%path)   // '",' // &
+               '"priority":'   // dm_itoa(observ%priority)   // ','  // &
+               '"error":'      // dm_itoa(observ%error)      // ','  // &
+               '"next":'       // dm_itoa(observ%next)       // ','  // &
+               '"nreceivers":' // dm_itoa(observ%nreceivers) // ','  // &
+               '"nrequests":'  // dm_itoa(observ%nrequests)  // ','  // &
+               '"receivers":'  // receivers                  // ','  // &
+               '"requests":'   // requests                   // '}'
     end function json_from_observ
 
     function json_from_observs(observs) result(json)
@@ -362,13 +362,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(observs(i)) // ','
+                json = json // dm_json_from(observs(i)) // ','
             else
-                json = json // ' ' // dm_json_from(observs(i))
+                json = json // dm_json_from(observs(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_observs
 
     function json_from_sensor(sensor) result(json)
@@ -377,15 +377,15 @@ contains
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
-        json = '{ "id": "'     // trim(sensor%id)      // '",' // &
-               ' "node_id": "' // trim(sensor%node_id) // '",' // &
-               ' "type": '     // dm_itoa(sensor%type) // ','  // &
-               ' "name": "'    // trim(sensor%name)    // '",' // &
-               ' "sn": "'      // trim(sensor%sn)      // '",' // &
-               ' "meta": "'    // trim(sensor%meta)    // '",' // &
-               ' "x": '        // dm_ftoa(sensor%x)    // ','  // &
-               ' "y": '        // dm_ftoa(sensor%y)    // ','  // &
-               ' "z": '        // dm_ftoa(sensor%z)    // ' }'
+        json = '{"id":"'     // trim(sensor%id)      // '",' // &
+               '"node_id":"' // trim(sensor%node_id) // '",' // &
+               '"type":'     // dm_itoa(sensor%type) // ','  // &
+               '"name":"'    // trim(sensor%name)    // '",' // &
+               '"sn":"'      // trim(sensor%sn)      // '",' // &
+               '"meta":"'    // trim(sensor%meta)    // '",' // &
+               '"x":'        // dm_ftoa(sensor%x)    // ','  // &
+               '"y":'        // dm_ftoa(sensor%y)    // ','  // &
+               '"z":'        // dm_ftoa(sensor%z)    // '}'
     end function json_from_sensor
 
     function json_from_sensors(sensors) result(json)
@@ -407,13 +407,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(sensors(i)) // ','
+                json = json // dm_json_from(sensors(i)) // ','
             else
-                json = json // ' ' // dm_json_from(sensors(i))
+                json = json // dm_json_from(sensors(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_sensors
 
     function json_from_target(target) result(json)
@@ -422,13 +422,13 @@ contains
         type(target_type), intent(inout) :: target !! Sensor type.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
-        json = '{ "id": "'  // trim(target%id)       // '",' // &
-               ' "name": "' // trim(target%name)     // '",' // &
-               ' "meta": "' // trim(target%meta)     // '",' // &
-               ' "state": ' // dm_itoa(target%state) // ','  // &
-               ' "x": '     // dm_ftoa(target%x)     // ','  // &
-               ' "y": '     // dm_ftoa(target%y)     // ','  // &
-               ' "z": '     // dm_ftoa(target%z)     // ' }'
+        json = '{"id":"'  // trim(target%id)       // '",' // &
+               '"name":"' // trim(target%name)     // '",' // &
+               '"meta":"' // trim(target%meta)     // '",' // &
+               '"state":' // dm_itoa(target%state) // ','  // &
+               '"x":'     // dm_ftoa(target%x)     // ','  // &
+               '"y":'     // dm_ftoa(target%y)     // ','  // &
+               '"z":'     // dm_ftoa(target%z)     // '}'
     end function json_from_target
 
     function json_from_targets(targets) result(json)
@@ -450,13 +450,13 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // ' ' // dm_json_from(targets(i)) // ','
+                json = json // dm_json_from(targets(i)) // ','
             else
-                json = json // ' ' // dm_json_from(targets(i))
+                json = json // dm_json_from(targets(i))
             end if
         end do
 
-        json = json // ' ]'
+        json = json // ']'
     end function json_from_targets
 
     integer function json_write_beat(beat, unit) result(rc)
@@ -499,12 +499,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(beats(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(beats(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_beats
@@ -549,12 +549,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(data_points(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(data_points(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_data_points
@@ -599,12 +599,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(logs(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(logs(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_logs
@@ -649,12 +649,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(nodes(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(nodes(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_nodes
@@ -699,12 +699,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(observs(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(observs(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_observs
@@ -749,12 +749,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(sensors(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(sensors(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_sensors
@@ -799,12 +799,12 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(" ", a)', advance='no', iostat=stat) dm_json_from(targets(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(targets(i))
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return
         end do
 
-        write (unit_, '(" ]")', iostat=stat)
+        write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_targets
