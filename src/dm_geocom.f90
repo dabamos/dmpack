@@ -502,7 +502,8 @@ contains
             ! Prepare request.
             request%timestamp = dm_time_now()
 
-            ! Send request to sensor.
+            ! Flush buffers and send request to sensor.
+            rc = dm_tty_flush(this%tty)
             rc = dm_tty_write(this%tty, request)
 
             if (dm_is_error(rc)) then

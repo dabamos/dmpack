@@ -370,7 +370,6 @@ contains
 
             if (debug_) then
                 call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
-                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
             end if
 
             ! Prepare request.
@@ -379,13 +378,21 @@ contains
             request%response  = ' '
             request%timestamp = dm_time_now()
 
+            ! Flush buffers.
+            rc = dm_tty_flush(tty)
+
+            if (debug_) then
+                if (dm_is_error(rc)) call dm_log_warning('failed to flush buffers', observ=observ, error=rc)
+                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
+            end if
+
             ! Send request to sensor.
             rc = dm_tty_write(tty, request)
 
             if (dm_is_error(rc)) then
                 request%error = rc
-                call dm_log_error('failed to write ' // request_name_string(request%name, i) // &
-                                  ' to TTY ' // app%tty, observ=observ, error=rc)
+                call dm_log_error('failed to write ' // request_name_string(request%name, i) // ' to TTY ' // &
+                                  app%tty, observ=observ, error=rc)
                 cycle req_loop
             end if
 

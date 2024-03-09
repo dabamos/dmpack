@@ -142,8 +142,11 @@ contains
 
     subroutine dm_logger_log_args(level, message, source, observ, timestamp, error)
         !! Sends a log message to the message queue (fire & forget). Only the
-        !! log level is validated.
-        use :: dm_ascii
+        !! log level is validated. An invalid level is set to `LVL_ERROR`.
+        !!
+        !! The passed log message is not validated, and non-printable
+        !! characters are accepted. Make sure to only log escaped message
+        !! strings!
         use :: dm_time
         use :: dm_uuid
 
@@ -165,7 +168,7 @@ contains
 
         ! Set log data.
         log%id      = dm_uuid4()
-        log%message = dm_ascii_escape(message)
+        log%message = adjustl(message)
 
         if (present(source)) then
             log%source = source

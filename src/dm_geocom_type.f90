@@ -670,9 +670,9 @@ contains
         if (.not. dm_is_error(rc)) return
 
         if (type >= 1 .and. type <= GEOCOM_TYPE_LAST) then
-            call dm_error_out(rc, 'invalid GeoCOM parameter ' // trim(GEOCOM_TYPE_NAMES(type)))
+            call dm_error_out(rc, 'invalid GeoCOM type ' // trim(GEOCOM_TYPE_NAMES(type)))
         else
-            call dm_error_out(rc, 'invalid GeoCOM parameter')
+            call dm_error_out(rc, 'unknown GeoCOM type')
         end if
     end function dm_geocom_type_validated
 end module dm_geocom_type

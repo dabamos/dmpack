@@ -83,24 +83,24 @@ The reference implementation of the OGC Sensor Observation Service (SOS) in
 Java, by 52°North Spatial Information Research GmbH. Offers an interoperable
 interface for publishing and querying sensor data and meta data. Additional
 client applications enable analysis and visualisation of the measurement data.
-(GPLv2)
+The project is mostly inactive. (GPLv2)
 link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
 monitoring and alerting solution built with Node.js, MariaDB, and React. (MIT)
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
 SensorThings (FROST) is the reference implementation of the OGC SensorThings API
 in Java. The project provides an HTTP- and MQTT-based message bus for data
 transmission between client and server. Developed by Fraunhofer-Institut für
-Optronik, Systemtechnik und Bildauswertung (IOSB). (LGPLv3)
+Optronik, Systemtechnik und Bildauswertung (IOSB), Karlsruhe. (LGPLv3)
 link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
-Further development appears to have been stopped. (GPLv3)
+The project appears to be abandoned. (GPLv3)
 link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
-observations from monitoring sensors. The project also provides a graphical user
-interface and a RESTful web API to automate administration procedures. Developed
-by Istituto Scienze della Terra, University of Applied Sciences and Arts of
-Southern Switzerland. (GPLv2)
+observations from monitoring sensors, but not in active development anymore. The
+project also provides a graphical user interface and a RESTful web API to
+automate administration procedures. Developed by Istituto Scienze della Terra,
+University of Applied Sciences and Arts of Southern Switzerland. (GPLv2)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
@@ -116,7 +116,8 @@ link:https://github.com/project-mjolnir[Project Mjolnir]:: An open source
 client–server IoT architecture for scientific sensor networks written in
 Python, by University of Alabama in Huntsville and NASA. Includes a sensor
 client for data logging, uplink and control, as well as a server component to
-store, serve/display, and monitor data from remote sensors. (MIT)
+store, serve/display, and monitor data from remote sensors. Apparently, the
+development of the software is not continued. (MIT)
 link:http://www.agt.bme.hu/ulyxes/[Ulyxes]:: An open source project in Python to
 control robotic total stations (RTS) and other sensors, and to publish
 observation results on web based maps. Developed at the Department of Geodesy
