@@ -7,7 +7,9 @@ module dm_geocom
     !! for C/C++ and Visual Basic. Functions are given more memorable names,
     !! without any sub-system prefix. Structured types have been removed
     !! altogether. If invalid parameters are passed to the GeoCOM methods, they
-    !! will be replaced with their default values.
+    !! will be replaced with their default values. Open the serial port with
+    !! argument `verbose` set to `.true.` to output error messages to standard
+    !! error.
     !!
     !! The following example opens the TTY `/dev/ttyUSB0` at 115,200 baud, and
     !! calls the null procedure of the instrument (`COM_NullProc`):
@@ -24,6 +26,260 @@ module dm_geocom
     !!
     !! call geocom%close()
     !! ```
+    !!
+    !! ## GeoCOM Parameters and Named Types
+    !!
+    !! * `GEOCOM_AUT_CLOCKWISE`     – Direction close-wise.
+    !! * `GEOCOM_AUT_ANTICLOCKWISE` – Direction counter clock-wise.
+    !!
+    !! * `GEOCOM_IOS_BEEP_STDINTENS` – Standard intensity of beep expressed as percentage.
+    !!
+    !! ### GEOCOM_AUT_ADJMODE
+    !!
+    !! * `GEOCOM_AUT_NORM_MODE`   – Angle tolerance.
+    !! * `GEOCOM_AUT_POINT_MODE`  – Point tolerance.
+    !! * `GEOCOM_AUT_DEFINE_MODE` – System independent positioning tolerance.
+    !!
+    !! ### GEOCOM_AUT_ATRMODE
+    !!
+    !! * `GEOCOM_AUT_POSITION` – Positioning to Hz and V angle.
+    !! * `GEOCOM_AUT_TARGET`   – Positioning to a target in the env. of the Hz and V angle.
+    !!
+    !! ### GEOCOM_AUT_POSMODE
+    !!
+    !! * `GEOCOM_AUT_NORMAL`  – Fast positioning mode.
+    !! * `GEOCOM_AUT_PRECISE` – Exact positioning mode.
+    !! * `GEOCOM_AUT_FAST`    – For TM30/TS30.
+    !!
+    !! ### GEOCOM_BAP_TRSETTING
+    !!
+    !! * `GEOCOM_BAP_ATRSET_NORMAL`     – ATR is using no special flags or modes.
+    !! * `GEOCOM_BAP_ATRSET_LOWVIS_ON`  – ATR low vis mode on.
+    !! * `GEOCOM_BAP_ATRSET_LOWVIS_AON` – ATR low vis mode always on.
+    !! * `GEOCOM_BAP_ATRSET_SRANGE_ON`  – ATR high reflectivity mode on.
+    !! * `GEOCOM_BAP_ATRSET_SRANGE_AON` – ATR high reflectivity mode always on.
+    !!
+    !! ### GEOCOM_BAP_MEASURE_PRG
+    !!
+    !! * `GEOCOM_BAP_NO_MEAS`    – No measurements, take last one.
+    !! * `GEOCOM_BAP_NO_DIST`    – No dist. measurement, angles only.
+    !! * `GEOCOM_BAP_DEF_DIST`   – Default distance measurements.
+    !! * `GEOCOM_BAP_CLEAR_DIST` – Clear distances.
+    !! * `GEOCOM_BAP_STOP_TRK`   – Stop tracking.
+    !!
+    !! ### GEOCOM_BAP_PRISMTYPE
+    !!
+    !! * `GEOCOM_BAP_PRISM_ROUND`        – Leica Circular Prism.
+    !! * `GEOCOM_BAP_PRISM_MINI`         – Leica Mini Prism.
+    !! * `GEOCOM_BAP_PRISM_TAPE`         – Leica Reflector Tape.
+    !! * `GEOCOM_BAP_PRISM_360`          – Leica 360° Prism.
+    !! * `GEOCOM_BAP_PRISM_USER1`        – Not supported by TPS1200.
+    !! * `GEOCOM_BAP_PRISM_USER2`        – Not supported by TPS1200.
+    !! * `GEOCOM_BAP_PRISM_USER3`        – Not supported by TPS1200.
+    !! * `GEOCOM_BAP_PRISM_360_MINI`     – Leica Mini 360° Prism
+    !! * `GEOCOM_BAP_PRISM_MINI_ZERO`    – Leica Mini Zero Prism.
+    !! * `GEOCOM_BAP_PRISM_USER`         – User Defined Prism.
+    !! * `GEOCOM_BAP_PRISM_NDS_TAPE`     – Leica HDS Target.
+    !! * `GEOCOM_BAP_PRISM_GRZ121_ROUND` – GRZ121 360º Prism for Machine Guidance.
+    !! * `GEOCOM_BAP_PRISM_MA_MPR122`    – MPR122 360º Prism for Machine Guidance.
+    !!
+    !! ### GEOCOM_BAP_REFLTYPE
+    !!
+    !! * `GEOCOM_BAP_REFL_UNDEF` – Reflector not defined.
+    !! * `GEOCOM_BAP_REFL_PRISM` – Reflector prism.
+    !! * `GEOCOM_BAP_REFL_TAPE`  – Reflector tape.
+    !!
+    !! ### GEOCOM_BAP_USER_MEASPRG
+    !!
+    !! * `GEOCOM_BAP_SINGLE_REF_STANDARD`  – IR standard.
+    !! * `GEOCOM_BAP_SINGLE_REF_FAST`      – IR fast.
+    !! * `GEOCOM_BAP_SINGLE_REF_VISIBLE`   – LO standard.
+    !! * `GEOCOM_BAP_SINGLE_RLESS_VISIBLE` – RL standard.
+    !! * `GEOCOM_BAP_CONT_REF_STANDARD`    – IR tracking.
+    !! * `GEOCOM_BAP_CONT_REF_FAST`        – Not supported by TPS1200.
+    !! * `GEOCOM_BAP_CONT_RLESS_VISIBLE`   – RL fast tracking.
+    !! * `GEOCOM_BAP_AVG_REF_STANDARD`     – IR average.
+    !! * `GEOCOM_BAP_AVG_REF_VISIBLE`      – LO average.
+    !! * `GEOCOM_BAP_AVG_RLESS_VISIBLE`    – RL average.
+    !! * `GEOCOM_BAP_CONT_REF_SYNCHRO`     – IR synchro tracking.
+    !! * `GEOCOM_BAP_SINGLE_REF_PRECISE`   – IR precise (TM30/TS30).
+    !!
+    !! ### GEOCOM_BAP_TARGET_TYPE
+    !!
+    !! * `GEOCOM_BAP_REFL_USE`  – With reflector.
+    !! * `GEOCOM_BAP_REFL_LESS` – Without reflector.
+    !!
+    !! ### GEOCOM_COM_BAUD_RATE
+    !!
+    !! * `GEOCOM_COM_BAUD_38400`  – 38400 baud.
+    !! * `GEOCOM_COM_BAUD_19200`  – 19200 baud (default rate).
+    !! * `GEOCOM_COM_BAUD_9600`   – 9600 baud.
+    !! * `GEOCOM_COM_BAUD_4800`   – 4800 baud.
+    !! * `GEOCOM_COM_BAUD_2400`   – 2400 baud.
+    !! * `GEOCOM_COM_BAUD_115200` – 115200 baud.
+    !! * `GEOCOM_COM_BAUD_57600`  – 57600 baud.
+    !!
+    !! ### GEOCOM_COM_FORMAT
+    !!
+    !! * `GEOCOM_COM_ASCII`  – ASCII protocol.
+    !! * `GEOCOM_COM_BINARY` – Binary protocol.
+    !!
+    !! ### GEOCOM_COM_TPS_STARTUP_MODE
+    !!
+    !! * `GEOCOM_COM_STARTUP_LOCAL`  – Not supported by TPS1200.
+    !! * `GEOCOM_COM_STARTUP_REMOTE` – RPC is enabled (online mode).
+    !!
+    !! ### GEOCOM_COM_TPS_STOP_MODE
+    !!
+    !! * `GEOCOM_COM_STOP_SHUT_DOWN` – Power down instrument.
+    !! * `GEOCOM_COM_STOP_SLEEP`     – Not supported by TPS1200.
+    !!
+    !! ### GEOCOM_CSV_POWER_PATH
+    !!
+    !! * `GEOCOM_CSV_EXTERNAL_POWER` – Power source is external.
+    !! * `GEOCOM_CSV_INTERNAL_POWER` – Power source is the internal battery.
+    !!
+    !! ### GEOCOM_TPS_DEVICE_CLASS
+    !!
+    !! * `GEOCOM_TPS_CLASS_1100` – TPS1000 family member, 1 mgon, 3 ".
+    !! * `GEOCOM_TPS_CLASS_1700` – TPS1000 family member, 0.5 mgon, 1.5 ".
+    !! * `GEOCOM_TPS_CLASS_1800` – TPS1000 family member, 0.3 mgon, 1 ".
+    !! * `GEOCOM_TPS_CLASS_5000` – TPS2000 family member.
+    !! * `GEOCOM_TPS_CLASS_6000` – TPS2000 family member.
+    !! * `GEOCOM_TPS_CLASS_1500` – TPS1000 family member.
+    !! * `GEOCOM_TPS_CLASS_2003` – TPS2000 family member.
+    !! * `GEOCOM_TPS_CLASS_5005` – TPS5000 family member.
+    !! * `GEOCOM_TPS_CLASS_5100` – TPS5000 family member.
+    !! * `GEOCOM_TPS_CLASS_1102` – TPS1100 family member, 2 ".
+    !! * `GEOCOM_TPS_CLASS_1103` – TPS1100 family member, 3 ".
+    !! * `GEOCOM_TPS_CLASS_1105` – TPS1100 family member, 5 ".
+    !! * `GEOCOM_TPS_CLASS_1101` – TPS1100 family member, 1 ".
+    !! * `GEOCOM_TPS_CLASS_1202` – TPS1200 family member, 2 ".
+    !! * `GEOCOM_TPS_CLASS_1203` – TPS1200 family member, 3 ".
+    !! * `GEOCOM_TPS_CLASS_1205` – TPS1200 family member, 5 ".
+    !! * `GEOCOM_TPS_CLASS_1201` – TPS1200 family member, 1 ".
+    !! * `GEOCOM_TPS_CLASS_TX30` – TS30,TM30 family member, 0.5 ".
+    !! * `GEOCOM_TPS_CLASS_TX31` – TS30,TM30 family member, 1 ".
+    !!
+    !! ### GEOCOM_TPS_DEVICE_TYPE
+    !!
+    !! * `GEOCOM_TPS_DEVICE_T`      – Theodolite without built-in EDM.
+    !! * `GEOCOM_TPS_DEVICE_MOT`    – Motorized device.
+    !! * `GEOCOM_TPS_DEVICE_ATR`    – Automatic Target Recognition.
+    !! * `GEOCOM_TPS_DEVICE_EGL`    – Electronic Guide Light.
+    !! * `GEOCOM_TPS_DEVICE_DB`     – Reserved (Database, not GSI).
+    !! * `GEOCOM_TPS_DEVICE_DL`     – Diode laser.
+    !! * `GEOCOM_TPS_DEVICE_LP`     – Laser plumbed.
+    !! * `GEOCOM_TPS_DEVICE_TC1`    – Tachymeter (TCW1).
+    !! * `GEOCOM_TPS_DEVICE_TC2`    – Tachymeter (TCW2).
+    !! * `GEOCOM_TPS_DEVICE_TC`     – Tachymeter (TCW3).
+    !! * `GEOCOM_TPS_DEVICE_TCR`    – Tachymeter (TCW3 with red laser).
+    !! * `GEOCOM_TPS_DEVICE_ATC`    – Autocollimation lamp (used only PMU).
+    !! * `GEOCOM_TPS_DEVICE_LPNT`   – Laserpointer.
+    !! * `GEOCOM_TPS_DEVICE_RL_EXT` – Reflectorless EDM with extended range (Pinpoint R100, R300).
+    !! * `GEOCOM_TPS_DEVICE_PS`     – Power Search.
+    !! * `GEOCOM_TPS_DEVICE_SIM`    – Runs on simulation, no hardware.
+    !!
+    !! ### GEOCOM_TPS_REFLESS_CLASS
+    !!
+    !! * `GEOCOM_TPS_REFLESS_NONE`  – None.
+    !! * `GEOCOM_TPS_REFLESS_R100`  – Pinpoint R100.
+    !! * `GEOCOM_TPS_REFLESS_R300`  – Pinpoint R300.
+    !! * `GEOCOM_TPS_REFLESS_R400`  – Pinpoint R400.
+    !! * `GEOCOM_TPS_REFLESS_R1000` – Pinpoint R1000.
+    !!
+    !! ### GEOCOM_EDM_EGLINTENSITY_TYPE
+    !!
+    !! * `GEOCOM_EDM_EGLINTEN_OFF`  – Off.
+    !! * `GEOCOM_EDM_EGLINTEN_LOW`  – Low intensity.
+    !! * `GEOCOM_EDM_EGLINTEN_MID`  – Medium intensity.
+    !! * `GEOCOM_EDM_EGLINTEN_HIGH` – High intensity.
+    !!
+    !! ### GEOCOM_EDM_MODE
+    !!
+    !! * `GEOCOM_EDM_MODE_NOT_USED`   – Initial value.
+    !! * `GEOCOM_EDM_SINGLE_TAPE`     – IR Standard Reflector Tape.
+    !! * `GEOCOM_EDM_SINGLE_STANDARD` – IR Standard.
+    !! * `GEOCOM_EDM_SINGLE_FAST`     – IR Fast.
+    !! * `GEOCOM_EDM_SINGLE_LRANGE`   – LO Standard.
+    !! * `GEOCOM_EDM_SINGLE_SRANGE`   – RL Standard.
+    !! * `GEOCOM_EDM_CONT_STANDARD`   – Standard repeated measurement.
+    !! * `GEOCOM_EDM_CONT_DYNAMIC`    – IR Tacking.
+    !! * `GEOCOM_EDM_CONT_REFLESS`    – RL Tracking.
+    !! * `GEOCOM_EDM_CONT_FAST`       – Fast repeated measurement.
+    !! * `GEOCOM_EDM_AVERAGE_IR`      – IR Average.
+    !! * `GEOCOM_EDM_AVERAGE_SR`      – RL Average.
+    !! * `GEOCOM_EDM_AVERAGE_LR`      – LO Average.
+    !! * `GEOCOM_EDM_PRECISE_IR`      – IR Precise (TM30, TS30).
+    !! * `GEOCOM_EDM_PRECISE_TAPE`    – IR Precise Reflector Tape (TM30, TS30).
+    !!
+    !! ### GEOCOM_FTR_DEVICETYPE
+    !!
+    !! * `GEOCOM_FTR_DEVICE_INTERNAL` – Internal memory.
+    !! * `GEOCOM_FTR_DEVICE_PCPARD`   – Memory card.
+    !!
+    !! ### GEOCOM_FTR_FILETYPE
+    !!
+    !! * `GEOCOM_FTR_FILE_UNKNOWN` – Undocumented.
+    !! * `GEOCOM_FTR_FILE_IMAGES`  – Extension wildcard: `*.jpg`.
+    !!
+    !! ### GEOCOM_IMG_MEM_TYPE
+    !!
+    !! * `GEOCOM_IMG_INTERNAL_MEMORY` – Internal memory module.
+    !! * `GEOCOM_IMG_PC_CARD`         – External PC Card.
+    !!
+    !! ### GEOCOM_MOT_LOCK_STATUS
+    !!
+    !! * `GEOCOM_MOT_LOCKED_OUT` – Locked out.
+    !! * `GEOCOM_MOT_LOCKED_IN`  – Locked in.
+    !! * `GEOCOM_MOT_PREDICTION` – Prediction mode.
+    !!
+    !! ### GEOCOM_MOT_MODE
+    !!
+    !! * `GEOCOM_MOT_POSIT`   – Configured for relative positioning.
+    !! * `GEOCOM_MOT_OCONST`  – Configured for constant speed.
+    !! * `GEOCOM_MOT_MANUPOS` – Configured for manual positioning (default setting).
+    !! * `GEOCOM_MOT_LOCK`    – Configured as “Lock-in” controller.
+    !! * `GEOCOM_MOT_BREAK`   – Configured as “Brake” controller.
+    !! * `GEOCOM_MOT_TERM`    – Terminates the controller task.
+    !!
+    !! ### GEOCOM_MOT_STOPMODE
+    !!
+    !! * `GEOCOM_MOT_NORMAL`   – Slow down with current acceleration.
+    !! * `GEOCOM_MOT_SHUTDOWN` – Slow down by switch off power supply.
+    !!
+    !! ### GEOCOM_SUP_AUTO_POWER
+    !!
+    !! * `GEOCOM_SUP_POWER_DISABLED` – Instrument remains on.
+    !! * `GEOCOM_SUP_POWER_OFF`      – Turns off mechanism.
+    !!
+    !! ### GEOCOM_TMC_FACE
+    !!
+    !! * `GEOCOM_TMC_FACE_1` – Position 1 of telescope.
+    !! * `GEOCOM_TMC_FACE_2` – Position 2 of telescope.
+    !!
+    !! ### GEOCOM_TMC_FACE_DEF
+    !!
+    !! * `GEOCOM_TMC_FACE_NORMAL` – Face in normal position.
+    !! * `GEOCOM_TMC_FACE_TURN`   – Face turned.
+    !!
+    !! ### GEOCOM_TMC_INCLINE_PRG
+    !!
+    !! * `GEOCOM_TMC_MEA_INC`      – Use sensor (a priori sigma).
+    !! * `GEOCOM_TMC_AUTO_INC`     – Automatic mode (sensor/plane).
+    !! * `GEOCOM_TMC_PLANE_INC`    – Use plane (a priori sigma).
+    !!
+    !! ### GEOCOM_TMC_MEASURE_PRG
+    !!
+    !! * `GEOCOM_TMC_STOP`         – Stop measurement program.
+    !! * `GEOCOM_TMC_DEF_DIST`     – Default distance measurement program.
+    !! * `GEOCOM_TMC_CLEAR`        – `GEOCOM_TMC_STOP` and clear data.
+    !! * `GEOCOM_TMC_SIGNAL`       – Signal measurement (test function).
+    !! * `GEOCOM_TMC_DO_MEASURE`   – (Re-)start measurement task.
+    !! * `GEOCOM_TMC_RTRK_DIST`    – Distance-TRK measurement program.
+    !! * `GEOCOM_TMC_RED_TRK_DIST` – Reflectorless tracking.
+    !! * `GEOCOM_TMC_FREQUENCY`    – Frequency measurement (test).
+    !!
     use :: dm_error
     use :: dm_geocom_api
     use :: dm_geocom_error
@@ -47,6 +303,7 @@ module dm_geocom
         type(request_type) :: request                            !! Last request sent to sensor.
         type(tty_type)     :: tty                                !! TTY type for serial connection.
     contains
+        private
         ! Public class methods.
         procedure, public :: baud_rate    => geocom_baud_rate    !! Returns current baud rate.
         procedure, public :: close        => geocom_close        !! Closes TTY.

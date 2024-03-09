@@ -328,7 +328,7 @@ contains
     end subroutine dm_real64_to_int64
 
     pure elemental subroutine dm_real64_to_logical(f, l)
-        !! Converts 8-byte real to logical. If `f` is `0.0`, the result is
+        !! Converts 8-byte real to logical. If `f` equals `0.0`, the result is
         !! `.false.`, else `.true.`.
         real(kind=r8), intent(in)  :: f !! 8-byte real value.
         logical,       intent(out) :: l !! Logical value.

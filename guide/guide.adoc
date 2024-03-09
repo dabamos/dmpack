@@ -5094,8 +5094,8 @@ performed observations are forwarded to <<dmdb>>.
 | 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer
 | 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer
 | 4 | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean
-| 5 | `RESPONSE_TYPE_BYTE`    | Byte
-| 6 | `RESPONSE_TYPE_STRING`  | Byte string
+| 5 | `RESPONSE_TYPE_BYTE`    | byte
+| 6 | `RESPONSE_TYPE_STRING`  | byte string
 |===
 
 === Functions

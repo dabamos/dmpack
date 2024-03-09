@@ -212,7 +212,7 @@ contains
     end function dm_lua_escape
 
     integer function dm_lua_eval(lua, command) result(rc)
-        !! Executes Lua command passed in character string `cmd`.
+        !! Executes Lua command passed in character string `command`.
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
         character(len=*),     intent(in)    :: command !! Lua command to evaluate.
 

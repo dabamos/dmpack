@@ -229,7 +229,7 @@ contains
         if (.not. dm_id_valid(request%name)) return
 
         if (timestamp_) then
-            if (.not. dm_time_valid(request%timestamp)) return
+            if (.not. dm_time_valid(request%timestamp, strict=.true.)) return
         end if
 
         if (.not. dm_string_is_printable(request%request)) return

@@ -113,7 +113,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_ATA_SLDR_ADDRESS_ERROR     = 535   !! Address out of valid range.
     integer, parameter, public :: GRC_ATA_SLDR_INV_LOADFILE      = 536   !! Firmware file has invalid format.
     integer, parameter, public :: GRC_ATA_SLDR_UNSUPPORTED       = 537   !! Current (loaded) firmware does not support upload.
-    integer, parameter, public :: GRC_ATA_PS_NOT_READY           = 538   !! PS-System is not ready.
+    integer, parameter, public :: GRC_ATA_PS_NOT_READY           = 538   !! PowerSearch system is not ready.
     integer, parameter, public :: GRC_ATA_ATR_SYSTEM_ERR         = 539   !! ATR system error.
 
     integer, parameter, public :: GRC_EDM                        = 768   !! EDM error.
@@ -488,7 +488,7 @@ contains
             case (GRC_ATA_SLDR_UNSUPPORTED)
                 str = 'current (loaded) firmware does not support upload'
             case (GRC_ATA_PS_NOT_READY)
-                str = 'PS-System is not ready'
+                str = 'PowerSearch system is not ready'
             case (GRC_ATA_ATR_SYSTEM_ERR)
                 str = 'ATR system error'
 

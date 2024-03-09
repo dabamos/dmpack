@@ -5,11 +5,12 @@ module dm_sem
     use, intrinsic :: iso_c_binding, only: c_null_ptr
     use :: unix
     use :: dm_error
+    use :: dm_id
     implicit none (type, external)
     private
 
     integer, parameter, public :: SEM_MODE     = int(o'0660') !! Permissions.
-    integer, parameter, public :: SEM_NAME_LEN = 32           !! Max. semaphore identifier length.
+    integer, parameter, public :: SEM_NAME_LEN = ID_LEN + 1   !! Max. semaphore identifier length.
 
     type, public :: sem_type
         !! Opaque named semaphore type.

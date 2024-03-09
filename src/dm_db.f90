@@ -1967,7 +1967,7 @@ contains
         logical,          intent(in), optional :: threaded     !! Threaded access flag (off by default).
         integer,          intent(in), optional :: timeout      !! Busy timeout in mseconds (0 by default).
         logical,          intent(in), optional :: validate     !! Validate application id (off by default).
-        logical,          intent(in), optional :: wal          !! WAL mode flag (off by default).
+        logical,          intent(in), optional :: wal          !! WAL journal mode flag (off by default).
 
         integer :: flag, timeout_
         logical :: create_, foreign_keys_, threaded_, validate_, wal_
@@ -3278,14 +3278,14 @@ contains
     end function dm_db_select_target
 
     integer function dm_db_set_application_id(db, id) result(rc)
-        !! Set the 32-bit signed big-endian "Application ID" integer located at
+        !! Set the 32-bit signed big-endian “Application ID” integer located at
         !! offset 68 into the database header.
         !!
         !! Applications that use SQLite as their application file-format should
         !! set the Application ID integer to a unique integer so that utilities
-        !! such as file(1) can determine the specific file type rather than
-        !! just reporting "SQLite3 Database". A list of assigned application
-        !! IDs can be seen by consulting the magic.txt file in the SQLite
+        !! such as _file(1)_ can determine the specific file type rather than
+        !! just reporting “SQLite3 Database”. A list of assigned application
+        !! IDs can be seen by consulting the `magic.txt` file in the SQLite
         !! source repository.
         !!
         !! The function returns the following error codes:

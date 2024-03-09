@@ -255,7 +255,7 @@ contains
         if (.not. dm_id_valid(observ%name)) return
 
         if (timestamp_) then
-            if (.not. dm_time_valid(observ%timestamp)) return
+            if (.not. dm_time_valid(observ%timestamp, strict=.true.)) return
         end if
 
         if (len_trim(observ%source) > 0) then
