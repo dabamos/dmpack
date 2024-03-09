@@ -5148,7 +5148,7 @@ respective function without prefix.
 | <<lua-api-geocom-fine-adjust,geocom_fine_adjust>>                                     | `AUT_FineAdjust`
 | <<lua-api-geocom-get-angle,geocom_get_angle>>                                         | `TMC_GetAngle5`
 | <<lua-api-geocom-get-angle-complete,geocom_get_angle_complete>>                       | `TMC_GetAngle1`
-| <<lua-api-geocom-get-angular-correction-status,geocom_get_angular_correction_status>> | `TMC_GetAngSwitch`
+| <<lua-api-geocom-get-angle-correction-status,geocom_get_angle_correction>>            | `TMC_GetAngSwitch`
 | <<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction>>       | `TMC_GetAtmCorr`
 | <<lua-api-geocom-get-atmospheric-ppm,geocom_get_atmospheric_ppm>>                     | `TMC_GetAtmPpm`
 | <<lua-api-geocom-get-atr-error,geocom_get_atr_error>>                                 | `TMC_IfDataAzeCorrError`
@@ -5377,7 +5377,7 @@ Returns request of *TMC_GetAngle1* procedure. Creates request for returning a
 complete angle measurement. The function starts an angle and, depending on the
 configuration, an inclination measurement, and returns the results.
 
-==== geocom_get_angular_correction_status() [[lua-api-geocom-get-angular-correction-status]]
+==== geocom_get_angle_correction() [[lua-api-geocom-get-angle-correction-status]]
 
 Returns request of *TMC_GetAngSwitch* procedure. Creates request for getting the
 angular correction status.

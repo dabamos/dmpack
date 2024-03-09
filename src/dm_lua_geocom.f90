@@ -29,7 +29,7 @@ module dm_lua_geocom
     private :: lua_geocom_fine_adjust
     private :: lua_geocom_get_angle
     private :: lua_geocom_get_angle_complete
-    private :: lua_geocom_get_angular_correction_status
+    private :: lua_geocom_get_angle_correction
     private :: lua_geocom_get_atmospheric_correction
     private :: lua_geocom_get_atmospheric_ppm
     private :: lua_geocom_get_atr_error
@@ -156,7 +156,7 @@ contains
         !! * `geocom_fine_adjust()`
         !! * `geocom_get_angle()`
         !! * `geocom_get_angle_complete()`
-        !! * `geocom_get_angular_correction_status()`
+        !! * `geocom_get_angle_correction()`
         !! * `geocom_get_atmospheric_correction()`
         !! * `geocom_get_atmospheric_ppm()`
         !! * `geocom_get_atr_error()`
@@ -431,7 +431,7 @@ contains
         call dm_lua_register(lua, 'geocom_fine_adjust',                   lua_geocom_fine_adjust)
         call dm_lua_register(lua, 'geocom_get_angle',                     lua_geocom_get_angle)
         call dm_lua_register(lua, 'geocom_get_angle_complete',            lua_geocom_get_angle_complete)
-        call dm_lua_register(lua, 'geocom_get_angular_correction_status', lua_geocom_get_angular_correction_status)
+        call dm_lua_register(lua, 'geocom_get_angle_correction', lua_geocom_get_angle_correction)
         call dm_lua_register(lua, 'geocom_get_atmospheric_correction',    lua_geocom_get_atmospheric_correction)
         call dm_lua_register(lua, 'geocom_get_atmospheric_ppm',           lua_geocom_get_atmospheric_ppm)
         call dm_lua_register(lua, 'geocom_get_atr_error',                 lua_geocom_get_atr_error)
@@ -723,17 +723,17 @@ contains
         n = 1
     end function lua_geocom_get_angle_complete
 
-    integer(kind=c_int) function lua_geocom_get_angular_correction_status(ptr) bind(c) result(n)
+    integer(kind=c_int) function lua_geocom_get_angle_correction(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_angular_correction_status(request)
+        call dm_geocom_api_request_get_angle_correction(request)
         call dm_lua_from(lua, request)
         n = 1
-    end function lua_geocom_get_angular_correction_status
+    end function lua_geocom_get_angle_correction
 
     integer(kind=c_int) function lua_geocom_get_atmospheric_correction(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.

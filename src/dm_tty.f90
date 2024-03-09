@@ -256,6 +256,7 @@ contains
         !! * `E_INVALID` if the TTY parameters or flags are invalid.
         !! * `E_IO` if opening the TTY failed.
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
+        !!
         use :: unix
 
         type(tty_type),   intent(inout)        :: tty       !! TTY type.
@@ -347,7 +348,7 @@ contains
 
     integer function dm_tty_read_byte(tty, byte) result(rc)
         !! Reads single byte from file descriptor.
-        use :: unix
+        use :: unix, only: c_read
 
         type(tty_type),    intent(inout) :: tty  !! TTY type.
         character, target, intent(out)   :: byte !! Byte read.
@@ -368,6 +369,7 @@ contains
         !!
         !! * `E_BOUNDS` if end of buffer is reached.
         !! * `E_READ` if the read operation failed.
+        !!
         type(tty_type),   intent(inout)         :: tty    !! TTY type.
         character(len=*), intent(inout)         :: bytes  !! Input buffer.
         character(len=*), intent(in)            :: del    !! Delimiter.
@@ -409,6 +411,7 @@ contains
         !!
         !! * `E_BOUNDS` if the response is longer than `REQUEST_RESPONSE_LEN`.
         !! * `E_READ` if reading from TTY failed.
+        !!
         use :: dm_ascii, only: dm_ascii_escape, dm_ascii_unescape
         use :: dm_request
 
@@ -434,6 +437,7 @@ contains
         !!
         !! * `E_INVALID` if TTY is not connected.
         !! * `E_SYSTEM` if system calls failed.
+        !!
         use :: unix
         use :: dm_util
 
@@ -618,6 +622,7 @@ contains
         !!
         !! * `E_INVALID` if TTY is not connected.
         !! * `E_SYSTEM` if system calls failed.
+        !!
         use :: unix
 
         type(tty_type), intent(inout) :: tty      !! TTY type.
@@ -651,6 +656,7 @@ contains
         !!
         !! * `E_INVALID` if TTY is not connected.
         !! * `E_SYSTEM` if system calls failed.
+        !!
         use :: unix
 
         type(tty_type), intent(inout) :: tty     !! TTY type.
@@ -767,21 +773,15 @@ contains
         if (timeout >= 0) valid = .true.
     end function dm_tty_valid_timeout
 
-    integer function dm_tty_write_bytes(tty, bytes, nbytes, flush) result(rc)
+    integer function dm_tty_write_bytes(tty, bytes, nbytes) result(rc)
         !! Writes given string to TTY. Returns `E_WRITE` on error. The function
         !! may cause an access violation if `nbytes` is greater than the length
-        !! of `bytes`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_SYSTEM` if flushing the input buffer failed.
-        !! * `E_WRITE` if writing to TTY failed.
+        !! of `bytes`. Returns `E_WRITE` on error.
         use :: unix, only: c_write
 
         type(tty_type),           intent(inout)        :: tty    !! TTY type.
         character(len=*), target, intent(in)           :: bytes  !! Bytes to send.
         integer,                  intent(in), optional :: nbytes !! Number of bytes to send.
-        logical,                  intent(in), optional :: flush  !! Flush input buffer.
 
         integer(kind=c_size_t) :: n, sz
 
@@ -789,11 +789,6 @@ contains
             n = int(nbytes, kind=c_size_t)
         else
             n = len(bytes, kind=c_size_t)
-        end if
-
-        if (present(flush)) then
-            rc = dm_tty_flush(tty, input=flush, output=.false.)
-            if (dm_is_error(rc)) return
         end if
 
         rc = E_NONE
@@ -806,27 +801,16 @@ contains
         rc = E_NONE
     end function dm_tty_write_bytes
 
-    integer function dm_tty_write_request(tty, request, flush) result(rc)
+    integer function dm_tty_write_request(tty, request) result(rc)
         !! Writes given request to TTY. The function unescapes the request
-        !! string. If `flush` is `.true.`, the input buffer is flushed first.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_SYSTEM` if flushing the input buffer failed.
-        !! * `E_WRITE` if writing to TTY failed.
+        !! string. The function returns `E_WRITE` on error.
         use :: dm_ascii, only: dm_ascii_unescape
         use :: dm_request
 
         type(tty_type),     intent(inout)        :: tty     !! TTY type.
         type(request_type), intent(inout)        :: request !! Request type
-        logical,            intent(in), optional :: flush   !! Flush input buffer.
 
         character(len=REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
-
-        if (present(flush)) then
-            rc = dm_tty_flush(tty, input=flush, output=.false.)
-            if (dm_is_error(rc)) return
-        end if
 
         raw = dm_ascii_unescape(request%request)
         rc  = dm_tty_write(tty, raw, nbytes=len_trim(raw))

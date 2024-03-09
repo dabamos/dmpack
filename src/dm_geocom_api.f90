@@ -105,7 +105,7 @@ module dm_geocom_api
     !! | `SUP_SetConfig`             | `dm_geocom_api_request_set_config`                    |
     !! | `TMC_DoMeasure`             | `dm_geocom_api_request_do_measure`                    |
     !! | `TMC_GeoPpm`                | `dm_geocom_api_request_get_geometric_ppm`             |
-    !! | `TMC_GetAngSwitch`          | `dm_geocom_api_request_get_angular_correction_status` |
+    !! | `TMC_GetAngSwitch`          | `dm_geocom_api_request_get_angle_correction`          |
     !! | `TMC_GetAngle1`             | `dm_geocom_api_request_get_angle_complete`            |
     !! | `TMC_GetAngle5`             | `dm_geocom_api_request_get_angle`                     |
     !! | `TMC_GetAtmCorr`            | `dm_geocom_api_request_get_atmospheric_correction`    |
@@ -171,7 +171,7 @@ module dm_geocom_api
     public :: dm_geocom_api_request_fine_adjust
     public :: dm_geocom_api_request_get_angle
     public :: dm_geocom_api_request_get_angle_complete
-    public :: dm_geocom_api_request_get_angular_correction_status
+    public :: dm_geocom_api_request_get_angle_correction
     public :: dm_geocom_api_request_get_atmospheric_correction
     public :: dm_geocom_api_request_get_atmospheric_ppm
     public :: dm_geocom_api_request_get_atr_error
@@ -508,7 +508,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<nfiles>`                                               |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'delete'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<nfiles>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<nfiles>\d+)'
         integer,          parameter :: REQUEST_CODE    = 23309
 
         type(request_type),     intent(out) :: request     !! Prepared request.
@@ -606,7 +606,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<blockval>,<blocklen>`           |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'download'
-        character(len=*), parameter :: REQUEST_PATTERN = "(?<grc>\d+),'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ",'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
         integer,          parameter :: REQUEST_CODE    = 23304
         integer,          parameter :: MODE            = REQUEST_MODE_GEOCOM_FILE
 
@@ -691,7 +691,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_angle'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<hz>[\d\.]+),(?<v>[\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<hz>[\d\.]+),(?<v>[\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2107
 
         type(request_type), intent(out) :: request  !! Prepared request.
@@ -724,11 +724,11 @@ contains
         !! * `hz`      – Horizontal angle [rad].
         !! * `v`       – Vertical angle [rad].
         !! * `angacc`  – Accuracy of angles [rad].
-        !! * `angtime` – Moment of measurement [ms].
+        !! * `angtime` – Moment of measurement [msec].
         !! * `xinc`    – Transverse axis inclination [rad].
         !! * `linc`    – Longitude axis inclidation [rad].
         !! * `incacc`  – Inclination accuracy [rad].
-        !! * `inctime` – Moment of measurement [ms].
+        !! * `inctime` – Moment of measurement [msec].
         !! * `face`    – Face position of telescope.
         !!
         !! | Property       | Values                                                                               |
@@ -739,7 +739,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_angle_complete'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<angtime>\d+),' // &
+            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<angtime>\d+),' // &
             '(?<xinc>[-\d\.]+),(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<inctime>\d+),(?<face>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2003
 
@@ -756,18 +756,18 @@ contains
             response_type('hz',      unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
             response_type('v',       unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
             response_type('angacc',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
-            response_type('angtime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [ms].
+            response_type('angtime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
             response_type('xinc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Transverse axis inclination [rad].
             response_type('linc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Longitude axis inclidation [rad].
             response_type('incacc',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
-            response_type('inctime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [ms].
+            response_type('inctime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
             response_type('face',    unit=' ',   type=RESPONSE_TYPE_INT32)   & ! Face position of telescope.
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, REQUEST_PATTERN, responses)
     end subroutine dm_geocom_api_request_get_angle_complete
 
-    pure subroutine dm_geocom_api_request_get_angular_correction_status(request)
+    pure subroutine dm_geocom_api_request_get_angle_correction(request)
         !! Request of *TMC_GetAngSwitch* procedure. Creates request for
         !! getting the angular correction status.
         !!
@@ -785,9 +785,9 @@ contains
         !! | ASCII request  | `%R1Q,2014:`                                         |
         !! | ASCII response | `%R1P,0,0:<grc>,<inccor>,<stdcor>,<colcor>,<tilcor>` |
         !!
-        character(len=*), parameter :: REQUEST_NAME    = 'get_angular_correction_status'
+        character(len=*), parameter :: REQUEST_NAME    = 'get_angle_correction'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
+            GRC_PATTERN // ',(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2014
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -802,7 +802,7 @@ contains
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
-    end subroutine dm_geocom_api_request_get_angular_correction_status
+    end subroutine dm_geocom_api_request_get_angle_correction
 
     pure subroutine dm_geocom_api_request_get_atmospheric_correction(request)
         !! Request of *TMC_GetAtmCorr* procedure. Creates request for getting
@@ -824,7 +824,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_atmospheric_correction'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<lambda>[-\d\.]+),(?<pressure>[-\d\.]+),(?<drytemp>[-\d\.]+),(?<wettemp>[-\d\.]+)'
+            GRC_PATTERN // ',(?<lambda>[-\d\.]+),(?<pressure>[-\d\.]+),(?<drytemp>[-\d\.]+),(?<wettemp>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2029
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -857,7 +857,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<atmppm>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_atmospheric_ppm'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<atmppm>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<atmppm>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2151
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -887,7 +887,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<atrerr>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_atr_error'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<atrerr>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<atrerr>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2114
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -917,7 +917,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<atrset>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_atr_setting'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<atrset>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<atrset>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17034
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -947,7 +947,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<binmode>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_binary_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<binmode>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<binmode>\d+)'
         integer,          parameter :: REQUEST_CODE    = 113
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -971,7 +971,7 @@ contains
         !!
         !! * `grc`     – GeoCOM return code.
         !! * `autopwr` – Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
-        !! * `pwrtime` – Power timeout [ms].
+        !! * `pwrtime` – Power timeout [msec].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -980,7 +980,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,0,<autopwr>,<pwrtime>`           |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_config'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),\d+,(?<autopwr>\d+),(?<pwrtime>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<autopwr>\d+),(?<pwrtime>\d+)'
         integer,          parameter :: REQUEST_CODE    = 14001
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1000,7 +1000,7 @@ contains
         !! getting the coordinates of a measured point.
         !!
         !! This function conducts an angle and, in dependence of the selected
-        !! `inc_mode`, an inclination measurement, and the calculates the
+        !! `inc_mode`, an inclination measurement, and then calculates the
         !! coordinates of the measured point with the last distance.
         !!
         !! The argument `wait_time` specifies the delay to wait for the
@@ -1014,11 +1014,11 @@ contains
         !! * `east`    – E coordinate [m].
         !! * `north`   – N coordinate [m]
         !! * `height`  – H coordinate [m].
-        !! * `ctime`   – Timestamp of distance measurement [ms].
+        !! * `ctime`   – Timestamp of distance measurement [msec].
         !! * `eastc`   – E coordinate (continuously) [m].
         !! * `northc`  – N coordinate (continuously) [m].
         !! * `heightc` – H coordinate (continuously) [m].
-        !! * `ctimec`  – Timestamp of continuous measurement [m].
+        !! * `ctimec`  – Timestamp of continuous measurement [msec].
         !!
         !! | Property       | Values                                                                               |
         !! |----------------|--------------------------------------------------------------------------------------|
@@ -1028,12 +1028,12 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_coordinate'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+),(?<ctime>\d+),' // &
+            GRC_PATTERN // ',(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+),(?<ctime>\d+),' // &
             '(?<eastc>[-\d\.]+),(?<northc>[-\d\.]+),(?<heightc>[-\d\.]+),(?<ctimec>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2082
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
         integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
@@ -1046,7 +1046,7 @@ contains
             response_type('east',    unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate [m].
             response_type('north',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate [m]
             response_type('height',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate [m].
-            response_type('ctime',   unit='ms', type=RESPONSE_TYPE_INT64),  & ! Timestamp of distance measurement [ms].
+            response_type('ctime',   unit='ms', type=RESPONSE_TYPE_INT64),  & ! Timestamp of distance measurement [msec].
             response_type('eastc',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate (continuously) [m].
             response_type('northc',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate (continuously) [m].
             response_type('heightc', unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate (continuously) [m].
@@ -1066,7 +1066,7 @@ contains
         !! * `grc`    – GeoCOM return code.
         !! * `year`   – Year.
         !! * `month`  – Month [byte].
-        !! * `day`    – Day [byte].
+        !! * `day`    – Day of month [byte].
         !! * `hour`   – Hours [byte].
         !! * `minute` – Minutes [byte].
         !! * `second` – Seconds [byte].
@@ -1079,7 +1079,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_date_time'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            "(?<grc>\d+),(?<year>\d+),'(?<month>[0-9a-f]+)','(?<day>[0-9a-f]+)'," // &
+            GRC_PATTERN // ",(?<year>\d+),'(?<month>[0-9a-f]+)','(?<day>[0-9a-f]+)'," // &
             "'(?<hour>[0-9a-f]+)','(?<minute>[0-9a-f]+)','(?<second>[0-9a-f]+)'"
         integer,          parameter :: REQUEST_CODE    = 5008
 
@@ -1123,7 +1123,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_date_time_centi'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<year>\d+),(?<month>\d+),(?<day>\d+),(?<hour>\d+),' // &
+            GRC_PATTERN // ',(?<year>\d+),(?<month>\d+),(?<day>\d+),(?<hour>\d+),' // &
             '(?<minute>\d+),(?<second>\d+),(?<csecond>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5117
 
@@ -1161,7 +1161,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<devclass>,<devtype>`            |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_device_config'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<devclass>\d+),(?<devtype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<devclass>\d+),(?<devtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5035
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1194,7 +1194,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<ndigits>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_double_precision'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<ndigits>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<ndigits>\d+)'
         integer,          parameter :: REQUEST_CODE    = 108
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1224,7 +1224,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<edmmode>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_edm_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<edmmode>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<edmmode>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2021
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1255,7 +1255,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<eglint>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_egl_intensity'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<eglint>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<eglint>\d+)'
         integer,          parameter :: REQUEST_CODE    = 1058
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1285,7 +1285,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<face>`                          |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_face'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<face>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<face>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2026
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1315,7 +1315,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<adjmode>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_fine_adjust_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<adjmode>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<adjmode>\d+)'
         integer,          parameter :: REQUEST_CODE    = 9030
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1352,7 +1352,7 @@ contains
         !! * `linc`     – Longitude axis inclidation [rad].
         !! * `incacc`   – Inclination accuracy [rad].
         !! * `sdist`    – Slope distance [m].
-        !! * `disttime` – Time of distance measurement [ms].
+        !! * `disttime` – Time of distance measurement [msec].
         !!
         !! | Property       | Values                                                                       |
         !! |----------------|------------------------------------------------------------------------------|
@@ -1367,7 +1367,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 2167
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
         integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
@@ -1384,7 +1384,7 @@ contains
             response_type('linc',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Length inclination [rad].
             response_type('incacc',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
             response_type('sdist',    unit='m',   type=RESPONSE_TYPE_REAL64), & ! Distance measurement [m].
-            response_type('disttime', unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [ms].
+            response_type('disttime', unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [msec].
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, REQUEST_PATTERN, responses)
@@ -1408,7 +1408,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<gcrel>,<gcver>,<gcsub>`         |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_geocom_version'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<gcrel>\d+),(?<gcver>\d+),(?<gcsub>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<gcrel>\d+),(?<gcver>\d+),(?<gcsub>\d+)'
         integer,          parameter :: REQUEST_CODE    = 110
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1480,7 +1480,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<height>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_height'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<rheight>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<rheight>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2011
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1520,7 +1520,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_image_config'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
+            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"$'
         integer,          parameter :: REQUEST_CODE    = 23400
 
         type(request_type), intent(out) :: request  !! Prepared request.
@@ -1558,7 +1558,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<inccor>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_inclination_correction'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<inccor>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<inccor>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2007
 
         type(request_type), intent(out) :: request  !! Prepared request.
@@ -1588,7 +1588,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<incerr>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_inclination_error'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<incerr>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<incerr>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2115
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1618,7 +1618,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<name>`                          |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_instrument_name'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),"(?<name>.+)"'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',"(?<name>.+)"$'
         integer,          parameter :: REQUEST_CODE    = 5004
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1648,7 +1648,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<serialno>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_instrument_number'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<serialno>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<serialno>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5003
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1679,7 +1679,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<temp>`                          |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_internal_temperature'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<temp>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<temp>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5011
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1709,7 +1709,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<lockstat>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_lock_status'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<lockstat>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<lockstat>\d+)'
         integer,          parameter :: REQUEST_CODE    = 6021
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1740,7 +1740,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_measurement_program'
         integer,          parameter :: REQUEST_CODE    = 17018
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<measprg>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<measprg>\d+)'
 
         type(request_type), intent(out) :: request !! Prepared request.
         type(response_type)             :: responses(2)
@@ -1771,7 +1771,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<battlife>,<pwrsrc>, <pwrsug>`   |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_power'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<battlife>\d+),(?<pwrsrc>\d+),(?<pwrsug>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<battlife>\d+),(?<pwrsrc>\d+),(?<pwrsug>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5039
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1803,7 +1803,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<reflcor>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_constant'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<reflcor>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<reflcor>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2023
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1873,7 +1873,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<pristype>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_type'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmtype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17009
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1903,7 +1903,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<prsmtype>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_type_v2'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmtype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17031
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1974,7 +1974,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<atrfov>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_reduced_atr_fov'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<atrfov>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<atrfov>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17036
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2007,7 +2007,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<rlclass>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_reflectorless_class'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<rlclass>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<rlclass>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5100
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2040,7 +2040,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<refrmode>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_refraction_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<refrmode>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<refrmode>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2091
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2112,7 +2112,7 @@ contains
         !!
         !! * `grc`     – GeoCOM return code.
         !! * `sigint`  – Signal intensity of EDM [%].
-        !! * `sigtime` – Timestamp [ms].
+        !! * `sigtime` – Timestamp [msec].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -2121,7 +2121,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<sigint>,<sigtime>`              |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_signal'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<sigint>[-\d\.]+),(?<sigtime>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<sigint>[-\d\.]+),(?<sigtime>\d+)'
         integer,          parameter :: REQUEST_CODE    = 2022
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2166,7 +2166,7 @@ contains
         integer,          parameter :: REQUEST_CODE    = 2116
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
         integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
@@ -2206,11 +2206,11 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_simple_measurement'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2108
 
         type(request_type), intent(out) :: request   !! Prepared request.
-        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [ms].
+        integer,            intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
         integer,            intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(len=80)   :: args
@@ -2248,7 +2248,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<distppm>,<reflcor>`             |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_slope_distance_correction'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<distppm>[-\d\.]+),(?<reflcor>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<distppm>[-\d\.]+),(?<reflcor>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2126
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2281,7 +2281,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<swrel>,<swver>,<swsub>`         |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_software_version'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<swrel>\d+),(?<swver>\d+),(?<swsub>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<swrel>\d+),(?<swver>\d+),(?<swsub>\d+)'
         integer,          parameter :: REQUEST_CODE    = 5034
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2353,7 +2353,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<tartype>`                             |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_target_type'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<tartype>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<tartype>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17022
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2386,7 +2386,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<timehz>,<timev>`                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_timeout'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<timehz>[-\d\.]+),(?<timev>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<timehz>[-\d\.]+),(?<timev>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 9012
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2421,7 +2421,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<tolhz>,<tolv>`                        |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_tolerance'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<tolhz>[-\d\.]+),(?<tolv>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<tolhz>[-\d\.]+),(?<tolv>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 9008
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2452,7 +2452,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<atr>`                                 |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_atr_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<atr>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<atr>\d+)'
         integer,          parameter :: REQUEST_CODE    = 18006
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2482,7 +2482,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<lock>`                                |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_lock_mode'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<lock>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<lock>\d+)'
         integer,          parameter :: REQUEST_CODE    = 18006
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2514,7 +2514,8 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<prsmcor>,<prsmtype>,<prsmuser>` |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_prism_definition'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"'
+        character(len=*), parameter :: REQUEST_PATTERN = &
+            GRC_PATTERN // ',(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"$'
         integer,          parameter :: REQUEST_CODE    = 17033
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2552,7 +2553,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<rangehz>,<rangev>`              |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_spiral'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<rangehz>[-\d\.]+),(?<rangev>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<rangehz>[-\d\.]+),(?<rangev>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 9040
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2673,7 +2674,8 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>,<distmode>`     |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'measure_distance_angle'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+),(?<distmode>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = &
+            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+),(?<distmode>\d+)'
         integer,          parameter :: REQUEST_CODE    = 17017
 
         type(request_type), intent(out) :: request   !! Prepared request.
@@ -3068,7 +3070,7 @@ contains
 
         type(request_type), intent(out) :: request    !! Prepared request.
         integer,            intent(in)  :: auto_power !! Power-off mode (`GEOCOM_SUP_AUTO_POWER`).
-        integer,            intent(in)  :: timeout    !! Timeout [ms].
+        integer,            intent(in)  :: timeout    !! Timeout [msec].
 
         character(len=80) :: args
 
@@ -4028,7 +4030,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<nblocks>`                                      |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'setup_download'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<nblocks>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<nblocks>\d+)'
         integer,          parameter :: REQUEST_CODE    = 23303
 
         type(request_type), intent(out) :: request     !! Prepared request.
@@ -4236,7 +4238,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<imageno>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'take_image'
-        character(len=*), parameter :: REQUEST_PATTERN = '(?<grc>\d+),(?<imageno>\d+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<imageno>\d+)'
         integer,          parameter :: REQUEST_CODE    = 23402
 
         type(request_type), intent(out) :: request  !! Prepared request.

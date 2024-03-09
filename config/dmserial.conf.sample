@@ -37,8 +37,6 @@
 --
 --      require("myfile")
 --
-
---
 -- The following node id, sensor id, and target id must exist in the database,
 -- or be set accordingly.
 --
@@ -99,7 +97,7 @@ observ_meter = {
     receivers = { "dmdb" },
     requests = {
         {
-            name = "get-values",
+            name = "get_values",
             request = "Meter\\r",
             delimiter = "\\n",
             pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",

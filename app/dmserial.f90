@@ -370,6 +370,7 @@ contains
 
             if (debug_) then
                 call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
             end if
 
             ! Prepare request.
@@ -379,12 +380,7 @@ contains
             request%timestamp = dm_time_now()
 
             ! Send request to sensor.
-            if (debug_) then
-                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // &
-                                  request%request, observ=observ)
-            end if
-
-            rc = dm_tty_write(tty, request, flush=.true.)
+            rc = dm_tty_write(tty, request)
 
             if (dm_is_error(rc)) then
                 request%error = rc

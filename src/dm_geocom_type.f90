@@ -39,6 +39,42 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_TPS_DEVICE_CLASS      = 29 !! TPS device precision class.
     integer, parameter, public :: GEOCOM_TPS_DEVICE_TYPE       = 30 !! TPS device configuration type.
     integer, parameter, public :: GEOCOM_TPS_REFLESS_CLASS     = 31 !! Reflectorless class.
+    integer, parameter, public :: GEOCOM_TYPE_LAST             = 31 !! Never use this.
+
+    character(len=*), parameter, public :: geocom_type_names(1:GEOCOM_TYPE_LAST) = [ &
+        character(len=28) :: &
+        'GEOCOM_AUT_ADJMODE', &
+        'GEOCOM_AUT_ATRMODE', &
+        'GEOCOM_AUT_POSMODE', &
+        'GEOCOM_BAP_ATRSETTING', &
+        'GEOCOM_BAP_MEASURE_PRG', &
+        'GEOCOM_BAP_PRISMDEF', &
+        'GEOCOM_BAP_PRISMTYPE', &
+        'GEOCOM_BAP_REFLTYPE', &
+        'GEOCOM_BAP_TARGET_TYPE', &
+        'GEOCOM_BAP_USER_MEASPRG', &
+        'GEOCOM_COM_BAUD_RATE', &
+        'GEOCOM_COM_FORMAT', &
+        'GEOCOM_COM_TPS_STARTUP_MODE', &
+        'GEOCOM_COM_TPS_STOP_MODE', &
+        'GEOCOM_CSV_POWER_PATH', &
+        'GEOCOM_EDM_EGLINTENSITY_TYPE', &
+        'GEOCOM_EDM_MODE', &
+        'GEOCOM_FTR_DEVICETYPE', &
+        'GEOCOM_FTR_FILETYPE', &
+        'GEOCOM_IMG_MEM_TYPE', &
+        'GEOCOM_MOT_LOCK_STATUS', &
+        'GEOCOM_MOT_MODE', &
+        'GEOCOM_MOT_STOPMODE', &
+        'GEOCOM_SUP_AUTO_POWER', &
+        'GEOCOM_TMC_FACE', &
+        'GEOCOM_TMC_FACE_DEF', &
+        'GEOCOM_TMC_INCLINE_PRG', &
+        'GEOCOM_TMC_MEASURE_PRG', &
+        'GEOCOM_TPS_DEVICE_CLASS', &
+        'GEOCOM_TPS_DEVICE_TYPE', &
+        'GEOCOM_TPS_REFLESS_CLASS' &
+    ] !! GeoCOM type names.
 
     ! **************************************************************************
     ! AUT - AUTOMATION.
@@ -311,7 +347,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_geocom_type_validated(type, value, default, error) result(n)
+    integer function dm_geocom_type_validated(type, value, default, verbose, error) result(n)
         !! Parameterisation function for GeoCOM enumeration types.
         !!
         !! Returns argument `value` if it is a valid enumerator of enumeration
@@ -350,9 +386,13 @@ contains
         !!
         !! * `E_TYPE` if the type is not found or not supported.
         !! * `E_INVALID` if the value is not of given type.
+        !!
+        !! If `verbose` is `.true.`, an error message is printed to standard
+        !! error.
         integer, intent(in)            :: type    !! GeoCOM enumeration type.
         integer, intent(in)            :: value   !! Enumerator to validate.
         integer, intent(in),  optional :: default !! Value to return on error.
+        logical, intent(in),  optional :: verbose !! Print error messages.
         integer, intent(out), optional :: error   !! Error code.
 
         integer :: rc
@@ -625,5 +665,14 @@ contains
 
         if (dm_is_error(rc) .and. present(default)) n = default
         if (present(error)) error = rc
+
+        if (.not. present(verbose)) return
+        if (.not. dm_is_error(rc)) return
+
+        if (type >= 1 .and. type <= GEOCOM_TYPE_LAST) then
+            call dm_error_out(rc, 'invalid GeoCOM parameter ' // trim(GEOCOM_TYPE_NAMES(type)))
+        else
+            call dm_error_out(rc, 'invalid GeoCOM parameter')
+        end if
     end function dm_geocom_type_validated
 end module dm_geocom_type

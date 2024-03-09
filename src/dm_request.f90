@@ -285,7 +285,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental subroutine request_get_byte(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_byte(request, name, value, unit, type, error, status, default)
         !! Returns byte response as single character value, unit, type, and error
         !! of response of name `name`.
         !!
@@ -293,9 +293,9 @@ contains
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !! * `E_TYPE` if the response value is not of type byte.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_BYTE
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -305,8 +305,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        character,                        intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -335,7 +338,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_byte
 
-    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status, default)
         !! Returns 4-byte integer response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -343,9 +346,9 @@ contains
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !! * `E_TYPE` if the response value is not of type int32.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT32
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -355,8 +358,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        integer(kind=i4),                 intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -385,7 +391,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_i4
 
-    pure elemental subroutine request_get_i8(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_i8(request, name, value, unit, type, error, status, default)
         !! Returns 8-byte integer response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -393,9 +399,9 @@ contains
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !! * `E_TYPE` if the response value is not of type int64.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT64
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -405,8 +411,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        integer(kind=i8),                 intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -435,7 +444,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_i8
 
-    pure elemental subroutine request_get_l(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_l(request, name, value, unit, type, error, status, default)
         !! Returns logical response value, unit, type, and error of response of
         !! name `name`.
         !!
@@ -445,7 +454,7 @@ contains
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
         !! * `E_TYPE` if the response value is not of type logical.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_LOGICAL
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -455,8 +464,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        logical,                          intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -485,7 +497,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_l
 
-    pure elemental subroutine request_get_r4(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_r4(request, name, value, unit, type, error, status, default)
         !! Returns 4-byte real response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -493,9 +505,9 @@ contains
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !! * `E_TYPE` if the response value is not of type real32.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL32
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -505,8 +517,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        real(kind=r4),                    intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -535,7 +550,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_r4
 
-    pure elemental subroutine request_get_r8(request, name, value, unit, type, error, status)
+    pure elemental subroutine request_get_r8(request, name, value, unit, type, error, status, default)
         !! Returns 8-byte real response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -543,9 +558,9 @@ contains
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !! * `E_TYPE` if the response value is not of type real64.
         !!
-        !! On error, `value` will not be modified.
+        !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL64
 
         type(request_type),               intent(inout)         :: request !! Request type.
@@ -555,8 +570,11 @@ contains
         integer,                          intent(out), optional :: type    !! Response value type.
         integer,                          intent(out), optional :: error   !! Response error.
         integer,                          intent(out), optional :: status  !! Error code.
+        real(kind=r8),                    intent(in),  optional :: default !! Default value.
 
         integer :: i, rc
+
+        if (present(default)) value = default
 
         response_block: block
             rc = E_EMPTY
@@ -585,18 +603,21 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_r8
 
-    pure elemental subroutine request_get_type(request, name, response, status)
+    pure elemental subroutine request_get_type(request, name, response, status, default)
         !! Returns response of name `name`.
         !!
         !! The routine returns the following error codes in `status`:
         !!
         !! * `E_EMPTY` if the request has no responses.
         !! * `E_NOT_FOUND` if a response of the given name does not exist.
-        !! * `E_TYPE` if the response value is not of type logical.
+        !!
+        !! On error, an empty response will be returned, unless `default` is
+        !! passed.
         type(request_type),  intent(inout)         :: request  !! Request type.
         character(len=*),    intent(in)            :: name     !! Response name.
         type(response_type), intent(out)           :: response !! Response type.
         integer,             intent(out), optional :: status   !! Error code.
+        type(response_type), intent(in),  optional :: default  !! Default response.
 
         integer :: i, rc
 
@@ -613,6 +634,10 @@ contains
         end block response_block
 
         if (present(status)) status = rc
+
+        if (present(default)) then
+            if (rc /= E_NONE) response = default
+        endif
     end subroutine request_get_type
 
     pure elemental subroutine request_set_i4(request, index, name, value, unit, error)

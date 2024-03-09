@@ -4,9 +4,10 @@ module dm_geocom
     !! Object-oriented GeoCOM API for Fortran.
     !!
     !! The API provided by DMPACK does not follow the official Leica GeoCOM API
-    !! for C/C++ and Visual Basic. Structured types and functions are simplified
-    !! and given more memorable names. Function names do not contain any
-    !! sub-system prefix.
+    !! for C/C++ and Visual Basic. Functions are given more memorable names,
+    !! without any sub-system prefix. Structured types have been removed
+    !! altogether. If invalid parameters are passed to the GeoCOM methods, they
+    !! will be replaced with their default values.
     !!
     !! The following example opens the TTY `/dev/ttyUSB0` at 115,200 baud, and
     !! calls the null procedure of the instrument (`COM_NullProc`):
@@ -15,7 +16,7 @@ module dm_geocom
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
-    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, verbose=.true. error=rc)
+    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, verbose=.true., error=rc)
     !! if (dm_is_error(rc)) error stop
     !!
     !! call geocom%null()
@@ -39,39 +40,144 @@ module dm_geocom
         !! GeoCOM class for TTY access and GeoCOM API handling through the
         !! public methods. Objects of this class are not thread-safe.
         private
-        integer            :: baud    = GEOCOM_COM_BAUD_19200 !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
-        integer            :: grc     = GRC_OK                !! Last GeoCOM return code.
-        integer            :: rc      = E_NONE                !! Last DMPACK return code.
-        logical            :: verbose = .false.               !! Print error messages to stderr.
-        type(request_type) :: request                         !! Last request sent to sensor.
-        type(tty_type)     :: tty                             !! TTY type for serial connection.
+        integer            :: baud    = GEOCOM_COM_BAUD_19200    !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+        integer            :: grc     = GRC_OK                   !! Last GeoCOM return code.
+        integer            :: rc      = E_NONE                   !! Last DMPACK return code.
+        logical            :: verbose = .false.                  !! Print error messages to stderr.
+        type(request_type) :: request                            !! Last request sent to sensor.
+        type(tty_type)     :: tty                                !! TTY type for serial connection.
     contains
         ! Public class methods.
-        procedure, public :: baud_rate    => geocom_baud_rate
-        procedure, public :: close        => geocom_close
-        procedure, public :: code         => geocom_code
-        procedure, public :: error        => geocom_error
-        procedure, public :: last_request => geocom_last_request
-        procedure, public :: message      => geocom_message
-        procedure, public :: open         => geocom_open
-        procedure, public :: path         => geocom_path
-        procedure, public :: send         => geocom_send
+        procedure, public :: baud_rate    => geocom_baud_rate    !! Returns current baud rate.
+        procedure, public :: close        => geocom_close        !! Closes TTY.
+        procedure, public :: code         => geocom_code         !! Returns last GeoCOM code.
+        procedure, public :: error        => geocom_error        !! Returns last DMPACK error.
+        procedure, public :: last_request => geocom_last_request !! Returns last request sent to sensor.
+        procedure, public :: message      => geocom_message      !! Returns message associated with GeoCOM code.
+        procedure, public :: open         => geocom_open         !! Opens TTY.
+        procedure, public :: path         => geocom_path         !! Returns TTY path.
+        procedure, public :: send         => geocom_send         !! Sends raw request to sensor.
+
+        ! Private class methods.
+        procedure         :: reset        => geocom_reset        !! Resets request and error codes.
 
         ! Public GeoCOM-specific methods.
-        procedure, public :: abort_download     => geocom_abort_download
-        procedure, public :: abort_list         => geocom_abort_list
-        procedure, public :: beep_alarm         => geocom_beep_alarm
-        procedure, public :: beep_normal        => geocom_beep_normal
-        procedure, public :: beep_off           => geocom_beep_off
-        procedure, public :: beep_on            => geocom_beep_on
-        procedure, public :: change_face        => geocom_change_face
-        procedure, public :: delete             => geocom_delete
-        procedure, public :: do_measure         => geocom_do_measure
-        procedure, public :: download           => geocom_download
-        procedure, public :: fine_adjust        => geocom_fine_adjust
-        procedure, public :: get_angle          => geocom_get_angle
-        procedure, public :: get_angle_complete => geocom_get_angle_complete
-        procedure, public :: null               => geocom_null
+        procedure, public :: abort_download                => geocom_abort_download
+        procedure, public :: abort_list                    => geocom_abort_list
+        procedure, public :: beep_alarm                    => geocom_beep_alarm
+        procedure, public :: beep_normal                   => geocom_beep_normal
+        procedure, public :: beep_off                      => geocom_beep_off
+        procedure, public :: beep_on                       => geocom_beep_on
+        procedure, public :: change_face                   => geocom_change_face
+        procedure, public :: delete                        => geocom_delete
+        procedure, public :: do_measure                    => geocom_do_measure
+        procedure, public :: download                      => geocom_download
+        procedure, public :: fine_adjust                   => geocom_fine_adjust
+        procedure, public :: get_angle                     => geocom_get_angle
+        procedure, public :: get_angle_complete            => geocom_get_angle_complete
+        procedure, public :: get_angle_correction          => geocom_get_angle_correction
+        procedure, public :: get_atmospheric_correction    => geocom_get_atmospheric_correction
+        procedure, public :: get_atmospheric_ppm           => geocom_get_atmospheric_ppm
+        procedure, public :: get_atr_error                 => geocom_get_atr_error
+        procedure, public :: get_atr_setting               => geocom_get_atr_setting
+        procedure, public :: get_binary_mode               => geocom_get_binary_mode
+        procedure, public :: get_config                    => geocom_get_config
+        procedure, public :: get_coordinate                => geocom_get_coordinate
+        procedure, public :: get_date_time                 => geocom_get_date_time
+        procedure, public :: get_date_time_centi           => geocom_get_date_time_centi
+        procedure, public :: get_device_config             => geocom_get_device_config
+        procedure, public :: get_double_precision          => geocom_get_double_precision
+        procedure, public :: get_edm_mode                  => geocom_get_edm_mode
+        procedure, public :: get_egl_intensity             => geocom_get_egl_intensity
+        procedure, public :: get_face                      => geocom_get_face
+        procedure, public :: get_fine_adjust_mode          => geocom_get_fine_adjust_mode
+        procedure, public :: get_full_measurement          => geocom_get_full_measurement
+       !procedure, public :: get_geocom_version            => geocom_get_geocom_version
+       !procedure, public :: get_geometric_ppm             => geocom_get_geometric_ppm
+       !procedure, public :: get_height                    => geocom_get_height
+       !procedure, public :: get_image_config              => geocom_get_image_config
+       !procedure, public :: get_inclination_correction    => geocom_get_inclination_correction
+       !procedure, public :: get_inclination_error         => geocom_get_inclination_error
+       !procedure, public :: get_instrument_name           => geocom_get_instrument_name
+       !procedure, public :: get_instrument_number         => geocom_get_instrument_number
+       !procedure, public :: get_internal_temperature      => geocom_get_internal_temperature
+       !procedure, public :: get_lock_status               => geocom_get_lock_status
+       !procedure, public :: get_measurement_program       => geocom_get_measurement_program
+       !procedure, public :: get_power                     => geocom_get_power
+       !procedure, public :: get_prism_constant            => geocom_get_prism_constant
+       !procedure, public :: get_prism_definition          => geocom_get_prism_definition
+       !procedure, public :: get_prism_type                => geocom_get_prism_type
+       !procedure, public :: get_prism_type_v2             => geocom_get_prism_type_v2
+       !procedure, public :: get_quick_distance            => geocom_get_quick_distance
+       !procedure, public :: get_reduced_atr_fov           => geocom_get_reduced_atr_fov
+       !procedure, public :: get_reflectorless_class       => geocom_get_reflectorless_class
+       !procedure, public :: get_refraction_mode           => geocom_get_refraction_mode
+       !procedure, public :: get_search_area               => geocom_get_search_area
+       !procedure, public :: get_signal                    => geocom_get_signal
+       !procedure, public :: get_simple_coordinates        => geocom_get_simple_coordinates
+       !procedure, public :: get_simple_measurement        => geocom_get_simple_measurement
+       !procedure, public :: get_slope_distance_correction => geocom_get_slope_distance_correction
+       !procedure, public :: get_software_version          => geocom_get_software_version
+       !procedure, public :: get_station                   => geocom_get_station
+       !procedure, public :: get_target_type               => geocom_get_target_type
+       !procedure, public :: get_timeout                   => geocom_get_timeout
+       !procedure, public :: get_tolerance                 => geocom_get_tolerance
+       !procedure, public :: get_user_atr_mode             => geocom_get_user_atr_mode
+       !procedure, public :: get_user_lock_mode            => geocom_get_user_lock_mode
+       !procedure, public :: get_user_prism_definition     => geocom_get_user_prism_definition
+       !procedure, public :: get_user_spiral               => geocom_get_user_spiral
+       !procedure, public :: list                          => geocom_list
+       !procedure, public :: lock_in                       => geocom_lock_in
+       !procedure, public :: measure_distance_angle        => geocom_measure_distance_angle
+        procedure, public :: null                          => geocom_null
+       !procedure, public :: ps_enable_range               => geocom_ps_enable_range
+       !procedure, public :: ps_search_next                => geocom_ps_search_next
+       !procedure, public :: ps_search_window              => geocom_ps_search_window
+       !procedure, public :: ps_set_range                  => geocom_ps_set_range
+       !procedure, public :: search                        => geocom_search
+       !procedure, public :: search_target                 => geocom_search_target
+       !procedure, public :: set_angle_correction          => geocom_set_angle_correction
+       !procedure, public :: set_atmospheric_correction    => geocom_set_atmospheric_correction
+       !procedure, public :: set_atmospheric_ppm           => geocom_set_atmospheric_ppm
+       !procedure, public :: set_atr_mode                  => geocom_set_atr_mode
+       !procedure, public :: set_binary_mode               => geocom_set_binary_mode
+       !procedure, public :: set_config                    => geocom_set_config
+       !procedure, public :: set_date_time                 => geocom_set_date_time
+       !procedure, public :: set_distance                  => geocom_set_distance
+       !procedure, public :: set_double_precision          => geocom_set_double_precision
+       !procedure, public :: set_edm_mode                  => geocom_set_edm_mode
+       !procedure, public :: set_egl_intensity             => geocom_set_egl_intensity
+       !procedure, public :: set_fine_adjust_mode          => geocom_set_fine_adjust_mode
+       !procedure, public :: set_geometric_ppm             => geocom_set_geometric_ppm
+       !procedure, public :: set_height                    => geocom_set_height
+       !procedure, public :: set_image_config              => geocom_set_image_config
+       !procedure, public :: set_inclination_correction    => geocom_set_inclination_correction
+       !procedure, public :: set_laser_pointer             => geocom_set_laser_pointer
+       !procedure, public :: set_measurement_program       => geocom_set_measurement_program
+       !procedure, public :: set_orientation               => geocom_set_orientation
+       !procedure, public :: set_position                  => geocom_set_position
+       !procedure, public :: set_positioning_timeout       => geocom_set_positioning_timeout
+       !procedure, public :: set_prism_constant            => geocom_set_prism_constant
+       !procedure, public :: set_prism_type                => geocom_set_prism_type
+       !procedure, public :: set_prism_type_v2             => geocom_set_prism_type_v2
+       !procedure, public :: set_reduced_atr_fov           => geocom_set_reduced_atr_fov
+       !procedure, public :: set_refraction_mode           => geocom_set_refraction_mode
+       !procedure, public :: set_search_area               => geocom_set_search_area
+       !procedure, public :: set_station                   => geocom_set_station
+       !procedure, public :: set_target_type               => geocom_set_target_type
+       !procedure, public :: set_tolerance                 => geocom_set_tolerance
+       !procedure, public :: set_user_atr_mode             => geocom_set_user_atr_mode
+       !procedure, public :: set_user_lock_mode            => geocom_set_user_lock_mode
+       !procedure, public :: set_user_prism_definition     => geocom_set_user_prism_definition
+       !procedure, public :: set_user_spiral               => geocom_set_user_spiral
+       !procedure, public :: set_velocity                  => geocom_set_velocity
+       !procedure, public :: setup_download                => geocom_setup_download
+       !procedure, public :: setup_list                    => geocom_setup_list
+       !procedure, public :: start_controller              => geocom_start_controller
+       !procedure, public :: stop_controller               => geocom_stop_controller
+       !procedure, public :: switch_off                    => geocom_switch_off
+       !procedure, public :: switch_on                     => geocom_switch_on
+       !procedure, public :: take_image                    => geocom_take_image
     end type geocom_class
 
     ! Private procedures.
@@ -83,6 +189,7 @@ module dm_geocom
     private :: geocom_last_request
     private :: geocom_message
     private :: geocom_open
+    private :: geocom_reset
     private :: geocom_send
 
     ! Private GeoCOM procedures.
@@ -99,7 +206,109 @@ module dm_geocom
     private :: geocom_fine_adjust
     private :: geocom_get_angle
     private :: geocom_get_angle_complete
+    private :: geocom_get_angle_correction
+    private :: geocom_get_atmospheric_correction
+    private :: geocom_get_atmospheric_ppm
+    private :: geocom_get_atr_error
+    private :: geocom_get_atr_setting
+    private :: geocom_get_binary_mode
+    private :: geocom_get_config
+    private :: geocom_get_coordinate
+    private :: geocom_get_date_time
+    private :: geocom_get_date_time_centi
+    private :: geocom_get_device_config
+    private :: geocom_get_double_precision
+    private :: geocom_get_edm_mode
+    private :: geocom_get_egl_intensity
+    private :: geocom_get_face
+    private :: geocom_get_fine_adjust_mode
+    private :: geocom_get_full_measurement
+   !private :: geocom_get_geocom_version
+   !private :: geocom_get_geometric_ppm
+   !private :: geocom_get_height
+   !private :: geocom_get_image_config
+   !private :: geocom_get_inclination_correction
+   !private :: geocom_get_inclination_error
+   !private :: geocom_get_instrument_name
+   !private :: geocom_get_instrument_number
+   !private :: geocom_get_internal_temperature
+   !private :: geocom_get_lock_status
+   !private :: geocom_get_measurement_program
+   !private :: geocom_get_power
+   !private :: geocom_get_prism_constant
+   !private :: geocom_get_prism_definition
+   !private :: geocom_get_prism_type
+   !private :: geocom_get_prism_type_v2
+   !private :: geocom_get_quick_distance
+   !private :: geocom_get_reduced_atr_fov
+   !private :: geocom_get_reflectorless_class
+   !private :: geocom_get_refraction_mode
+   !private :: geocom_get_search_area
+   !private :: geocom_get_signal
+   !private :: geocom_get_simple_coordinates
+   !private :: geocom_get_simple_measurement
+   !private :: geocom_get_slope_distance_correction
+   !private :: geocom_get_software_version
+   !private :: geocom_get_station
+   !private :: geocom_get_target_type
+   !private :: geocom_get_timeout
+   !private :: geocom_get_tolerance
+   !private :: geocom_get_user_atr_mode
+   !private :: geocom_get_user_lock_mode
+   !private :: geocom_get_user_prism_definition
+   !private :: geocom_get_user_spiral
+   !private :: geocom_list
+   !private :: geocom_lock_in
+   !private :: geocom_measure_distance_angle
     private :: geocom_null
+   !private :: geocom_ps_enable_range
+   !private :: geocom_ps_search_next
+   !private :: geocom_ps_search_window
+   !private :: geocom_ps_set_range
+   !private :: geocom_search
+   !private :: geocom_search_target
+   !private :: geocom_set_angle_correction
+   !private :: geocom_set_atmospheric_correction
+   !private :: geocom_set_atmospheric_ppm
+   !private :: geocom_set_atr_mode
+   !private :: geocom_set_binary_mode
+   !private :: geocom_set_config
+   !private :: geocom_set_date_time
+   !private :: geocom_set_distance
+   !private :: geocom_set_double_precision
+   !private :: geocom_set_edm_mode
+   !private :: geocom_set_egl_intensity
+   !private :: geocom_set_fine_adjust_mode
+   !private :: geocom_set_geometric_ppm
+   !private :: geocom_set_height
+   !private :: geocom_set_image_config
+   !private :: geocom_set_inclination_correction
+   !private :: geocom_set_laser_pointer
+   !private :: geocom_set_measurement_program
+   !private :: geocom_set_orientation
+   !private :: geocom_set_position
+   !private :: geocom_set_positioning_timeout
+   !private :: geocom_set_prism_constant
+   !private :: geocom_set_prism_type
+   !private :: geocom_set_prism_type_v2
+   !private :: geocom_set_reduced_atr_fov
+   !private :: geocom_set_refraction_mode
+   !private :: geocom_set_search_area
+   !private :: geocom_set_station
+   !private :: geocom_set_target_type
+   !private :: geocom_set_tolerance
+   !private :: geocom_set_user_atr_mode
+   !private :: geocom_set_user_lock_mode
+   !private :: geocom_set_user_prism_definition
+   !private :: geocom_set_user_spiral
+   !private :: geocom_set_velocity
+   !private :: geocom_setup_download
+   !private :: geocom_setup_list
+   !private :: geocom_start_controller
+   !private :: geocom_stop_controller
+   !private :: geocom_switch_off
+   !private :: geocom_switch_on
+   !private :: geocom_take_image
 contains
     ! **************************************************************************
     ! PUBLIC METHODS.
@@ -168,7 +377,7 @@ contains
         !! * `GEOCOM_COM_BAUD_2400`   –   2400 baud.
         !! * `GEOCOM_COM_BAUD_4800`   –   4800 baud.
         !! * `GEOCOM_COM_BAUD_9600`   –   9600 baud.
-        !! * `GEOCOM_COM_BAUD_19200`  –  19200 baud (default).
+        !! * `GEOCOM_COM_BAUD_19200`  –  19200 baud (instrument default).
         !! * `GEOCOM_COM_BAUD_38400`  –  38400 baud.
         !! * `GEOCOM_COM_BAUD_57600`  –  57600 baud.
         !! * `GEOCOM_COM_BAUD_115200` – 115200 baud.
@@ -183,7 +392,8 @@ contains
         !! * `E_INVALID` if baud rate is invalid.
         !! * `E_IO` if opening the TTY failed.
         !! * `E_NOT_FOUND` if TTY at path does no exist.
-        !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
+        !! * `E_SYSTEM` if setting the TTY attributes failed.
+        !!
         use :: dm_file, only: dm_file_exists
 
         integer, parameter :: WAIT_TIME = 3 !! Retry wait time in [sec].
@@ -271,7 +481,7 @@ contains
 
         integer :: rc
 
-        this%grc = GRC_UNDEFINED
+        if (dm_is_error(this%rc) .and. this%verbose) call dm_error_out(this%rc)
 
         tty_block: block
             ! Verify that TTY is not connected yet.
@@ -293,10 +503,10 @@ contains
             request%timestamp = dm_time_now()
 
             ! Send request to sensor.
-            rc = dm_tty_write(this%tty, request, flush=.true.)
+            rc = dm_tty_write(this%tty, request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'failed to write to TTY')
+                if (this%verbose) call dm_error_out(rc, 'failed to write to TTY ' // trim(this%tty%path))
                 exit tty_block
             end if
 
@@ -304,7 +514,7 @@ contains
             rc = dm_tty_read(this%tty, request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'failed to read from TTY')
+                if (this%verbose) call dm_error_out(rc, 'failed to read from TTY ' // trim(this%tty%path))
                 exit tty_block
             end if
 
@@ -330,6 +540,18 @@ contains
     end subroutine geocom_send
 
     ! **************************************************************************
+    ! PRIVATE METHODS.
+    ! **************************************************************************
+    subroutine geocom_reset(this)
+        !! Resets object.
+        class(geocom_class), intent(inout) :: this !! GeoCOM object.
+
+        this%rc      = E_NONE
+        this%grc     = GRC_OK
+        this%request = request_type()
+    end subroutine geocom_reset
+
+    ! **************************************************************************
     ! PUBLIC GEOCOM METHODS.
     ! **************************************************************************
     subroutine geocom_abort_download(this, delay)
@@ -340,6 +562,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_abort_download(request)
         call this%send(request, delay)
     end subroutine geocom_abort_download
@@ -352,6 +575,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_abort_list(request)
         call this%send(request, delay)
     end subroutine geocom_abort_list
@@ -364,6 +588,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_beep_alarm(request)
         call this%send(request, delay)
     end subroutine geocom_beep_alarm
@@ -376,6 +601,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_beep_normal(request)
         call this%send(request, delay)
     end subroutine geocom_beep_normal
@@ -387,6 +613,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_beep_off(request)
         call this%send(request, delay)
     end subroutine geocom_beep_off
@@ -401,6 +628,8 @@ contains
 
         integer            :: intensity_
         type(request_type) :: request
+
+        call this%reset()
 
         intensity_ = GEOCOM_IOS_BEEP_STDINTENS
         if (present(intensity)) intensity_ = max(0, min(100, intensity))
@@ -429,8 +658,10 @@ contains
         integer            :: atr_mode_, pos_mode_
         type(request_type) :: request
 
-        pos_mode_ = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, pos_mode)
-        atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode)
+        call this%reset()
+
+        pos_mode_ = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, pos_mode, verbose=this%verbose, error=this%rc)
+        atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode, verbose=this%verbose, error=this%rc)
 
         call dm_geocom_api_request_change_face(request, pos_mode_, atr_mode_)
         call this%send(request, delay)
@@ -456,8 +687,10 @@ contains
         integer            :: day_, month_, year_
         type(request_type) :: request
 
-        device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type)
-        file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type)
+        call this%reset()
+
+        device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=this%rc)
+        file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=this%rc)
 
         day_   = max(0, min(255, day))
         month_ = max(0, min(255, month))
@@ -468,7 +701,7 @@ contains
         call dm_geocom_api_request_delete(request, device_type_, file_type_, day_, month_, year_, file_name)
         call this%send(request, delay)
 
-        if (present(nfiles)) call dm_request_get(this%request, 'nfiles', nfiles)
+        if (present(nfiles)) call dm_request_get(this%request, 'nfiles', nfiles, default=0)
     end subroutine geocom_delete
 
     subroutine geocom_do_measure(this, tmc_prog, inc_mode, delay)
@@ -508,10 +741,14 @@ contains
         integer            :: inc_mode_, tmc_prog_
         type(request_type) :: request
 
-        tmc_prog_ = dm_geocom_type_validated(GEOCOM_TMC_MEASURE_PRG, tmc_prog)
+        call this%reset()
+
+        tmc_prog_ = dm_geocom_type_validated(GEOCOM_TMC_MEASURE_PRG, tmc_prog, verbose=this%verbose, error=this%rc)
         inc_mode_ = GEOCOM_TMC_MEA_INC
 
-        if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
+        if (present(inc_mode)) then
+            inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        end if
 
         call dm_geocom_api_request_do_measure(request, tmc_prog_, inc_mode_)
         call this%send(request, delay)
@@ -537,15 +774,15 @@ contains
         integer            :: block_number_
         type(request_type) :: request
 
-        block_value   = achar(0)
-        block_length  = 0
+        call this%reset()
+
         block_number_ = max(0, min(65535, block_number))
 
         call dm_geocom_api_request_download(request, block_number_)
         call this%send(request, delay)
 
-        call dm_request_get(this%request, 'blockval', block_value)
-        call dm_request_get(this%request, 'blocklen', block_length)
+        call dm_request_get(this%request, 'blockval', block_value,  default=achar(0))
+        call dm_request_get(this%request, 'blocklen', block_length, default=0)
     end subroutine geocom_download
 
     subroutine geocom_fine_adjust(this, search_hz, search_v, delay)
@@ -576,6 +813,8 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
+
         call dm_geocom_api_request_fine_adjust(request, search_hz, search_v)
         call this%send(request, delay)
     end subroutine geocom_fine_adjust
@@ -593,14 +832,19 @@ contains
         integer            :: inc_mode_
         type(request_type) :: request
 
+        call this%reset()
+
         inc_mode_ = GEOCOM_TMC_MEA_INC
-        if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
+
+        if (present(inc_mode)) then
+            inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        end if
 
         call dm_geocom_api_request_get_angle(request, inc_mode)
         call this%send(request, delay)
 
-        call dm_request_get(this%request, 'hz', hz)
-        call dm_request_get(this%request, 'v',  v)
+        call dm_request_get(this%request, 'hz', hz, default=0.0_r8)
+        call dm_request_get(this%request, 'v',  v,  default=0.0_r8)
     end subroutine geocom_get_angle
 
     subroutine geocom_get_angle_complete(this, hz, v, angle_accuracy, angle_time, trans_inc, long_inc, &
@@ -613,11 +857,11 @@ contains
         real(kind=r8),       intent(out)           :: hz             !! Horizontal angle [rad].
         real(kind=r8),       intent(out)           :: v              !! Vertical angle [rad].
         real(kind=r8),       intent(out), optional :: angle_accuracy !! Accuracy of angles [rad].
-        integer(kind=i8),    intent(out), optional :: angle_time     !! Moment of measurement [ms].
+        integer(kind=i8),    intent(out), optional :: angle_time     !! Moment of measurement [msec].
         real(kind=r8),       intent(out), optional :: trans_inc      !! Transverse axis inclination [rad].
         real(kind=r8),       intent(out), optional :: long_inc       !! Longitude axis inclidation [rad].
         real(kind=r8),       intent(out), optional :: inc_accuracy   !! Inclination accuracy [rad].
-        integer(kind=i8),    intent(out), optional :: inc_time       !! Moment of measurement [ms].
+        integer(kind=i8),    intent(out), optional :: inc_time       !! Moment of measurement [msec].
         integer,             intent(out), optional :: face           !! Face position of telescope (`GEOCOM_TMC_FACE`).
         integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in),  optional :: delay          !! Request delay [msec].
@@ -625,34 +869,416 @@ contains
         integer            :: inc_mode_
         type(request_type) :: request
 
-        hz = 0.0_r8
-        v  = 0.0_r8
-
-        if (present(angle_accuracy)) angle_accuracy = 0.0_r8
-        if (present(angle_time))     angle_time     = 0_i8
-        if (present(trans_inc))      trans_inc      = 0.0_r8
-        if (present(long_inc))       long_inc       = 0.0_r8
-        if (present(inc_accuracy))   inc_accuracy   = 0.0_r8
-        if (present(inc_time))       inc_time       = 0_i8
-        if (present(face))           face           = 0
+        call this%reset()
 
         inc_mode_ = GEOCOM_TMC_MEA_INC
-        if (present(inc_mode)) inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode)
+
+        if (present(inc_mode)) then
+            inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        end if
 
         call dm_geocom_api_request_get_angle_complete(request, inc_mode_)
         call this%send(request, delay)
 
-        call dm_request_get(this%request, 'hz', hz)
-        call dm_request_get(this%request, 'v',  v)
+        call dm_request_get(this%request, 'hz', hz, default=0.0_r8)
+        call dm_request_get(this%request, 'v',  v,  default=0.0_r8)
 
-        if (present(angle_accuracy)) call dm_request_get(this%request, 'angacc',  angle_accuracy)
-        if (present(angle_time))     call dm_request_get(this%request, 'angtime', angle_time)
-        if (present(trans_inc))      call dm_request_get(this%request, 'xinc',    trans_inc)
-        if (present(long_inc))       call dm_request_get(this%request, 'linc',    long_inc)
-        if (present(inc_accuracy))   call dm_request_get(this%request, 'incacc',  inc_accuracy)
-        if (present(inc_time))       call dm_request_get(this%request, 'inctime', inc_time)
-        if (present(face))           call dm_request_get(this%request, 'face',    face)
+        if (present(angle_accuracy)) call dm_request_get(this%request, 'angacc',  angle_accuracy, default=0.0_r8)
+        if (present(angle_time))     call dm_request_get(this%request, 'angtime', angle_time,     default=0_i8)
+        if (present(trans_inc))      call dm_request_get(this%request, 'xinc',    trans_inc,      default=0.0_r8)
+        if (present(long_inc))       call dm_request_get(this%request, 'linc',    long_inc,       default=0.0_r8)
+        if (present(inc_accuracy))   call dm_request_get(this%request, 'incacc',  inc_accuracy,   default=0.0_r8)
+        if (present(inc_time))       call dm_request_get(this%request, 'inctime', inc_time,       default=0_i8)
+        if (present(face))           call dm_request_get(this%request, 'face',    face,           default=0)
     end subroutine geocom_get_angle_complete
+
+    subroutine geocom_get_angle_correction(this, incline, stand_axis, collimation, tilt_axis, delay)
+        !! Sends *TMC_GetAngSwitch* request to sensor. The function returns the
+        !! angular correction status.
+        class(geocom_class), intent(inout)         :: this        !! GeoCOM object.
+        logical,             intent(out), optional :: incline     !! Inclination correction enabled.
+        logical,             intent(out), optional :: stand_axis  !! Standing axis correction enabled.
+        logical,             intent(out), optional :: collimation !! Collimation error correction enabled.
+        logical,             intent(out), optional :: tilt_axis   !! Tilting axis correction enabled.
+        integer,             intent(in),  optional :: delay       !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_angle_correction(request)
+        call this%send(request, delay)
+
+        if (present(incline))     call dm_request_get(this%request, 'inccor', incline,     default=.false.)
+        if (present(stand_axis))  call dm_request_get(this%request, 'stdcor', stand_axis,  default=.false.)
+        if (present(collimation)) call dm_request_get(this%request, 'colcor', collimation, default=.false.)
+        if (present(tilt_axis))   call dm_request_get(this%request, 'tilcor', tilt_axis,   default=.false.)
+    end subroutine geocom_get_angle_correction
+
+    subroutine geocom_get_atmospheric_correction(this, lambda, pressure, dry_temp, wet_temp, delay)
+        !! Sends *TMC_GetAtmCorr* request to sensor. The function returns the
+        !! atmospheric correction parameters.
+        class(geocom_class), intent(inout)         :: this     !! GeoCOM object.
+        real(kind=r8),       intent(out), optional :: lambda   !! Wave length of the EDM transmitter [m].
+        real(kind=r8),       intent(out), optional :: pressure !! Atmospheric pressure [mbar].
+        real(kind=r8),       intent(out), optional :: dry_temp !! Dry temperature [°C].
+        real(kind=r8),       intent(out), optional :: wet_temp !! Wet temperature [°C].
+        integer,             intent(in),  optional :: delay    !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_atmospheric_correction(request)
+        call this%send(request, delay)
+
+        if (present(lambda))   call dm_request_get(this%request, 'lambda',   lambda,   default=0.0_r8)
+        if (present(pressure)) call dm_request_get(this%request, 'pressure', pressure, default=0.0_r8)
+        if (present(dry_temp)) call dm_request_get(this%request, 'drytemp',  dry_temp, default=0.0_r8)
+        if (present(wet_temp)) call dm_request_get(this%request, 'wettemp',  wet_temp, default=0.0_r8)
+    end subroutine geocom_get_atmospheric_correction
+
+    subroutine geocom_get_atmospheric_ppm(this, ppm, delay)
+        !! Sends *TMC_GetAtmPpm* request to sensor. The function returns the
+        !! atmospheric ppm correction factor in `ppm`.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        real(kind=r8),       intent(out)          :: ppm   !! Atmospheric ppm correction factor [ppm].
+        integer,             intent(in), optional :: delay !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_atmospheric_ppm(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'atmppm', ppm, default=0.0_r8)
+    end subroutine geocom_get_atmospheric_ppm
+
+    subroutine geocom_get_atr_error(this, error, delay)
+        !! Sends *TMC_IfDataAzeCorrError* request to sensor. The function returns the
+        !! ATR error status in `error`.
+        class(geocom_class), intent(inout)         :: this  !! GeoCOM object.
+        logical,             intent(out)           :: error !! ATR correction error occured.
+        integer,             intent(in),  optional :: delay !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_atr_error(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'atrerr', error, default=.false.)
+    end subroutine geocom_get_atr_error
+
+    subroutine geocom_get_atr_setting(this, setting, delay)
+        !! Sends *BAP_GetATRSetting* request to sensor. The function returns
+        !! the current ATR Low-Vis mode in `setting`.
+        class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
+        integer,             intent(out)           :: setting !! ATR setting (`GEOCOM_BAP_ATRSETTING`).
+        integer,             intent(in),  optional :: delay   !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_atr_setting(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'atrset', setting, default=0)
+    end subroutine geocom_get_atr_setting
+
+    subroutine geocom_get_binary_mode(this, enabled, delay)
+        !! Sends *COM_GetBinaryAvailable* request to sensor. The function returns the
+        !! binary attribute of the server in `enabled`.
+        class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
+        logical,             intent(out)           :: enabled !! Binary operation is enabled.
+        integer,             intent(in),  optional :: delay   !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_binary_mode(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'binmode', enabled, default=.false.)
+    end subroutine geocom_get_binary_mode
+
+    subroutine geocom_get_config(this, auto_power, timeout, delay)
+        !! Send *SUP_GetConfig* request to sensor. The function returns the
+        !! power management configuration status. The power timeout `timeout`
+        !! specifies the time after which the device switches into the mode
+        !! indicated by `auto_power`.
+        class(geocom_class), intent(inout)         :: this       !! GeoCOM object.
+        integer,             intent(out)           :: auto_power !! Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
+        integer,             intent(out)           :: timeout    !! Power timeout [msec].
+        integer,             intent(in),  optional :: delay      !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_config(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'autopwr', auto_power, default=0)
+        call dm_request_get(this%request, 'pwrtime', timeout,    default=0)
+    end subroutine geocom_get_config
+
+    subroutine geocom_get_coordinate(this, easting, northing, height, time, cont_easting, cont_northing, &
+                                     cont_height, cont_time, wait_time, inc_mode, delay)
+        !! Sends *TMC_GetCoordinate* request to sensor. The function returns
+        !! the coordinates of a measured point.
+        !!
+        !! The API call conducts an angle and, in dependence of the selected
+        !! `inc_mode`, an inclination measurement, and then calculates the
+        !! coordinates of the measured point with the last distance.
+        !!
+        !! The argument `wait_time` specifies the delay to wait for the
+        !! distance measurement to finish. Single and tracking measurements are
+        !! supported. The quality of the result is returned in the GeoCOM
+        !! return code.
+        class(geocom_class), intent(inout)         :: this          !! GeoCOM object.
+        real(kind=r8),       intent(out), optional :: easting       !! E coordinate [m].
+        real(kind=r8),       intent(out), optional :: northing      !! N coordinate [m]
+        real(kind=r8),       intent(out), optional :: height        !! H coordinate [m].
+        integer(kind=i8),    intent(out), optional :: time          !! Timestamp of distance measurement [msec].
+        real(kind=r8),       intent(out), optional :: cont_easting  !! E coordinate (continuously) [m].
+        real(kind=r8),       intent(out), optional :: cont_northing !! N coordinate (continuously) [m].
+        real(kind=r8),       intent(out), optional :: cont_height   !! H coordinate (continuously) [m].
+        integer(kind=i8),    intent(out), optional :: cont_time     !! Timestamp of continuous measurement [msec].
+        integer,             intent(in),  optional :: wait_time     !! Delay to wait for the distance measurement to finish [msec].
+        integer,             intent(in),  optional :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: delay         !! Request delay [msec].
+
+        integer            :: inc_mode_, wait_time_
+        type(request_type) :: request
+
+        call this%reset()
+
+        wait_time_ = 0
+        inc_mode_  = GEOCOM_TMC_MEA_INC
+
+        if (present(wait_time)) wait_time_ = max(0, wait_time)
+
+        if (present(inc_mode)) then
+            inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        end if
+
+        call dm_geocom_api_request_get_coordinate(request, wait_time_, inc_mode_)
+        call this%send(request, delay)
+
+        if (present(easting))       call dm_request_get(this%request, 'east',    easting,       default=0.0_r8)
+        if (present(northing))      call dm_request_get(this%request, 'north',   northing,      default=0.0_r8)
+        if (present(height))        call dm_request_get(this%request, 'height',  height,        default=0.0_r8)
+        if (present(time))          call dm_request_get(this%request, 'ctime',   time,          default=0_i8)
+        if (present(cont_easting))  call dm_request_get(this%request, 'eastc',   cont_easting,  default=0.0_r8)
+        if (present(cont_northing)) call dm_request_get(this%request, 'northc',  cont_northing, default=0.0_r8)
+        if (present(cont_height))   call dm_request_get(this%request, 'heightc', cont_height,   default=0.0_r8)
+        if (present(cont_time))     call dm_request_get(this%request, 'ctimec',  cont_time,     default=0_i8)
+    end subroutine geocom_get_coordinate
+
+    subroutine geocom_get_date_time(this, year, month, day, hour, minute, second, delay)
+        !! Sends *CSV_GetDateTime* request to sensor. The function returns
+        !! current date and time of the instrument.
+        class(geocom_class), intent(inout)         :: this   !! GeoCOM object.
+        integer,             intent(out), optional :: year   !! Year.
+        integer,             intent(out), optional :: month  !! Month.
+        integer,             intent(out), optional :: day    !! Day of month.
+        integer,             intent(out), optional :: hour   !! Hours.
+        integer,             intent(out), optional :: minute !! Minutes.
+        integer,             intent(out), optional :: second !! Seconds.
+        integer,             intent(in),  optional :: delay  !! Request delay [msec].
+
+        character          :: month_, day_, hour_, minute_, second_
+        integer            :: year_
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_date_time(request)
+        call this%send(request, delay)
+
+        call dm_request_get(this%request, 'year',   year_,   default=0)
+        call dm_request_get(this%request, 'month',  month_,  default=achar(0))
+        call dm_request_get(this%request, 'day',    day_,    default=achar(0))
+        call dm_request_get(this%request, 'hour',   hour_,   default=achar(0))
+        call dm_request_get(this%request, 'minute', minute_, default=achar(0))
+        call dm_request_get(this%request, 'second', second_, default=achar(0))
+
+        if (present(year))   year   = year_
+        if (present(month))  month  = iachar(month_)
+        if (present(day))    day    = iachar(day_)
+        if (present(hour))   hour   = iachar(hour_)
+        if (present(minute)) minute = iachar(minute_)
+        if (present(second)) second = iachar(second_)
+    end subroutine geocom_get_date_time
+
+    subroutine geocom_get_date_time_centi(this, year, month, day, hour, minute, second, csecond, delay)
+        !! Sends *CSV_GetDateTimeCentiSec* request to sensor. The function
+        !! returns the current date and time of the instrument, including
+        !! centiseconds.
+        class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
+        integer,             intent(out), optional :: year    !! Year.
+        integer,             intent(out), optional :: month   !! Month.
+        integer,             intent(out), optional :: day     !! Day of month.
+        integer,             intent(out), optional :: hour    !! Hours.
+        integer,             intent(out), optional :: minute  !! Minutes.
+        integer,             intent(out), optional :: second  !! Seconds.
+        integer,             intent(out), optional :: csecond !! Centiseconds.
+        integer,             intent(in),  optional :: delay   !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_date_time_centi(request)
+        call this%send(request, delay)
+
+        if (present(year))    call dm_request_get(this%request, 'year',    year,    default=0)
+        if (present(month))   call dm_request_get(this%request, 'month',   month,   default=0)
+        if (present(day))     call dm_request_get(this%request, 'day',     day,     default=0)
+        if (present(hour))    call dm_request_get(this%request, 'hour',    hour,    default=0)
+        if (present(minute))  call dm_request_get(this%request, 'minute',  minute,  default=0)
+        if (present(second))  call dm_request_get(this%request, 'second',  second,  default=0)
+        if (present(csecond)) call dm_request_get(this%request, 'csecond', csecond, default=0)
+    end subroutine geocom_get_date_time_centi
+
+    subroutine geocom_get_device_config(this, device_class, device_type, delay)
+        !! Sends *CSV_GetDeviceConfig* request to sensor. The function returns
+        !! the instrument configuration.
+        class(geocom_class), intent(inout)        :: this         !! GeoCOM object.
+        integer,             intent(out)          :: device_class !! Device precision class (`GEOCOM_TPS_DEVICE_CLASS`).
+        integer,             intent(out)          :: device_type  !! Device configuration type (`GEOCOM_TPS_DEVICE_TYPE`).
+        integer,             intent(in), optional :: delay        !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_device_config(request)
+        call this%send(request, delay)
+
+        call dm_request_get(this%request, 'devclass', device_class, default=0)
+        call dm_request_get(this%request, 'devtype',  device_type,  default=0)
+    end subroutine geocom_get_device_config
+
+    subroutine geocom_get_double_precision(this, ndigits, delay)
+        !! Sends *COM_GetDoublePrecision* request to sensor. The function
+        !! returns the double precision setting – the number of digits to the
+        !! right of the decimal point – when double floating-point values are
+        !! transmitted in `ndigits`.
+        class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
+        integer,             intent(out)          :: ndigits !! Number of digits to the right of the decimal point.
+        integer,             intent(in), optional :: delay   !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_double_precision(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'ndigits', ndigits, default=0)
+    end subroutine geocom_get_double_precision
+
+    subroutine geocom_get_edm_mode(this, edm_mode, delay)
+        !! Sends *TMC_GetEdmMode* request to sensor. The function returns the
+        !! EDM measurement mode in `edm_mode`.
+        class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
+        integer,             intent(out)          :: edm_mode !! EDM mode (`GEOCOM_EDM_MODE`).
+        integer,             intent(in), optional :: delay    !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_edm_mode(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'edmmode', edm_mode, default=0)
+    end subroutine geocom_get_edm_mode
+
+    subroutine geocom_get_egl_intensity(this, intensity, delay)
+        !! Sends *EDM_GetEglIntensity* request to sensor. The function returns
+        !! the value of the intensity of the electronic guide light (EGL) in
+        !! `intensity`.
+        class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
+        integer,             intent(out)          :: intensity !! EDM EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
+        integer,             intent(in), optional :: delay     !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_egl_intensity(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'eglint', intensity, default=0)
+    end subroutine geocom_get_egl_intensity
+
+    subroutine geocom_get_face(this, face, delay)
+        !! Sends *TMC_GetFace* request to sensor. The function returns the face
+        !! of the current telescope position in `face`.
+        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
+        integer,             intent(out)          :: face  !! Telescope face (`GEOCOM_TMC_FACE`).
+        integer,             intent(in), optional :: delay !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_face(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'face', face, default=0)
+    end subroutine geocom_get_face
+
+    subroutine geocom_get_fine_adjust_mode(this, adjust_mode, delay)
+        !! Sends *AUT_GetFineAdjustMode* to sensor. The function returns the
+        !! fine adjustment positioning mode in `adjust_mode`.
+        class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
+        integer,             intent(out)          :: adjust_mode !! Fine adjustment positioning mode (`GEOCOM_AUT_ADJMODE`).
+        integer,             intent(in), optional :: delay       !! Request delay [msec].
+
+        type(request_type) :: request
+
+        call this%reset()
+        call dm_geocom_api_request_get_fine_adjust_mode(request)
+        call this%send(request, delay)
+        call dm_request_get(this%request, 'adjmode', adjust_mode, default=0)
+    end subroutine geocom_get_fine_adjust_mode
+
+    subroutine geocom_get_full_measurement(this, hz, v, angle_accuracy, cross_incl, length_incl, incl_accuracy, &
+                                           slope_dist, dist_time, wait_time, inc_mode, delay)
+        !! Sends *TMC_GetFullMeas* request to sensor. The function returns
+        !! angle, inclination, and distance measurement data, including
+        !! accuracy and measurement time.
+        !!
+        !! This command does not issue a new distance measurement. A distance
+        !! measurement has to be started in advance. If the distance is valid,
+        !! the function ignores `wait_time` and returns the results
+        !! immediately. If no valid distance is available, and the measurement
+        !! unit is not activated, the angle measurement result is retuned after
+        !! the waiting time.
+        class(geocom_class), intent(inout)         :: this           !! GeoCOM object.
+        real(kind=r8),       intent(out), optional :: hz             !! Horizontal angle [rad].
+        real(kind=r8),       intent(out), optional :: v              !! Vertical angle [rad].
+        real(kind=r8),       intent(out), optional :: angle_accuracy !! Accuracy of angles [rad].
+        real(kind=r8),       intent(out), optional :: cross_incl     !! Cross inclination [rad].
+        real(kind=r8),       intent(out), optional :: length_incl    !! Length inclination [rad].
+        real(kind=r8),       intent(out), optional :: incl_accuracy  !! Inclination accuracy [rad].
+        real(kind=r8),       intent(out), optional :: slope_dist     !! Distance measurement [m].
+        real(kind=r8),       intent(out), optional :: dist_time      !! Time of distance measurement [msec].
+        integer,             intent(in),  optional :: wait_time      !! Delay to wait for the distance measurement to finish [msec].
+        integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: delay          !! Request delay [msec].
+
+        integer            :: inc_mode_, wait_time_
+        type(request_type) :: request
+
+        call this%reset()
+
+        wait_time_ = 0
+        inc_mode_  = GEOCOM_TMC_MEA_INC
+
+        if (present(wait_time)) wait_time_ = max(0, wait_time)
+
+        if (present(inc_mode)) then
+            inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        end if
+
+        call dm_geocom_api_request_get_full_measurement(request, wait_time, inc_mode)
+        call this%send(request, delay)
+
+        if (present(hz))             call dm_request_get(this%request, 'hz',       hz,             default=0.0_r8)
+        if (present(v))              call dm_request_get(this%request, 'v',        v,              default=0.0_r8)
+        if (present(angle_accuracy)) call dm_request_get(this%request, 'angacc',   angle_accuracy, default=0.0_r8)
+        if (present(cross_incl))     call dm_request_get(this%request, 'xinc',     cross_incl,     default=0.0_r8)
+        if (present(length_incl))    call dm_request_get(this%request, 'linc',     length_incl,    default=0.0_r8)
+        if (present(incl_accuracy))  call dm_request_get(this%request, 'incacc',   incl_accuracy,  default=0.0_r8)
+        if (present(slope_dist))     call dm_request_get(this%request, 'sdist',    slope_dist,     default=0.0_r8)
+        if (present(dist_time))      call dm_request_get(this%request, 'disttime', dist_time,      default=0.0_r8)
+    end subroutine geocom_get_full_measurement
 
     subroutine geocom_null(this, delay)
         !! Sends *COM_NullProc* request to sensor. API call for checking the
@@ -662,6 +1288,7 @@ contains
 
         type(request_type) :: request
 
+        call this%reset()
         call dm_geocom_api_request_null(request)
         call this%send(request, delay)
     end subroutine geocom_null
