@@ -212,7 +212,7 @@ contains
 
     pure elemental logical function dm_observ_valid(observ, id, timestamp) result(valid)
         !! Returns `.true.` if given observation is valid. An observation is
-        !! valid if it conforms to the following rules:
+        !! valid if it conforms to the following requirements:
         !!
         !! * A valid observation id, node id, sensor id, and target id are set,
         !!   and the observation id does not equal the default UUID, unless
@@ -229,11 +229,11 @@ contains
         !!   _requests_, or 0.
         !! * All receiver names are valid ids.
         !! * All requests and responses are valid.
+        !!
         type(observ_type), intent(in)           :: observ    !! Observation type.
-        logical,           intent(in), optional :: id        !! Validate or ignore ids.
-        logical,           intent(in), optional :: timestamp !! Validate or ignore timestamps.
+        logical,           intent(in), optional :: id        !! Enable id validation (on by default).
+        logical,           intent(in), optional :: timestamp !! Enable timestamp validation (on by default).
 
-        integer :: i
         logical :: id_, timestamp_
 
         valid = .false.
@@ -246,8 +246,9 @@ contains
 
         if (id_) then
             if (observ%id == UUID_DEFAULT) return
-            if (.not. dm_uuid4_valid(observ%id)) return
-            if (.not. dm_id_valid(observ%node_id)) return
+
+            if (.not. dm_uuid4_valid(observ%id))     return
+            if (.not. dm_id_valid(observ%node_id))   return
             if (.not. dm_id_valid(observ%sensor_id)) return
             if (.not. dm_id_valid(observ%target_id)) return
         end if
@@ -264,17 +265,17 @@ contains
 
         if (observ%priority < 0) return
         if (.not. dm_error_valid(observ%error)) return
-        if (observ%next < 0 .or. observ%next > OBSERV_MAX_NRECEIVERS) return
-        if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
-        if (observ%nrequests < 0 .or. observ%nrequests > OBSERV_MAX_NREQUESTS) return
 
-        do i = 1, observ%nreceivers
-            if (.not. dm_id_valid(observ%receivers(i))) return
-        end do
+        if (observ%next       < 0 .or. observ%next       > OBSERV_MAX_NRECEIVERS) return
+        if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
+        if (observ%nrequests  < 0 .or. observ%nrequests  > OBSERV_MAX_NREQUESTS)  return
+
+        if (observ%nreceivers > 0) then
+            if (.not. all(dm_id_valid(observ%receivers(1:observ%nreceivers)))) return
+        end if
 
         if (observ%nrequests > 0) then
-            valid = all(dm_request_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))
-            return
+            if (.not. all(dm_request_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))) return
         end if
 
         valid = .true.

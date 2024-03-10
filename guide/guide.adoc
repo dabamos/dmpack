@@ -97,10 +97,11 @@ networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
 The project appears to be abandoned. (GPLv3)
 link:http://istsos.org/[istSOS]:: A server implementation of the
 OGC Sensor Observation Service in Python, for managing and dispatching
-observations from monitoring sensors, but not in active development anymore. The
-project also provides a graphical user interface and a RESTful web API to
-automate administration procedures. Developed by Istituto Scienze della Terra,
-University of Applied Sciences and Arts of Southern Switzerland. (GPLv2)
+observations from monitoring sensors. The project also provides a graphical user
+interface and a RESTful web API to automate administration procedures. Developed
+by Istituto Scienze della Terra, University of Applied Sciences and Arts of
+Southern Switzerland. The software seems not to be actively maintained anymore.
+(GPLv2)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
@@ -116,8 +117,8 @@ link:https://github.com/project-mjolnir[Project Mjolnir]:: An open source
 client–server IoT architecture for scientific sensor networks written in
 Python, by University of Alabama in Huntsville and NASA. Includes a sensor
 client for data logging, uplink and control, as well as a server component to
-store, serve/display, and monitor data from remote sensors. Apparently, the
-development of the software is not continued. (MIT)
+store, serve/display, and monitor data from remote sensors. Further development
+of the software has been stopped. (MIT)
 link:http://www.agt.bme.hu/ulyxes/[Ulyxes]:: An open source project in Python to
 control robotic total stations (RTS) and other sensors, and to publish
 observation results on web based maps. Developed at the Department of Geodesy
@@ -1739,6 +1740,13 @@ calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
 base64-encoded data URI. Any style sheet file with classless CSS can be
 included to alter the presentation of the report. The output of *dmreport* is a
 single HTML file.
+
+Depending on the selected plot format, the environment variable `GDFONTPATH` may
+have to be set to the local font directory first:
+
+....
+$ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
+....
 
 If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
 `gnuplot-nox`, an alias has to be added to the global profile:
@@ -3504,8 +3512,8 @@ $ h5dump -H -A 0 observ.hdf5
 
 .Text [[data-api-text]]
 ....
-version=1.0
-dmpack=1.0
+version=1.0.0
+dmpack=1.0.0
 host=localhost
 server=lighttpd/1.4.70
 timestamp=1970-01-01T00:00:00.000000+00:00
@@ -5074,7 +5082,7 @@ performed observations are forwarded to <<dmdb>>.
 .Named log level parameters
 [cols="1,4,8"]
 |===
-| # | Name           | Description
+| # | Name           | Level
 
 | 0 | `LVL_NONE`     | invalid level
 | 1 | `LVL_DEBUG`    | debug level
@@ -5087,7 +5095,7 @@ performed observations are forwarded to <<dmdb>>.
 .Named response value type parameters
 [cols="1,6,8"]
 |===
-| # | Name                    | Description
+| # | Name                    | Type
 
 | 0 | `RESPONSE_TYPE_REAL64`  | 8-byte signed real
 | 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real
@@ -5416,7 +5424,7 @@ after which the device switches into the mode indicated by response `autopwr`.
 
 ==== geocom_get_coordinate(wait_time, inc_mode) [[lua-api-geocom-get-coordinate]]
 
-* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
 Returns request of *TMC_GetCoordinate* procedure. Creates request for getting
@@ -5472,7 +5480,7 @@ getting the fine adjustment positioning mode.
 
 ==== geocom_get_full_measurement(wait_time, inc_mode) [[lua-api-geocom-get-full-measurement]]
 
-* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
 Returns request of *TMC_GetFullMeas* procedure. The GeoCOM function returns
@@ -5617,7 +5625,7 @@ After the measurement, the EDM must be switched off with mode
 
 ==== geocom_get_simple_coordinates(wait_time, inc_mode) [[lua-api-geocom-get-simple-coordinates]]
 
-* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
 Returns request of *TMC_GetSimpleCoord* procedure. The API function returns the
@@ -5629,7 +5637,7 @@ measurement mode.
 
 ==== geocom_get_simple_measurement(wait_time, inc_mode) [[lua-api-geocom-get-simple-measurement]]
 
-* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [ms].
+* `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
 Returns request of *TMC_GetSimpleMea* procedure. The API function returns the
@@ -5829,7 +5837,7 @@ GeoCOM server to handle binary communication (not supported by DMPACK).
 ==== geocom_set_config(auto_power, timeout) [[lua-api-geocom-set-config]]
 
 * `auto_power` (_integer_) – Power-off mode (<<geocom-api-sup-auto-power,GEOCOM_SUP_AUTO_POWER>>).
-* `timeout`    (_integer_) – Timeout [ms].
+* `timeout`    (_integer_) – Timeout [msec].
 
 Returns request of *SUP_SetConfig* procedure. Creates request for setting the
 power management configuration. The argument `timeout` sets the duration after
@@ -5992,8 +6000,8 @@ destination area. This mode requires activated ATR.
 
 ==== geocom_set_positioning_timeout(time_hz, time_v) [[lua-api-geocom-set-positioning-timeout]]
 
-* `time_hz` (_number_) – Timeout in Hz direction [s].
-* `time_v`  (_number_) – Timeout in V direction [s].
+* `time_hz` (_number_) – Timeout in Hz direction [sec].
+* `time_v`  (_number_) – Timeout in V direction [sec].
 
 Returns request of *AUT_SetTimeout* procedure. This function sets the maximum
 time to perform a positioning. The timeout is reset on 7 seconds after each
@@ -6148,8 +6156,8 @@ dimensions of the ATR search window (GeoCOM robotic licence required).
 
 ==== geocom_set_velocity(omega_hz, omega_v) [[lua-api-geocom-set-velocity]]
 
-* `omega_hz` (_number_) – Velocity in Hz direction [rad/s].
-* `omega_v`  (_number_) – Velocity in V direction [rad/s].
+* `omega_hz` (_number_) – Velocity in Hz direction [rad/sec].
+* `omega_v`  (_number_) – Velocity in V direction [rad/sec].
 
 Returns request of *MOT_SetVelocity* procedure. Creates request for driving the
 instrument with constant speed.
@@ -6159,8 +6167,8 @@ licence required). The API function
 <<lua-api-geocom-start-controller,geocom_start_controller()>> must have been
 called with argument `GEOCOM_MOT_OCONST` before.
 
-The velocity in horizontal and vertical direction are in [rad/s]. The maximum
-velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s for TPS1100/TPS1200.
+The velocity in horizontal and vertical direction are in [rad/sec]. The maximum
+velocity is ±3.14 rad/sec for TM30/TS30, and ±0.79 rad/sec for TPS1100/TPS1200.
 
 ==== geocom_setup_download(device_type, file_type, file_name, block_size) [[lua-api-geocom-setup-download]]
 

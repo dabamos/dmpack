@@ -2,14 +2,14 @@
 ! Licence: ISC
 module dm_regex
     !! Abstraction layer over PCRE2.
-    use, intrinsic :: iso_c_binding, only: c_associated, c_null_ptr, c_ptr
+    use, intrinsic :: iso_c_binding
     use :: pcre2
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REGEX_OVEC_SIZE = 150 !! PCRE2 `O` vector size (multiple of 3).
+    integer, parameter, public :: REGEX_OVEC_SIZE = 150 !! PCRE2 O-vector size (must be multiple of 3).
 
     type, public :: regex_type
         !! Opaque regular expression type.
@@ -70,6 +70,7 @@ contains
         !! * `E_REGEX_NO_GROUP` if no group matches.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !! * `E_REGEX` if an PCRE2 library error occured.
+        !!
         type(regex_type),              intent(inout) :: regex   !! Regular expression type.
         character(len=*),              intent(in)    :: subject !! Input string.
         character(len=*),              intent(in)    :: name    !! Group name.
@@ -121,6 +122,7 @@ contains
         !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !! * `E_REGEX` if an PCRE2 library error occured.
+        !!
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
         character(len=*), intent(in)    :: subject !! Input string to match against.
 
@@ -171,9 +173,11 @@ contains
         !! * `E_EMPTY` if response string of regular expression group is empty.
         !! * `E_INCOMPLETE` if response could not be extracted.
         !! * `E_REGEX_NO_GROUP` if no regular expression group matches.
+        !!
         use :: dm_request
         use :: dm_response
         use :: dm_string
+
         type(request_type), intent(inout) :: request !! Request type.
 
         character(len=:), allocatable :: buffer
@@ -274,7 +278,9 @@ contains
         !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_GROUP` if `name` does not match any group.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
+        !!
         use :: dm_request
+
         type(request_type),            intent(inout)        :: request !! Request type.
         character(len=*),              intent(in)           :: name    !! Response name or regular expression group.
         character(len=:), allocatable, intent(out)          :: string  !! String extracted from group `name`.

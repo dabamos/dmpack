@@ -34,7 +34,7 @@ program main
     call dm_init()
 
     ! Call any DMPACK procedures here.
-    call dm_version_out('none', 0, 0, 0)
+    call dm_version_out()
 end program main
 ```
 

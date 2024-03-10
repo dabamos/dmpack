@@ -55,21 +55,21 @@ module dm_request
     interface dm_request_get
         !! Generic function to get value, unit, type, and error of a response.
         module procedure :: request_get_byte
-        module procedure :: request_get_i4
-        module procedure :: request_get_i8
-        module procedure :: request_get_l
-        module procedure :: request_get_r4
-        module procedure :: request_get_r8
+        module procedure :: request_get_int32
+        module procedure :: request_get_int64
+        module procedure :: request_get_logical
+        module procedure :: request_get_real32
+        module procedure :: request_get_real64
         module procedure :: request_get_type
     end interface
 
     interface dm_request_set
         !! Generic function to set value, unit, type, and error of a response.
-        module procedure :: request_set_i4
-        module procedure :: request_set_i8
-        module procedure :: request_set_l
-        module procedure :: request_set_r4
-        module procedure :: request_set_r8
+        module procedure :: request_set_int32
+        module procedure :: request_set_int64
+        module procedure :: request_set_logical
+        module procedure :: request_set_real32
+        module procedure :: request_set_real64
     end interface
 
     public :: operator (==)
@@ -85,26 +85,34 @@ module dm_request
     public :: dm_request_valid
 
     ! Private procedures.
-    private :: request_set_i4
-    private :: request_set_i8
-    private :: request_set_l
-    private :: request_set_r4
-    private :: request_set_r8
+    private :: request_set_int32
+    private :: request_set_int64
+    private :: request_set_logical
+    private :: request_set_real32
+    private :: request_set_real64
 
-    private :: request_get_i4
-    private :: request_get_i8
-    private :: request_get_l
-    private :: request_get_r4
-    private :: request_get_r8
+    private :: request_get_int32
+    private :: request_get_int64
+    private :: request_get_logical
+    private :: request_get_real32
+    private :: request_get_real64
     private :: request_get_type
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     integer function dm_request_add(request, response) result(rc)
-        !! Appends response to the given request.
+        !! Validates and appends response to the given request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if the responses array is full.
+        !! * `E_INVALID` if the response is invalid.
+        !!
+        !! The request attribute `nresponses` must be between 0 and one less
+        !! than `REQUEST_MAX_NRESPONSES` for the response to be added.
         type(request_type),  intent(inout) :: request  !! Request type.
-        type(response_type), intent(inout) :: response !! Response data.
+        type(response_type), intent(inout) :: response !! Response to add.
 
         rc = E_BOUNDS
         if (request%nresponses < 0 .or. request%nresponses >= REQUEST_MAX_NRESPONSES) return
@@ -144,8 +152,7 @@ contains
         n = max(0, min(REQUEST_MAX_NRESPONSES, request1%nresponses))
 
         if (n > 0) then
-            equals = all(dm_response_equals(request1%responses(1:n), request2%responses(1:n)))
-            return
+            if (.not. all(dm_response_equals(request1%responses(1:n), request2%responses(1:n)))) return
         end if
 
         equals = .true.
@@ -204,7 +211,7 @@ contains
 
     pure elemental logical function dm_request_valid(request, timestamp) result(valid)
         !! Returns `.true.` if given observation request is valid. A request is
-        !! valid if it conforms to the following rules:
+        !! valid if it conforms to the following requirements:
         !!
         !! * A request name is set and a valid id.
         !! * A time stamp is set and in ISO 8601 format, unless argument
@@ -216,6 +223,7 @@ contains
         !! * The attribute _nresponses_ is within the bounds of array
         !!   _responses_.
         !! * All responses are valid.
+        !!
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
@@ -338,7 +346,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine request_get_byte
 
-    pure elemental subroutine request_get_i4(request, name, value, unit, type, error, status, default)
+    pure elemental subroutine request_get_int32(request, name, value, unit, type, error, status, default)
         !! Returns 4-byte integer response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -389,9 +397,9 @@ contains
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
         if (present(error)) error = E_NONE
-    end subroutine request_get_i4
+    end subroutine request_get_int32
 
-    pure elemental subroutine request_get_i8(request, name, value, unit, type, error, status, default)
+    pure elemental subroutine request_get_int64(request, name, value, unit, type, error, status, default)
         !! Returns 8-byte integer response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -442,9 +450,9 @@ contains
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
         if (present(error)) error = E_NONE
-    end subroutine request_get_i8
+    end subroutine request_get_int64
 
-    pure elemental subroutine request_get_l(request, name, value, unit, type, error, status, default)
+    pure elemental subroutine request_get_logical(request, name, value, unit, type, error, status, default)
         !! Returns logical response value, unit, type, and error of response of
         !! name `name`.
         !!
@@ -495,9 +503,9 @@ contains
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
         if (present(error)) error = E_NONE
-    end subroutine request_get_l
+    end subroutine request_get_logical
 
-    pure elemental subroutine request_get_r4(request, name, value, unit, type, error, status, default)
+    pure elemental subroutine request_get_real32(request, name, value, unit, type, error, status, default)
         !! Returns 4-byte real response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -548,9 +556,9 @@ contains
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
         if (present(error)) error = E_NONE
-    end subroutine request_get_r4
+    end subroutine request_get_real32
 
-    pure elemental subroutine request_get_r8(request, name, value, unit, type, error, status, default)
+    pure elemental subroutine request_get_real64(request, name, value, unit, type, error, status, default)
         !! Returns 8-byte real response value, unit, type, and error of
         !! response of name `name`.
         !!
@@ -601,7 +609,7 @@ contains
         if (present(unit))  unit  = ' '
         if (present(type))  type  = VALUE_TYPE
         if (present(error)) error = E_NONE
-    end subroutine request_get_r8
+    end subroutine request_get_real64
 
     pure elemental subroutine request_get_type(request, name, response, status, default)
         !! Returns response of name `name`.
@@ -640,7 +648,7 @@ contains
         endif
     end subroutine request_get_type
 
-    pure elemental subroutine request_set_i4(request, index, name, value, unit, error)
+    pure elemental subroutine request_set_int32(request, index, name, value, unit, error)
         !! Updates response name, value, and optional unit and error, of
         !! response at position `index` to given 4-byte integer value. This
         !! routine does not update the number of responses
@@ -666,9 +674,9 @@ contains
         else
             request%responses(index)%error = E_NONE
         end if
-    end subroutine request_set_i4
+    end subroutine request_set_int32
 
-    pure elemental subroutine request_set_i8(request, index, name, value, unit, error)
+    pure elemental subroutine request_set_int64(request, index, name, value, unit, error)
         !! Updates response name, value, and optional unit and error, of
         !! response at position `index` to given 8-byte integer value. This
         !! routine does not update the number of responses
@@ -694,9 +702,9 @@ contains
         else
             request%responses(index)%error = E_NONE
         end if
-    end subroutine request_set_i8
+    end subroutine request_set_int64
 
-    pure elemental subroutine request_set_l(request, index, name, value, unit, error)
+    pure elemental subroutine request_set_logical(request, index, name, value, unit, error)
         !! Updates response name, value, and optional unit and error, of
         !! response at position `index` to given logical value. This routine
         !! does not update the number of responses `request%nresponses`. No
@@ -722,9 +730,9 @@ contains
         else
             request%responses(index)%error = E_NONE
         end if
-    end subroutine request_set_l
+    end subroutine request_set_logical
 
-    pure elemental subroutine request_set_r4(request, index, name, value, unit, error)
+    pure elemental subroutine request_set_real32(request, index, name, value, unit, error)
         !! Updates response name, value, and optional unit and error, of
         !! response at position `index` to given 4-byte real value. This
         !! routine does not update the number of responses
@@ -750,9 +758,9 @@ contains
         else
             request%responses(index)%error = E_NONE
         end if
-    end subroutine request_set_r4
+    end subroutine request_set_real32
 
-    pure elemental subroutine request_set_r8(request, index, name, value, unit, error)
+    pure elemental subroutine request_set_real64(request, index, name, value, unit, error)
         !! Updates response name, value, and optional unit and error, of
         !! response at position `index` to given 8-byte real value. This
         !! routine does not update the number of responses
@@ -778,5 +786,5 @@ contains
         else
             request%responses(index)%error = E_NONE
         end if
-    end subroutine request_set_r8
+    end subroutine request_set_real64
 end module dm_request

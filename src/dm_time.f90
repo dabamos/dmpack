@@ -5,8 +5,8 @@ module dm_time
     !! date and time format. Date and time are separated by character `T`. The
     !! time has microsecond resolution, a time zone is mandatory. A valid
     !! timestamp must contain at least the full year, and be between 4 and 32
-    !! characters long. The string `1970-01-01T00:00:00.000000+00:00` is a
-    !! valid DMPACK time stamp.
+    !! characters long. For example, the string
+    !! `1970-01-01T00:00:00.000000+00:00` is a valid DMPACK time stamp.
     use :: dm_error
     use :: dm_kind
     use :: dm_util
@@ -16,8 +16,8 @@ module dm_time
     ! The parameter `TIME_LEN` as the length of a character string that stores a
     ! time stamp. Make sure that hard-coded edit descriptors match the length,
     ! for instance, in modules `dm_block`, `dm_dp`, and `dm_plot`.
-    integer,          parameter, public :: TIME_LEN       = 32 !! ISO 8601 time stamp length.
-    integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Human-readable time stamp length.
+    integer,          parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
+    integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Length of human-readable time stamp.
     character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
     type, public :: time_delta_type
@@ -49,6 +49,7 @@ module dm_time
     public :: dm_time_to_unix
     public :: dm_time_valid
     public :: dm_time_zone
+    public :: dm_time_zone_iso
 
     private:: time_from_unix_integer
     private:: time_from_unix_string
@@ -145,12 +146,18 @@ contains
     end function dm_time_delta_to_string
 
     impure elemental integer function dm_time_diff(time1, time2, seconds) result(rc)
-        !! Returns the time delta between `time1` and `time2` as 8-byte integer
-        !! `seconds` (measured in seconds). The function does not validate the
-        !! time stamps. Make sure, to only pass valid values.
-        character(len=*), intent(in)  :: time1   !! ISO 8601 time stamp.
-        character(len=*), intent(in)  :: time2   !! ISO 8601 time stamp.
-        integer(kind=i8), intent(out) :: seconds !! Time delta in seconds.
+        !! Returns the time difference between `time1` and `time2` as 8-byte
+        !! integer `seconds` (measured in seconds). The function does not
+        !! validate the time stamps. Make sure, to only pass valid values.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if one time stamp or both are invalid.
+        !! * `E_SYSTEM` if the system call failed.
+        !!
+        character(len=TIME_LEN), intent(in)  :: time1   !! ISO 8601 time stamp.
+        character(len=TIME_LEN), intent(in)  :: time2   !! ISO 8601 time stamp.
+        integer(kind=i8),        intent(out) :: seconds !! Time delta in seconds.
 
         integer          :: u1, u2 ! Microseconds.
         integer(kind=i8) :: t1, t2 ! Seconds.
@@ -169,6 +176,7 @@ contains
     integer(kind=i8) function dm_time_mseconds() result(mseconds)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch).
         use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
+
         type(c_timespec) :: tp
 
         mseconds = 0
@@ -181,6 +189,7 @@ contains
         !! 8601/RFC 3339 format (`1970-01-01T00:00:00.000000+00:00`), and
         !! microsecond resolution.
         use :: unix
+
         character(len=*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, sp, i0.2, ss, ":", i0.2)'
 
@@ -228,8 +237,8 @@ contains
     pure elemental character(len=25) function dm_time_strip_useconds(time) result(str)
         !! Strips the microseconds part of the given ISO 8601 time stamp and
         !! returns a 25-characters long string. The function does not validate
-        !! the time stamp. Make sure, only a valid 32-characters long ISO 8601
-        !! time stamp is passed in `time`.
+        !! the time stamp for performance reasons. Make sure that only a valid
+        !! 32-characters long ISO 8601 time stamp is passed in `time`.
         character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
 
         write (str, '(a19, a6)') time(1:19), time(27:32)
@@ -241,8 +250,8 @@ contains
         !! (_.beat time_) in the form `@1000.00` in `beats`. One beat is
         !! equivalent to one decimal minute in the French decimal time (1 min
         !! 26.4 sec in Solar time).
-        character(len=*), intent(in)  :: time  !! ISO 8601 time stamp.
-        character(len=8), intent(out) :: beats !! Timestamp converted to _.beat_.
+        character(len=TIME_LEN), intent(in)  :: time  !! ISO 8601 time stamp.
+        character(len=8),        intent(out) :: beats !! Timestamp converted to _.beat_.
 
         integer          :: hour, minute, second
         integer(kind=i8) :: bmt, utc
@@ -261,7 +270,7 @@ contains
     pure elemental function dm_time_to_human(time) result(human)
         !! Returns time stamp as 26-characters long string in human-readable
         !! format. Converts the given ISO 8601 time stamp `time` in format
-        !! `1970-01-01T00:00:00.000000+00:00` to time stamp in format
+        !! `1970-01-01T00:00:00.000000+00:00` to format
         !! `1970-01-01 00:00:00 +00:00`. The argument `time` is not validated.
         !! Make sure to only pass valid values.
         !!
@@ -282,9 +291,10 @@ contains
         !! The function returns `E_INVALID` if the given ISO 8601 time stamp
         !! `time` is invalid. However, this function does not perform a full
         !! validation of the time stamp for performance reasons. Make sure to
-        !! only pass valid time stamps.  If the call to `timegm()` fails,
+        !! only pass valid time stamps. If the call to `timegm()` fails,
         !! `E_SYSTEM` is returned.
         use :: unix, only: c_timegm, c_tm
+
         character(len=*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i6, i3, 1x, i2)'
 
         character(len=TIME_LEN), intent(in)            :: time     !! ISO 8601 time stamp.
@@ -328,8 +338,9 @@ contains
         !! time stamp does not have to be complete to be valid, unless `strict`
         !! is `.true.`. Then, argument `time` must be 32-characters long.
         !! Otherwise, the minimum length of a time stamp to be valid is 4
-        !! characters, but not more than 32.
+        !! characters, the maximum is 32 characters.
         use :: dm_ascii, only: dm_ascii_is_digit
+
         character(len=*), intent(in)           :: time   !! ISO 8601 time stamp to validate.
         logical,          intent(in), optional :: strict !! Validate length (must be 32 characters).
 
@@ -383,10 +394,20 @@ contains
         call date_and_time(zone=zone)
     end function dm_time_zone
 
+    character(len=6) function dm_time_zone_iso() result(zone)
+        !! Returns current time zone as six characters long string (ISO format),
+        !! for example, `+00:00`.
+        character(len=5) :: z
+
+        call date_and_time(zone=z)
+        write (zone, '(a3, ":", a2)') z(1:3), z(4:5)
+    end function dm_time_zone_iso
+
     subroutine dm_time_strings(year, month, day, hour, minute, second, usecond, zone_hour, zone_minute, zone)
         !! Returns current date and time values as strings in given dummy
         !! arguments.
         use :: unix
+
         character(len=4), intent(out), optional :: year        !! Current year (`YYYY`).
         character(len=2), intent(out), optional :: month       !! Current month (`MM`).
         character(len=2), intent(out), optional :: day         !! Current day (`DD`).
@@ -427,13 +448,13 @@ contains
     ! ******************************************************************
     impure elemental integer function time_from_unix_integer(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to broken-down time
-        !! representation. Returns `E_SYSTEM` if the system call failed.
+        !! representation. The argument `epoch` is the number of seconds
+        !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).  The
+        !! function calls `gmtime_r()` internally (SUSv2).
         !!
-        !! The argument `epoch` is the number of seconds elapsed since the
-        !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
-        !!
-        !! The function calls `gmtime_r()` internally (SUSv2).
+        !! Returns `E_SYSTEM` if the system call failed.
         use :: unix
+
         integer(kind=i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
         integer,          intent(out), optional :: year   !! Year part of time stamp.
         integer,          intent(out), optional :: month  !! Month part of time stamp.
@@ -462,14 +483,15 @@ contains
 
     impure elemental integer function time_from_unix_string(epoch, time) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to ISO 8601
-        !! representation. Returns `E_SYSTEM` if the system call failed.
+        !! representation. The argument `epoch` is the number of seconds
+        !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). The
+        !! function calls `gmtime_r()` internally (SUSv2).
         !!
-        !! The argument `epoch` is the number of seconds elapsed since the
-        !! Epoch, 1970-01-01 00:00:00 +0000 (UTC).
-        !!
-        !! The function calls `gmtime_r()` internally (SUSv2).
+        !! Returns `E_SYSTEM` if the system call failed.
         use :: unix
-        character(len=*), parameter :: FMT_ISO = '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".000000+00:00")'
+
+        character(len=*), parameter :: FMT_ISO = &
+            '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".000000+00:00")'
 
         integer(kind=i8),        intent(in)  :: epoch !! Unix time stamp in seconds (UTC).
         character(len=TIME_LEN), intent(out) :: time  !! ISO 8601 representation.

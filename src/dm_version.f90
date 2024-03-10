@@ -15,6 +15,12 @@ module dm_version
                                                                achar(DM_VERSION_MINOR + 48) // '.' // &
                                                                achar(DM_VERSION_PATCH + 48) !! DMPACK version as string.
 
+    interface dm_version_out
+        !! Generic DMPACK version output routine.
+        module procedure :: dm_version_out_app
+        module procedure :: dm_version_out_lib
+    end interface
+
     interface dm_version_to_string
         !! Generic DMPACK version formatters.
         module procedure :: dm_version_to_string_app
@@ -22,13 +28,20 @@ module dm_version
         module procedure :: dm_version_to_string_short
     end interface
 
+    ! Public procedures.
     public :: dm_version_out
     public :: dm_version_to_string
 
+    ! Private procedures.
+    private :: dm_version_out_app
+    private :: dm_version_out_lib
     private :: dm_version_to_string_app
     private :: dm_version_to_string_long
     private :: dm_version_to_string_short
 contains
+    ! ******************************************************************
+    ! PRIVATE PROCEDURES.
+    ! ******************************************************************
     pure function dm_version_to_string_app(name, major, minor, patch, library) result(str)
         !! Returns allocatable string of application version, with optional
         !! DMPACK library version appended if `library` is `.true.`.
@@ -73,8 +86,8 @@ contains
         write (str, '(i1, ".", i1)') major, minor
     end function dm_version_to_string_short
 
-    subroutine dm_version_out(name, major, minor, patch)
-        !! Prints DMPACK and application version to standard output.
+    subroutine dm_version_out_app(name, major, minor, patch)
+        !! Prints application and DMPACK library version to standard output.
         character(len=*), intent(in) :: name  !! Application name.
         integer,          intent(in) :: major !! Major version number of application.
         integer,          intent(in) :: minor !! Minor version number of application.
@@ -82,5 +95,10 @@ contains
 
         print '(a, 1x, i1, 2(".", i1), " (DMPACK ", a, ")")', &
             trim(name), major, minor, patch, DM_VERSION_STRING
-    end subroutine dm_version_out
+    end subroutine dm_version_out_app
+
+    subroutine dm_version_out_lib()
+        !! Prints DMPACK library version to standard output.
+        print '("DMPACK ", a)', DM_VERSION_STRING
+    end subroutine dm_version_out_lib
 end module dm_version

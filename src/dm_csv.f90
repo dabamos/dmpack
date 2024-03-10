@@ -10,7 +10,7 @@ module dm_csv
     implicit none (type, external)
     private
 
-    character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV separator character.
+    character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV field separator.
     integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
     interface dm_csv_from
