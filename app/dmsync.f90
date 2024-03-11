@@ -10,7 +10,7 @@ program dmsync
     character(len=*), parameter :: APP_NAME  = 'dmsync'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     integer, parameter :: APP_DB_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -253,10 +253,8 @@ contains
         integer                        :: delay, i, j, n, stat
         integer(kind=i8)               :: limit, nsyncs
         real(kind=r8)                  :: dt
-
-        type(api_status_type) :: api
-        type(timer_type)      :: sync_timer
-        type(timer_type)      :: rpc_timer
+        type(timer_type)               :: sync_timer
+        type(timer_type)               :: rpc_timer
 
         character(len=ID_LEN),   allocatable :: ids(:)       ! Derived type ids.
         type(rpc_request_type),  allocatable :: requests(:)  ! HTTP-RPC requests.
@@ -394,6 +392,9 @@ contains
 
             ! Send records concurrently to HTTP-RPC API.
             rpc_block: block
+                logical               :: has_api_status
+                type(api_status_type) :: api_status
+
                 if (n == 0) then
                     call dm_log_debug('no ' // name // 's to sync found')
                     exit rpc_block
@@ -430,8 +431,16 @@ contains
                 end if
 
                 update_loop: do i = 1, n
+                    ! Read API status response from payload.
+                    has_api_status = .false.
+
+                    if (responses(i)%content_type == MIME_TEXT) then
+                        stat = dm_api_status_from_string(responses(i)%payload, api_status)
+                        has_api_status = dm_is_ok(stat)
+                    end if
+
                     ! Log the HTTP response code.
-                    code_select: select case (responses(i)%code)
+                    select case (responses(i)%code)
                         case (0)
                             ! Failed to connect.
                             call dm_log_warning('connection to host ' // trim(app%host) // ' failed: ' // &
@@ -447,7 +456,12 @@ contains
 
                         case (HTTP_UNAUTHORIZED)
                             ! Missing or wrong API credentials.
-                            call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                            if (has_api_status) then
+                                call dm_log_error('unauthorized access on host ' // trim(app%host) // ': ' // &
+                                                  api_status%message, error=E_RPC_AUTH)
+                            else
+                                call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                            end if
 
                         case (HTTP_INTERNAL_SERVER_ERROR)
                             ! Server crashed.
@@ -458,24 +472,16 @@ contains
                             call dm_log_error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
 
                         case default
-                            ! MIME type `text/plain` indicates API status response.
-                            if (responses(i)%content_type == MIME_TEXT) then
-                                ! Convert response text to API type.
-                                stat = dm_api_status_from_string(api, responses(i)%payload)
-
-                                if (dm_is_ok(stat)) then
-                                    write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
-                                        trim(app%host), responses(i)%code, api%message
-                                    call dm_log_error(message, error=api%error)
-                                    exit code_select
-                                end if
+                            if (has_api_status) then
+                                write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
+                                    trim(app%host), responses(i)%code, api_status%message
+                                call dm_log_error(message, error=api_status%error)
+                            else
+                                write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
+                                    trim(app%host), responses(i)%code
+                                call dm_log_warning(message, error=E_RPC_API)
                             end if
-
-                            ! Otherwise, output generic log message.
-                            write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
-                                trim(app%host), responses(i)%code
-                            call dm_log_warning(message, error=E_RPC_API)
-                    end select code_select
+                    end select
 
                     ! Update sync data.
                     syncs(i)%timestamp = dm_time_now()         ! Time of sync attempt.

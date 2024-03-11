@@ -45,22 +45,22 @@ module dm_lua
 
     interface dm_lua_field
         !! Pushes table element on stack and optionally returns value.
-        module procedure :: lua_field_
-        module procedure :: lua_field_a
-        module procedure :: lua_field_i4
-        module procedure :: lua_field_i8
-        module procedure :: lua_field_l
-        module procedure :: lua_field_r8
+        module procedure :: lua_field_int32
+        module procedure :: lua_field_int64
+        module procedure :: lua_field_logical
+        module procedure :: lua_field_real64
+        module procedure :: lua_field_stack
+        module procedure :: lua_field_string
     end interface
 
     interface dm_lua_get
         !! Pushes table index on stack and optionally returns value.
-        module procedure :: lua_get_
-        module procedure :: lua_get_a
-        module procedure :: lua_get_i4
-        module procedure :: lua_get_i8
-        module procedure :: lua_get_l
-        module procedure :: lua_get_r8
+        module procedure :: lua_get_int32
+        module procedure :: lua_get_int64
+        module procedure :: lua_get_logical
+        module procedure :: lua_get_real64
+        module procedure :: lua_get_stack
+        module procedure :: lua_get_string
     end interface
 
     interface dm_lua_from
@@ -71,12 +71,12 @@ module dm_lua
 
     interface dm_lua_read
         !! Pushes global variable on stack and optionally returns value.
-        module procedure :: lua_read_
-        module procedure :: lua_read_a
-        module procedure :: lua_read_i4
-        module procedure :: lua_read_i8
-        module procedure :: lua_read_l
-        module procedure :: lua_read_r8
+        module procedure :: lua_read_int32
+        module procedure :: lua_read_int64
+        module procedure :: lua_read_logical
+        module procedure :: lua_read_real64
+        module procedure :: lua_read_stack
+        module procedure :: lua_read_string
     end interface
 
     interface dm_lua_to
@@ -125,29 +125,29 @@ module dm_lua
     public :: dm_lua_version
 
     ! Private procedures.
-    private :: lua_field_
-    private :: lua_field_a
-    private :: lua_field_i4
-    private :: lua_field_i8
-    private :: lua_field_l
-    private :: lua_field_r8
+    private :: lua_field_int32
+    private :: lua_field_int64
+    private :: lua_field_logical
+    private :: lua_field_real64
+    private :: lua_field_stack
+    private :: lua_field_string
 
     private :: lua_from_observ
     private :: lua_from_request
 
-    private :: lua_get_
-    private :: lua_get_a
-    private :: lua_get_i4
-    private :: lua_get_i8
-    private :: lua_get_l
-    private :: lua_get_r8
+    private :: lua_get_int32
+    private :: lua_get_int64
+    private :: lua_get_logical
+    private :: lua_get_real64
+    private :: lua_get_stack
+    private :: lua_get_string
 
-    private :: lua_read_
-    private :: lua_read_a
-    private :: lua_read_i4
-    private :: lua_read_i8
-    private :: lua_read_l
-    private :: lua_read_r8
+    private :: lua_read_int32
+    private :: lua_read_int64
+    private :: lua_read_logical
+    private :: lua_read_real64
+    private :: lua_read_stack
+    private :: lua_read_string
 
     private :: lua_to_job
     private :: lua_to_job_list
@@ -495,7 +495,115 @@ contains
     ! ******************************************************************
     ! PRIVATE FUNCTIONS.
     ! ******************************************************************
-    integer function lua_field_(lua, name) result(rc)
+    integer function lua_field_int32(lua, name, value) result(rc)
+        !! Returns 4-byte integer from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type integer.
+        !!
+        !! On error, `value` will not be overwritten.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Table field name.
+        integer(kind=i4),     intent(inout) :: value !! Table field value.
+
+        lua_block: block
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
+
+            rc = E_NONE
+            value = int(lua_tointeger(lua%ptr, -1), kind=i4)
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+    end function lua_field_int32
+
+    integer function lua_field_int64(lua, name, value) result(rc)
+        !! Returns 8-byte integer from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type integer.
+        !!
+        !! On error, `value` will not be overwritten.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Table field name.
+        integer(kind=i8),     intent(inout) :: value !! Table field value.
+
+        lua_block: block
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
+
+            rc = E_NONE
+            value = lua_tointeger(lua%ptr, -1)
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+    end function lua_field_int64
+
+    integer function lua_field_logical(lua, name, value) result(rc)
+        !! Returns logical from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type boolean.
+        !!
+        !! On error, `value` will not be overwritten.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Table field name.
+        logical,              intent(inout) :: value !! Table field value.
+
+        lua_block: block
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_isboolean(lua%ptr, -1) /= 1) exit lua_block
+
+            rc = E_NONE
+            value = lua_toboolean(lua%ptr, -1)
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+    end function lua_field_logical
+
+    integer function lua_field_real64(lua, name, value) result(rc)
+        !! Returns 8-byte real from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type number.
+        !!
+        !! On error, `value` will not be overwritten.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Table field name.
+        real(kind=r8),        intent(inout) :: value !! Table field value.
+
+        lua_block: block
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_isnumber(lua%ptr, -1) /= 1) exit lua_block
+
+            rc = E_NONE
+            value = lua_tonumber(lua%ptr, -1)
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+    end function lua_field_real64
+
+    integer function lua_field_stack(lua, name) result(rc)
         !! Pushes table field of given name on stack.
         !!
         !! The function returns the following error codes:
@@ -507,9 +615,9 @@ contains
         rc = E_EMPTY
         if (lua_getfield(lua%ptr, -1, name) == LUA_TNIL) return
         rc = E_NONE
-    end function lua_field_
+    end function lua_field_stack
 
-    integer function lua_field_a(lua, name, value, unescape) result(rc)
+    integer function lua_field_string(lua, name, value, unescape) result(rc)
         !! Returns character string from table field `name` in `value`. If
         !! `unescape` is passed and `.true.`, the returned string will have all
         !! occurences of `\\` replaced by `\`.
@@ -555,24 +663,28 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_field_a
+    end function lua_field_string
 
-    integer function lua_field_i4(lua, name, value) result(rc)
-        !! Returns 4-byte integer from table field `name` in `value`.
+    integer function lua_get_int32(lua, i, value) result(rc)
+        !! Returns 4-byte integer from table element `i` in `value`.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_TYPE` if the field is not of type integer.
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        integer(kind=i4),     intent(inout) :: value !! Table field value.
+        integer,              intent(in)    :: i     !! Variable index.
+        integer,              intent(inout) :: value !! Variable value.
 
         lua_block: block
+            rc = E_INVALID
+            if (lua_istable(lua%ptr, -1) == 0) return
+
             rc = E_EMPTY
-            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
@@ -582,24 +694,28 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_field_i4
+    end function lua_get_int32
 
-    integer function lua_field_i8(lua, name, value) result(rc)
-        !! Returns 8-byte integer from table field `name` in `value`.
+    integer function lua_get_int64(lua, i, value) result(rc)
+        !! Returns 8-byte integer from table element `i` in `value`.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_TYPE` if the field is not of type integer.
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        integer(kind=i8),     intent(inout) :: value !! Table field value.
+        integer,              intent(in)    :: i     !! Variable index.
+        integer(kind=i8),     intent(inout) :: value !! Variable value.
 
         lua_block: block
+            rc = E_INVALID
+            if (lua_istable(lua%ptr, -1) == 0) return
+
             rc = E_EMPTY
-            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
@@ -609,24 +725,28 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_field_i8
+    end function lua_get_int64
 
-    integer function lua_field_l(lua, name, value) result(rc)
-        !! Returns logical from table field `name` in `value`.
+    integer function lua_get_logical(lua, i, value) result(rc)
+        !! Returns logical from table element `i` in `value`.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_TYPE` if the field is not of type boolean.
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type boolean.
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        logical,              intent(inout) :: value !! Table field value.
+        integer,              intent(in)    :: i     !! Variable index.
+        logical,              intent(inout) :: value !! Variable value.
 
         lua_block: block
+            rc = E_INVALID
+            if (lua_istable(lua%ptr, -1) == 0) return
+
             rc = E_EMPTY
-            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isboolean(lua%ptr, -1) /= 1) exit lua_block
@@ -636,24 +756,28 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_field_l
+    end function lua_get_logical
 
-    integer function lua_field_r8(lua, name, value) result(rc)
-        !! Returns 8-byte real from table field `name` in `value`.
+    integer function lua_get_real64(lua, i, value) result(rc)
+        !! Returns 8-byte real from table element `i` in `value`.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_TYPE` if the field is not of type number.
+        !! * `E_EMPTY` if the table element of given name is null.
+        !! * `E_INVALID` if the element on top of the stack is not a table.
+        !! * `E_TYPE` if the table element is not of type number.
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        real(kind=r8),        intent(inout) :: value !! Table field value.
+        integer,              intent(in)    :: i     !! Variable index.
+        real(kind=r8),        intent(inout) :: value !! Variable value.
 
         lua_block: block
+            rc = E_INVALID
+            if (lua_istable(lua%ptr, -1) == 0) return
+
             rc = E_EMPTY
-            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
             if (lua_isnumber(lua%ptr, -1) /= 1) exit lua_block
@@ -663,9 +787,9 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_field_r8
+    end function lua_get_real64
 
-    integer function lua_get_(lua, i) result(rc)
+    integer function lua_get_stack(lua, i) result(rc)
         !! Pushes table element at index `i` on stack.
         !!
         !! The function returns the following error codes:
@@ -680,9 +804,9 @@ contains
         rc = E_EMPTY
         if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) return
         rc = E_NONE
-    end function lua_get_
+    end function lua_get_stack
 
-    integer function lua_get_a(lua, i, value, unescape) result(rc)
+    integer function lua_get_string(lua, i, value, unescape) result(rc)
         !! Returns character string from table element `i` in `value`.  If
         !! `unescape` is passed and `.true.`, the returned string will have all
         !! occurences of `\\` replaced by `\`.
@@ -732,159 +856,9 @@ contains
         end block lua_block
 
         call lua_pop(lua%ptr, 1)
-    end function lua_get_a
+    end function lua_get_string
 
-    integer function lua_get_i4(lua, i, value) result(rc)
-        !! Returns 4-byte integer from table element `i` in `value`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the table element of given name is null.
-        !! * `E_INVALID` if the element on top of the stack is not a table.
-        !! * `E_TYPE` if the table element is not of type integer.
-        !!
-        !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(in)    :: i     !! Variable index.
-        integer,              intent(inout) :: value !! Variable value.
-
-        lua_block: block
-            rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) == 0) return
-
-            rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
-
-            rc = E_TYPE
-            if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
-
-            rc = E_NONE
-            value = int(lua_tointeger(lua%ptr, -1), kind=i4)
-        end block lua_block
-
-        call lua_pop(lua%ptr, 1)
-    end function lua_get_i4
-
-    integer function lua_get_i8(lua, i, value) result(rc)
-        !! Returns 8-byte integer from table element `i` in `value`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the table element of given name is null.
-        !! * `E_INVALID` if the element on top of the stack is not a table.
-        !! * `E_TYPE` if the table element is not of type integer.
-        !!
-        !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(in)    :: i     !! Variable index.
-        integer(kind=i8),     intent(inout) :: value !! Variable value.
-
-        lua_block: block
-            rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) == 0) return
-
-            rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
-
-            rc = E_TYPE
-            if (lua_isinteger(lua%ptr, -1) /= 1) exit lua_block
-
-            rc = E_NONE
-            value = lua_tointeger(lua%ptr, -1)
-        end block lua_block
-
-        call lua_pop(lua%ptr, 1)
-    end function lua_get_i8
-
-    integer function lua_get_l(lua, i, value) result(rc)
-        !! Returns logical from table element `i` in `value`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the table element of given name is null.
-        !! * `E_INVALID` if the element on top of the stack is not a table.
-        !! * `E_TYPE` if the table element is not of type boolean.
-        !!
-        !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(in)    :: i     !! Variable index.
-        logical,              intent(inout) :: value !! Variable value.
-
-        lua_block: block
-            rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) == 0) return
-
-            rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
-
-            rc = E_TYPE
-            if (lua_isboolean(lua%ptr, -1) /= 1) exit lua_block
-
-            rc = E_NONE
-            value = lua_toboolean(lua%ptr, -1)
-        end block lua_block
-
-        call lua_pop(lua%ptr, 1)
-    end function lua_get_l
-
-    integer function lua_get_r8(lua, i, value) result(rc)
-        !! Returns 8-byte real from table element `i` in `value`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the table element of given name is null.
-        !! * `E_INVALID` if the element on top of the stack is not a table.
-        !! * `E_TYPE` if the table element is not of type number.
-        !!
-        !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(in)    :: i     !! Variable index.
-        real(kind=r8),        intent(inout) :: value !! Variable value.
-
-        lua_block: block
-            rc = E_INVALID
-            if (lua_istable(lua%ptr, -1) == 0) return
-
-            rc = E_EMPTY
-            if (lua_rawgeti(lua%ptr, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
-
-            rc = E_TYPE
-            if (lua_isnumber(lua%ptr, -1) /= 1) exit lua_block
-
-            rc = E_NONE
-            value = lua_tonumber(lua%ptr, -1)
-        end block lua_block
-
-        call lua_pop(lua%ptr, 1)
-    end function lua_get_r8
-
-    integer function lua_read_(lua, name) result(rc)
-        !! Pushes global variable on stack. Returns `E_EMPTY` if the variable
-        !! does not exist.
-        type(lua_state_type), intent(inout) :: lua  !! Lua type.
-        character(len=*),     intent(in)    :: name !! Variable name.
-
-        rc = E_EMPTY
-        if (lua_getglobal(lua%ptr, name) <= 0) return
-        rc = E_NONE
-    end function lua_read_
-
-    integer function lua_read_a(lua, name, value) result(rc)
-        !! Returns the value of global variable as allocatable string. The
-        !! function returns `E_TYPE` if the variable is not of type string.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
-        character(len=*),     intent(inout) :: value !! Variable value.
-
-        rc = E_TYPE
-        if (lua_getglobal(lua%ptr, name) == LUA_TSTRING) then
-            value = lua_tostring(lua%ptr, -1)
-            rc = E_NONE
-        end if
-        call lua_pop(lua%ptr, 1)
-    end function lua_read_a
-
-    integer function lua_read_i4(lua, name, value) result(rc)
+    integer function lua_read_int32(lua, name, value) result(rc)
         !! Returns the value of global variable as 4-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
@@ -897,9 +871,9 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_read_i4
+    end function lua_read_int32
 
-    integer function lua_read_i8(lua, name, value) result(rc)
+    integer function lua_read_int64(lua, name, value) result(rc)
         !! Returns the value of global variable as 8-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
@@ -912,9 +886,9 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_read_i8
+    end function lua_read_int64
 
-    integer function lua_read_l(lua, name, value) result(rc)
+    integer function lua_read_logical(lua, name, value) result(rc)
         !! Returns the value of global variable as logical. The function
         !! returns `E_TYPE` if the variable is not of type boolean.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
@@ -927,9 +901,9 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_read_l
+    end function lua_read_logical
 
-    integer function lua_read_r8(lua, name, value) result(rc)
+    integer function lua_read_real64(lua, name, value) result(rc)
         !! Returns the value of global variable as 8-byte real. The function
         !! returns `E_TYPE` if the variable is not of type number.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
@@ -942,7 +916,33 @@ contains
             rc = E_NONE
         end if
         call lua_pop(lua%ptr, 1)
-    end function lua_read_r8
+    end function lua_read_real64
+
+    integer function lua_read_stack(lua, name) result(rc)
+        !! Pushes global variable on stack. Returns `E_EMPTY` if the variable
+        !! does not exist.
+        type(lua_state_type), intent(inout) :: lua  !! Lua type.
+        character(len=*),     intent(in)    :: name !! Variable name.
+
+        rc = E_EMPTY
+        if (lua_getglobal(lua%ptr, name) <= 0) return
+        rc = E_NONE
+    end function lua_read_stack
+
+    integer function lua_read_string(lua, name, value) result(rc)
+        !! Returns the value of global variable as allocatable string. The
+        !! function returns `E_TYPE` if the variable is not of type string.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Variable name.
+        character(len=*),     intent(inout) :: value !! Variable value.
+
+        rc = E_TYPE
+        if (lua_getglobal(lua%ptr, name) == LUA_TSTRING) then
+            value = lua_tostring(lua%ptr, -1)
+            rc = E_NONE
+        end if
+        call lua_pop(lua%ptr, 1)
+    end function lua_read_string
 
     integer function lua_to_job(lua, job) result(rc)
         !! Reads Lua table into Fortran job type. The table has to be on top of

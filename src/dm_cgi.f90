@@ -59,14 +59,15 @@ module dm_cgi
 
     interface dm_cgi_get
         !! Generic interface to CGI get functions.
-        module procedure :: cgi_get_a
-        module procedure :: cgi_get_i4
-        module procedure :: cgi_get_i8
-        module procedure :: cgi_get_l
-        module procedure :: cgi_get_r4
-        module procedure :: cgi_get_r8
+        module procedure :: cgi_get_int32
+        module procedure :: cgi_get_int64
+        module procedure :: cgi_get_logical
+        module procedure :: cgi_get_real32
+        module procedure :: cgi_get_real64
+        module procedure :: cgi_get_string
     end interface
 
+    ! Public procedures.
     public :: dm_cgi_auth
     public :: dm_cgi_content
     public :: dm_cgi_decode
@@ -83,12 +84,13 @@ module dm_cgi
     public :: dm_cgi_size
     public :: dm_cgi_value
 
-    private :: cgi_get_a
-    private :: cgi_get_i4
-    private :: cgi_get_i8
-    private :: cgi_get_l
-    private :: cgi_get_r4
-    private :: cgi_get_r8
+    ! Private procedures.
+    private :: cgi_get_int32
+    private :: cgi_get_int64
+    private :: cgi_get_logical
+    private :: cgi_get_real32
+    private :: cgi_get_real64
+    private :: cgi_get_string
     private :: cgi_param_loc
 contains
     ! ******************************************************************
@@ -383,37 +385,7 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function cgi_get_a(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param`. The return code is
-        !! set to `E_EMPTY` if the key does not exist and `required` has not been
-        !! not passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        character(len=*),     intent(inout)        :: value    !! Parameter value.
-        character(len=*),     intent(in), optional :: default  !! Default value.
-        logical,              intent(in), optional :: required !! Required flag.
-
-        integer :: i
-
-        rc = E_EMPTY
-        if (present(required)) then
-            if (.not. required) rc = E_NONE
-        end if
-
-        get_block: block
-            value = ''
-            i = cgi_param_loc(param, key)
-            if (i == 0) exit get_block
-            if (len_trim(param%values(i)) == 0) exit get_block
-            value = trim(param%values(i))
-            rc = E_NONE
-            return
-        end block get_block
-
-        if (present(default)) value = default
-    end function cgi_get_a
-
-    integer function cgi_get_i4(param, key, value, default, required) result(rc)
+    integer function cgi_get_int32(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 32-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`
@@ -437,9 +409,9 @@ contains
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
         call dm_string_to(param%values(i), value, rc)
-    end function cgi_get_i4
+    end function cgi_get_int32
 
-    integer function cgi_get_i8(param, key, value, default, required) result(rc)
+    integer function cgi_get_int64(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 64-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`
@@ -463,9 +435,9 @@ contains
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
         call dm_string_to(param%values(i), value, rc)
-    end function cgi_get_i8
+    end function cgi_get_int64
 
-    integer function cgi_get_l(param, key, value, default, required) result(rc)
+    integer function cgi_get_logical(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as logical.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`
@@ -493,9 +465,9 @@ contains
         if (stat /= E_NONE) return
         value = .not. (j == 0)
         rc = E_NONE
-    end function cgi_get_l
+    end function cgi_get_logical
 
-    integer function cgi_get_r4(param, key, value, default, required) result(rc)
+    integer function cgi_get_real32(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 32-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`
@@ -519,9 +491,9 @@ contains
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
         call dm_string_to(param%values(i), value, rc)
-    end function cgi_get_r4
+    end function cgi_get_real32
 
-    integer function cgi_get_r8(param, key, value, default, required) result(rc)
+    integer function cgi_get_real64(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 64-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`.
@@ -545,7 +517,37 @@ contains
         if (i == 0) return
         if (len_trim(param%values(i)) == 0) return
         call dm_string_to(param%values(i), value, rc)
-    end function cgi_get_r8
+    end function cgi_get_real64
+
+    integer function cgi_get_string(param, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `param`. The return code is
+        !! set to `E_EMPTY` if the key does not exist and `required` has not been
+        !! not passed or is `.true.`
+        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        character(len=*),     intent(in)           :: key      !! Parameter key.
+        character(len=*),     intent(inout)        :: value    !! Parameter value.
+        character(len=*),     intent(in), optional :: default  !! Default value.
+        logical,              intent(in), optional :: required !! Required flag.
+
+        integer :: i
+
+        rc = E_EMPTY
+        if (present(required)) then
+            if (.not. required) rc = E_NONE
+        end if
+
+        get_block: block
+            value = ''
+            i = cgi_param_loc(param, key)
+            if (i == 0) exit get_block
+            if (len_trim(param%values(i)) == 0) exit get_block
+            value = trim(param%values(i))
+            rc = E_NONE
+            return
+        end block get_block
+
+        if (present(default)) value = default
+    end function cgi_get_string
 
     integer function cgi_param_loc(param, key) result(i)
         !! Returns location of key in parameter keys array, or 0 if not found.

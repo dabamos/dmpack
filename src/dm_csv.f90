@@ -62,11 +62,11 @@ module dm_csv
 
     interface csv_next
         !! Generic CSV record reader.
-        module procedure :: csv_next_a
-        module procedure :: csv_next_i4
-        module procedure :: csv_next_i8
-        module procedure :: csv_next_r4
-        module procedure :: csv_next_r8
+        module procedure :: csv_next_int32
+        module procedure :: csv_next_int64
+        module procedure :: csv_next_real32
+        module procedure :: csv_next_real64
+        module procedure :: csv_next_string
     end interface
 
     ! Public procedures.
@@ -102,11 +102,11 @@ module dm_csv
     private :: csv_from_targets
 
     private :: csv_next
-    private :: csv_next_a
-    private :: csv_next_i4
-    private :: csv_next_i8
-    private :: csv_next_r4
-    private :: csv_next_r8
+    private :: csv_next_int32
+    private :: csv_next_int64
+    private :: csv_next_real32
+    private :: csv_next_real64
+    private :: csv_next_string
     private :: csv_parse
     private :: csv_unquote
 
@@ -794,7 +794,87 @@ contains
         end do
     end function csv_from_targets
 
-    integer function csv_next_a(input, output, separator, limit, pos, quote) result(rc)
+    integer function csv_next_int32(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 4-byte integer until separator.
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        integer(kind=i4), intent(out)          :: output    !! Output integer.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+
+        character :: q
+        integer   :: old
+
+        q = ASCII_NUL
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos)
+        if (dm_is_error(rc)) return
+        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_int32
+
+    integer function csv_next_int64(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 8-byte integer until separator.
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        integer(kind=i8), intent(out)          :: output    !! Output integer.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+
+        character :: q
+        integer   :: old
+
+        q = ASCII_NUL
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_int64
+
+    integer function csv_next_real32(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 4-byte real until separator.
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        real(kind=r4),    intent(out)          :: output    !! Output real.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+
+        character :: q
+        integer   :: old
+
+        q = ASCII_NUL
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_real32
+
+    integer function csv_next_real64(input, output, separator, limit, pos, quote) result(rc)
+        !! Reads next 8-byte real until separator.
+        character(len=*), intent(inout)        :: input     !! Input string to parse.
+        real(kind=r8),    intent(out)          :: output    !! Output real.
+        character,        intent(in)           :: separator !! CSV field separator.
+        integer,          intent(in)           :: limit     !! Total length of input string.
+        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+
+        character :: q
+        integer   :: old
+
+        q = ASCII_NUL
+        if (present(quote)) q = quote
+        old = pos
+        rc = csv_parse(input, separator, limit, pos, q)
+        if (dm_is_error(rc)) return
+        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+    end function csv_next_real64
+
+    integer function csv_next_string(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next character string until separator.
         character(len=*), intent(inout)        :: input     !! Input string to parse.
         character(len=*), intent(inout)        :: output    !! Output string (must be large enough to hold field value).
@@ -823,87 +903,7 @@ contains
         if (dm_is_error(rc)) return
         output = input(old + 1:pos - 1)
         if (quoted) call csv_unquote(output, quote)
-    end function csv_next_a
-
-    integer function csv_next_i4(input, output, separator, limit, pos, quote) result(rc)
-        !! Reads next 4-byte integer until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        integer(kind=i4), intent(out)          :: output    !! Output integer.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
-
-        character :: q
-        integer   :: old
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
-        old = pos
-        rc = csv_parse(input, separator, limit, pos)
-        if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
-    end function csv_next_i4
-
-    integer function csv_next_i8(input, output, separator, limit, pos, quote) result(rc)
-        !! Reads next 8-byte integer until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        integer(kind=i8), intent(out)          :: output    !! Output integer.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
-
-        character :: q
-        integer   :: old
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
-        old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
-        if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
-    end function csv_next_i8
-
-    integer function csv_next_r4(input, output, separator, limit, pos, quote) result(rc)
-        !! Reads next 4-byte real until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        real(kind=r4),    intent(out)          :: output    !! Output real.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
-
-        character :: q
-        integer   :: old
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
-        old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
-        if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
-    end function csv_next_r4
-
-    integer function csv_next_r8(input, output, separator, limit, pos, quote) result(rc)
-        !! Reads next 8-byte real until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        real(kind=r8),    intent(out)          :: output    !! Output real.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
-
-        character :: q
-        integer   :: old
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
-        old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
-        if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
-    end function csv_next_r8
+    end function csv_next_string
 
     integer function csv_parse(str, separator, limit, pos, quote) result(rc)
         !! Returns position of next separator character in `pos`. If no

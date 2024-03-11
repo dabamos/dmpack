@@ -225,7 +225,7 @@ contains
             if (log%level < app%minlevel) cycle ipc_loop
 
             ! Skip if log already exists.
-            if (dm_db_exists_log(db, log%id)) then
+            if (dm_db_log_exists(db, log%id)) then
                 call dm_log_warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if

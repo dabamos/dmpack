@@ -186,10 +186,11 @@ contains
         character(len=:), allocatable  :: url    ! URL of HTTP-RPC API endpoint.
 
         integer          :: last_error
-        integer          :: i, rc, t
+        integer          :: i, rc, stat, t
         integer(kind=i8) :: uptime
+        logical          :: has_api_status
 
-        type(api_status_type)   :: api
+        type(api_status_type)   :: api_status
         type(beat_type)         :: beat
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
@@ -238,8 +239,13 @@ contains
             end if
 
             last_error = rc
+            has_api_status = .false.
 
-            code_select: &
+            if (response%content_type == MIME_TEXT) then
+                stat = dm_api_status_from_string(response%payload, api_status)
+                has_api_status = dm_is_ok(stat)
+            end if
+
             select case (response%code)
                 case (0)
                     call dm_log_warning('connection to host ' // trim(app%host) // ' failed: ' // &
@@ -249,7 +255,12 @@ contains
                     call dm_log_debug('beat accepted by host ' // app%host)
 
                 case (HTTP_UNAUTHORIZED)
-                    call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                    if (has_api_status) then
+                        call dm_log_error('unauthorized access on host ' // trim(app%host) // ': ' // &
+                                          api_status%message, error=E_RPC_AUTH)
+                    else
+                        call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                    end if
 
                 case (HTTP_INTERNAL_SERVER_ERROR)
                     call dm_log_error('internal server error on host ' // app%host, error=E_RPC_SERVER)
@@ -258,19 +269,16 @@ contains
                     call dm_log_error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
 
                 case default
-                    ! Log response from api message if available.
-                    if (response%content_type == MIME_TEXT) then
-                        if (dm_is_ok(dm_api_status_from_string(api, response%payload))) then
-                            call dm_log_error('server error on host ' // trim(app%host) // &
-                                              ' (HTTP ' // dm_itoa(response%code) // '): ' // &
-                                              api%message, error=api%error)
-                            exit code_select
-                        end if
+                    if (has_api_status) then
+                        ! Log response from API status if available.
+                        call dm_log_error('server error on host ' // trim(app%host) // ' (HTTP ' // &
+                                          dm_itoa(response%code) // '): ' // api_status%message, &
+                                          error=api_status%error)
+                    else
+                        call dm_log_warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
+                                            dm_itoa(response%code) // ')', error=E_RPC_API)
                     end if
-
-                    call dm_log_warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
-                                        dm_itoa(response%code) // ')', error=E_RPC_API)
-            end select code_select
+            end select
 
             if (app%count > 0) then
                 i = i + 1

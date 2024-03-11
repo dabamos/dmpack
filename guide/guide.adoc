@@ -6413,6 +6413,8 @@ $ sh hdfview.sh
 | 43   | `E_DB_STEP`         | Database step failed or no write permission.
 | 44   | `E_DB_NO_ROWS`      | Database returned no rows.
 | 45   | `E_DB_BACKUP`       | Database backup error.
+| 46   | `E_DB_ATTACH`       | Database attach failed.
+| 47   | `E_DB_DETACH`       | Database detach failed.
 | 50   | `E_ARG`             | Generic command-line error.
 | 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
 | 52   | `E_ARG_INVALID`     | Argument invalid or missing.

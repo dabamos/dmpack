@@ -65,10 +65,10 @@ module dm_arg
 
     interface dm_arg_get
         !! Returns argument value.
-        module procedure :: arg_get_a
-        module procedure :: arg_get_i4
-        module procedure :: arg_get_l
-        module procedure :: arg_get_r8
+        module procedure :: arg_get_int32
+        module procedure :: arg_get_logical
+        module procedure :: arg_get_real64
+        module procedure :: arg_get_string
     end interface
 
     public :: dm_arg_get
@@ -78,10 +78,10 @@ module dm_arg
     public :: dm_arg_read
     public :: dm_arg_validate
 
-    private :: arg_get_a
-    private :: arg_get_i4
-    private :: arg_get_l
-    private :: arg_get_r8
+    private :: arg_get_int32
+    private :: arg_get_logical
+    private :: arg_get_real64
+    private :: arg_get_string
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -428,26 +428,7 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ****************************************************************** 
-    integer function arg_get_a(arg, value, default, passed) result(rc)
-        !! Returns argument value as character string.
-        type(arg_type),   intent(inout)         :: arg     !! Arg type.
-        character(len=*), intent(inout)         :: value   !! Argument value.
-        character(len=*), intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
-
-        if (present(passed)) passed = arg%passed
-
-        if (rc == E_ARG_NOT_FOUND) then
-            if (present(default)) value = default
-            return
-        end if
-
-        value = arg%value
-    end function arg_get_a
-
-    integer function arg_get_i4(arg, value, default, passed) result(rc)
+    integer function arg_get_int32(arg, value, default, passed) result(rc)
         !! Returns argument value as 4-byte integer.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         integer,        intent(inout)         :: value   !! Argument value.
@@ -464,9 +445,9 @@ contains
         end if
 
         value = dm_atoi(arg%value)
-    end function arg_get_i4
+    end function arg_get_int32
 
-    integer function arg_get_l(arg, value, default, passed) result(rc)
+    integer function arg_get_logical(arg, value, default, passed) result(rc)
         !! Returns `.true.` if argument has been passed.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         logical,        intent(inout)         :: value   !! Argument value.
@@ -483,9 +464,9 @@ contains
         end if
 
         value = .true.
-    end function arg_get_l
+    end function arg_get_logical
 
-    integer function arg_get_r8(arg, value, default, passed) result(rc)
+    integer function arg_get_real64(arg, value, default, passed) result(rc)
         !! Returns argument value as 8-byte real.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         real(kind=r8),  intent(inout)         :: value   !! Argument value.
@@ -502,5 +483,24 @@ contains
         end if
 
         value = dm_atof(arg%value)
-    end function arg_get_r8
+    end function arg_get_real64
+
+    integer function arg_get_string(arg, value, default, passed) result(rc)
+        !! Returns argument value as character string.
+        type(arg_type),   intent(inout)         :: arg     !! Arg type.
+        character(len=*), intent(inout)         :: value   !! Argument value.
+        character(len=*), intent(in),  optional :: default !! Default value.
+        logical,          intent(out), optional :: passed  !! Passed or not.
+
+        rc = arg%error
+
+        if (present(passed)) passed = arg%passed
+
+        if (rc == E_ARG_NOT_FOUND) then
+            if (present(default)) value = default
+            return
+        end if
+
+        value = arg%value
+    end function arg_get_string
 end module dm_arg

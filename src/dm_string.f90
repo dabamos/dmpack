@@ -34,18 +34,18 @@ module dm_string
 
     interface dm_string_to
         !! Generic string to number converter.
-        module procedure :: string_to_i4
-        module procedure :: string_to_i8
-        module procedure :: string_to_r4
-        module procedure :: string_to_r8
+        module procedure :: string_to_int32
+        module procedure :: string_to_int64
+        module procedure :: string_to_real32
+        module procedure :: string_to_real64
     end interface
 
     interface dm_string_from
         !! Generic number to string converter.
-        module procedure :: string_from_i4
-        module procedure :: string_from_i8
-        module procedure :: string_from_r4
-        module procedure :: string_from_r8
+        module procedure :: string_from_int32
+        module procedure :: string_from_int64
+        module procedure :: string_from_real32
+        module procedure :: string_from_real64
     end interface
 
     ! Public procedures.
@@ -71,14 +71,14 @@ module dm_string
     public :: dm_string_destroy
 
     ! Private procedures.
-    private :: string_from_i4
-    private :: string_from_i8
-    private :: string_from_r4
-    private :: string_from_r8
-    private :: string_to_i4
-    private :: string_to_i8
-    private :: string_to_r4
-    private :: string_to_r8
+    private :: string_from_int32
+    private :: string_from_int64
+    private :: string_from_real32
+    private :: string_from_real64
+    private :: string_to_int32
+    private :: string_to_int64
+    private :: string_to_real32
+    private :: string_to_real64
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -259,7 +259,7 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    pure subroutine string_from_i4(i, str, error)
+    pure subroutine string_from_int32(i, str, error)
         !! Returns string representation of given 4-byte integer.
         integer(kind=i4),              intent(in)            :: i     !! Input.
         character(len=:), allocatable, intent(out)           :: str   !! Output.
@@ -280,9 +280,9 @@ contains
         write (str, '(i0)', iostat=rc) i
 
         if (present(error)) error = E_NONE
-    end subroutine string_from_i4
+    end subroutine string_from_int32
 
-    pure subroutine string_from_i8(i, str, error)
+    pure subroutine string_from_int64(i, str, error)
         !! Returns string representation of given 8-byte integer.
         integer(kind=i8),              intent(in)            :: i     !! Input.
         character(len=:), allocatable, intent(out)           :: str   !! Output.
@@ -303,9 +303,9 @@ contains
         write (str, '(i0)', iostat=rc) i
 
         if (present(error)) error = E_NONE
-    end subroutine string_from_i8
+    end subroutine string_from_int64
 
-    pure subroutine string_from_r4(f, str, error)
+    pure subroutine string_from_real32(f, str, error)
         !! Returns string representation of given 4-byte real.
         real(kind=r4),                 intent(in)            :: f     !! Input.
         character(len=:), allocatable, intent(out)           :: str   !! Output.
@@ -320,9 +320,9 @@ contains
         if (rc /= 0) return
         str = trim(buf)
         if (present(error)) error = E_NONE
-    end subroutine string_from_r4
+    end subroutine string_from_real32
 
-    pure subroutine string_from_r8(f, str, error)
+    pure subroutine string_from_real64(f, str, error)
         !! Returns string representation of given 8-byte real.
         real(kind=r8),                 intent(in)            :: f     !! Input.
         character(len=:), allocatable, intent(out)           :: str   !! Output.
@@ -337,9 +337,9 @@ contains
         if (rc /= 0) return
         str = trim(buf)
         if (present(error)) error = E_NONE
-    end subroutine string_from_r8
+    end subroutine string_from_real64
 
-    pure elemental subroutine string_to_i4(str, i, error)
+    pure elemental subroutine string_to_int32(str, i, error)
         !! Converts string to 4-byte integer.
         character(len=*), intent(in)            :: str   !! Input.
         integer(kind=i4), intent(out)           :: i     !! Output.
@@ -350,9 +350,9 @@ contains
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) i
         if (present(error)) error = E_NONE
-    end subroutine string_to_i4
+    end subroutine string_to_int32
 
-    pure elemental subroutine string_to_i8(str, i, error)
+    pure elemental subroutine string_to_int64(str, i, error)
         !! Converts string to 8-byte integer.
         character(len=*), intent(in)            :: str   !! Input.
         integer(kind=i8), intent(out)           :: i     !! Output.
@@ -363,9 +363,9 @@ contains
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) i
         if (present(error)) error = E_NONE
-    end subroutine string_to_i8
+    end subroutine string_to_int64
 
-    pure elemental subroutine string_to_r4(str, f, error)
+    pure elemental subroutine string_to_real32(str, f, error)
         !! Converts string to 4-byte real.
         character(len=*), intent(in)            :: str   !! Input.
         real(kind=r4),    intent(out)           :: f     !! Output.
@@ -376,9 +376,9 @@ contains
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) f
         if (present(error)) error = E_NONE
-    end subroutine string_to_r4
+    end subroutine string_to_real32
 
-    pure elemental subroutine string_to_r8(str, f, error)
+    pure elemental subroutine string_to_real64(str, f, error)
         !! Converts string to 8-byte real.
         character(len=*), intent(in)            :: str   !! Input.
         real(kind=r8),    intent(out)           :: f     !! Output.
@@ -389,5 +389,5 @@ contains
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) f
         if (present(error)) error = E_NONE
-    end subroutine string_to_r8
+    end subroutine string_to_real64
 end module dm_string

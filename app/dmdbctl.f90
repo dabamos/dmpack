@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -104,7 +104,7 @@ contains
                 ! Create node.
                 id = app%node%id
 
-                if (dm_db_exists_node(db, id)) then
+                if (dm_db_node_exists(db, id)) then
                     rc = E_EXIST
                     call dm_error_out(rc, 'node ' // trim(id) // ' exists')
                     return
@@ -116,13 +116,13 @@ contains
                 ! Create sensor.
                 id = app%sensor%id
 
-                if (dm_db_exists_sensor(db, id)) then
+                if (dm_db_sensor_exists(db, id)) then
                     rc = E_EXIST
                     call dm_error_out(rc, 'sensor ' // trim(id) // ' exists')
                     return
                 end if
 
-                if (.not. dm_db_exists_node(db, app%sensor%node_id)) then
+                if (.not. dm_db_node_exists(db, app%sensor%node_id)) then
                     rc = E_INVALID
                     call dm_error_out(rc, 'node ' // trim(app%sensor%node_id) // ' not found')
                     return
@@ -134,7 +134,7 @@ contains
                 ! Create target.
                 id = app%target%id
 
-                if (dm_db_exists_target(db, id)) then
+                if (dm_db_target_exists(db, id)) then
                     rc = E_EXIST
                     call dm_error_out(rc, 'target' // trim(id) // ' exists')
                     return
@@ -165,7 +165,7 @@ contains
                 ! Delete node.
                 id = app%node%id
 
-                if (.not. dm_db_exists_node(db, id)) then
+                if (.not. dm_db_node_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
@@ -177,7 +177,7 @@ contains
                 ! Delete sensor.
                 id = app%sensor%id
 
-                if (.not. dm_db_exists_sensor(db, id)) then
+                if (.not. dm_db_sensor_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
@@ -189,7 +189,7 @@ contains
                 ! Delete target.
                 id = app%target%id
 
-                if (.not. dm_db_exists_target(db, id)) then
+                if (.not. dm_db_target_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'target' // trim(id) // ' not found')
                     return
@@ -223,7 +223,7 @@ contains
                 ! Read node.
                 id = app%node%id
 
-                if (.not. dm_db_exists_node(db, id)) then
+                if (.not. dm_db_node_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
@@ -239,7 +239,7 @@ contains
                 ! Read sensor.
                 id = app%sensor%id
 
-                if (.not. dm_db_exists_sensor(db, id)) then
+                if (.not. dm_db_sensor_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
@@ -255,7 +255,7 @@ contains
                 ! Read target.
                 id = app%target%id
 
-                if (.not. dm_db_exists_target(db, id)) then
+                if (.not. dm_db_target_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'target ' // trim(id) // ' not found')
                     return
@@ -289,7 +289,7 @@ contains
                 ! Update node.
                 id = app%node%id
 
-                if (.not. dm_db_exists_node(db, id)) then
+                if (.not. dm_db_node_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'node ' // trim(id) // ' not found')
                     return
@@ -311,7 +311,7 @@ contains
                 ! Update sensor.
                 id = app%sensor%id
 
-                if (.not. dm_db_exists_sensor(db, id)) then
+                if (.not. dm_db_sensor_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'sensor ' // trim(id) // ' not found')
                     return
@@ -336,7 +336,7 @@ contains
                     return
                 end if
 
-                if (.not. dm_db_exists_node(db, app%sensor%node_id)) then
+                if (.not. dm_db_node_exists(db, app%sensor%node_id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'node ' // trim(app%sensor%node_id) // ' not found')
                     return
@@ -348,7 +348,7 @@ contains
                 ! Update target.
                 id = app%target%id
 
-                if (.not. dm_db_exists_target(db, id)) then
+                if (.not. dm_db_target_exists(db, id)) then
                     rc = E_NOT_FOUND
                     call dm_error_out(rc, 'target ' // trim(id) // ' not found')
                     return

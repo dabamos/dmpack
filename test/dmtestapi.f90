@@ -34,7 +34,7 @@ contains
         str = dm_api_status_to_string(api1)
 
         print *, 'String to API status type ...'
-        rc = dm_api_status_from_string(api2, str)
+        rc = dm_api_status_from_string(str, api2)
         if (dm_is_error(rc)) return
 
         print *, 'Matching API status types ...'

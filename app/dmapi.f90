@@ -33,7 +33,7 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 0
+    integer, parameter :: APP_PATCH = 1
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -434,7 +434,7 @@ contains
                     end if
                 end if
 
-                if (dm_db_exists_log(db, log%id)) then
+                if (dm_db_log_exists(db, log%id)) then
                     call api_error(HTTP_CONFLICT, 'log exists', E_EXIST)
                     exit response_block
                 end if
@@ -745,7 +745,7 @@ contains
                     end if
                 end if
 
-                if (dm_db_exists_node(db, node%id)) then
+                if (dm_db_node_exists(db, node%id)) then
                     call api_error(HTTP_CONFLICT, 'node exists', E_EXIST)
                     exit response_block
                 end if
@@ -981,7 +981,7 @@ contains
                     end if
                 end if
 
-                if (dm_db_exists_observ(db, observ%id)) then
+                if (dm_db_observ_exists(db, observ%id)) then
                     call api_error(HTTP_CONFLICT, 'observation exists', E_EXIST)
                     exit response_block
                 end if
@@ -1369,7 +1369,7 @@ contains
                     end if
                 end if
 
-                if (dm_db_exists_sensor(db, sensor%id)) then
+                if (dm_db_sensor_exists(db, sensor%id)) then
                     call api_error(HTTP_CONFLICT, 'sensor exists', E_EXIST)
                     exit response_block
                 end if
@@ -1599,7 +1599,7 @@ contains
                     exit response_block
                 end if
 
-                if (dm_db_exists_target(db, target%id)) then
+                if (dm_db_target_exists(db, target%id)) then
                     call api_error(HTTP_CONFLICT, 'target exists', E_EXIST)
                     exit response_block
                 end if

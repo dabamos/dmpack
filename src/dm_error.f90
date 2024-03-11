@@ -7,9 +7,13 @@ module dm_error
     implicit none (type, external)
     private
 
-    ! NOTE: Any additional error code must be exported in function
-    ! `dm_lua_api_register()` (from module `dm_lua_api`) and in function
-    ! `luaopen_libdmpack()` (from module `dm_lua_lib`).
+    ! ************************************************************************
+    !                                ATTENTION
+    !
+    ! Any additional error code must be exported in function
+    ! `dm_lua_api_register()` from module `dm_lua_api`.
+    !
+    ! ************************************************************************
 
     ! Generic errors.
     integer, parameter, public :: E_NONE           =   0 !! No error.
@@ -54,6 +58,8 @@ module dm_error
     integer, parameter, public :: E_DB_STEP        =  43 !! Step failed.
     integer, parameter, public :: E_DB_NO_ROWS     =  44 !! No rows returned.
     integer, parameter, public :: E_DB_BACKUP      =  45 !! Backup error.
+    integer, parameter, public :: E_DB_ATTACH      =  46 !! Attach failed.
+    integer, parameter, public :: E_DB_DETACH      =  47 !! Detach error.
 
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
@@ -87,9 +93,13 @@ module dm_error
     integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
 
+    ! SMTP errors.
     integer, parameter, public :: E_MAIL           = 100 !! Generic SMTP error.
+
+    ! MQTT errors.
     integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
 
+    ! Lua errors.
     integer, parameter, public :: E_LUA            = 120 !! Generic Lua error.
     integer, parameter, public :: E_LUA_YIELD      = 121 !! Lua thread (coroutine) yields.
     integer, parameter, public :: E_LUA_RUNTIME    = 122 !! Lua runtime error.
@@ -98,10 +108,10 @@ module dm_error
     integer, parameter, public :: E_LUA_ERROR      = 125 !! Lua message handling error.
     integer, parameter, public :: E_LUA_FILE       = 126 !! Lua file I/O error.
 
-    integer, parameter, public :: E_LAST           = 126 !! DO NOT USE.
+    integer, parameter, public :: E_LAST           = 126 !! Never use this.
 
     interface dm_perror
-        !! Alias for `dm_error_out()`.
+        !! Alias for `dm_error_out()`, do not use.
         module procedure :: dm_error_out
     end interface
 
@@ -202,6 +212,10 @@ contains
                 str = 'database returned no rows'
             case (E_DB_BACKUP)
                 str = 'database backup error'
+            case (E_DB_ATTACH)
+                str = 'database attach failed'
+            case (E_DB_DETACH)
+                str = 'database detach failed'
 
             ! Options.
             case (E_ARG)

@@ -11,7 +11,7 @@ program dmdb
     character(len=*), parameter :: APP_NAME  = 'dmdb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -229,7 +229,7 @@ contains
                 cycle ipc_loop
             end if
 
-            if (dm_db_exists_observ(db, observ%id)) then
+            if (dm_db_observ_exists(db, observ%id)) then
                 call dm_log_warning('observ ' // trim(observ%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if

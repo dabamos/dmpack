@@ -20,21 +20,10 @@ module dm_db
     !! successful.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
-    use :: dm_beat
-    use :: dm_dp
     use :: dm_error
-    use :: dm_file
     use :: dm_id
     use :: dm_kind
-    use :: dm_log
-    use :: dm_node
-    use :: dm_observ
-    use :: dm_request
-    use :: dm_response
-    use :: dm_sensor
     use :: dm_sql
-    use :: dm_sync
-    use :: dm_target
     use :: dm_time
     use :: dm_uuid
     use :: dm_util
@@ -62,6 +51,10 @@ module dm_db
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
+
+    ! Private parameters.
+    character(len=*), parameter :: DB_ATTACHED_NAME = 'attached'
+    integer,          parameter :: DB_MAX_QUERY_LEN = 4096
 
     type, public :: db_type
         !! Opaque SQLite database connectivity type.
@@ -230,6 +223,7 @@ module dm_db
     public :: dm_db_update_handler
 
     ! Public procedures.
+    public :: dm_db_attach
     public :: dm_db_backup
     public :: dm_db_begin
     public :: dm_db_close
@@ -243,12 +237,12 @@ module dm_db
     public :: dm_db_count_requests
     public :: dm_db_count_responses
     public :: dm_db_count_sensors
-    public :: dm_db_count_targets
     public :: dm_db_count_sync_logs
     public :: dm_db_count_sync_nodes
     public :: dm_db_count_sync_observs
     public :: dm_db_count_sync_sensors
     public :: dm_db_count_sync_targets
+    public :: dm_db_count_targets
     public :: dm_db_create_beats
     public :: dm_db_create_logs
     public :: dm_db_create_observs
@@ -258,13 +252,9 @@ module dm_db
     public :: dm_db_delete_observ
     public :: dm_db_delete_sensor
     public :: dm_db_delete_target
+    public :: dm_db_detach
     public :: dm_db_error
     public :: dm_db_error_message
-    public :: dm_db_exists_log
-    public :: dm_db_exists_node
-    public :: dm_db_exists_observ
-    public :: dm_db_exists_sensor
-    public :: dm_db_exists_target
     public :: dm_db_finalize
     public :: dm_db_get_application_id
     public :: dm_db_get_data_version
@@ -289,6 +279,9 @@ module dm_db
     public :: dm_db_insert_sync_target
     public :: dm_db_insert_target
     public :: dm_db_log
+    public :: dm_db_log_exists
+    public :: dm_db_node_exists
+    public :: dm_db_observ_exists
     public :: dm_db_open
     public :: dm_db_optimize
     public :: dm_db_prepared
@@ -330,6 +323,7 @@ module dm_db
     public :: dm_db_select_tables
     public :: dm_db_select_target
     public :: dm_db_select_targets
+    public :: dm_db_sensor_exists
     public :: dm_db_set_application_id
     public :: dm_db_set_auto_vacuum
     public :: dm_db_set_busy_handler
@@ -343,6 +337,7 @@ module dm_db
     public :: dm_db_shutdown
     public :: dm_db_sleep
     public :: dm_db_table_exists
+    public :: dm_db_target_exists
     public :: dm_db_threadsafe
     public :: dm_db_update
     public :: dm_db_update_node
@@ -407,6 +402,40 @@ contains
     ! ******************************************************************
     ! PUBLIC FUNCTIONS.
     ! ******************************************************************
+    integer function dm_db_attach(db, path, name) result(rc)
+        !! Attaches the database at `path` to the current connection. If no name
+        !! is passed for the attached database, the name will be set to
+        !! `attached`. The function trims the given path and name strings.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_ATTACH` if database attach query failed.
+        !! * `E_NOT_FOUND` if database at `path` does not exist.
+        !!
+        use :: dm_file
+
+        character(len=*), parameter :: QUERY_FMT = '("ATTACH DATABASE ''", a, "'' AS ", a)'
+
+        type(db_type),    intent(inout)        :: db   !! Database type.
+        character(len=*), intent(in)           :: path !! Path of database to attach.
+        character(len=*), intent(in), optional :: name !! Name of attached database.
+
+        character(len=DB_MAX_QUERY_LEN) :: query
+
+        rc = E_NOT_FOUND
+        if (.not. dm_file_exists(path)) return
+
+        rc = E_DB_ATTACH
+        if (present(name)) then
+            write (query, QUERY_FMT) trim(path), name
+        else
+            write (query, QUERY_FMT) trim(path), DB_ATTACHED_NAME
+        end if
+
+        if (dm_is_error(db_exec(db, trim(query)))) return
+        rc = E_NONE
+    end function dm_db_attach
+
     integer function dm_db_backup(db, path, wal, callback, nsteps, sleep_time) result(rc)
         !! Creates online backup of given database. The functions assumes 500
         !! steps and a sleep time of 250 msec by default, if the arguments are
@@ -419,6 +448,8 @@ contains
         !! * `E_EXIST` if backup database exists.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
+        use :: dm_file
+
         integer, parameter :: NSTEPS_DEFAULT     = 500 !! Number of steps.
         integer, parameter :: SLEEP_TIME_DEFAULT = 250 !! Busy sleep time in [msec].
 
@@ -1053,10 +1084,34 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_delete_target
 
+    integer function dm_db_detach(db, name) result(rc)
+        !! Detaches database from the current connection. If no name is passed
+        !! for the attached database, the name is assumed to be `attached`. The
+        !! function trims the given name string. Returns `E_DB_DETACH` on error.
+        character(len=*), parameter :: QUERY_FMT = '("DETACH DATABASE ", a)'
+
+        type(db_type),    intent(inout)        :: db   !! Database type.
+        character(len=*), intent(in), optional :: name !! Name of attached database.
+
+        character(len=DB_MAX_QUERY_LEN) :: query
+
+        rc = E_DB_DETACH
+        if (present(name)) then
+            write (query, QUERY_FMT) name
+        else
+            write (query, QUERY_FMT) DB_ATTACHED_NAME
+        end if
+
+        if (dm_is_error(db_exec(db, trim(query)))) return
+        rc = E_NONE
+    end function dm_db_detach
+
     integer function dm_db_error(db, sqlite_error) result(rc)
         !! Returns last database error as DMPACK error code, optionally the
-        !! SQLite 3 error code as `sqlite_error`. This function matches an
-        !! SQLite 3 error code to the corresponding DMPACK error code.
+        !! SQLite error code in argument `sqlite_error`. This function matches
+        !! an SQLite error code to the corresponding DMPACK error code. For
+        !! example, if the last SQLite error is `SQLITE_OK`, the function
+        !! returns `E_NONE`.
         type(db_type), intent(inout)         :: db           !! Database type.
         integer,       intent(out), optional :: sqlite_error !! SQLite error code.
 
@@ -1094,46 +1149,6 @@ contains
 
         message = sqlite3_errmsg(db%ptr)
     end function dm_db_error_message
-
-    logical function dm_db_exists_log(db, log_id) result(exists)
-        !! Returns `.true.` if log id exists.
-        type(db_type),     intent(inout) :: db     !! Database type.
-        character(len=*),  intent(in)    :: log_id !! Log id (UUID4).
-
-        exists = db_exists(db, SQL_TABLE_LOGS, log_id)
-    end function dm_db_exists_log
-
-    logical function dm_db_exists_node(db, node_id) result(exists)
-        !! Returns `.true.` if node id exists.
-        type(db_type),     intent(inout) :: db      !! Database type.
-        character(len=*),  intent(in)    :: node_id !! Node id.
-
-        exists = db_exists(db, SQL_TABLE_NODES, node_id)
-    end function dm_db_exists_node
-
-    logical function dm_db_exists_observ(db, observ_id) result(exists)
-        !! Returns `.true.` if observation id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
-
-        exists = db_exists(db, SQL_TABLE_OBSERVS, observ_id)
-    end function dm_db_exists_observ
-
-    logical function dm_db_exists_sensor(db, sensor_id) result(exists)
-        !! Returns `.true.` if sensor id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: sensor_id !! Sensor id.
-
-        exists = db_exists(db, SQL_TABLE_SENSORS, sensor_id)
-    end function dm_db_exists_sensor
-
-    logical function dm_db_exists_target(db, target_id) result(exists)
-        !! Returns `.true.` if target id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: target_id !! Target id.
-
-        exists = db_exists(db, SQL_TABLE_TARGETS, target_id)
-    end function dm_db_exists_target
 
     integer function dm_db_finalize(db_stmt) result(rc)
         !! Finalises given database statement. Returns `E_DB_FINALIZE` on
@@ -1389,8 +1404,9 @@ contains
         rc = E_NONE
     end function dm_db_init
 
-    integer function dm_db_insert_beat(db, beat, db_stmt) result(rc)
-        !! Adds the given heartbeat to database.
+    integer function dm_db_insert_beat(db, beat, db_stmt, validate) result(rc)
+        !! Adds the given heartbeat to database. The beat data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1401,18 +1417,28 @@ contains
         !! * `E_INVALID` if argument `beat` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),      intent(inout)           :: db      !! Database type.
-        type(beat_type),    intent(inout)           :: beat    !! Beat to insert.
-        type(db_stmt_type), intent(inout), optional :: db_stmt !! Database statement type.
+        use :: dm_beat
+
+        type(db_type),      intent(inout)           :: db       !! Database type.
+        type(beat_type),    intent(inout)           :: beat     !! Beat to insert.
+        type(db_stmt_type), intent(inout), optional :: db_stmt  !! Database statement type.
+        logical,            intent(in),    optional :: validate !! Validate beat.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_beat_valid(beat)) return
+        ! Validate beat.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_beat_valid(beat)) return
+        end if
 
         ! Set given statement.
         stmt = c_null_ptr
@@ -1450,9 +1476,9 @@ contains
         end if
     end function dm_db_insert_beat
 
-    integer function dm_db_insert_beats(db, beats, transaction) result(rc)
+    integer function dm_db_insert_beats(db, beats, transaction, validate) result(rc)
         !! Adds array of beats to database. A transaction is used unless
-        !! `transaction` is `.false.`.
+        !! `transaction` is `.false.`. The beat data is validated by default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1467,9 +1493,12 @@ contains
         !! * `E_INVALID` if an element in `beats` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
+        use :: dm_beat
+
         type(db_type),   intent(inout)        :: db          !! Database type.
         type(beat_type), intent(inout)        :: beats(:)    !! Beat type array.
         logical,         intent(in), optional :: transaction !! Use SQL transaction.
+        logical,         intent(in), optional :: validate    !! Validate beats.
 
         integer            :: i, stat
         logical            :: transaction_
@@ -1492,7 +1521,7 @@ contains
 
         ! Re-use statement.
         do i = 1, size(beats)
-            rc = dm_db_insert_beat(db, beats(i), db_stmt)
+            rc = dm_db_insert_beat(db, beats(i), db_stmt, validate=validate)
             if (dm_is_error(rc)) exit
         end do
 
@@ -1507,8 +1536,9 @@ contains
         end if
     end function dm_db_insert_beats
 
-    integer function dm_db_insert_log(db, log) result(rc)
-        !! Adds the given log to database.
+    integer function dm_db_insert_log(db, log, validate) result(rc)
+        !! Adds the given log to database. The log data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1518,17 +1548,27 @@ contains
         !! * `E_INVALID` if argument `log` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),  intent(inout) :: db  !! Database type.
-        type(log_type), intent(inout) :: log !! Log message to insert.
+        use :: dm_log
+
+        type(db_type),  intent(inout)        :: db       !! Database type.
+        type(log_type), intent(inout)        :: log      !! Log message to insert.
+        logical,        intent(in), optional :: validate !! Validate log.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_log_valid(log)) return
+        ! Validate log.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_log_valid(log)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1555,8 +1595,9 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_insert_log
 
-    integer function dm_db_insert_node(db, node) result(rc)
-        !! Adds the given node to database.
+    integer function dm_db_insert_node(db, node, validate) result(rc)
+        !! Adds the given node to database. The node data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1566,17 +1607,27 @@ contains
         !! * `E_INVALID` if argument `node` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),   intent(inout) :: db   !! Database type.
-        type(node_type), intent(inout) :: node !! Node to insert.
+        use :: dm_node
+
+        type(db_type),   intent(inout)        :: db       !! Database type.
+        type(node_type), intent(inout)        :: node     !! Node to insert.
+        logical,         intent(in), optional :: validate !! Validate node.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_node_valid(node)) return
+        ! Validate node.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_node_valid(node)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1599,11 +1650,11 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_insert_node
 
-    integer function dm_db_insert_observ(db, observ, db_stmt) result(rc)
+    integer function dm_db_insert_observ(db, observ, db_stmt, validate) result(rc)
         !! Adds single observation to database, including receivers, requests,
         !! and responses. If the insert query fails, the transaction will be
         !! rolled back, i.e., no part of the observation is written to the
-        !! database on error.
+        !! database on error. The observation data is validated by default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1617,21 +1668,30 @@ contains
         !! * `E_INVALID` if argument `observ` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
+        use :: dm_observ
+
         character(len=*), parameter :: SAVE_POINT = 'observ'
 
-        type(db_type),      intent(inout)           :: db      !! Database type.
-        type(observ_type),  intent(inout)           :: observ  !! Observation type.
-        type(db_stmt_type), intent(inout), optional :: db_stmt !! Database statement type.
+        type(db_type),      intent(inout)           :: db       !! Database type.
+        type(observ_type),  intent(inout)           :: observ   !! Observation type.
+        type(db_stmt_type), intent(inout), optional :: db_stmt  !! Database statement type.
+        logical,            intent(in),    optional :: validate !! Validate observation.
 
         integer     :: i, n
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        ! Check validity.
-        rc = E_INVALID
-        if (.not. dm_observ_valid(observ)) return
+        ! Validate observation.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_observ_valid(observ)) return
+        end if
 
         ! Set given statement.
         stmt = c_null_ptr
@@ -1707,9 +1767,10 @@ contains
         if (dm_is_error(db_release(db, SAVE_POINT))) rc = E_DB_TRANSACTION
     end function dm_db_insert_observ
 
-    integer function dm_db_insert_observs(db, observs, transaction) result(rc)
+    integer function dm_db_insert_observs(db, observs, transaction, validate) result(rc)
         !! Adds array of observations to database. A transaction is used unless
-        !! `transaction` is `.false.`.
+        !! `transaction` is `.false.`. The observation data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1724,9 +1785,12 @@ contains
         !! * `E_INVALID` if an element in `observs` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
+        use :: dm_observ
+
         type(db_type),     intent(inout)        :: db          !! Database type.
         type(observ_type), intent(inout)        :: observs(:)  !! Observation type array.
         logical,           intent(in), optional :: transaction !! Use SQL transaction.
+        logical,           intent(in), optional :: validate    !! Validate observations.
 
         integer            :: i, stat
         logical            :: transaction_
@@ -1749,7 +1813,7 @@ contains
 
         ! Re-use statement.
         do i = 1, size(observs)
-            rc = dm_db_insert_observ(db, observs(i), db_stmt)
+            rc = dm_db_insert_observ(db, observs(i), db_stmt, validate=validate)
             if (dm_is_error(rc)) exit
         end do
 
@@ -1764,8 +1828,9 @@ contains
         end if
     end function dm_db_insert_observs
 
-    integer function dm_db_insert_sensor(db, sensor) result(rc)
-        !! Adds given sensor to database.
+    integer function dm_db_insert_sensor(db, sensor, validate) result(rc)
+        !! Adds given sensor to database. The sensor data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1775,17 +1840,27 @@ contains
         !! * `E_INVALID` if argument `sensor` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),     intent(inout) :: db     !! Database type.
-        type(sensor_type), intent(inout) :: sensor !! Sensor to insert.
+        use :: dm_sensor
+
+        type(db_type),     intent(inout)        :: db       !! Database type.
+        type(sensor_type), intent(inout)        :: sensor   !! Sensor to insert.
+        logical,           intent(in), optional :: validate !! Validate sensor.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_sensor_valid(sensor)) return
+        ! Validate sensor.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_sensor_valid(sensor)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1814,6 +1889,16 @@ contains
     integer function dm_db_insert_sync(db, sync) result(rc)
         !! Wrapper function that inserts or replaces given sync data into
         !! database. Sync data must have a valid type.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1835,6 +1920,16 @@ contains
 
     integer function dm_db_insert_sync_log(db, sync) result(rc)
         !! Inserts or replaces given log sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1846,6 +1941,16 @@ contains
 
     integer function dm_db_insert_sync_node(db, sync) result(rc)
         !! Inserts or replaces given node sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1857,6 +1962,16 @@ contains
 
     integer function dm_db_insert_sync_observ(db, sync) result(rc)
         !! Inserts or replaces given observation sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1868,6 +1983,16 @@ contains
 
     integer function dm_db_insert_sync_sensor(db, sync) result(rc)
         !! Inserts or replaces given sensor sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1879,6 +2004,16 @@ contains
 
     integer function dm_db_insert_sync_target(db, sync) result(rc)
         !! Inserts or replaces given target sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
@@ -1888,8 +2023,9 @@ contains
         rc = db_insert_sync(db, sync, SQL_INSERT_SYNC_TARGET)
     end function dm_db_insert_sync_target
 
-    integer function dm_db_insert_target(db, target) result(rc)
-        !! Adds given target to database.
+    integer function dm_db_insert_target(db, target, validate) result(rc)
+        !! Adds given target to database. The target data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1899,17 +2035,27 @@ contains
         !! * `E_INVALID` if argument `target` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),     intent(inout) :: db     !! Database type.
-        type(target_type), intent(inout) :: target !! Target to insert.
+        use :: dm_target
+
+        type(db_type),     intent(inout)        :: db       !! Database type.
+        type(target_type), intent(inout)        :: target   !! Target to insert.
+        logical,           intent(in), optional :: validate !! Validate target.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_target_valid(target)) return
+        ! Validate target.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_target_valid(target)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -1932,6 +2078,30 @@ contains
 
         stat = sqlite3_finalize(stmt)
     end function dm_db_insert_target
+
+    logical function dm_db_log_exists(db, log_id) result(exists)
+        !! Returns `.true.` if log id exists.
+        type(db_type),     intent(inout) :: db     !! Database type.
+        character(len=*),  intent(in)    :: log_id !! Log id (UUID4).
+
+        exists = db_exists(db, SQL_TABLE_LOGS, log_id)
+    end function dm_db_log_exists
+
+    logical function dm_db_node_exists(db, node_id) result(exists)
+        !! Returns `.true.` if node id exists.
+        type(db_type),     intent(inout) :: db      !! Database type.
+        character(len=*),  intent(in)    :: node_id !! Node id.
+
+        exists = db_exists(db, SQL_TABLE_NODES, node_id)
+    end function dm_db_node_exists
+
+    logical function dm_db_observ_exists(db, observ_id) result(exists)
+        !! Returns `.true.` if observation id exists.
+        type(db_type),     intent(inout) :: db        !! Database type.
+        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
+
+        exists = db_exists(db, SQL_TABLE_OBSERVS, observ_id)
+    end function dm_db_observ_exists
 
     integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
                                 timeout, validate, wal) result(rc)
@@ -1959,6 +2129,8 @@ contains
         !! * `E_INVALID` if database is already opened.
         !! * `E_NOT_FOUND` if database has not been found.
         !!
+        use :: dm_file
+
         type(db_type),    intent(inout)        :: db           !! Database type.
         character(len=*), intent(in)           :: path         !! File path of database.
         logical,          intent(in), optional :: create       !! Create flag (off by default).
@@ -2120,6 +2292,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_beat
+
         type(db_type),    intent(inout) :: db      !! Database type.
         type(beat_type),  intent(out)   :: beat    !! Returned beat type.
         character(len=*), intent(in)    :: node_id !! Node id.
@@ -2265,6 +2439,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_log
+
         type(db_type),    intent(inout) :: db     !! Database type.
         type(log_type),   intent(out)   :: log    !! Returned log data.
         character(len=*), intent(in)    :: log_id !! Log id.
@@ -2300,6 +2476,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_log
+
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
         character(len=*),            intent(in)            :: observ_id !! Observation id.
@@ -2362,6 +2540,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_node
+
         type(db_type),    intent(inout) :: db      !! Database type.
         type(node_type),  intent(out)   :: node    !! Returned node data.
         character(len=*), intent(in)    :: node_id !! Node id.
@@ -2399,6 +2579,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),     intent(inout) :: db        !! Database type.
         type(observ_type), intent(out)   :: observ    !! Selected observation.
         character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
@@ -2467,6 +2649,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                      intent(inout)         :: db        !! Database type.
         character(len=ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
         character(len=*),                   intent(in),  optional :: node_id   !! Node id.
@@ -2651,6 +2835,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                       intent(inout)         :: db            !! Database type.
         type(observ_view_type), allocatable, intent(out)           :: views(:)      !! Returned observation views.
         character(len=*),                    intent(in)            :: node_id       !! Node id.
@@ -2743,6 +2929,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
         character(len=*),               intent(in)            :: after      !! Id of observation with timestamp before first of range.
@@ -2860,6 +3048,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
         character(len=*),               intent(in)            :: node_id    !! Node id.
@@ -2955,6 +3145,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_sensor
+
         type(db_type),     intent(inout) :: db        !! Database type.
         type(sensor_type), intent(out)   :: sensor    !! Returned sensor data.
         character(len=*),  intent(in)    :: sensor_id !! Sensor id.
@@ -2989,6 +3181,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(out)   :: sync !! Returned sync data.
 
@@ -3006,6 +3200,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
@@ -3029,6 +3225,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(out)   :: sync !! Returned sync data.
 
@@ -3046,6 +3244,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
@@ -3070,6 +3270,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(out)   :: sync !! Returned sync data.
 
@@ -3087,6 +3289,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
@@ -3110,6 +3314,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(out)   :: sync !! Returned sync data.
 
@@ -3127,6 +3333,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
@@ -3150,6 +3358,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),   intent(inout) :: db   !! Database type.
         type(sync_type), intent(out)   :: sync !! Returned sync data.
 
@@ -3167,6 +3377,8 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
@@ -3251,6 +3463,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_target
+
         type(db_type),     intent(inout) :: db        !! Database type.
         type(target_type), intent(out)   :: target    !! Returned target data.
         character(len=*),  intent(in)    :: target_id !! Target id.
@@ -3276,6 +3490,14 @@ contains
 
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_target
+
+    logical function dm_db_sensor_exists(db, sensor_id) result(exists)
+        !! Returns `.true.` if sensor id exists.
+        type(db_type),     intent(inout) :: db        !! Database type.
+        character(len=*),  intent(in)    :: sensor_id !! Sensor id.
+
+        exists = db_exists(db, SQL_TABLE_SENSORS, sensor_id)
+    end function dm_db_sensor_exists
 
     integer function dm_db_set_application_id(db, id) result(rc)
         !! Set the 32-bit signed big-endian “Application ID” integer located at
@@ -3513,9 +3735,9 @@ contains
     integer function dm_db_set_query_only(db, enabled) result(rc)
         !! Sets query-only pragma.
         !!
-        !! The `query_only` pragma prevents data changes on database files when
-        !! enabled. When this pragma is enabled, any attempt to `CREATE`,
-        !! `DELETE`, `DROP`, `INSERT`, or `UPDATE` will result in an
+        !! The SQLite `query_only` pragma prevents data changes on database
+        !! files when enabled. When this pragma is enabled, any attempt to
+        !! `CREATE`, `DELETE`, `DROP`, `INSERT`, or `UPDATE` will result in an
         !! `E_READ_ONLY` error.
         !!
         !! However, the database is not truly read-only. You can still run a
@@ -3621,8 +3843,9 @@ contains
         safe = (sqlite3_threadsafe() == SQLITE_OK)
     end function dm_db_threadsafe
 
-    integer function dm_db_update_node(db, node) result(rc)
-        !! Updates the given node in database.
+    integer function dm_db_update_node(db, node, validate) result(rc)
+        !! Updates the given node in database. The node data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -3632,17 +3855,27 @@ contains
         !! * `E_INVALID` if node is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),   intent(inout) :: db   !! Database type.
-        type(node_type), intent(inout) :: node !! Node to update.
+        use :: dm_node
+
+        type(db_type),   intent(inout)        :: db       !! Database type.
+        type(node_type), intent(inout)        :: node     !! Node to update.
+        logical,         intent(in), optional :: validate !! Validate node.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_node_valid(node)) return
+        ! Validate node.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_node_valid(node)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3666,8 +3899,9 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_update_node
 
-    integer function dm_db_update_sensor(db, sensor) result(rc)
-        !! Updates given sensor in database.
+    integer function dm_db_update_sensor(db, sensor, validate) result(rc)
+        !! Updates given sensor in database. The sensor data is validated by
+        !! default.
         !!
         !! The function returns the following error codes:
         !!
@@ -3677,17 +3911,27 @@ contains
         !! * `E_INVALID` if sensor is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),     intent(inout) :: db     !! Database type.
-        type(sensor_type), intent(inout) :: sensor !! Sensor to update.
+        use :: dm_sensor
+
+        type(db_type),     intent(inout)        :: db       !! Database type.
+        type(sensor_type), intent(inout)        :: sensor   !! Sensor to update.
+        logical,           intent(in), optional :: validate !! Validate sensor.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_sensor_valid(sensor)) return
+        ! Validate sensor.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_sensor_valid(sensor)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3714,8 +3958,9 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_update_sensor
 
-    integer function dm_db_update_target(db, target) result(rc)
-        !! Updates the given target in database.
+    integer function dm_db_update_target(db, target, validate) result(rc)
+        !! Updates the given target in database. The target data is validated
+        !! by default.
         !!
         !! The function returns the following error codes:
         !!
@@ -3725,17 +3970,27 @@ contains
         !! * `E_INVALID` if target is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),     intent(inout) :: db     !! Database type.
-        type(target_type), intent(inout) :: target !! Target to update.
+        use :: dm_target
+
+        type(db_type),     intent(inout)        :: db       !! Database type.
+        type(target_type), intent(inout)        :: target   !! Target to update.
+        logical,           intent(in), optional :: validate !! Validate target.
 
         integer     :: stat
+        logical     :: validate_
         type(c_ptr) :: stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        rc = E_INVALID
-        if (.not. dm_target_valid(target)) return
+        ! Validate target.
+        validate_ = .true.
+        if (present(validate)) validate_ = validate
+
+        if (validate_) then
+            rc = E_INVALID
+            if (.not. dm_target_valid(target)) return
+        end if
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -3809,6 +4064,14 @@ contains
         if (present(exists) .and. rc == E_NONE) exists = .true.
     end function dm_db_table_exists
 
+    logical function dm_db_target_exists(db, target_id) result(exists)
+        !! Returns `.true.` if target id exists.
+        type(db_type),     intent(inout) :: db        !! Database type.
+        character(len=*),  intent(in)    :: target_id !! Target id.
+
+        exists = db_exists(db, SQL_TABLE_TARGETS, target_id)
+    end function dm_db_target_exists
+
     integer function dm_db_vacuum(db, into) result(rc)
         !! Vacuums database schema `main`, or, if `into` is passed, vacuums
         !! it into new database at given path.
@@ -3820,6 +4083,8 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_EXIST` if `into` is passed and the file exists.
         !!
+        use :: dm_file
+
         character(len=*), parameter :: QUERY = "VACUUM 'main'"
 
         type(db_type),    intent(inout)        :: db   !! Database type.
@@ -3891,7 +4156,7 @@ contains
 
     subroutine dm_db_sleep(msec)
         !! Delays execution for given duration in msec.
-        integer, intent(in) :: msec !! Time in msec.
+        integer, intent(in) :: msec !! Time in [msec].
 
         integer :: n
 
@@ -4156,6 +4421,8 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_INVALID` if one of the receivers is invalid.
         !!
+        use :: dm_observ
+
         type(db_type),    intent(inout) :: db           !! Database type.
         character(len=*), intent(in)    :: observ_id    !! Observation id.
         character(len=*), intent(inout) :: receivers(:) !! Array of receivers to insert.
@@ -4204,6 +4471,9 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
+        use :: dm_observ
+        use :: dm_request
+
         type(db_type),      intent(inout) :: db          !! Database type.
         character(len=*),   intent(in)    :: observ_id   !! Observation id.
         type(request_type), intent(inout) :: requests(:) !! Array of requests to insert.
@@ -4262,6 +4532,10 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
+        use :: dm_observ
+        use :: dm_request
+        use :: dm_response
+
         type(db_type),       intent(inout) :: db           !! Database type.
         character(len=*),    intent(in)    :: observ_id    !! Observation id.
         integer,             intent(in)    :: request_idx  !! Request index.
@@ -4313,6 +4587,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
+        use :: dm_sync
+
         type(db_type),    intent(inout) :: db    !! Database type.
         type(sync_type),  intent(inout) :: sync  !! Sync data to insert.
         character(len=*), intent(in)    :: query !! SQL query to perform.
@@ -4397,6 +4673,8 @@ contains
     integer function db_next_row_beat(stmt, beat, validate) result(rc)
         !! Reads beat data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_beat
+
         type(c_ptr),     intent(inout)        :: stmt     !! SQLite statement.
         type(beat_type), intent(inout)        :: beat     !! Beat type.
         logical,         intent(in), optional :: validate !! Validate column types.
@@ -4433,6 +4711,8 @@ contains
     integer function db_next_row_data_point(stmt, dp, validate) result(rc)
         !! Reads observation data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_dp
+
         type(c_ptr),   intent(inout)        :: stmt     !! SQLite statement.
         type(dp_type), intent(inout)        :: dp       !! Data point type.
         logical,       intent(in), optional :: validate !! Validate column types.
@@ -4457,6 +4737,8 @@ contains
     integer function db_next_row_log(stmt, log, validate) result(rc)
         !! Reads log data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_log
+
         type(c_ptr),    intent(inout)        :: stmt     !! SQLite statement.
         type(log_type), intent(inout)        :: log      !! Log type.
         logical,        intent(in), optional :: validate !! Validate column types.
@@ -4497,6 +4779,8 @@ contains
     integer function db_next_row_node(stmt, node, validate) result(rc)
         !! Reads node data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_node
+
         type(c_ptr),     intent(inout)        :: stmt     !! SQLite statement.
         type(node_type), intent(inout)        :: node     !! Node type.
         logical,         intent(in), optional :: validate !! Validate column types.
@@ -4529,6 +4813,8 @@ contains
     integer function db_next_row_observ(stmt, observ, validate) result(rc)
         !! Reads observation data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_observ
+
         type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
         type(observ_type), intent(inout)        :: observ   !! Observation type.
         logical,           intent(in), optional :: validate !! Validate column types.
@@ -4575,6 +4861,8 @@ contains
     integer function db_next_row_observ_view(stmt, view, validate) result(rc)
         !! Reads observation data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_observ
+
         type(c_ptr),            intent(inout)        :: stmt     !! SQLite statement.
         type(observ_view_type), intent(inout)        :: view     !! Observation view type.
         logical,                intent(in), optional :: validate !! Validate column types.
@@ -4623,6 +4911,8 @@ contains
     integer function db_next_row_sensor(stmt, sensor, validate) result(rc)
         !! Reads sensor data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_sensor
+
         type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
         type(sensor_type), intent(inout)        :: sensor   !! Sensor type.
         logical,           intent(in), optional :: validate !! Validate column types.
@@ -4687,6 +4977,8 @@ contains
 
     integer function db_next_row_sync(stmt, sync) result(rc)
         !! Reads sync data from table row. Returns `E_DB_TYPE` on error.
+        use :: dm_sync
+
         type(c_ptr),     intent(inout) :: stmt !! SQLite statement.
         type(sync_type), intent(inout) :: sync !! Sync type.
 
@@ -4719,6 +5011,8 @@ contains
     integer function db_next_row_target(stmt, target, validate) result(rc)
         !! Reads target data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_target
+
         type(c_ptr),       intent(inout)        :: stmt     !! SQLite statement.
         type(target_type), intent(inout)        :: target   !! Target type.
         logical,           intent(in), optional :: validate !! Validate column types.
@@ -4793,6 +5087,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_beat
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(beat_type), allocatable, intent(out)           :: beats(:) !! Returned beat types.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of beats.
@@ -4857,6 +5153,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_beat
+
         type(db_type),      intent(inout)         :: db      !! Database type.
         type(db_stmt_type), intent(inout)         :: db_stmt !! Database statement type.
         type(beat_type),    intent(out)           :: beat    !! Returned beat type.
@@ -4896,6 +5194,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_dp
+
         type(db_type),              intent(inout)         :: db            !! Database type.
         type(dp_type), allocatable, intent(out)           :: dps(:)        !! Returned data points.
         character(len=*),           intent(in)            :: node_id       !! Node id.
@@ -4993,6 +5293,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_dp
+
         type(db_type),      intent(inout)        :: db            !! Database type.
         type(db_stmt_type), intent(inout)        :: db_stmt       !! Database statement type.
         type(dp_type),      intent(out)          :: dp            !! Returned data point.
@@ -5724,6 +6026,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_log
+
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
         character(len=*),            intent(in),  optional :: node_id   !! Node id.
@@ -5959,6 +6263,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_log
+
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(db_stmt_type),          intent(inout)         :: db_stmt   !! Database statement type.
         type(log_type),              intent(out)           :: log       !! Returned log type.
@@ -6157,6 +6463,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_node
+
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(node_type), allocatable, intent(out)           :: nodes(:) !! Returned node data array.
         integer(kind=i8),             intent(out), optional :: nnodes   !! Number of nodes.
@@ -6259,6 +6567,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
         character(len=*),               intent(in),  optional :: node_id    !! Node id.
@@ -6456,6 +6766,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),      intent(inout)         :: db        !! Database type.
         type(db_stmt_type), intent(inout)         :: db_stmt   !! Database statement type.
         type(observ_type),  intent(out)           :: observ    !! Returned observation type.
@@ -6625,6 +6937,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),     intent(inout) :: db         !! Database type.
         type(observ_type), intent(inout) :: observs(:) !! Returned observation data.
 
@@ -6692,6 +7006,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+
         type(db_type),                      intent(inout)           :: db         !! Database type.
         character(len=OBSERV_RECEIVER_LEN), intent(out)             :: receivers(OBSERV_MAX_NRECEIVERS) !! Returned receivers array.
         character(len=*),                   intent(in)              :: observ_id  !! Observation id.
@@ -6759,6 +7075,9 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_observ
+        use :: dm_request
+
         type(db_type),      intent(inout)           :: db        !! Database type.
         type(request_type), intent(out)             :: requests(OBSERV_MAX_NREQUESTS) !! Requests data.
         character(len=*),   intent(in)              :: observ_id !! Observation id.
@@ -6851,6 +7170,9 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_request
+        use :: dm_response
+
         type(db_type),       intent(inout)           :: db          !! Database type.
         type(response_type), intent(out)             :: responses(REQUEST_MAX_NRESPONSES) !! Returned responses array.
         character(len=*),    intent(in)              :: observ_id   !! Observation id.
@@ -6925,6 +7247,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_sensor
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data.
         integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
@@ -6978,6 +7302,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_sensor
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data.
         character(len=*),               intent(in)            :: node_id    !! Node id.
@@ -7041,6 +7367,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_INVALID` if sync data type is invalid.
         !!
+        use :: dm_sync
+
         type(db_type),    intent(inout) :: db    !! Database type.
         integer,          intent(in)    :: type  !! Sync data type.
         character(len=*), intent(in)    :: query !! Select query.
@@ -7080,6 +7408,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_sync
+
         type(db_type),                intent(inout)        :: db          !! Database type.
         integer,                      intent(in)           :: type        !! Sync data type.
         character(len=*),             intent(in)           :: count_query !! Select count query.
@@ -7155,6 +7485,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
+        use :: dm_target
+
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(target_type), allocatable, intent(out)           :: targets(:) !! Array of targets.
         integer(kind=i8),               intent(out), optional :: ntargets   !! Number of selected targets.
