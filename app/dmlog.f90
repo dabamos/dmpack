@@ -10,13 +10,15 @@ program dmlog
     character(len=*), parameter :: APP_NAME  = 'dmlog'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     type :: app_type
         !! Command-line arguments.
         character(len=LOGGER_NAME_LEN) :: logger  = ' '     !! Name of logger instance (optional).
         logical                        :: verbose = .false. !! Print debug messages to stderr (optional).
     end type app_type
+
+    class(logger_class), pointer :: logger ! Logger object.
 
     integer        :: rc  ! Return code.
     type(app_type) :: app ! App configuration.
@@ -30,13 +32,14 @@ program dmlog
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
-    call dm_logger_init(name=app%logger, ipc=.true., verbose=app%verbose)
+    logger => dm_logger_get()
+    call logger%configure(name=app%logger, ipc=.true., verbose=app%verbose)
 
     ! Prepare and send log.
     log%id = dm_uuid4()
     log%timestamp = dm_time_now()
 
-    call dm_logger_log(log)
+    call logger%log(log)
 contains
     integer function read_args(app, log) result(rc)
         !! Reads command-line arguments.

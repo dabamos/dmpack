@@ -1,13 +1,20 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_logger
-    !! This module provides functions and subroutines to send logs to or read
-    !! logs from a POSIX message queue. Each process may use only one logger: the
-    !! global `LOGGER`. The `LOGGER` may only be changed once, and by one thread
-    !! only.
+    !! Object-oriented logger that outputs logs and optionally forwards them
+    !! via POSIX message queue.
     !!
-    !! Be aware that only a single receiver is allowed (but multiple senders).
-    !! Otherwise, the messages are passed in round-robin fashion to the receivers.
+    !! Only a single receiver is allowed (but multiple senders). Otherwise,
+    !! the logs messages are passed in round-robin fashion to the receivers.
+    !!
+    !! Get a pointer to the logger before configuration:
+    !!
+    !! ```fortran
+    !! class(logger_class), pointer :: logger
+    !!
+    !! logger => dm_logger_get()
+    !! call logger%configure(name='dmlogger', ipc=.true., verbose=.true.)
+    !! ```
     use :: dm_ansi
     use :: dm_error
     use :: dm_id
@@ -20,127 +27,134 @@ module dm_logger
     private
 
     ! Logger parameters.
-    integer,          parameter, public :: LOGGER_NAME_LEN     = ID_LEN     !! Maximum length of logger name.
-    character(len=*), parameter, public :: LOGGER_NAME_DEFAULT = 'dmlogger' !! Default name of logger process.
+    integer,          parameter, public :: LOGGER_NAME_LEN = ID_LEN     !! Maximum length of logger name.
+    character(len=*), parameter         :: LOGGER_NAME     = 'dmlogger' !! Default name of logger process.
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(LVL_NONE:LVL_LAST) = [ &
         COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED &
     ] !! Colours associated with log level.
 
-    type, public :: logger_type
+    type, public :: logger_class
         !! Opaque logger type.
         private
-        character(len=LOGGER_NAME_LEN) :: name     = LOGGER_NAME_DEFAULT !! Logger and message queue name.
-        character(len=NODE_ID_LEN)     :: node_id  = ' '                 !! Optional node id.
-        character(len=LOG_SOURCE_LEN)  :: source   = ' '                 !! Default source of each log message.
-        logical                        :: blocking = .true.              !! Blocking message queue access.
-        logical                        :: debug    = .false.             !! Forward debug messages via IPC.
-        logical                        :: no_color = .false.             !! Disable ANSI colour output.
-        logical                        :: ipc      = .false.             !! Send logs to POSIX message queue.
-        logical                        :: verbose  = .true.              !! Print to standard error.
-    end type logger_type
+        character(len=LOGGER_NAME_LEN) :: name      = LOGGER_NAME !! Logger and message queue name.
+        character(len=NODE_ID_LEN)     :: node_id   = ' '         !! Optional node id.
+        character(len=LOG_SOURCE_LEN)  :: source    = ' '         !! Default source of each log message.
+        integer                        :: min_level = LVL_INFO    !! Minimum level of logs to be forwarded via message queue.
+        logical                        :: blocking  = .true.      !! Blocking message queue access.
+        logical                        :: ipc       = .false.     !! Send logs to POSIX message queue.
+        logical                        :: no_color  = .false.     !! Disable ANSI colour output.
+        logical                        :: verbose   = .true.      !! Print to standard error.
+    contains
+        private
+        ! Private methods.
+        procedure :: fail     => logger_fail
+        procedure :: log_args => logger_log_args
+        procedure :: log_type => logger_log_type
+        procedure :: send     => logger_send
+        ! Public methods.
+        procedure, public :: configure => logger_configure
+        procedure, public :: out       => logger_out
+        ! Public logging methods.
+        generic,   public :: log       => log_args, log_type
+        procedure, public :: critical  => logger_log_critical
+        procedure, public :: debug     => logger_log_debug
+        procedure, public :: error     => logger_log_error
+        procedure, public :: info      => logger_log_info
+        procedure, public :: warning   => logger_log_warning
+    end type logger_class
 
-    type(logger_type), save, public :: LOGGER !! Global logger.
+    ! Global logger instance.
+    class(logger_class), allocatable, target, save :: DMPACK_LOGGER
 
-    interface dm_logger_log
-        !! Generic interface to logging routines.
-        procedure :: dm_logger_log_args
-        procedure :: dm_logger_log_type
-    end interface dm_logger_log
+    ! Public procedures.
+    public :: dm_logger_get
 
-    interface dm_log_critical
-        !! Alias for subroutine.
-        module procedure :: dm_logger_log_critical
-    end interface
-
-    interface dm_log_debug
-        !! Alias for subroutine.
-        module procedure :: dm_logger_log_debug
-    end interface
-
-    interface dm_log_error
-        !! Alias for subroutine.
-        module procedure :: dm_logger_log_error
-    end interface
-
-    interface dm_log_info
-        !! Alias for subroutine.
-        module procedure :: dm_logger_log_info
-    end interface
-
-    interface dm_log_warning
-        !! Alias for subroutine.
-        module procedure :: dm_logger_log_warning
-    end interface
-
-    public :: dm_log_debug
-    public :: dm_log_info
-    public :: dm_log_warning
-    public :: dm_log_error
-    public :: dm_log_critical
-
-    public :: dm_logger_fail
-    public :: dm_logger_init
-    public :: dm_logger_log
-    public :: dm_logger_log_critical
-    public :: dm_logger_log_debug
-    public :: dm_logger_log_error
-    public :: dm_logger_log_info
-    public :: dm_logger_log_warning
-    public :: dm_logger_out
-    public :: dm_logger_send
-
-    private :: dm_logger_log_args
-    private :: dm_logger_log_type
+    ! Private procedures.
+    private :: logger_configure
+    private :: logger_fail
+    private :: logger_log_args
+    private :: logger_log_critical
+    private :: logger_log_debug
+    private :: logger_log_error
+    private :: logger_log_info
+    private :: logger_log_type
+    private :: logger_log_warning
+    private :: logger_out
+    private :: logger_send
 contains
-    subroutine dm_logger_fail(message, error, source)
+    ! ******************************************************************
+    ! PUBLIC PROCEDURES.
+    ! ******************************************************************
+    function dm_logger_get() result(logger)
+        !! Returns pointer to global logger. The function allocates the logger
+        !! if it does not exist yet.
+        class(logger_class), pointer :: logger !! Pointer to logger object.
+        integer                      :: stat
+
+        logger => null()
+
+        if (.not. allocated(DMPACK_LOGGER)) then
+            allocate (DMPACK_LOGGER, stat=stat)
+            if (stat /= 0) return
+        end if
+
+        logger => DMPACK_LOGGER
+    end function dm_logger_get
+
+    ! ******************************************************************
+    ! PRIVATE CLASS METHODS.
+    ! ******************************************************************
+    subroutine logger_configure(this, name, node_id, source, debug, ipc, blocking, no_color, verbose)
+        !! Configures the logger.
+        class(logger_class), intent(inout)        :: this     !! Logger object.
+        character(len=*),    intent(in), optional :: name     !! Logger name.
+        character(len=*),    intent(in), optional :: node_id  !! Node id.
+        character(len=*),    intent(in), optional :: source   !! Source (name of calling program).
+        logical,             intent(in), optional :: debug    !! Forward debug messages via IPC.
+        logical,             intent(in), optional :: ipc      !! IPC through POSIX message queues.
+        logical,             intent(in), optional :: blocking !! Blocking IPC.
+        logical,             intent(in), optional :: no_color !! Disable ANSI colours.
+        logical,             intent(in), optional :: verbose  !! Verbose output.
+
+        if (present(name)) then
+            if (dm_id_valid(name)) this%name = name
+        end if
+
+        if (present(node_id))  this%node_id   = node_id
+        if (present(source))   this%source    = source
+        if (present(debug))    this%min_level = LVL_DEBUG
+        if (present(ipc))      this%ipc       = ipc
+        if (present(blocking)) this%blocking  = blocking
+        if (present(no_color)) this%no_color  = no_color
+        if (present(verbose))  this%verbose   = verbose
+    end subroutine logger_configure
+
+    subroutine logger_fail(this, message, error, source)
         !! Prints critical error message to standard error, with optional
         !! DMPACK error code.
         use :: dm_time
 
-        character(len=*), intent(in)           :: message !! Error message.
-        integer,          intent(in), optional :: error   !! Optional error code.
-        character(len=*), intent(in), optional :: source  !! Optional source of log.
+        class(logger_class), intent(inout)        :: this    !! Logger object.
+        character(len=*),    intent(in)           :: message !! Error message.
+        integer,             intent(in), optional :: error   !! Optional error code.
+        character(len=*),    intent(in), optional :: source  !! Optional source of log.
 
         type(log_type) :: log
 
         log = log_type(timestamp = dm_time_now(), &
                        level     = LVL_ERROR, &
                        message   = message, &
-                       source    = LOGGER%source)
+                       source    = this%source)
 
         if (present(error))  log%error  = error
         if (present(source)) log%source = source
 
-        call dm_logger_out(log)
-    end subroutine dm_logger_fail
+        call this%out(log)
+    end subroutine logger_fail
 
-    subroutine dm_logger_init(name, node_id, source, debug, ipc, blocking, no_color, verbose)
-        !! Initialises the global logger.
-        character(len=*), intent(in), optional :: name     !! Logger name.
-        character(len=*), intent(in), optional :: node_id  !! Node id.
-        character(len=*), intent(in), optional :: source   !! Source (name of calling program).
-        logical,          intent(in), optional :: debug    !! Forward debug messages via IPC.
-        logical,          intent(in), optional :: ipc      !! IPC through POSIX message queues.
-        logical,          intent(in), optional :: blocking !! Blocking IPC.
-        logical,          intent(in), optional :: no_color !! Disable ANSI colours.
-        logical,          intent(in), optional :: verbose  !! Verbose output.
-
-        if (present(name)) then
-            if (dm_id_valid(name)) LOGGER%name = name
-        end if
-
-        if (present(node_id))  LOGGER%node_id  = node_id
-        if (present(source))   LOGGER%source   = source
-        if (present(debug))    LOGGER%debug    = debug
-        if (present(ipc))      LOGGER%ipc      = ipc
-        if (present(blocking)) LOGGER%blocking = blocking
-        if (present(no_color)) LOGGER%no_color = no_color
-        if (present(verbose))  LOGGER%verbose  = verbose
-    end subroutine dm_logger_init
-
-    subroutine dm_logger_log_args(level, message, source, observ, timestamp, error)
+    subroutine logger_log_args(this, level, message, source, observ, timestamp, error)
         !! Sends a log message to the message queue (fire & forget). Only the
         !! log level is validated. An invalid level is set to `LVL_ERROR`.
         !!
@@ -150,17 +164,18 @@ contains
         use :: dm_time
         use :: dm_uuid
 
-        integer,           intent(in)              :: level     !! Log level.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        integer,             intent(in)              :: level     !! Log level.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
 
         type(log_type) :: log
 
         ! Ignore debug messages if forwarding and output are both disabled.
-        if (level == LVL_DEBUG .and. .not. LOGGER%debug .and. .not. LOGGER%verbose) return
+        if (level == LVL_DEBUG .and. this%min_level > LVL_DEBUG .and. .not. this%verbose) return
 
         ! Replace invalid log level with `LVL_ERROR`.
         log%level = LVL_ERROR
@@ -173,7 +188,7 @@ contains
         if (present(source)) then
             log%source = source
         else
-            log%source = LOGGER%source
+            log%source = this%source
         end if
 
         if (present(observ)) then
@@ -182,7 +197,7 @@ contains
             log%target_id = observ%target_id
             log%observ_id = observ%id
         else
-            log%node_id = LOGGER%node_id
+            log%node_id = this%node_id
         end if
 
         if (present(timestamp)) then
@@ -194,83 +209,90 @@ contains
         if (present(error)) log%error = error
 
         ! Output and send log.
-        if (LOGGER%verbose) call dm_logger_out(log)
-        if (LOGGER%ipc)     call dm_logger_send(log)
-    end subroutine dm_logger_log_args
+        if (this%verbose) call this%out(log)
+        if (this%ipc)     call this%send(log)
+    end subroutine logger_log_args
 
-    subroutine dm_logger_log_critical(message, source, observ, timestamp, error)
+    subroutine logger_log_critical(this, message, source, observ, timestamp, error)
         !! Sends a debug log message to the message queue.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
 
-        call dm_logger_log(LVL_CRITICAL, message, source, observ, timestamp, error)
-    end subroutine dm_logger_log_critical
+        call this%log(LVL_CRITICAL, message, source, observ, timestamp, error)
+    end subroutine logger_log_critical
 
-    subroutine dm_logger_log_debug(message, source, observ, timestamp, error)
+    subroutine logger_log_debug(this, message, source, observ, timestamp, error)
         !! Sends a debug log message to the message queue.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
 
-        call dm_logger_log(LVL_DEBUG, message, source, observ, timestamp, error)
-    end subroutine dm_logger_log_debug
+        call this%log(LVL_DEBUG, message, source, observ, timestamp, error)
+    end subroutine logger_log_debug
 
-    subroutine dm_logger_log_error(message, source, observ, timestamp, error)
+    subroutine logger_log_error(this, message, source, observ, timestamp, error)
         !! Sends a error log message to the message queue.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
 
-        call dm_logger_log(LVL_ERROR, message, source, observ, timestamp, error)
-    end subroutine dm_logger_log_error
+        call this%log(LVL_ERROR, message, source, observ, timestamp, error)
+    end subroutine logger_log_error
 
-    subroutine dm_logger_log_info(message, source, observ, timestamp, error)
+    subroutine logger_log_info(this, message, source, observ, timestamp, error)
         !! Sends a info log message to the message queue.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
 
-        call dm_logger_log(LVL_INFO, message, source, observ, timestamp, error)
-    end subroutine dm_logger_log_info
+        call this%log(LVL_INFO, message, source, observ, timestamp, error)
+    end subroutine logger_log_info
 
-    subroutine dm_logger_log_warning(message, source, observ, timestamp, error)
-        !! Sends a warning log message to the message queue.
-        character(len=*),  intent(in)              :: message   !! Log message.
-        character(len=*),  intent(in),    optional :: source    !! Optional source of log.
-        type(observ_type), intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),  intent(in),    optional :: timestamp !! Optional timestamp of log.
-        integer,           intent(in),    optional :: error     !! Optional error code.
-
-        call dm_logger_log(LVL_WARNING, message, source, observ, timestamp, error)
-    end subroutine dm_logger_log_warning
-
-    subroutine dm_logger_log_type(log)
+    subroutine logger_log_type(this, log)
         !! Sends a log data type to the message queue (send & forget). The
         !! passed log is not validated and must have id, node id, and
         !! timestamp. The receiver may decline the log if the data is
         !! invalid.
-        type(log_type), intent(inout) :: log !! Log type.
+        class(logger_class), intent(inout) :: this !! Logger object.
+        type(log_type),      intent(inout) :: log  !! Log type.
 
-        if (LOGGER%verbose) call dm_logger_out(log)
-        if (LOGGER%ipc)     call dm_logger_send(log)
-    end subroutine dm_logger_log_type
+        if (this%verbose) call this%out(log)
+        if (this%ipc)     call this%send(log)
+    end subroutine logger_log_type
 
-    subroutine dm_logger_out(log, unit)
+    subroutine logger_log_warning(this, message, source, observ, timestamp, error)
+        !! Sends a warning log message to the message queue.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(len=*),    intent(in)              :: message   !! Log message.
+        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
+
+        call this%log(LVL_WARNING, message, source, observ, timestamp, error)
+    end subroutine logger_log_warning
+
+    subroutine logger_out(this, log, unit)
         !! Prints log message to standard error.
         character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " (", i0, ")")'
         character(len=*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
 
-        type(log_type), intent(inout)        :: log  !! Log to output.
-        integer,        intent(in), optional :: unit !! File unit.
+        class(logger_class), intent(inout)        :: this !! Logger object.
+        type(log_type),      intent(inout)        :: log  !! Log to output.
+        integer,             intent(in), optional :: unit !! File unit.
 
         integer :: level, unit_
 
@@ -280,7 +302,7 @@ contains
         unit_ = stderr
         if (present(unit)) unit_ = unit
 
-        if (.not. LOGGER%no_color) call dm_ansi_color(LOGGER_COLORS(level))
+        if (.not. this%no_color) call dm_ansi_color(LOGGER_COLORS(level))
 
         if (log%error /= E_NONE) then
             write (unit_, FMT_ERROR) log%timestamp, &
@@ -295,32 +317,33 @@ contains
                                     trim(log%message)
         end if
 
-        if (.not. LOGGER%no_color) call dm_ansi_color(COLOR_RESET)
-    end subroutine dm_logger_out
+        if (.not. this%no_color) call dm_ansi_color(COLOR_RESET)
+    end subroutine logger_out
 
-    subroutine dm_logger_send(log)
+    subroutine logger_send(this, log)
         !! Sends log message to default log message queue (fire & forget)
-        !! if `LOGGER%ipc` is true. Prints message to standard output if
-        !! `LOGGER%verbose` is true.
+        !! if logger attribute `ipc` is `.true.`. Prints message to standard
+        !! output if attribute `verbose` is `.true.`.
         use :: dm_mqueue
 
-        type(log_type), intent(inout) :: log !! Log type.
+        class(logger_class), intent(inout) :: this !! Logger object.
+        type(log_type),      intent(inout) :: log  !! Log type.
 
         integer           :: rc
         type(mqueue_type) :: mqueue
 
-        if (.not. LOGGER%ipc) return
-        if (.not. LOGGER%debug .and. log%level <= LVL_DEBUG) return
+        if (.not. this%ipc) return
+        if (this%min_level > LVL_DEBUG .and. log%level <= LVL_DEBUG) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &
                             type     = TYPE_LOG, &
-                            name     = LOGGER%name, &
+                            name     = this%name, &
                             access   = MQUEUE_WRONLY, &
-                            blocking = logger%blocking)
+                            blocking = this%blocking)
 
         if (dm_is_error(rc)) then
-            call dm_logger_fail('failed to open mqueue /' // LOGGER%name, rc)
+            call this%fail('failed to open mqueue /' // this%name, rc)
             return
         end if
 
@@ -328,14 +351,14 @@ contains
         rc = dm_mqueue_write(mqueue, log)
 
         if (dm_is_error(rc)) then
-            call dm_logger_fail('failed to write to mqueue /' // LOGGER%name, rc)
+            call this%fail('failed to write to mqueue /' // this%name, rc)
         end if
 
         ! Close message queue.
         rc = dm_mqueue_close(mqueue)
 
         if (dm_is_error(rc)) then
-            call dm_logger_fail('failed to close mqueue /' // LOGGER%name, rc)
+            call this%fail('failed to close mqueue /' // this%name, rc)
         end if
-    end subroutine dm_logger_send
+    end subroutine logger_send
 end module dm_logger

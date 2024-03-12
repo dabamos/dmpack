@@ -10,7 +10,7 @@ program dmserial
     character(len=*), parameter :: APP_NAME  = 'dmserial'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -43,6 +43,8 @@ program dmserial
         type(job_list_type)                :: jobs                      !! Job list.
     end type app_type
 
+    class(logger_class), pointer :: logger ! Logger object.
+
     integer        :: rc  ! Return code.
     type(app_type) :: app ! App settings.
     type(tty_type) :: tty ! TTY/PTY type.
@@ -66,12 +68,13 @@ program dmserial
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
-    call dm_logger_init(name    = app%logger, &
-                        node_id = app%node, &
-                        source  = app%name, &
-                        debug   = app%debug, &
-                        ipc     = (len_trim(app%logger) > 0), &
-                        verbose = app%verbose)
+    logger => dm_logger_get()
+    call logger%configure(name    = app%logger, &
+                          node_id = app%node, &
+                          source  = app%name, &
+                          debug   = app%debug, &
+                          ipc     = (len_trim(app%logger) > 0), &
+                          verbose = app%verbose)
 
     ! Register signal handler.
     call dm_signal_register(signal_handler)
@@ -79,8 +82,6 @@ program dmserial
     ! Run main loop.
     rc = run(app, tty)
     if (dm_is_error(rc)) call dm_stop(1)
-
-    call dm_stop(0)
 contains
     integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
         !! Creates TTY type from application settings.
@@ -135,7 +136,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log_error('failed to output observ', error=rc)
+                    call logger%error('failed to output observ', error=rc)
                     return
                 end if
 
@@ -147,7 +148,7 @@ contains
                       newunit=fu, position='append', status='unknown')
 
                 if (stat /= 0) then
-                    call dm_log_error('failed to open file ' // app%output, error=rc)
+                    call logger%error('failed to open file ' // app%output, error=rc)
                     return
                 end if
 
@@ -155,7 +156,7 @@ contains
                 rc = write_observ(observ, unit=fu, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call dm_log_error('failed to write observ to file ' // app%output, error=rc)
+                    call logger%error('failed to write observ to file ' // app%output, error=rc)
                 end if
 
                 close (fu)
@@ -360,7 +361,7 @@ contains
 
         if (n == 0) then
             observ%error = rc
-            call dm_log_info('no requests in observ ' // observ%name, observ=observ)
+            call logger%info('no requests in observ ' // observ%name, observ=observ)
             return
         end if
 
@@ -369,7 +370,7 @@ contains
             request => observ%requests(i)
 
             if (debug_) then
-                call dm_log_debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+                call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
             end if
 
             ! Prepare request.
@@ -382,8 +383,8 @@ contains
             rc = dm_tty_flush(tty)
 
             if (debug_) then
-                if (dm_is_error(rc)) call dm_log_warning('failed to flush buffers', observ=observ, error=rc)
-                call dm_log_debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
+                if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
+                call logger%debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
             end if
 
             ! Send request to sensor.
@@ -391,14 +392,14 @@ contains
 
             if (dm_is_error(rc)) then
                 request%error = rc
-                call dm_log_error('failed to write ' // request_name_string(request%name, i) // ' to TTY ' // &
+                call logger%error('failed to write ' // request_name_string(request%name, i) // ' to TTY ' // &
                                   app%tty, observ=observ, error=rc)
                 cycle req_loop
             end if
 
             ! Ignore sensor response if no delimiter is set.
             if (len_trim(request%delimiter) == 0) then
-                if (debug_) call dm_log_debug('no delimiter in ' // request_name_string(request%name, i), observ=observ)
+                if (debug_) call logger%debug('no delimiter in ' // request_name_string(request%name, i), observ=observ)
                 cycle req_loop
             end if
 
@@ -407,20 +408,20 @@ contains
 
             if (dm_is_error(rc)) then
                 request%error = rc
-                call dm_log_error('failed to read response of ' // request_name_string(request%name, i) // &
+                call logger%error('failed to read response of ' // request_name_string(request%name, i) // &
                                   ' from TTY ' // app%tty, observ=observ, error=request%error)
                 cycle req_loop
             end if
 
             if (debug_) then
-                call dm_log_debug('received response from TTY ' // trim(app%tty) // ': ' // &
+                call logger%debug('received response from TTY ' // trim(app%tty) // ': ' // &
                                   request%response, observ=observ)
             end if
 
             ! Do not extract responses if no pattern is set.
             if (len_trim(request%pattern) == 0) then
                 if (debug_) then
-                    call dm_log_debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
+                    call logger%debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
                 end if
                 cycle req_loop
             end if
@@ -430,7 +431,7 @@ contains
 
             if (dm_is_error(rc)) then
                 request%error = rc
-                call dm_log_warning('response of ' // request_name_string(request%name, i) // ' does not match pattern', &
+                call logger%warning('response of ' // request_name_string(request%name, i) // ' does not match pattern', &
                                     observ=observ, error=request%error)
                 cycle req_loop
             end if
@@ -440,23 +441,23 @@ contains
                 response => request%responses(j)
 
                 if (dm_is_error(response%error)) then
-                    call dm_log_warning('failed to extract response ' // trim(response%name) // ' of ' // &
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // &
                                         request_name_string(request%name, i), observ=observ, error=response%error)
                     cycle
                 end if
             end do
 
-            if (debug_) call dm_log_debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+            if (debug_) call logger%debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)
             if (delay <= 0) cycle req_loop
 
             if (debug_ .and. i < n) then
-                call dm_log_debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
+                call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
                                   ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             else if (debug_) then
-                call dm_log_debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                call logger%debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             end if
 
             call dm_usleep(delay * 1000) ! [msec] to [us].
@@ -494,17 +495,17 @@ contains
 
         debug = (app%debug .or. app%verbose)
 
-        call dm_log_info('started ' // app%name)
+        call logger%info('started ' // app%name)
 
         ! Try to open TTY/PTY.
-        call dm_log_debug('opening TTY '  // trim(app%tty) // ' to sensor ' // trim(app%sensor) // &
+        call logger%debug('opening TTY '  // trim(app%tty) // ' to sensor ' // trim(app%sensor) // &
                           ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
                           dm_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
-            call dm_log_error('failed to open TTY ' // trim(app%tty) // ', trying again in 5 sec', error=rc)
+            call logger%error('failed to open TTY ' // trim(app%tty) // ', trying again in 5 sec', error=rc)
             call dm_sleep(5)
         end do
 
@@ -515,16 +516,16 @@ contains
 
             if (njobs == 0) then
                 rc = E_NONE
-                if (debug) call dm_log_debug('no jobs left')
+                if (debug) call logger%debug('no jobs left')
                 exit job_loop
             end if
 
             ! Get next job as deep copy.
-            if (debug) call dm_log_debug(dm_itoa(njobs) // ' job(s) left in job queue')
+            if (debug) call logger%debug(dm_itoa(njobs) // ' job(s) left in job queue')
             rc = dm_job_list_next(app%jobs, job)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to fetch next job', error=rc)
+                call logger%error('failed to fetch next job', error=rc)
                 cycle job_loop
             end if
 
@@ -533,7 +534,7 @@ contains
                 observ => job%observ
 
                 if (debug) then
-                    call dm_log_debug('starting observ ' // trim(observ%name) // ' for sensor ' // &
+                    call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // &
                                       app%sensor, observ=observ)
                 end if
 
@@ -541,13 +542,13 @@ contains
                 rc = read_observ(tty, observ, app%node, app%sensor, app%name, debug=debug)
 
                 ! Forward observation.
-                rc = dm_mqueue_forward(observ, app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
 
                 if (debug) then
-                    call dm_log_debug('finished observ ' // trim(observ%name) // ' for sensor ' // &
+                    call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // &
                                       app%sensor, observ=observ)
                 end if
             end if
@@ -555,12 +556,12 @@ contains
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
-            if (debug) call dm_log_debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+            if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             call dm_usleep(delay * 1000) ! [msec] to [us].
         end do job_loop
 
         if (dm_tty_connected(tty)) then
-            call dm_log_debug('closing TTY ' // app%tty)
+            call logger%debug('closing TTY ' // app%tty)
             call dm_tty_close(tty)
         end if
 
@@ -595,10 +596,10 @@ contains
 
         select case (signum)
             case default
-                call dm_log_info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_itoa(signum))
 
                 if (dm_tty_connected(tty)) then
-                    call dm_log_debug('closing TTY ' // tty%path)
+                    call logger%debug('closing TTY ' // tty%path)
                     call dm_tty_close(tty)
                 end if
 

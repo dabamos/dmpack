@@ -27,6 +27,7 @@ contains
         integer,          parameter :: TEST_LEVEL   = LVL_INFO
 
         character(len=:), allocatable :: buffer
+        class(logger_class), pointer  :: logger
         type(log_type)                :: log1, log2, log3
         type(log_type)                :: logs(1)
         type(mqueue_type)             :: mqueue
@@ -52,19 +53,20 @@ contains
         log1%error     = TEST_ERROR
 
         print *, 'Initialising logger ...'
-        call dm_logger_init(name=LOGGER_NAME, debug=.true., ipc=.true., no_color=.true.)
+        logger => dm_logger_get()
+        call logger%configure(name=LOGGER_NAME, debug=.true., ipc=.true., no_color=.true.)
 
         print *, 'Opening log message queue ...'
         if (dm_mqueue_open(mqueue, TYPE_LOG, LOGGER_NAME, MQUEUE_RDONLY) /= E_NONE) return
 
         print *, 'Creating log message ...'
-        call dm_logger_log(log1)
+        call logger%log(log1)
 
         print *, 'Reading from log message queue ...'
         if (dm_mqueue_read(mqueue, log2) /= E_NONE) return
 
         print *, 'Creating log message ...'
-        call dm_log_info(TEST_MESSAGE, error=TEST_ERROR, observ=observ)
+        call logger%info(TEST_MESSAGE, error=TEST_ERROR, observ=observ)
 
         print *, 'Reading from log message queue ...'
         if (dm_mqueue_read(mqueue, log3) /= E_NONE) return
@@ -76,7 +78,7 @@ contains
         if (dm_mqueue_unlink(mqueue) /= E_NONE) return
 
         print *, 'Printing log message ...'
-        call dm_logger_out(log2)
+        call logger%out(log2)
 
         print *, 'Validating log message ...'
         if (.not. dm_log_valid(log2)) return
@@ -91,7 +93,7 @@ contains
         print *, dm_json_from(logs)
 
         print *, 'Printing log message ...'
-        call dm_logger_out(log3)
+        call logger%out(log3)
 
         print *, 'Validating log message ...'
         if (.not. dm_log_valid(log3)) return

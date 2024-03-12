@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
 
@@ -36,6 +36,8 @@ program dmbeat
         logical                        :: verbose  = .false.  !! Print debug messages to stderr.
     end type app_type
 
+    class(logger_class), pointer :: logger ! Logger object.
+
     integer        :: rc  ! Return code.
     type(app_type) :: app ! App configuration.
 
@@ -47,18 +49,19 @@ program dmbeat
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
-    call dm_logger_init(name    = app%logger, &
-                        node_id = app%node, &
-                        source  = app%name, &
-                        debug   = app%debug, &
-                        ipc     = app%ipc, &
-                        verbose = app%verbose)
+    logger => dm_logger_get()
+    call logger%configure(name    = app%logger, &
+                          node_id = app%node, &
+                          source  = app%name, &
+                          debug   = app%debug, &
+                          ipc     = app%ipc, &
+                          verbose = app%verbose)
 
     ! Initialise RPC backend.
     rc = dm_rpc_init()
 
     if (dm_is_error(rc)) then
-        call dm_log_error('failed to initialize libcurl', error=rc)
+        call logger%error('failed to initialize libcurl', error=rc)
         call dm_stop(1)
     end if
 
@@ -66,8 +69,8 @@ program dmbeat
     call dm_signal_register(signal_handler)
     call run(app)
 
+    ! Clean-up.
     call dm_rpc_destroy()
-    call dm_stop(0)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -196,7 +199,7 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
-        call dm_log_info('started ' // app%name)
+        call logger%info('started ' // app%name)
 
         ! Client and library version.
         client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
@@ -212,7 +215,7 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
-            call dm_log_debug('emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
+            call logger%debug('emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
 
             ! Create new heartbeat.
             beat = beat_type(node_id   = app%node, &
@@ -235,7 +238,7 @@ contains
                              url      = url)
 
             if (dm_is_error(rc)) then
-                call dm_log_debug('failed to send beat to host ' // app%host, error=rc)
+                call logger%debug('failed to send beat to host ' // app%host, error=rc)
             end if
 
             last_error = rc
@@ -248,34 +251,34 @@ contains
 
             select case (response%code)
                 case (0)
-                    call dm_log_warning('connection to host ' // trim(app%host) // ' failed: ' // &
+                    call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // &
                                         response%error_message, error=rc)
 
                 case (HTTP_CREATED)
-                    call dm_log_debug('beat accepted by host ' // app%host)
+                    call logger%debug('beat accepted by host ' // app%host)
 
                 case (HTTP_UNAUTHORIZED)
                     if (has_api_status) then
-                        call dm_log_error('unauthorized access on host ' // trim(app%host) // ': ' // &
+                        call logger%error('unauthorized access on host ' // trim(app%host) // ': ' // &
                                           api_status%message, error=E_RPC_AUTH)
                     else
-                        call dm_log_error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                        call logger%error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
                     end if
 
                 case (HTTP_INTERNAL_SERVER_ERROR)
-                    call dm_log_error('internal server error on host ' // app%host, error=E_RPC_SERVER)
+                    call logger%error('internal server error on host ' // app%host, error=E_RPC_SERVER)
 
                 case (HTTP_BAD_GATEWAY)
-                    call dm_log_error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+                    call logger%error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
 
                 case default
                     if (has_api_status) then
                         ! Log response from API status if available.
-                        call dm_log_error('server error on host ' // trim(app%host) // ' (HTTP ' // &
+                        call logger%error('server error on host ' // trim(app%host) // ' (HTTP ' // &
                                           dm_itoa(response%code) // '): ' // api_status%message, &
                                           error=api_status%error)
                     else
-                        call dm_log_warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
+                        call logger%warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
                                             dm_itoa(response%code) // ')', error=E_RPC_API)
                     end if
             end select
@@ -286,11 +289,11 @@ contains
             end if
 
             t = max(0, int(app%interval - dm_timer_stop(timer)))
-            call dm_log_debug('next beat in ' // dm_itoa(t) // ' sec')
+            call logger%debug('next beat in ' // dm_itoa(t) // ' sec')
             call dm_sleep(t)
         end do emit_loop
 
-        call dm_log_debug('finished transmission')
+        call logger%debug('finished transmission')
     end subroutine run
 
     subroutine signal_handler(signum) bind(c)
@@ -301,7 +304,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log_info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_itoa(signum))
                 call dm_rpc_destroy()
                 call dm_stop(0)
         end select

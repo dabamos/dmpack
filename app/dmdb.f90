@@ -11,7 +11,7 @@ program dmdb
     character(len=*), parameter :: APP_NAME  = 'dmdb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -30,6 +30,8 @@ program dmdb
         logical                        :: verbose  = .false.  !! Print debug messages to stderr.
     end type app_type
 
+    class(logger_class), pointer :: logger ! Logger object.
+
     integer           :: rc     ! Return code.
     type(app_type)    :: app    ! App settings.
     type(db_type)     :: db     ! Database handle.
@@ -44,19 +46,20 @@ program dmdb
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
-    call dm_logger_init(name    = app%logger, &
-                        node_id = app%node, &
-                        source  = app%name, &
-                        debug   = app%debug, &
-                        ipc     = (len_trim(app%logger) > 0), &
-                        verbose = app%verbose)
+    logger => dm_logger_get()
+    call logger%configure(name    = app%logger, &
+                          node_id = app%node, &
+                          source  = app%name, &
+                          debug   = app%debug, &
+                          ipc     = (len_trim(app%logger) > 0), &
+                          verbose = app%verbose)
 
     init_block: block
         ! Open SQLite database.
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call dm_log_error('failed to open database ' // app%database, error=rc)
+            call logger%error('failed to open database ' // app%database, error=rc)
             exit init_block
         end if
 
@@ -67,7 +70,7 @@ program dmdb
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log_error('failed to open mqueue /' // trim(app%name) // ': ' // &
+            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
                               dm_system_error_message(), error=rc)
             exit init_block
         end if
@@ -77,7 +80,7 @@ program dmdb
             rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to open semaphore /' // app%name, error=rc)
+                call logger%error('failed to open semaphore /' // app%name, error=rc)
                 exit init_block
             end if
         end if
@@ -186,7 +189,9 @@ contains
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) stat = min(1, error)
+        if (present(error)) then
+            if (dm_is_error(rc)) stat = 1
+        end if
 
         rc = dm_db_close(db)
         rc = dm_mqueue_close(mqueue)
@@ -212,25 +217,25 @@ contains
         type(observ_type) :: observ
 
         steps = 0
-        call dm_log_info('started ' // app%name)
+        call logger%info('started ' // app%name)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to read from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
             if (.not. dm_observ_valid(observ)) then
-                call dm_log_error('invalid observ ' // trim(observ%name), error=E_INVALID)
+                call logger%error('invalid observ ' // trim(observ%name), error=E_INVALID)
                 cycle ipc_loop
             end if
 
             if (dm_db_observ_exists(db, observ%id)) then
-                call dm_log_warning('observ ' // trim(observ%id) // ' exists', error=E_EXIST)
+                call logger%warning('observ ' // trim(observ%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -240,7 +245,7 @@ contains
 
                 ! Retry if database is busy.
                 if (rc == E_DB_BUSY) then
-                    call dm_log_debug('database busy', error=rc)
+                    call logger%debug('database busy', error=rc)
                     call dm_db_sleep(APP_DB_TIMEOUT)
                     cycle db_loop
                 end if
@@ -248,11 +253,11 @@ contains
                 ! Get more precise database error.
                 if (dm_is_error(rc)) then
                     rc = dm_db_error(db)
-                    call dm_log_error('failed to insert observ ' // observ%name, error=rc)
+                    call logger%error('failed to insert observ ' // observ%name, error=rc)
                     exit db_loop
                 end if
 
-                call dm_log_debug('inserted observ ' // observ%name)
+                call logger%debug('inserted observ ' // observ%name)
 
                 ! Post semaphore.
                 if (app%ipc) then
@@ -264,15 +269,15 @@ contains
             end do db_loop
 
             ! Forward observation.
-            rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
+            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
             if (steps == 0) then
                 ! Optimise database.
-                call dm_log_debug('optimizing database')
+                call logger%debug('optimizing database')
                 rc = dm_db_optimize(db)
 
                 if (dm_is_error(rc)) then
-                    call dm_log_error('failed to optimize database', error=rc)
+                    call logger%error('failed to optimize database', error=rc)
                 end if
             end if
 
@@ -289,7 +294,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log_info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_itoa(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_handler

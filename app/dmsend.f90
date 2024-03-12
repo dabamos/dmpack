@@ -11,7 +11,7 @@ program dmsend
     character(len=*), parameter :: APP_NAME  = 'dmsend'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -32,6 +32,8 @@ program dmsend
         logical                            :: verbose     = .false.     !! Print debug messages to stderr.
     end type app_type
 
+    class(logger_class), pointer :: logger ! Logger object.
+
     integer        :: rc
     type(app_type) :: app
 
@@ -43,12 +45,13 @@ program dmsend
     if (dm_is_error(rc)) call dm_stop(1)
 
     ! Initialise logger.
-    call dm_logger_init(name    = app%logger, &
-                        node_id = app%node, &
-                        source  = app%name, &
-                        debug   = app%debug, &
-                        ipc     = (len_trim(app%logger) > 0), &
-                        verbose = app%verbose)
+    logger => dm_logger_get()
+    call logger%configure(name    = app%logger, &
+                          node_id = app%node, &
+                          source  = app%name, &
+                          debug   = app%debug, &
+                          ipc     = (len_trim(app%logger) > 0), &
+                          verbose = app%verbose)
 
     ! Read and send data.
     rc = run(app)
@@ -188,11 +191,11 @@ contains
 
         if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
 
-        call dm_log_info('started ' // app%name)
+        call logger%info('started ' // app%name)
 
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then
-            call dm_log_debug('opening mqueue /' // app%receiver)
+            call logger%debug('opening mqueue /' // app%receiver)
             rc = dm_mqueue_open(mqueue   = mqueue, &
                                 type     = app%type, &
                                 name     = app%receiver, &
@@ -200,7 +203,7 @@ contains
                                 blocking = .true.)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to open mqueue /' // app%receiver, error=rc)
+                call logger%error('failed to open mqueue /' // app%receiver, error=rc)
                 return
             end if
         end if
@@ -208,12 +211,12 @@ contains
         read_block: block
             if (is_file) then
                 ! Open input file.
-                call dm_log_debug('opening input file ' // app%input)
+                call logger%debug('opening input file ' // app%input)
                 open (action='read', file=trim(app%input), iostat=stat, newunit=file_unit, status='old')
 
                 if (stat /= 0) then
                     rc = E_IO
-                    call dm_log_error('failed to open input file ' // app%input, error=rc)
+                    call logger%error('failed to open input file ' // app%input, error=rc)
                     exit read_block
                 end if
             end if
@@ -227,34 +230,34 @@ contains
                    ! Read observation in CSV or Namelist format.
                     select case (app%format)
                         case (FORMAT_CSV)
-                            call dm_log_debug('reading observ in CSV format')
+                            call logger%debug('reading observ in CSV format')
                             rc = dm_csv_read(observ, unit=file_unit)
                         case (FORMAT_NML)
-                            call dm_log_debug('reading observ in NML format')
+                            call logger%debug('reading observ in NML format')
                             rc = dm_nml_read(observ, unit=file_unit)
                     end select
 
                     ! End of file reached.
                     if (rc == E_EOF) then
                         rc = E_NONE
-                        call dm_log_debug('end of file reached')
+                        call logger%debug('end of file reached')
                         exit ipc_loop
                     end if
 
                     if (dm_is_error(rc)) then
-                        call dm_log_error('failed to read observ', error=rc)
+                        call logger%error('failed to read observ', error=rc)
                         exit ipc_loop
                     end if
 
                     ! Validate input.
                     if (.not. dm_observ_valid(observ)) then
-                        call dm_log_error('invalid input observ ' // observ%id, error=E_INVALID)
+                        call logger%error('invalid input observ ' // observ%id, error=E_INVALID)
                         cycle ipc_loop
                     end if
 
                     ! Forward observation to next receiver, or send it to message queue.
                     if (app%forward) then
-                        rc = dm_mqueue_forward(observ, app%name, APP_MQ_BLOCKING)
+                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                     else
                         rc = dm_mqueue_write(mqueue, observ)
                     end if
@@ -265,28 +268,28 @@ contains
                     ! Read log in CSV or Namelist format.
                     select case (app%format)
                         case (FORMAT_CSV)
-                            call dm_log_debug('reading log in CSV format')
+                            call logger%debug('reading log in CSV format')
                             rc = dm_csv_read(log, unit=file_unit)
                         case (FORMAT_NML)
-                            call dm_log_debug('reading log in NML format')
+                            call logger%debug('reading log in NML format')
                             rc = dm_nml_read(log, unit=file_unit)
                     end select
 
                     ! End of file reached.
                     if (rc == E_EOF) then
                         rc = E_NONE
-                        call dm_log_debug('end of file reached')
+                        call logger%debug('end of file reached')
                         exit ipc_loop
                     end if
 
                     if (dm_is_error(rc)) then
-                        call dm_log_error('failed to read log', error=rc)
+                        call logger%error('failed to read log', error=rc)
                         exit ipc_loop
                     end if
 
                     ! Validate input.
                     if (.not. dm_log_valid(log)) then
-                        call dm_log_error('invalid input log ' // log%id, error=E_INVALID)
+                        call logger%error('invalid input log ' // log%id, error=E_INVALID)
                         cycle ipc_loop
                     end if
 
@@ -296,7 +299,7 @@ contains
 
                 ! Handle message queue error.
                 if (dm_is_error(rc)) then
-                    call dm_log_error('failed to write to mqueue', error=rc)
+                    call logger%error('failed to write to mqueue', error=rc)
                     call dm_sleep(1)
                     cycle ipc_loop
                 end if
@@ -305,23 +308,23 @@ contains
             end do ipc_loop
 
             if (is_file) then
-                call dm_log_debug('closing input file ' // app%input)
+                call logger%debug('closing input file ' // app%input)
                 close (file_unit)
             end if
         end block read_block
 
         ! Close message queue.
         if (.not. app%forward) then
-            call dm_log_debug('closing mqueue /' // app%receiver)
+            call logger%debug('closing mqueue /' // app%receiver)
             stat = dm_mqueue_close(mqueue)
 
             if (dm_is_error(stat)) then
-                call dm_log_warning('failed to close mqueue /' // app%receiver, error=stat)
+                call logger%warning('failed to close mqueue /' // app%receiver, error=stat)
             end if
 
             rc = max(rc, stat)
         end if
 
-        call dm_log_debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
+        call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
     end function run
 end program dmsend

@@ -23,11 +23,9 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function mqueue_forward_observ(observ, name, blocking, quiet, self) result(rc)
+    integer function mqueue_forward_observ(observ, name, blocking, self, verbose) result(rc)
         !! Forwards given observation to next receiver. This function creates
-        !! log messages about the progress and requires a configured logger,
-        !! unless `quiet` is `.false.`. Therefore, it should not be called by
-        !! a library procedure (for programs only).
+        !! log messages, unless `verbose` is passed and `.false.`.
         !!
         !! If `name` is passed and equals the next receiver, the receiver will
         !! be skipped, unless `self` is `.true.`. This behaviour prevents the
@@ -38,14 +36,17 @@ contains
         use :: dm_logger
         use :: dm_observ
         use :: dm_system, only: dm_system_error_message
-        type(observ_type), intent(inout)        :: observ   !! Observation to forward.
-        character(len=*),  intent(in), optional :: name     !! App name.
-        logical,           intent(in), optional :: blocking !! Message queue access is blocking.
-        logical,           intent(in), optional :: quiet    !! No logging if `.true.`.
-        logical,           intent(in), optional :: self     !! Allow forwarding to `name`.
+
+        type(observ_type),            intent(inout)        :: observ   !! Observation to forward.
+        character(len=*),             intent(in), optional :: name     !! App name.
+        logical,                      intent(in), optional :: blocking !! Blocking message queue access.
+        logical,                      intent(in), optional :: self     !! Allow forwarding to `name`.
+        logical,                      intent(in), optional :: verbose  !! Create log messages (enabled by default).
+
+        class(logger_class), pointer :: logger
 
         integer           :: next
-        logical           :: blocking_, quiet_, self_
+        logical           :: blocking_, self_, verbose_
         type(mqueue_type) :: mqueue
 
         rc   = E_NONE
@@ -55,13 +56,14 @@ contains
         blocking_ = .true.
         if (present(blocking)) blocking_ = blocking
 
-        ! Generate log messages.
-        quiet_ = .false.
-        if (present(quiet)) quiet_ = quiet
-
         ! Allow forwarding to sender.
         self_ = .false.
         if (present(self)) self_ = self
+
+        ! Enable logging.
+        verbose_ = .true.
+        if (present(verbose)) verbose_ = verbose
+        if (verbose_) logger => dm_logger_get()
 
         do
             ! Increase the receiver index.
@@ -69,15 +71,15 @@ contains
 
             ! End of receiver list reached?
             if (next > observ%nreceivers) then
-                if (.not. quiet_) call dm_log_debug('no receivers left in observ ' // observ%name, observ=observ)
+                if (verbose_) call logger%debug('no receivers left in observ ' // observ%name, observ=observ)
                 return
             end if
 
             ! Invalid receiver name?
             if (.not. dm_id_valid(observ%receivers(next))) then
                 rc = E_INVALID
-                if (.not. quiet_) then
-                    call dm_log_error('invalid receiver ' // trim(observ%receivers(next)) // &
+                if (verbose_) then
+                    call logger%error('invalid receiver ' // trim(observ%receivers(next)) // &
                                       ' in observ ' // observ%name, observ=observ, error=rc)
                 end if
                 return
@@ -91,8 +93,8 @@ contains
             ! Forwarding to self is allowed, or valid receiver is found?
             if (self_ .or. observ%receivers(next) /= name) exit
 
-            if (.not. quiet_) then
-                call dm_log_debug('skipped receiver ' // dm_itoa(next) // ' (' // &
+            if (verbose_) then
+                call logger%debug('skipped receiver ' // dm_itoa(next) // ' (' // &
                                   trim(observ%receivers(next)) // ') of observ ' // observ%name)
             end if
         end do
@@ -107,8 +109,8 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (.not. quiet_) then
-                    call dm_log_error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // &
+                if (verbose_) then
+                    call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // &
                                       dm_system_error_message(), observ=observ, error=rc)
                 end if
                 exit mqueue_block
@@ -120,15 +122,15 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (.not. quiet_) then
-                    call dm_log_error('failed to send observ ' // trim(observ%name) // &
+                if (verbose_) then
+                    call logger%error('failed to send observ ' // trim(observ%name) // &
                                       ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 end if
                 exit mqueue_block
             end if
 
-            if (.not. quiet_) then
-                call dm_log_debug('sent observ ' // trim(observ%name) // ' to mqueue /' // &
+            if (verbose_) then
+                call logger%debug('sent observ ' // trim(observ%name) // ' to mqueue /' // &
                                   observ%receivers(next), observ=observ)
             end if
         end block mqueue_block
@@ -136,8 +138,8 @@ contains
         ! Close message queue.
         rc = dm_mqueue_close(mqueue)
 
-        if (dm_is_error(rc) .and. .not. quiet_) then
-            call dm_log_warning('failed to close mqueue /' // observ%receivers(next) // ': ' // &
+        if (dm_is_error(rc) .and. verbose_) then
+            call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // &
                                 dm_system_error_message(), observ=observ, error=rc)
         end if
     end function mqueue_forward_observ

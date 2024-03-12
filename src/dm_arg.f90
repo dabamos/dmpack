@@ -85,7 +85,7 @@ module dm_arg
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
-    ! ****************************************************************** 
+    ! ******************************************************************
     logical function dm_arg_has(name, short) result(has)
         !! Returns `.true.` if argument of given name is passed without value.
         character(len=*), intent(in)           :: name  !! Name of command-line argument.
@@ -427,7 +427,7 @@ contains
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
-    ! ****************************************************************** 
+    ! ******************************************************************
     integer function arg_get_int32(arg, value, default, passed) result(rc)
         !! Returns argument value as 4-byte integer.
         type(arg_type), intent(inout)         :: arg     !! Arg type.

@@ -11,7 +11,7 @@ program dmlogger
     character(len=*), parameter :: APP_NAME  = 'dmlogger'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -27,6 +27,8 @@ program dmlogger
         logical                      :: verbose  = .false.     !! Print debug messages to stderr.
     end type app_type
 
+    class(logger_class), pointer :: logger ! Logger object.
+
     integer           :: rc     ! Return code.
     type(app_type)    :: app    ! App configuration.
     type(db_type)     :: db     ! Global database handle.
@@ -40,19 +42,20 @@ program dmlogger
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(1)
 
-    ! Initialise logger.
-    call dm_logger_init(name    = app%name, &  ! Name of global logger.
-                        node_id = app%node, &  ! Sensor node id.
-                        source  = app%name, &  ! Application name.
-                        ipc     = .false., &   ! Don't send logs via IPC.
-                        verbose = app%verbose) ! Prints logs to terminal.
-
     init_block: block
+        ! Initialise logger.
+        logger => dm_logger_get()
+        call logger%configure(name    = app%name, &  ! Name of global logger.
+                              node_id = app%node, &  ! Sensor node id.
+                              source  = app%name, &  ! Application name.
+                              ipc     = .false., &   ! Don't send logs via IPC.
+                              verbose = app%verbose) ! Prints logs to terminal.
+
         ! Open SQLite database.
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call dm_log_error('failed to open database ' // app%database, error=rc)
+            call logger%error('failed to open database ' // app%database, error=rc)
             exit init_block
         end if
 
@@ -63,7 +66,7 @@ program dmlogger
                             access = MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
-            call dm_log_error('failed to open mqueue /' // trim(app%name) // ': ' // &
+            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
                               dm_system_error_message(), error=rc)
             exit init_block
         end if
@@ -73,7 +76,7 @@ program dmlogger
             rc = dm_sem_open(sem, app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to open semaphore /' // app%name, error=rc)
+                call logger%error('failed to open semaphore /' // app%name, error=rc)
                 exit init_block
             end if
         end if
@@ -83,8 +86,7 @@ program dmlogger
         call run(app, db, mqueue, sem)
     end block init_block
 
-    if (dm_is_error(rc)) call halt(1)
-    call halt(0)
+    call halt(rc)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -173,10 +175,16 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine halt(stat)
+    subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in) :: stat
-        integer             :: rc
+        integer, intent(in), optional :: error
+
+        integer :: rc, stat
+
+        stat = 0
+        if (present(error)) then
+            if (dm_is_error(rc)) stat = 1
+        end if
 
         rc = dm_db_close(db)
         rc = dm_mqueue_close(mqueue)
@@ -202,15 +210,15 @@ contains
         type(log_type) :: log
 
         steps = 0
-        call dm_log_info('started ' // app%name)
-        call dm_log_debug('minimum log level is set to ' // LOG_LEVEL_NAMES(app%minlevel))
+        call logger%info('started ' // app%name)
+        call logger%debug('minimum log level is set to ' // LOG_LEVEL_NAMES(app%minlevel))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)
 
             if (dm_is_error(rc)) then
-                call dm_log_error('failed to read from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
@@ -219,14 +227,14 @@ contains
             if (.not. dm_id_valid(log%node_id)) log%node_id = app%node
 
             ! Print to standard output.
-            if (app%verbose) call dm_logger_out(log)
+            if (app%verbose) call logger%out(log)
 
             ! Skip if log level is lower than minimum level.
             if (log%level < app%minlevel) cycle ipc_loop
 
             ! Skip if log already exists.
             if (dm_db_log_exists(db, log%id)) then
-                call dm_log_warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
+                call logger%warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -239,12 +247,12 @@ contains
                     rc = dm_db_error(db)
 
                     if (rc == E_DB_BUSY) then
-                        call dm_log_warning('database busy', error=rc)
+                        call logger%warning('database busy', error=rc)
                         call dm_db_sleep(APP_DB_TIMEOUT)
                         cycle db_loop
                     end if
 
-                    call dm_log_error('failed to insert log ' // trim(log%id) // ': ' // &
+                    call logger%error('failed to insert log ' // trim(log%id) // ': ' // &
                                       dm_db_error_message(db), error=rc)
                     exit db_loop
                 end if
@@ -260,9 +268,9 @@ contains
 
             if (steps == 0) then
                 ! Optimise database.
-                call dm_log_debug('optimizing database')
+                call logger%debug('optimizing database')
                 rc = dm_db_optimize(db)
-                if (dm_is_error(rc)) call dm_log_error('failed to optimize database', error=rc)
+                if (dm_is_error(rc)) call logger%error('failed to optimize database', error=rc)
             end if
 
             ! Increase optimise step counter.
@@ -278,7 +286,7 @@ contains
 
         select case (signum)
             case default
-                call dm_log_info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_itoa(signum))
                 call dm_sleep(2)
                 call halt(0)
         end select
