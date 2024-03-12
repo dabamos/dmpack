@@ -109,19 +109,20 @@ contains
             rc = dm_lua_eval(lua, 'E_BOUNDS = '         // dm_itoa(E_BOUNDS));         if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_EXIST = '          // dm_itoa(E_EXIST));          if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_SYSTEM = '         // dm_itoa(E_SYSTEM));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_TIMEOUT = '        // dm_itoa(E_TIMEOUT));        if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_MEMORY = '         // dm_itoa(E_MEMORY));         if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_FULL = '           // dm_itoa(E_FULL));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_EMPTY = '          // dm_itoa(E_EMPTY));          if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_LIMIT = '          // dm_itoa(E_LIMIT));          if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_TIMEOUT = '        // dm_itoa(E_TIMEOUT));        if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_FORMAT = '         // dm_itoa(E_FORMAT));         if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_NOT_FOUND = '      // dm_itoa(E_NOT_FOUND));      if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_PERM = '           // dm_itoa(E_PERM));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_READ_ONLY = '      // dm_itoa(E_READ_ONLY));      if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_CORRUPT = '        // dm_itoa(E_CORRUPT));        if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_CONFIG = '         // dm_itoa(E_CONFIG));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_DB = '             // dm_itoa(E_DB));             if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_ID = '          // dm_itoa(E_DB_ID));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_MEM = '         // dm_itoa(E_DB_MEM));         if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_BUSY = '        // dm_itoa(E_DB_BUSY));        if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_LOCKED = '      // dm_itoa(E_DB_LOCKED));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_EXEC = '        // dm_itoa(E_DB_EXEC));        if (dm_is_error(rc)) return
@@ -166,6 +167,10 @@ contains
             rc = dm_lua_eval(lua, 'E_RPC_SERVER = '     // dm_itoa(E_RPC_SERVER));     if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_MAIL = '           // dm_itoa(E_MAIL));           if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_MAIL_CONNECT = '   // dm_itoa(E_MAIL_CONNECT));   if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_MAIL_SSL = '       // dm_itoa(E_MAIL_SSL));       if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_MAIL_AUTH = '      // dm_itoa(E_MAIL_AUTH));      if (dm_is_error(rc)) return
+
             rc = dm_lua_eval(lua, 'E_MQTT = '           // dm_itoa(E_MQTT));           if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_LUA = '            // dm_itoa(E_LUA));            if (dm_is_error(rc)) return
@@ -175,6 +180,10 @@ contains
             rc = dm_lua_eval(lua, 'E_LUA_MEM = '        // dm_itoa(E_LUA_MEM));        if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_LUA_ERROR = '      // dm_itoa(E_LUA_ERROR));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_LUA_FILE = '       // dm_itoa(E_LUA_FILE));       if (dm_is_error(rc)) return
+
+            rc = dm_lua_eval(lua, 'E_LIB = '            // dm_itoa(E_LIB));            if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.

@@ -31,35 +31,36 @@ module dm_error
     integer, parameter, public :: E_BOUNDS         =  12 !! Out of bounds error.
     integer, parameter, public :: E_EXIST          =  13 !! Resource exists.
     integer, parameter, public :: E_SYSTEM         =  14 !! System call failed.
-    integer, parameter, public :: E_TIMEOUT        =  15 !! Timeout occured.
-    integer, parameter, public :: E_EMPTY          =  16 !! No data.
-    integer, parameter, public :: E_LIMIT          =  17 !! Memory limit reached.
-    integer, parameter, public :: E_FORMAT         =  18 !! Format error.
-    integer, parameter, public :: E_NOT_FOUND      =  19 !! Resource not found.
-    integer, parameter, public :: E_READ_ONLY      =  20 !! Read-only access.
-    integer, parameter, public :: E_CONFIG         =  21 !! Invalid configuration error.
-    integer, parameter, public :: E_HDF5           =  22 !! HDF5 error.
-    integer, parameter, public :: E_ZLIB           =  23 !! zlib error.
+    integer, parameter, public :: E_MEMORY         =  15 !! No memory.
+    integer, parameter, public :: E_FULL           =  16 !! Disk full.
+    integer, parameter, public :: E_EMPTY          =  17 !! No data.
+    integer, parameter, public :: E_LIMIT          =  18 !! Memory limit reached.
+    integer, parameter, public :: E_TIMEOUT        =  19 !! Timeout occured.
+    integer, parameter, public :: E_FORMAT         =  20 !! Format error.
+    integer, parameter, public :: E_NOT_FOUND      =  21 !! Resource not found.
+    integer, parameter, public :: E_PERM           =  22 !! No permission.
+    integer, parameter, public :: E_READ_ONLY      =  23 !! Read-only access.
+    integer, parameter, public :: E_CORRUPT        =  24 !! Data corrupted.
+    integer, parameter, public :: E_CONFIG         =  25 !! Invalid configuration error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
     integer, parameter, public :: E_DB_ID          =  31 !! Invalid database application id.
-    integer, parameter, public :: E_DB_MEM         =  32 !! No memory or disk full.
-    integer, parameter, public :: E_DB_BUSY        =  33 !! Database is busy.
-    integer, parameter, public :: E_DB_LOCKED      =  34 !! Database is locked.
-    integer, parameter, public :: E_DB_EXEC        =  35 !! Execution failed.
-    integer, parameter, public :: E_DB_CONSTRAINT  =  36 !! Contraint error.
-    integer, parameter, public :: E_DB_TRANSACTION =  37 !! Transaction failed.
-    integer, parameter, public :: E_DB_ROLLBACK    =  38 !! Transaction rollback error.
-    integer, parameter, public :: E_DB_PREPARE     =  39 !! Prepare failed.
-    integer, parameter, public :: E_DB_FINALIZE    =  40 !! Statement error.
-    integer, parameter, public :: E_DB_BIND        =  41 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        =  42 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        =  43 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     =  44 !! No rows returned.
-    integer, parameter, public :: E_DB_BACKUP      =  45 !! Backup error.
-    integer, parameter, public :: E_DB_ATTACH      =  46 !! Attach failed.
-    integer, parameter, public :: E_DB_DETACH      =  47 !! Detach error.
+    integer, parameter, public :: E_DB_BUSY        =  32 !! Database is busy.
+    integer, parameter, public :: E_DB_LOCKED      =  33 !! Database is locked.
+    integer, parameter, public :: E_DB_EXEC        =  34 !! Execution failed.
+    integer, parameter, public :: E_DB_CONSTRAINT  =  35 !! Contraint error.
+    integer, parameter, public :: E_DB_TRANSACTION =  36 !! Transaction failed.
+    integer, parameter, public :: E_DB_ROLLBACK    =  37 !! Transaction rollback error.
+    integer, parameter, public :: E_DB_PREPARE     =  38 !! Prepare failed.
+    integer, parameter, public :: E_DB_FINALIZE    =  39 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        =  40 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        =  41 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        =  42 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     =  43 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      =  44 !! Backup error.
+    integer, parameter, public :: E_DB_ATTACH      =  45 !! Attach failed.
+    integer, parameter, public :: E_DB_DETACH      =  46 !! Detach error.
 
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
@@ -93,22 +94,30 @@ module dm_error
     integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
 
-    ! SMTP errors.
-    integer, parameter, public :: E_MAIL           = 100 !! Generic SMTP error.
+    ! Mail errors.
+    integer, parameter, public :: E_MAIL           = 100 !! Generic mail error.
+    integer, parameter, public :: E_MAIL_CONNECT   = 101 !! Mail connection error.
+    integer, parameter, public :: E_MAIL_SSL       = 102 !! Mail SSL/TLS error.
+    integer, parameter, public :: E_MAIL_AUTH      = 103 !! Unauthorised.
 
     ! MQTT errors.
     integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
 
     ! Lua errors.
     integer, parameter, public :: E_LUA            = 120 !! Generic Lua error.
-    integer, parameter, public :: E_LUA_YIELD      = 121 !! Lua thread (coroutine) yields.
+    integer, parameter, public :: E_LUA_YIELD      = 121 !! Lua thread (coroutine) yields (not an error).
     integer, parameter, public :: E_LUA_RUNTIME    = 122 !! Lua runtime error.
     integer, parameter, public :: E_LUA_SYNTAX     = 123 !! Lua syntax error.
     integer, parameter, public :: E_LUA_MEM        = 124 !! Lua memory allocation error.
     integer, parameter, public :: E_LUA_ERROR      = 125 !! Lua message handling error.
     integer, parameter, public :: E_LUA_FILE       = 126 !! Lua file I/O error.
 
-    integer, parameter, public :: E_LAST           = 126 !! Never use this.
+    ! Additional errors.
+    integer, parameter, public :: E_LIB            = 130 !! Generic library error.
+    integer, parameter, public :: E_HDF5           = 131 !! HDF5 error.
+    integer, parameter, public :: E_ZLIB           = 132 !! zlib error.
+
+    integer, parameter, public :: E_LAST           = 132 !! Never use this.
 
     interface dm_perror
         !! Alias for `dm_error_out()`, do not use.
@@ -160,32 +169,34 @@ contains
                 str = 'resource exists'
             case (E_SYSTEM)
                 str = 'system call failed'
-            case (E_TIMEOUT)
-                str = 'timeout'
+            case (E_MEMORY)
+                str = 'no memory'
+            case (E_FULL)
+                str = 'disk full'
             case (E_EMPTY)
                 str = 'no data'
             case (E_LIMIT)
                 str = 'limit reached'
+            case (E_TIMEOUT)
+                str = 'timeout'
             case (E_FORMAT)
                 str = 'format error'
             case (E_NOT_FOUND)
                 str = 'resource not found'
+            case (E_PERM)
+                str = 'no permission'
             case (E_READ_ONLY)
                 str = 'read only'
+            case (E_CORRUPT)
+                str = 'data corrupted'
             case (E_CONFIG)
                 str = 'configuration error'
-            case (E_HDF5)
-                str = 'HDF5 error'
-            case (E_ZLIB)
-                str = 'zlib error'
 
             ! Database.
             case (E_DB)
                 str = 'database error'
             case (E_DB_ID)
                 str = 'database application id invalid'
-            case (E_DB_MEM)
-                str = 'database memory error'
             case (E_DB_BUSY)
                 str = 'database busy'
             case (E_DB_LOCKED)
@@ -265,7 +276,7 @@ contains
             case (E_RPC_API)
                 str = 'RPC API error'
             case (E_RPC_AUTH)
-                str = 'RPC unauthorized'
+                str = 'RPC authorization error'
             case (E_RPC_CONFLICT)
                 str = 'RPC conflict'
             case (E_RPC_SERVER)
@@ -273,7 +284,13 @@ contains
 
             ! Mail.
             case (E_MAIL)
-                str = 'SMTP error'
+                str = 'mail error'
+            case (E_MAIL_CONNECT)
+                str = 'mail connection error'
+            case (E_MAIL_SSL)
+                str = 'mail SSL error'
+            case (E_MAIL_AUTH)
+                str = 'mail authorization error'
 
             ! MQTT.
             case (E_MQTT)
@@ -295,8 +312,16 @@ contains
             case (E_LUA_FILE)
                 str = 'Lua file I/O error'
 
+            ! Libraries.
+            case (E_LIB)
+                str = 'library error'
+            case (E_HDF5)
+                str = 'HDF5 error'
+            case (E_ZLIB)
+                str = 'zlib error'
+
             case default
-                str = 'unknown'
+                str = 'unknown error'
         end select
     end function dm_error_message
 

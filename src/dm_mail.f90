@@ -37,19 +37,6 @@ module dm_mail
     integer, parameter, public :: MAIL_SSL   = 1 !! Explicit SSL.
     integer, parameter, public :: MAIL_TLS   = 2 !! Implicit TLS (StartTLS).
 
-!   abstract interface
-!       function mail_callback(ptr, sz, nmemb, data) bind(c)
-!           !! Private abstract interface of cURL read callback.
-!           import :: c_ptr, c_size_t
-!           implicit none
-!           type(c_ptr),            intent(in), value :: ptr           !! C pointer to a chunk of memory.
-!           integer(kind=c_size_t), intent(in), value :: sz            !! Always 1.
-!           integer(kind=c_size_t), intent(in), value :: nmemb         !! Size of the memory chunk.
-!           type(c_ptr),            intent(in), value :: data          !! C pointer to client data passed by caller.
-!           integer(kind=c_size_t)                    :: mail_callback !! Function return value.
-!       end function mail_callback
-!   end interface
-
     type :: payload_type
         !! Private payload type.
         character(len=:), allocatable :: data
@@ -100,6 +87,7 @@ module dm_mail
     public :: dm_mail_create_mail
     public :: dm_mail_create_server
     public :: dm_mail_destroy
+    public :: dm_mail_error
     public :: dm_mail_init
     public :: dm_mail_send
     public :: dm_mail_url
@@ -190,6 +178,71 @@ contains
         rc = E_NONE
     end function dm_mail_create_server
 
+    integer function dm_mail_error(curl_error) result(rc)
+        !! Converts cURL easy stack error code to DMPACK error code.
+        integer, intent(in) :: curl_error !! cURL easy error code.
+
+        select case (curl_error)
+            case (CURLE_OK)
+                rc = E_NONE
+
+            case (CURLE_UNSUPPORTED_PROTOCOL,  &
+                  CURLE_FAILED_INIT,           &
+                  CURLE_URL_MALFORMAT,         &
+                  CURLE_NOT_BUILT_IN,          &
+                  CURLE_BAD_FUNCTION_ARGUMENT, &
+                  CURLE_UNKNOWN_OPTION,        &
+                  CURLE_BAD_CONTENT_ENCODING)
+                rc = E_INVALID
+
+            case (CURLE_COULDNT_RESOLVE_PROXY, &
+                  CURLE_COULDNT_RESOLVE_HOST,  &
+                  CURLE_COULDNT_CONNECT)
+                rc = E_MAIL_CONNECT
+
+            case (CURLE_REMOTE_ACCESS_DENIED, &
+                  CURLE_AUTH_ERROR)
+                rc = E_MAIL_AUTH
+
+            case (CURLE_WRITE_ERROR)
+                rc = E_WRITE
+
+            case (CURLE_READ_ERROR)
+                rc = E_READ
+
+            case (CURLE_OUT_OF_MEMORY)
+                rc = E_MEMORY
+
+            case (CURLE_OPERATION_TIMEDOUT)
+                rc = E_TIMEOUT
+
+            case (CURLE_GOT_NOTHING)
+                rc = E_EMPTY
+
+            case (CURLE_SSL_CONNECT_ERROR,        &
+                  CURLE_SSL_ENGINE_NOTFOUND,      &
+                  CURLE_SSL_ENGINE_SETFAILED,     &
+                  CURLE_SSL_CERTPROBLEM,          &
+                  CURLE_SSL_CIPHER,               &
+                  CURLE_PEER_FAILED_VERIFICATION, &
+                  CURLE_SSL_ENGINE_INITFAILED,    &
+                  CURLE_SSL_CACERT_BADFILE,       &
+                  CURLE_SSL_SHUTDOWN_FAILED,      &
+                  CURLE_SSL_CRL_BADFILE,          &
+                  CURLE_SSL_ISSUER_ERROR,         &
+                  CURLE_SSL_PINNEDPUBKEYNOTMATCH, &
+                  CURLE_SSL_INVALIDCERTSTATUS,    &
+                  CURLE_SSL_CLIENTCERT)
+                rc = E_MAIL_SSL
+
+            case (CURLE_FILESIZE_EXCEEDED)
+                rc = E_LIMIT
+
+            case default
+                rc = E_MAIL
+        end select
+    end function dm_mail_error
+
     integer function dm_mail_init() result(rc)
         !! Initialises SMTP backend.
         rc = E_MAIL
@@ -228,12 +281,10 @@ contains
         list_ptr = c_null_ptr
         curl_ptr = curl_easy_init()
 
-        rc = E_IO
+        rc = E_MAIL
         if (.not. c_associated(curl_ptr)) return
 
         curl_block: block
-            rc = E_INVALID
-
             ! SMTP server URL.
             stat = curl_easy_setopt(curl_ptr, CURLOPT_URL, server%url)
             if (stat /= CURLE_OK) exit curl_block
@@ -313,13 +364,10 @@ contains
             end if
 
             ! Send request.
-            rc = E_MAIL
-
             stat = curl_easy_perform(curl_ptr)
-            if (stat /= CURLE_OK) exit curl_block
-
-            rc = E_NONE
         end block curl_block
+
+        rc = dm_mail_error(stat)
 
         if (present(error_message) .and. stat /= CURLE_OK) then
             error_message = curl_easy_strerror(stat)
@@ -338,7 +386,7 @@ contains
         character(len=*), intent(in)           :: host !! SMTP server host name.
         integer,          intent(in), optional :: port !! SMTP server port (up to 5 digits).
         logical,          intent(in), optional :: tls  !! Transport-layer security.
-        character(len=:), allocatable          :: url  !! URL to SMTP server.
+        character(len=:), allocatable          :: url  !! URL of SMTP server.
 
         character(len=5) :: str
         integer          :: port_
@@ -430,7 +478,8 @@ contains
         !! Returns list of e-mail addresses in allocatable string.
         type(person_type), intent(in) :: persons(:) !! Array of person types.
         character(len=:), allocatable :: str        !! List of addresses.
-        integer                       :: i, n
+
+        integer :: i, n
 
         n = size(persons)
 

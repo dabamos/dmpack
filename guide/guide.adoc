@@ -181,8 +181,9 @@ The shell script requires _curl(1)_ and _unzip(1)_.
 This section describes how to build the DMPACK library and programs from source,
 with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
 (FPM). At the moment, support for the Fortran Package Manager is experimental.
-The shared libraries `libgfortran.so` and `libquadmath.so` must be present on
-the target system if the DMPACK programs have been compiled with GNU Fortran.
+The shared libraries `libgcc.so`, `libgfortran.so` and `libquadmath.so` must be
+present on the target system if the DMPACK programs have been compiled with GNU
+Fortran.
 
 Either build with GNU/BSD Make or with the Fortran Package Manager. It is
 recommended to use _make(1)_. To display the available build targets, run:
@@ -824,7 +825,7 @@ an empty file will be created.
 | `--output _file_`    | `-o`  | –       | Path of output file.
 | `--response _name_`  | `-R`  | –       | Response name for type `dp`.
 | `--sensor _id_`      | `-S`  | –       | Sensor id (requied for types `dp` and `observ`).
-| `--separator _char_` | `-s`  | `,`     | CSV separator character.
+| `--separator _char_` | `-s`  | `,`     | CSV field separator.
 | `--target _id_`      | `-T`  | –       | Target id (required for types `dp` and `observ`).
 | `--to _timestamp_`   | `-E`  | –       | End of time range in ISO 8601 (required for types `dp`, `log`, `observ`).
 | `--type _type_`      | `-t`  | –       | Type of record to export: `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` (required).
@@ -1155,7 +1156,7 @@ sensors must exist as well.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
 | `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
 | `--quote _char_`     | `-q`  | –       | CSV quote character.
-| `--separator _char_` | `-s`  | `,`     | CSV separator character.
+| `--separator _char_` | `-s`  | `,`     | CSV field separator.
 | `--type _type_`      | `-t`  | –       | Type of record to import: `log`, `node`, `observ`, `sensor`, `target` (required).
 | `--verbose`          | `-V`  | off     | Print progress to _stdout_.
 | `--version`          | `-v`  | –       | Output version information and quit.
@@ -6388,33 +6389,34 @@ $ sh hdfview.sh
 | 12   | `E_BOUNDS`          | Out of bounds error.
 | 13   | `E_EXIST`           | Resource exists.
 | 14   | `E_SYSTEM`          | System call failed.
-| 15   | `E_TIMEOUT`         | Timeout occured.
-| 16   | `E_EMPTY`           | No data.
-| 17   | `E_LIMIT`           | Memory limit reached.
-| 18   | `E_FORMAT`          | Format error.
-| 19   | `E_NOT_FOUND`       | Resource not found.
-| 20   | `E_READ_ONLY`       | Read-only access.
-| 21   | `E_CONFIG`          | Invalid configuration.
-| 22   | `E_HDF5`            | HDF5 library error.
-| 23   | `E_ZLIB`            | Zlib library error.
+| 15   | `E_MEMORY`          | No memory.
+| 16   | `E_FULL`            | Disk full.
+| 17   | `E_EMPTY`           | No data.
+| 18   | `E_LIMIT`           | Limit reached.
+| 19   | `E_TIMEOUT`         | Timeout occured.
+| 20   | `E_FORMAT`          | Format error.
+| 21   | `E_NOT_FOUND`       | Resource not found.
+| 22   | `E_PERM`            | No permission.
+| 23   | `E_READ_ONLY`       | Read-only access.
+| 24   | `E_CORRUPT`         | Data corrupted.
+| 25   | `E_CONFIG`          | Invalid configuration.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
-| 32   | `E_DB_MEM`          | No memory or disk full.
-| 33   | `E_DB_BUSY`         | Database is busy.
-| 34   | `E_DB_LOCKED`       | Database is locked.
-| 35   | `E_DB_EXEC`         | Database execution failed.
-| 36   | `E_DB_CONSTRAINT`   | Database contraint error.
-| 37   | `E_DB_TRANSACTION`  | Database transaction failed.
-| 38   | `E_DB_ROLLBACK`     | Database rollback failed.
-| 39   | `E_DB_PREPARE`      | Database prepare failed.
-| 40   | `E_DB_FINALIZE`     | Database statement finalisation error.
-| 41   | `E_DB_BIND`         | Database binding failed.
-| 42   | `E_DB_TYPE`         | Database type mismatch.
-| 43   | `E_DB_STEP`         | Database step failed or no write permission.
-| 44   | `E_DB_NO_ROWS`      | Database returned no rows.
-| 45   | `E_DB_BACKUP`       | Database backup error.
-| 46   | `E_DB_ATTACH`       | Database attach failed.
-| 47   | `E_DB_DETACH`       | Database detach failed.
+| 32   | `E_DB_BUSY`         | Database is busy.
+| 33   | `E_DB_LOCKED`       | Database is locked.
+| 34   | `E_DB_EXEC`         | Database execution failed.
+| 35   | `E_DB_CONSTRAINT`   | Database contraint error.
+| 36   | `E_DB_TRANSACTION`  | Database transaction failed.
+| 37   | `E_DB_ROLLBACK`     | Database rollback failed.
+| 38   | `E_DB_PREPARE`      | Database prepare failed.
+| 39   | `E_DB_FINALIZE`     | Database statement finalisation error.
+| 40   | `E_DB_BIND`         | Database binding failed.
+| 41   | `E_DB_TYPE`         | Database type mismatch.
+| 42   | `E_DB_STEP`         | Database step failed or no write permission.
+| 43   | `E_DB_NO_ROWS`      | Database returned no rows.
+| 44   | `E_DB_BACKUP`       | Database backup error.
+| 45   | `E_DB_ATTACH`       | Database attach failed.
+| 46   | `E_DB_DETACH`       | Database detach failed.
 | 50   | `E_ARG`             | Generic command-line error.
 | 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
 | 52   | `E_ARG_INVALID`     | Argument invalid or missing.
@@ -6434,16 +6436,22 @@ $ sh hdfview.sh
 | 91   | `E_RPC_CONNECT`     | RPC connection error.
 | 92   | `E_RPC_SSL`         | RPC SSL/TLS error.
 | 93   | `E_RPC_API`         | RPC API call failed.
-| 94   | `E_RPC_AUTH`        | RPC API call unauthorised.
+| 94   | `E_RPC_AUTH`        | RPC authorisation error.
 | 95   | `E_RPC_CONFLICT`    | RPC resource exists.
 | 96   | `E_RPC_SERVER`      | RPC internal server error.
-| 100  | `E_MAIL`            | Generic SMTP error.
+| 100  | `E_MAIL`            | Generic mail error.
+| 101  | `E_MAIL_CONNECT`    | Mail connection error.
+| 102  | `E_MAIL_SSL`        | Mail SSL/TLS error.
+| 103  | `E_MAIL_AUTH`       | Mail authorisation error.
 | 110  | `E_MQTT`            | Generic MQTT error.
 | 120  | `E_LUA`             | Generic Lua error.
-| 121  | `E_LUA_YIELD`       | Lua thread (coroutine) yields.
+| 121  | `E_LUA_YIELD`       | Lua thread (coroutine) yields (not an error).
 | 122  | `E_LUA_RUNTIME`     | Lua runtime error.
 | 123  | `E_LUA_SYNTAX`      | Lua syntax error.
 | 124  | `E_LUA_MEM`         | Lua memory allocation error.
 | 125  | `E_LUA_ERROR`       | Lua message handling error.
 | 126  | `E_LUA_FILE`        | Lua file I/O error.
+| 130  | `E_LIB`             | Generic library error.
+| 131  | `E_HDF5`            | HDF5 library error.
+| 132  | `E_ZLIB`            | Zlib library error.
 |===

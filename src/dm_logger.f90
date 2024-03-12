@@ -7,14 +7,13 @@ module dm_logger
     !! Only a single receiver is allowed (but multiple senders). Otherwise,
     !! the logs messages are passed in round-robin fashion to the receivers.
     !!
-    !! Get a pointer to the logger before configuration:
+    !! Get a pointer to the logger before configuration and invocation:
     !!
     !! ```fortran
     !! class(logger_class), pointer :: logger
     !!
     !! logger => dm_logger_get()
     !! call logger%configure(name='dmlogger', ipc=.false., verbose=.true.)
-    !!
     !! call logger%error('log message')
     !! ```
     use :: dm_ansi

@@ -1125,18 +1125,30 @@ contains
                 rc = E_NONE
             case (SQLITE_BUSY)
                 rc = E_DB_BUSY
-            case (SQLITE_READONLY)
-                rc = E_READ_ONLY
-            case (SQLITE_IOERR, SQLITE_FULL, SQLITE_NOMEM)
-                rc = E_DB_MEM
             case (SQLITE_LOCKED)
                 rc = E_DB_LOCKED
-            case (SQLITE_MISMATCH)
-                rc = E_DB_TYPE
-            case (SQLITE_RANGE)
-                rc = E_DB_BIND
+            case (SQLITE_NOMEM)
+                rc = E_MEMORY
+            case (SQLITE_READONLY)
+                rc = E_READ_ONLY
+            case (SQLITE_IOERR)
+                rc = E_IO
+            case (SQLITE_CORRUPT)
+                rc = E_CORRUPT
+            case (SQLITE_FULL)
+                rc = E_FULL
+            case (SQLITE_EMPTY)
+                rc = E_EMPTY
+            case (SQLITE_TOOBIG)
+                rc = E_LIMIT
             case (SQLITE_CONSTRAINT)
                 rc = E_DB_CONSTRAINT
+            case (SQLITE_MISMATCH)
+                rc = E_DB_TYPE
+            case (SQLITE_FORMAT)
+                rc = E_FORMAT
+            case (SQLITE_RANGE)
+                rc = E_DB_BIND
             case default
                 rc = E_DB
         end select

@@ -186,7 +186,7 @@ contains
                 rc = E_READ
 
             case (CURLE_OUT_OF_MEMORY)
-                rc = E_LIMIT
+                rc = E_MEMORY
 
             case (CURLE_OPERATION_TIMEDOUT)
                 rc = E_TIMEOUT
@@ -211,7 +211,7 @@ contains
                 rc = E_RPC_SSL
 
             case (CURLE_FILESIZE_EXCEEDED)
-                rc = E_BOUNDS
+                rc = E_LIMIT
 
             case (CURLE_REMOTE_FILE_NOT_FOUND)
                 rc = E_NOT_FOUND
