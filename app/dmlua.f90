@@ -202,7 +202,9 @@ contains
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) stat = 1
+        if (present(error)) then
+            if (dm_is_error(error)) stat = 1
+        end if
 
         rc = dm_mqueue_close(mqueue)
         rc = dm_mqueue_unlink(mqueue)

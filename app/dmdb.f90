@@ -190,7 +190,7 @@ contains
 
         stat = 0
         if (present(error)) then
-            if (dm_is_error(rc)) stat = 1
+            if (dm_is_error(error)) stat = 1
         end if
 
         rc = dm_db_close(db)

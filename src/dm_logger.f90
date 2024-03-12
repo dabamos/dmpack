@@ -13,7 +13,9 @@ module dm_logger
     !! class(logger_class), pointer :: logger
     !!
     !! logger => dm_logger_get()
-    !! call logger%configure(name='dmlogger', ipc=.true., verbose=.true.)
+    !! call logger%configure(name='dmlogger', ipc=.false., verbose=.true.)
+    !!
+    !! call logger%error('log message')
     !! ```
     use :: dm_ansi
     use :: dm_error
@@ -107,7 +109,7 @@ contains
     ! PRIVATE CLASS METHODS.
     ! ******************************************************************
     subroutine logger_configure(this, name, node_id, source, debug, ipc, blocking, no_color, verbose)
-        !! Configures the logger.
+        !! Configures the (global) logger.
         class(logger_class), intent(inout)        :: this     !! Logger object.
         character(len=*),    intent(in), optional :: name     !! Logger name.
         character(len=*),    intent(in), optional :: node_id  !! Node id.
