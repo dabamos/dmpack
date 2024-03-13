@@ -114,10 +114,11 @@ module dm_error
 
     ! Additional errors.
     integer, parameter, public :: E_LIB            = 130 !! Generic library error.
-    integer, parameter, public :: E_HDF5           = 131 !! HDF5 error.
-    integer, parameter, public :: E_ZLIB           = 132 !! zlib error.
+    integer, parameter, public :: E_FCGI           = 131 !! FastCGI error.
+    integer, parameter, public :: E_HDF5           = 132 !! HDF5 error.
+    integer, parameter, public :: E_ZLIB           = 133 !! zlib error.
 
-    integer, parameter, public :: E_LAST           = 132 !! Never use this.
+    integer, parameter, public :: E_LAST           = 133 !! Never use this.
 
     interface dm_perror
         !! Alias for `dm_error_out()`, do not use.
@@ -315,6 +316,8 @@ contains
             ! Libraries.
             case (E_LIB)
                 str = 'library error'
+            case (E_FCGI)
+                str = 'FastCGI error'
             case (E_HDF5)
                 str = 'HDF5 error'
             case (E_ZLIB)

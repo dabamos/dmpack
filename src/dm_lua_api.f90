@@ -183,6 +183,7 @@ contains
             rc = dm_lua_eval(lua, 'E_LUA_FILE = '       // dm_itoa(E_LUA_FILE));       if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_LIB = '            // dm_itoa(E_LIB));            if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_FCGI = '           // dm_itoa(E_FCGI));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
         end if

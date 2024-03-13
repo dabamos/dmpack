@@ -4,7 +4,6 @@ module dm_api
     !! HTTP-RPC API status message.
     use :: dm_ascii, NL => ASCII_LF
     use :: dm_error
-    use :: dm_string
     use :: dm_time
     use :: dm_util
     use :: dm_version
@@ -41,6 +40,8 @@ contains
         !! string are overwritten in the derived type. No error is returned if
         !! the string does not contain any of the keys. The function return
         !! `E_EMPTY` if the passed string is empty.
+        use :: dm_string
+
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
 
         character(len=*),      intent(in)  :: string !! String representation of API status.

@@ -6452,6 +6452,7 @@ $ sh hdfview.sh
 | 125  | `E_LUA_ERROR`       | Lua message handling error.
 | 126  | `E_LUA_FILE`        | Lua file I/O error.
 | 130  | `E_LIB`             | Generic library error.
-| 131  | `E_HDF5`            | HDF5 library error.
-| 132  | `E_ZLIB`            | Zlib library error.
+| 131  | `E_FCGI`            | FastCGI library error.
+| 132  | `E_HDF5`            | HDF5 library error.
+| 133  | `E_ZLIB`            | Zlib library error.
 |===

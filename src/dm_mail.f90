@@ -252,6 +252,16 @@ contains
 
     integer function dm_mail_send(mail, server, error_message, error_curl, debug) result(rc)
         !! Sends SMTP request by calling libcurl.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_CORRUPT` if mail or server type is not initialised properly.
+        !! * `E_INVALID` if mail or server data is invalid.
+        !! * `E_MAIL` if libcurl initialisation failed.
+        !! * `E_MAIL_AUTH` if SMTP authentication failed.
+        !! * `E_MAIL_CONNECT` if connection to server could not be established.
+        !! * `E_MAIL_SSL` if SSL/TLS error occured.
+        !!
         type(mail_type),               intent(inout)         :: mail
         type(mail_server_type),        intent(inout)         :: server
         character(len=:), allocatable, intent(out), optional :: error_message
@@ -269,7 +279,7 @@ contains
         debug_ = .false.
         if (present(debug)) debug_ = debug
 
-        rc = E_INVALID
+        rc = E_CORRUPT
         if (.not. mail%allocated) return
         if (.not. server%allocated) return
 
@@ -515,13 +525,13 @@ contains
         if (sz == 0 .or. nmemb == 0 .or. room < 1) return
         if (.not. c_associated(ptr) .or. .not. c_associated(data)) return
 
-        chunk => null()
+        chunk   => null()
         payload => null()
 
         call c_f_pointer(ptr, chunk)
         call c_f_pointer(data, payload)
 
-        if (.not. associated(chunk)) return
+        if (.not. associated(chunk))   return
         if (.not. associated(payload)) return
 
         if (.not. allocated(payload%data) .or. payload%length <= 0) return

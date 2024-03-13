@@ -21,7 +21,7 @@
 --
 
 --
--- Observation to be put in the jobs list.
+-- Observation to be added to the jobs list.
 --
 observ = {
     name = "dummy-observ",

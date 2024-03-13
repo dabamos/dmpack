@@ -36,15 +36,22 @@ module dm_job
 contains
     integer function dm_job_list_add(job_list, job) result(rc)
         !! Adds job to job list at the next free index in job array.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_CORRUPT` if job list is not initialised properly.
+        !! * `E_LIMIT` if memory limit of job list is reached.
+        !! * `E_INVALID` if passed job is invalid.
+        !!
         type(job_list_type), intent(inout) :: job_list !! Job list type.
         type(job_type),      intent(inout) :: job      !! Job type.
         integer                            :: i
 
-        rc = E_ALLOC
+        rc = E_CORRUPT
         if (.not. allocated(job_list%jobs)) return
         if (.not. allocated(job_list%mask)) return
 
-        rc = E_BOUNDS
+        rc = E_LIMIT
         i = job_list%njobs + 1
         if (i > size(job_list%jobs)) return
 
@@ -92,7 +99,7 @@ contains
     end function dm_job_list_count
 
     integer function dm_job_list_init(job_list, n) result(rc)
-        !! Initialises job list.
+        !! Initialises job list. The function returns `E_ALLOC` on error.
         type(job_list_type), intent(out) :: job_list !! Job list type.
         integer,             intent(in)  :: n        !! Maximum number of jobs to hold.
         integer                          :: stat
@@ -113,8 +120,13 @@ contains
         !!
         !! Call `dm_job_list_any()` or `dm_job_list_count()` beforehand to check
         !! if the job list contains any enabled jobs. Otherwise, this function
-        !! return `E_EMPTY`. If `job_list` is not allocated properly, `E_ALLOC`
-        !! is returned.
+        !! return `E_EMPTY`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_CORRUPT` if job list is not initialised properly.
+        !! * `E_EMPTY` if job list is empty.
+        !!
         type(job_list_type), intent(inout)         :: job_list !! Job list type.
         type(job_type),      intent(out)           :: job      !! Job type.
         integer,             intent(out), optional :: index    !! Position in job list.
@@ -127,7 +139,7 @@ contains
         if (present(index)) index = 0
         if (present(revolved)) revolved = .false.
 
-        rc = E_ALLOC
+        rc = E_CORRUPT
         if (.not. allocated(job_list%jobs)) return
         if (.not. allocated(job_list%mask)) return
 

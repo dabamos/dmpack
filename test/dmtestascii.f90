@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestascii
-    !! Test program for utility procedures.
+    !! Test program for ASCII procedures.
     use :: dmpack
     implicit none (type, external)
     integer, parameter :: NTESTS = 1

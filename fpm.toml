@@ -5,7 +5,7 @@ author      = "Philipp Engel"
 maintainer  = "@interkosmos"
 copyright   = "Copyright (c) 2023, Philipp Engel"
 description = "Deformation Monitoring Package (DMPACK) for automated control measurements in engineering geodesy"
-keywords    = [ "geodesy", "monitoring", "engineering", "sensor", "iot" ]
+keywords    = [ "geodesy", "monitoring", "engineering", "sensors", "iot" ]
 
 [library]
 source-dir = "src"
@@ -144,6 +144,10 @@ link = [ "sqlite3" ]
 [[test]]
 name = "dmtestapi"
 main = "dmtestapi.f90"
+
+[[test]]
+name = "dmtestascii"
+main = "dmtestascii.f90"
 
 [[test]]
 name = "dmtestatom"

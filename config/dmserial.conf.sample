@@ -40,9 +40,9 @@
 -- The following node id, sensor id, and target id must exist in the database,
 -- or be set accordingly.
 --
-local node_id   = "dummy-node"
-local sensor_id = "dkrf400"
-local target_id = "meter"
+node_id   = "dummy-node"
+sensor_id = "dkrf400"
+target_id = "meter"
 
 --
 -- The observations to be used in jobs list. The attribute `receivers` may
