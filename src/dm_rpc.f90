@@ -244,7 +244,7 @@ contains
     end function dm_rpc_error_multi
 
     integer function dm_rpc_init() result(rc)
-        !! Initialises RPC backend.
+        !! Initialises RPC backend. The function returns `E_RPC` on error.
         rc = E_RPC
         if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
         rc = E_NONE
@@ -430,7 +430,7 @@ contains
         !! URL API of libcurl to create the URL. The base path and the endpoint
         !! must both start with a `/`.
         !!
-        !! On error, returns an empty string.
+        !! The function returns an empty string on error.
         character(len=*), intent(in)           :: host     !! IP or FQDN of remote host.
         integer,          intent(in), optional :: port     !! API port (up to 5 digits).
         character(len=*), intent(in), optional :: base     !! API base path (for example, `/api/v1`).
@@ -517,7 +517,7 @@ contains
         character(len=:), allocatable    :: chunk
         type(rpc_response_type), pointer :: response
 
-        n = int(0, kind=c_size_t)
+        n = 0_c_size_t
 
         if (.not. c_associated(ptr)) return
         if (.not. c_associated(data)) return
@@ -572,6 +572,7 @@ contains
         use :: dm_observ
         use :: dm_sensor
         use :: dm_target
+
         class(*),                      intent(inout)        :: type    !! Derived type.
         character(len=:), allocatable, intent(out)          :: payload !! Serialised type.
         logical,                       intent(in), optional :: deflate !! Enable deflate compression.

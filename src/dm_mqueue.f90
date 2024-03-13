@@ -48,6 +48,7 @@ module dm_mqueue
         procedure :: mqueue_write_raw
     end interface
 
+    ! Public procedures.
     public :: dm_mqueue_attributes
     public :: dm_mqueue_close
     public :: dm_mqueue_open
@@ -55,13 +56,12 @@ module dm_mqueue
     public :: dm_mqueue_unlink
     public :: dm_mqueue_write
 
+    ! Private procedures.
     private :: mqueue_open_raw
     private :: mqueue_open_type
-
     private :: mqueue_read_log
     private :: mqueue_read_observ
     private :: mqueue_read_raw
-
     private :: mqueue_write_log
     private :: mqueue_write_observ
     private :: mqueue_write_raw
@@ -71,6 +71,12 @@ contains
     ! ******************************************************************
     integer function dm_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
         !! Returns message queue attributes.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if message queue descriptor is invalid.
+        !! * `E_MQUEUE` if system call to get the attributes failed.
+        !!
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         integer(kind=i8),  intent(out), optional :: flags    !! Flags.
         integer(kind=i8),  intent(out), optional :: max_msg  !! Maximum number of messages in queue.
@@ -95,6 +101,12 @@ contains
 
     integer function dm_mqueue_close(mqueue) result(rc)
         !! Closes message queue.
+        !!
+        !! The function returns the followin error codes:
+        !!
+        !! * `E_INVALID` if message queue descriptor is invalid.
+        !! * `E_MQUEUE` if system call to close the queue failed.
+        !!
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         rc = E_NONE
@@ -111,6 +123,12 @@ contains
 
     integer function dm_mqueue_unlink(mqueue) result(rc)
         !! Deletes POSIX message queue.
+        !!
+        !! The function returns the followin error codes:
+        !!
+        !! * `E_INVALID` if message queue has no name.
+        !! * `E_MQUEUE` if system call to unlink the queue failed.
+        !!
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         rc = E_INVALID
@@ -125,6 +143,12 @@ contains
     ! ******************************************************************
     integer function mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, create, exclusive, blocking) result(rc)
         !! Opens POSIX message queue of given name.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if name is empty or starts with `/`.
+        !! * `E_MQUEUE` if system call to open the queue failed.
+        !!
         type(mqueue_type), intent(out)          :: mqueue    !! Message queue type.
         character(len=*),  intent(in)           :: name      !! Message queue name (without leading `/`).
         integer,           intent(in)           :: max_msg   !! Maximum number of messages in queue.
@@ -193,6 +217,12 @@ contains
     integer function mqueue_open_type(mqueue, type, name, access, blocking) result(rc)
         !! Opens message queue for reading/writing logs or observations (in
         !! blocking mode by default).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if type is invalid, name is empty, or name starts with `/`.
+        !! * `E_MQUEUE` if system call to open the queue failed.
+        !!
         type(mqueue_type), intent(out)          :: mqueue   !! Message queue type.
         integer,           intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
         character(len=*),  intent(in)           :: name     !! Message queue name (without leading `/`).
@@ -236,7 +266,7 @@ contains
 
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
-        !! larger than parameter `LOG_SIZE`.
+        !! larger than parameter `LOG_SIZE`. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         type(log_type),    intent(out)           :: log      !! Log type.
         integer(kind=i8),  intent(in),  optional :: timeout  !! Timeout in seconds.
@@ -255,7 +285,8 @@ contains
 
     integer function mqueue_read_observ(mqueue, observ, timeout) result(rc)
         !! Receives observation from message queue. The received message shall
-        !! not be larger than parameter `OBSERV_SIZE`.
+        !! not be larger than parameter `OBSERV_SIZE`. Returns `E_MQUEUE` on
+        !! error.
         type(mqueue_type), intent(inout)         :: mqueue  !! Message queue type.
         type(observ_type), intent(out)           :: observ  !! Observation type.
         integer(kind=i8),  intent(in),  optional :: timeout !! Timeout in seconds.
@@ -274,7 +305,8 @@ contains
 
     integer function mqueue_read_raw(mqueue, buffer, priority, timeout) result(rc)
         !! Receives message from message queue and returns data in `buffer`.
-        !! The buffer size must equal the message size.
+        !! The buffer size must equal the message size. Returns `E_MQUEUE` on
+        !! error.
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         character(len=*),  intent(inout)         :: buffer   !! Byte buffer.
         integer,           intent(out), optional :: priority !! Message priority.
@@ -302,7 +334,7 @@ contains
     end function mqueue_read_raw
 
     integer function mqueue_write_log(mqueue, log) result(rc)
-        !! Sends log message to message queue.
+        !! Sends log message to message queue. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(log_type),    intent(inout) :: log    !! Log type.
 
@@ -313,19 +345,18 @@ contains
     end function mqueue_write_log
 
     integer function mqueue_write_observ(mqueue, observ) result(rc)
-        !! Sends observation to message queue.
+        !! Sends observation to message queue. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(observ_type), intent(inout) :: observ !! Observation type.
 
         character(len=OBSERV_SIZE) :: buffer
 
-        rc = E_MQUEUE
         buffer = transfer(observ, buffer)
         rc = mqueue_write_raw(mqueue, buffer, priority=observ%priority)
     end function mqueue_write_observ
 
     integer function mqueue_write_raw(mqueue, buffer, priority) result(rc)
-        !! Sends log to message queue.
+        !! Sends log to message queue. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout)        :: mqueue   !! Message queue type.
         character(len=*),  intent(inout)        :: buffer   !! Byte buffer
         integer,           intent(in), optional :: priority !! Priority

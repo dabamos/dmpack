@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_sem
     !! Named POSIX semaphores. Has to be linked with `-lpthread`.
-    use, intrinsic :: iso_c_binding, only: c_null_ptr
     use :: unix
     use :: dm_error
     use :: dm_id
@@ -28,7 +27,12 @@ module dm_sem
     public :: dm_sem_wait
 contains
     integer function dm_sem_close(sem) result(rc)
-        !! Closes named semaphore.
+        !! Closes named semaphore. The function returns the following error
+        !! codes:
+        !!
+        !! * `E_INVALID` if semaphore pointer is not associated.
+        !! * `E_SYSTEM` if system call to close semaphore failed.
+        !!
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_INVALID
@@ -43,6 +47,12 @@ contains
     integer function dm_sem_open(sem, name, value, create, mode) result(rc)
         !! Opens and optionally creates named semaphore. The given name
         !! shall not start with a leading `/`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if name is empty or starts with `/`, or if value is negative.
+        !! * `E_SYSTEM` if system call to open semaphore failed.
+        !!
         type(sem_type),   intent(inout)        :: sem    !! Semaphore type.
         character(len=*), intent(in)           :: name   !! Semaphore name (without leading `/`).
         integer,          intent(in), optional :: value  !! Initial value.
@@ -88,7 +98,7 @@ contains
     end function dm_sem_name
 
     integer function dm_sem_post(sem) result(rc)
-        !! Increases semaphore value.
+        !! Increases semaphore value. Returns `E_SYSTEM` on error.
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
@@ -97,7 +107,7 @@ contains
     end function dm_sem_post
 
     integer function dm_sem_unlink(sem) result(rc)
-        !! Unlinks named semaphore.
+        !! Unlinks named semaphore. Returns `E_SYSTEM` on error.
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
@@ -106,7 +116,7 @@ contains
     end function dm_sem_unlink
 
     integer function dm_sem_value(sem, value) result(rc)
-        !! Returns the current semaphore value.
+        !! Returns the current semaphore value. Returns `E_SYSTEM` on error.
         type(sem_type), intent(inout) :: sem   !! Semaphore type.
         integer,        intent(out)   :: value !! Returned value.
 
@@ -116,7 +126,7 @@ contains
     end function dm_sem_value
 
     integer function dm_sem_wait(sem) result(rc)
-        !! Waits for semaphore.
+        !! Waits for semaphore. Returns `E_SYSTEM` on error.
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
