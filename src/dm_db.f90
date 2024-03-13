@@ -16,6 +16,26 @@ module dm_db
     !! rc = dm_db_close(db)
     !! ```
     !!
+    !! Using the iterator interface instead:
+    !!
+    !! ```fortran
+    !! integer            :: rc
+    !! type(db_type)      :: db
+    !! type(db_stmt_type) :: db_stmt
+    !! type(observ_type)  :: observ
+    !!
+    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !!
+    !! do
+    !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
+    !!     if (rc == E_DB_NO_ROWS) exit
+    !!     print *, trim(observ%name)
+    !! end do
+    !!
+    !! rc = dm_db_finalize(db_stmt)
+    !! rc = dm_db_close(db)
+    !! ```
+    !!
     !! The database functions return `E_NONE` if the respective operation was
     !! successful.
     use, intrinsic :: iso_c_binding
@@ -186,7 +206,7 @@ module dm_db
     interface dm_db_select_nodes
         !! Generic nodes select function.
         module procedure :: db_select_nodes_array
-       !module procedure :: db_select_nodes_iter
+        module procedure :: db_select_nodes_iter
     end interface
 
     interface dm_db_select_observs
@@ -198,15 +218,15 @@ module dm_db
     interface dm_db_select_sensors
         !! Generic sensors select function.
         module procedure :: db_select_sensors_array
-       !module procedure :: db_select_sensors_iter
+        module procedure :: db_select_sensors_iter
         module procedure :: db_select_sensors_by_node_array
-       !module procedure :: db_select_sensors_by_node_iter
+        module procedure :: db_select_sensors_by_node_iter
     end interface
 
     interface dm_db_select_targets
         !! Generic targets select function.
         module procedure :: db_select_targets_array
-       !module procedure :: db_select_targets_iter
+        module procedure :: db_select_targets_iter
     end interface
 
     interface dm_db_update
@@ -386,6 +406,8 @@ module dm_db
     private :: db_select_json_nodes_iter
     private :: db_select_logs_array
     private :: db_select_logs_iter
+    private :: db_select_nodes_array
+    private :: db_select_nodes_iter
     private :: db_select_nrows
     private :: db_select_observs_array
     private :: db_select_observs_iter
@@ -394,10 +416,13 @@ module dm_db
     private :: db_select_requests
     private :: db_select_responses
     private :: db_select_sensors_array
+    private :: db_select_sensors_iter
     private :: db_select_sensors_by_node_array
+    private :: db_select_sensors_by_node_iter
     private :: db_select_sync
     private :: db_select_syncs
     private :: db_select_targets_array
+    private :: db_select_targets_iter
 contains
     ! ******************************************************************
     ! PUBLIC FUNCTIONS.
@@ -2211,6 +2236,7 @@ contains
             if (dm_is_error(rc)) return
         end if
 
+        ! Prepare database on create.
         if (create_) then
             ! Set application id.
             rc = dm_db_set_application_id(db, DB_APPLICATION_ID)
@@ -6470,7 +6496,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -6517,6 +6542,33 @@ contains
 
         if (.not. allocated(nodes)) allocate (nodes(0))
     end function db_select_nodes_array
+
+    integer function db_select_nodes_iter(db, db_stmt, node) result(rc)
+        !! Iterator function that returns all sensor nodes in `node`. The
+        !! statement `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_node
+
+        type(db_type),      intent(inout) :: db      !! Database type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        type(node_type),    intent(out)   :: node    !! Returned node data.
+
+        if (.not. dm_db_prepared(db_stmt)) then
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NODES, db_stmt%ptr) /= SQLITE_OK) return
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, node)
+    end function db_select_nodes_iter
 
     integer function db_select_nrows(db, table, n) result(rc)
         !! Returns number of rows in table `table` in `n`.
@@ -7249,12 +7301,11 @@ contains
     end function db_select_responses
 
     integer function db_select_sensors_array(db, sensors, nsensors) result(rc)
-        !! Returns all sensors of node `node_id` in allocatable array `sensors`.
+        !! Returns all sensors in allocatable array `sensors`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -7262,7 +7313,7 @@ contains
         use :: dm_sensor
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
-        type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data.
+        type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data array.
         integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
 
         integer          :: stat
@@ -7302,12 +7353,40 @@ contains
         if (.not. allocated(sensors)) allocate (sensors(0))
     end function db_select_sensors_array
 
-    integer function db_select_sensors_by_node_array(db, sensors, node_id, nsensors) result(rc)
+    integer function db_select_sensors_iter(db, db_stmt, sensor) result(rc)
+        !! Iterator function that returns all sensors in `sensor`. The
+        !! statement `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_sensor
+
+        type(db_type),      intent(inout) :: db      !! Database type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
+
+        if (.not. dm_db_prepared(db_stmt)) then
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS, db_stmt%ptr) /= SQLITE_OK) return
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, sensor)
+    end function db_select_sensors_iter
+
+    integer function db_select_sensors_by_node_array(db, node_id, sensors, nsensors) result(rc)
         !! Returns all sensors of node `node_id` in allocatable array `sensors`.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_INVALID` if node id is empty.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
@@ -7317,16 +7396,17 @@ contains
         use :: dm_sensor
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
-        type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data.
         character(len=*),               intent(in)            :: node_id    !! Node id.
+        type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data array.
         integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
 
         integer          :: stat
         integer(kind=i8) :: i, n
         type(c_ptr)      :: stmt
 
-        rc = E_INVALID
         if (present(nsensors)) nsensors = 0_i8
+
+        rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
         sql_block: block
@@ -7369,6 +7449,42 @@ contains
         stat = sqlite3_finalize(stmt)
         if (.not. allocated(sensors)) allocate (sensors(0))
     end function db_select_sensors_by_node_array
+
+    integer function db_select_sensors_by_node_iter(db, db_stmt, node_id, sensor) result(rc)
+        !! Iterator function that returns all sensors of node `node_id` in
+        !! `sensor`. The statement `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if node id is empty.
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_sensor
+
+        type(db_type),      intent(inout) :: db      !! Database type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        character(len=*),   intent(in)    :: node_id !! Node id.
+        type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
+
+        if (.not. dm_db_prepared(db_stmt)) then
+            rc = E_INVALID
+            if (len_trim(node_id) == 0) return
+
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS_BY_NODE, db_stmt%ptr) /= SQLITE_OK) return
+
+            rc = E_DB_BIND
+            if (sqlite3_bind_text(db_stmt%ptr, 1, trim(node_id)) /= SQLITE_OK) return
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, sensor)
+    end function db_select_sensors_by_node_iter
 
     integer function db_select_sync(db, type, query, sync) result(rc)
         !! Utility function that returns synchronisation data of given query.
@@ -7492,7 +7608,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -7500,7 +7615,7 @@ contains
         use :: dm_target
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
-        type(target_type), allocatable, intent(out)           :: targets(:) !! Array of targets.
+        type(target_type), allocatable, intent(out)           :: targets(:) !! Target data array.
         integer(kind=i8),               intent(out), optional :: ntargets   !! Number of selected targets.
 
         integer          :: stat
@@ -7539,6 +7654,33 @@ contains
 
         if (.not. allocated(targets)) allocate (targets(0))
     end function db_select_targets_array
+
+    integer function db_select_targets_iter(db, db_stmt, target) result(rc)
+        !! Iterator function that returns all targets in `target`. The
+        !! statement `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_NO_ROWS` if no more rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_target
+
+        type(db_type),      intent(inout) :: db      !! Database type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        type(target_type),  intent(out)   :: target  !! Target data.
+
+        if (.not. dm_db_prepared(db_stmt)) then
+            rc = E_DB_PREPARE
+            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TARGETS, db_stmt%ptr) /= SQLITE_OK) return
+        end if
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+
+        rc = db_next_row(db_stmt%ptr, target)
+    end function db_select_targets_iter
 
     ! ******************************************************************
     ! PRIVATE SUBROUTINES.
