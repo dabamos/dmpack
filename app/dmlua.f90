@@ -62,11 +62,7 @@ program dmlua
         end if
 
         ! Register DMPACK API for Lua.
-        rc = dm_lua_api_register(lua                = lua,    &
-                                 add_errors         = .true., &
-                                 add_log_levels     = .true., &
-                                 add_procedures     = .true., &
-                                 add_response_types = .true.)
+        rc = dm_lua_api_register(lua)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to register Lua API', error=rc)

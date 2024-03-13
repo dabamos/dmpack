@@ -257,10 +257,14 @@ contains
         end if
 
         ! TTY options.
+        rc = E_NOT_FOUND
+
         if (.not. dm_file_exists(app%tty)) then
             call dm_error_out(rc, 'TTY ' // trim(app%tty) // ' does not exist')
             return
         end if
+
+        rc = E_INVALID
 
         if (dm_tty_baud_rate_from_value(app%baud_rate) == 0) then
             call dm_error_out(rc, 'invalid baud rate')
@@ -288,6 +292,8 @@ contains
         end if
 
         ! Observation jobs.
+        rc = E_EMPTY
+
         if (dm_job_list_count(app%jobs) == 0) then
             call dm_error_out(rc, 'no enabled jobs')
             return
@@ -301,8 +307,8 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(config_type)             :: config
 
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        rc = E_INVALID
+        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
 
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
@@ -490,7 +496,7 @@ contains
 
         integer                    :: delay, njobs
         logical                    :: debug  ! Create debug messages only if necessary.
-        type(job_type),    target  :: job    ! Next job to run.
+        type(job_type),    target  :: job    ! Next job to start.
         type(observ_type), pointer :: observ ! Next observation to perform.
 
         debug = (app%debug .or. app%verbose)
@@ -505,7 +511,7 @@ contains
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
-            call logger%error('failed to open TTY ' // trim(app%tty) // ', trying again in 5 sec', error=rc)
+            call logger%error('failed to open TTY ' // trim(app%tty) // ', next attempt in 5 sec', error=rc)
             call dm_sleep(5)
         end do
 

@@ -183,6 +183,8 @@ contains
             if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
         end if
 
+        rc = E_EMPTY
+
         if (dm_job_list_count(app%jobs) == 0) then
             call dm_error_out(rc, 'no enabled jobs')
             return

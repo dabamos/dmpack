@@ -38,11 +38,9 @@ contains
         args = [ arg_type(name='database', short='d', type=ARG_TYPE_DB) ] ! -d, --database <path>
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
 
-        arg_block: block
-            if (rc == E_ARG_NOT_FOUND) exit arg_block
-            if (dm_is_ok(rc)) rc = dm_arg_get(args(1), app%database)
-            return
-        end block arg_block
+        if (dm_is_ok(rc)) then
+            rc = dm_arg_get(args(1), app%database)
+        end if
 
         rc = E_NONE
     end function read_args
@@ -51,6 +49,7 @@ contains
         !! Reads system and database information and prints it as key-value
         !! pairs to standard output.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+
         type(app_type), intent(inout) :: app
 
         character(len=:), allocatable :: mode_name
@@ -64,6 +63,13 @@ contains
         with_db = (len_trim(app%database) > 0)
 
         if (with_db) then
+            rc = E_NOT_FOUND
+
+            if (.not. dm_file_exists(app%database)) then
+                call dm_error_out(rc, 'database ' // trim(app%database) // ' not found')
+                return
+            end if
+
             sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
 

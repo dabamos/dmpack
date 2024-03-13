@@ -704,10 +704,13 @@ contains
                                  byte_size = TTY_BYTE_SIZE8, &
                                  parity    = TTY_PARITY_NONE, &
                                  stop_bits = TTY_STOP_BITS1)
-
-                ! Exit on success.
                 if (dm_is_ok(rc)) exit
-                if (this%verbose) call dm_error_out(rc, 'failed to open TTY ' // trim(path))
+
+                if (this%verbose) then
+                    call dm_error_out(rc, 'failed to open TTY ' // trim(path) // &
+                                          ' (attempt ' // dm_itoa(i + 1) // ' of ' // &
+                                          dm_itoa(n + 1) // ')')
+                end if
 
                 ! Try again.
                 if (i < n) call dm_sleep(WAIT_TIME)

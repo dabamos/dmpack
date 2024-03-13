@@ -21,7 +21,7 @@ module dm_mail
     !! ```
     !!
     !! The procedures `dm_mail_init()` and `dm_mail_destroy()` have to be called
-    !! once per process, and only if neither the RPC nor the MQTT backend is not
+    !! once per process, and only if neither the RPC nor the MQTT backend is
     !! initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl

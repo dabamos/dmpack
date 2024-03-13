@@ -38,7 +38,7 @@ program main
 end program main
 ```
 
-Link the program against `libdmpack.a` or `libdmpack.so`:
+Link the program against `libdmpack.a` or `-ldmpack`:
 
 ```
 $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a

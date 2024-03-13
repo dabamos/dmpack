@@ -148,7 +148,7 @@ contains
             case (E_INVALID)
                 str = 'invalid'
             case (E_INCOMPLETE)
-                str = 'missing or incomplete'
+                str = 'incomplete'
             case (E_TYPE)
                 str = 'type error'
             case (E_IO)

@@ -139,8 +139,7 @@ contains
         integer             :: i !! `0` or `1`.
 
         i = 0
-        if (.not. l) return
-        i = 1
+        if (l) i = 1
     end function dm_btoi
 
     pure elemental function dm_deg_to_gon(a) result(b)

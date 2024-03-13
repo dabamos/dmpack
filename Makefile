@@ -265,9 +265,9 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestatom dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
-      dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
-      dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt \
+test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
+      dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml \
+      dmtestid dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt \
       dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
       dmtestregex dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty \
       dmtestunit dmtestutil dmtestuuid dmtestz
@@ -461,6 +461,9 @@ $(SHARED): $(TARGET)
 
 dmtestapi: test/dmtestapi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestapi test/dmtestapi.f90 $(TARGET) $(LDLIBS)
+
+dmtestascii: test/dmtestascii.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestascii test/dmtestascii.f90 $(TARGET) $(LDLIBS)
 
 dmtestatom: test/dmtestatom.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestatom test/dmtestatom.f90 $(TARGET) $(LDLIBS)

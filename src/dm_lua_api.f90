@@ -22,7 +22,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_lua_api_register(lua, add_errors, add_log_levels, add_procedures, add_response_types) result(rc)
+    integer function dm_lua_api_register(lua, errors, log_levels, procedures, response_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
         !! the given Lua session.
         !!
@@ -30,10 +30,10 @@ contains
         !! of error codes, log levels, and procedures may be disabled through
         !! the dummy arguments.
         !!
-        !! All DMPACK error codes are exported if `add_errors` is not
-        !! `.false.`.
+        !! All DMPACK error codes are exported, starting from `E_NONE`, if
+        !! `errors` is not `.false.`.
         !!
-        !! The following log level parameters are injected if `add_log_levels` is
+        !! The following log level parameters are injected if `log_levels` is
         !! not `.false.`:
         !!
         !! * `LVL_NONE`
@@ -43,8 +43,8 @@ contains
         !! * `LVL_ERROR`
         !! * `LVL_CRITICAL`
         !!
-        !! The following Lua procedures are registered if `add_procedures` is
-        !! not `.false.`:
+        !! The following Lua procedures are registered if `procedures` is not
+        !! `.false.`:
         !!
         !! * `deg2gon(deg)`
         !! * `deg2rad(deg)`
@@ -54,7 +54,7 @@ contains
         !! * `rad2gon(rad)`
         !!
         !! The following response type parameters are injected if
-        !! `add_response_types` is not `.false.`:
+        !! `response_types` is not `.false.`:
         !!
         !! * `RESPONSE_TYPE_REAL64`
         !! * `RESPONSE_TYPE_REAL32`
@@ -71,29 +71,30 @@ contains
         !! initialised, or `E_LUA` if the registration failed.
         use :: dm_log
         use :: dm_response
-        type(lua_state_type), intent(inout)        :: lua                !! Lua state type.
-        logical,              intent(in), optional :: add_errors         !! Export error codes.
-        logical,              intent(in), optional :: add_log_levels     !! Export log level.
-        logical,              intent(in), optional :: add_procedures     !! Export procedures.
-        logical,              intent(in), optional :: add_response_types !! Export response type parameters.
 
-        logical :: add_errors_, add_log_levels_, add_procedures_, add_response_types_
+        type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
+        logical,              intent(in), optional :: errors         !! Export error codes.
+        logical,              intent(in), optional :: log_levels     !! Export log level.
+        logical,              intent(in), optional :: procedures     !! Export procedures.
+        logical,              intent(in), optional :: response_types !! Export response type parameters.
+
+        logical :: errors_, log_levels_, procedures_, response_types_
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
 
-        add_errors_         = .true.
-        add_log_levels_     = .true.
-        add_procedures_     = .true.
-        add_response_types_ = .true.
+        errors_         = .true.
+        log_levels_     = .true.
+        procedures_     = .true.
+        response_types_ = .true.
 
-        if (present(add_errors))         add_errors_         = add_errors
-        if (present(add_log_levels))     add_log_levels_     = add_log_levels
-        if (present(add_procedures))     add_procedures_     = add_procedures
-        if (present(add_response_types)) add_response_types_ = add_response_types
+        if (present(errors))         errors_         = errors
+        if (present(log_levels))     log_levels_     = log_levels
+        if (present(procedures))     procedures_     = procedures
+        if (present(response_types)) response_types_ = response_types
 
         ! Add error codes.
-        if (add_errors_) then
+        if (errors_) then
             rc = dm_lua_eval(lua, 'E_NONE = '           // dm_itoa(E_NONE));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ERROR = '          // dm_itoa(E_ERROR));          if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DUMMY = '          // dm_itoa(E_DUMMY));          if (dm_is_error(rc)) return
@@ -187,7 +188,7 @@ contains
         end if
 
         ! Add log levels.
-        if (add_log_levels_) then
+        if (log_levels_) then
             rc = dm_lua_eval(lua, 'LVL_NONE = '     // dm_itoa(LVL_NONE));     if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'LVL_DEBUG = '    // dm_itoa(LVL_DEBUG));    if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'LVL_INFO = '     // dm_itoa(LVL_INFO));     if (dm_is_error(rc)) return
@@ -197,7 +198,7 @@ contains
         end if
 
         ! Register response type parameters.
-        if (add_response_types_) then
+        if (response_types_) then
             rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL64 = '  // dm_itoa(RESPONSE_TYPE_REAL64));  if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL32 = '  // dm_itoa(RESPONSE_TYPE_REAL32));  if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'RESPONSE_TYPE_INT64 = '   // dm_itoa(RESPONSE_TYPE_INT64));   if (dm_is_error(rc)) return
@@ -208,7 +209,7 @@ contains
         end if
 
         ! Register procedures.
-        if (add_procedures_) then
+        if (procedures_) then
             call dm_lua_register(lua, 'deg2gon', dm_lua_api_deg2gon)
             call dm_lua_register(lua, 'deg2rad', dm_lua_api_deg2rad)
             call dm_lua_register(lua, 'gon2deg', dm_lua_api_gon2deg)

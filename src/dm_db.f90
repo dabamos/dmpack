@@ -12,7 +12,7 @@ module dm_db
     !! type(observ_type), allocatable :: observs(:)
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
-    !! rc = dm_db_select(db, observs, desc=.true., limit=10)
+    !! rc = dm_db_select_observs(db, observs, desc=.true., limit=10)
     !! rc = dm_db_close(db)
     !! ```
     !!

@@ -13,9 +13,11 @@ module dm_logger
     !! class(logger_class), pointer :: logger
     !!
     !! logger => dm_logger_get()
-    !! call logger%configure(name='dmlogger', ipc=.false., verbose=.true.)
+    !! call logger%configure(name='dmlogger', ipc=.true., verbose=.true.)
     !! call logger%error('log message')
     !! ```
+    !!
+    !! The log message is sent do a _dmlogger(1)_ instance of name `dmlogger`.
     use :: dm_ansi
     use :: dm_error
     use :: dm_id
@@ -37,7 +39,7 @@ module dm_logger
     ] !! Colours associated with log level.
 
     type, public :: logger_class
-        !! Opaque logger type.
+        !! Opaque logger class.
         private
         character(len=LOGGER_NAME_LEN) :: name      = LOGGER_NAME !! Logger and message queue name.
         character(len=NODE_ID_LEN)     :: node_id   = ' '         !! Optional node id.

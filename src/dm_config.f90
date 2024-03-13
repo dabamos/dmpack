@@ -55,6 +55,7 @@ contains
         use :: dm_file,       only: dm_file_exists
         use :: dm_lua_api,    only: dm_lua_api_register
         use :: dm_lua_geocom, only: dm_lua_geocom_register
+
         type(config_type), intent(inout)        :: config !! Config type.
         character(len=*),  intent(in)           :: path   !! Path to config file.
         character(len=*),  intent(in), optional :: name   !! Name of table. Passed name implies table loading.
@@ -77,11 +78,7 @@ contains
             if (dm_is_error(rc)) exit open_block
 
             ! Register DMPACK API for Lua.
-            rc = dm_lua_api_register(config%lua, &
-                                     add_errors         = .true., & ! Add error codes.
-                                     add_log_levels     = .true., & ! Add log levels.
-                                     add_procedures     = .true., & ! Add Lua procedures.
-                                     add_response_types = .true.)   ! Add response types.
+            rc = dm_lua_api_register(config%lua)
             if (dm_is_error(rc)) exit open_block
 
             ! Register GeoCOM API for Lua.

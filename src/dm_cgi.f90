@@ -107,8 +107,7 @@ contains
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on _read(2)_
         !! as Fortran cannot read unformatted content from standard input.
-        use, intrinsic :: iso_c_binding, only: c_loc, c_size_t
-        use :: unix, only: STDIN_FILENO, c_read
+        use :: unix
 
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment type.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
@@ -127,7 +126,7 @@ contains
 
         do i = 1, env%content_length
             rc = E_IO
-            sz = c_read(STDIN_FILENO, c_loc(buf), int(1, kind=c_size_t))
+            sz = c_read(STDIN_FILENO, c_loc(buf), 1_c_size_t)
             if (sz < 1) exit
             content(i:i) = buf
             rc = E_NONE
@@ -139,9 +138,8 @@ contains
         character(len=*),          intent(in)  :: input  !! Encoded input string.
         character(len=len(input)), intent(out) :: output !! Decoded output string.
 
-        character(len=2) :: hex
-        integer          :: i, j, k, n, m
-        integer          :: stat
+        integer :: i, j, k, n, m
+        integer :: stat
 
         rc = E_BOUNDS
         n = len_trim(input)
@@ -160,8 +158,7 @@ contains
             select case (input(i:i))
                 case ('%')
                     if (i + 2 > n) exit
-                    hex = input(i + 1:i + 2)
-                    read (hex, '(z2)', iostat=stat) k
+                    read (input(i + 1:i + 2), '(z2)', iostat=stat) k
 
                     if (stat == 0) then
                         ! Bytes are in hex.
