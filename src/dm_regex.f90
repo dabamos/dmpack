@@ -177,11 +177,12 @@ contains
         use :: dm_request
         use :: dm_response
         use :: dm_string
+        use :: dm_util
 
         type(request_type), intent(inout) :: request !! Request type.
 
         character(len=:), allocatable :: buffer
-        integer                       :: i, match, stat
+        integer                       :: i, ibyte, match, stat
         integer(kind=PCRE2_SIZE)      :: n
         type(c_ptr)                   :: match_data
         type(regex_type)              :: regex
@@ -240,16 +241,29 @@ contains
                     if (n == 0) exit response_block
 
                     ! Convert string to real.
-                    rc = E_NONE
+                    rc = E_TYPE
                     select case (request%responses(i)%type)
-                        case (RESPONSE_TYPE_BYTE)
-                            ! dm_byte_to_real64()
-                            continue
-                        case (RESPONSE_TYPE_STRING)
-                            ! Do not extract strings.
-                            continue
-                        case default
+                        ! Convert string to real.
+                        case (RESPONSE_TYPE_REAL64, RESPONSE_TYPE_REAL32, &
+                              RESPONSE_TYPE_INT64,  RESPONSE_TYPE_INT32)
                             call dm_string_to(buffer, request%responses(i)%value, rc)
+
+                        ! Convert byte to real.
+                        case (RESPONSE_TYPE_BYTE)
+                            read (buffer, '(z2)', iostat=stat) ibyte
+
+                            if (stat == 0) then
+                                rc = E_NONE
+                                request%responses(i)%value = dm_to_real64(ibyte)
+                            end if
+
+                        ! Do not extract strings.
+                        case (RESPONSE_TYPE_STRING)
+                            rc = E_NONE
+
+                        ! Invalid (type error).
+                        case default
+                            continue
                     end select
                 end block response_block
 

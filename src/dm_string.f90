@@ -346,7 +346,7 @@ contains
         integer,          intent(out), optional :: error !! error code.
         integer                                 :: rc
 
-        i = 0
+        i = 0_i4
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) i
         if (present(error)) error = E_NONE
@@ -359,7 +359,7 @@ contains
         integer,          intent(out), optional :: error !! error code.
         integer                                 :: rc
 
-        i = 0
+        i = 0_i8
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) i
         if (present(error)) error = E_NONE
@@ -372,7 +372,7 @@ contains
         integer,          intent(out), optional :: error !! error code.
         integer                                 :: rc
 
-        f = 0.0
+        f = 0.0_r4
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) f
         if (present(error)) error = E_NONE
@@ -385,7 +385,7 @@ contains
         integer,          intent(out), optional :: error !! error code.
         integer                                 :: rc
 
-        f = 0.0
+        f = 0.0_r8
         if (present(error)) error = E_TYPE
         read (str, *, iostat=rc) f
         if (present(error)) error = E_NONE

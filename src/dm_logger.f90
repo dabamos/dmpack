@@ -69,7 +69,7 @@ module dm_logger
     end type logger_class
 
     ! Global logger instance.
-    class(logger_class), allocatable, target, save :: DMPACK_LOGGER
+    class(logger_class), allocatable, target, save :: MODULE_LOGGER
 
     ! Public procedures.
     public :: dm_logger_get
@@ -98,12 +98,12 @@ contains
 
         logger => null()
 
-        if (.not. allocated(DMPACK_LOGGER)) then
-            allocate (DMPACK_LOGGER, stat=stat)
+        if (.not. allocated(MODULE_LOGGER)) then
+            allocate (MODULE_LOGGER, stat=stat)
             if (stat /= 0) return
         end if
 
-        logger => DMPACK_LOGGER
+        logger => MODULE_LOGGER
     end function dm_logger_get
 
     ! ******************************************************************
