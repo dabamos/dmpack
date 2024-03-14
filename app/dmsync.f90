@@ -424,7 +424,7 @@ contains
                         rc = dm_rpc_send(requests(1:n), responses, targets(1:n))
                 end select
 
-                dt = dm_timer_stop(rpc_timer)
+                call dm_timer_stop(rpc_timer, dt)
 
                 if (dm_is_error(rc)) then
                     call logger%debug('failed to sync with host ' // app%host, error=rc)
@@ -535,7 +535,8 @@ contains
             ! Sleep for the given sync interval in seconds.
             if (.not. app%ipc) then
                 if (app%interval <= 0) exit sync_loop
-                delay = max(1, nint(app%interval - dm_timer_stop(sync_timer)))
+                call dm_timer_stop(sync_timer)
+                delay = max(1, nint(app%interval - dm_timer_result(sync_timer)))
                 call logger%debug('next sync in ' // dm_itoa(delay) // ' sec')
                 call dm_sleep(delay)
             end if

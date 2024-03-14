@@ -341,7 +341,7 @@ contains
 
             call dm_timer_start(timer)
             stats(i) = tests(i)%proc()
-            time = dm_timer_stop(timer)
+            call dm_timer_stop(timer, time)
             total_time = total_time + time
 
             state = TEST_STATE_FAILED

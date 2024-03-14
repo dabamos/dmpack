@@ -92,7 +92,7 @@ contains
 
         stat = TEST_FAILED
         rc = dm_rpc_init()
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         url = dm_rpc_url(host)
@@ -113,7 +113,7 @@ contains
         end if
 
         call dm_rpc_reset(request)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
         if (response%code /= HTTP_OK) return
 
@@ -146,8 +146,8 @@ contains
             if (dm_is_error(rc)) exit
         end do
 
-        dt = dm_timer_stop(timer)
-        call dm_perror(rc)
+        call dm_timer_stop(timer, dt)
+        call dm_error_out(rc)
         print '(1x, i0, a, f8.5, a)', (i - 1), ' observations sent in ', dt, ' sec'
 
         call dm_rpc_destroy()
@@ -174,7 +174,7 @@ contains
 
         stat = TEST_FAILED
         rc = dm_rpc_init()
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         allocate (observs(NOBSERVS))
@@ -187,9 +187,9 @@ contains
         rc = dm_rpc_send(requests, responses, observs, &
                          dm_rpc_url(host, endpoint='/observ'), &
                          username, password, deflate=.true.)
-        dt = dm_timer_stop(timer)
+        call dm_timer_stop(timer, dt)
 
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         error = .false.
@@ -229,7 +229,7 @@ contains
 
         stat = TEST_FAILED
         rc = dm_rpc_init()
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         allocate (observs(NOBSERVS))
@@ -242,9 +242,9 @@ contains
         rc = dm_rpc_send(requests, responses, observs, &
                          dm_rpc_url(host, endpoint='/observ'), &
                          username, password, deflate=.true., sequential=.true.)
-        dt = dm_timer_stop(timer)
+        call dm_timer_stop(timer, dt)
 
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         error = .false.
@@ -280,7 +280,7 @@ contains
 
         stat = TEST_FAILED
         rc = dm_rpc_init()
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         beat = beat_type(node_id='dummy-node', time_sent=dm_time_now(), interval=600)
@@ -296,8 +296,8 @@ contains
                          password = password, &
                          deflate  = .true., &
                          url      = dm_rpc_url(host, endpoint='/beat'))
-        dt = dm_timer_stop(timer)
-        call dm_perror(rc)
+        call dm_timer_stop(timer, dt)
+        call dm_error_out(rc)
 
         if (response%code /= HTTP_CREATED) print '(" HTTP: ", i0)', response%code
 

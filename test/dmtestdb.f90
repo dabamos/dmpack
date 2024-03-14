@@ -438,7 +438,7 @@ contains
                 rc = dm_db_insert_observ(db, observs1(i))
                 if (dm_is_error(rc))  exit test_block
             end do
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
 
             print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
             print *, 'Selecting and matching observations ...'
@@ -506,14 +506,14 @@ contains
             print *, 'Bulk adding observations ...'
             call dm_timer_start(t)
             rc = dm_db_insert_observs(db, observs1)
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
             print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
 
             print *, 'Selecting observations ...'
             call dm_timer_start(t)
             rc = dm_db_select_observs(db, observs2, limit=int(NOBSERVS, kind=i8))
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (size(observs2) /= size(observs1)) return
@@ -522,7 +522,7 @@ contains
             call dm_timer_start(t)
             rc = dm_db_select_observs_by_time(db, observs2, node1%id, sensor1%id, target1%id, &
                                               '1970', '2100', limit=int(NOBSERVS, kind=i8))
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (size(observs2) /= size(observs1)) return
@@ -535,7 +535,7 @@ contains
             call dm_timer_start(t)
             rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, &
                                             nobservs=nobs)
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (dm_is_error(rc)) exit test_block
             if (size(observs2) == 0) return
@@ -545,7 +545,7 @@ contains
             rc = dm_db_select_observ_views(db, views, node1%id, sensor1%id, target1%id, &
                                            observs1(1)%requests(1)%responses(1)%name, &
                                            '1970', '2100')
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
             print '(1x, i0, a, f0.3, a)', size(views), ' observation views read in ', dt, ' sec'
 
@@ -642,7 +642,7 @@ contains
                 rc = dm_db_insert_log(db, logs(i))
                 if (dm_is_error(rc)) exit test_block
             end do
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
 
             print '(1x, i0, a, f0.3, a)', NLOGS, ' logs added in ', dt, ' sec'
         end block test_block
@@ -677,7 +677,7 @@ contains
             call dm_timer_start(t)
             rc = dm_db_select_logs(db, logs, node_id='', sensor_id='', target_id='', &
                                    source='', from='', to='', limit=int(NLOGS, i8), nlogs=n)
-            dt = dm_timer_stop(t)
+            call dm_timer_stop(t, dt)
             print '(1x, a, i0, a, f0.3, a)', 'Selected ', n, ' logs in ', dt, ' sec'
         end block test_block
 

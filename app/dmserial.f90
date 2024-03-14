@@ -390,7 +390,8 @@ contains
 
             if (debug_) then
                 if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
-                call logger%debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, observ=observ)
+                call logger%debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, &
+                                  observ=observ, escape=.false.)
             end if
 
             ! Send request to sensor.
@@ -421,7 +422,7 @@ contains
 
             if (debug_) then
                 call logger%debug('received response from TTY ' // trim(app%tty) // ': ' // &
-                                  request%response, observ=observ)
+                                  request%response, observ=observ, escape=.false.)
             end if
 
             ! Do not extract responses if no pattern is set.

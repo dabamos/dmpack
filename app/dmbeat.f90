@@ -288,7 +288,8 @@ contains
                 if (i >= app%count) exit emit_loop
             end if
 
-            t = max(0, int(app%interval - dm_timer_stop(timer)))
+            call dm_timer_stop(timer)
+            t = max(0, int(app%interval - dm_timer_result(timer)))
             call logger%debug('next beat in ' // dm_itoa(t) // ' sec')
             call dm_sleep(t)
         end do emit_loop

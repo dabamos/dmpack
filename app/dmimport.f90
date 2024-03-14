@@ -253,7 +253,7 @@ contains
 
             ! Output statistics.
             if (app%verbose) then
-                dt = dm_timer_stop(timer)
+                call dm_timer_stop(timer, dt)
                 print '("Read ", i0, " rows from file ", a)', nrows, trim(app%input)
                 print '("Imported ", i0, " records in ", f0.1, " seconds")', nrecs, dt
             end if

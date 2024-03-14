@@ -51,7 +51,7 @@ contains
         print '(72("."))'
         call dm_timer_start(timer)
         print '(a)', dm_csv_from(observs, header=.false.)
-        dt = dm_timer_stop(timer)
+        call dm_timer_stop(timer, dt)
         print '(72("."))'
         print '(a, f8.6)', ' Time: ', dt
 
@@ -83,7 +83,7 @@ contains
         print '(72("."))'
         call dm_timer_start(timer)
         rc = dm_csv_write(observs, header=.false.)
-        dt = dm_timer_stop(timer)
+        call dm_timer_stop(timer, dt)
         print '(72("."))'
         print '(a, f8.6)', ' Time: ', dt
 

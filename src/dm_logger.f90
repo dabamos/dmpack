@@ -17,7 +17,8 @@ module dm_logger
     !! call logger%error('log message')
     !! ```
     !!
-    !! The log message is sent do a _dmlogger(1)_ instance of name `dmlogger`.
+    !! The log message is sent do the _dmlogger(1)_ instance of name
+    !! `dmlogger`.
     use :: dm_ansi
     use :: dm_error
     use :: dm_id
@@ -110,12 +111,27 @@ contains
     ! PRIVATE CLASS METHODS.
     ! ******************************************************************
     subroutine logger_configure(this, name, node_id, source, debug, ipc, blocking, no_color, verbose)
-        !! Configures the (global) logger.
+        !! Configures the (global) logger. The argument `name` is set only if
+        !! it is a valid id of character set `[-0-9A-Z_a-z]`. The argument
+        !! `source` shall be the name of the log source, usually the name of
+        !! the calling program.
+        !!
+        !! If `debug` is passed and `.true.`, log messages of level `LVL_DEBUG`
+        !! are forwarded via message queue. Otherwise, the minimum level for
+        !! logs to be transmitted is `LVL_INFO`. If `ipc` is passed and
+        !! `.true.`, logs are sent to the POSIX message queue of logger `name`.
+        !! The name of the message queue is therefore `/<name>`. Writing to
+        !! the message queue is blocking, unless `blocking` is passed and
+        !! `.false.`.
+        !!
+        !! The dummy argument `no_color` disables coloured output through ANSI
+        !! escape sequences if `.true.`. Log messages are printed to standard
+        !! error, unless `verbose` is passed and `.false.`.
         class(logger_class), intent(inout)        :: this     !! Logger object.
         character(len=*),    intent(in), optional :: name     !! Logger name.
         character(len=*),    intent(in), optional :: node_id  !! Node id.
         character(len=*),    intent(in), optional :: source   !! Source (name of calling program).
-        logical,             intent(in), optional :: debug    !! Forward debug messages via IPC.
+        logical,             intent(in), optional :: debug    !! Forward debugging messages via IPC.
         logical,             intent(in), optional :: ipc      !! IPC through POSIX message queues.
         logical,             intent(in), optional :: blocking !! Blocking IPC.
         logical,             intent(in), optional :: no_color !! Disable ANSI colours.
@@ -136,8 +152,9 @@ contains
 
     subroutine logger_fail(this, message, error, source)
         !! Prints critical error message to standard error, with optional
-        !! DMPACK error code.
-        use :: dm_time
+        !! DMPACK error code. The length of argument `message` is limited to
+        !! `LOG_MESSAGE_LEN`.
+        use :: dm_time, only: dm_time_now
 
         class(logger_class), intent(inout)        :: this    !! Logger object.
         character(len=*),    intent(in)           :: message !! Error message.
@@ -157,15 +174,16 @@ contains
         call this%out(log)
     end subroutine logger_fail
 
-    subroutine logger_log_args(this, level, message, source, observ, timestamp, error)
+    subroutine logger_log_args(this, level, message, source, observ, timestamp, error, escape)
         !! Sends a log message to the message queue (fire & forget). Only the
         !! log level is validated. An invalid level is set to `LVL_ERROR`.
         !!
-        !! The passed log message is not validated, and non-printable
-        !! characters are accepted. Make sure to only log escaped message
-        !! strings!
-        use :: dm_time
-        use :: dm_uuid
+        !! The passed log message is not validated, but non-printable
+        !! characters are escaped, unless `escape` is passed and `.false.`. The
+        !! length of argument `message` is limited to `LOG_MESSAGE_LEN`.
+        use :: dm_ascii, only: dm_ascii_escape
+        use :: dm_time,  only: dm_time_now
+        use :: dm_uuid,  only: dm_uuid4
 
         class(logger_class), intent(inout)           :: this      !! Logger object.
         integer,             intent(in)              :: level     !! Log level.
@@ -174,19 +192,30 @@ contains
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
+        logical        :: escape_
         type(log_type) :: log
 
-        ! Ignore debug messages if forwarding and output are both disabled.
+        escape_ = .true.
+        if (present(escape)) escape_ = escape
+
+        ! Ignore debugging messages if forwarding and output are both disabled.
         if (level == LVL_DEBUG .and. this%min_level > LVL_DEBUG .and. .not. this%verbose) return
 
         ! Replace invalid log level with `LVL_ERROR`.
         log%level = LVL_ERROR
         if (dm_log_valid(level)) log%level = level
 
-        ! Set log data.
-        log%id      = dm_uuid4()
-        log%message = adjustl(message)
+        ! Create log id.
+        log%id = dm_uuid4()
+
+        ! Set log message.
+        if (escape_) then
+            log%message = dm_ascii_escape(adjustl(message))
+        else
+            log%message = adjustl(message)
+        end if
 
         if (present(source)) then
             log%source = source
@@ -216,31 +245,33 @@ contains
         if (this%ipc)     call this%send(log)
     end subroutine logger_log_args
 
-    subroutine logger_log_critical(this, message, source, observ, timestamp, error)
-        !! Sends a debug log message to the message queue.
+    subroutine logger_log_critical(this, message, source, observ, timestamp, error, escape)
+        !! Sends a critical log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(len=*),    intent(in)              :: message   !! Log message.
         character(len=*),    intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
-        call this%log(LVL_CRITICAL, message, source, observ, timestamp, error)
+        call this%log(LVL_CRITICAL, message, source, observ, timestamp, error, escape)
     end subroutine logger_log_critical
 
-    subroutine logger_log_debug(this, message, source, observ, timestamp, error)
-        !! Sends a debug log message to the message queue.
+    subroutine logger_log_debug(this, message, source, observ, timestamp, error, escape)
+        !! Sends a debugging log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(len=*),    intent(in)              :: message   !! Log message.
         character(len=*),    intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
-        call this%log(LVL_DEBUG, message, source, observ, timestamp, error)
+        call this%log(LVL_DEBUG, message, source, observ, timestamp, error, escape)
     end subroutine logger_log_debug
 
-    subroutine logger_log_error(this, message, source, observ, timestamp, error)
+    subroutine logger_log_error(this, message, source, observ, timestamp, error, escape)
         !! Sends a error log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(len=*),    intent(in)              :: message   !! Log message.
@@ -248,11 +279,12 @@ contains
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
-        call this%log(LVL_ERROR, message, source, observ, timestamp, error)
+        call this%log(LVL_ERROR, message, source, observ, timestamp, error, escape)
     end subroutine logger_log_error
 
-    subroutine logger_log_info(this, message, source, observ, timestamp, error)
+    subroutine logger_log_info(this, message, source, observ, timestamp, error, escape)
         !! Sends a info log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(len=*),    intent(in)              :: message   !! Log message.
@@ -260,8 +292,9 @@ contains
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
-        call this%log(LVL_INFO, message, source, observ, timestamp, error)
+        call this%log(LVL_INFO, message, source, observ, timestamp, error, escape)
     end subroutine logger_log_info
 
     subroutine logger_log_type(this, log)
@@ -276,7 +309,7 @@ contains
         if (this%ipc)     call this%send(log)
     end subroutine logger_log_type
 
-    subroutine logger_log_warning(this, message, source, observ, timestamp, error)
+    subroutine logger_log_warning(this, message, source, observ, timestamp, error, escape)
         !! Sends a warning log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(len=*),    intent(in)              :: message   !! Log message.
@@ -284,8 +317,9 @@ contains
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
         character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
 
-        call this%log(LVL_WARNING, message, source, observ, timestamp, error)
+        call this%log(LVL_WARNING, message, source, observ, timestamp, error, escape)
     end subroutine logger_log_warning
 
     subroutine logger_out(this, log, unit)

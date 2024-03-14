@@ -739,7 +739,9 @@ contains
 
         integer :: rc
 
-        if (dm_is_error(this%rc) .and. this%verbose) call dm_error_out(this%rc)
+        if (dm_is_error(this%rc) .and. this%verbose) then
+            call dm_error_out(this%rc, 'invalid request parameters detected')
+        end if
 
         tty_block: block
             ! Verify that TTY is not connected yet.
@@ -1593,7 +1595,7 @@ contains
         !! selected. On error, the file prefix string is allocated but empty.
         !! The maximum string length is 20 characters
         !! (`GEOCOM_IMG_MAX_FILE_PREFIX_LEN`).
-        use :: dm_regex
+        use :: dm_regex, only: dm_regex_response_string
 
         class(geocom_class),           intent(inout)        :: this         !! GeoCOM object.
         integer,                       intent(out)          :: image_number !! Actual image number.
@@ -1660,7 +1662,7 @@ contains
         !! Sends *CSV_GetInstrumentName* request to sensor. The function gets
         !! the Leica-specific instrument name. On error, the name is allocated
         !! but empty.
-        use :: dm_regex
+        use :: dm_regex, only: dm_regex_response_string
 
         class(geocom_class),           intent(inout)        :: this  !! GeoCOM object.
         character(len=:), allocatable, intent(out)          :: name  !! Instrument name
