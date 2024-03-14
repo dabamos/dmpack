@@ -352,8 +352,13 @@ contains
         !!
         !! Returns argument `value` if it is a valid enumerator of enumeration
         !! `type`, else the default value of that type. If argument `type` is not
-        !! found or not supported, the function returns 0. If argument `default`
-        !! is passed, it is returned on error.
+        !! found or not supported, the function returns 0 and `E_TYPE` in
+        !! `error`. If argument `default` is passed, it is returned instead on
+        !! error.
+        !!
+        !! The dummy argument `value` has been made optional for convenience.
+        !! If not passed, the default value of the given type is returned, or
+        !! `default`.
         !!
         !! If argument `type` is valid, argument `value` is invalid, and argument
         !! `default` is not passed, the default value from the following table is
@@ -385,69 +390,72 @@ contains
         !! The function returns the following error codes in `error`:
         !!
         !! * `E_TYPE` if the type is not found or not supported.
-        !! * `E_INVALID` if the value is not of given type.
+        !! * `E_INVALID` if the value is not a valid enumerator.
         !!
         !! If `verbose` is `.true.`, an error message is printed to standard
         !! error.
         integer, intent(in)            :: type    !! GeoCOM enumeration type.
-        integer, intent(in)            :: value   !! Enumerator to validate.
+        integer, intent(in),  optional :: value   !! Enumerator to validate.
         integer, intent(in),  optional :: default !! Value to return on error.
         logical, intent(in),  optional :: verbose !! Print error messages.
         integer, intent(out), optional :: error   !! Error code.
 
-        integer :: rc
+        integer :: rc, value_
 
         rc = E_INVALID
         n  = 0
 
+        value_ = -1
+        if (present(value)) value_ = value
+
         select case (type)
             case (GEOCOM_AUT_ADJMODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_AUT_NORM_MODE,  &
                           GEOCOM_AUT_POINT_MODE, &
                           GEOCOM_AUT_DEFINE_MODE)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_AUT_NORM_MODE
                 end select
 
             case (GEOCOM_AUT_ATRMODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_AUT_POSITION, &
                           GEOCOM_AUT_TARGET)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_AUT_POSITION
                 end select
 
             case (GEOCOM_AUT_POSMODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_AUT_NORMAL,  &
                           GEOCOM_AUT_PRECISE, &
                           GEOCOM_AUT_FAST)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_AUT_NORMAL
                 end select
 
             case (GEOCOM_BAP_MEASURE_PRG)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_BAP_NO_MEAS,    &
                           GEOCOM_BAP_NO_DIST,    &
                           GEOCOM_BAP_DEF_DIST,   &
                           GEOCOM_BAP_CLEAR_DIST, &
                           GEOCOM_BAP_STOP_TRK)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_BAP_DEF_DIST
                 end select
 
             case (GEOCOM_BAP_PRISMTYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_BAP_PRISM_ROUND,        &
                           GEOCOM_BAP_PRISM_MINI,         &
                           GEOCOM_BAP_PRISM_TAPE,         &
@@ -462,34 +470,34 @@ contains
                           GEOCOM_BAP_PRISM_GRZ121_ROUND, &
                           GEOCOM_BAP_PRISM_MA_MPR122)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_BAP_PRISM_ROUND
                 end select
 
             case (GEOCOM_BAP_REFLTYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_BAP_REFL_UNDEF, &
                           GEOCOM_BAP_REFL_PRISM, &
                           GEOCOM_BAP_REFL_TAPE)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_BAP_REFL_UNDEF
                 end select
 
             case (GEOCOM_BAP_TARGET_TYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_BAP_REFL_USE, &
                           GEOCOM_BAP_REFL_LESS)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_BAP_REFL_USE
                 end select
 
             case (GEOCOM_BAP_USER_MEASPRG)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_BAP_SINGLE_REF_STANDARD,  &
                           GEOCOM_BAP_SINGLE_REF_FAST,      &
                           GEOCOM_BAP_SINGLE_REF_VISIBLE,   &
@@ -503,13 +511,13 @@ contains
                           GEOCOM_BAP_CONT_REF_SYNCHRO,     &
                           GEOCOM_BAP_SINGLE_REF_PRECISE)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_BAP_SINGLE_REF_STANDARD
                 end select
 
             case (GEOCOM_COM_BAUD_RATE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_COM_BAUD_38400,  &
                           GEOCOM_COM_BAUD_19200,  &
                           GEOCOM_COM_BAUD_9600,   &
@@ -518,45 +526,45 @@ contains
                           GEOCOM_COM_BAUD_115200, &
                           GEOCOM_COM_BAUD_57600)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_COM_BAUD_19200
                 end select
 
             case (GEOCOM_COM_TPS_STARTUP_MODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_COM_STARTUP_LOCAL, &
                           GEOCOM_COM_STARTUP_REMOTE)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_COM_STARTUP_REMOTE
                 end select
 
             case (GEOCOM_COM_TPS_STOP_MODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_COM_STOP_SHUT_DOWN, &
                           GEOCOM_COM_STOP_SLEEP)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_COM_STOP_SHUT_DOWN
                 end select
 
             case (GEOCOM_EDM_EGLINTENSITY_TYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_EDM_EGLINTEN_OFF, &
                           GEOCOM_EDM_EGLINTEN_LOW, &
                           GEOCOM_EDM_EGLINTEN_MID, &
                           GEOCOM_EDM_EGLINTEN_HIGH)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_EDM_EGLINTEN_OFF
                 end select
 
             case (GEOCOM_EDM_MODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_EDM_MODE_NOT_USED,   &
                           GEOCOM_EDM_SINGLE_TAPE,     &
                           GEOCOM_EDM_SINGLE_STANDARD, &
@@ -573,43 +581,43 @@ contains
                           GEOCOM_EDM_PRECISE_IR,      &
                           GEOCOM_EDM_PRECISE_TAPE)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_EDM_MODE_NOT_USED
                 end select
 
             case (GEOCOM_FTR_DEVICETYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_FTR_DEVICE_INTERNAL, &
                           GEOCOM_FTR_DEVICE_PCPARD)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_FTR_DEVICE_INTERNAL
                 end select
 
             case (GEOCOM_FTR_FILETYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_FTR_FILE_UNKNOWN, &
                           GEOCOM_FTR_FILE_IMAGES)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_FTR_FILE_UNKNOWN
                 end select
 
             case (GEOCOM_IMG_MEM_TYPE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_IMG_INTERNAL_MEMORY, &
                           GEOCOM_IMG_PC_CARD)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_IMG_INTERNAL_MEMORY
                 end select
 
             case (GEOCOM_MOT_MODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_MOT_POSIT,   &
                           GEOCOM_MOT_OCONST,  &
                           GEOCOM_MOT_MANUPOS, &
@@ -617,34 +625,34 @@ contains
                           GEOCOM_MOT_BREAK,   &
                           GEOCOM_MOT_TERM)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_MOT_MANUPOS
                 end select
 
             case (GEOCOM_MOT_STOPMODE)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_MOT_NORMAL, &
                           GEOCOM_MOT_SHUTDOWN)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_MOT_NORMAL
                 end select
 
             case (GEOCOM_TMC_INCLINE_PRG)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_TMC_MEA_INC,  &
                           GEOCOM_TMC_AUTO_INC, &
                           GEOCOM_TMC_PLANE_INC)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_TMC_MEA_INC
                 end select
 
             case (GEOCOM_TMC_MEASURE_PRG)
-                select case (value)
+                select case (value_)
                     case (GEOCOM_TMC_STOP,         &
                           GEOCOM_TMC_DEF_DIST,     &
                           GEOCOM_TMC_CLEAR,        &
@@ -654,7 +662,7 @@ contains
                           GEOCOM_TMC_RED_TRK_DIST, &
                           GEOCOM_TMC_FREQUENCY)
                         rc = E_NONE
-                        n  = value
+                        n  = value_
                     case default
                         n = GEOCOM_TMC_DEF_DIST
                 end select

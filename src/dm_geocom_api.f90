@@ -1520,7 +1520,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_image_config'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"$'
+            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
         integer,          parameter :: REQUEST_CODE    = 23400
 
         type(request_type), intent(out) :: request  !! Prepared request.
@@ -1618,7 +1618,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<name>`                          |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_instrument_name'
-        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',"(?<name>.+)"$'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',"(?<name>.+)"'
         integer,          parameter :: REQUEST_CODE    = 5004
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2515,7 +2515,7 @@ contains
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_user_prism_definition'
         character(len=*), parameter :: REQUEST_PATTERN = &
-            GRC_PATTERN // ',(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"$'
+            GRC_PATTERN // ',(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"'
         integer,          parameter :: REQUEST_CODE    = 17033
 
         type(request_type), intent(out) :: request !! Prepared request.
