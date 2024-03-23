@@ -60,7 +60,6 @@ contains
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
 
-        character        :: a
         integer          :: stat
         integer(kind=i8) :: i
 
@@ -75,9 +74,7 @@ contains
         if (env%content_length < 0) return
 
         do i = 1, env%content_length
-            a = achar(fcgi_getchar())
-            if (a == ASCII_NUL) return
-            content(i:i) = a
+            content(i:i) = achar(fcgi_getchar())
         end do
     end function dm_fcgi_content
 
