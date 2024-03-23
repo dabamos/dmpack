@@ -56,7 +56,6 @@ contains
         !!
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_BOUNDS` if content length is negative.
-        !! * `E_FCGI` if FastCGI returned an unexpected NULL byte.
         !!
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
@@ -75,14 +74,11 @@ contains
         rc = E_NONE
         if (env%content_length < 0) return
 
-        rc = E_FCGI
         do i = 1, env%content_length
             a = achar(fcgi_getchar())
             if (a == ASCII_NUL) return
             content(i:i) = a
         end do
-
-        rc = E_NONE
     end function dm_fcgi_content
 
     subroutine dm_fcgi_header(content_type, http_status)
