@@ -45,7 +45,7 @@ contains
 
         class(logger_class), pointer :: logger
 
-        integer           :: next
+        integer           :: next, stat
         logical           :: blocking_, self_, verbose_
         type(mqueue_type) :: mqueue
 
@@ -94,8 +94,8 @@ contains
             if (self_ .or. observ%receivers(next) /= name) exit
 
             if (verbose_) then
-                call logger%debug('skipped receiver ' // dm_itoa(next) // ' (' // &
-                                  trim(observ%receivers(next)) // ') of observ ' // observ%name)
+                call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // &
+                                  ' (' // dm_itoa(next) // ') of observ ' // observ%name)
             end if
         end do
 
@@ -123,8 +123,8 @@ contains
             ! Exit on error.
             if (dm_is_error(rc)) then
                 if (verbose_) then
-                    call logger%error('failed to send observ ' // trim(observ%name) // &
-                                      ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
+                    call logger%error('failed to send observ ' // trim(observ%name) // ' to mqueue /' // &
+                                      observ%receivers(next), observ=observ, error=rc)
                 end if
                 exit mqueue_block
             end if
@@ -136,9 +136,10 @@ contains
         end block mqueue_block
 
         ! Close message queue.
-        rc = dm_mqueue_close(mqueue)
+        stat = dm_mqueue_close(mqueue)
 
-        if (dm_is_error(rc) .and. verbose_) then
+        if (dm_is_error(stat) .and. verbose_) then
+            rc = stat
             call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // &
                                 dm_system_error_message(), observ=observ, error=rc)
         end if

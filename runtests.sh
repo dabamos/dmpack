@@ -36,9 +36,10 @@
 #
 TESTS="dmtestapi dmtestascii dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
 dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
-dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue dmtestmqtt \
-dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc \
-dmtestrts dmteststring dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid"
+dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue \
+dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
+dmtestregex dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty dmtestunit \
+dmtestutil dmtestuuid"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 

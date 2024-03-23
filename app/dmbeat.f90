@@ -80,19 +80,19 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('host',     short='H', type=ARG_TYPE_CHAR),    & ! -H, --host <string>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
             arg_type('port',     short='p', type=ARG_TYPE_INTEGER), & ! -p, --port <n>
-            arg_type('tls',      short='X', type=ARG_TYPE_BOOL),    & ! -X, --tls
-            arg_type('username', short='U', type=ARG_TYPE_CHAR),    & ! -U, --username <string>
-            arg_type('password', short='P', type=ARG_TYPE_CHAR),    & ! -P, --password <string>
+            arg_type('tls',      short='X', type=ARG_TYPE_LOGICAL), & ! -X, --tls
+            arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
+            arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
             arg_type('count',    short='C', type=ARG_TYPE_INTEGER), & ! -C, --count <n>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),    & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)     & ! -V, --verbose
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -252,7 +252,7 @@ contains
             select case (response%code)
                 case (0)
                     call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // &
-                                        response%error_message, error=rc)
+                                        response%error_message, error=E_RPC_CONNECT)
 
                 case (HTTP_CREATED)
                     call logger%debug('beat accepted by host ' // app%host)

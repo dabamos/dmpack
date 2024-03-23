@@ -171,23 +171,23 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
             arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),       & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),       & ! -S, --sensor <string>
-            arg_type('tty',      short='Y', type=ARG_TYPE_CHAR),     & ! -T, --tty <string>
-            arg_type('output',   short='o', type=ARG_TYPE_CHAR),     & ! -o, --output <string>
-            arg_type('format',   short='f', type=ARG_TYPE_CHAR),     & ! -f, --format <string>
-            arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER),  & ! -B, --baudrate <n>
-            arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER),  & ! -Z, --bytesize <n>
-            arg_type('parity',   short='P', type=ARG_TYPE_CHAR),     & ! -P, --parity <string>
-            arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER),  & ! -O, --stopbits <n>
-            arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER),  & ! -T, --timeout <n>
-            arg_type('dtr',      short='Q', type=ARG_TYPE_BOOL),     & ! -Q, --dtr
-            arg_type('rts',      short='R', type=ARG_TYPE_BOOL),     & ! -R, --rts
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),     & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)      & ! -V, --verbose
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
+            arg_type('tty',      short='Y', type=ARG_TYPE_STRING),  & ! -T, --tty <string>
+            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <string>
+            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER), & ! -B, --baudrate <n>
+            arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER), & ! -Z, --bytesize <n>
+            arg_type('parity',   short='P', type=ARG_TYPE_STRING),  & ! -P, --parity <string>
+            arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER), & ! -O, --stopbits <n>
+            arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER), & ! -T, --timeout <n>
+            arg_type('dtr',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --dtr
+            arg_type('rts',      short='R', type=ARG_TYPE_LOGICAL), & ! -R, --rts
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.

@@ -101,14 +101,14 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),   & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
-            arg_type('database', short='d', type=ARG_TYPE_DB),   & ! -d, --database <path>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
-            arg_type('ipc',      short='Q', type=ARG_TYPE_BOOL), & ! -Q, --ipc
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('ipc',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --ipc
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -184,14 +184,12 @@ contains
 
     subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: error !! DMPACK error code.
+        integer, intent(in) :: error !! DMPACK error code.
 
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) then
-            if (dm_is_error(error)) stat = 1
-        end if
+        if (dm_is_error(error)) stat = 1
 
         rc = dm_db_close(db)
         rc = dm_mqueue_close(mqueue)

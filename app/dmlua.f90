@@ -108,14 +108,14 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',      short='n', type=ARG_TYPE_ID),   & ! -n, --name <string>
-            arg_type('config',    short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
-            arg_type('logger',    short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
-            arg_type('procedure', short='p', type=ARG_TYPE_CHAR), & ! -p, --procedure <string>
-            arg_type('script',    short='s', type=ARG_TYPE_FILE), & ! -s, --script <path>
-            arg_type('debug',     short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
-            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('name',      short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',    short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',    short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',      short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('procedure', short='p', type=ARG_TYPE_STRING),  & ! -p, --procedure <string>
+            arg_type('script',    short='s', type=ARG_TYPE_FILE),    & ! -s, --script <path>
+            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -193,14 +193,12 @@ contains
 
     subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: error
+        integer, intent(in) :: error
 
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) then
-            if (dm_is_error(error)) stat = 1
-        end if
+        if (dm_is_error(error)) stat = 1
 
         rc = dm_mqueue_close(mqueue)
         rc = dm_mqueue_unlink(mqueue)
@@ -239,7 +237,7 @@ contains
 
             ! Validate observation.
             if (.not. dm_observ_valid(observ_in)) then
-                call logger%error('invalid observ ' // trim(observ_in%name), &
+                call logger%error('received invalid observ ' // trim(observ_in%name), &
                                   observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if

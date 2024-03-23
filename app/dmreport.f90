@@ -165,13 +165,13 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',   short='n', type=ARG_TYPE_ID),   & ! -n, --name <string>
-            arg_type('config', short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
-            arg_type('node',   short='N', type=ARG_TYPE_ID),   & ! -N, --node <id>
-            arg_type('from',   short='B', type=ARG_TYPE_TIME), & ! -B, --from <timestamp>
-            arg_type('to',     short='E', type=ARG_TYPE_TIME), & ! -E, --to <timestamp>
-            arg_type('output', short='o', type=ARG_TYPE_CHAR), & ! -o, --output <path>
-            arg_type('style',  short='C', type=ARG_TYPE_FILE)  & ! -C, --style <path>
+            arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
+            arg_type('config', short='c', type=ARG_TYPE_FILE),   & ! -c, --config <path>
+            arg_type('node',   short='N', type=ARG_TYPE_ID),     & ! -N, --node <id>
+            arg_type('from',   short='B', type=ARG_TYPE_TIME),   & ! -B, --from <timestamp>
+            arg_type('to',     short='E', type=ARG_TYPE_TIME),   & ! -E, --to <timestamp>
+            arg_type('output', short='o', type=ARG_TYPE_STRING), & ! -o, --output <path>
+            arg_type('style',  short='C', type=ARG_TYPE_FILE)    & ! -C, --style <path>
         ]
 
         ! Read all command-line arguments.

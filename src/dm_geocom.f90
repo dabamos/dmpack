@@ -670,9 +670,8 @@ contains
             end if
 
             ! Initialise TTY type.
-            this%grc     = GRC_OK
-            this%rc      = E_NONE
-            this%request = request_type()
+            call this%reset()
+
             this%verbose = .false.
             if (present(verbose)) this%verbose = verbose
 
@@ -705,9 +704,8 @@ contains
                 if (dm_is_ok(rc)) exit
 
                 if (this%verbose) then
-                    call dm_error_out(rc, 'failed to open TTY ' // trim(path) // &
-                                          ' (attempt ' // dm_itoa(i + 1) // ' of ' // &
-                                          dm_itoa(n + 1) // ')')
+                    call dm_error_out(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // &
+                                          dm_itoa(i + 1) // ' of ' // dm_itoa(n + 1) // ')')
                 end if
 
                 ! Try again.
@@ -740,7 +738,7 @@ contains
         integer :: rc
 
         if (dm_is_error(this%rc) .and. this%verbose) then
-            call dm_error_out(this%rc, 'invalid request parameters detected')
+            call dm_error_out(this%rc, 'invalid request parameters detected in request ' // request%name)
         end if
 
         tty_block: block
@@ -783,7 +781,10 @@ contains
             rc = dm_regex_request(request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'regular expression pattern does not match')
+                if (this%verbose) then
+                    call dm_error_out(rc, 'regular expression pattern of request ' // &
+                                      trim(request%name) // ' does not match')
+                end if
                 exit tty_block
             end if
 

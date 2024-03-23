@@ -18,6 +18,8 @@ module dm_config
 
     interface dm_config_get
         !! Generic interface to return configuration value by name.
+        module procedure :: config_get_array_int32
+        module procedure :: config_get_array_int64
         module procedure :: config_get_int32
         module procedure :: config_get_int64
         module procedure :: config_get_job_list
@@ -83,7 +85,7 @@ contains
 
             ! Register GeoCOM API for Lua.
             if (geocom_) then
-                rc = dm_lua_geocom_register(config%lua)
+                rc = dm_lua_geocom_register(config%lua, procedures=.true., errors=.true.)
                 if (dm_is_error(rc)) exit open_block
             end if
 
@@ -145,12 +147,32 @@ contains
 
         rc = E_CONFIG
         if (present(param)) then
-            call dm_error_out(error, 'invalid parameter "' // trim(param) // '" in configuration')
+            call dm_error_out(error, 'invalid parameter ' // trim(param) // ' in configuration')
             return
         end if
 
         call dm_error_out(error, 'invalid parameter in configuration')
     end function config_error
+
+    integer function config_get_array_int32(config, name, values) result(rc)
+        !! Returns configuration values as 4-byte integer array.
+        type(config_type),             intent(inout) :: config    !! Config type.
+        character(len=*),              intent(in)    :: name      !! Setting name.
+        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Setting values.
+
+        rc = dm_lua_field(config%lua, name, values)
+        rc = config_error(rc, param=name)
+    end function config_get_array_int32
+
+    integer function config_get_array_int64(config, name, values) result(rc)
+        !! Returns configuration values as 8-byte integer array.
+        type(config_type),             intent(inout) :: config    !! Config type.
+        character(len=*),              intent(in)    :: name      !! Setting name.
+        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Setting values.
+
+        rc = dm_lua_field(config%lua, name, values)
+        rc = config_error(rc, param=name)
+    end function config_get_array_int64
 
     integer function config_get_int32(config, name, value) result(rc)
         !! Returns configuration value as 4-byte integer.

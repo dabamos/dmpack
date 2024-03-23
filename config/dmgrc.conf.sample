@@ -1,0 +1,45 @@
+--
+-- Example configuration file for dmgrc.
+--
+-- Rename table "dmlua" to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      level    - Default log level for all return codes other GRC_OK.
+--      levels   - Custom log levels of GeoCOM return codes.
+--      logger   - Name of logger instance to send logs to.
+--      node     - Node id (required).
+--      response - Name of GeoCOM return code response in observations.
+--      verbose  - Print logs to standard error.
+--
+
+dmgrc = {
+    logger = "dmlogger",
+    node = "dummy-node",
+    response = "grc",
+    level = LVL_WARNING,
+    levels = {
+        debug = {
+            GRC_ABORT,
+            GRC_SHUT_DOWN,
+            GRC_NO_EVENT
+        },
+        info = {
+            GRC_SLEEP_NODE,
+            GRC_NA,
+            GRC_STOPPED
+        },
+        warning = {
+            GRC_TMC_ACCURACY_GUARANTEE,
+            GRC_AUT_NO_TARGET,
+            GRC_AUT_ACCURACY
+        },
+        error = {
+            GRC_FATAL
+        },
+        critical = {}
+    },
+    debug = false,
+    verbose = true
+}

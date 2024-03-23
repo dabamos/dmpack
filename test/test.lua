@@ -56,6 +56,7 @@ observs = { observ, observ }
 config = {
     logger = "dmlogger",
     node = "dummy-node",
+    list = { 1, 2, 3 },
     jobs = {
         {
             delay = 30 * 1000,

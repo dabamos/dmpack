@@ -389,22 +389,22 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('create',   short='C', type=ARG_TYPE_CHAR), &                               ! -C, --create <type>
-            arg_type('read',     short='R', type=ARG_TYPE_CHAR), &                               ! -R, --read <type>
-            arg_type('update',   short='U', type=ARG_TYPE_CHAR), &                               ! -U, --update <type>
-            arg_type('delete',   short='D', type=ARG_TYPE_CHAR), &                               ! -D, --delete <type>
-            arg_type('database', short='d', type=ARG_TYPE_DB,   required=.true.), &              ! -d, --database <path>
-            arg_type('id',       short='I', type=ARG_TYPE_ID,   required=.true.), &              ! -I, --id <id>
-            arg_type('name',     short='n', type=ARG_TYPE_CHAR, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
-            arg_type('meta',     short='M', type=ARG_TYPE_CHAR, max_len=NODE_META_LEN), &        ! -M, --meta <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID), &                                 ! -N, --node <id>
-            arg_type('sn',       short='Q', type=ARG_TYPE_CHAR, max_len=SENSOR_SN_LEN), &        ! -Q, --sn <string>
-            arg_type('type',     short='t', type=ARG_TYPE_CHAR, max_len=SENSOR_TYPE_NAME_LEN), & ! -t, --type <type>
-            arg_type('state',    short='S', type=ARG_TYPE_INTEGER), &                            ! -S, --state <state>
-            arg_type('easting',  short='X', type=ARG_TYPE_FLOAT), &                              ! -X, --easting <x>
-            arg_type('northing', short='Y', type=ARG_TYPE_FLOAT), &                              ! -Y, --northing <y>
-            arg_type('altitude', short='Z', type=ARG_TYPE_FLOAT), &                              ! -Z, --altitude <z>
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL) &                                ! -V, --verbose
+            arg_type('create',   short='C', type=ARG_TYPE_STRING), &                               ! -C, --create <type>
+            arg_type('read',     short='R', type=ARG_TYPE_STRING), &                               ! -R, --read <type>
+            arg_type('update',   short='U', type=ARG_TYPE_STRING), &                               ! -U, --update <type>
+            arg_type('delete',   short='D', type=ARG_TYPE_STRING), &                               ! -D, --delete <type>
+            arg_type('database', short='d', type=ARG_TYPE_DB, required=.true.), &                  ! -d, --database <path>
+            arg_type('id',       short='I', type=ARG_TYPE_ID, required=.true.), &                  ! -I, --id <id>
+            arg_type('name',     short='n', type=ARG_TYPE_STRING, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
+            arg_type('meta',     short='M', type=ARG_TYPE_STRING, max_len=NODE_META_LEN), &        ! -M, --meta <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID), &                                   ! -N, --node <id>
+            arg_type('sn',       short='Q', type=ARG_TYPE_STRING, max_len=SENSOR_SN_LEN), &        ! -Q, --sn <string>
+            arg_type('type',     short='t', type=ARG_TYPE_STRING, max_len=SENSOR_TYPE_NAME_LEN), & ! -t, --type <type>
+            arg_type('state',    short='S', type=ARG_TYPE_INTEGER), &                              ! -S, --state <state>
+            arg_type('easting',  short='X', type=ARG_TYPE_REAL), &                                 ! -X, --easting <x>
+            arg_type('northing', short='Y', type=ARG_TYPE_REAL), &                                 ! -Y, --northing <y>
+            arg_type('altitude', short='Z', type=ARG_TYPE_REAL), &                                 ! -Z, --altitude <z>
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL) &                               ! -V, --verbose
         ]
 
         ! Read command-line arguments.

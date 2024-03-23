@@ -53,6 +53,8 @@ contains
         type(file_status_type) :: file_status
 
         is_stale = .true.
+
+        ! File is stale if it does not exist yet.
         if (.not. dm_file_exists(path)) return
 
         ! Read file status to get last modification time.
@@ -66,6 +68,7 @@ contains
 
         ! Last file modification time is older than given time stamp?
         if (file_status%m_time < epoch) return
+
         is_stale = .false.
     end function is_stale_file
 
@@ -78,22 +81,22 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
             arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
-            arg_type('output',   short='o', type=ARG_TYPE_CHAR),    & ! -o, --output <path>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
             arg_type('entries',  short='E', type=ARG_TYPE_INTEGER), & ! -E, --entries <n>
-            arg_type('minlevel', short='L', type=ARG_TYPE_INTEGER), & ! -L, --minlevel <n>
-            arg_type('maxlevel', short='K', type=ARG_TYPE_INTEGER), & ! -K, --maxlevel <n>
-            arg_type('force',    short='F', type=ARG_TYPE_BOOL),    & ! -F, --force
-            arg_type('author',   short='A', type=ARG_TYPE_CHAR),    & ! -A, --author <string>
-            arg_type('email',    short='M', type=ARG_TYPE_CHAR),    & ! -M, --email <string>
-            arg_type('id',       short='I', type=ARG_TYPE_CHAR),    & ! -I, --id <string>
-            arg_type('title',    short='C', type=ARG_TYPE_CHAR),    & ! -C, --title <string>
-            arg_type('subtitle', short='G', type=ARG_TYPE_CHAR),    & ! -G, --subtitle <string>
-            arg_type('url',      short='U', type=ARG_TYPE_CHAR),    & ! -U, --url <string>
-            arg_type('xsl',      short='X', type=ARG_TYPE_CHAR)     & ! -X, --xsl <string>
+            arg_type('minlevel', short='L', type=ARG_TYPE_LEVEL),   & ! -L, --minlevel <n>
+            arg_type('maxlevel', short='K', type=ARG_TYPE_LEVEL),   & ! -K, --maxlevel <n>
+            arg_type('force',    short='F', type=ARG_TYPE_LOGICAL), & ! -F, --force
+            arg_type('author',   short='A', type=ARG_TYPE_STRING),  & ! -A, --author <string>
+            arg_type('email',    short='M', type=ARG_TYPE_STRING),  & ! -M, --email <string>
+            arg_type('id',       short='I', type=ARG_TYPE_STRING),  & ! -I, --id <string>
+            arg_type('title',    short='C', type=ARG_TYPE_STRING),  & ! -C, --title <string>
+            arg_type('subtitle', short='G', type=ARG_TYPE_STRING),  & ! -G, --subtitle <string>
+            arg_type('url',      short='U', type=ARG_TYPE_STRING),  & ! -U, --url <string>
+            arg_type('xsl',      short='X', type=ARG_TYPE_STRING)   & ! -X, --xsl <string>
         ]
 
         ! Read all command-line arguments.

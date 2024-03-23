@@ -180,18 +180,18 @@ contains
         !! Searches requests array of the observation for responses of passed name
         !! and returns the index of the first found. If no request of this name
         !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
-        type(observ_type), intent(inout) :: observ         !! Observation type.
-        character(len=*),  intent(in)    :: response_name  !! Response name.
-        integer,           intent(out)   :: request_index  !! Position of request in requests array.
-        integer,           intent(out)   :: response_index !! Position of response in responses array.
+        type(observ_type), intent(inout)         :: observ         !! Observation type.
+        character(len=*),  intent(in)            :: response_name  !! Response name.
+        integer,           intent(out), optional :: request_index  !! Position of request in requests array.
+        integer,           intent(out), optional :: response_index !! Position of response in responses array.
 
         integer :: i, j
         integer :: nrequests, nresponses
 
         rc = E_NONE
 
-        request_index  = 0
-        response_index = 0
+        if (present(request_index))  request_index  = 0
+        if (present(response_index)) response_index = 0
 
         nrequests = max(0, min(OBSERV_MAX_NREQUESTS, observ%nrequests))
 
@@ -200,8 +200,8 @@ contains
 
             do j = 1, nresponses
                 if (observ%requests(i)%responses(j)%name == response_name) then
-                    request_index  = i
-                    response_index = j
+                    if (present(request_index))  request_index  = i
+                    if (present(response_index)) response_index = j
                     return
                 end if
             end do

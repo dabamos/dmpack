@@ -60,7 +60,7 @@ contains
         if (c_chdir('/' // c_null_char) < 0) return
 
         ! Open the log file.
-        call c_openlog(command // c_null_char, LOG_CONS, LOG_DAEMON)
+        call c_openlog(trim(command) // c_null_char, LOG_CONS, LOG_DAEMON)
 
         rc = E_NONE
     end function dm_system_daemonize

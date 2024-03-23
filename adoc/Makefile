@@ -25,7 +25,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmexport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfeed.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfs.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmplot.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmgrc.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmimport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminfo.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminit.adoc
@@ -33,6 +33,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlogger.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlua.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmpipe.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmplot.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmrecv.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmreport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsend.adoc
@@ -41,7 +42,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmuuid.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmweb.adoc
 
-pdf: man
+pdf:
 	mkdir -p $(PDFDIR)
 	$(MAN) -t $(MANDIR)/dmapi.1    | $(PS2PDF) - $(PDFDIR)/dmapi.pdf
 	$(MAN) -t $(MANDIR)/dmbackup.1 | $(PS2PDF) - $(PDFDIR)/dmbackup.pdf
@@ -51,7 +52,7 @@ pdf: man
 	$(MAN) -t $(MANDIR)/dmexport.1 | $(PS2PDF) - $(PDFDIR)/dmexport.pdf
 	$(MAN) -t $(MANDIR)/dmfeed.1   | $(PS2PDF) - $(PDFDIR)/dmfeed.pdf
 	$(MAN) -t $(MANDIR)/dmfs.1     | $(PS2PDF) - $(PDFDIR)/dmfs.pdf
-	$(MAN) -t $(MANDIR)/dmplot.1   | $(PS2PDF) - $(PDFDIR)/dmplot.pdf
+	$(MAN) -t $(MANDIR)/dmgrc.1    | $(PS2PDF) - $(PDFDIR)/dmgrc.pdf
 	$(MAN) -t $(MANDIR)/dmimport.1 | $(PS2PDF) - $(PDFDIR)/dmimport.pdf
 	$(MAN) -t $(MANDIR)/dminfo.1   | $(PS2PDF) - $(PDFDIR)/dminfo.pdf
 	$(MAN) -t $(MANDIR)/dminit.1   | $(PS2PDF) - $(PDFDIR)/dminit.pdf
@@ -59,6 +60,7 @@ pdf: man
 	$(MAN) -t $(MANDIR)/dmlogger.1 | $(PS2PDF) - $(PDFDIR)/dmlogger.pdf
 	$(MAN) -t $(MANDIR)/dmlua.1    | $(PS2PDF) - $(PDFDIR)/dmlua.pdf
 	$(MAN) -t $(MANDIR)/dmpipe.1   | $(PS2PDF) - $(PDFDIR)/dmpipe.pdf
+	$(MAN) -t $(MANDIR)/dmplot.1   | $(PS2PDF) - $(PDFDIR)/dmplot.pdf
 	$(MAN) -t $(MANDIR)/dmrecv.1   | $(PS2PDF) - $(PDFDIR)/dmrecv.pdf
 	$(MAN) -t $(MANDIR)/dmreport.1 | $(PS2PDF) - $(PDFDIR)/dmreport.pdf
 	$(MAN) -t $(MANDIR)/dmsend.1   | $(PS2PDF) - $(PDFDIR)/dmsend.pdf
@@ -67,7 +69,7 @@ pdf: man
 	$(MAN) -t $(MANDIR)/dmuuid.1   | $(PS2PDF) - $(PDFDIR)/dmuuid.pdf
 	$(MAN) -t $(MANDIR)/dmweb.1    | $(PS2PDF) - $(PDFDIR)/dmweb.pdf
 
-html: man
+html:
 	mkdir -p $(HTMLDIR)
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmapi.1    > $(HTMLDIR)/dmapi.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmbackup.1 > $(HTMLDIR)/dmbackup.html
@@ -77,6 +79,7 @@ html: man
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmexport.1 > $(HTMLDIR)/dmexport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfeed.1   > $(HTMLDIR)/dmfeed.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfs.1     > $(HTMLDIR)/dmfs.html
+	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmgrc.1    > $(HTMLDIR)/dmgrc.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmimport.1 > $(HTMLDIR)/dmimport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dminfo.1   > $(HTMLDIR)/dminfo.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dminit.1   > $(HTMLDIR)/dminit.html

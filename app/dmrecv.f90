@@ -96,18 +96,18 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),   & ! -N, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
-            arg_type('output',   short='o', type=ARG_TYPE_CHAR), & ! -o, --output <path>
-            arg_type('format',   short='f', type=ARG_TYPE_CHAR), & ! -f, --format <string>
-            arg_type('type',     short='t', type=ARG_TYPE_CHAR), & ! -t, --type <string>
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -N, --name <string>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
+            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type <string>
             arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
-            arg_type('forward',  short='F', type=ARG_TYPE_BOOL), & ! -F, --forward
-            arg_type('replace',  short='r', type=ARG_TYPE_BOOL), & ! -r, --replace
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('forward',  short='F', type=ARG_TYPE_LOGICAL), & ! -F, --forward
+            arg_type('replace',  short='r', type=ARG_TYPE_LOGICAL), & ! -r, --replace
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -219,14 +219,12 @@ contains
 
     subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: error !! DMPACK error code.
+        integer, intent(in) :: error !! DMPACK error code.
 
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) then
-            if (dm_is_error(error)) stat = 1
-        end if
+        if (dm_is_error(error)) stat = 1
 
         rc = dm_mqueue_close(mqueue)
         rc = dm_mqueue_unlink(mqueue)

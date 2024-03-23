@@ -12,9 +12,9 @@ module dm_arg
     !! type(arg_type)    :: args(3)
     !!
     !! args = [ &
-    !!     arg_type('input',   short='i', type=ARG_TYPE_CHAR, required=.true.), &
+    !!     arg_type('input',   short='i', type=ARG_TYPE_STRING, required=.true.), &
     !!     arg_type('delay',   short='x', type=ARG_TYPE_INTEGER), &
-    !!     arg_type('verbose', short='V', type=ARG_TYPE_BOOL) &
+    !!     arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL) &
     !! ]
     !!
     !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=0)
@@ -24,7 +24,7 @@ module dm_arg
     !! ```
     !!
     !! Each argument requires name and type. The default type is
-    !! `ARG_TYPE_BOOL`. Errors are indicated by the return codes. The
+    !! `ARG_TYPE_LOGICAL`. Errors are indicated by the return codes. The
     !! command-line arguments `--help`/-`h` and `--version`/`-v` are processed
     !! automatically by function `dm_arg_read()`.
     use :: dm_ascii
@@ -36,31 +36,35 @@ module dm_arg
     private
 
     ! Argument value types.
-    integer, parameter, public :: ARG_TYPE_BOOL    = 0 !! Logical argument.
-    integer, parameter, public :: ARG_TYPE_CHAR    = 1 !! Character value.
-    integer, parameter, public :: ARG_TYPE_INTEGER = 2 !! Integer value.
-    integer, parameter, public :: ARG_TYPE_FLOAT   = 3 !! Real value.
-    integer, parameter, public :: ARG_TYPE_ID      = 4 !! Valid ID value.
-    integer, parameter, public :: ARG_TYPE_UUID    = 5 !! Valid UUID4 value.
-    integer, parameter, public :: ARG_TYPE_TIME    = 6 !! Valid ISO 8601 value.
-    integer, parameter, public :: ARG_TYPE_FILE    = 7 !! Path to file on file system (must exist).
-    integer, parameter, public :: ARG_TYPE_DB      = 8 !! Path to database on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_NONE    =  0 !! None type (invalid).
+    integer, parameter, public :: ARG_TYPE_LOGICAL =  1 !! Logical argument.
+    integer, parameter, public :: ARG_TYPE_INTEGER =  2 !! Integer value.
+    integer, parameter, public :: ARG_TYPE_REAL    =  3 !! Real value.
+    integer, parameter, public :: ARG_TYPE_CHAR    =  4 !! Single character value.
+    integer, parameter, public :: ARG_TYPE_STRING  =  5 !! Character string value.
+    integer, parameter, public :: ARG_TYPE_ID      =  6 !! Valid ID value.
+    integer, parameter, public :: ARG_TYPE_UUID    =  7 !! Valid UUID4 value.
+    integer, parameter, public :: ARG_TYPE_TIME    =  8 !! Valid ISO 8601 value.
+    integer, parameter, public :: ARG_TYPE_LEVEL   =  9 !! Log level.
+    integer, parameter, public :: ARG_TYPE_FILE    = 10 !! Path to file on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_DB      = 11 !! Path to database on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_LAST    = 11 !! Never use this.
 
     integer, parameter, public :: ARG_NAME_LEN  = 32            !! Maximum length of argument name.
     integer, parameter, public :: ARG_VALUE_LEN = FILE_PATH_LEN !! Maximum length of argument value.
 
     type, public :: arg_type
         !! Argument description type.
-        character(len=ARG_NAME_LEN)  :: name     = ' '           !! Identifier of the argument (without leading --).
-        character                    :: short    = ASCII_NUL     !! Short argument character.
-        character(len=ARG_VALUE_LEN) :: value    = ' '           !! Default and passed value (if any).
-        integer                      :: length   = 0             !! Value length.
-        integer                      :: max_len  = ARG_VALUE_LEN !! Maximum argument value length.
-        integer                      :: min_len  = 0             !! Minimum argument value length.
-        integer                      :: type     = ARG_TYPE_BOOL !! Value data type.
-        logical                      :: required = .false.       !! Option is mandatory.
-        logical                      :: passed   = .false.       !! Option was passed.
-        integer                      :: error    = E_NONE        !! Occured error.
+        character(len=ARG_NAME_LEN)  :: name     = ' '              !! Identifier of the argument (without leading --).
+        character                    :: short    = ASCII_NUL        !! Short argument character.
+        character(len=ARG_VALUE_LEN) :: value    = ' '              !! Default and passed value (if any).
+        integer                      :: length   = 0                !! Value length.
+        integer                      :: max_len  = ARG_VALUE_LEN    !! Maximum argument value length.
+        integer                      :: min_len  = 0                !! Minimum argument value length.
+        integer                      :: type     = ARG_TYPE_LOGICAL !! Value data type.
+        logical                      :: required = .false.          !! Option is mandatory.
+        logical                      :: passed   = .false.          !! Option was passed.
+        integer                      :: error    = E_NONE           !! Occured error.
     end type arg_type
 
     interface dm_arg_get
@@ -95,7 +99,7 @@ contains
         type(arg_type) :: args(1)
 
         has = .false.
-        args(1) = arg_type(name=name, type=ARG_TYPE_BOOL)
+        args(1) = arg_type(name=name, type=ARG_TYPE_LOGICAL)
         if (present(short)) args(1)%short = short
         rc = dm_arg_parse(args, ignore_unknown=.true., verbose=.false.)
         has = (args(1)%error == E_NONE)
@@ -111,6 +115,7 @@ contains
         !! * `E_ARG_NO_VALUE` if an argument has been passed without value.
         !! * `E_ARG_LENGTH` if one of the argument values has wrong length.
         !! * `E_ARG_UNKNOWN` if one of the arguments parsed is not known.
+        !!
         type(arg_type), intent(inout)        :: args(:)        !! Arguments array.
         logical,        intent(in), optional :: ignore_unknown !! Allow unknown arguments.
         logical,        intent(in), optional :: verbose        !! Print error messages to stderr.
@@ -170,7 +175,7 @@ contains
                 exists = .true.
 
                 ! No value to expect.
-                if (args(j)%type == ARG_TYPE_BOOL) then
+                if (args(j)%type == ARG_TYPE_LOGICAL) then
                     args(j)%error  = E_NONE
                     args(j)%passed = .true.
                     exit
@@ -231,7 +236,9 @@ contains
         !! * `E_ARG_TYPE` if an argument has the wrong type.
         !! * `E_ARG_LENGTH` if the length of the argument is wrong.
         !! * `E_ARG_UNKNOWN` if an unknown argument has been passed.
+        !!
         use :: dm_version
+
         type(arg_type),   intent(inout)        :: args(:) !! Arguments to match.
         character(len=*), intent(in), optional :: app     !! App name (for `-v`).
         integer,          intent(in), optional :: major   !! Major version number (for `-v`).
@@ -305,18 +312,22 @@ contains
                     select case (args(i)%type)
                         case (ARG_TYPE_INTEGER)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not an integer')
-                        case (ARG_TYPE_FLOAT)
+                        case (ARG_TYPE_REAL)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a number')
+                        case (ARG_TYPE_CHAR)
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a single character')
                         case (ARG_TYPE_ID)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid id')
                         case (ARG_TYPE_UUID)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid UUID4')
                         case (ARG_TYPE_TIME)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not in ISO 8601 format')
+                        case (ARG_TYPE_LEVEL)
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid log level')
                         case (ARG_TYPE_FILE)
-                            call dm_error_out(rc, 'file "' // trim(args(i)%value) // '" not found')
+                            call dm_error_out(rc, 'file ' // trim(args(i)%value) // ' not found')
                         case (ARG_TYPE_DB)
-                            call dm_error_out(rc, 'database "' // trim(args(i)%value) // '" not found')
+                            call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' not found')
                     end select
                     exit validate_loop
 
@@ -337,14 +348,16 @@ contains
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument.
         use :: dm_id
+        use :: dm_log
         use :: dm_string
         use :: dm_time
         use :: dm_uuid
+
         type(arg_type), intent(inout) :: arg !! Argument to validate.
 
-        integer          :: error
-        integer(kind=i8) :: i
-        real(kind=r8)    :: f
+        integer       :: error
+        integer       :: i, level
+        real(kind=r8) :: f
 
         rc = E_ARG
         if (len_trim(arg%name) == 0) return
@@ -359,16 +372,21 @@ contains
 
         ! Validate the type.
         rc = E_ARG_TYPE
-        select case (arg%type)
-            case (ARG_TYPE_FLOAT)
-                if (arg%length == 0) return
-                call dm_string_to(arg%value, f, error)
-                if (dm_is_error(error)) return
+        if (arg%type <= ARG_TYPE_NONE .or. arg%type > ARG_TYPE_LAST) return
 
+        select case (arg%type)
             case (ARG_TYPE_INTEGER)
                 if (arg%length == 0) return
                 call dm_string_to(arg%value, i, error)
                 if (dm_is_error(error)) return
+
+            case (ARG_TYPE_REAL)
+                if (arg%length == 0) return
+                call dm_string_to(arg%value, f, error)
+                if (dm_is_error(error)) return
+
+            case (ARG_TYPE_CHAR)
+                if (arg%length > 1) return
 
             case (ARG_TYPE_ID)
                 if (.not. dm_id_valid(arg%value)) return
@@ -379,9 +397,15 @@ contains
             case (ARG_TYPE_TIME)
                 if (.not. dm_time_valid(arg%value)) return
 
+            case (ARG_TYPE_LEVEL)
+                if (arg%length == 0) return
+                call dm_string_to(arg%value, level, error)
+                if (dm_is_error(error)) level = dm_log_level_from_name(trim(arg%value))
+                if (.not. dm_log_valid(level)) return
+
             case (ARG_TYPE_FILE, ARG_TYPE_DB)
                 if (arg%length == 0) return
-                if (.not. dm_file_exists(arg%value) .and. arg%required) return
+                if (arg%required .and. .not. dm_file_exists(arg%value)) return
         end select
 
         rc = E_NONE
@@ -400,18 +424,22 @@ contains
                 args(i)%short, trim(args(i)%name)
 
             select case (args(i)%type)
-                case (ARG_TYPE_CHAR)
-                    write (stdout, '("<string>")')
                 case (ARG_TYPE_INTEGER)
                     write (stdout, '("<integer>")')
-                case (ARG_TYPE_FLOAT)
+                case (ARG_TYPE_REAL)
                     write (stdout, '("<float>")')
+                case (ARG_TYPE_CHAR)
+                    write (stdout, '("<char>")')
+                case (ARG_TYPE_STRING)
+                    write (stdout, '("<string>")')
                 case (ARG_TYPE_ID)
                     write (stdout, '("<id>")')
                 case (ARG_TYPE_UUID)
                     write (stdout, '("<uuid>")')
                 case (ARG_TYPE_TIME)
                     write (stdout, '("<timestamp>")')
+                case (ARG_TYPE_LEVEL)
+                    write (stdout, '("<level>")')
                 case (ARG_TYPE_FILE)
                     write (stdout, '("<file>")')
                 case (ARG_TYPE_DB)

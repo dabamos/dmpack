@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmserial
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.20
-.\"      Date: 2024-02-21
+.\" Generator: Asciidoctor 2.0.21
+.\"      Date: 2024-03-21
 .\"    Manual: User Commands
 .\"    Source: DMSERIAL
 .\"  Language: English
 .\"
-.TH "DMSERIAL" "1" "2024-02-21" "DMSERIAL" "User Commands"
+.TH "DMSERIAL" "1" "2024-03-21" "DMSERIAL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -46,7 +46,7 @@ USB/RS\-232/RS\-422/RS\-485. Sensor commands and responses are sent/received
 through a teletype (TTY) device provided by the operating system. A
 pseudo\-terminal (PTY) may be used to connect a virtual sensor.
 .sp
-Each request of an observation must contains the raw request intended for the
+Each request of an observation must contain the raw request intended for the
 sensor in attribute \f(CRrequest\fP. Response values are extracted by group from the
 raw response using the given regular expression pattern. Each group name must
 match a response name. Response names are limited to eight characters.

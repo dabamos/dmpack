@@ -5,13 +5,16 @@
 program dmtestregex
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 2
+    integer, parameter :: NTESTS = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestregex.test01', test01)
-    tests(2) = test_type('dmtestregex.test02', test02)
+    tests = [ &
+        test_type('dmtestregex.test01', test01), &
+        test_type('dmtestregex.test02', test02), &
+        test_type('dmtestregex.test03', test03)  &
+    ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -35,7 +38,7 @@ contains
         call dm_regex_destroy(regex)
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc)
+            call dm_error_out(rc)
             return
         end if
 
@@ -69,10 +72,31 @@ contains
         call dm_regex_destroy(regex)
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc)
+            call dm_error_out(rc)
             return
         end if
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(len=*), parameter :: ASSERT = 'dummy'
+
+        character(len=:), allocatable :: string
+        integer                       :: rc
+        type(request_type)            :: request
+
+        stat = TEST_FAILED
+
+        request%response = '%R1P,0,0:0,1,100,0,"' // ASSERT // '"'
+        request%pattern  = '%R1P,0,0:(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
+
+        print *, 'Extracting response string ...'
+        rc = dm_regex_response_string(request, 'fnprefix', string)
+
+        call dm_error_out(rc)
+        if (string /= ASSERT) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestregex

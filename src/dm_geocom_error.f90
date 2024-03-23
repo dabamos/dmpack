@@ -30,7 +30,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_SET_INCOMPL                = 7     !! Parameter setup for subsystem is incomplete.
     integer, parameter, public :: GRC_ABORT                      = 8     !! Function execution has been aborted.
     integer, parameter, public :: GRC_NOMEMORY                   = 9     !! Fatal error (not enough memory).
-    integer, parameter, public :: GRC_NOTINIT                    = 10    !! Fatal error (subsystem not initialized).
+    integer, parameter, public :: GRC_NOTINIT                    = 10    !! Fatal error (subsystem not initialised).
     integer, parameter, public :: GRC_SHUT_DOWN                  = 12    !! Subsystem is down.
     integer, parameter, public :: GRC_SYSBUSY                    = 13    !! System busy/already in use of another process.
     integer, parameter, public :: GRC_HWFAILURE                  = 14    !! Fatal error (hardware failure).
@@ -43,7 +43,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_INSTRUMENT_TILT            = 22    !! Instrument tilting out of range.
     integer, parameter, public :: GRC_COM_SETTING                = 23    !! Communication error.
     integer, parameter, public :: GRC_NO_ACTION                  = 24    !! GRC_TYPE Input (do no action)
-    integer, parameter, public :: GRC_SLEEP_MODE                 = 25    !! Instrument run into the sleep mode.
+    integer, parameter, public :: GRC_SLEEP_MODE                 = 25    !! Instrument went into sleep mode.
     integer, parameter, public :: GRC_NOTOK                      = 26    !! Function not successfully completed.
     integer, parameter, public :: GRC_NA                         = 27    !! Not available (licence key not available).
     integer, parameter, public :: GRC_OVERFLOW                   = 28    !! Overflow error.
@@ -194,15 +194,15 @@ module dm_geocom_error
     integer, parameter, public :: GRC_TMC_BUSY                   = 1293  !! System is busy (no measurement done).
     integer, parameter, public :: GRC_TMC_SIGNAL_ERROR           = 1294  !! No signal on EDM (only in signal mode).
 
-    integer, parameter, public :: GRC_MOT_UNREADY                = 1792  !! Motorization is not ready.
-    integer, parameter, public :: GRC_MOT_BUSY                   = 1793  !! Motorization is handling another task.
-    integer, parameter, public :: GRC_MOT_NOT_OCONST             = 1794  !! Motorization is not in velocity mode.
-    integer, parameter, public :: GRC_MOT_NOT_CONFIG             = 1795  !! Motorization is in the wrong mode or busy.
-    integer, parameter, public :: GRC_MOT_NOT_POSIT              = 1796  !! Motorization is not in posit mode.
-    integer, parameter, public :: GRC_MOT_NOT_SERVICE            = 1797  !! Motorization is not in service mode.
-    integer, parameter, public :: GRC_MOT_NOT_BUSY               = 1798  !! Motorization is handling no task.
-    integer, parameter, public :: GRC_MOT_NOT_LOCK               = 1799  !! Motorization is not in tracking mode.
-    integer, parameter, public :: GRC_MOT_NOT_SPIRAL             = 1800  !! Motorization is not in spiral mode.
+    integer, parameter, public :: GRC_MOT_UNREADY                = 1792  !! Motorisation is not ready.
+    integer, parameter, public :: GRC_MOT_BUSY                   = 1793  !! Motorisation is handling another task.
+    integer, parameter, public :: GRC_MOT_NOT_OCONST             = 1794  !! Motorisation is not in velocity mode.
+    integer, parameter, public :: GRC_MOT_NOT_CONFIG             = 1795  !! Motorisation is in the wrong mode or busy.
+    integer, parameter, public :: GRC_MOT_NOT_POSIT              = 1796  !! Motorisation is not in posit mode.
+    integer, parameter, public :: GRC_MOT_NOT_SERVICE            = 1797  !! Motorisation is not in service mode.
+    integer, parameter, public :: GRC_MOT_NOT_BUSY               = 1798  !! Motorisation is handling no task.
+    integer, parameter, public :: GRC_MOT_NOT_LOCK               = 1799  !! Motorisation is not in tracking mode.
+    integer, parameter, public :: GRC_MOT_NOT_SPIRAL             = 1800  !! Motorisation is not in spiral mode.
     integer, parameter, public :: GRC_MOT_V_ENCODER              = 1801  !! Vertical encoder/motor error.
     integer, parameter, public :: GRC_MOT_HZ_ENCODER             = 1802  !! Horizontal encoder/motor error.
     integer, parameter, public :: GRC_MOT_HZ_V_ENCODER           = 1803  !! Horizontal and vertical encoder/motor error.
@@ -243,7 +243,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_COM_INTR                   = 3087  !! Call interrupted.
     integer, parameter, public :: GRC_COM_REQUIRES_8DBITS        = 3090  !! Protocol needs 8 bit encoded characters.
     integer, parameter, public :: GRC_COM_TR_ID_MISMATCH         = 3093  !! TRANSACTIONS ID mismatch error.
-    integer, parameter, public :: GRC_COM_NOT_GEOCOM             = 3094  !! Protocol not recognizable.
+    integer, parameter, public :: GRC_COM_NOT_GEOCOM             = 3094  !! Protocol not recognisable.
     integer, parameter, public :: GRC_COM_UNKNOWN_PORT           = 3095  !! Invalid port address.
     integer, parameter, public :: GRC_COM_ERO_END                = 3099  !! ERO is terminating.
     integer, parameter, public :: GRC_COM_OVERRUN                = 3100  !! Internal error (data buffer overflow).
@@ -322,7 +322,7 @@ contains
             case (GRC_NOMEMORY)
                 str = 'fatal error (not enough memory)'
             case (GRC_NOTINIT)
-                str = 'fatal error (subsystem not initialized)'
+                str = 'fatal error (subsystem not initialised)'
             case (GRC_SHUT_DOWN)
                 str = 'subsystem is down'
             case (GRC_SYSBUSY)
@@ -348,7 +348,7 @@ contains
             case (GRC_NO_ACTION)
                 str = 'GRC_TYPE input (do no action)'
             case (GRC_SLEEP_MODE)
-                str = 'instrument run into the sleep mode'
+                str = 'instrument went into sleep mode'
             case (GRC_NOTOK)
                 str = 'function not successfully completed'
             case (GRC_NA)
@@ -650,23 +650,23 @@ contains
 
             ! MOT
             case (GRC_MOT_UNREADY)
-                str = 'motorization is not ready'
+                str = 'motorisation is not ready'
             case (GRC_MOT_BUSY)
-                str = 'motorization is handling another task'
+                str = 'motorisation is handling another task'
             case (GRC_MOT_NOT_OCONST)
-                str = 'motorization is not in velocity mode'
+                str = 'motorisation is not in velocity mode'
             case (GRC_MOT_NOT_CONFIG)
-                str = 'motorization is in the wrong mode or busy'
+                str = 'motorisation is in the wrong mode or busy'
             case (GRC_MOT_NOT_POSIT)
-                str = 'motorization is not in posit mode'
+                str = 'motorisation is not in posit mode'
             case (GRC_MOT_NOT_SERVICE)
-                str = 'motorization is not in service mode'
+                str = 'motorisation is not in service mode'
             case (GRC_MOT_NOT_BUSY)
-                str = 'motorization is handling no task'
+                str = 'motorisation is handling no task'
             case (GRC_MOT_NOT_LOCK)
-                str = 'motorization is not in tracking mode'
+                str = 'motorisation is not in tracking mode'
             case (GRC_MOT_NOT_SPIRAL)
-                str = 'motorization is not in spiral mode'
+                str = 'motorisation is not in spiral mode'
             case (GRC_MOT_V_ENCODER)
                 str = 'vertical encoder/motor error'
             case (GRC_MOT_HZ_ENCODER)
@@ -748,7 +748,7 @@ contains
             case (GRC_COM_TR_ID_MISMATCH)
                 str = 'TRANSACTIONS ID mismatch error'
             case (GRC_COM_NOT_GEOCOM)
-                str = 'protocol not recognizable'
+                str = 'protocol not recognisable'
             case (GRC_COM_UNKNOWN_PORT)
                 str = 'invalid port address'
             case (GRC_COM_ERO_END)

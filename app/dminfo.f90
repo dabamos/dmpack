@@ -35,13 +35,12 @@ contains
         type(app_type), intent(inout) :: app
         type(arg_type)                :: args(1)
 
-        args = [ arg_type(name='database', short='d', type=ARG_TYPE_DB) ] ! -d, --database <path>
+        args = [ &
+            arg_type(name='database', short='d', type=ARG_TYPE_DB) & ! -d, --database <path>
+        ]
+
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
-
-        if (dm_is_ok(rc)) then
-            rc = dm_arg_get(args(1), app%database)
-        end if
-
+        rc = dm_arg_get(args(1), app%database)
         rc = E_NONE
     end function read_args
 
@@ -55,21 +54,14 @@ contains
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode
         integer(kind=i8)              :: n, sz
-        logical                       :: exists, with_db
+        logical                       :: exists, has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
         ! Try to open database.
-        with_db = (len_trim(app%database) > 0)
+        has_db = (len_trim(app%database) > 0)
 
-        if (with_db) then
-            rc = E_NOT_FOUND
-
-            if (.not. dm_file_exists(app%database)) then
-                call dm_error_out(rc, 'database ' // trim(app%database) // ' not found')
-                return
-            end if
-
+        if (has_db) then
             sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
 
@@ -84,7 +76,7 @@ contains
         print '("build.options: ", a)',  compiler_options()
 
         ! Database information.
-        if (with_db) then
+        if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
             print '("db.application_id: ", z0)', app_id
 

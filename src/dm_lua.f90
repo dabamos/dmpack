@@ -45,6 +45,8 @@ module dm_lua
 
     interface dm_lua_field
         !! Pushes table element on stack and optionally returns value.
+        module procedure :: lua_field_array_int32
+        module procedure :: lua_field_array_int64
         module procedure :: lua_field_int32
         module procedure :: lua_field_int64
         module procedure :: lua_field_logical
@@ -71,6 +73,8 @@ module dm_lua
 
     interface dm_lua_read
         !! Pushes global variable on stack and optionally returns value.
+        module procedure :: lua_read_array_int32
+        module procedure :: lua_read_array_int64
         module procedure :: lua_read_int32
         module procedure :: lua_read_int64
         module procedure :: lua_read_logical
@@ -125,6 +129,8 @@ module dm_lua
     public :: dm_lua_version
 
     ! Private procedures.
+    private :: lua_field_array_int32
+    private :: lua_field_array_int64
     private :: lua_field_int32
     private :: lua_field_int64
     private :: lua_field_logical
@@ -142,6 +148,8 @@ module dm_lua
     private :: lua_get_stack
     private :: lua_get_string
 
+    private :: lua_read_array_int32
+    private :: lua_read_array_int64
     private :: lua_read_int32
     private :: lua_read_int64
     private :: lua_read_logical
@@ -495,6 +503,90 @@ contains
     ! ******************************************************************
     ! PRIVATE FUNCTIONS.
     ! ******************************************************************
+    integer function lua_field_array_int32(lua, name, values) result(rc)
+        !! Returns allocatable 4-byte integer array from table field `name` in
+        !! `values`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not an integer array.
+        !!
+        !! On error, `values` will be allocated but empty.
+        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
+        character(len=*),              intent(in)    :: name      !! Table field name.
+        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Table field values.
+
+        lua_block: block
+            integer :: i, n, stat
+
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_istable(lua%ptr, -1) == 0) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = E_ALLOC
+            allocate (values(n), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            do i = 1, n
+                rc = dm_lua_get(lua, i, values(i))
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+        if (.not. allocated(values)) allocate (values(0))
+    end function lua_field_array_int32
+
+    integer function lua_field_array_int64(lua, name, values) result(rc)
+        !! Returns allocatable 8-byte integer array from table field `name` in
+        !! `values`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not an integer array.
+        !!
+        !! On error, `values` will be allocated but empty.
+        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
+        character(len=*),              intent(in)    :: name      !! Table field name.
+        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Table field values.
+
+        lua_block: block
+            integer :: i, n, stat
+
+            rc = E_EMPTY
+            if (lua_getfield(lua%ptr, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_istable(lua%ptr, -1) == 0) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = E_ALLOC
+            allocate (values(n), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            do i = 1, n
+                rc = dm_lua_get(lua, i, values(i))
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+        if (.not. allocated(values)) allocate (values(0))
+    end function lua_field_array_int64
+
     integer function lua_field_int32(lua, name, value) result(rc)
         !! Returns 4-byte integer from table field `name` in `value`.
         !!
@@ -858,6 +950,78 @@ contains
         call lua_pop(lua%ptr, 1)
     end function lua_get_string
 
+    integer function lua_read_array_int32(lua, name, values) result(rc)
+        !! Returns the values of global variable as 4-byte integers.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_TYPE` if variable is not an integer table.
+        !!
+        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
+        character(len=*),              intent(in)    :: name      !! Variable name.
+        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Variable values.
+
+        lua_block: block
+            integer :: i, n, stat
+
+            rc = E_TYPE
+            if (lua_getglobal(lua%ptr, name) /= LUA_TTABLE) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = E_ALLOC
+            allocate (values(n), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            do i = 1, n
+                rc = dm_lua_get(lua, i, values(i))
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+        if (.not. allocated(values)) allocate (values(0))
+    end function lua_read_array_int32
+
+    integer function lua_read_array_int64(lua, name, values) result(rc)
+        !! Returns the values of global variable as 8-byte integers.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_TYPE` if variable is not an integer table.
+        !!
+        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
+        character(len=*),              intent(in)    :: name      !! Variable name.
+        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Variable values.
+
+        lua_block: block
+            integer :: i, n, stat
+
+            rc = E_TYPE
+            if (lua_getglobal(lua%ptr, name) /= LUA_TTABLE) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = E_ALLOC
+            allocate (values(n), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            do i = 1, n
+                rc = dm_lua_get(lua, i, values(i))
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call lua_pop(lua%ptr, 1)
+        if (.not. allocated(values)) allocate (values(0))
+    end function lua_read_array_int64
+
     integer function lua_read_int32(lua, name, value) result(rc)
         !! Returns the value of global variable as 4-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
@@ -948,6 +1112,7 @@ contains
         !! Reads Lua table into Fortran job type. The table has to be on top of
         !! the stack and will be removed once finished.
         use :: dm_job
+
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         type(job_type),       intent(out)   :: job !! Job type.
 
@@ -973,6 +1138,7 @@ contains
         !! Reads Lua table into Fortran job list. The table has to be on
         !! top of the stack and will be removed once finished.
         use :: dm_job
+
         type(lua_state_type), intent(inout) :: lua      !! Lua type.
         type(job_list_type),  intent(out)   :: job_list !! Job list type.
 
@@ -1013,6 +1179,7 @@ contains
         !! * `E_EMPTY` if the table is empty.
         !! * `E_TYPE` if the stack element is not a table.
         use :: dm_job
+
         type(lua_state_type),        intent(inout) :: lua     !! Lua type.
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
@@ -1046,6 +1213,7 @@ contains
         !! Reads Lua table into Fortran observation type. The table has to be on
         !! top of the stack and will be removed once finished.
         use :: dm_observ
+
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(observ_type),    intent(out)   :: observ !! Observation type.
 
@@ -1110,6 +1278,7 @@ contains
         !! Reads Lua table into Fortran observation type array. The table has to
         !! be on top of the stack and will be removed once finished.
         use :: dm_observ
+
         type(lua_state_type),           intent(inout) :: lua        !! Lua type.
         type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation type array.
 
@@ -1146,6 +1315,7 @@ contains
         !! Reads Lua table into Fortran report type. The table has to
         !! be on top of the stack and will be removed once finished.
         use :: dm_report
+
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(report_type),    intent(out)   :: report !! Report type.
 
@@ -1248,6 +1418,7 @@ contains
         !! Reads Lua table into Fortran request type. The table has to be on
         !! top of the stack and will be removed once finished.
         use :: dm_request
+
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
         type(request_type),   intent(out)   :: request !! Request type.
 
@@ -1304,6 +1475,7 @@ contains
     subroutine lua_from_observ(lua, observ)
         !! Pushes observation on Lua stack.
         use :: dm_observ
+
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(observ_type),    intent(inout) :: observ !! Observation type.
 
@@ -1377,6 +1549,7 @@ contains
     subroutine lua_from_request(lua, request)
         !! Pushes request on Lua stack.
         use :: dm_request
+
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
         type(request_type),   intent(inout) :: request !! Request type.
 

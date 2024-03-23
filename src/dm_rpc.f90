@@ -504,6 +504,25 @@ contains
         if (.not. allocated(url)) url = ''
     end function dm_rpc_url
 
+    subroutine dm_rpc_destroy()
+        !! Cleans-up RPC backend.
+        call curl_global_cleanup()
+    end subroutine dm_rpc_destroy
+
+    impure elemental subroutine dm_rpc_reset(request)
+        !! Auxiliary destructor routine to free allocated request memory.
+        !! Cleans-up the cURL handles of the request.
+        type(rpc_request_type), intent(inout) :: request !! Request type.
+
+        if (c_associated(request%list_ptr)) call curl_slist_free_all(request%list_ptr)
+        if (c_associated(request%curl_ptr)) call curl_easy_cleanup(request%curl_ptr)
+
+        request = rpc_request_type()
+    end subroutine dm_rpc_reset
+
+    ! ******************************************************************
+    ! PUBLIC CALLBACK FUNCTIONS.
+    ! ******************************************************************
     integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes the
         !! received response chunks to `rpc_response_type` pointer that has to
@@ -529,22 +548,6 @@ contains
 
         n = nmemb
     end function dm_rpc_write_callback
-
-    subroutine dm_rpc_destroy()
-        !! Cleans-up RPC backend.
-        call curl_global_cleanup()
-    end subroutine dm_rpc_destroy
-
-    impure elemental subroutine dm_rpc_reset(request)
-        !! Auxiliary destructor routine to free allocated request memory.
-        !! Cleans-up the cURL handles of the request.
-        type(rpc_request_type), intent(inout) :: request !! Request type.
-
-        if (c_associated(request%list_ptr)) call curl_slist_free_all(request%list_ptr)
-        if (c_associated(request%curl_ptr)) call curl_easy_cleanup(request%curl_ptr)
-
-        request = rpc_request_type()
-    end subroutine dm_rpc_reset
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

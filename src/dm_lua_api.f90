@@ -121,6 +121,7 @@ contains
             rc = dm_lua_eval(lua, 'E_READ_ONLY = '      // dm_itoa(E_READ_ONLY));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_CORRUPT = '        // dm_itoa(E_CORRUPT));        if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_CONFIG = '         // dm_itoa(E_CONFIG));         if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_GEOCOM = '         // dm_itoa(E_GEOCOM));         if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_DB = '             // dm_itoa(E_DB));             if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_ID = '          // dm_itoa(E_DB_ID));          if (dm_is_error(rc)) return

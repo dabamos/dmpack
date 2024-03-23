@@ -91,10 +91,10 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('type',     short='t', type=ARG_TYPE_CHAR, required=.true.), & ! -t, --type [beat|log|observ]
-            arg_type('database', short='d', type=ARG_TYPE_CHAR, required=.true.), & ! -d, --database <path>
-            arg_type('sync',     short='Y', type=ARG_TYPE_BOOL),                  & ! -Y, --sync
-            arg_type('wal',      short='W', type=ARG_TYPE_BOOL)                   & ! -W, --wal
+            arg_type('type',     short='t', type=ARG_TYPE_STRING, required=.true.), & ! -t, --type [beat|log|observ]
+            arg_type('database', short='d', type=ARG_TYPE_STRING, required=.true.), & ! -d, --database <path>
+            arg_type('sync',     short='Y', type=ARG_TYPE_LOGICAL),                 & ! -Y, --sync
+            arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL)                  & ! -W, --wal
         ]
 
         ! Read all command-line arguments.
@@ -103,6 +103,11 @@ contains
 
         ! Database type (observ, log, beat).
         rc = dm_arg_get(args(1), type)
+        rc = dm_arg_get(args(2), app%database)
+        rc = dm_arg_get(args(3), app%sync)
+        rc = dm_arg_get(args(4), app%wal)
+
+        ! Validate options.
         app%type = dm_type_from_name(type)
 
         rc = E_INVALID
@@ -110,21 +115,9 @@ contains
             case (TYPE_OBSERV, TYPE_LOG, TYPE_BEAT)
                 continue
             case default
-                call dm_error_out(rc, 'invalid database type ' // trim(type) // &
-                                  ' (either observ, log, or beat)')
+                call dm_error_out(rc, 'invalid database type ' // trim(type) // ' (must be observ, log, or beat)')
                 return
         end select
-
-        rc = dm_arg_get(args(2), app%database)
-        rc = dm_arg_get(args(3), app%sync)
-        rc = dm_arg_get(args(4), app%wal)
-
-        ! Validate options.
-        rc = E_INVALID
-        if (len_trim(app%database) == 0) then
-            call dm_error_out(rc, 'invalid database path')
-            return
-        end if
 
         rc = E_EXIST
         if (dm_file_exists(app%database)) then

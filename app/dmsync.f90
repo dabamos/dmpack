@@ -126,19 +126,19 @@ contains
             arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
             arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
             arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('wait',     short='w', type=ARG_TYPE_CHAR),    & ! -w, --wait <string>
+            arg_type('wait',     short='w', type=ARG_TYPE_STRING),  & ! -w, --wait <string>
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
             arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
-            arg_type('type',     short='t', type=ARG_TYPE_CHAR),    & ! -t, --type log|observ
-            arg_type('host',     short='H', type=ARG_TYPE_CHAR),    & ! -H, --host <string>
+            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type log|observ
+            arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
             arg_type('port',     short='p', type=ARG_TYPE_INTEGER), & ! -p, --port <n>
-            arg_type('username', short='U', type=ARG_TYPE_CHAR),    & ! -U, --username <string>
-            arg_type('password', short='P', type=ARG_TYPE_CHAR),    & ! -P, --password <string>
+            arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
+            arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('create',   short='C', type=ARG_TYPE_BOOL),    & ! -C, --create
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL),    & ! -D, --debug
-            arg_type('tls',      short='X', type=ARG_TYPE_BOOL),    & ! -X, --tls
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)     & ! -V, --verbose
+            arg_type('create',   short='C', type=ARG_TYPE_LOGICAL), & ! -C, --create
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('tls',      short='X', type=ARG_TYPE_LOGICAL), & ! -X, --tls
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -427,7 +427,7 @@ contains
                 call dm_timer_stop(rpc_timer, dt)
 
                 if (dm_is_error(rc)) then
-                    call logger%debug('failed to sync with host ' // app%host, error=rc)
+                    call logger%warning('failed to sync with host ' // app%host, error=rc)
                 else
                     write (message, '("finished sync in ", f0.2, " sec")') dt
                     call logger%debug(message, error=rc)
@@ -446,8 +446,8 @@ contains
                     select case (responses(i)%code)
                         case (0)
                             ! Failed to connect.
-                            call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // &
-                                                responses(i)%error_message, error=E_RPC_CONNECT)
+                            call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // &
+                                              responses(i)%error_message, error=E_RPC_CONNECT)
 
                         case (HTTP_CREATED)
                             ! Success.
@@ -455,34 +455,34 @@ contains
 
                         case (HTTP_CONFLICT)
                             ! Record exists in server database.
-                            call logger%info(name // ' ' // trim(ids(i)) // ' exists', error=E_EXIST)
+                            call logger%debug(name // ' ' // trim(ids(i)) // ' exists', error=E_EXIST)
 
                         case (HTTP_UNAUTHORIZED)
                             ! Missing or wrong API credentials.
                             if (has_api_status) then
-                                call logger%error('unauthorized access on host ' // trim(app%host) // ': ' // &
+                                call logger%debug('unauthorized access on host ' // trim(app%host) // ': ' // &
                                                   api_status%message, error=E_RPC_AUTH)
                             else
-                                call logger%error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                                call logger%debug('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
                             end if
 
                         case (HTTP_INTERNAL_SERVER_ERROR)
                             ! Server crashed.
-                            call logger%error('internal server error on host ' // app%host, error=E_RPC_SERVER)
+                            call logger%debug('internal server error on host ' // app%host, error=E_RPC_SERVER)
 
                         case (HTTP_BAD_GATEWAY)
                             ! Reverse proxy of server failed to connect to API.
-                            call logger%error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+                            call logger%debug('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
 
                         case default
                             if (has_api_status) then
                                 write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
                                     trim(app%host), responses(i)%code, api_status%message
-                                call logger%error(message, error=api_status%error)
+                                call logger%debug(message, error=api_status%error)
                             else
                                 write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
                                     trim(app%host), responses(i)%code
-                                call logger%warning(message, error=E_RPC_API)
+                                call logger%debug(message, error=E_RPC_API)
                             end if
                     end select
 
@@ -500,20 +500,17 @@ contains
                         ! Re-try insert if database is busy.
                         if (rc == E_DB_BUSY) then
                             write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_NATTEMPTS
-                            call logger%warning(message, error=rc)
+                            call logger%debug(message, error=rc)
 
                             if (j < APP_DB_NATTEMPTS) then
                                 call dm_db_sleep(APP_DB_TIMEOUT)
                             else
-                                call logger%info('sync database update aborted')
+                                call logger%warning('sync database update aborted')
                             end if
 
                             cycle db_loop
-                        end if
-
-                        if (dm_is_error(rc)) then
-                            call logger%error('failed to update sync status: ' // &
-                                              dm_db_error_message(db), error=rc)
+                        else if (dm_is_error(rc)) then
+                            call logger%error('failed to update sync status: ' // dm_db_error_message(db), error=rc)
                         end if
 
                         exit
@@ -524,8 +521,8 @@ contains
                 if (nsyncs > limit) then
                     if (dm_is_error(rc)) then
                         ! Wait a grace period on error.
-                        call logger%debug('waiting 10 sec before next sync attempt')
-                        call dm_sleep(10)
+                        call logger%debug('waiting 30 sec before next sync attempt')
+                        call dm_sleep(30)
                     end if
 
                     cycle sync_loop
@@ -547,14 +544,12 @@ contains
 
     subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in), optional :: error !! DMPACK error code.
+        integer, intent(in) :: error !! DMPACK error code.
 
         integer :: rc, stat
 
         stat = 0
-        if (present(error)) then
-            if (dm_is_error(error)) stat = 1
-        end if
+        if (dm_is_error(error)) stat = 1
 
         call dm_rpc_destroy()
         if (app%ipc) rc = dm_sem_close(sem)

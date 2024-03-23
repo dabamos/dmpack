@@ -904,10 +904,7 @@ contains
         logical :: quoted
 
         quoted = .false.
-
-        if (present(quote)) then
-            if (quote /= ASCII_NUL) quoted = .true.
-        end if
+        if (present(quote)) quoted = (quote /= ASCII_NUL)
 
         old = pos
 

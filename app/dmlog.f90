@@ -51,16 +51,16 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('logger',  short='l', type=ARG_TYPE_ID), &      ! -l, --logger <string>
-            arg_type('verbose', short='V', type=ARG_TYPE_BOOL), &    ! -V, --verbose
-            arg_type('level',   short='L', type=ARG_TYPE_INTEGER), & ! -L, --level <n>
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL), & ! -V, --verbose
+            arg_type('level',   short='L', type=ARG_TYPE_LEVEL),   & ! -L, --level <n>
             arg_type('error',   short='e', type=ARG_TYPE_INTEGER), & ! -e, --error <n>
-            arg_type('node',    short='N', type=ARG_TYPE_ID), &      ! -N, --node <string>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID), &      ! -S, --sensor <string>
-            arg_type('target',  short='T', type=ARG_TYPE_ID), &      ! -T, --target <string>
-            arg_type('observ',  short='O', type=ARG_TYPE_UUID), &    ! -O, --observ <string>
-            arg_type('source',  short='Z', type=ARG_TYPE_CHAR, max_len=LOG_SOURCE_LEN), & ! -Z, --source <string>
-            arg_type('message', short='m', type=ARG_TYPE_CHAR, max_len=LOG_MESSAGE_LEN, required=.true.) &  ! -m, --message <string>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
+            arg_type('target',  short='T', type=ARG_TYPE_ID),      & ! -T, --target <id>
+            arg_type('observ',  short='O', type=ARG_TYPE_UUID),    & ! -O, --observ <uuid>
+            arg_type('source',  short='Z', type=ARG_TYPE_ID,     max_len=LOG_SOURCE_LEN), & ! -Z, --source <id>
+            arg_type('message', short='m', type=ARG_TYPE_STRING, max_len=LOG_MESSAGE_LEN, required=.true.) &  ! -m, --message <string>
         ]
 
         ! Read all command-line arguments.
@@ -80,12 +80,7 @@ contains
 
         rc = E_INVALID
 
-        if (.not. dm_log_valid(log%level)) then
-            call dm_error_out(rc, 'invalid log level')
-            return
-        end if
-
-        if (log%error < 0) then
+        if (.not. dm_error_valid(log%error)) then
             call dm_error_out(rc, 'invalid error code')
             return
         end if

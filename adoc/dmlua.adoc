@@ -15,7 +15,7 @@ dmlua - passes received observations to Lua function
 
 *dmlua* --version
 
-*dmlua* --*node* _id_ --*script* _file_] [--*procedure* _name_]
+*dmlua* --*node* _id_ --*script* _file_ [--*procedure* _name_]
 [--*name* _name_] [--*logger* _name_] [--*debug*] [--*verbose*]
 
 *dmlua* --*config* _file_ [--*name* _name_]

@@ -67,6 +67,7 @@ module dm_log
     public :: operator (==)
 
     public :: dm_log_equals
+    public :: dm_log_level_from_name
     public :: dm_log_out
     public :: dm_log_valid
 
@@ -96,6 +97,33 @@ contains
 
         equals = .true.
     end function dm_log_equals
+
+    pure elemental integer function dm_log_level_from_name(name) result(level)
+        !! Returns log level from string argument `name`. The string is
+        !! converted to lower-case before. If `name` neither matches `none`,
+        !! `debug`, `warning`, `error`, nor `critical`, this function returns
+        !! `LVL_NONE`.
+        use :: dm_string, only: dm_lower
+
+        character(len=*), intent(in) :: name !! Log level name.
+
+        select case (dm_lower(name))
+            case (LOG_LEVEL_NAMES_LOWER(LVL_NONE))
+                level = LVL_NONE
+            case (LOG_LEVEL_NAMES_LOWER(LVL_DEBUG))
+                level = LVL_DEBUG
+            case (LOG_LEVEL_NAMES_LOWER(LVL_INFO))
+                level = LVL_INFO
+            case (LOG_LEVEL_NAMES_LOWER(LVL_WARNING))
+                level = LVL_WARNING
+            case (LOG_LEVEL_NAMES_LOWER(LVL_ERROR))
+                level = LVL_ERROR
+            case (LOG_LEVEL_NAMES_LOWER(LVL_CRITICAL))
+                level = LVL_CRITICAL
+            case default
+                level = LVL_NONE
+        end select
+    end function dm_log_level_from_name
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
@@ -130,7 +158,7 @@ contains
         integer, intent(in) :: level !! Log level.
 
         valid = .false.
-        if (level < 0 .or. level > LVL_LAST) return
+        if (level <= LVL_NONE .or. level > LVL_LAST) return
         valid = .true.
     end function dm_log_valid_level
 
@@ -143,6 +171,7 @@ contains
         !! * The time stamp is in ISO 8601 format.
         !! * All ASCII characters of the log message are printable.
         use :: dm_string, only: dm_string_is_printable
+
         type(log_type), intent(in) :: log !! Log to validate.
 
         valid = .false.

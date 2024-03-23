@@ -8,20 +8,24 @@ program dmtestlua
     implicit none (type, external)
     character(len=*), parameter :: LUA_FILE = 'test/test.lua'
 
-    integer, parameter :: NTESTS = 9
+    integer, parameter :: NTESTS = 11
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestlua.test01', test01)
-    tests(2) = test_type('dmtestlua.test02', test02)
-    tests(3) = test_type('dmtestlua.test03', test03)
-    tests(4) = test_type('dmtestlua.test04', test04)
-    tests(5) = test_type('dmtestlua.test05', test05)
-    tests(6) = test_type('dmtestlua.test06', test06)
-    tests(7) = test_type('dmtestlua.test07', test07)
-    tests(8) = test_type('dmtestlua.test08', test08)
-    tests(9) = test_type('dmtestlua.test09', test09)
+    tests = [ &
+        test_type('dmtestlua.test01', test01), &
+        test_type('dmtestlua.test02', test02), &
+        test_type('dmtestlua.test03', test03), &
+        test_type('dmtestlua.test04', test04), &
+        test_type('dmtestlua.test05', test05), &
+        test_type('dmtestlua.test06', test06), &
+        test_type('dmtestlua.test07', test07), &
+        test_type('dmtestlua.test08', test08), &
+        test_type('dmtestlua.test09', test09), &
+        test_type('dmtestlua.test10', test10), &
+        test_type('dmtestlua.test11', test11)  &
+    ]
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -479,4 +483,96 @@ contains
 
         stat = TEST_PASSED
     end function test09
+
+    logical function test10() result(stat)
+        !! Lua array access test.
+        integer, parameter :: ASSERT(3) = [ 1, 2, 3 ]
+
+        integer              :: i, rc
+        integer, allocatable :: values(:)
+        type(lua_state_type) :: lua
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening Lua file ...'
+            rc = dm_lua_open(lua, LUA_FILE)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading integer array ...'
+            rc = dm_lua_read(lua, 'mylist', values)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating ...'
+            rc = E_CORRUPT
+            if (.not. allocated(values)) exit test_block
+            if (size(values) /= size(ASSERT)) exit test_block
+
+            rc = E_INVALID
+            do i = 1, size(values)
+                if (values(i) /= ASSERT(i)) exit test_block
+            end do
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_error_out(rc, 'Lua error: ' // dm_lua_last_error(lua))
+        call dm_lua_destroy(lua)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test10
+
+    logical function test11() result(stat)
+        !! Reads array from table.
+        integer, parameter :: ASSERT(3) = [ 1, 2, 3 ]
+
+        integer              :: i, rc
+        integer, allocatable :: values(:)
+        type(lua_state_type) :: lua
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Opening Lua file ...'
+            rc = dm_lua_open(lua, LUA_FILE)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading table ...'
+            rc = dm_lua_read(lua, 'config')
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Reading field ...'
+            rc = dm_lua_field(lua, 'list', values)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating ...'
+            rc = E_CORRUPT
+            if (.not. allocated(values)) exit test_block
+            if (size(values) /= size(ASSERT)) exit test_block
+
+            rc = E_INVALID
+            do i = 1, size(values)
+                if (values(i) /= ASSERT(i)) exit test_block
+            end do
+
+            rc = E_NONE
+        end block test_block
+
+        call dm_error_out(rc, dm_lua_last_error(lua))
+        call dm_lua_destroy(lua)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test11
 end program dmtestlua

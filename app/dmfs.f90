@@ -66,7 +66,7 @@ contains
         type(observ_type), intent(inout) :: observ !! Observation type.
         integer,           intent(in)    :: type   !! Output I/O type.
 
-        integer :: fu, stat
+        integer :: stat, unit
 
         rc = E_NONE
 
@@ -89,20 +89,20 @@ contains
                 rc = E_IO
 
                 open (action='write', file=trim(app%output), iostat=stat, &
-                      newunit=fu, position='append', status='unknown')
+                      newunit=unit, position='append', status='unknown')
 
                 if (stat /= 0) then
                     call logger%error('failed to open file ' // app%output, error=rc)
                     return
                 end if
 
-                rc = write_observ(observ, unit=fu, format=app%format)
+                rc = write_observ(observ, unit=unit, format=app%format)
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to write observ to file ' // app%output, error=rc)
                 end if
 
-                close (fu)
+                close (unit)
         end select
     end function output_observ
 
@@ -114,15 +114,15 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',    short='n', type=ARG_TYPE_ID),   & ! -n, --name <string>
+            arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',  short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
-            arg_type('node',    short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID),   & ! -S, --sensor <string>
-            arg_type('output',  short='o', type=ARG_TYPE_CHAR), & ! -o, --output <string>
-            arg_type('format',  short='f', type=ARG_TYPE_CHAR), & ! -f, --format <string>
-            arg_type('debug',   short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
-            arg_type('verbose', short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
+            arg_type('output',  short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
+            arg_type('format',  short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.

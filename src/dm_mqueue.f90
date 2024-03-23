@@ -320,7 +320,7 @@ contains
 
         if (present(timeout)) then
             timespec%tv_sec  = int(timeout, kind=c_time_t)
-            timespec%tv_nsec = int(0, kind=c_long)
+            timespec%tv_nsec = 0_c_long
 
             sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_, timespec)
         else
@@ -366,7 +366,7 @@ contains
         rc = E_MQUEUE
         priority_ = 0
         if (present(priority)) priority_ = priority
-        if (c_mq_send(mqueue%mqd, buffer, len(buffer, kind=i8), priority_) < 0) return
+        if (c_mq_send(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_) < 0) return
         rc = E_NONE
     end function mqueue_write_raw
 end module dm_mqueue

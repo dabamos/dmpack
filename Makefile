@@ -190,6 +190,7 @@ DMDBCTL  = $(DISTDIR)/dmdbctl
 DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
+DMGRC    = $(DISTDIR)/dmgrc
 DMIMPORT = $(DISTDIR)/dmimport
 DMINFO   = $(DISTDIR)/dminfo
 DMINIT   = $(DISTDIR)/dminit
@@ -212,14 +213,14 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
       src/dm_format.f90 src/dm_ansi.f90 src/dm_env.f90 src/dm_util.f90 \
       src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 src/dm_path.f90 \
       src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 src/dm_hdf5.f90 \
-      src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_arg.f90 \
-      src/dm_signal.f90 src/dm_system.f90 src/dm_pipe.f90 src/dm_sem.f90 \
-      src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 \
-      src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 \
-      src/dm_observ.f90 src/dm_log.f90 src/dm_job.f90 src/dm_tty.f90 \
-      src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 src/dm_sync.f90 \
-      src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 \
-      src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
+      src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_signal.f90 \
+      src/dm_system.f90 src/dm_pipe.f90 src/dm_sem.f90 src/dm_mutex.f90 \
+      src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 src/dm_sensor.f90 \
+      src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 src/dm_observ.f90 \
+      src/dm_log.f90 src/dm_arg.f90 src/dm_job.f90 src/dm_tty.f90 src/dm_plot.f90 \
+      src/dm_report.f90 src/dm_regex.f90 src/dm_sync.f90 src/dm_beat.f90 \
+      src/dm_mqueue.f90 src/dm_logger.f90 src/dm_test.f90 src/dm_nml.f90 \
+      src/dm_sql.f90 src/dm_db.f90 src/dm_z.f90 src/dm_person.f90 \
       src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 src/dm_api.f90 \
       src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 \
       src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 \
@@ -233,9 +234,9 @@ SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
 OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
       dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o dm_util.o dm_time.o \
       dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o dm_hash_table.o \
-      dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_arg.o dm_signal.o dm_system.o \
-      dm_pipe.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o dm_sensor.o \
-      dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o dm_job.o \
+      dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_signal.o dm_system.o dm_pipe.o \
+      dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o dm_sensor.o dm_target.o \
+      dm_response.o dm_request.o dm_observ.o dm_log.o dm_arg.o dm_job.o \
       dm_tty.o dm_plot.o dm_report.o dm_regex.o dm_sync.o dm_beat.o dm_mqueue.o \
       dm_logger.o dm_test.o dm_nml.o dm_sql.o dm_db.o dm_z.o dm_person.o dm_mail.o \
       dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o \
@@ -260,17 +261,17 @@ all: $(TARGET) $(SHARED) test app
 
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
-     $(DMFS) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
+     $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
      $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
       dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml \
-      dmtestid dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqtt \
-      dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
-      dmtestregex dmtestrpc dmtestrts dmteststring dmtesttime dmtesttty \
-      dmtestunit dmtestutil dmtestuuid dmtestz
+      dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
+      dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe \
+      dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtesttime \
+      dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz
 
 # ******************************************************************************
 #
@@ -377,7 +378,6 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_unit.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_id.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_uuid.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_arg.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_signal.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_system.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_pipe.f90
@@ -392,6 +392,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_request.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_observ.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_log.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_arg.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_job.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_tty.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_plot.f90
@@ -501,6 +502,9 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
 
+dmtestlog: test/dmtestlog.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlog test/dmtestlog.f90 $(TARGET) $(LDLIBS)
+
 dmtestlogger: test/dmtestlogger.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestlogger test/dmtestlogger.f90 $(TARGET) $(LIBRT) $(LDLIBS)
 
@@ -597,6 +601,9 @@ $(DMFEED): app/dmfeed.f90 $(TARGET)
 $(DMFS): app/dmfs.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
+$(DMGRC): app/dmgrc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMGRC) app/dmgrc.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+
 $(DMIMPORT): app/dmimport.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMIMPORT) app/dmimport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
@@ -690,7 +697,7 @@ install:
 	install -m 755 $(DMEXPORT) $(IBINDIR)/
 	install -m 755 $(DMFEED)   $(IBINDIR)/
 	install -m 755 $(DMFS)     $(IBINDIR)/
-	install -m 755 $(DMPLOT)   $(IBINDIR)/
+	install -m 755 $(DMGRC)    $(IBINDIR)/
 	install -m 755 $(DMIMPORT) $(IBINDIR)/
 	install -m 755 $(DMINFO)   $(IBINDIR)/
 	install -m 755 $(DMINIT)   $(IBINDIR)/
@@ -698,6 +705,7 @@ install:
 	install -m 755 $(DMLOGGER) $(IBINDIR)/
 	install -m 755 $(DMLUA)    $(IBINDIR)/
 	install -m 755 $(DMPIPE)   $(IBINDIR)/
+	install -m 755 $(DMPLOT)   $(IBINDIR)/
 	install -m 755 $(DMRECV)   $(IBINDIR)/
 	install -m 755 $(DMREPORT) $(IBINDIR)/
 	install -m 755 $(DMSEND)   $(IBINDIR)/
@@ -725,7 +733,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmexport.1 > $(IMANDIR)/dmexport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfeed.1   > $(IMANDIR)/dmfeed.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfs.1     > $(IMANDIR)/dmfs.1.gz
-	$(GZIP) -9 < $(MANDIR)/dmplot.1  > $(IMANDIR)/dmplot.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmgrc.1    > $(IMANDIR)/dmgrc.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmimport.1 > $(IMANDIR)/dmimport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dminfo.1   > $(IMANDIR)/dminfo.1.gz
 	$(GZIP) -9 < $(MANDIR)/dminit.1   > $(IMANDIR)/dminit.1.gz
@@ -733,6 +741,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmlogger.1 > $(IMANDIR)/dmlogger.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmlua.1    > $(IMANDIR)/dmlua.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmpipe.1   > $(IMANDIR)/dmpipe.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmplot.1   > $(IMANDIR)/dmplot.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmrecv.1   > $(IMANDIR)/dmrecv.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmreport.1 > $(IMANDIR)/dmreport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmsend.1   > $(IMANDIR)/dmsend.1.gz
@@ -762,6 +771,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmexport
 	$(RM) -f $(IBINDIR)/dmfeed
 	$(RM) -f $(IBINDIR)/dmfs
+	$(RM) -f $(IBINDIR)/dmgrc
 	$(RM) -f $(IBINDIR)/dmplot
 	$(RM) -f $(IBINDIR)/dmimport
 	$(RM) -f $(IBINDIR)/dminfo
@@ -785,6 +795,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmexport.1.gz
 	$(RM) -f $(IMANDIR)/dmfeed.1.gz
 	$(RM) -f $(IMANDIR)/dmfs.1.gz
+	$(RM) -f $(IMANDIR)/dmgrc.1.gz
 	$(RM) -f $(IMANDIR)/dmimport.1.gz
 	$(RM) -f $(IMANDIR)/dminfo.1.gz
 	$(RM) -f $(IMANDIR)/dminit.1.gz
@@ -816,15 +827,19 @@ clean:
 	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
 	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
 	if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
+	@echo
 	@echo "--- Deleting build files ..."
 	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
 	if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
 	if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
 	if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
+	@echo
 	@echo "--- Deleting tests ..."
 	if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	@echo
 	@echo "--- Deleting programs ..."
 	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
+	@echo
 	@echo "--- Cleaning guide ..."
 	cd $(GUIDDIR) && $(MAKE) clean
 
@@ -835,22 +850,31 @@ clean:
 # ******************************************************************************
 
 purge: clean
+	@echo
 	@echo "--- Cleaning fortran-curl ..."
 	cd vendor/fortran-curl/ && make clean TARGET="../../$(LIBFCURL)"
+	@echo
 	@echo "--- Cleaning fortran-lua54 ..."
 	cd vendor/fortran-lua54/ && make clean TARGET="../../$(LIBFLUA54)"
+	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
 	cd vendor/fortran-pcre2/ && make clean TARGET="../../$(LIBFPCRE2)"
+	@echo
 	@echo "--- Cleaning fortran-sqlite3 ..."
 	cd vendor/fortran-sqlite3/ && make clean TARGET="../../$(LIBFSQLITE3)"
+	@echo
 	@echo "--- Cleaning fortran-unix ..."
 	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
+	@echo
 	@echo "--- Cleaning fortran-zlib ..."
 	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZ)"
+	@echo
 	@echo "--- Deleting module files ..."
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
+	@echo
 	@echo "--- Deleting source code documentation ..."
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
+	@echo
 	@echo "--- Deleting stale test files ..."
 	if [ -e testobserv.hdf5 ]; then $(RM) testobserv.hdf5; fi
 	if [ -e testbeat.sqlite ]; then $(RM) testbeat.sqlite; fi

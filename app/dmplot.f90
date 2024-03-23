@@ -141,21 +141,21 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('name',       short='n', type=ARG_TYPE_ID), &      ! -n, --name <string>
-            arg_type('config',     short='c', type=ARG_TYPE_FILE), &    ! -c, --config <path>
-            arg_type('database',   short='d', type=ARG_TYPE_DB), &      ! -d, --database <file>
-            arg_type('node',       short='N', type=ARG_TYPE_ID), &      ! -N, --node <id>
-            arg_type('sensor',     short='S', type=ARG_TYPE_ID), &      ! -S, --sensor <id>
-            arg_type('target',     short='T', type=ARG_TYPE_ID), &      ! -T, --target <id>
+            arg_type('name',       short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('config',     short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('database',   short='d', type=ARG_TYPE_DB),      & ! -d, --database <file>
+            arg_type('node',       short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('sensor',     short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
+            arg_type('target',     short='T', type=ARG_TYPE_ID),      & ! -T, --target <id>
             arg_type('response',   short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <name>
-            arg_type('from',       short='B', type=ARG_TYPE_TIME), &    ! -B, --from <timestamp>
-            arg_type('to',         short='E', type=ARG_TYPE_TIME), &    ! -E, --to <timestamp>
-            arg_type('terminal',   short='m', type=ARG_TYPE_CHAR, max_len=PLOT_TERM_NAME_LEN), & ! -m, --terminal <name>
-            arg_type('output',     short='o', type=ARG_TYPE_CHAR), &    ! -o, --output <file>
-            arg_type('background', short='G', type=ARG_TYPE_CHAR), &    ! -G, --background <color>
-            arg_type('foreground', short='P', type=ARG_TYPE_CHAR), &    ! -P, --foreground <color>
-            arg_type('font',       short='A', type=ARG_TYPE_CHAR), &    ! -A, --font <name>
-            arg_type('title',      short='C', type=ARG_TYPE_CHAR), &    ! -C, --title <title>
+            arg_type('from',       short='B', type=ARG_TYPE_TIME),    & ! -B, --from <timestamp>
+            arg_type('to',         short='E', type=ARG_TYPE_TIME),    & ! -E, --to <timestamp>
+            arg_type('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERM_NAME_LEN), & ! -m, --terminal <name>
+            arg_type('output',     short='o', type=ARG_TYPE_STRING),  & ! -o, --output <file>
+            arg_type('background', short='G', type=ARG_TYPE_STRING),  & ! -G, --background <color>
+            arg_type('foreground', short='P', type=ARG_TYPE_STRING),  & ! -P, --foreground <color>
+            arg_type('font',       short='A', type=ARG_TYPE_STRING),  & ! -A, --font <name>
+            arg_type('title',      short='C', type=ARG_TYPE_STRING),  & ! -C, --title <title>
             arg_type('width',      short='W', type=ARG_TYPE_INTEGER), & ! -W, --width <n>
             arg_type('height',     short='H', type=ARG_TYPE_INTEGER)  & ! -H, --height <n>
         ]

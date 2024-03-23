@@ -68,6 +68,11 @@ main = "dmfs.f90"
 link = [ "lua-5.4", "pcre2-8", "rt" ]
 
 [[executable]]
+name = "dmgrc"
+main = "dmgrc.f90"
+link = [ "lua-5.4", "pcre2-8", "rt" ]
+
+[[executable]]
 name = "dmimport"
 main = "dmimport.f90"
 link = [ "sqlite3" ]
@@ -206,6 +211,10 @@ main = "dmtestjob.f90"
 [[test]]
 name = "dmtestjson"
 main = "dmtestjson.f90"
+
+[[test]]
+name = "dmtestlog"
+main = "dmtestlog.f90"
 
 [[test]]
 name = "dmtestlogger"

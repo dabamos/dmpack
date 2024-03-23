@@ -84,11 +84,11 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('database', short='d', type=ARG_TYPE_DB,   required=.true.), & ! -d, --database <path>
-            arg_type('backup',   short='b', type=ARG_TYPE_CHAR, required=.true.), & ! -b, --backup <path>
-            arg_type('vacuum',   short='U', type=ARG_TYPE_BOOL), & ! -U, --vacuum
-            arg_type('wal',      short='W', type=ARG_TYPE_BOOL), & ! -W, --wal
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('database', short='d', type=ARG_TYPE_DB,     required=.true.), & ! -d, --database <path>
+            arg_type('backup',   short='b', type=ARG_TYPE_STRING, required=.true.), & ! -b, --backup <path>
+            arg_type('vacuum',   short='U', type=ARG_TYPE_LOGICAL), & ! -U, --vacuum
+            arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL), & ! -W, --wal
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.

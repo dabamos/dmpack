@@ -6,7 +6,7 @@
 :lang: en
 :docdate: 2024-02-18
 :doctype: book
-:url-org: https://dabamos.de/
+:url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
 :imagesdir: resources/images/
 :data-uri:
@@ -178,28 +178,27 @@ The shell script requires _curl(1)_ and _unzip(1)_.
 
 == Installation
 
-This section describes how to build the DMPACK library and programs from source,
-with POSIX Make or the link:https://fpm.fortran-lang.org/[Fortran Package Manager]
-(FPM). At the moment, support for the Fortran Package Manager is experimental.
-The shared libraries `libgcc.so`, `libgfortran.so` and `libquadmath.so` must be
-present on the target system if the DMPACK programs have been compiled with GNU
-Fortran.
-
-Either build with GNU/BSD Make or with the Fortran Package Manager. It is
-recommended to use _make(1)_. To display the available build targets, run:
+This section describes the steps to build the DMPACK library and programs from
+source, either with POSIX Make or the
+link:https://fpm.fortran-lang.org/[Fortran Package Manager] (FPM). At the
+moment, support for the Fortran Package Manager is experimental, and using
+GNU/BSD Make is the recommended way. Display the available build targets of the
+Makefile:
 
 ....
 $ make help
 ....
 
-Or, to output the selected build options, run for instance:
+Or, output the selected build options:
 
 ....
 $ make options PREFIX=/opt
 ....
 
 See section <<system-configuration>> on how to configure the operating system
-after the installation.
+after the installation. The shared libraries `libgcc.so`, `libgfortran.so`, and
+`libquadmath.so` must be present on the target system if the DMPACK programs
+have been compiled with GNU Fortran.
 
 === FreeBSD [[freebsd]]
 
@@ -235,8 +234,8 @@ Install the library and all programs system-wide to `/usr/local/`:
 $ doas make install_freebsd
 ....
 
-You can change the installation prefix with argument `PREFIX`. To install to a
-custom directory, run:
+You can change the installation prefix with argument `PREFIX`. To install to
+directory `/opt` instead, run:
 
 ....
 $ doas make install PREFIX=/opt
@@ -277,10 +276,6 @@ manually. The library and programs will be installed to `~/.local/` by default.
 
 === Linux [[linux]]
 
-If Intel oneAPI will be used to compile DMPACK, it is necessary to build HDF5
-from source as well, as the versions in the Linux package repositories have been
-compiled with GNU Fortran and are therefore incompatible.
-
 On Debian, install GCC, GNU Fortran, and the rest of the build environment
 first:
 
@@ -301,6 +296,13 @@ Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
 if raster image formats are not needed (SVG output only). The SQLite 3 package
 version must be ≥ 3.39.0. Depending on the package repository, the names of the
 HDF5 and Lua packages may differ.
+
+[NOTE]
+====
+If Intel oneAPI is used instead of GCC to compile DMPACK, it is necessary to
+build HDF5 from source, as the versions in the Linux package repositories have
+been compiled with GNU Fortran and are therefore incompatible.
+====
 
 ==== Make [[linux-make]]
 
@@ -335,6 +337,9 @@ library `libsqlite3.so`:
 ....
 $ make OS=linux PREFIX=/usr LIBSQLITE3="-L/usr/local/lib -lsqlite3"
 ....
+
+If more than one library is installed, specify the path with linker flag
+`-Wl,-rpath=/usr/local/lib`.
 ====
 
 [NOTE]
@@ -347,7 +352,7 @@ $ make CC=icx FC=ifx PPFLAGS= \
   CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
   LDFLAGS="-module ./include -I./include" \
   INCHDF5="-I/opt/include" \
-  LIBHDF5="-Wl,-rpath,/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
+  LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
 ....
 
 In this case, the HDF5 libraries are installed to `/opt/lib/`, and the HDF5
@@ -455,8 +460,10 @@ POSIX message queue.
 
 === Observation Processing
 
-<<dmlua>>:: Runs a custom Lua script to process an observation and forward it
-to the next specified receiver.
+<<dmgrc>>:: Inspects received observations and creates log messages from GeoCOM
+return codes.
+<<dmlua>>:: Runs a custom Lua script to process observations and forward them to
+the next specified receiver.
 
 === Plots & Reports
 
@@ -1094,6 +1101,72 @@ Start *dmfs* to execute the configured job:
 ....
 $ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf
 ....
+
+=== dmgrc [[dmgrc]]
+
+The *dmgrc* program creates log messages from Leica GeoCOM return codes.
+Observations received by POSIX message queue are searched for a GeoCOM return
+code (GRC) response. If the code does not equal `GRC_OK`, a log message is sent
+to the configured logger instance.
+
+By default, observation responses of name `grc` are verified. For each GeoCOM
+error code, a custom log level may be specified in the configuration file.
+Otherwise, the default log level is used instead.
+
+==== Command-Line Options
+
+[cols="2,1,1,7"]
+|===
+| Option              | Short | Default | Description
+
+| `--config _file_`   | `-c`  | –       | Path to configuration file (required).
+| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ via IPC (if logger is set).
+| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--level _level_`   | `-L`  | 3       | Default level of log messages, between 1 and 5.
+| `--logger _name_`   | `-l`  | –       | Name of <<dmlogger>> process to send logs to.
+| `--name _name_`     | `-n`  | `dmgrc` | Name of instance and table in given configuration file.
+| `--node _id_`       | `-N`  | –       | Node id.
+| `--response _name_` | `-R`  | `grc`   | Response name of the GeoCOM return code.
+| `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
+| `--version`         | `-v`  | –       | Output version information and quit.
+|===
+
+==== Examples
+
+A configuration file is not required, but allows to specifiy the log level of
+certain GeoCOM return codes. In the following example configuration, the default
+log level for all return codes other than `GRC_OK` is set to `LVL_WARNING`. The
+level is further refined for specific GeoCOM codes:
+
+[source,lua]
+....
+-- dmgrc.conf
+dmgrc = {
+  logger = "dmlogger",
+  node = "dummy-node",
+  response = "grc",
+  level = LVL_WARNING,
+  levels {
+    debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
+    info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
+    warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
+    error = { GRC_FATAL },
+    critical = {}
+  },
+  debug = false,
+  verbose = true
+}
+....
+
+See section <<geocom-api-return-codes,GeoCOM API>> for a table of all supported
+return codes. Pass the path of the configuration file through the command-line
+argument:
+
+....
+$ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf
+....
+
+The name argument must match the name of the configuration table.
 
 === dminfo [[dminfo]]
 
@@ -4626,7 +4699,7 @@ five minutes:
 The feed is updated only if new logs have arrived in the meantime, unless option
 _force_ is enabled.
 
-== GeoCOM API
+== GeoCOM API [[geocom-api]]
 
 The official GeoCOM API is divided into the following sub-systems:
 
@@ -4647,7 +4720,10 @@ The official GeoCOM API is divided into the following sub-systems:
 | `TMC`   | Theodolite Measurement and Calculation
 |===
 
-All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
+=== Types [[geocom-api-types]]
+
+All GeoCOM named types and enumerators supported by DMPACK start with prefix
+`GEOCOM_`.
 
 [%autowidth]
 |===
@@ -5024,13 +5100,278 @@ All GeoCOM named parameters provided by DMPACK start with prefix `GEOCOM_`.
 | `GEOCOM_TPS_REFLESS_R1000` | Pinpoint R1000.
 |===
 
+=== Return Codes [[geocom-api-return-codes]]
+
+All GeoCOM return codes start with prefix `GRC_`.
+
+[%autowidth]
+|===
+| Code  | Name                             | Description
+
+| 0     | `GRC_OK`                         | Function successfully completed.
+| 1     | `GRC_UNDEFINED`                  | Unknown error, result unspecified.
+| 2     | `GRC_IVPARAM`                    | Invalid parameter detected. Result unspecified.
+| 3     | `GRC_IVRESULT`                   | Invalid result.
+| 4     | `GRC_FATAL`                      | Fatal error.
+| 5     | `GRC_NOT_IMPL`                   | Not implemented.
+| 6     | `GRC_TIME_OUT`                   | Function execution timed out. Result unspecified.
+| 7     | `GRC_SET_INCOMPL`                | Parameter setup for subsystem is incomplete.
+| 8     | `GRC_ABORT`                      | Function execution has been aborted.
+| 9     | `GRC_NOMEMORY`                   | Fatal error (not enough memory).
+| 10    | `GRC_NOTINIT`                    | Fatal error (subsystem not initialised).
+| 12    | `GRC_SHUT_DOWN`                  | Subsystem is down.
+| 13    | `GRC_SYSBUSY`                    | System busy/already in use of another process.
+| 14    | `GRC_HWFAILURE`                  | Fatal error (hardware failure).
+| 15    | `GRC_ABORT_APPL`                 | Execution of application has been aborted.
+| 16    | `GRC_LOW_POWER`                  | Operation aborted (insufficient power supply level).
+| 17    | `GRC_IVVERSION`                  | Invalid version of file.
+| 18    | `GRC_BAT_EMPTY`                  | Battery empty, about 1 minute remaining.
+| 20    | `GRC_NO_EVENT`                   | No event pending.
+| 21    | `GRC_OUT_OF_TEMP`                | Out of temperature range.
+| 22    | `GRC_INSTRUMENT_TILT`            | Instrument tilting out of range.
+| 23    | `GRC_COM_SETTING`                | Communication error.
+| 24    | `GRC_NO_ACTION`                  | GRC_TYPE input (do no action)
+| 25    | `GRC_SLEEP_MODE`                 | Instrument went into sleep mode.
+| 26    | `GRC_NOTOK`                      | Function not successfully completed.
+| 27    | `GRC_NA`                         | Not available (licence key not available).
+| 28    | `GRC_OVERFLOW`                   | Overflow error.
+| 29    | `GRC_STOPPED`                    | System or subsystem has been stopped.
+| 256   | `GRC_ANG`                        | ANG error.
+| 257   | `GRC_ANG_ERROR`                  | Angles and inclinations not valid.
+| 258   | `GRC_ANG_INCL_ERROR`             | Inclinations not valid.
+| 259   | `GRC_ANG_BAD_ACC`                | Value accuracies not reached.
+| 260   | `GRC_ANG_BAD_ANGLE_ACC`          | Angle accuracies not reached.
+| 261   | `GRC_ANG_BAD_INCLIN_ACC`         | Inclination accuracies not reached.
+| 266   | `GRC_ANG_WRITE_PROTECTED`        | No write access allowed.
+| 267   | `GRC_ANG_OUT_OF_RANGE`           | Value out of range.
+| 268   | `GRC_ANG_IR_OCCURED`             | Function aborted due to interrupt.
+| 269   | `GRC_ANG_HZ_MOVED`               | Hz moved during incline measurement.
+| 270   | `GRC_ANG_OS_ERROR`               | Troubles with operation system.
+| 271   | `GRC_ANG_DATA_ERROR`             | Overflow at parameter values.
+| 272   | `GRC_ANG_PEAK_CNT_UFL`           | Too less peaks.
+| 273   | `GRC_ANG_TIME_OUT`               | Reading timeout.
+| 274   | `GRC_ANG_TOO_MANY_EXPOS`         | Too many exposures wanted.
+| 275   | `GRC_ANG_PIX_CTRL_ERR`           | Picture height out of range.
+| 276   | `GRC_ANG_MAX_POS_SKIP`           | Positive exposure dynamic overflow.
+| 277   | `GRC_ANG_MAX_NEG_SKIP`           | Negative exposure dynamic overflow.
+| 278   | `GRC_ANG_EXP_LIMIT`              | Exposure time overflow.
+| 279   | `GRC_ANG_UNDER_EXPOSURE`         | Picture under-exposured.
+| 280   | `GRC_ANG_OVER_EXPOSURE`          | Picture over-exposured.
+| 300   | `GRC_ANG_TMANY_PEAKS`            | Too many peaks detected.
+| 301   | `GRC_ANG_TLESS_PEAKS`            | Too less peaks detected.
+| 302   | `GRC_ANG_PEAK_TOO_SLIM`          | Peak too slim.
+| 303   | `GRC_ANG_PEAK_TOO_WIDE`          | Peak to wide.
+| 304   | `GRC_ANG_BAD_PEAKDIFF`           | Bad peak difference.
+| 305   | `GRC_ANG_UNDER_EXP_PICT`         | Too less peak amplitude.
+| 306   | `GRC_ANG_PEAKS_INHOMOGEN`        | Inhomogeneous peak amplitudes.
+| 307   | `GRC_ANG_NO_DECOD_POSS`          | No peak decoding possible.
+| 308   | `GRC_ANG_UNSTABLE_DECOD`         | Peak decoding not stable.
+| 309   | `GRC_ANG_TLESS_FPEAKS`           | Too less valid fine-peaks.
+| 316   | `GRC_ANG_INCL_OLD_PLANE`         | Inclination plane out of time range.
+| 317   | `GRC_ANG_INCL_NO_PLANE`          | Inclination no plane available.
+| 326   | `GRC_ANG_FAST_ANG_ERR`           | Errors in 5 kHz and or 2.5 kHz angle.
+| 327   | `GRC_ANG_FAST_ANG_ERR_5`         | Errors in 5 kHz angle.
+| 328   | `GRC_ANG_FAST_ANG_ERR_25`        | Errors in 2.5 kHz angle.
+| 329   | `GRC_ANG_TRANS_ERR`              | LVDS transfer error detected.
+| 330   | `GRC_ANG_TRANS_ERR_5`            | LVDS transfer error detected in 5 kHz mode.
+| 331   | `GRC_ANG_TRANS_ERR_25`           | LVDS transfer error detected in 2.5 kHz mode.
+| 512   | `GRC_ATA_NOT_READY`              | ATR system is not ready.
+| 513   | `GRC_ATA_NO_RESULT`              | Result is not available yet.
+| 514   | `GRC_ATA_SEVERAL_TARGETS`        | Several targets detected.
+| 515   | `GRC_ATA_BIG_SPOT`               | Spot is too big for analyse.
+| 516   | `GRC_ATA_BACKGROUND`             | Background is too bright.
+| 517   | `GRC_ATA_NO_TARGETS`             | No targets detected.
+| 518   | `GRC_ATA_NOT_ACCURAT`            | Accuracy worse than asked for.
+| 519   | `GRC_ATA_SPOT_ON_EDGE`           | Spot is on the edge of the sensing area.
+| 522   | `GRC_ATA_BLOOMING`               | Blooming or spot on edge detected.
+| 523   | `GRC_ATA_NOT_BUSY`               | ATR is not in a continuous mode.
+| 524   | `GRC_ATA_STRANGE_LIGHT`          | Not the spot of the own target illuminator.
+| 525   | `GRC_ATA_V24_FAIL`               | Communication error to sensor (ATR).
+| 526   | `GRC_ATA_DECODE_ERROR`           | Received Arguments cannot be decoded.
+| 527   | `GRC_ATA_HZ_FAIL`                | No spot detected in Hz direction.
+| 528   | `GRC_ATA_V_FAIL`                 | No spot detected in V direction.
+| 529   | `GRC_ATA_HZ_STRANGE_L`           | Strange light in Hz direction.
+| 530   | `GRC_ATA_V_STRANGE_L`            | Strange light in V direction.
+| 531   | `GRC_ATA_SLDR_TRANSFER_PENDING`  | On multiple ATA_SLDR_OpenTransfer.
+| 532   | `GRC_ATA_SLDR_TRANSFER_ILLEGAL`  | No ATA_SLDR_OpenTransfer happened.
+| 533   | `GRC_ATA_SLDR_DATA_ERROR`        | Unexpected data format received.
+| 534   | `GRC_ATA_SLDR_CHK_SUM_ERROR`     | Checksum error in transmitted data.
+| 535   | `GRC_ATA_SLDR_ADDRESS_ERROR`     | Address out of valid range.
+| 536   | `GRC_ATA_SLDR_INV_LOADFILE`      | Firmware file has invalid format.
+| 537   | `GRC_ATA_SLDR_UNSUPPORTED`       | Current (loaded) firmware does not support upload.
+| 538   | `GRC_ATA_PS_NOT_READY`           | PowerSearch system is not ready.
+| 539   | `GRC_ATA_ATR_SYSTEM_ERR`         | ATR system error.
+| 768   | `GRC_EDM`                        | EDM error.
+| 769   | `GRC_EDM_SYSTEM_ERR`             | Fatal EDM sensor error.
+| 770   | `GRC_EDM_INVALID_COMMAND`        | Invalid command or unknown command.
+| 771   | `GRC_EDM_BOOM_ERR`               | Boomerang error.
+| 772   | `GRC_EDM_SIGN_LOW_ERR`           | Received signal to low, prism to far away, or natural barrier, bad environment, etc.
+| 773   | `GRC_EDM_DIL_ERR`                | Obsolete.
+| 774   | `GRC_EDM_SIGN_HIGH_ERR`          | Received signal to strong, prism to near, strange light effect.
+| 775   | `GRC_EDM_TIMEOUT`                | Timeout, measuring time exceeded (signal too weak, beam interrupted).
+| 776   | `GRC_EDM_FLUKT_ERR`              | Too much turbulences or distractions.
+| 777   | `GRC_EDM_FMOT_ERR`               | Filter motor defective.
+| 778   | `GRC_EDM_DEV_NOT_INSTALLED`      | Device like EGL, DL is not installed.
+| 779   | `GRC_EDM_NOT_FOUND`              | Search result invalid.
+| 780   | `GRC_EDM_ERROR_RECEIVED`         | Communication ok, but an error reported from the EDM sensor.
+| 781   | `GRC_EDM_MISSING_SRVPWD`         | No service password is set.
+| 782   | `GRC_EDM_INVALID_ANSWER`         | Communication ok, but an unexpected answer received.
+| 783   | `GRC_EDM_SEND_ERR`               | Data send error, sending buffer is full.
+| 784   | `GRC_EDM_RECEIVE_ERR`            | Data receive error, like parity buffer overflow.
+| 785   | `GRC_EDM_INTERNAL_ERR`           | Internal EDM subsystem error.
+| 786   | `GRC_EDM_BUSY`                   | Sensor is working already, abort current measuring first.
+| 787   | `GRC_EDM_NO_MEASACTIVITY`        | No measurement activity started.
+| 788   | `GRC_EDM_CHKSUM_ERR`             | Calculated checksum, resp. received data wrong.
+| 789   | `GRC_EDM_INIT_OR_STOP_ERR`       | During start up or shut down phase an error occured.
+| 790   | `GRC_EDM_SRL_NOT_AVAILABLE`      | Red laser not available on this sensor HW.
+| 791   | `GRC_EDM_MEAS_ABORTED`           | Measurement will be aborted (will be used for the laser security).
+| 798   | `GRC_EDM_SLDR_TRANSFER_PENDING`  | Multiple OpenTransfer calls.
+| 799   | `GRC_EDM_SLDR_TRANSFER_ILLEGAL`  | No open transfer happened.
+| 800   | `GRC_EDM_SLDR_DATA_ERROR`        | Unexpected data format received.
+| 801   | `GRC_EDM_SLDR_CHK_SUM_ERROR`     | Checksum error in transmitted data.
+| 802   | `GRC_EDM_SLDR_ADDR_ERROR`        | Address out of valid range.
+| 803   | `GRC_EDM_SLDR_INV_LOADFILE`      | Firmware file has invalid format.
+| 804   | `GRC_EDM_SLDR_UNSUPPORTED`       | Current (loaded) firmware doesn't support upload.
+| 808   | `GRC_EDM_UNKNOW_ERR`             | Undocumented error from the EDM sensor, should not occur.
+| 818   | `GRC_EDM_DISTRANGE_ERR`          | Out of distance range (too small or large).
+| 819   | `GRC_EDM_SIGNTONOISE_ERR`        | Signal to noise ratio too small.
+| 820   | `GRC_EDM_NOISEHIGH_ERR`          | Noise to high.
+| 821   | `GRC_EDM_PWD_NOTSET`             | Password is not set.
+| 822   | `GRC_EDM_ACTION_NO_MORE_VALID`   | Elapsed time between prepare and start fast measurement for ATR too long.
+| 823   | `GRC_EDM_MULTRG_ERR`             | Possibly more than one target (also a sensor error).
+| 824   | `GRC_EDM_MISSING_EE_CONSTS`      | EEPROM consts are missing.
+| 825   | `GRC_EDM_NOPRECISE`              | No precise measurement possible.
+| 826   | `GRC_EDM_MEAS_DIST_NOT_ALLOWED`  | Measured distance is too big (not allowed).
+| 1024  | `GRC_GMF`                        | GMF error.
+| 1025  | `GRC_GMF_WRONG_AREA_DEF`         | Wrong area definition.
+| 1026  | `GRC_GMF_IDENTICAL_PTS`          | Identical points.
+| 1027  | `GRC_GMF_PTS_IN_LINE`            | Points on one line
+| 1028  | `GRC_GMF_OUT_OF_RANGE`           | Out of range.
+| 1029  | `GRC_GMF_PLAUSIBILITY_ERR`       | Plausibility error.
+| 1030  | `GRC_GMF_TOO_FEW_OBSERVATIONS`   | Too few observations to calculate the average.
+| 1031  | `GRC_GMF_NO_SOLUTION`            | No solution.
+| 1032  | `GRC_GMF_ONE_SOLUTION`           | Only one solution.
+| 1033  | `GRC_GMF_TWO_SOLUTIONS`          | Second solution.
+| 1034  | `GRC_GMF_ANGLE_SMALLER_15GON`    | Intersection angle < 15 gon.
+| 1035  | `GRC_GMF_INVALID_TRIANGLE_TYPE`  | Invalid triangle.
+| 1036  | `GRC_GMF_INVALID_ANGLE_SYSTEM`   | Invalid angle unit.
+| 1037  | `GRC_GMF_INVALID_DIST_SYSTEM`    | Invalid distance unit.
+| 1038  | `GRC_GMF_INVALID_V_SYSTEM`       | Invalid vertical angle.
+| 1039  | `GRC_GMF_INVALID_TEMP_SYSTEM`    | Invalid temperature system.
+| 1040  | `GRC_GMF_INVALID_PRES_SYSTEM`    | Invalid pressure unit.
+| 1041  | `GRC_GMF_RADIUS_NOT_POSSIBLE`    | Invalid radius.
+| 1042  | `GRC_GMF_NO_PROVISIONAL_VALUES`  | Insufficient data (GM2).
+| 1043  | `GRC_GMF_SINGULAR_MATRIX`        | Bad data (GM2).
+| 1044  | `GRC_GMF_TOO_MANY_ITERATIONS`    | Bad data distr (GM2).
+| 1045  | `GRC_GMF_IDENTICAL_TIE_POINTS`   | Same tie points (GM2).
+| 1046  | `GRC_GMF_SETUP_EQUALS_TIE_POINT` | Station and tie point same (GM2).
+| 1280  | `GRC_TMC`                        | TMC error.
+| 1283  | `GRC_TMC_NO_FULL_CORRECTION`     | Measurement without full correction.
+| 1284  | `GRC_TMC_ACCURACY_GUARANTEE`     | Accuracy can not be guaranteed.
+| 1285  | `GRC_TMC_ANGLE_OK`               | Only angle measurement valid.
+| 1288  | `GRC_TMC_ANGLE_NOT_FULL_CORR`    | Only angle measurement valid but without full correction.
+| 1289  | `GRC_TMC_ANGLE_NO_ACC_GUARANTY`  | Only angle measurement valid but accuracy can not be guaranteed.
+| 1290  | `GRC_TMC_ANGLE_ERROR`            | No angle measurement.
+| 1291  | `GRC_TMC_DIST_PPM`               | Wrong setting of PPM or MM on EDM.
+| 1292  | `GRC_TMC_DIST_ERROR`             | Distance measurement not done (no aim).
+| 1293  | `GRC_TMC_BUSY`                   | System is busy (no measurement done).
+| 1294  | `GRC_TMC_SIGNAL_ERROR`           | No signal on EDM (only in signal mode).
+| 1792  | `GRC_MOT_UNREADY`                | Motorisation is not ready.
+| 1793  | `GRC_MOT_BUSY`                   | Motorisation is handling another task.
+| 1794  | `GRC_MOT_NOT_OCONST`             | Motorisation is not in velocity mode.
+| 1795  | `GRC_MOT_NOT_CONFIG`             | Motorisation is in the wrong mode or busy.
+| 1796  | `GRC_MOT_NOT_POSIT`              | Motorisation is not in posit mode.
+| 1797  | `GRC_MOT_NOT_SERVICE`            | Motorisation is not in service mode.
+| 1798  | `GRC_MOT_NOT_BUSY`               | Motorisation is handling no task.
+| 1799  | `GRC_MOT_NOT_LOCK`               | Motorisation is not in tracking mode.
+| 1800  | `GRC_MOT_NOT_SPIRAL`             | Motorisation is not in spiral mode.
+| 1801  | `GRC_MOT_V_ENCODER`              | Vertical encoder/motor error.
+| 1802  | `GRC_MOT_HZ_ENCODER`             | Horizontal encoder/motor error.
+| 1803  | `GRC_MOT_HZ_V_ENCODER`           | Horizontal and vertical encoder/motor error.
+| 2304  | `GRC_BMM`                        | BMM error.
+| 2305  | `GRC_BMM_XFER_PENDING`           | Loading process already opened.
+| 2306  | `GRC_BMM_NO_XFER_OPEN`           | Transfer not opened.
+| 2307  | `GRC_BMM_UNKNOWN_CHARSET`        | Unknown character set.
+| 2308  | `GRC_BMM_NOT_INSTALLED`          | Display module not present.
+| 2309  | `GRC_BMM_ALREADY_EXIST`          | Character set already exists.
+| 2310  | `GRC_BMM_CANT_DELETE`            | Character set cannot be deleted.
+| 2311  | `GRC_BMM_MEM_ERROR`              | Memory cannot be allocated.
+| 2312  | `GRC_BMM_CHARSET_USED`           | Character set still used.
+| 2313  | `GRC_BMM_CHARSET_SAVED`          | Charset cannot be deleted or is protected.
+| 2314  | `GRC_BMM_INVALID_ADR`            | Attempt to copy a character block outside the allocated memory.
+| 2315  | `GRC_BMM_CANCELANDADR_ERROR`     | Error during release of allocated memory.
+| 2316  | `GRC_BMM_INVALID_SIZE`           | Number of bytes specified in header does not match the bytes read.
+| 2317  | `GRC_BMM_CANCELANDINVSIZE_ERROR` | Allocated memory could not be released.
+| 2318  | `GRC_BMM_ALL_GROUP_OCC`          | Max. number of character sets already loaded.
+| 2319  | `GRC_BMM_CANT_DEL_LAYERS`        | Layer cannot be deleted.
+| 2320  | `GRC_BMM_UNKNOWN_LAYER`          | Required layer does not exist.
+| 2321  | `GRC_BMM_INVALID_LAYERLEN`       | Layer length exceeds maximum.
+| 3072  | `GRC_COM_ERO`                    | Initiate Extended Runtime Operation (ERO).
+| 3073  | `GRC_COM_CANT_ENCODE`            | Cannot encode arguments in client.
+| 3074  | `GRC_COM_CANT_DECODE`            | Cannot decode results in client.
+| 3075  | `GRC_COM_CANT_SEND`              | Hardware error while sending.
+| 3076  | `GRC_COM_CANT_RECV`              | Hardware error while receiving.
+| 3077  | `GRC_COM_TIMEDOUT`               | Request timed out.
+| 3078  | `GRC_COM_WRONG_FORMAT`           | Packet format error.
+| 3079  | `GRC_COM_VER_MISMATCH`           | Version mismatch between client and server.
+| 3080  | `GRC_COM_CANT_DECODE_REQ`        | Cannot decode arguments in server.
+| 3081  | `GRC_COM_PROC_UNAVAIL`           | Unknown RPC, procedure ID invalid.
+| 3082  | `GRC_COM_CANT_ENCODE_REP`        | Cannot encode results in server.
+| 3083  | `GRC_COM_SYSTEM_ERR`             | Unspecified generic system error.
+| 3085  | `GRC_COM_FAILED`                 | Unspecified error.
+| 3086  | `GRC_COM_NO_BINARY`              | Binary protocol not available.
+| 3087  | `GRC_COM_INTR`                   | Call interrupted.
+| 3090  | `GRC_COM_REQUIRES_8DBITS`        | Protocol needs 8 bit encoded characters.
+| 3093  | `GRC_COM_TR_ID_MISMATCH`         | TRANSACTIONS ID mismatch error.
+| 3094  | `GRC_COM_NOT_GEOCOM`             | Protocol not recognisable.
+| 3095  | `GRC_COM_UNKNOWN_PORT`           | Invalid port address.
+| 3099  | `GRC_COM_ERO_END`                | ERO is terminating.
+| 3100  | `GRC_COM_OVERRUN`                | Internal error (data buffer overflow).
+| 3101  | `GRC_COM_SRVR_RX_CHECKSUM_ERRR`  | Invalid checksum on server side received.
+| 3102  | `GRC_COM_CLNT_RX_CHECKSUM_ERRR`  | Invalid checksum on client side received.
+| 3103  | `GRC_COM_PORT_NOT_AVAILABLE`     | Port not available.
+| 3104  | `GRC_COM_PORT_NOT_OPEN`          | Port not opened.
+| 3105  | `GRC_COM_NO_PARTNER`             | Unable to find TPS.
+| 3106  | `GRC_COM_ERO_NOT_STARTED`        | Extended Runtime Operation could not be started.
+| 3107  | `GRC_COM_CONS_REQ`               | Att to send cons reqs.
+| 3108  | `GRC_COM_SRVR_IS_SLEEPING`       | TPS has gone to sleep (wait and try again).
+| 3109  | `GRC_COM_SRVR_IS_OFF`            | TPS has shut down (wait and try again).
+| 3110  | `GRC_COM_NO_CHECKSUM`            | No checksum in ASCII protocol available.
+| 8704  | `GRC_AUT_TIMEOUT`                | Position not reached.
+| 8705  | `GRC_AUT_DETENT_ERROR`           | Positioning not possible due to mounted EDM.
+| 8706  | `GRC_AUT_ANGLE_ERROR`            | Angle measurement error.
+| 8707  | `GRC_AUT_MOTOR_ERROR`            | Motorisation error.
+| 8708  | `GRC_AUT_INCACC`                 | Position not exactly reached.
+| 8709  | `GRC_AUT_DEV_ERROR`              | Deviation measurement error.
+| 8710  | `GRC_AUT_NO_TARGET`              | No target detected.
+| 8711  | `GRC_AUT_MULTIPLE_TARGETS`       | Multiple targets detected.
+| 8712  | `GRC_AUT_BAD_ENVIRONMENT`        | Bad environment conditions.
+| 8713  | `GRC_AUT_DETECTOR_ERROR`         | Error in target acquisition.
+| 8714  | `GRC_AUT_NOT_ENABLED`            | Target acquisition not enabled.
+| 8715  | `GRC_AUT_CALACC`                 | ATR calibration failed.
+| 8716  | `GRC_AUT_ACCURACY`               | Target position not exactly reached.
+| 8717  | `GRC_AUT_DIST_STARTED`           | Dist. measurement has been started.
+| 8718  | `GRC_AUT_SUPPLY_TOO_HIGH`        | External supply voltage is too high.
+| 8719  | `GRC_AUT_SUPPLY_TOO_LOW`         | Int. or ext. supply voltage is too low.
+| 8720  | `GRC_AUT_NO_WORKING_AREA`        | Working area not set.
+| 8721  | `GRC_AUT_ARRAY_FULL`             | Power search data array is filled.
+| 8722  | `GRC_AUT_NO_DATA`                | No data available.
+| 12544 | `GRC_KDM_NOT_AVAILABLE`          | KDM device is not available.
+| 13056 | `GRC_FTR_FILEACCESS`             | File access error.
+| 13057 | `GRC_FTR_WRONGFILEBLOCKNUMBER`   | Block number was not the expected one.
+| 13058 | `GRC_FTR_NOTENOUGHSPACE`         | Not enough space on device to proceed uploading.
+| 13059 | `GRC_FTR_INVALIDINPUT`           | Rename of file failed.
+| 13060 | `GRC_FTR_MISSINGSETUP`           | Invalid parameter as input.
+|===
+
 == Lua API [[lua-api]]
 
-Parts of the DMPACK library are exposed to Lua through the following API. Log
-levels and error codes are registered as named parameters. The GeoCOM API
-includes named parameters and functions for request preparation. The GeoCOM
+Parts of the DMPACK library are exposed to Lua through a distinct API. Log
+levels and error codes are registered as named parameters. The
+<<geocom-api,GeoCOM API>> includes named parameters of enumerators and return
+codes beside functions for <<lua-api-geocom,request preparation>>. The GeoCOM
 functions may be called from the configuration file of <<dmserial>> to
-initialise the job observations, for example:
+initialise jobs, for example:
 
 [source,lua]
 ....
@@ -5057,7 +5398,7 @@ jobs = {
   },
   {
     --
-    -- Single measurement of target p01.
+    -- Single measurement of target p01 every 10 seconds.
     --
     onetime = false,
     delay = 10 * 1000,
@@ -5132,7 +5473,7 @@ gon = deg2gon(360.0)
 print(gon)
 ....
 
-=== GeoCOM
+=== GeoCOM [[lua-api-geocom]]
 
 The GeoCOM API for Lua is used to automate the creation of observation requests
 in DMPACK configuration files. The Lua function names do not match the official
@@ -6400,6 +6741,7 @@ $ sh hdfview.sh
 | 23   | `E_READ_ONLY`       | Read-only access.
 | 24   | `E_CORRUPT`         | Data corrupted.
 | 25   | `E_CONFIG`          | Invalid configuration.
+| 26   | `E_GEOCOM`          | GeoCOM error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_BUSY`         | Database is busy.

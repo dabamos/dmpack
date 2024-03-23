@@ -113,6 +113,7 @@ The following programs are based on the DMPACK library.
 | [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
 | [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
+| [dmgrc](adoc/dmgrc.adoc)       | Generates log messages from GeoCOM return codes.                    |
 | [dmimport](adoc/dmimport.adoc) | Imports CSV file into database.                                     |
 | [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key-value pairs.          |
 | [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |

@@ -42,6 +42,7 @@ module dm_error
     integer, parameter, public :: E_READ_ONLY      =  23 !! Read-only access.
     integer, parameter, public :: E_CORRUPT        =  24 !! Data corrupted.
     integer, parameter, public :: E_CONFIG         =  25 !! Invalid configuration error.
+    integer, parameter, public :: E_GEOCOM         =  26 !! GeoCOM error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -192,6 +193,8 @@ contains
                 str = 'data corrupted'
             case (E_CONFIG)
                 str = 'configuration error'
+            case (E_GEOCOM)
+                str = 'GeoCOM error'
 
             ! Database.
             case (E_DB)

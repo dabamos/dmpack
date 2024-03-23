@@ -57,9 +57,9 @@ contains
         rc = E_NONE
 
         args = [ &
-            arg_type('convert', short='C', type=ARG_TYPE_BOOL),    & ! -C, --convert
+            arg_type('convert', short='C', type=ARG_TYPE_LOGICAL), & ! -C, --convert
             arg_type('count',   short='n', type=ARG_TYPE_INTEGER), & ! -n, --count
-            arg_type('hyphens', short='H', type=ARG_TYPE_BOOL)     & ! -H, --hyphens
+            arg_type('hyphens', short='H', type=ARG_TYPE_LOGICAL)  & ! -H, --hyphens
         ]
 
         ! Read all command-line arguments.

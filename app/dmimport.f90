@@ -283,13 +283,13 @@ contains
         type_name = ' '
 
         args = [ &
-            arg_type('type',      short='t', type=ARG_TYPE_CHAR, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
-            arg_type('database',  short='d', type=ARG_TYPE_DB), &                    ! -d, --database <path>
-            arg_type('input',     short='i', type=ARG_TYPE_CHAR, required=.true.), & ! -i, --input <path>
-            arg_type('quote',     short='q', type=ARG_TYPE_CHAR, max_len=1), &       ! -q, --quote <char>
-            arg_type('separator', short='s', type=ARG_TYPE_CHAR, max_len=1), &       ! -s, --separator <char>
-            arg_type('dry',       short='y', type=ARG_TYPE_BOOL), &                  ! -y, --dry
-            arg_type('verbose',   short='V', type=ARG_TYPE_BOOL) &                   ! -V, --verbose
+            arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
+            arg_type('database',  short='d', type=ARG_TYPE_DB),                      & ! -d, --database <path>
+            arg_type('input',     short='i', type=ARG_TYPE_STRING, required=.true.), & ! -i, --input <path>
+            arg_type('quote',     short='q', type=ARG_TYPE_CHAR),                    & ! -q, --quote <char>
+            arg_type('separator', short='s', type=ARG_TYPE_CHAR),                    & ! -s, --separator <char>
+            arg_type('dry',       short='y', type=ARG_TYPE_LOGICAL),                 & ! -y, --dry
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -306,6 +306,7 @@ contains
 
         app%type = dm_type_from_name(type_name)
 
+        ! Validate arguments.
         rc = E_INVALID
 
         if (.not. app%dry) then
@@ -320,7 +321,6 @@ contains
             end if
         end if
 
-        ! Validate data type.
         select case (app%type)
             case (TYPE_NODE, TYPE_SENSOR, TYPE_TARGET, TYPE_OBSERV, TYPE_LOG)
                 continue

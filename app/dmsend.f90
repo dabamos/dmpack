@@ -66,17 +66,17 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),   & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),   & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),   & ! -N, --node <string>
-            arg_type('input',    short='i', type=ARG_TYPE_CHAR), & ! -i, --input <path>
-            arg_type('format',   short='f', type=ARG_TYPE_CHAR), & ! -f, --format <string>
-            arg_type('type',     short='t', type=ARG_TYPE_CHAR), & ! -t, --type <string>
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('input',    short='i', type=ARG_TYPE_STRING),  & ! -i, --input <path>
+            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type <string>
             arg_type('receiver', short='r', type=ARG_TYPE_ID, max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_BOOL), & ! -D, --debug
-            arg_type('forward',  short='F', type=ARG_TYPE_BOOL), & ! -F, --forward
-            arg_type('verbose',  short='V', type=ARG_TYPE_BOOL)  & ! -V, --verbose
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('forward',  short='F', type=ARG_TYPE_LOGICAL), & ! -F, --forward
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
