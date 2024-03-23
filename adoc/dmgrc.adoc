@@ -50,7 +50,7 @@ Otherwise, the default log level is used instead.
   Name of _dmlogger(1)_ process to send logs to.
 
 *--name*, *-n* _name_::
-  Name of program instance and configuration (default is `dmgrc`).
+  Name of program instance and configuration (`dmgrc` by default).
 
 *--node*, *-N* _id_::
   Node id.
@@ -89,7 +89,7 @@ dmgrc = {
   node = "dummy-node",
   response = "grc",
   level = LVL_WARNING,
-  levels {
+  levels = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
     warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },

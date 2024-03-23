@@ -2,12 +2,12 @@
 .\"     Title: dmgrc
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.21
-.\"      Date: 2024-03-22
+.\"      Date: 2024-03-23
 .\"    Manual: User Commands
 .\"    Source: DMGRC
 .\"  Language: English
 .\"
-.TH "DMGRC" "1" "2024-03-22" "DMGRC" "User Commands"
+.TH "DMGRC" "1" "2024-03-23" "DMGRC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -79,7 +79,7 @@ Name of \fIdmlogger(1)\fP process to send logs to.
 .sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
-Name of program instance and configuration (default is \f(CRdmgrc\fP).
+Name of program instance and configuration (\f(CRdmgrc\fP by default).
 .RE
 .sp
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP
@@ -130,7 +130,7 @@ dmgrc = {
   node = "dummy\-node",
   response = "grc",
   level = LVL_WARNING,
-  levels {
+  levels = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
     warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
