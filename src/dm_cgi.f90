@@ -315,7 +315,7 @@ contains
 
         integer :: code ! HTTP code.
 
-        code = 200
+        code = HTTP_OK
         if (present(http_status)) code = http_status
 
         write (stdout, '("Content-Type: ", 2a)',   advance='no') content_type, CR_LF

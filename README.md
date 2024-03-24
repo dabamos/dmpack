@@ -1,6 +1,8 @@
 # Deformation Monitoring Package (DMPACK)
 
-[![Build](https://github.com/dabamos/dmpack/actions/workflows/build.yml/badge.svg)](https://github.com/dabamos/dmpack/actions/workflows/build.yml)
+![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
+![License](https://img.shields.io/github/license/dabamos/dmpack)
+![Version](https://img.shields.io/badge/Version-0.9.4-green)
 
 DMPACK is a free and open-source software package for IoT-based automatic
 deformation monitoring and distributed control measurements in engineering
