@@ -294,12 +294,14 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure function dm_geocom_error_message(code) result(str)
+    pure function dm_geocom_error_message(grc) result(str)
         !! Returns message associated with given GeoCOM (error) code.
-        integer, intent(in)           :: code !! GeoCOM code.
-        character(len=:), allocatable :: str  !! GeoCOM code message.
+        use :: dm_util, only: dm_itoa
 
-        select case (code)
+        integer, intent(in)           :: grc !! GeoCOM return code.
+        character(len=:), allocatable :: str !! GeoCOM return code message.
+
+        select case (grc)
             ! TPS
             case (GRC_OK)
                 str = 'function successfully completed'
@@ -384,7 +386,7 @@ contains
             case (GRC_ANG_DATA_ERROR)
                 str = 'overflow at parameter values'
             case (GRC_ANG_PEAK_CNT_UFL)
-                str = 'too less peaks'
+                str = 'not enough peaks'
             case (GRC_ANG_TIME_OUT)
                 str = 'reading timeout'
             case (GRC_ANG_TOO_MANY_EXPOS)
@@ -404,15 +406,15 @@ contains
             case (GRC_ANG_TMANY_PEAKS)
                 str = 'too many peaks detected'
             case (GRC_ANG_TLESS_PEAKS)
-                str = 'too less peaks detected'
+                str = 'not enough peaks detected'
             case (GRC_ANG_PEAK_TOO_SLIM)
                 str = 'peak too slim'
             case (GRC_ANG_PEAK_TOO_WIDE)
-                str = 'peak to wide'
+                str = 'peak too wide'
             case (GRC_ANG_BAD_PEAKDIFF)
                 str = 'bad peak difference'
             case (GRC_ANG_UNDER_EXP_PICT)
-                str = 'too less peak amplitude'
+                str = 'peak amplitude to low'
             case (GRC_ANG_PEAKS_INHOMOGEN)
                 str = 'inhomogeneous peak amplitudes'
             case (GRC_ANG_NO_DECOD_POSS)
@@ -420,11 +422,11 @@ contains
             case (GRC_ANG_UNSTABLE_DECOD)
                 str = 'peak decoding not stable'
             case (GRC_ANG_TLESS_FPEAKS)
-                str = 'too less valid fine-peaks'
+                str = 'not enough valid fine-peaks'
             case (GRC_ANG_INCL_OLD_PLANE)
                 str = 'inclination plane out of time range'
             case (GRC_ANG_INCL_NO_PLANE)
-                str = 'inclination no plane available'
+                str = 'inclination plane not available'
             case (GRC_ANG_FAST_ANG_ERR)
                 str = 'errors in 5 kHz and or 2.5 kHz angle'
             case (GRC_ANG_FAST_ANG_ERR_5)
@@ -486,7 +488,7 @@ contains
             case (GRC_ATA_SLDR_INV_LOADFILE)
                 str = 'firmware file has invalid format'
             case (GRC_ATA_SLDR_UNSUPPORTED)
-                str = 'current (loaded) firmware does not support upload'
+                str = 'currently loaded firmware does not support upload'
             case (GRC_ATA_PS_NOT_READY)
                 str = 'PowerSearch system is not ready'
             case (GRC_ATA_ATR_SYSTEM_ERR)
@@ -502,7 +504,7 @@ contains
             case (GRC_EDM_BOOM_ERR)
                 str = 'boomerang error'
             case (GRC_EDM_SIGN_LOW_ERR)
-                str = 'received signal to low, prism to far away, or natural barrier, bad environment'
+                str = 'received signal too low, prism too far away, or natural barrier, bad environment'
             case (GRC_EDM_DIL_ERR)
                 str = 'obsolete'
             case (GRC_EDM_SIGN_HIGH_ERR)
@@ -518,11 +520,11 @@ contains
             case (GRC_EDM_NOT_FOUND)
                 str = 'search result invalid'
             case (GRC_EDM_ERROR_RECEIVED)
-                str = 'Communication ok, but an error reported from the EDM sensor'
+                str = 'communication ok, but error reported from the EDM sensor'
             case (GRC_EDM_MISSING_SRVPWD)
                 str = 'no service password is set'
             case (GRC_EDM_INVALID_ANSWER)
-                str = 'communication ok, but an unexpected answer received'
+                str = 'communication ok, but unexpected answer received'
             case (GRC_EDM_SEND_ERR)
                 str = 'data send error, sending buffer is full'
             case (GRC_EDM_RECEIVE_ERR)
@@ -538,11 +540,11 @@ contains
             case (GRC_EDM_INIT_OR_STOP_ERR)
                 str = 'during start up or shut down phase an error occured'
             case (GRC_EDM_SRL_NOT_AVAILABLE)
-                str = 'red laser not available on this sensor HW'
+                str = 'red laser not available on this sensor hardware'
             case (GRC_EDM_MEAS_ABORTED)
-                str = 'measurement will be aborted (will be used for the laser security)'
+                str = 'measurement will be aborted for laser security'
             case (GRC_EDM_SLDR_TRANSFER_PENDING)
-                str = 'multiple OpenTransfer calls'
+                str = 'multiple open transfer calls'
             case (GRC_EDM_SLDR_TRANSFER_ILLEGAL)
                 str = 'no open transfer happened'
             case (GRC_EDM_SLDR_DATA_ERROR)
@@ -554,11 +556,11 @@ contains
             case (GRC_EDM_SLDR_INV_LOADFILE)
                 str = 'firmware file has invalid format'
             case (GRC_EDM_SLDR_UNSUPPORTED)
-                str = 'current (loaded) firmware does not support upload'
+                str = 'currently loaded firmware does not support upload'
             case (GRC_EDM_UNKNOW_ERR)
                 str = 'undocumented error from the EDM sensor'
             case (GRC_EDM_DISTRANGE_ERR)
-                str = 'out of distance range (too small or large)'
+                str = 'out of distance range (too short or too long)'
             case (GRC_EDM_SIGNTONOISE_ERR)
                 str = 'signal to noise ratio too small'
             case (GRC_EDM_NOISEHIGH_ERR)
@@ -566,7 +568,7 @@ contains
             case (GRC_EDM_PWD_NOTSET)
                 str = 'password is not set'
             case (GRC_EDM_ACTION_NO_MORE_VALID)
-                str = 'elapsed time between prepare and start fast measurement for ATR too long'
+                str = 'elapsed time between prepare and start of fast measurement for ATR too long'
             case (GRC_EDM_MULTRG_ERR)
                 str = 'possibly more than one target (also a sensor error)'
             case (GRC_EDM_MISSING_EE_CONSTS)
@@ -574,7 +576,7 @@ contains
             case (GRC_EDM_NOPRECISE)
                 str = 'no precise measurement possible'
             case (GRC_EDM_MEAS_DIST_NOT_ALLOWED)
-                str = 'measured distance is too big (not allowed)'
+                str = 'measured distance is too long (not allowed)'
 
             ! GMF
             case (GRC_GMF)
@@ -746,7 +748,7 @@ contains
             case (GRC_COM_REQUIRES_8DBITS)
                 str = 'protocol needs 8 bit encoded characters'
             case (GRC_COM_TR_ID_MISMATCH)
-                str = 'TRANSACTIONS ID mismatch error'
+                str = 'transaction id mismatch error'
             case (GRC_COM_NOT_GEOCOM)
                 str = 'protocol not recognisable'
             case (GRC_COM_UNKNOWN_PORT)
@@ -766,7 +768,7 @@ contains
             case (GRC_COM_NO_PARTNER)
                 str = 'unable to find TPS'
             case (GRC_COM_ERO_NOT_STARTED)
-                str = 'extended Runtime Operation could not be started'
+                str = 'Extended Runtime Operation could not be started'
             case (GRC_COM_CONS_REQ)
                 str = 'att to send cons reqs'
             case (GRC_COM_SRVR_IS_SLEEPING)
@@ -804,11 +806,11 @@ contains
             case (GRC_AUT_ACCURACY)
                 str = 'target position not exactly reached'
             case (GRC_AUT_DIST_STARTED)
-                str = 'dist. measurement has been started'
+                str = 'distance measurement has been started'
             case (GRC_AUT_SUPPLY_TOO_HIGH)
                 str = 'external supply voltage is too high'
             case (GRC_AUT_SUPPLY_TOO_LOW)
-                str = 'int. or ext. supply voltage is too low'
+                str = 'internal or external supply voltage is too low'
             case (GRC_AUT_NO_WORKING_AREA)
                 str = 'working area not set'
             case (GRC_AUT_ARRAY_FULL)
@@ -833,7 +835,7 @@ contains
                 str = 'invalid parameter as input'
 
             case default
-                str = 'unknown GeoCOM code'
+                str = 'unknown GeoCOM code (' // dm_itoa(grc) // ')'
         end select
     end function dm_geocom_error_message
 

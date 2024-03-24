@@ -40,10 +40,18 @@ contains
     integer function dm_pipe_open(pipe, command, access) result(rc)
         !! Opens a process by creating a pipe, forking, and invoking the shell.
         !! Access mode has to be either `PIPE_RDONLY` or `PIPE_WRONLY`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if pipe is already associated.
+        !! * `E_INVALID` if access mode is invalid.
+        !! * `E_SYSTEM` if system call failed.
+        !!
         type(pipe_type),  intent(inout) :: pipe    !! Pipe type.
         character(len=*), intent(in)    :: command !! Name or path of binary to open.
         integer,          intent(in)    :: access  !! Open pipe for reading or writing.
-        character(len=2)                :: a
+
+        character(len=2) :: a
 
         rc = E_EXIST
         if (c_associated(pipe%ptr)) return
@@ -66,7 +74,8 @@ contains
     end function dm_pipe_open
 
     integer function dm_pipe_open2(stdin, stdout, stderr, command) result(rc)
-        !! Creates three anonymous pipes for bidirectional IPC (`stdin`, `stdout`, `stderr`).
+        !! Creates three anonymous pipes for bidirectional IPC (`stdin`,
+        !! `stdout`, `stderr`). The function return `E_SYSTEM` on error.
         type(pipe_type),  intent(out) :: stdin   !! Standard input descriptor.
         type(pipe_type),  intent(out) :: stdout  !! Standard output descriptor.
         type(pipe_type),  intent(out) :: stderr  !! Standard error descriptor.
@@ -86,7 +95,10 @@ contains
 
         pid = c_fork()
 
-        if (pid > 0) then
+        if (pid < 0) then
+            ! Fork error.
+            return
+        else if (pid > 0) then
             ! Parent process.
             stat = c_close(p1(1))
             stat = c_close(p2(2))
@@ -118,7 +130,7 @@ contains
                            trim(command) // c_null_char, &
                            c_null_ptr)
 
-            call c_exit(1)
+            call c_exit(0)
         end if
     end function dm_pipe_open2
 
@@ -135,7 +147,14 @@ contains
     end function dm_pipe_read
 
     integer function dm_pipe_write(pipe, str) result(rc)
-        !! Writes to pipe. Trims the string, adds new line and null-termination.
+        !! Writes to pipe. Trims the string, adds new line and
+        !! null-termination.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if pipe is not associated or access mode is not `PIPE_RDONLY`.
+        !! * `E_SYSTEM` if system call failed.
+        !!
         type(pipe_type),  intent(inout) :: pipe !! Pipe type.
         character(len=*), intent(in)    :: str  !! String to write to the pipe.
 
@@ -150,7 +169,7 @@ contains
     end function dm_pipe_write
 
     integer(kind=i8) function dm_pipe_write2(pipe, bytes) result(sz)
-        !! Writes to pipe (binary).
+        !! Writes to pipe (binary) and returns the number of bytes written.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(in)    :: bytes !! Bytes to write to the pipe.
 
@@ -162,18 +181,20 @@ contains
     subroutine dm_pipe_close(pipe)
         !! Closes pipe to process.
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
-        integer                        :: rc
 
-        if (c_associated(pipe%ptr)) rc = c_pclose(pipe%ptr)
-        if (rc == 0) pipe%ptr = c_null_ptr
+        integer :: stat
+
+        if (c_associated(pipe%ptr)) stat = c_pclose(pipe%ptr)
+        if (stat == 0) pipe%ptr = c_null_ptr
     end subroutine dm_pipe_close
 
     subroutine dm_pipe_close2(pipe)
         !! Closes pipe to process (binary).
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
-        integer                        :: rc
 
-        if (c_associated(pipe%ptr)) rc = c_fclose(pipe%ptr)
-        if (rc == 0) pipe%ptr = c_null_ptr
+        integer :: stat
+
+        if (c_associated(pipe%ptr)) stat = c_fclose(pipe%ptr)
+        if (stat == 0) pipe%ptr = c_null_ptr
     end subroutine dm_pipe_close2
 end module dm_pipe

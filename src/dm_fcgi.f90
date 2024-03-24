@@ -3,12 +3,9 @@
 module dm_fcgi
     !! FastCGI interface bindings and procedures.
     use, intrinsic :: iso_c_binding
-    use :: dm_ascii
     use :: dm_cgi
     use :: dm_error
     use :: dm_kind
-    use :: dm_http
-    use :: dm_util
     implicit none (type, external)
     private
 
@@ -63,30 +60,39 @@ contains
         integer          :: stat
         integer(kind=i8) :: i
 
-        rc = E_BOUNDS
-        if (env%content_length < 0) return
+        fcgi_block: block
+            rc = E_BOUNDS
+            if (env%content_length < 0) exit fcgi_block
 
-        rc = E_ALLOC
-        allocate (character(len=env%content_length) :: content, stat=stat)
-        if (stat /= 0) return
+            rc = E_ALLOC
+            allocate (character(len=env%content_length) :: content, stat=stat)
+            if (stat /= 0) exit fcgi_block
 
-        rc = E_NONE
-        if (env%content_length < 0) return
+            rc = E_NONE
+            do i = 1, env%content_length
+                content(i:i) = achar(fcgi_getchar())
+            end do
 
-        do i = 1, env%content_length
-            content(i:i) = achar(fcgi_getchar())
-        end do
+            return
+        end block fcgi_block
+
+        if (.not. allocated(content)) allocate (character(len=0) :: content)
     end function dm_fcgi_content
 
     subroutine dm_fcgi_header(content_type, http_status)
         !! Writes HTTP header. A sane HTTP server converts the status code in
         !! the header to a real HTTP status code, as we cannot return it in any
-        !! other way with FastCGI. Default HTTP status code is 200.
+        !! other way with FastCGI. The default HTTP status code is 200.
+        use :: dm_ascii
+        use :: dm_http
+        use :: dm_util
+
         character(len=*), intent(in)           :: content_type !! MIME type.
         integer,          intent(in), optional :: http_status  !! HTTP status code.
-        integer                                :: code, stat
 
-        code = 200
+        integer :: code, stat
+
+        code = HTTP_OK
         if (present(http_status)) code = http_status
 
         stat = fcgi_puts('Content-Type: ' // trim(content_type) // CR_LF // &
@@ -97,7 +103,8 @@ contains
     subroutine dm_fcgi_out(content)
         !! Writes given content as response.
         character(len=*), intent(in) :: content !! Response content.
-        integer                      :: stat
+
+        integer :: stat
 
         stat = fcgi_puts(content // c_null_char)
     end subroutine dm_fcgi_out

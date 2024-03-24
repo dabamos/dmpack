@@ -33,7 +33,7 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 1
+    integer, parameter :: APP_PATCH = 2
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -75,14 +75,9 @@ program dmapi
                cgi_route_type('/timeseries', route_timeseries) ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_DB_BEAT', db_beat, n)
-    if (dm_is_error(rc)) call dm_stop(1)
-
-    rc = dm_env_get('DM_DB_LOG', db_log, n)
-    if (dm_is_error(rc)) call dm_stop(1)
-
-    rc = dm_env_get('DM_DB_OBSERV', db_observ, n)
-    if (dm_is_error(rc)) call dm_stop(1)
+    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n); if (dm_is_error(rc)) call dm_stop(1)
+    rc = dm_env_get('DM_DB_LOG',    db_log,    n); if (dm_is_error(rc)) call dm_stop(1)
+    rc = dm_env_get('DM_DB_OBSERV', db_observ, n); if (dm_is_error(rc)) call dm_stop(1)
 
     rc = dm_env_get('DM_READ_ONLY', read_only, .false.)
 
@@ -117,27 +112,28 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * node_id - Node id.
+        !! * `node_id` - Node id.
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Heartbeat is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Heartbeat was not found.
-        !! * 503 - Database error.
+        !! * `200` - Heartbeat is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Heartbeat was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Heartbeat was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Heartbeat was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -166,6 +162,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -173,6 +170,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -187,11 +185,19 @@ contains
                     rc = dm_nml_to(content, beat)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate beat.
+                if (.not. dm_beat_valid(beat)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid beat data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate node id.
                 if (dm_cgi_auth(env)) then
                     if (env%remote_user /= beat%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
@@ -199,17 +205,19 @@ contains
                     end if
                 end if
 
+                ! Set time stamp and remote IP address.
                 beat%time_recv = dm_time_now()
                 beat%address   = env%remote_addr
 
-                rc = dm_db_insert(db, beat)
+                ! Insert beat into database.
+                rc = dm_db_insert(db, beat, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -219,17 +227,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter node_id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter node_id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_valid(node_id)) then
-                call api_error(code, 'invalid parameter node_id', rc)
+                call api_error(code, 'invalid parameter node_id', E_INVALID)
                 exit response_block
             end if
 
@@ -278,15 +284,16 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * header - CSV header (0 or 1).
+        !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Beats are returned.
-        !! * 404 - No beats found.
-        !! * 503 - Database error.
+        !! * `200` - Beats are returned.
+        !! * `404` - No beats found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -351,28 +358,29 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * id - Log id (UUID4).
+        !! * `id` - Log id (UUID4).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Log is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Log was not found.
-        !! * 503 - Database error.
+        !! * `200` - Log is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Log was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Log was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 409 - Log exists in database.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Log was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `409` - Log exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -401,6 +409,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -408,6 +417,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -422,11 +432,19 @@ contains
                     rc = dm_nml_to(content, log)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate log.
+                if (.not. dm_log_valid(log)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid log data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate node id.
                 if (dm_cgi_auth(env)) then
                     if (env%remote_user /= log%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
@@ -434,19 +452,21 @@ contains
                     end if
                 end if
 
+                ! Validate uniqueness.
                 if (dm_db_log_exists(db, log%id)) then
                     call api_error(HTTP_CONFLICT, 'log exists', E_EXIST)
                     exit response_block
                 end if
 
-                rc = dm_db_insert(db, log)
+                ! Insert log into database.
+                rc = dm_db_insert(db, log, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -456,17 +476,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_uuid4_valid(id)) then
-                call api_error(code, 'invalid parameter id', rc)
+                call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -515,22 +533,24 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * node_id - Node id.
-        !! * from    - Start timestamp (ISO 8601).
-        !! * to      - End timestamp (ISO 8601).
-        !! * header  - CSV header (0 or 1).
+        !! * `node_id` - Node id.
+        !! * `from`    - Start timestamp (ISO 8601).
+        !! * `to`      - End timestamp (ISO 8601).
+        !! * `header`  - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Logs are returned.
-        !! * 400 - Invalid request.
-        !! * 404 - No logs found.
-        !! * 503 - Database error.
+        !! * `200` - Logs are returned.
+        !! * `400` - Invalid request.
+        !! * `404` - No logs found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
-        integer                           :: rc
-        type(db_type)                     :: db
+
+        integer       :: rc
+        type(db_type) :: db
 
         rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
@@ -552,7 +572,7 @@ contains
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
-            rc = E_INVALID
+            rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
             ! Mandatory GET parameters.
@@ -662,28 +682,29 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * id - Node id.
+        !! * `id` - Node id.
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Node is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Node was not found.
-        !! * 503 - Database error.
+        !! * `200` - Node is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Node was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Node was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 409 - Node exists in database.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Node was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `409` - Node exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -712,6 +733,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -719,6 +741,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -733,11 +756,19 @@ contains
                     rc = dm_nml_to(content, node)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate node data.
+                if (.not. dm_node_valid(node)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid node data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate node id.
                 if (dm_cgi_auth(env)) then
                     if (env%remote_user /= node%id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
@@ -745,19 +776,21 @@ contains
                     end if
                 end if
 
+                ! Validate uniqueness.
                 if (dm_db_node_exists(db, node%id)) then
                     call api_error(HTTP_CONFLICT, 'node exists', E_EXIST)
                     exit response_block
                 end if
 
-                rc = dm_db_insert(db, node)
+                ! Insert node into database.
+                rc = dm_db_insert(db, node, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -767,17 +800,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_valid(id)) then
-                call api_error(code, 'invalid parameter id', rc)
+                call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -825,15 +856,16 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * header  - CSV header (0 or 1).
+        !! * `header`  - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Nodes are returned.
-        !! * 404 - No nodes found.
-        !! * 503 - Database error.
+        !! * `200` - Nodes are returned.
+        !! * `404` - No nodes found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -852,10 +884,6 @@ contains
             type(cgi_param_type)         :: param
             type(node_type), allocatable :: nodes(:)
 
-            ! Optional GET parameters.
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
             ! Select all nodes from database.
             rc = dm_db_select_nodes(db, nodes)
 
@@ -870,6 +898,10 @@ contains
             ! Select MIME type from HTTP Accept header.
             select case (content_type(env, MIME_CSV))
                 case (MIME_CSV)
+                    ! Optional GET parameters.
+                    call dm_cgi_query(env, param)
+                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(nodes, header=header))
@@ -898,28 +930,29 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * id - Observation id (UUID4).
+        !! * `id` - Observation id (UUID4).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Observation is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Observation was not found.
-        !! * 503 - Database error.
+        !! * `200` - Observation is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Observation was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Observation was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 409 - Observation exists in database.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Observation was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `409` - Observation exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -948,6 +981,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -955,6 +989,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -969,11 +1004,19 @@ contains
                     rc = dm_nml_to(content, observ)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate observation data.
+                if (.not. dm_observ_valid(observ)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid observ data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate node id.
                 if (dm_cgi_auth(env)) then
                     if (env%remote_user /= observ%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
@@ -981,19 +1024,21 @@ contains
                     end if
                 end if
 
+                ! Validate uniqueness.
                 if (dm_db_observ_exists(db, observ%id)) then
                     call api_error(HTTP_CONFLICT, 'observation exists', E_EXIST)
                     exit response_block
                 end if
 
-                rc = dm_db_insert(db, observ)
+                ! Insert observation into database.
+                rc = dm_db_insert(db, observ, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -1003,17 +1048,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_uuid4_valid(id)) then
-                call api_error(code, 'invalid parameter id', rc)
+                call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1062,22 +1105,23 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * node_id   - Node id.
-        !! * sensor_id - Sensor id.
-        !! * target_id - Target id.
-        !! * from      - Start timestamp (ISO 8601).
-        !! * to        - End timestamp (ISO 8601).
-        !! * limit     - Max. number of results (optional).
-        !! * header    - CSV header (0 or 1).
+        !! * `node_id`   - Node id.
+        !! * `sensor_id` - Sensor id.
+        !! * `target_id` - Target id.
+        !! * `from`      - Start timestamp (ISO 8601).
+        !! * `to`        - End timestamp (ISO 8601).
+        !! * `limit`     - Max. number of results (optional).
+        !! * `header`    - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Observations are returned.
-        !! * 400 - Invalid request.
-        !! * 404 - No observations found.
-        !! * 503 - Database error.
+        !! * `200` - Observations are returned.
+        !! * `400` - Invalid request.
+        !! * `404` - No observations found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1104,7 +1148,7 @@ contains
             call dm_cgi_query(env, param)
 
             ! Mandatory parameters.
-            rc = E_INVALID
+            rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
@@ -1169,8 +1213,6 @@ contains
                 limit = limit_
             end if
 
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
             ! Select observations from database.
             rc = dm_db_select_observs(db, observs, node_id, sensor_id, target_id, &
                                       from, to, limit=int(limit, kind=i8))
@@ -1188,6 +1230,9 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
+
+                    ! Add optional CSV header.
+                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
                     if (header) call dm_fcgi_out(dm_csv_header_observ())
 
                     do i = 1, size(observs)
@@ -1235,27 +1280,20 @@ contains
         !! * GET
         !!
         !! ## GET Responses
-        !! * 200 - Always.
+        !! * `200` - Always.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         character(len=API_STATUS_LEN) :: message
-        integer                       :: er, rc
+        integer                       :: rc
         type(api_status_type)         :: api
-        type(db_type)                 :: db
+
+        rc = E_NONE
 
         ! Check database availability.
-        rc = dm_db_open(db, db_beat, read_only=.true.)
-        er = dm_db_close(db)
-
-        if (dm_is_ok(rc)) then
-            rc = dm_db_open(db, db_log, read_only=.true.)
-            er = dm_db_close(db)
-        end if
-
-        if (dm_is_ok(rc)) then
-            rc = dm_db_open(db, db_observ, read_only=.true.)
-            er = dm_db_close(db)
-        end if
+        if (.not. dm_file_exists(db_beat) .or. &
+            .not. dm_file_exists(db_log)  .or. &
+            .not. dm_file_exists(db_observ)) rc = E_NOT_FOUND
 
         if (dm_is_error(rc)) then
             message = dm_error_message(rc)
@@ -1286,28 +1324,29 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * id - Sensor id.
+        !! * `id` - Sensor id.
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Sensor is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Sensor was not found.
-        !! * 503 - Database error.
+        !! * `200` - Sensor is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Sensor was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Sensor was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 409 - Sensor exists in database.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Sensor was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `409` - Sensor exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1336,6 +1375,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -1343,6 +1383,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -1357,11 +1398,19 @@ contains
                     rc = dm_nml_to(content, sensor)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate sensor data.
+                if (.not. dm_sensor_valid(sensor)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid sensor data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate node id.
                 if (dm_cgi_auth(env)) then
                     if (env%remote_user /= sensor%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
@@ -1369,19 +1418,21 @@ contains
                     end if
                 end if
 
+                ! Validate uniqueness.
                 if (dm_db_sensor_exists(db, sensor%id)) then
                     call api_error(HTTP_CONFLICT, 'sensor exists', E_EXIST)
                     exit response_block
                 end if
 
-                rc = dm_db_insert(db, sensor)
+                ! Insert sensor into database.
+                rc = dm_db_insert(db, sensor, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -1391,17 +1442,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_valid(id)) then
-                call api_error(code, 'invalid parameter id', rc)
+                call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1449,16 +1498,17 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * header - CSV header (0 or 1).
+        !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Sensors are returned.
-        !! * 400 - Invalid request.
-        !! * 404 - No sensors found.
-        !! * 503 - Database error.
+        !! * `200` - Sensors are returned.
+        !! * `400` - Invalid request.
+        !! * `404` - No sensors found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1477,10 +1527,6 @@ contains
             type(cgi_param_type)           :: param
             type(sensor_type), allocatable :: sensors(:)
 
-            ! Optional GET parameters.
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
             ! Select all sensors from database.
             rc = dm_db_select_sensors(db, sensors)
 
@@ -1495,6 +1541,10 @@ contains
             ! Select MIME type from HTTP Accept header.
             select case (content_type(env, MIME_CSV))
                 case (MIME_CSV)
+                    ! Optional GET parameters.
+                    call dm_cgi_query(env, param)
+                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(sensors, header=header))
@@ -1523,28 +1573,29 @@ contains
         !! * GET, POST
         !!
         !! ## GET Parameters
-        !! * id - Target id.
+        !! * `id` - Target id.
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * Content-Encoding - `deflate` (optional)
-        !! * Content-Type     - `application/namelist`
+        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
-        !! * 200 - Target is returned.
-        !! * 400 - Invalid request.
-        !! * 404 - Target was not found.
-        !! * 503 - Database error.
+        !! * `200` - Target is returned.
+        !! * `400` - Invalid request.
+        !! * `404` - Target was not found.
+        !! * `503` - Database error.
         !!
         !! ## POST Responses
-        !! * 201 - Target was accepted.
-        !! * 400 - Invalid request or payload.
-        !! * 401 - Unauthorised.
-        !! * 409 - Target exists in database.
-        !! * 415 - Invalid payload format.
-        !! * 503 - Database error.
+        !! * `201` - Target was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `409` - Target exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1573,6 +1624,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read request content.
                 rc = dm_fcgi_content(env, content)
 
                 if (dm_is_error(rc)) then
@@ -1580,6 +1632,7 @@ contains
                     exit response_block
                 end if
 
+                ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
                     rc = dm_z_uncompress(content, buffer)
@@ -1594,24 +1647,33 @@ contains
                     rc = dm_nml_to(content, target)
                 end if
 
+                ! Validate namelist error.
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
                     exit response_block
                 end if
 
+                ! Validate target data.
+                if (.not. dm_target_valid(target)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid target data', E_INVALID)
+                    exit response_block
+                end if
+
+                ! Validate uniqueness.
                 if (dm_db_target_exists(db, target%id)) then
                     call api_error(HTTP_CONFLICT, 'target exists', E_EXIST)
                     exit response_block
                 end if
 
-                rc = dm_db_insert(db, target)
+                ! Insert target into database.
+                rc = dm_db_insert(db, target, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
                     exit response_block
                 end if
 
-                ! Empty response.
+                ! Empty response on success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
                 exit response_block
             end if
@@ -1621,17 +1683,15 @@ contains
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, param)
 
-            rc = E_INVALID
-
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', rc)
+                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_valid(id)) then
-                call api_error(code, 'invalid parameter id', rc)
+                call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1679,15 +1739,16 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * header - CSV header (0 or 1).
+        !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Targets are returned.
-        !! * 404 - No targets found.
-        !! * 503 - Database error.
+        !! * `200` - Targets are returned.
+        !! * `404` - No targets found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1706,10 +1767,6 @@ contains
             type(cgi_param_type)           :: param
             type(target_type), allocatable :: targets(:)
 
-            ! Optional GET parameters.
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
             ! Select all targets from database.
             rc = dm_db_select_targets(db, targets)
 
@@ -1724,6 +1781,10 @@ contains
             ! Select MIME type from HTTP Accept header.
             select case (content_type(env, MIME_CSV))
                 case (MIME_CSV)
+                    ! Optional GET parameters.
+                    call dm_cgi_query(env, param)
+                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(targets, header=header))
@@ -1752,24 +1813,25 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * node_id   - Node id.
-        !! * sensor_id - Sensor id.
-        !! * target_id - Target id.
-        !! * response  - Response name.
-        !! * from      - Start timestamp (ISO 8601).
-        !! * to        - End timestamp (ISO 8601).
-        !! * limit     - Max. number of results (optional).
-        !! * header    - CSV header (0 or 1).
-        !! * view      - Returns observation views (0 or 1).
+        !! * `node_id`   - Node id.
+        !! * `sensor_id` - Sensor id.
+        !! * `target_id` - Target id.
+        !! * `response`  - Response name.
+        !! * `from`      - Start timestamp (ISO 8601).
+        !! * `to`        - End timestamp (ISO 8601).
+        !! * `limit`     - Max. number of results (optional).
+        !! * `header`    - CSV header (0 or 1).
+        !! * `view`      - Returns observation views (0 or 1).
         !!
         !! ## GET Headers
-        !! * Accept - `text/comma-separated-values`
+        !! * `Accept` - `text/comma-separated-values`
         !!
         !! ## GET Responses
-        !! * 200 - Observations are returned.
-        !! * 400 - Invalid request.
-        !! * 404 - No observations found.
-        !! * 503 - Database error.
+        !! * `200` - Observations are returned.
+        !! * `400` - Invalid request.
+        !! * `404` - No observations found.
+        !! * `503` - Database error.
+        !!
         type(cgi_env_type), intent(inout) :: env
 
         integer       :: rc
@@ -1799,7 +1861,7 @@ contains
             call dm_cgi_query(env, param)
 
             ! Mandatory GET parameters.
-            rc = E_INVALID
+            rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
@@ -1874,8 +1936,8 @@ contains
                 limit = limit_
             end if
 
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-            rc = dm_cgi_get(param, 'view', view, .false.)
+            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            rc = dm_cgi_get(param, 'view',   view,   default=.false.)
 
             if (view) then
                 ! Select observation views from database.
@@ -1961,6 +2023,6 @@ contains
         end if
 
         if (present(message)) call dm_fcgi_out('message=' // trim(message))
-        if (present(error))   call dm_fcgi_out('error=' // dm_itoa(error))
+        if (present(error))   call dm_fcgi_out('error='   // dm_itoa(error))
     end subroutine api_error
 end program dmapi

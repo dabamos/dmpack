@@ -15,7 +15,7 @@ dmgrc - creates log messages from Leica GeoCOM return codes
 
 *dmgrc* --version
 
-*dmgrc* [--*level* _level_] [--*node* _id_] [--*response* _name_]
+*dmgrc* [--*node* _id_] [--*level* _level_] [--*response* _name_]
 [--*name* _name_] [--*logger* _name_] [--*debug*] [--*verbose*]
 
 *dmgrc* --*config* _file_ [--*name* _name_]
