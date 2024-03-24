@@ -941,20 +941,21 @@ contains
         end if
 
         ! Prepare and send HTTP request.
+        error = CURLE_OK
+
         curl_block: block
-            stat = CURLE_OK
             rc = rpc_request_prepare(request, response)
             if (dm_is_error(rc)) exit curl_block
 
             rc = E_RPC
             error = curl_easy_perform(request%curl_ptr)
-            if (stat /= CURLE_OK) exit curl_block
+            if (error /= CURLE_OK) exit curl_block
 
             rc = E_NONE
         end block curl_block
 
         ! Get response info.
-        if (rc /= E_INVALID) then
+        if (dm_is_ok(rc)) then
             ! Get HTTP response code.
             stat = curl_easy_getinfo(request%curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
 

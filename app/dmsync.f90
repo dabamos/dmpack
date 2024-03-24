@@ -395,8 +395,11 @@ contains
 
             ! Send records concurrently to HTTP-RPC API.
             rpc_block: block
+                integer               :: last_error
                 logical               :: has_api_status
                 type(api_status_type) :: api_status
+
+                last_error = E_NONE
 
                 if (n == 0) then
                     call logger%debug('no ' // name // 's to sync found')
@@ -430,7 +433,7 @@ contains
                     call logger%warning('failed to sync with host ' // app%host, error=rc)
                 else
                     write (message, '("finished sync in ", f0.2, " sec")') dt
-                    call logger%debug(message, error=rc)
+                    call logger%debug(message)
                 end if
 
                 update_loop: do i = 1, n
@@ -446,45 +449,55 @@ contains
                     select case (responses(i)%code)
                         case (0)
                             ! Failed to connect.
+                            rc = E_RPC_CONNECT
                             call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // &
-                                              responses(i)%error_message, error=E_RPC_CONNECT)
+                                              responses(i)%error_message, error=rc)
 
                         case (HTTP_CREATED)
                             ! Success.
-                            call logger%debug('synced ' // name // ' ' // trim(ids(i)))
+                            rc = E_NONE
+                            call logger%debug('synced ' // name // ' ' // trim(ids(i)), error=rc)
 
                         case (HTTP_CONFLICT)
                             ! Record exists in server database.
-                            call logger%debug(name // ' ' // trim(ids(i)) // ' exists', error=E_EXIST)
+                            rc = E_EXIST
+                            call logger%debug(name // ' ' // trim(ids(i)) // ' exists', error=rc)
 
                         case (HTTP_UNAUTHORIZED)
                             ! Missing or wrong API credentials.
+                            rc = E_RPC_AUTH
                             if (has_api_status) then
                                 call logger%debug('unauthorized access on host ' // trim(app%host) // ': ' // &
-                                                  api_status%message, error=E_RPC_AUTH)
+                                                  api_status%message, error=rc)
                             else
-                                call logger%debug('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                                call logger%debug('unauthorized access on host ' // app%host, error=rc)
                             end if
 
                         case (HTTP_INTERNAL_SERVER_ERROR)
                             ! Server crashed.
-                            call logger%debug('internal server error on host ' // app%host, error=E_RPC_SERVER)
+                            rc = E_RPC_SERVER
+                            call logger%debug('internal server error on host ' // app%host, error=rc)
 
                         case (HTTP_BAD_GATEWAY)
                             ! Reverse proxy of server failed to connect to API.
-                            call logger%debug('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+                            rc = E_RPC_CONNECT
+                            call logger%debug('bad gateway on host ' // app%host, error=rc)
 
                         case default
                             if (has_api_status) then
+                                rc = api_status%error
                                 write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
                                     trim(app%host), responses(i)%code, api_status%message
-                                call logger%debug(message, error=api_status%error)
+                                call logger%debug(message, error=rc)
                             else
+                                rc = E_RPC_API
                                 write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
                                     trim(app%host), responses(i)%code
-                                call logger%debug(message, error=E_RPC_API)
+                                call logger%debug(message, error=rc)
                             end if
                     end select
+
+                    last_error = max(last_error, rc)
 
                     ! Update sync data.
                     syncs(i)%timestamp = dm_time_now()         ! Time of sync attempt.
@@ -517,9 +530,11 @@ contains
                     end do db_loop
                 end do update_loop
 
+                if (dm_is_error(last_error)) call logger%warning(dm_error_message(rc), error=rc)
+
                 ! Synchronise pending data.
                 if (nsyncs > limit) then
-                    if (dm_is_error(rc)) then
+                    if (dm_is_error(last_error)) then
                         ! Wait a grace period on error.
                         call logger%debug('waiting 30 sec before next sync attempt')
                         call dm_sleep(30)

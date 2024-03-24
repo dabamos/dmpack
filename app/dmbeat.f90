@@ -226,7 +226,7 @@ contains
 
             ! Get system uptime.
             call dm_system_uptime(uptime, rc)
-            if (dm_is_ok(rc)) beat%uptime = int(uptime, kind=i4)
+            beat%uptime = int(uptime, kind=i4)
 
             ! Send RPC request to API.
             rc = dm_rpc_send(request  = request, &
@@ -237,11 +237,7 @@ contains
                              deflate  = APP_RPC_DEFLATE, &
                              url      = url)
 
-            if (dm_is_error(rc)) then
-                call logger%debug('failed to send beat to host ' // app%host, error=rc)
-            end if
-
-            last_error = rc
+            if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
             has_api_status = .false.
 
             if (response%content_type == MIME_TEXT) then
@@ -251,37 +247,45 @@ contains
 
             select case (response%code)
                 case (0)
+                    rc = E_RPC_CONNECT
                     call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // &
-                                        response%error_message, error=E_RPC_CONNECT)
+                                        response%error_message, error=rc)
 
                 case (HTTP_CREATED)
-                    call logger%debug('beat accepted by host ' // app%host)
+                    rc = E_NONE
+                    call logger%debug('beat accepted by host ' // app%host, error=rc)
 
                 case (HTTP_UNAUTHORIZED)
+                    rc = E_RPC_AUTH
                     if (has_api_status) then
                         call logger%error('unauthorized access on host ' // trim(app%host) // ': ' // &
-                                          api_status%message, error=E_RPC_AUTH)
+                                          api_status%message, error=rc)
                     else
-                        call logger%error('unauthorized access on host ' // app%host, error=E_RPC_AUTH)
+                        call logger%error('unauthorized access on host ' // app%host, error=rc)
                     end if
 
                 case (HTTP_INTERNAL_SERVER_ERROR)
-                    call logger%error('internal server error on host ' // app%host, error=E_RPC_SERVER)
+                    rc = E_RPC_SERVER
+                    call logger%error('internal server error on host ' // app%host, error=rc)
 
                 case (HTTP_BAD_GATEWAY)
-                    call logger%error('bad gateway on host ' // app%host, error=E_RPC_CONNECT)
+                    rc = E_RPC_CONNECT
+                    call logger%error('bad gateway on host ' // app%host, error=rc)
 
                 case default
+                    ! Log response from API status if available.
                     if (has_api_status) then
-                        ! Log response from API status if available.
-                        call logger%error('server error on host ' // trim(app%host) // ' (HTTP ' // &
-                                          dm_itoa(response%code) // '): ' // api_status%message, &
-                                          error=api_status%error)
+                        rc = api_status%error
+                        call logger%warning('server error on host ' // trim(app%host) // ' (HTTP ' // &
+                                            dm_itoa(response%code) // '): ' // api_status%message, error=rc)
                     else
+                        rc = E_RPC_API
                         call logger%warning('API call to host ' // trim(app%host) // ' failed (HTTP ' // &
-                                            dm_itoa(response%code) // ')', error=E_RPC_API)
+                                            dm_itoa(response%code) // ')', error=rc)
                     end if
             end select
+
+            last_error = rc
 
             if (app%count > 0) then
                 i = i + 1
