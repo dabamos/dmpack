@@ -1,8 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_format
-    !! Serialisation formats.
-    use :: dm_string
+    !! Serialisation format definitions.
     implicit none (type, external)
     private
 
@@ -23,12 +22,15 @@ module dm_format
     public :: dm_format_valid
 contains
     pure elemental integer function dm_format_from_name(name) result(format)
-        !! Returns format enumerator from given name.
+        !! Returns format enumerator from given name. If the argument is not a
+        !! valid format, the function returns `FORMAT_NONE`.
+        use :: dm_string, only: dm_lower
+
         character(len=*), intent(in) :: name !! Format name.
 
         character(len=FORMAT_NAME_LEN) :: name_
 
-        ! Normalised name.
+        ! Normalise name.
         name_ = dm_lower(name)
 
         select case (name_)
@@ -52,8 +54,6 @@ contains
         !! invalid format.
         integer, intent(in) :: format !! Format enumerator.
 
-        valid = .false.
-        if (format <= FORMAT_NONE .or. format > FORMAT_LAST) return
-        valid = .true.
+        valid = (format > FORMAT_NONE .and. format <= FORMAT_LAST)
     end function dm_format_valid
 end module dm_format

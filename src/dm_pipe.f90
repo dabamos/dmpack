@@ -4,7 +4,6 @@ module dm_pipe
     !! Module for basic subprocess management on Unix. Procedures with
     !! name postfix `2` are for bi-directional IPC, all other for
     !! uni-directional only.
-    use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
     use :: dm_kind

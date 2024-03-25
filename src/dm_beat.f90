@@ -1,27 +1,26 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_beat
-    !! Beat message passing.
+    !! Heartbeat message type.
     use :: dm_error
     use :: dm_id
     use :: dm_kind
     use :: dm_node
-    use :: dm_string
     use :: dm_time
     implicit none (type, external)
     private
 
-    integer, parameter, public :: BEAT_ADDR_LEN    = 45 !! IPv6 address length.
-    integer, parameter, public :: BEAT_CLIENT_LEN  = 32 !! Client software name and version length.
+    integer, parameter, public :: BEAT_ADDR_LEN   = 45 !! IPv6 address length.
+    integer, parameter, public :: BEAT_CLIENT_LEN = 32 !! Client software name and version length.
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
         character(len=NODE_ID_LEN)      :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
-        character(len=BEAT_ADDR_LEN)    :: address   = ' '          !! Client IP address (IPv4 or IPv6).
+        character(len=BEAT_ADDR_LEN)    :: address   = ' '          !! Client IP address (IPv4, IPv6).
         character(len=BEAT_CLIENT_LEN)  :: client    = ' '          !! Client software name and version.
         character(len=TIME_LEN)         :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
         character(len=TIME_LEN)         :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
-        integer                         :: error     = E_NONE       !! Client error.
+        integer                         :: error     = E_NONE       !! Last client error.
         integer                         :: interval  = 0            !! Transmission interval in seconds.
         integer                         :: uptime    = 0            !! System uptime in seconds.
     end type beat_type
@@ -40,9 +39,9 @@ module dm_beat
     public :: dm_beat_valid
 contains
     pure elemental logical function dm_beat_equals(beat1, beat2) result(equals)
-        !! Returns `.true.` if given heartbeats are equal.
-        type(beat_type), intent(in) :: beat1 !! The first heartbeat.
-        type(beat_type), intent(in) :: beat2 !! The second heartbeat.
+        !! Returns `.true.` if given beats are equal.
+        type(beat_type), intent(in) :: beat1 !! The first beat.
+        type(beat_type), intent(in) :: beat2 !! The second beat.
 
         equals = .false.
         if (beat1%node_id   /= beat2%node_id)   return
@@ -58,6 +57,8 @@ contains
 
     pure elemental logical function dm_beat_valid(beat) result(valid)
         !! Returns `.true.` if given beat type elements are valid.
+        use :: dm_string, only: dm_string_is_printable
+
         type(beat_type), intent(in) :: beat !! Beat type.
 
         valid = .false.

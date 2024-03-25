@@ -108,6 +108,7 @@ contains
     integer function dm_string_count_lines(str) result(n)
         !! Returns the number of line breaks in string.
         use :: dm_ascii, only: ASCII_LF
+
         character(len=*), intent(inout) :: str !! Input string.
 
         n = dm_string_count_char(str, ASCII_LF) + 1
@@ -138,6 +139,7 @@ contains
         !! Returns `.true.` if all characters is given string are printable
         !! ASCII characters.
         use :: dm_ascii, only: dm_ascii_is_printable
+
         character(len=*), intent(in) :: str !! String to validate.
         integer                      :: i
 

@@ -38,9 +38,9 @@ contains
     integer function env_get_allocatable(name, value, default) result(rc)
         !! Returns environment variable as allocatable string in `value`, with
         !! optional default value from `default` if the variable does not exist.
-        character(len=*),              intent(in)            :: name    !! Variable name.
-        character(len=:), allocatable, intent(out)           :: value   !! Variable value.
-        character(len=*),              intent(in),  optional :: default !! Default value.
+        character(len=*),              intent(in)           :: name    !! Variable name.
+        character(len=:), allocatable, intent(out)          :: value   !! Variable value.
+        character(len=*),              intent(in), optional :: default !! Default value.
 
         character(len=ENV_BUFFER_LEN) :: buffer
         integer                       :: n, stat
@@ -184,7 +184,8 @@ contains
         character(len=*), intent(in)    :: name  !! Variable name.
         character(len=*), intent(inout) :: value !! Variable value.
         integer,          intent(out)   :: n     !! Actual length of string.
-        integer                         :: stat
+
+        integer :: stat
 
         rc = E_EMPTY
         value = ' '

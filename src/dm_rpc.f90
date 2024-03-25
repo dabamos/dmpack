@@ -453,7 +453,6 @@ contains
         character(len=:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
 
         character(len=:), allocatable :: path
-        character(len=5)              :: port_str
 
         integer     :: stat
         integer     :: port_
@@ -485,8 +484,7 @@ contains
 
             ! URL port.
             if (port_ > 0) then
-                write (port_str, '(i0)', iostat=stat) port_
-                stat = curl_url_set(ptr, CURLUPART_PORT, trim(port_str))
+                stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
                 if (stat /= CURLUE_OK) exit url_block
             end if
 

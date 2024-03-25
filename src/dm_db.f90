@@ -19,14 +19,14 @@ module dm_db
     !! Using the iterator interface instead:
     !!
     !! ```fortran
-    !! integer            :: rc
-    !! type(db_type)      :: db
-    !! type(db_stmt_type) :: db_stmt
-    !! type(observ_type)  :: observ
+    !! integer            :: rc      ! Return code.
+    !! type(db_type)      :: db      ! Database handle.
+    !! type(db_stmt_type) :: db_stmt ! Database statement.
+    !! type(observ_type)  :: observ  ! Returned observation.
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
     !!
-    !! do
+    !! do while (dm_is_ok(rc))
     !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
     !!     if (rc == E_DB_NO_ROWS) exit
     !!     print *, trim(observ%name)

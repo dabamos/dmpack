@@ -12,10 +12,8 @@ contains
     pure elemental logical function dm_id_valid(id, max_len) result(valid)
         !! Returns `.true.` if given string is a valid id. A valid id must
         !! be between 1 and 32 characters long, and all characters have to
-        !! be in set [-0-9A-Z_a-z].
-        !!
-        !! The optional argument `max_len` overwrites the default maximum id
-        !! length.
+        !! be in set `[-0-9A-Z_a-z]`. The optional argument `max_len`
+        !! overwrites the default maximum id length.
         character(len=*), parameter :: ID_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
 

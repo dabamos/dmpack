@@ -14,7 +14,7 @@ module dm_node
     type, public :: node_type
         !! Node type.
         character(len=NODE_ID_LEN)   :: id   = ' '    !! Node id (`-0-9A-Z_a-z`).
-        character(len=NODE_NAME_LEN) :: name = ' '    !! Note name.
+        character(len=NODE_NAME_LEN) :: name = ' '    !! Node name.
         character(len=NODE_META_LEN) :: meta = ' '    !! Additional description text (optional).
         real(kind=r8)                :: x    = 0.0_r8 !! Node x or easting (optional).
         real(kind=r8)                :: y    = 0.0_r8 !! Node y or northing (optional).
@@ -37,6 +37,7 @@ contains
     pure elemental logical function dm_node_equals(node1, node2) result(equals)
         !! Returns `.true.` if given nodes are equal.
         use :: dm_util, only: dm_equals
+
         type(node_type), intent(in) :: node1 !! The first node.
         type(node_type), intent(in) :: node2 !! The second node.
 

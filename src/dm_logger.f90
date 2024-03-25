@@ -18,7 +18,7 @@ module dm_logger
     !! ```
     !!
     !! The log message is sent do the _dmlogger(1)_ instance of name
-    !! `dmlogger`.
+    !! `dmlogger`, i.e., to POSIX message queue `/dmlogger`.
     use :: dm_ansi
     use :: dm_error
     use :: dm_id
@@ -95,7 +95,8 @@ contains
         !! Returns pointer to global logger. The function allocates the logger
         !! if it does not exist yet.
         class(logger_class), pointer :: logger !! Pointer to logger object.
-        integer                      :: stat
+
+        integer :: stat
 
         logger => null()
 

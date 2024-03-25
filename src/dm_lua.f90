@@ -206,7 +206,8 @@ contains
         !! with `\\`.
         character(len=*), intent(in)  :: str !! String to escape.
         character(len=:), allocatable :: res !! Escaped string.
-        integer                       :: i
+
+        integer :: i
 
         res = ''
 

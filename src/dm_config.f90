@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_config
     !! Module for loading Lua configuration files.
-    use, intrinsic :: iso_c_binding
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -197,11 +196,13 @@ contains
     integer function config_get_job_list(config, name, value, field) result(rc)
         !! Returns configuration value as job list.
         use :: dm_job
+
         type(config_type),   intent(inout)        :: config !! Config type.
         character(len=*),    intent(in)           :: name   !! Setting name.
         type(job_list_type), intent(out)          :: value  !! Setting value.
         logical,             intent(in), optional :: field  !! Read from table field.
-        logical                                   :: field_
+
+        logical :: field_
 
         field_ = .true.
         if (present(field)) field_ = field
@@ -245,11 +246,13 @@ contains
     integer function config_get_report(config, name, value, field) result(rc)
         !! Returns configuration value as report.
         use :: dm_report
+
         type(config_type), intent(inout)        :: config !! Config type.
         character(len=*),  intent(in)           :: name   !! Setting name.
         type(report_type), intent(out)          :: value  !! Setting value.
         logical,           intent(in), optional :: field  !! Read from table field.
-        logical                                 :: field_
+
+        logical :: field_
 
         field_ = .true.
         if (present(field)) field_ = field

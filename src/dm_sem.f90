@@ -91,8 +91,8 @@ contains
 
     function dm_sem_name(sem) result(name)
         !! Returns the name of the semaphore.
-        type(sem_type), intent(inout) :: sem !! Semaphore type.
-        character(len=:), allocatable :: name
+        type(sem_type), intent(inout) :: sem  !! Semaphore type.
+        character(len=:), allocatable :: name !! Semaphore name.
 
         name = trim(sem%name)
     end function dm_sem_name

@@ -68,7 +68,7 @@ contains
 
         integer,          intent(in), optional :: year    !! Year (`YYYY`).
         integer,          intent(in), optional :: month   !! Month (`MM`).
-        integer,          intent(in), optional :: day     !! Day (`DD`).
+        integer,          intent(in), optional :: day     !! Day of month (`DD`).
         integer,          intent(in), optional :: hour    !! Hour (`hh`).
         integer,          intent(in), optional :: minute  !! Minute (`mm`).
         integer,          intent(in), optional :: second  !! Second (`ss`).
@@ -147,8 +147,9 @@ contains
 
     impure elemental integer function dm_time_diff(time1, time2, seconds) result(rc)
         !! Returns the time difference between `time1` and `time2` as 8-byte
-        !! integer `seconds` (measured in seconds). The function does not
-        !! validate the time stamps. Make sure, to only pass valid values.
+        !! integer `seconds` [sec]. The function does not validate the time
+        !! stamps. Make sure to only pass valid values. On error, the result
+        !! `seconds` is 0.
         !!
         !! The function returns the following error codes:
         !!
@@ -157,29 +158,27 @@ contains
         !!
         character(len=TIME_LEN), intent(in)  :: time1   !! ISO 8601 time stamp.
         character(len=TIME_LEN), intent(in)  :: time2   !! ISO 8601 time stamp.
-        integer(kind=i8),        intent(out) :: seconds !! Time delta in seconds.
+        integer(kind=i8),        intent(out) :: seconds !! Time delta [sec].
 
         integer          :: u1, u2 ! Microseconds.
         integer(kind=i8) :: t1, t2 ! Seconds.
 
         seconds = 0_i8
 
-        rc = dm_time_to_unix(time1, t1, u1)
-        if (dm_is_error(rc)) return
-
-        rc = dm_time_to_unix(time2, t2, u2)
-        if (dm_is_error(rc)) return
+        rc = dm_time_to_unix(time1, t1, u1); if (dm_is_error(rc)) return
+        rc = dm_time_to_unix(time2, t2, u2); if (dm_is_error(rc)) return
 
         seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
     end function dm_time_diff
 
     integer(kind=i8) function dm_time_mseconds() result(mseconds)
-        !! Returns current time in mseconds as 8-byte integer (Unix Epoch).
+        !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
+        !! error, the result is 0.
         use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
 
         type(c_timespec) :: tp
 
-        mseconds = 0
+        mseconds = 0_i8
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
         mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
     end function dm_time_mseconds
@@ -193,7 +192,8 @@ contains
         character(len=*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, sp, i0.2, ss, ":", i0.2)'
 
-        integer          :: rc, tz_hour, tz_minute
+        integer          :: rc
+        integer          :: tz_hour, tz_minute
         type(c_ptr)      :: ptr
         type(c_timeval)  :: tv
         type(c_timezone) :: tz
@@ -207,7 +207,7 @@ contains
 
         write (str, FMT_ISO) tm%tm_year + 1900, & ! Year.
                              tm%tm_mon + 1,     & ! Month
-                             tm%tm_mday,        & ! Day.
+                             tm%tm_mday,        & ! Day of month.
                              tm%tm_hour,        & ! Hour.
                              tm%tm_min,         & ! Minute.
                              tm%tm_sec,         & ! Second.
@@ -316,10 +316,10 @@ contains
                                           tz_hour, tz_min
         if (stat /= 0) return
 
-        tm = c_tm(tm_sec  = tm_sec, &
-                  tm_min  = tm_min, &
-                  tm_hour = tm_hour, &
-                  tm_mday = tm_mday, &
+        tm = c_tm(tm_sec  = tm_sec,     &
+                  tm_min  = tm_min,     &
+                  tm_hour = tm_hour,    &
+                  tm_mday = tm_mday,    &
                   tm_mon  = tm_mon - 1, &
                   tm_year = tm_year - 1900)
 
@@ -410,7 +410,7 @@ contains
 
         character(len=4), intent(out), optional :: year        !! Current year (`YYYY`).
         character(len=2), intent(out), optional :: month       !! Current month (`MM`).
-        character(len=2), intent(out), optional :: day         !! Current day (`DD`).
+        character(len=2), intent(out), optional :: day         !! Current day of month (`DD`).
         character(len=2), intent(out), optional :: hour        !! Current hour (`hh`).
         character(len=2), intent(out), optional :: minute      !! Current minute (`mm`).
         character(len=2), intent(out), optional :: second      !! Current second (`ss`).
@@ -458,7 +458,7 @@ contains
         integer(kind=i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
         integer,          intent(out), optional :: year   !! Year part of time stamp.
         integer,          intent(out), optional :: month  !! Month part of time stamp.
-        integer,          intent(out), optional :: day    !! Day part of time stamp.
+        integer,          intent(out), optional :: day    !! Day of month part of time stamp.
         integer,          intent(out), optional :: hour   !! Hour part of time stamp.
         integer,          intent(out), optional :: minute !! Minute part of time stamp.
         integer,          intent(out), optional :: second !! Second part of time stamp.

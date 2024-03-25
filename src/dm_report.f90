@@ -69,9 +69,10 @@ module dm_report
     public :: dm_report_valid
 contains
     logical function dm_report_valid(report) result(valid)
-        !! Returns whether given report type is valid or not.
+        !! Returns `.true.` if given report type is valid, else `.false.`.
         type(report_type), intent(inout) :: report !! Report type.
-        integer                          :: i, n
+
+        integer :: i, n
 
         valid = .false.
 

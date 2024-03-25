@@ -6,17 +6,17 @@ module dm_type
     public
 
     ! Derived type enumeration.
-    integer, parameter, public :: TYPE_NONE       = 0 !! Invalid type.
-    integer, parameter, public :: TYPE_NODE       = 1 !! Node.
-    integer, parameter, public :: TYPE_SENSOR     = 2 !! Sensor.
-    integer, parameter, public :: TYPE_TARGET     = 3 !! Target.
-    integer, parameter, public :: TYPE_OBSERV     = 4 !! Observation.
-    integer, parameter, public :: TYPE_REQUEST    = 5 !! Request of observation.
-    integer, parameter, public :: TYPE_RESPONSE   = 6 !! Response of request.
-    integer, parameter, public :: TYPE_LOG        = 7 !! Log.
-    integer, parameter, public :: TYPE_BEAT       = 8 !! Heartbeat.
-    integer, parameter, public :: TYPE_DP         = 9 !! X/Y data point.
-    integer, parameter, public :: TYPE_LAST       = 9 !! Never use this.
+    integer, parameter, public :: TYPE_NONE     = 0 !! Invalid type.
+    integer, parameter, public :: TYPE_NODE     = 1 !! Node.
+    integer, parameter, public :: TYPE_SENSOR   = 2 !! Sensor.
+    integer, parameter, public :: TYPE_TARGET   = 3 !! Target.
+    integer, parameter, public :: TYPE_OBSERV   = 4 !! Observation.
+    integer, parameter, public :: TYPE_REQUEST  = 5 !! Request of observation.
+    integer, parameter, public :: TYPE_RESPONSE = 6 !! Response of request.
+    integer, parameter, public :: TYPE_LOG      = 7 !! Log.
+    integer, parameter, public :: TYPE_BEAT     = 8 !! Heartbeat.
+    integer, parameter, public :: TYPE_DP       = 9 !! X/Y data point.
+    integer, parameter, public :: TYPE_LAST     = 9 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
@@ -33,6 +33,7 @@ contains
         !! `TYPE_NAME_LEN`, only the characters from `1` to `TYPE_NAME_LEN` are
         !! compared.
         use :: dm_string, only: dm_lower
+
         character(len=*), intent(in) :: name !! Derived type name.
         character(len=TYPE_NAME_LEN) :: name_
 
@@ -68,8 +69,6 @@ contains
         !! an invalid type.
         integer, intent(in) :: type !! Type enumerator.
 
-        valid = .false.
-        if (type <= TYPE_NONE .or. type > TYPE_LAST) return
-        valid = .true.
+        valid = (type > TYPE_NONE .and. type <= TYPE_LAST)
     end function dm_type_valid
 end module dm_type

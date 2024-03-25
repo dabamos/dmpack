@@ -11,14 +11,14 @@ contains
         !! Returns a parsed path, or an empty string. The following format
         !! descriptors are allowed:
         !!
-        !! | Format | Description |
-        !! |--------|-------------|
-        !! | `%Y`   | year        |
-        !! | `%M`   | month       |
-        !! | `%D`   | day         |
-        !! | `%h`   | hour        |
-        !! | `%m`   | minute      |
-        !! | `%s`   | second      |
+        !! | Format | Description  |
+        !! |--------|--------------|
+        !! | `%Y`   | year         |
+        !! | `%M`   | month        |
+        !! | `%D`   | day of month |
+        !! | `%h`   | hour         |
+        !! | `%m`   | minute       |
+        !! | `%s`   | second       |
         !!
         !! The descriptors wil be replaced with their current values.
         character(len=*), intent(in)  :: path   !! Input path.

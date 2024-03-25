@@ -138,10 +138,10 @@ contains
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
     integer function dm_lua_geocom_register(lua, procedures, errors) result(rc)
-        !! Registers all GeoCOM API parameters and functions in given Lua
-        !! environment, unless `procedures` is `.false.`. If `errors` is passed
-        !! and `.true.`, all named GeoCOM return code parameters are registered
-        !! as well.
+        !! Registers all GeoCOM API procedures and type parameters in given Lua
+        !! environment `lua`, unless `procedures` is `.false.`. If `errors` is
+        !! passed and `.true.`, all named GeoCOM return code parameters are
+        !! registered as well.
         !!
         !! The function returns `E_INVALID` if the Lua interpreter is not
         !! initialised, or `E_LUA` if the registration failed.
@@ -268,8 +268,8 @@ contains
         use :: dm_util, only: dm_itoa
 
         type(lua_state_type), intent(inout)        :: lua        !! Lua state type.
-        logical,              intent(in), optional :: procedures !! Export GeoCOM API procedures and parameters.
-        logical,              intent(in), optional :: errors     !! Export GeoCOM return codes.
+        logical,              intent(in), optional :: procedures !! Export GeoCOM API procedures and type parameters.
+        logical,              intent(in), optional :: errors     !! Export GeoCOM return codes (`GRC_*`).
 
         logical :: errors_, procedures_
 
@@ -284,7 +284,7 @@ contains
 
         ! Register GeoCOM Lua API.
         if (procedures_) then
-            ! Add GeoCOM parameters.
+            ! Add GeoCOM type parameters.
             rc = dm_lua_eval(lua, 'GEOCOM_AUT_NORMAL = '               // dm_itoa(GEOCOM_AUT_NORMAL));               if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'GEOCOM_AUT_PRECISE = '              // dm_itoa(GEOCOM_AUT_PRECISE));              if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'GEOCOM_AUT_FAST = '                 // dm_itoa(GEOCOM_AUT_FAST));                 if (dm_is_error(rc)) return

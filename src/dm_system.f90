@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_system
     !! Abstraction layers over system calls.
-    use, intrinsic :: iso_c_binding
     use :: unix
     use :: dm_error
     use :: dm_kind
@@ -102,7 +101,7 @@ contains
     end subroutine dm_system_path
 
     subroutine dm_system_uname(uname, error)
-        !! Returns uname information (operating system, hostname, ...).
+        !! Returns uname information (operating system, hostname, …).
         type(uname_type), intent(out)           :: uname !! Uname type.
         integer,          intent(out), optional :: error !! Error code.
 
@@ -124,9 +123,10 @@ contains
     end subroutine dm_system_uname
 
     subroutine dm_system_uptime(time, error)
-        !! Returns system uptime.
-        integer(kind=i8), intent(out)           :: time
-        integer,          intent(out), optional :: error
+        !! Returns system uptime in `time` [sec]. On error, argument `error` is
+        !! `E_SYSTEM`.
+        integer(kind=i8), intent(out)           :: time  !! Uptime [sec].
+        integer,          intent(out), optional :: error !! Error code.
 
         integer          :: stat
         type(c_timespec) :: tp

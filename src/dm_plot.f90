@@ -35,7 +35,7 @@ module dm_plot
     integer, parameter, public :: PLOT_TERM_X11       = 8 !! X11.
     integer, parameter, public :: PLOT_TERM_LAST      = 8 !! Never use this.
 
-    integer, parameter, public :: PLOT_TERM_NAME_LEN = 8
+    integer, parameter, public :: PLOT_TERM_NAME_LEN  = 8 !! Max. terminal name length.
 
     character(len=*), parameter, public :: PLOT_TERM_NAMES(PLOT_TERM_NONE:PLOT_TERM_LAST) = [ &
         character(len=PLOT_TERM_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'png', &
@@ -93,8 +93,8 @@ contains
     ! ******************************************************************
     integer(kind=i8) function dm_plot_error(plot, bytes) result(n)
         !! Returns Gnuplot's standard error output in allocatable character
-        !! string `bytes`. The result is empty if no output to standard error
-        !! has been made.
+        !! string `bytes`. The result is allocated but empty if no output to
+        !! standard error has been made.
         type(plot_type),               intent(inout) :: plot  !! Plot settings.
         character(len=:), allocatable, intent(out)   :: bytes !! Bytes returned by Gnuplot.
 
@@ -177,12 +177,12 @@ contains
         !! Returns Gnuplot terminal backend of given name.
         character(len=*), intent(in) :: name
 
-        character(len=PLOT_TERM_NAME_LEN) :: n
+        character(len=PLOT_TERM_NAME_LEN) :: name_
 
         ! Normalise name.
-        n = dm_lower(name)
+        name_ = dm_lower(name)
 
-        select case (n)
+        select case (name_)
             case (PLOT_TERM_NAMES(PLOT_TERM_ANSI))
                 ! ANSI
                 term = PLOT_TERM_ANSI
@@ -218,9 +218,7 @@ contains
         !! an invalid terminal.
         integer, intent(in) :: term !! Terminal type enumerator.
 
-        valid = .false.
-        if (term <= PLOT_TERM_NONE .or. term > PLOT_TERM_LAST) return
-        valid = .true.
+        valid = (term > PLOT_TERM_NONE .and. term <= PLOT_TERM_LAST)
     end function dm_plot_term_valid
 
     ! ******************************************************************
@@ -270,7 +268,8 @@ contains
     integer function plot_set_graph(plot) result(rc)
         !! Sets graph colour.
         type(plot_type), intent(inout) :: plot !! Plot settings.
-        integer                        :: n
+
+        integer :: n
 
         rc = E_NONE
         n = len_trim(plot%graph)
@@ -293,7 +292,8 @@ contains
     integer function plot_set_label(plot) result(rc)
         ! Set X, Y axis labels.
         type(plot_type),  intent(inout) :: plot !! Plot settings.
-        integer                         :: n
+
+        integer :: n
 
         rc = E_NONE
         n = len_trim(plot%xlabel)
@@ -424,7 +424,8 @@ contains
     integer function plot_write(plot, str) result(rc)
         type(plot_type),  intent(inout) :: plot !! Plot settings.
         character(len=*), intent(in)    :: str  !! Bytes to send through pipe.
-        integer(kind=i8)                :: sz
+
+        integer(kind=i8) :: sz
 
         if (plot%bidirect) then
             rc = E_IO

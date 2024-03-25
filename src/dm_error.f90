@@ -332,21 +332,21 @@ contains
     end function dm_error_message
 
     pure elemental logical function dm_error_valid(error) result(valid)
-        !! Returns whether given code is (likely) valid.
+        !! Returns whether given error code is (likely) valid.
         integer, intent(in) :: error !! Error code.
 
         valid = (error >= E_NONE .and. error <= E_LAST)
     end function dm_error_valid
 
     pure elemental logical function dm_is_error(error) result(is_error)
-        !! Returns `.true.` if given code is an error.
+        !! Returns `.true.` if given code is an error (not `E_NONE`).
         integer, intent(in) :: error !! Error code.
 
         is_error = (error /= E_NONE)
     end function dm_is_error
 
     pure elemental logical function dm_is_ok(error) result(is_ok)
-        !! Returns `.true.` if given code is not an error.
+        !! Returns `.true.` if given code is not an error (`E_NONE`).
         integer, intent(in) :: error !! Error code.
 
         is_ok = (error == E_NONE)
@@ -358,15 +358,15 @@ contains
         !!
         !! If `extra` is `.true.`, the routine outputs the default error
         !! message for the given error instead of the code. If `quit` is
-        !! `.true.`, the routine terminates with exit code `0` on error
-        !! `E_NONE`, else with `1`.
+        !! `.true.`, the routine terminates with exit code `0` on code
+        !! `E_NONE`, or with exit code `1` on error.
         character(len=*), parameter :: FMT_ERROR = '("Error: ", a, " (E", i0.3, ")")'
         character(len=*), parameter :: FMT_EXTRA = '("Error: ", a, " (", a, ")")'
 
-        integer,          intent(in)           :: error   !! Error code.
+        integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
         logical,          intent(in), optional :: verbose !! If true, print message on `E_NONE`.
-        logical,          intent(in), optional :: extra   !! If true, print default message additionally.
+        logical,          intent(in), optional :: extra   !! If true, print default message instead of code.
         logical,          intent(in), optional :: quit    !! If true, stop program.
 
         integer :: stat
@@ -401,7 +401,7 @@ contains
     end subroutine dm_error_out
 
     subroutine dm_stop(stat)
-        !! Stops program execution and returns optional status.
+        !! Stops program execution with optional exit status `stat`.
         use :: unix, only: c_exit
         integer, intent(in), optional :: stat !! Exit status.
 

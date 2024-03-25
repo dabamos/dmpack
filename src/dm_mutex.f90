@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_mutex
     !! POSIX mutex abstraction layer. Has to be linked with `-lpthread`.
-    use, intrinsic :: iso_c_binding, only: c_null_ptr
     use :: unix
     use :: dm_error
     implicit none (type, external)

@@ -20,13 +20,13 @@ module dm_rts
     !! real(kind=r8) :: ppm, ppm1, ppm2
     !! real(kind=r8) :: corr_dist, hz_dist, slope_dist, v
     !!
-    !! temperature = 15.0_r8   ! [°C]
-    !! pressure    = 1010.0_r8 ! [mbar]
-    !! humidity    = 0.65_r8   ! [none]
-    !! height      = 100.0_r8  ! [m]
-    !! slope_dist  = 42.0_r8   ! [m]
+    !! temperature = 15.0_r8   ! Air temperature [°C].
+    !! pressure    = 1010.0_r8 ! Air pressure [mbar].
+    !! humidity    = 0.65_r8   ! Relative humidity [none].
+    !! height      = 100.0_r8  ! Instrument height [m].
+    !! slope_dist  = 42.0_r8   ! Slope distance [m].
     !!
-    !! v = dm_gon_to_rad(101.5_r8) ! [rad]
+    !! v = dm_gon_to_rad(101.5_r8) ! Vertical angle [rad].
     !!
     !! ppm1 = dm_rts_correction_atmospheric(temperature, pressure, humidity)
     !! ppm2 = dm_rts_correction_sea_level(height)

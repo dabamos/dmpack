@@ -16,6 +16,7 @@ module dm_kind
     !! * standard error:  `stderr` (⇒ `error_unit`)
     !! * standard input:  `stdin`  (⇒ `input_unit`)
     !! * standard output: `stdout` (⇒ `output_unit`)
+    !!
     use, intrinsic :: iso_fortran_env, only: i2     => int16, &
                                              i4     => int32, &
                                              i8     => int64, &

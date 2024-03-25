@@ -24,16 +24,16 @@ module dm_regex
     public :: dm_regex_request
     public :: dm_regex_response_string
 contains
-    integer function dm_regex_create(regex, pattern, err_msg, err_offset) result(rc)
+    integer function dm_regex_create(regex, pattern, error_message, error_offset) result(rc)
         !! Creates new regular expression type from given pattern. Returns
         !! `E_REGEX_COMPILE` on error.
-        type(regex_type),              intent(out)           :: regex      !! Regular expression type.
-        character(len=*),              intent(in)            :: pattern    !! Pattern to compile.
-        character(len=:), allocatable, intent(out), optional :: err_msg    !! Error message.
-        integer(kind=i8),              intent(out), optional :: err_offset !! Error offset in pattern.
+        type(regex_type),              intent(out)           :: regex         !! Regular expression type.
+        character(len=*),              intent(in)            :: pattern       !! Pattern to compile.
+        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer(kind=i8),              intent(out), optional :: error_offset  !! Error offset in pattern.
 
         character(len=128) :: buffer ! PCRE2 error message buffer.
-        integer            :: code, rc2
+        integer            :: code, stat
         integer(kind=i8)   :: offset
 
         rc = E_REGEX_COMPILE
@@ -45,13 +45,14 @@ contains
                                   ccontext    = c_null_ptr)
 
         if (.not. c_associated(regex%ptr)) then
-            if (present(err_msg)) then
+            if (present(error_message)) then
                 buffer = ' '
-                rc2 = pcre2_get_error_message(code, buffer, len(buffer, kind=PCRE2_SIZE))
-                err_msg = trim(buffer)
+                stat   = pcre2_get_error_message(code, buffer, len(buffer, kind=PCRE2_SIZE))
+
+                error_message = trim(buffer)
             end if
 
-            if (present(err_offset)) err_offset = offset
+            if (present(error_offset)) error_offset = offset
             return
         end if
 
@@ -85,6 +86,7 @@ contains
 
         pcre_block: block
             match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = subject, &
                                 length      = len(subject, kind=PCRE2_SIZE), &
@@ -103,8 +105,7 @@ contains
             if (match < 0) exit pcre_block
 
             rc = E_REGEX_NO_GROUP
-            if (pcre2_substring_get_byname(match_data, name, value, n) /= 0) &
-                exit pcre_block
+            if (pcre2_substring_get_byname(match_data, name, value, n) /= 0) exit pcre_block
 
             rc = E_NONE
         end block pcre_block
@@ -133,6 +134,7 @@ contains
         if (.not. c_associated(regex%ptr)) return
 
         match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+
         match = pcre2_match(code        = regex%ptr, &
                             subject     = subject, &
                             length      = len(subject, kind=PCRE2_SIZE), &
@@ -140,6 +142,7 @@ contains
                             options     = 0, &
                             match_data  = match_data, &
                             mcontext    = c_null_ptr)
+
         call pcre2_match_data_free(match_data)
 
         rc = E_REGEX_EXCEEDED
@@ -205,6 +208,7 @@ contains
 
             ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = request%response, &
                                 length      = len_trim(request%response, kind=PCRE2_SIZE), &
@@ -229,11 +233,11 @@ contains
             do i = 1, request%nresponses
                 response_block: block
                     ! Get sub-string by name.
+                    rc   = E_REGEX_NO_GROUP
                     stat = pcre2_substring_get_byname(match_data = match_data, &
                                                       name       = trim(request%responses(i)%name), &
                                                       buffer     = buffer, &
                                                       buff_len   = n)
-                    rc = E_REGEX_NO_GROUP
                     if (stat /= 0) exit response_block
 
                     ! Check string length.
@@ -324,6 +328,7 @@ contains
 
             ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = request%response, &
                                 length      = len_trim(request%response, kind=PCRE2_SIZE), &

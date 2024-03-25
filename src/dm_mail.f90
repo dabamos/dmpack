@@ -50,8 +50,8 @@ module dm_mail
         character(len=:), allocatable :: url                          !! SMTP server URL.
         character(len=:), allocatable :: username                     !! SMTP user name.
         character(len=:), allocatable :: password                     !! SMTP password.
-        integer                       :: connect_timeout = 30         !! Connection timeout in seconds.
-        integer                       :: timeout         = 30         !! Timeout in seconds.
+        integer                       :: connect_timeout = 30         !! Connection timeout [sec].
+        integer                       :: timeout         = 30         !! Timeout [sec].
         integer                       :: tls             = MAIL_PLAIN !! Transport-layer security.
         logical                       :: verify_ssl      = .false.    !! Verify SSL cert and host name.
         logical                       :: allocated       = .false.    !! Allocation status.
@@ -166,9 +166,9 @@ contains
         if (server%tls < MAIL_PLAIN .or. server%tls > MAIL_TLS) return
         if (server%tls /= MAIL_PLAIN) tls_ = .true.
 
-        if (present(verify_ssl))      server%verify_ssl      = verify_ssl
         if (present(timeout))         server%timeout         = timeout
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
+        if (present(verify_ssl))      server%verify_ssl      = verify_ssl
 
         server%url       = dm_mail_url(host, port=port_, tls=tls_)
         server%username  = trim(username)
@@ -274,13 +274,13 @@ contains
         type(payload_type), target :: payload
 
         if (present(error_message)) error_message = ''
-        if (present(error_curl)) error_curl = CURLE_OK
+        if (present(error_curl))    error_curl    = CURLE_OK
 
         debug_ = .false.
         if (present(debug)) debug_ = debug
 
         rc = E_CORRUPT
-        if (.not. mail%allocated) return
+        if (.not. mail%allocated)   return
         if (.not. server%allocated) return
 
         ! Prepare payload.
@@ -398,11 +398,10 @@ contains
         logical,          intent(in), optional :: tls  !! Transport-layer security.
         character(len=:), allocatable          :: url  !! URL of SMTP server.
 
-        character(len=5) :: str
-        integer          :: port_
-        integer          :: stat
-        logical          :: tls_
-        type(c_ptr)      :: ptr
+        integer     :: port_
+        integer     :: stat
+        logical     :: tls_
+        type(c_ptr) :: ptr
 
         port_ = 0
         if (present(port)) port_ = port
@@ -429,8 +428,7 @@ contains
 
             ! URL port.
             if (port_ > 0) then
-                write (str, '(i0)', iostat=stat) port_
-                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
                 if (stat /= CURLUE_OK) exit url_block
             end if
 
@@ -447,6 +445,7 @@ contains
         !! the allocation state of the given mail type. It has been made
         !! public to simplify testing.
         use :: dm_ascii, only: CR_LF
+
         type(mail_type), intent(inout) :: mail !! Mail type.
         character(len=:), allocatable  :: payload
 

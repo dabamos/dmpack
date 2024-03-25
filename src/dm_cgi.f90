@@ -372,7 +372,7 @@ contains
 
     subroutine dm_cgi_query(env, param)
         !! Returns CGI GET parameters from environment variable `QUERY_STRING`
-        !! as key-value pairs in `param`.
+        !! as key–value pairs in `param`.
         type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
         type(cgi_param_type), intent(out)   :: param !! CGI parameter type.
 
@@ -409,9 +409,9 @@ contains
     end function cgi_get_int32
 
     integer function cgi_get_int64(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as 64-bit integer.
-        !! The return code is set to `E_EMPTY` if the key does not exist and
-        !! `required` has not been not passed or is `.true.`
+        !! Returns (last) value associated with key in `param` as 64-bit
+        !! integer. The return code is set to `E_EMPTY` if the key does not
+        !! exist and `required` has not been not passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameters.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         integer(kind=i8),     intent(out)          :: value    !! Parameter value.
@@ -435,8 +435,8 @@ contains
     end function cgi_get_int64
 
     integer function cgi_get_logical(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as logical.
-        !! The return code is set to `E_EMPTY` if the key does not exist and
+        !! Returns (last) value associated with key in `param` as logical. The
+        !! return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been not passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
@@ -517,9 +517,9 @@ contains
     end function cgi_get_real64
 
     integer function cgi_get_string(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param`. The return code is
-        !! set to `E_EMPTY` if the key does not exist and `required` has not been
-        !! not passed or is `.true.`
+        !! Returns (last) value associated with key in `param`. The return code
+        !! is set to `E_EMPTY` if the key does not exist and `required` has not
+        !! been not passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         character(len=*),     intent(inout)        :: value    !! Parameter value.

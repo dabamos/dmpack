@@ -44,8 +44,9 @@ contains
         !! * `E_INVALID` if passed job is invalid.
         !!
         type(job_list_type), intent(inout) :: job_list !! Job list type.
-        type(job_type),      intent(inout) :: job      !! Job type.
-        integer                            :: i
+        type(job_type),      intent(inout) :: job      !! Job type to add to list.
+
+        integer :: i
 
         rc = E_CORRUPT
         if (.not. allocated(job_list%jobs)) return
@@ -82,7 +83,8 @@ contains
         !! Returns number of (enabled) jobs in job list.
         type(job_list_type), intent(inout)        :: job_list !! Job list type.
         logical,             intent(in), optional :: disabled !! Include disabled jobs.
-        logical                                   :: disabled_
+
+        logical :: disabled_
 
         n = 0
         if (.not. allocated(job_list%mask)) return
@@ -102,7 +104,8 @@ contains
         !! Initialises job list. The function returns `E_ALLOC` on error.
         type(job_list_type), intent(out) :: job_list !! Job list type.
         integer,             intent(in)  :: n        !! Maximum number of jobs to hold.
-        integer                          :: stat
+
+        integer :: stat
 
         rc = E_ALLOC
         allocate (job_list%jobs(n), stat=stat)

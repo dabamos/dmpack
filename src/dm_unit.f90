@@ -15,9 +15,9 @@ module dm_unit
 
     type, public :: unit_type
         !! Generic unit type.
-        real(kind=r8) :: value = real(0.0, kind=r8) !! Value.
-        integer       :: type  = UNIT_NONE          !! Unit of value.
-        integer       :: error = E_NONE             !! Convert error.
+        real(kind=r8) :: value = 0.0_r8    !! Value.
+        integer       :: type  = UNIT_NONE !! Unit of value.
+        integer       :: error = E_NONE    !! Convert error.
     end type unit_type
 
     type, extends(unit_type), public :: angle_type
@@ -33,7 +33,7 @@ contains
     pure elemental function dm_unit_to_deg(a) result(b)
         !! Converts angle to degrees.
         type(angle_type), intent(in) :: a !! Input angle.
-        type(angle_type)             :: b !! Output angle in deg.
+        type(angle_type)             :: b !! Output angle [deg].
 
         b%type = UNIT_DEG
 
@@ -52,7 +52,7 @@ contains
     pure elemental function dm_unit_to_gon(a) result(b)
         !! Converts angle to gradians.
         type(angle_type), intent(in) :: a !! Input angle.
-        type(angle_type)             :: b !! Output angle in gon.
+        type(angle_type)             :: b !! Output angle [gon].
 
         b%type = UNIT_GON
 
@@ -71,7 +71,7 @@ contains
     pure elemental function dm_unit_to_rad(a) result(b)
         !! Converts angle to radiants.
         type(angle_type), intent(in) :: a !! Input angle.
-        type(angle_type)             :: b !! Output angle in rad.
+        type(angle_type)             :: b !! Output angle [rad].
 
         b%type = UNIT_RAD
 

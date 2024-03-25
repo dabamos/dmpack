@@ -153,6 +153,7 @@ contains
     pure elemental function dm_deg_to_rad(a) result(b)
         !! Converts angle from degrees to radiants.
         use :: dm_const, only: PI
+
         real(kind=r8), intent(in) :: a !! Angle [deg].
         real(kind=r8)             :: b !! Angle [rad].
 
@@ -170,6 +171,7 @@ contains
     pure elemental function dm_gon_to_rad(a) result(b)
         !! Converts angle from gon to radiants.
         use :: dm_const, only: PI
+
         real(kind=r8), intent(in) :: a !! Angle [gon].
         real(kind=r8)             :: b !! Angle [rad].
 
@@ -179,6 +181,7 @@ contains
     pure elemental function dm_rad_to_deg(a) result(b)
         !! Converts angle from radiants to degrees.
         use :: dm_const, only: PI
+
         real(kind=r8), intent(in) :: a !! Angle [rad].
         real(kind=r8)             :: b !! Angle [deg]
 
@@ -188,6 +191,7 @@ contains
     pure elemental function dm_rad_to_gon(a) result(b)
         !! Converts angle from radiants to gon.
         use :: dm_const, only: PI
+
         real(kind=r8), intent(in) :: a !! Angle [rad].
         real(kind=r8)             :: b !! Angle [gon]
 
@@ -225,6 +229,7 @@ contains
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
         use :: unix, only: c_useconds_t, c_usleep
+
         integer, intent(in) :: sec !! Delay in seconds [s].
         integer             :: rc
 
@@ -234,6 +239,7 @@ contains
     subroutine dm_usleep(usec)
         !! Pauses program execution for given time in useconds.
         use :: unix, only: c_useconds_t, c_usleep
+
         integer, intent(in) :: usec !! Delay in useconds [us].
         integer             :: rc
 
@@ -351,9 +357,7 @@ contains
         integer(kind=i4), intent(inout) :: array(:) !! Input array.
         integer(kind=i4), intent(in)    :: value    !! Value to search.
 
-        has = .false.
-        if (findloc(array, value, dim=1) == 0) return
-        has = .true.
+        has = (findloc(array, value, dim=1) > 0)
     end function array_has_int32
 
     logical function array_has_int64(array, value) result(has)
@@ -361,9 +365,7 @@ contains
         integer(kind=i8), intent(inout) :: array(:) !! Input array.
         integer(kind=i8), intent(in)    :: value    !! Value to search.
 
-        has = .false.
-        if (findloc(array, value, dim=1) == 0) return
-        has = .true.
+        has = (findloc(array, value, dim=1) > 0)
     end function array_has_int64
 
     pure elemental logical function equals_real32(a, b) result(equals)
@@ -371,7 +373,7 @@ contains
         !! approximately the same, else `.false.`.
         real(kind=r4), intent(in) :: a, b
 
-        equals = abs(a - b) <= epsilon(a)
+        equals = (abs(a - b) <= epsilon(a))
     end function equals_real32
 
     pure elemental logical function equals_real64(a, b) result(equals)
@@ -379,7 +381,7 @@ contains
         !! approximately the same, else `.false.`.
         real(kind=r8), intent(in) :: a, b
 
-        equals = abs(a - b) <= epsilon(a)
+        equals = (abs(a - b) <= epsilon(a))
     end function equals_real64
 
     ! ******************************************************************

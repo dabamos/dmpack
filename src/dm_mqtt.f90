@@ -83,7 +83,7 @@ contains
         rc = E_IO
 
         if (present(error_message)) error_message = ''
-        if (present(error_curl)) error_curl = CURLE_OK
+        if (present(error_curl))    error_curl    = CURLE_OK
 
         curl_ptr = curl_easy_init()
         if (.not. c_associated(curl_ptr)) return
@@ -140,7 +140,7 @@ contains
     function dm_mqtt_url(host, topic, port) result(url)
         !! Returns allocatable string of URL to MQTT server. Uses the URL API
         !! of libcurl to create the URL. If `port` is `0`, the default port
-        !! will be used. The topic must start with a `/` character.
+        !! will be used. The topic must start with character `/`.
         !!
         !! On error, an empty string is returned.
         character(len=*), intent(in)           :: host  !! IP or FQDN of MQTT server.
@@ -148,10 +148,9 @@ contains
         integer,          intent(in), optional :: port  !! MQTT server port (1883 by default).
         character(len=:), allocatable          :: url   !! Created URL.
 
-        character(len=5) :: str
-        integer          :: port_
-        integer          :: stat
-        type(c_ptr)      :: ptr
+        integer     :: port_
+        integer     :: stat
+        type(c_ptr) :: ptr
 
         port_ = 0
         if (present(port)) port_ = port
@@ -170,8 +169,7 @@ contains
 
             ! URL port.
             if (port_ > 0) then
-                write (str, '(i0)', iostat=stat) port_
-                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
                 if (stat /= CURLUE_OK) exit url_block
             end if
 
