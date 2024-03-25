@@ -99,6 +99,7 @@ module dmpack
     use :: dm_system
     use :: dm_target
     use :: dm_test
+    use :: dm_thread
     use :: dm_time
     use :: dm_timer
     use :: dm_transform

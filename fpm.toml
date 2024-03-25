@@ -280,6 +280,11 @@ name = "dmteststring"
 main = "dmteststring.f90"
 
 [[test]]
+name = "dmtestthread"
+main = "dmtestthread.f90"
+link = [ "pthread" ]
+
+[[test]]
 name = "dmtesttime"
 main = "dmtesttime.f90"
 
