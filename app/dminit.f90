@@ -45,7 +45,8 @@ contains
         character(len=*), intent(in) :: path !! Path to database.
         logical,          intent(in) :: wal  !! WAL mode.
         logical,          intent(in) :: sync !! Add sync tables.
-        type(db_type)                :: db
+
+        type(db_type) :: db
 
         ! Open and create database.
         rc = dm_db_open(db, path, create=.true., wal=wal)
@@ -78,12 +79,12 @@ contains
             if (dm_is_error(rc)) call dm_error_out(rc, 'failed to create database')
         end block db_block
 
-        if (dm_db_close(db) /= E_NONE) rc = E_DB
+        if (dm_is_error(dm_db_close(db))) rc = E_DB
     end function create_db
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(out) :: app !! App type.
 
         character(len=TYPE_NAME_LEN) :: type
         type(arg_type)               :: args(4)

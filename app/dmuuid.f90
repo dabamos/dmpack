@@ -51,8 +51,8 @@ program dmuuid
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(3)
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(3)
 
         rc = E_NONE
 

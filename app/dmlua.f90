@@ -102,8 +102,8 @@ contains
         character(len=*), parameter :: PROC_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
 
-        type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(8)
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(8)
 
         rc = E_NONE
 

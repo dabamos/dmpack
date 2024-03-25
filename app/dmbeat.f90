@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
 
@@ -74,8 +74,8 @@ program dmbeat
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(arg_type)                :: args(13)
+        type(app_type), intent(out) :: app !! App type.
+        type(arg_type)              :: args(13)
 
         rc = E_NONE
 
@@ -188,8 +188,7 @@ contains
         character(len=BEAT_CLIENT_LEN) :: client ! Client name and version.
         character(len=:), allocatable  :: url    ! URL of HTTP-RPC API endpoint.
 
-        integer          :: last_error
-        integer          :: i, rc, stat, t
+        integer          :: delay, last_error, niter, rc
         integer(kind=i8) :: uptime
         logical          :: has_api_status
 
@@ -205,13 +204,10 @@ contains
         client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
 
         ! Create URL of RPC service.
-        url = dm_rpc_url(host     = app%host, &
-                         port     = app%port, &
-                         endpoint = RPC_ROUTE_BEAT, &
-                         tls      = app%tls)
+        url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
 
         last_error = E_NONE
-        i = 0
+        niter = 0
 
         emit_loop: do
             call dm_timer_start(timer)
@@ -229,20 +225,20 @@ contains
             beat%uptime = int(uptime, kind=i4)
 
             ! Send RPC request to API.
-            rc = dm_rpc_send(request  = request, &
-                             response = response, &
-                             type     = beat, &
-                             username = app%username, &
-                             password = app%password, &
-                             deflate  = APP_RPC_DEFLATE, &
-                             url      = url)
+            rc = dm_rpc_send(request    = request, &
+                             response   = response, &
+                             type       = beat, &
+                             url        = url, &
+                             username   = app%username, &
+                             password   = app%password, &
+                             user_agent = client, &
+                             deflate    = APP_RPC_DEFLATE)
 
             if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
             has_api_status = .false.
 
             if (response%content_type == MIME_TEXT) then
-                stat = dm_api_status_from_string(response%payload, api_status)
-                has_api_status = dm_is_ok(stat)
+                has_api_status = dm_is_ok(dm_api_status_from_string(response%payload, api_status))
             end if
 
             select case (response%code)
@@ -288,14 +284,14 @@ contains
             last_error = rc
 
             if (app%count > 0) then
-                i = i + 1
-                if (i >= app%count) exit emit_loop
+                niter = niter + 1
+                if (niter >= app%count) exit emit_loop
             end if
 
             call dm_timer_stop(timer)
-            t = max(0, int(app%interval - dm_timer_result(timer)))
-            call logger%debug('next beat in ' // dm_itoa(t) // ' sec')
-            call dm_sleep(t)
+            delay = max(0, int(app%interval - dm_timer_result(timer)))
+            call logger%debug('next beat in ' // dm_itoa(delay) // ' sec')
+            call dm_sleep(delay)
         end do emit_loop
 
         call logger%debug('finished transmission')

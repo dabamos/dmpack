@@ -32,8 +32,8 @@ program dminfo
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(1)
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(1)
 
         args = [ &
             arg_type(name='database', short='d', type=ARG_TYPE_DB) & ! -d, --database <path>

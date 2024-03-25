@@ -155,7 +155,7 @@ contains
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
-        type(app_type), target, intent(inout) :: app !! App type.
+        type(app_type), target, intent(out) :: app !! App type.
 
         integer                         :: format, i, n
         type(arg_type)                  :: args(7)

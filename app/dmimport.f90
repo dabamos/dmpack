@@ -275,7 +275,7 @@ contains
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app
+        type(app_type), intent(out) :: app
 
         character(len=6) :: type_name
         type(arg_type)   :: args(7)

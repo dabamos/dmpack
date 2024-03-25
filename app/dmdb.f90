@@ -94,8 +94,8 @@ program dmdb
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(8)
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(8)
 
         rc = E_NONE
 

@@ -75,8 +75,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and configuration
         !! from file (if `--config` is passed).
-        type(app_type), intent(inout) :: app !! App type.
-        type(arg_type)                :: args(16)
+        type(app_type), intent(out) :: app !! App type.
+        type(arg_type)              :: args(16)
 
         rc = E_NONE
 

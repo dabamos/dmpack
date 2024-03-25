@@ -376,7 +376,7 @@ contains
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app !! App settings.
+        type(app_type), intent(out) :: app !! App settings.
 
         character(len=SENSOR_TYPE_NAME_LEN) :: sensor ! Sensor type name.
         character(len=TYPE_NAME_LEN)        :: type   ! DMPACK derived type name.

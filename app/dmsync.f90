@@ -10,7 +10,7 @@ program dmsync
     character(len=*), parameter :: APP_NAME  = 'dmsync'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     integer, parameter :: APP_DB_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -117,8 +117,8 @@ program dmsync
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(inout) :: app
-        type(arg_type)                :: args(16)
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(16)
 
         rc = E_NONE
 
@@ -192,7 +192,11 @@ contains
         end if
 
         select case (app%type)
-            case (SYNC_TYPE_NODE, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET, SYNC_TYPE_OBSERV, SYNC_TYPE_LOG)
+            case (SYNC_TYPE_NODE,   &
+                  SYNC_TYPE_SENSOR, &
+                  SYNC_TYPE_TARGET, &
+                  SYNC_TYPE_OBSERV, &
+                  SYNC_TYPE_LOG)
                 continue
             case default
                 call dm_error_out(rc, 'invalid sync type')
@@ -276,24 +280,22 @@ contains
         limit = APP_SYNC_LIMIT
 
         ! Allocate type array, and generate URL of HTTP-RPC API endpoint.
-        rc = E_ALLOC
-
         select case (app%type)
             case (SYNC_TYPE_LOG)
                 allocate (logs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_LOG, tls=app%tls)
+                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_LOG, tls=app%tls)
             case (SYNC_TYPE_NODE)
                 allocate (nodes(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_NODE, tls=app%tls)
+                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_NODE, tls=app%tls)
             case (SYNC_TYPE_OBSERV)
                 allocate (observs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_OBSERV, tls=app%tls)
+                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_OBSERV, tls=app%tls)
             case (SYNC_TYPE_SENSOR)
                 allocate (sensors(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
+                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
             case (SYNC_TYPE_TARGET)
                 allocate (targets(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, port=app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
+                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
             case default
                 ! Fail-safe, should never occur.
                 rc = E_TYPE
@@ -301,6 +303,7 @@ contains
                 return
         end select
 
+        rc = E_ALLOC
         if (stat /= 0) return
 
         ! Allocate request array.
@@ -313,8 +316,9 @@ contains
 
         ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
-            requests(i)%url     = url
-            requests(i)%deflate = APP_RPC_DEFLATE
+            requests(i)%url        = url
+            requests(i)%user_agent = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
+            requests(i)%deflate    = APP_RPC_DEFLATE
 
             if (len_trim(app%username) > 0 .and. len_trim(app%password) > 0) then
                 requests(i)%auth     = RPC_AUTH_BASIC
@@ -370,19 +374,19 @@ contains
             do i = 1, n
                 select case (syncs(i)%type)
                     case (SYNC_TYPE_LOG)
-                        rc = dm_db_select(db, logs(i), syncs(i)%id)
+                        rc     = dm_db_select(db, logs(i), syncs(i)%id)
                         ids(i) = logs(i)%id
                     case (SYNC_TYPE_NODE)
-                        rc = dm_db_select(db, nodes(i), syncs(i)%id)
+                        rc     = dm_db_select(db, nodes(i), syncs(i)%id)
                         ids(i) = nodes(i)%id
                     case (SYNC_TYPE_OBSERV)
-                        rc = dm_db_select(db, observs(i), syncs(i)%id)
+                        rc     = dm_db_select(db, observs(i), syncs(i)%id)
                         ids(i) = observs(i)%id
                     case (SYNC_TYPE_SENSOR)
-                        rc = dm_db_select(db, sensors(i), syncs(i)%id)
+                        rc     = dm_db_select(db, sensors(i), syncs(i)%id)
                         ids(i) = sensors(i)%id
                     case (SYNC_TYPE_TARGET)
-                        rc = dm_db_select(db, targets(i), syncs(i)%id)
+                        rc     = dm_db_select(db, targets(i), syncs(i)%id)
                         ids(i) = targets(i)%id
                 end select
 
@@ -441,8 +445,7 @@ contains
                     has_api_status = .false.
 
                     if (responses(i)%content_type == MIME_TEXT) then
-                        stat = dm_api_status_from_string(responses(i)%payload, api_status)
-                        has_api_status = dm_is_ok(stat)
+                        has_api_status = dm_is_ok(dm_api_status_from_string(responses(i)%payload, api_status))
                     end if
 
                     ! Log the HTTP response code.
@@ -484,6 +487,7 @@ contains
                             call logger%debug('bad gateway on host ' // app%host, error=rc)
 
                         case default
+                            ! Any other server error.
                             if (has_api_status) then
                                 rc = api_status%error
                                 write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &

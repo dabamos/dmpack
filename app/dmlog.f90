@@ -43,9 +43,9 @@ program dmlog
 contains
     integer function read_args(app, log) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(inout) :: app
-        type(log_type), intent(inout) :: log
-        type(arg_type)                :: args(10)
+        type(app_type), intent(out) :: app
+        type(log_type), intent(out) :: log
+        type(arg_type)              :: args(10)
 
         rc = E_NONE
 

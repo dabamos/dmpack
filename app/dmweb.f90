@@ -579,8 +579,7 @@ contains
                 end if
 
                 ! Log level.
-                has_level = .false.
-                if (dm_is_ok(dm_cgi_get(param, 'level', level))) has_level = .true.
+                has_level = dm_is_ok(dm_cgi_get(param, 'level', level))
 
                 ! Log source.
                 rc = dm_cgi_get(param, 'source', source)
@@ -947,21 +946,21 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get parameters.
-                if (dm_is_error(dm_cgi_get(param, 'node_id', node_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'sensor_id', sensor_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'target_id', target_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
+                if (dm_is_error(dm_cgi_get(param, 'node_id',     node_id))   .or. &
+                    dm_is_error(dm_cgi_get(param, 'sensor_id',   sensor_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'target_id',   target_id)) .or. &
+                    dm_is_error(dm_cgi_get(param, 'from',        from))      .or. &
+                    dm_is_error(dm_cgi_get(param, 'to',          to))        .or. &
                     dm_is_error(dm_cgi_get(param, 'max_results', nresults) )) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id) .or. &
+                if (.not. dm_id_valid(node_id)   .or. &
                     .not. dm_id_valid(sensor_id) .or. &
                     .not. dm_id_valid(target_id) .or. &
-                    .not. dm_time_valid(from) .or. &
+                    .not. dm_time_valid(from)    .or. &
                     .not. dm_time_valid(to)) then
                     call html_error('Invalid Parameters', E_INVALID)
                     exit response_block
@@ -1090,23 +1089,23 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get request parameters.
-                if (dm_is_error(dm_cgi_get(param, 'node_id', node_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'sensor_id', sensor_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'target_id', target_id)) .or. &
+                if (dm_is_error(dm_cgi_get(param, 'node_id',       node_id))       .or. &
+                    dm_is_error(dm_cgi_get(param, 'sensor_id',     sensor_id))     .or. &
+                    dm_is_error(dm_cgi_get(param, 'target_id',     target_id))     .or. &
                     dm_is_error(dm_cgi_get(param, 'response_name', response_name)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'max_results', nresults))) then
+                    dm_is_error(dm_cgi_get(param, 'from',          from))          .or. &
+                    dm_is_error(dm_cgi_get(param, 'to',            to))            .or. &
+                    dm_is_error(dm_cgi_get(param, 'max_results',   nresults))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id) .or. &
-                    .not. dm_id_valid(sensor_id) .or. &
-                    .not. dm_id_valid(target_id) .or. &
+                if (.not. dm_id_valid(node_id)       .or. &
+                    .not. dm_id_valid(sensor_id)     .or. &
+                    .not. dm_id_valid(target_id)     .or. &
                     .not. dm_id_valid(response_name) .or. &
-                    .not. dm_time_valid(from) .or. &
+                    .not. dm_time_valid(from)        .or. &
                     .not. dm_time_valid(to)) then
                     call html_error('Invalid Parameters', E_INVALID)
                     exit response_block
@@ -1295,10 +1294,10 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id', sensor%id)) .or. &
+                if (dm_is_error(dm_cgi_get(param, 'id',      sensor%id))      .or. &
                     dm_is_error(dm_cgi_get(param, 'node_id', sensor%node_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'type', sensor%type)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'name', sensor%name))) then
+                    dm_is_error(dm_cgi_get(param, 'type',    sensor%type))    .or. &
+                    dm_is_error(dm_cgi_get(param, 'name',    sensor%name))) then
                     call html_error('Missing or Invalid Parameters', E_INVALID)
                     exit response_block
                 end if

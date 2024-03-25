@@ -14,7 +14,7 @@ module dm_rpc
     !! type(rpc_response_type)       :: response
     !!
     !! rc = dm_rpc_init()
-    !! if (dm_is_error(rc)) stop
+    !! if (dm_is_error(rc)) error stop
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
     !! rc  = dm_rpc_send(request, response, observ, url)
@@ -250,15 +250,18 @@ contains
         rc = E_NONE
     end function dm_rpc_init
 
-    integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password) result(rc)
+    integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &
+                                          user_agent, deflate) result(rc)
         !! Sends multiple HTTP requests by GET or POST method.
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
-        type(rpc_response_type), allocatable, intent(inout)        :: responses(:) !! RPC response type array.
+        type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
         integer,                              intent(in), optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),                     intent(in), optional :: accept       !! HTTP accept header.
+        character(len=*),                     intent(in), optional :: accept       !! HTTP Accept header.
         character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
         character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
+        logical,                              intent(in), optional :: deflate      !! Deflate-compression of payload (for POST only).
 
         integer :: i
 
@@ -266,9 +269,11 @@ contains
             ! Set request parameters.
             if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
 
-            if (present(accept)) requests(i)%accept = trim(accept)
-            if (present(method)) requests(i)%method = method
-            if (present(url))    requests(i)%url    = trim(url)
+            if (present(accept))     requests(i)%accept     = trim(accept)
+            if (present(method))     requests(i)%method     = method
+            if (present(url))        requests(i)%url        = trim(url)
+            if (present(user_agent)) requests(i)%user_agent = trim(user_agent)
+            if (present(deflate))    requests(i)%deflate    = deflate
 
             ! HTTP Basic Auth.
             if (present(username) .and. present(password)) then
@@ -282,27 +287,29 @@ contains
     end function dm_rpc_request_multi
 
     integer function dm_rpc_request_single(request, response, url, method, payload, content_type, &
-                                           accept, username, password, deflate) result(rc)
+                                           accept, username, password, user_agent, deflate) result(rc)
         !! Sends single HTTP request by GET or POST method, and with optional
         !! deflate compression.
         type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
         type(rpc_response_type), intent(out)             :: response     !! RPC response type.
         character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),        intent(inout), optional :: payload      !! For POST only.
-        character(len=*),        intent(in),    optional :: content_type !! For POST only.
-        character(len=*),        intent(in),    optional :: accept       !! HTTP accept header.
+        character(len=*),        intent(inout), optional :: payload      !! Payload date (for POST only).
+        character(len=*),        intent(in),    optional :: content_type !! Payload content type (for POST only).
+        character(len=*),        intent(in),    optional :: accept       !! HTTP Accept header.
         character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
         character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
-        logical,                 intent(in),    optional :: deflate      !! For POST only.
+        character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
+        logical,                 intent(in),    optional :: deflate      !! Deflate-compression of payload (for POST only).
 
         ! Set request parameters.
         if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
 
-        if (present(url))     request%url     = trim(url)
-        if (present(method))  request%method  = method
-        if (present(accept))  request%accept  = trim(accept)
-        if (present(deflate)) request%deflate = deflate
+        if (present(url))        request%url        = trim(url)
+        if (present(method))     request%method     = method
+        if (present(accept))     request%accept     = trim(accept)
+        if (present(user_agent)) request%user_agent = trim(user_agent)
+        if (present(deflate))    request%deflate    = deflate
 
         if (present(username) .and. present(password)) then
             request%auth     = RPC_AUTH_BASIC
@@ -318,7 +325,8 @@ contains
         rc = rpc_request_single(request, response)
     end function dm_rpc_request_single
 
-    integer function dm_rpc_send_type(request, response, type, url, username, password, deflate) result(rc)
+    integer function dm_rpc_send_type(request, response, type, url, username, password, &
+                                      user_agent, deflate) result(rc)
         !! Sends a single derived type in Namelist format to a given URL, with
         !! optional authentication and deflate compression. The URL has to be
         !! the API endpoint that accepts HTTP POST requests.
@@ -326,20 +334,22 @@ contains
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
         !! `target_type`. The function returns `E_TYPE` on any other type.
-        type(rpc_request_type),  intent(inout)        :: request  !! RPC request type.
-        type(rpc_response_type), intent(out)          :: response !! RPC response type.
-        class(*),                intent(inout)        :: type     !! Derived type.
-        character(len=*),        intent(in), optional :: url      !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: username !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password !! HTTP Basic Auth password.
-        logical,                 intent(in), optional :: deflate  !! Deflate compression.
+        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
+        type(rpc_response_type), intent(out)          :: response   !! RPC response type.
+        class(*),                intent(inout)        :: type       !! Derived type.
+        character(len=*),        intent(in), optional :: url        !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: username   !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password   !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent !! HTTP User Agent.
+        logical,                 intent(in), optional :: deflate    !! Deflate compression.
 
         request%accept       = MIME_TEXT
         request%content_type = MIME_NML
         request%method       = RPC_METHOD_POST
 
-        if (present(url))     request%url     = url
-        if (present(deflate)) request%deflate = deflate
+        if (present(url))        request%url        = trim(url)
+        if (present(user_agent)) request%user_agent = trim(user_agent)
+        if (present(deflate))    request%deflate    = deflate
 
         if (present(username) .and. present(password)) then
             request%auth     = RPC_AUTH_BASIC
@@ -354,7 +364,8 @@ contains
         rc = rpc_request(request, response)
     end function dm_rpc_send_type
 
-    integer function dm_rpc_send_types(requests, responses, types, url, username, password, deflate, sequential) result(rc)
+    integer function dm_rpc_send_types(requests, responses, types, url, username, password, &
+                                       user_agent, deflate, sequential) result(rc)
         !! Sends multiple derived types concurrently in Namelist format to the
         !! given URL, with optional authentication and deflate compression.
         !! The URL has to be the API endpoint that accepts HTTP POST requests.
@@ -364,20 +375,22 @@ contains
         !! `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
-        !! instead of concurrently.
+        !! instead of concurrently. The number of requests must match the
+        !! number of types, or `E_CORRUPT` is returned.
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         class(*),                             intent(inout)        :: types(:)     !! Derived type array.
         character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
         character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
         character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
         logical,                              intent(in), optional :: deflate      !! Deflate compression.
         logical,                              intent(in), optional :: sequential   !! Sequential instead of concurrent transfer.
 
         integer :: i, n, stat
         logical :: sequential_
 
-        rc = E_BOUNDS
+        rc = E_CORRUPT
         if (size(requests) /= size(types)) return
 
         sequential_ = .false.
@@ -399,8 +412,9 @@ contains
             requests(i)%content_type = MIME_NML
             requests(i)%method       = RPC_METHOD_POST
 
-            if (present(url))     requests(i)%url     = url
-            if (present(deflate)) requests(i)%deflate = deflate
+            if (present(url))        requests(i)%url        = trim(url)
+            if (present(user_agent)) requests(i)%user_agent = trim(user_agent)
+            if (present(deflate))    requests(i)%deflate    = deflate
 
             if (present(username) .and. present(password)) then
                 requests(i)%auth     = RPC_AUTH_BASIC
@@ -439,7 +453,7 @@ contains
         character(len=:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
 
         character(len=:), allocatable :: path
-        character(len=5)              :: str
+        character(len=5)              :: port_str
 
         integer     :: stat
         integer     :: port_
@@ -471,8 +485,8 @@ contains
 
             ! URL port.
             if (port_ > 0) then
-                write (str, '(i0)', iostat=stat) port_
-                stat = curl_url_set(ptr, CURLUPART_PORT, trim(str))
+                write (port_str, '(i0)', iostat=stat) port_
+                stat = curl_url_set(ptr, CURLUPART_PORT, trim(port_str))
                 if (stat /= CURLUE_OK) exit url_block
             end if
 
@@ -567,7 +581,12 @@ contains
         !! | `sensor_type` | `NML_SENSOR_LEN` |
         !! | `target_type` | `NML_TARGET_LEN` |
         !!
-        !! If any other type is passed, the function returns `E_TYPE`.
+        !! The function returns the following error codes:
+        !!
+        !! * `E_TYPE` if an unsupported payload type is passed.
+        !! * `E_WRITE` if namelist serialisation failed.
+        !! * `E_ZLIB` if deflate-compression failed.
+        !!
         use :: dm_beat
         use :: dm_log
         use :: dm_nml
@@ -653,18 +672,17 @@ contains
         !! * `E_RPC` if RPC backend initialisation failed.
         !!
         !! Other DMPACK errors may occur, depending on the result of the
-        !! transmission.
+        !! transmission. Specific transfer error codes are returned in the
+        !! responses.
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout in msec.
 
         type(rpc_request_type),               intent(inout) :: requests(:)  !! Request type array.
         type(rpc_response_type), allocatable, intent(out)   :: responses(:) !! Response type array.
 
-        integer :: error, i, n, stat
-        integer :: idx, nfds, nqueued, nrun
-
-        type(c_ptr) :: msg_ptr
-        type(c_ptr) :: multi_ptr
-
+        integer                 :: error, i, n, stat
+        integer                 :: idx, nfds, nqueued, nrun
+        type(c_ptr)             :: msg_ptr
+        type(c_ptr)             :: multi_ptr
         type(curl_msg), pointer :: msg
 
         n = size(requests)
@@ -686,16 +704,18 @@ contains
 
             ! Create and prepare transfer handles.
             do i = 1, n
+                ! Initialise easy handle.
                 if (.not. c_associated(requests(i)%curl_ptr)) then
                     requests(i)%curl_ptr = curl_easy_init()
                     if (.not. c_associated(requests(i)%curl_ptr)) exit curl_block
                 end if
 
+                ! Prepare request.
                 rc = rpc_request_prepare(requests(i), responses(i))
                 if (dm_is_error(rc)) exit curl_block
             end do
 
-            ! Create multi stack and add individual transfers.
+            ! Create multi-stack and add individual transfers.
             multi_ptr = curl_multi_init()
             if (.not. c_associated(multi_ptr)) exit curl_block
 
@@ -784,6 +804,12 @@ contains
 
     integer function rpc_request_prepare(request, response) result(rc)
         !! Prepares a request by setting the necessary libcurl options.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if libcurl is not initialised.
+        !! * `E_RPC` if request preparation failed.
+        !!
         type(rpc_request_type),  target, intent(inout) :: request  !! Request type.
         type(rpc_response_type), target, intent(inout) :: response !! Response type.
 
@@ -926,7 +952,9 @@ contains
     end function rpc_request_prepare
 
     integer function rpc_request_single(request, response) result(rc)
-        !! Sends single HTTP request by calling libcurl.
+        !! Sends single HTTP request by calling libcurl. The function returns
+        !! `E_RPC` on error. A more specific error code may be available in the
+        !! response attribute `error`.
         type(rpc_request_type),  intent(inout) :: request  !! Request type.
         type(rpc_response_type), intent(out)   :: response !! Response type.
 
