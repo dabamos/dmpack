@@ -18,7 +18,7 @@ module dm_geocom
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
-    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, retries=1, verbose=.true., error=rc)
+    !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, verbose=.true., error=rc)
     !! if (dm_is_error(rc)) error stop
     !!
     !! call geocom%null()
@@ -299,12 +299,13 @@ module dm_geocom
         integer            :: baud    = GEOCOM_COM_BAUD_19200    !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
         integer            :: grc     = GRC_OK                   !! Last GeoCOM return code.
         integer            :: rc      = E_NONE                   !! Last DMPACK return code.
-        logical            :: verbose = .false.                  !! Print error messages to stderr.
+        logical            :: verbose = .false.                  !! Print error messages to standard error.
         type(request_type) :: request                            !! Last request sent to sensor.
         type(tty_type)     :: tty                                !! TTY type for serial connection.
     contains
         private
         ! Private class methods.
+        procedure         :: output       => geocom_output       !! Outputs error message in verbose mode.
         procedure         :: reset        => geocom_reset        !! Resets request and error codes.
         ! Public class methods.
         procedure, public :: baud_rate    => geocom_baud_rate    !! Returns current baud rate.
@@ -360,7 +361,7 @@ module dm_geocom
         procedure, public :: get_measurement_program       => geocom_get_measurement_program
         procedure, public :: get_power                     => geocom_get_power
         procedure, public :: get_prism_constant            => geocom_get_prism_constant
-       !procedure, public :: get_prism_definition          => geocom_get_prism_definition
+        procedure, public :: get_prism_definition          => geocom_get_prism_definition
        !procedure, public :: get_prism_type                => geocom_get_prism_type
        !procedure, public :: get_prism_type_v2             => geocom_get_prism_type_v2
        !procedure, public :: get_quick_distance            => geocom_get_quick_distance
@@ -444,6 +445,7 @@ module dm_geocom
     private :: geocom_last_request
     private :: geocom_message
     private :: geocom_open
+    private :: geocom_output
     private :: geocom_reset
     private :: geocom_send
 
@@ -491,7 +493,7 @@ module dm_geocom
     private :: geocom_get_measurement_program
     private :: geocom_get_power
     private :: geocom_get_prism_constant
-   !private :: geocom_get_prism_definition
+    private :: geocom_get_prism_definition
    !private :: geocom_get_prism_type
    !private :: geocom_get_prism_type_v2
    !private :: geocom_get_quick_distance
@@ -614,7 +616,7 @@ contains
         !! GeoCOM object is used instead.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         integer,             intent(in), optional :: grc     !! GeoCOM return code.
-        character(len=:), allocatable             :: message !! Last return code message.
+        character(len=:), allocatable             :: message !! Message associated with last GeoCOM return code.
 
         if (present(grc)) then
             message = dm_geocom_error_message(grc)
@@ -651,7 +653,7 @@ contains
         !!
         use :: dm_file, only: dm_file_exists
 
-        integer, parameter :: WAIT_TIME = 3 !! Retry wait time in [sec].
+        integer, parameter :: WAIT_TIME = 3 !! Retry wait time [sec].
 
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
         character(len=*),    intent(in)            :: path      !! Path of TTY (for example, `/dev/ttyUSB0`).
@@ -665,7 +667,7 @@ contains
         tty_block: block
             rc = E_EXIST
             if (dm_tty_connected(this%tty)) then
-                if (this%verbose) call dm_error_out(rc, 'TTY already connected')
+                call this%output(rc, 'TTY already connected')
                 exit tty_block
             end if
 
@@ -679,14 +681,14 @@ contains
             this%baud = dm_geocom_type_validated(GEOCOM_COM_BAUD_RATE, baud_rate, error=rc)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'invalid baud rate')
+                call this%output(rc, 'invalid baud rate')
                 exit tty_block
             end if
 
             ! Verify TTY device exists.
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) then
-                if (this%verbose) call dm_error_out(rc, 'TTY ' // trim(path) // ' not found')
+                call this%output(rc, 'TTY ' // trim(path) // ' not found')
                 exit tty_block
             end if
 
@@ -703,10 +705,8 @@ contains
                                  stop_bits = TTY_STOP_BITS1)
                 if (dm_is_ok(rc)) exit
 
-                if (this%verbose) then
-                    call dm_error_out(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // &
-                                          dm_itoa(i + 1) // ' of ' // dm_itoa(n + 1) // ')')
-                end if
+                call this%output(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // &
+                                     dm_itoa(i + 1) // ' of ' // dm_itoa(n + 1) // ')')
 
                 ! Try again.
                 if (i < n) call dm_sleep(WAIT_TIME)
@@ -737,15 +737,15 @@ contains
 
         integer :: rc
 
-        if (dm_is_error(this%rc) .and. this%verbose) then
-            call dm_error_out(this%rc, 'invalid request parameters detected in request ' // request%name)
+        if (dm_is_error(this%rc)) then
+            call this%output(this%rc, 'invalid request parameters detected in request ' // request%name)
         end if
 
         tty_block: block
             ! Verify that TTY is not connected yet.
             rc = E_IO
             if (.not. dm_tty_connected(this%tty)) then
-                if (this%verbose) call dm_error_out(rc, 'TTY not connected')
+                call this%output(rc, 'TTY not connected')
                 exit tty_block
             end if
 
@@ -753,7 +753,7 @@ contains
             rc = dm_request_set_response_error(request, E_INCOMPLETE)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'failed to initialize responses')
+                call this%output(rc, 'failed to initialize responses')
                 exit tty_block
             end if
 
@@ -765,7 +765,7 @@ contains
             rc = dm_tty_write(this%tty, request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'failed to write to TTY ' // trim(this%tty%path))
+                call this%output(rc, 'failed to write to TTY ' // trim(this%tty%path))
                 exit tty_block
             end if
 
@@ -773,7 +773,7 @@ contains
             rc = dm_tty_read(this%tty, request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) call dm_error_out(rc, 'failed to read from TTY ' // trim(this%tty%path))
+                call this%output(rc, 'failed to read from TTY ' // trim(this%tty%path))
                 exit tty_block
             end if
 
@@ -781,10 +781,8 @@ contains
             rc = dm_regex_request(request)
 
             if (dm_is_error(rc)) then
-                if (this%verbose) then
-                    call dm_error_out(rc, 'regular expression pattern of request ' // &
-                                      trim(request%name) // ' does not match')
-                end if
+                call this%output(rc, 'regular expression pattern of request ' // &
+                                     trim(request%name) // ' does not match')
                 exit tty_block
             end if
 
@@ -804,6 +802,16 @@ contains
     ! **************************************************************************
     ! PRIVATE METHODS.
     ! **************************************************************************
+    subroutine geocom_output(this, error, message)
+        !! Outputs error message to `stderr` if verbose mode is enabled.
+        class(geocom_class), intent(inout) :: this    !! GeoCOM object.
+        integer,             intent(in)    :: error   !! DMPACK error code.
+        character(len=*),    intent(in)    :: message !! Error message.
+
+        if (.not. this%verbose) return
+        call dm_error_out(error, message)
+    end subroutine geocom_output
+
     subroutine geocom_reset(this)
         !! Resets object: clears return codes and last request.
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
@@ -1546,6 +1554,8 @@ contains
     end subroutine geocom_get_geocom_version
 
     subroutine geocom_get_geometric_ppm(this, enabled, scale_factor, offset, height_ppm, individual_ppm, delay)
+        !! Sends *TMC_GeoPpm* request to sensor. The function returns the
+        !! geometric ppm correction factor.
         class(geocom_class), intent(inout)         :: this           !! GeoCOM object.
         logical,             intent(out), optional :: enabled        !! State of geometric ppm calculation.
         real(kind=r8),       intent(out), optional :: scale_factor   !! Scale factor on central meridian.
@@ -1778,6 +1788,37 @@ contains
         call this%send(request, delay)
         call dm_request_get(this%request, 'reflcor', constant, default=0.0_r8)
     end subroutine geocom_get_prism_constant
+
+    subroutine geocom_get_prism_definition(this, prism_type, prism_name, prism_const, delay)
+        !! Sends *BAP_GetPrismDef* request to sensor. Returns the default prism
+        !! definition. The maximum prism name length is 16 characters
+        !! (`GEOCOM_BAP_PRISMNAME_LEN`). On error, the string is allocated but
+        !! empty.
+        use :: dm_regex, only: dm_regex_response_string
+
+        class(geocom_class),           intent(inout)        :: this        !! GeoCOM object.
+        integer,                       intent(in)           :: prism_type  !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        character(len=:), allocatable, intent(out)          :: prism_name  !! Prism name.
+        real(kind=r8),                 intent(out)          :: prism_const !! Prism correction constant [m].
+        integer,                       intent(in), optional :: delay       !! Request delay [msec].
+
+        integer            :: prism_type_
+        type(request_type) :: request
+
+        call this%reset()
+        prism_type_ = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, prism_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_request_get_prism_definition(request, prism_type_)
+        call this%send(request, delay)
+
+        call dm_request_get(this%request, 'prsmcor', prism_const, default=0.0_r8)
+
+        if (dm_is_error(this%rc)) then
+            prism_name = ''
+            return
+        end if
+
+        this%rc = dm_regex_response_string(this%request, 'prsmname', prism_name)
+    end subroutine geocom_get_prism_definition
 
     subroutine geocom_null(this, delay)
         !! Sends *COM_NullProc* request to sensor. API call for checking the
