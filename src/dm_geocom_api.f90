@@ -1794,16 +1794,16 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `reflcor` – Prism correction constant [m].
+        !! * `prsmcor` – Prism correction constant [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2023:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<reflcor>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prsmcor>`                       |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_prism_constant'
-        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<reflcor>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<prsmcor>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2023
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -1811,7 +1811,7 @@ contains
 
         responses = [ &
             response_type('grc',     unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('reflcor', unit='m', type=RESPONSE_TYPE_REAL64) &
+            response_type('prsmcor', unit='m', type=RESPONSE_TYPE_REAL64) &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -2130,7 +2130,7 @@ contains
         responses = [ &
             response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  &
             response_type('sigint',  unit='%',  type=RESPONSE_TYPE_REAL64), &
-            response_type('sigtime', unit='ms', type=RESPONSE_TYPE_LOGICAL) &
+            response_type('sigtime', unit='ms', type=RESPONSE_TYPE_INT32) &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -2233,22 +2233,22 @@ contains
         !! getting the total ppm and prism correction.
         !!
         !! The function returns the total ppm value (atmospheric ppm +
-        !! geometric ppm) plus the current prism constant.
+        !! geometric ppm) and the current prism constant.
         !!
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `distppm` – Total ppm correction factor [ppm].
-        !! * `reflcor` – Correction factor if the reflector [m].
+        !! * `distppm` – Total correction of distance [ppm].
+        !! * `prsmcor` – Correction of the reflector [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2126:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<distppm>,<reflcor>`             |
+        !! | ASCII response | `%R1P,0,0:<grc>,<distppm>,<prsmcor>`             |
         !!
         character(len=*), parameter :: REQUEST_NAME    = 'get_slope_distance_correction'
-        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<distppm>[-\d\.]+),(?<reflcor>[-\d\.]+)'
+        character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<distppm>[-\d\.]+),(?<prsmcor>[-\d\.]+)'
         integer,          parameter :: REQUEST_CODE    = 2126
 
         type(request_type), intent(out) :: request !! Prepared request.
@@ -2257,7 +2257,7 @@ contains
         responses = [ &
             response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  &
             response_type('distppm', unit='ppm', type=RESPONSE_TYPE_REAL64), &
-            response_type('reflcor', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+            response_type('prsmcor', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -2393,9 +2393,9 @@ contains
         type(response_type)             :: responses(3)
 
         responses = [ &
-            response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('timehz', unit='s', type=RESPONSE_TYPE_REAL64), &
-            response_type('timev',  unit='s', type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('timehz', unit='s', type=RESPONSE_TYPE_INT64), &
+            response_type('timev',  unit='s', type=RESPONSE_TYPE_INT64)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
@@ -2543,7 +2543,7 @@ contains
         !! The instrument returns the following responses:
         !!
         !! * `grc`     – GeoCOM return code.
-        !! * `rangehz` – Horizontal angle [rad]
+        !! * `rangehz` – Horizontal angle [rad].
         !! * `rangev`  – Vertical angle [rad].
         !!
         !! | Property       | Values                                           |
@@ -2561,9 +2561,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32), &
-            response_type('rangehz', unit='rad', type=RESPONSE_TYPE_INT64), &
-            response_type('rangev',  unit='rad', type=RESPONSE_TYPE_INT64)  &
+            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('rangehz', unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('rangev',  unit='rad', type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
