@@ -78,7 +78,9 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(8)
+
+        integer        :: i
+        type(arg_type) :: args(8)
 
         rc = E_NONE
 
@@ -141,11 +143,11 @@ contains
         end if
 
         ! Allocate return code arrays.
-        if (.not. allocated(app%levels(LVL_DEBUG   )%codes)) allocate (app%levels(LVL_DEBUG   )%codes(0))
-        if (.not. allocated(app%levels(LVL_INFO    )%codes)) allocate (app%levels(LVL_INFO    )%codes(0))
-        if (.not. allocated(app%levels(LVL_WARNING )%codes)) allocate (app%levels(LVL_WARNING )%codes(0))
-        if (.not. allocated(app%levels(LVL_ERROR   )%codes)) allocate (app%levels(LVL_ERROR   )%codes(0))
-        if (.not. allocated(app%levels(LVL_CRITICAL)%codes)) allocate (app%levels(LVL_CRITICAL)%codes(0))
+        do i = LVL_DEBUG, LVL_LAST
+            if (.not. allocated(app%levels(i)%codes)) then
+                allocate (app%levels(i)%codes(0))
+            end if
+        end do
 
         rc = E_NONE
     end function read_args

@@ -745,8 +745,8 @@ contains
         !! * `E_INVALID` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout)         :: db   !! Database type.
-        logical,       intent(in),  optional :: sync !! Create synchronisation tables.
+        type(db_type), intent(inout)        :: db   !! Database type.
+        logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
         logical :: sync_
@@ -5193,10 +5193,10 @@ contains
         !!
         use :: dm_beat
 
-        type(db_type),      intent(inout)         :: db      !! Database type.
-        type(db_stmt_type), intent(inout)         :: db_stmt !! Database statement type.
-        type(beat_type),    intent(out)           :: beat    !! Returned beat type.
-        integer(kind=i8),   intent(in),  optional :: limit   !! Max. number of beats.
+        type(db_type),      intent(inout)        :: db      !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt !! Database statement type.
+        type(beat_type),    intent(out)          :: beat    !! Returned beat type.
+        integer(kind=i8),   intent(in), optional :: limit   !! Max. number of beats.
 
         if (.not. dm_db_prepared(db_stmt)) then
             if (present(limit)) then
@@ -5749,20 +5749,20 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)         :: db        !! Database type.
-        type(db_stmt_type),            intent(inout)         :: db_stmt   !! Database statement type.
-        character(len=:), allocatable, intent(out)           :: json      !! Returned JSON.
-        character(len=*),              intent(in),  optional :: node_id   !! Node id.
-        character(len=*),              intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),              intent(in),  optional :: target_id !! Target id.
-        character(len=*),              intent(in),  optional :: source    !! Source name.
-        character(len=*),              intent(in),  optional :: from      !! Begin of time range.
-        character(len=*),              intent(in),  optional :: to        !! End of time range.
-        integer,                       intent(in),  optional :: min_level !! Minimum log level.
-        integer,                       intent(in),  optional :: max_level !! Maximum log level.
-        integer,                       intent(in),  optional :: error     !! Error code.
-        logical,                       intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),              intent(in),  optional :: limit     !! Max. numbers of logs.
+        type(db_type),                 intent(inout)        :: db        !! Database type.
+        type(db_stmt_type),            intent(inout)        :: db_stmt   !! Database statement type.
+        character(len=:), allocatable, intent(out)          :: json      !! Returned JSON.
+        character(len=*),              intent(in), optional :: node_id   !! Node id.
+        character(len=*),              intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*),              intent(in), optional :: target_id !! Target id.
+        character(len=*),              intent(in), optional :: source    !! Source name.
+        character(len=*),              intent(in), optional :: from      !! Begin of time range.
+        character(len=*),              intent(in), optional :: to        !! End of time range.
+        integer,                       intent(in), optional :: min_level !! Minimum log level.
+        integer,                       intent(in), optional :: max_level !! Maximum log level.
+        integer,                       intent(in), optional :: error     !! Error code.
+        logical,                       intent(in), optional :: desc      !! Descending order.
+        integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
 
         character(len=:), allocatable :: query
         integer                       :: k
@@ -6303,20 +6303,20 @@ contains
         !!
         use :: dm_log
 
-        type(db_type),               intent(inout)         :: db        !! Database type.
-        type(db_stmt_type),          intent(inout)         :: db_stmt   !! Database statement type.
-        type(log_type),              intent(out)           :: log       !! Returned log type.
-        character(len=*),            intent(in),  optional :: node_id   !! Node id.
-        character(len=*),            intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),            intent(in),  optional :: target_id !! Target id.
-        character(len=*),            intent(in),  optional :: source    !! Source name.
-        character(len=*),            intent(in),  optional :: from      !! Begin of time range.
-        character(len=*),            intent(in),  optional :: to        !! End of time range.
-        integer,                     intent(in),  optional :: min_level !! Minimum log level.
-        integer,                     intent(in),  optional :: max_level !! Maximum log level.
-        integer,                     intent(in),  optional :: error     !! Error code.
-        logical,                     intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),            intent(in),  optional :: limit     !! Max. numbers of logs.
+        type(db_type),               intent(inout)        :: db        !! Database type.
+        type(db_stmt_type),          intent(inout)        :: db_stmt   !! Database statement type.
+        type(log_type),              intent(out)          :: log       !! Returned log type.
+        character(len=*),            intent(in), optional :: node_id   !! Node id.
+        character(len=*),            intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*),            intent(in), optional :: target_id !! Target id.
+        character(len=*),            intent(in), optional :: source    !! Source name.
+        character(len=*),            intent(in), optional :: from      !! Begin of time range.
+        character(len=*),            intent(in), optional :: to        !! End of time range.
+        integer,                     intent(in), optional :: min_level !! Minimum log level.
+        integer,                     intent(in), optional :: max_level !! Maximum log level.
+        integer,                     intent(in), optional :: error     !! Error code.
+        logical,                     intent(in), optional :: desc      !! Descending order.
+        integer(kind=i8),            intent(in), optional :: limit     !! Max. numbers of logs.
 
         character(len=:), allocatable :: query
         integer                       :: k
@@ -6832,17 +6832,17 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),      intent(inout)         :: db        !! Database type.
-        type(db_stmt_type), intent(inout)         :: db_stmt   !! Database statement type.
-        type(observ_type),  intent(out)           :: observ    !! Returned observation type.
-        character(len=*),   intent(in),  optional :: node_id   !! Node id.
-        character(len=*),   intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),   intent(in),  optional :: target_id !! Target id.
-        character(len=*),   intent(in),  optional :: from      !! Beginning of time span.
-        character(len=*),   intent(in),  optional :: to        !! End of time span.
-        logical,            intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),   intent(in),  optional :: limit     !! Max. number of observations.
-        logical,            intent(in),  optional :: stub      !! Without receivers, requests, responses.
+        type(db_type),      intent(inout)        :: db        !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt   !! Database statement type.
+        type(observ_type),  intent(out)          :: observ    !! Returned observation type.
+        character(len=*),   intent(in), optional :: node_id   !! Node id.
+        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*),   intent(in), optional :: target_id !! Target id.
+        character(len=*),   intent(in), optional :: from      !! Beginning of time span.
+        character(len=*),   intent(in), optional :: to        !! End of time span.
+        logical,            intent(in), optional :: desc      !! Descending order.
+        integer(kind=i8),   intent(in), optional :: limit     !! Max. number of observations.
+        logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
 
         character(len=:), allocatable :: query
         integer                       :: i, k, n

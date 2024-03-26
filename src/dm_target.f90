@@ -8,9 +8,9 @@ module dm_target
     implicit none (type, external)
     private
 
-    integer, parameter, public :: TARGET_ID_LEN   = ID_LEN
-    integer, parameter, public :: TARGET_NAME_LEN = 32
-    integer, parameter, public :: TARGET_META_LEN = 32
+    integer, parameter, public :: TARGET_ID_LEN   = ID_LEN !! Max. target id length.
+    integer, parameter, public :: TARGET_NAME_LEN = 32     !! Max. target name length.
+    integer, parameter, public :: TARGET_META_LEN = 32     !! Max. target meta description length.
 
     ! Target states.
     integer, parameter, public :: TARGET_STATE_NONE     = 0 !! Default state.
@@ -22,7 +22,7 @@ module dm_target
     integer, parameter, public :: TARGET_STATE_USER     = 6 !! User-defined state.
     integer, parameter, public :: TARGET_STATE_LAST     = 6 !! Never use this.
 
-    integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Length of target state name.
+    integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Max. target state name length.
 
     character(len=*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
         character(len=TARGET_STATE_NAME_LEN) :: &

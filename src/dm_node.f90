@@ -7,9 +7,9 @@ module dm_node
     implicit none (type, external)
     private
 
-    integer, parameter, public :: NODE_ID_LEN   = ID_LEN
-    integer, parameter, public :: NODE_NAME_LEN = 32
-    integer, parameter, public :: NODE_META_LEN = 32
+    integer, parameter, public :: NODE_ID_LEN   = ID_LEN !! Max. node id length.
+    integer, parameter, public :: NODE_NAME_LEN = 32     !! Max. node name length.
+    integer, parameter, public :: NODE_META_LEN = 32     !! Max. node meta description length.
 
     type, public :: node_type
         !! Node type.

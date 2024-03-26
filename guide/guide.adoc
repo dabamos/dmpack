@@ -5452,12 +5452,12 @@ performed observations are forwarded to <<dmdb>>.
 
 The following utility functions are exported to convert units:
 
-* `deg2gon(deg)` – Converts degrees to gon.
+* `deg2gon(deg)` – Converts degrees to gradians.
 * `deg2rad(deg)` – Converts degrees to radiants.
-* `gon2deg(gon)` – Converts gon to degrees.
-* `gon2rad(gon)` – Converts gon to radiants.
+* `gon2deg(gon)` – Converts gradians to degrees.
+* `gon2rad(gon)` – Converts gradians to radiants.
 * `rad2deg(rad)` – Converts radiants to degrees.
-* `rad2gon(rad)` – Converts radiants to gon.
+* `rad2gon(rad)` – Converts radiants to gradians.
 
 The Lua functions may be called inside of configuration files. For testing, load
 the shared library `libdmpack.so` first, for example:

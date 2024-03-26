@@ -117,7 +117,7 @@ The following programs are based on the DMPACK library.
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
 | [dmgrc](adoc/dmgrc.adoc)       | Generates log messages from GeoCOM return codes.                    |
 | [dmimport](adoc/dmimport.adoc) | Imports CSV file into database.                                     |
-| [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key-value pairs.          |
+| [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key–value pairs.          |
 | [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |
 | [dmlog](adoc/dmlog.adoc)       | Sends log messages to logger via message queue.                     |
 | [dmlogger](adoc/dmlogger.adoc) | Stores log messages received from message queue in database.        |

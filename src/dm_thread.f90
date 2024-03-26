@@ -12,14 +12,14 @@ module dm_thread
             !! C-interoperable POSIX thread routine.
             import :: c_ptr
             implicit none
-            type(c_ptr), intent(in), value :: arg
+            type(c_ptr), intent(in), value :: arg !! Client data as C pointer.
         end subroutine dm_thread_routine
     end interface
 
     type, public :: thread_type
         !! Opaque POSIX thread type.
         private
-        type(c_pthread_t) :: state
+        type(c_pthread_t) :: state !! POSIX thread handle.
     end type thread_type
 
     public :: dm_thread_create

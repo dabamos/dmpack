@@ -297,6 +297,7 @@ contains
         !! * `E_REGEX_NO_GROUP` if `name` does not match any group.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !!
+        !! On error, the group string is allocated, but may be empty.
         use :: dm_request
 
         type(request_type),            intent(inout)        :: request !! Request type.

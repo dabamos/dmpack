@@ -8,10 +8,10 @@ module dm_sensor
     implicit none (type, external)
     private
 
-    integer, parameter, public :: SENSOR_ID_LEN   = ID_LEN
-    integer, parameter, public :: SENSOR_NAME_LEN = 32
-    integer, parameter, public :: SENSOR_SN_LEN   = 32
-    integer, parameter, public :: SENSOR_META_LEN = 32
+    integer, parameter, public :: SENSOR_ID_LEN   = ID_LEN !! Max. sensor id length.
+    integer, parameter, public :: SENSOR_NAME_LEN = 32     !! Max. sensor name length.
+    integer, parameter, public :: SENSOR_SN_LEN   = 32     !! Max. sensor serial number length.
+    integer, parameter, public :: SENSOR_META_LEN = 32     !! Max. sensor meta description length.
 
     ! Sensor types.
     integer, parameter, public :: SENSOR_TYPE_NONE    = 0 !! Unknown sensor type.
@@ -25,7 +25,7 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_MEMS    = 8 !! MEMS sensor.
     integer, parameter, public :: SENSOR_TYPE_LAST    = 8 !! Never use this.
 
-    integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7
+    integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7 !! Max. length of sensor type name.
 
     character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
         character(len=SENSOR_TYPE_NAME_LEN) :: &
@@ -151,6 +151,7 @@ contains
 
         write (unit_, '("sensor.id: ", a)')      trim(sensor%id)
         write (unit_, '("sensor.node_id: ", a)') trim(sensor%node_id)
+
         write (unit_, '("sensor.type: ")', advance='no')
 
         if (dm_sensor_type_valid(sensor%type)) then
