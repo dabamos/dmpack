@@ -7,15 +7,22 @@ module dm_mail
     !! first:
     !!
     !! ```fortran
-    !! integer           :: rc
-    !! type(mail_type)   :: mail
-    !! type(server_type) :: server
+    !! integer                :: rc
+    !! type(mail_type)        :: mail
+    !! type(mail_server_type) :: server
+    !! type(person_type)      :: from, to
     !!
+    !! ! Initialise SMTP backend and set SMTP server details.
     !! rc = dm_mail_init()
     !! rc = dm_mail_create(server, 'example.com', 'username', 'password')
-    !! rc = dm_mail_create(mail, from=person_type(mail='alice@example.com'), &
-    !!                     to=[ person_type(mail='bob@example.com') ], &
-    !!                     subject='Subject', message='Message')
+    !!
+    !! ! Create sender, receiver, and e-mail.
+    !! from = person_type(mail='alice@example.com')
+    !! to   = person_type(mail='bob@example.com')
+    !!
+    !! rc = dm_mail_create(mail, from=from, to=[ to ], subject='Subject', message='Message')
+    !!
+    !! ! Send e-mail and finalise SMTP backend.
     !! rc = dm_mail_send(mail, server)
     !! call dm_mail_destroy()
     !! ```

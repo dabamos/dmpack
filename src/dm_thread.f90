@@ -2,6 +2,38 @@
 ! Licence: ISC
 module dm_thread
     !! Abstraction layer of POSIX threads. Has to be linked with `-lpthread`.
+    !!
+    !! The thread routine must match the C-interoperable abstract interface
+    !! `dm_thread_routine(arg)`, for example:
+    !!
+    !! ```fortran
+    !! subroutine thread_routine(arg) bind(c)
+    !!     !! C-interoperable POSIX thread routine.
+    !!     use, intrinsic :: iso_c_binding
+    !!     type(c_ptr), intent(in), value :: arg !! C pointer to client data.
+    !!     integer, pointer               :: i   !! Fortran pointer to client data.
+    !!
+    !!     if (.not. c_associated(arg)) return
+    !!     call c_f_pointer(arg, i)
+    !!     print '("value: ", i0)', i
+    !! end subroutine thread_routine
+    !! ```
+    !!
+    !! The dummy argument `arg` can be of any type. The thread routine and the
+    !! argument have to be passed to the create function:
+    !!
+    !! ```fortran
+    !! integer, target   :: arg
+    !! integer           :: rc
+    !! type(thread_type) :: thread
+    !!
+    !! arg = 123
+    !!
+    !! rc = dm_thread_create(thread, thread_routine, arg)
+    !! rc = dm_thread_join(thread)
+    !! ```
+    !!
+    !! The functions return `E_SYSTEM` on error.
     use :: unix
     use :: dm_error
     implicit none (type, external)
@@ -30,7 +62,7 @@ contains
         !! Creates POSIX thread. The function returns `E_SYSTEM` on error.
         type(thread_type), intent(out)   :: thread  !! Thread type.
         procedure(dm_thread_routine)     :: routine !! Callback procedure of POSIX thread.
-        type(*), target,   intent(inout) :: arg     !! Thread argument.
+        type(*), target,   intent(inout) :: arg     !! Client data to be passed to thread procedure.
 
         integer :: stat
 

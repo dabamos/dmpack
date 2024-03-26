@@ -450,7 +450,7 @@ contains
             end if
 
             if (.not. dm_uuid4_valid(id)) then
-                call html_error('Invalid Parameter', E_INVALID)
+                call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
 
@@ -545,7 +545,7 @@ contains
                 if (dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
                     dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
                     dm_is_error(dm_cgi_get(param, 'max_results', nresults))) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -574,7 +574,7 @@ contains
                 if (.not. dm_array_has(max_results, nresults)) valid = .false.
 
                 if (.not. valid) then
-                    call html_error('Invalid Parameters', E_INVALID)
+                    call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -748,7 +748,7 @@ contains
                 ! Read and validate parameters.
                 if (dm_is_error(dm_cgi_get(param, 'id', node%id)) .or. &
                     dm_is_error(dm_cgi_get(param, 'name', node%name))) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -759,7 +759,7 @@ contains
 
                 ! Valid node data?
                 if (.not. dm_node_valid(node)) then
-                    call html_error('Invalid Node', E_INVALID)
+                    call html_error('Invalid Node', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -769,7 +769,7 @@ contains
                 if (dm_is_error(rc)) then
                     ! Catch file permission error.
                     if (rc /= E_READ_ONLY) rc = dm_db_error(db)
-                    call html_error('Database Operation Failed', rc)
+                    call html_error('Database Operation Failed', error=rc)
                     exit response_block
                 end if
             end if
@@ -952,7 +952,7 @@ contains
                     dm_is_error(dm_cgi_get(param, 'from',        from))      .or. &
                     dm_is_error(dm_cgi_get(param, 'to',          to))        .or. &
                     dm_is_error(dm_cgi_get(param, 'max_results', nresults) )) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -962,7 +962,7 @@ contains
                     .not. dm_id_valid(target_id) .or. &
                     .not. dm_time_valid(from)    .or. &
                     .not. dm_time_valid(to)) then
-                    call html_error('Invalid Parameters', E_INVALID)
+                    call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -976,7 +976,7 @@ contains
                                           limit=int(nresults, kind=i8), stub=.true., nobservs=nobservs)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                    call html_error('Database Query Failed', error=rc)
+                    call html_error('Database Query Failed', error=rc, extra=dm_db_error_message(db))
                     exit response_block
                 end if
 
@@ -1096,7 +1096,7 @@ contains
                     dm_is_error(dm_cgi_get(param, 'from',          from))          .or. &
                     dm_is_error(dm_cgi_get(param, 'to',            to))            .or. &
                     dm_is_error(dm_cgi_get(param, 'max_results',   nresults))) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1107,7 +1107,7 @@ contains
                     .not. dm_id_valid(response_name) .or. &
                     .not. dm_time_valid(from)        .or. &
                     .not. dm_time_valid(to)) then
-                    call html_error('Invalid Parameters', E_INVALID)
+                    call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1232,7 +1232,7 @@ contains
             end if
 
             if (.not. dm_id_valid(id)) then
-                call html_error('Invalid Parameter', E_INVALID)
+                call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
 
@@ -1298,7 +1298,7 @@ contains
                     dm_is_error(dm_cgi_get(param, 'node_id', sensor%node_id)) .or. &
                     dm_is_error(dm_cgi_get(param, 'type',    sensor%type))    .or. &
                     dm_is_error(dm_cgi_get(param, 'name',    sensor%name))) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1310,7 +1310,7 @@ contains
 
                 ! Valid sensor data?
                 if (.not. dm_sensor_valid(sensor)) then
-                    call html_error('Invalid Sensor', E_INVALID)
+                    call html_error('Invalid Sensor', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1320,7 +1320,7 @@ contains
                 if (dm_is_error(rc)) then
                     ! Catch file permission error.
                     if (rc /= E_READ_ONLY) rc = dm_db_error(db)
-                    call html_error('Database Operation Failed', rc)
+                    call html_error('Database Operation Failed', error=rc)
                     exit response_block
                 end if
             end if
@@ -1579,7 +1579,7 @@ contains
                 ! Read and validate parameters.
                 if (dm_is_error(dm_cgi_get(param, 'id', target%id)) .or. &
                     dm_is_error(dm_cgi_get(param, 'name', target%name))) then
-                    call html_error('Missing or Invalid Parameters', E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1592,7 +1592,7 @@ contains
 
                 ! Valid target data?
                 if (.not. dm_target_valid(target)) then
-                    call html_error('Invalid Target', E_INVALID)
+                    call html_error('Invalid Target', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -1602,7 +1602,7 @@ contains
                 if (dm_is_error(rc)) then
                     ! Catch file permission error.
                     if (rc /= E_READ_ONLY) rc = dm_db_error(db)
-                    call html_error('Database Operation Failed', rc)
+                    call html_error('Database Operation Failed', error=rc)
                     exit response_block
                 end if
             end if
@@ -2148,12 +2148,13 @@ contains
     ! ******************************************************************
     ! UTILITY PROCEDURES.
     ! ******************************************************************
-    subroutine html_error(heading, error, status, title)
+    subroutine html_error(heading, error, status, title, extra)
         !! Outputs error page (with header and footer).
         character(len=*), intent(in), optional :: heading !! Page heading.
         integer,          intent(in), optional :: error   !! DMPACK error code.
         integer,          intent(in), optional :: status  !! HTTP status code.
         character(len=*), intent(in), optional :: title   !! Page title.
+        character(len=*), intent(in), optional :: extra   !! Extra message, pre-formatted.
 
         if (present(title)) then
             call html_header(title)
@@ -2184,6 +2185,10 @@ contains
 
         if (present(error)) then
             call dm_cgi_out(dm_html_error(error))
+        end if
+
+        if (present(extra)) then
+            call dm_cgi_out(dm_html_pre(extra, code=.true.))
         end if
 
         call html_footer()

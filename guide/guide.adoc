@@ -265,8 +265,8 @@ Then, run:
 ....
 $ cd dmpack/
 $ export FFLAGS="-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
-$ fpm build --profile release --flag "${FFLAGS}"
 $ fpm test --flag "${FFLAGS}"
+$ fpm build --profile release --flag "${FFLAGS}"
 $ fpm install
 ....
 
@@ -367,8 +367,8 @@ fetched repository, then run:
 ....
 $ cd dmpack/
 $ export FFLAGS="-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
-$ fpm build --profile release --flag "${FFLAGS}"
 $ fpm test --flag "${FFLAGS}"
+$ fpm build --profile release --flag "${FFLAGS}"
 $ fpm install
 ....
 
@@ -1314,7 +1314,7 @@ The following log levels are accepted:
 
 | `--error _n_`        | `-e`  | 0          | DMPACK <<error-codes,error code>> (optional).
 | `--help`             | `-h`  | –          | Output available command-line arguments and quit.
-| `--level _n_`        | `-L`  | 2          | <<data-log-level,Log level>>, from 1 to 5.
+| `--level _level_`    | `-L`  | 2          | <<data-log-level,Log level>>, from 1 to 5.
 | `--logger _name_`    | `-l`  | `dmlogger` | Name of logger instance and POSIX message queue.
 | `--message _string_` | `-m`  | –          | Log message (max. 512 characters).
 | `--node _id_`        | `-N`  | –          | Node id (optional).

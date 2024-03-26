@@ -27,6 +27,128 @@ module dm_geocom
     !! call geocom%close()
     !! ```
     !!
+    !! ## API
+    !!
+    !! | GeoCOM API                  | DMPACK API                      |
+    !! |-----------------------------|---------------------------------|
+    !! | `AUS_GetUserAtrState`       | `get_user_atr_mode`             |
+    !! | `AUS_GetUserLockState`      | `get_user_lock_mode`            |
+    !! | `AUS_SetUserAtrState`       | `set_user_atr_mode`             |
+    !! | `AUS_SetUserLockState`      | `set_user_lock_mode`            |
+    !! | `AUT_ChangeFace`            | `change_face`                   |
+    !! | `AUT_FineAdjust`            | `fine_adjust`                   |
+    !! | `AUT_GetFineAdjustMode`     | `get_fine_adjust_mode`          |
+    !! | `AUT_GetSearchArea`         | `get_search_area`               |
+    !! | `AUT_GetUserSpiral`         | `get_user_spiral`               |
+    !! | `AUT_LockIn`                | `lock_in`                       |
+    !! | `AUT_MakePositioning`       | `set_position`                  |
+    !! | `AUT_PS_EnableRange`        | `ps_enable_range`               |
+    !! | `AUT_PS_SearchNext`         | `ps_search_next`                |
+    !! | `AUT_PS_SearchWindow`       | `ps_search_window`              |
+    !! | `AUT_PS_SetRange`           | `ps_set_range`                  |
+    !! | `AUT_ReadTimeout`           | `get_timeout`                   |
+    !! | `AUT_ReadTol`               | `get_tolerance`                 |
+    !! | `AUT_Search`                | `get_search`                    |
+    !! | `AUT_SetFineAdjustMode`     | `set_fine_adjust_mode`          |
+    !! | `AUT_SetSearchArea`         | `set_search_area`               |
+    !! | `AUT_SetTimeout`            | `set_positioning_timeout`       |
+    !! | `AUT_SetTol`                | `set_tolerance`                 |
+    !! | `AUT_SetUserSpiral`         | `set_user_spiral`               |
+    !! | `BAP_GetATRSetting`         | `get_atr_setting`               |
+    !! | `BAP_GetMeasPrg`            | `get_measurement_program`       |
+    !! | `BAP_GetPrismDef`           | `get_prism_definition`          |
+    !! | `BAP_GetRedATRFov`          | `get_reduced_atr_fov`           |
+    !! | `BAP_GetTargetType`         | `get_target_type`               |
+    !! | `BAP_GetUserPrismDef`       | `get_user_prism_definition`     |
+    !! | `BAP_MeasDistanceAngle`     | `measure_distance_angle`        |
+    !! | `BAP_SearchTarget`          | `search_target`                 |
+    !! | `BAP_SetATRSetting`         | `set_atr_mode`                  |
+    !! | `BAP_SetAtmCorr`            | `set_atmospheric_correction`    |
+    !! | `BAP_SetAtmPpm`             | `set_atmospheric_ppm`           |
+    !! | `BAP_SetMeasPrg`            | `set_measurement_program`       |
+    !! | `BAP_SetPrismType2`         | `set_prism_type_v2`             |
+    !! | `BAP_SetPrismType`          | `set_prism_type`                |
+    !! | `BAP_SetRedATRFov`          | `set_reduced_atr_fov`           |
+    !! | `BAP_SetTargetType`         | `set_target_type`               |
+    !! | `BAP_SetUserPrismDef`       | `set_user_prism_definition`     |
+    !! | `BMM_BeepAlarm`             | `beep_alarm`                    |
+    !! | `BMM_BeepNormal`            | `beep_normal`                   |
+    !! | `COM_GetBinaryAvailable`    | `get_binary_mode`               |
+    !! | `COM_GetDoublePrecision`    | `get_double_precision`          |
+    !! | `COM_GetSWVersion`          | `get_geocom_version`            |
+    !! | `COM_NullProc`              | `null`                          |
+    !! | `COM_SetBinaryAvailable`    | `set_binary_mode`               |
+    !! | `COM_SetDoublePrecision`    | `set_double_precision`          |
+    !! | `COM_SwitchOffTPS`          | `switch_off`                    |
+    !! | `COM_SwitchOffTPS`          | `switch_on`                     |
+    !! | `CSV_CheckPower`            | `get_power`                     |
+    !! | `CSV_GetDateTimeCentiSec`   | `get_date_time_centi`           |
+    !! | `CSV_GetDateTime`           | `get_date_time`                 |
+    !! | `CSV_GetDeviceConfig`       | `get_device_config`             |
+    !! | `CSV_GetInstrumentName`     | `get_instrument_name`           |
+    !! | `CSV_GetInstrumentNo`       | `get_instrument_number`         |
+    !! | `CSV_GetIntTemp`            | `get_internal_temperature`      |
+    !! | `CSV_GetReflectorlessClass` | `get_reflectorless_class`       |
+    !! | `CSV_GetSWVersion`          | `get_software_version`          |
+    !! | `CSV_SetDateTime`           | `set_date_time`                 |
+    !! | `EDM_GetEglIntensity`       | `get_egl_intensity`             |
+    !! | `EDM_Laserpointer`          | `set_laser_pointer`             |
+    !! | `EDM_SetEglIntensity`       | `set_egl_intensity`             |
+    !! | `FTR_AbortDownload`         | `abort_download`                |
+    !! | `FTR_AbortList`             | `abort_list`                    |
+    !! | `FTR_Delete`                | `delete`                        |
+    !! | `FTR_Download`              | `download`                      |
+    !! | `FTR_List`                  | `list`                          |
+    !! | `FTR_SetupDownload`         | `setup_download`                |
+    !! | `FTR_SetupList`             | `setup_list`                    |
+    !! | `IMG_GetTccConfig`          | `get_image_config`              |
+    !! | `IMG_SetTccConfig`          | `set_image_config`              |
+    !! | `IMG_TakeTccImage`          | `take_image`                    |
+    !! | `IOS_BeepOff`               | `beep_off`                      |
+    !! | `IOS_BeepOn`                | `beep_on`                       |
+    !! | `MOT_ReadLockStatus`        | `get_lock_status`               |
+    !! | `MOT_SetVelocity`           | `set_velocity`                  |
+    !! | `MOT_StartController`       | `start_controller`              |
+    !! | `MOT_StopController`        | `stop_controller`               |
+    !! | `SUP_GetConfig`             | `get_config`                    |
+    !! | `SUP_SetConfig`             | `set_config`                    |
+    !! | `TMC_DoMeasure`             | `do_measure`                    |
+    !! | `TMC_GeoPpm`                | `get_geometric_ppm`             |
+    !! | `TMC_GetAngSwitch`          | `get_angle_correction`          |
+    !! | `TMC_GetAngle1`             | `get_angle_complete`            |
+    !! | `TMC_GetAngle5`             | `get_angle`                     |
+    !! | `TMC_GetAtmCorr`            | `get_atmospheric_correction`    |
+    !! | `TMC_GetAtmPpm`             | `get_atmospheric_ppm`           |
+    !! | `TMC_GetCoordinate`         | `get_coordinate`                |
+    !! | `TMC_GetEdmMode`            | `get_edm_mode`                  |
+    !! | `TMC_GetFace`               | `get_face`                      |
+    !! | `TMC_GetFullMeas`           | `get_full_measurement`          |
+    !! | `TMC_GetHeight`             | `get_height`                    |
+    !! | `TMC_GetInclineSwitch`      | `get_inclination_correction`    |
+    !! | `TMC_GetPrismCorr`          | `get_prism_constant`            |
+    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
+    !! | `TMC_GetPrismType`          | `get_prism_type`                |
+    !! | `TMC_GetQuickDist`          | `get_quick_distance`            |
+    !! | `TMC_GetRefractiveMethod`   | `get_refraction_mode`           |
+    !! | `TMC_GetSignal`             | `get_signal`                    |
+    !! | `TMC_GetSimpleCoord`        | `get_simple_coordinates`        |
+    !! | `TMC_GetSimpleMea`          | `get_simple_measurement`        |
+    !! | `TMC_GetSlopeDistCorr`      | `get_slope_distance_correction` |
+    !! | `TMC_GetStation`            | `get_station`                   |
+    !! | `TMC_IfDataAzeCorrError`    | `get_atr_error`                 |
+    !! | `TMC_IfDataIncCorrError`    | `get_inclination_error`         |
+    !! | `TMC_QuickDist`             | `get_quick_distance`            |
+    !! | `TMC_SetAngSwitch`          | `set_angle_correction`          |
+    !! | `TMC_SetEdmMode`            | `set_edm_mode`                  |
+    !! | `TMC_SetGeoPpm`             | `set_geometric_ppm`             |
+    !! | `TMC_SetHandDist`           | `set_distance`                  |
+    !! | `TMC_SetHeight`             | `set_height`                    |
+    !! | `TMC_SetInclineSwitch`      | `set_inclination_correction`    |
+    !! | `TMC_SetOrientation`        | `set_orientation`               |
+    !! | `TMC_SetPrismCorr`          | `set_prism_constant`            |
+    !! | `TMC_SetRefractiveMethod`   | `set_refraction_mode`           |
+    !! | `TMC_SetStation`            | `set_station`                   |
+    !!
     !! ## GeoCOM Parameters and Named Types
     !!
     !! * `GEOCOM_AUT_CLOCKWISE`     – Direction close-wise.
@@ -732,7 +854,7 @@ contains
 
         class(geocom_class), intent(inout)         :: this    !! GeoCOM object.
         type(request_type),  intent(inout)         :: request !! Request to send.
-        integer,             intent(in),  optional :: delay   !! Request delay [msec].
+        integer,             intent(in),  optional :: delay   !! Post-request delay [msec].
         integer,             intent(out), optional :: error   !! DMPACK error code
 
         integer :: rc
@@ -828,7 +950,7 @@ contains
         !! Sends *FTR_AbortDownload* request to sensor. Aborts or ends the file
         !! download command.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -841,7 +963,7 @@ contains
         !! Sends *FTR_AbortList* request to sensor. Aborts or ends the file
         !! list command.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -854,7 +976,7 @@ contains
         !! Sends *BMM_BeepAlarm* request to sensor. Outputs an alarm signal
         !! (triple beep).
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -867,7 +989,7 @@ contains
         !! Sends *BMM_BeepNormal* request to sensor. Outputs an alarm signal
         !! (single beep).
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -879,7 +1001,7 @@ contains
     subroutine geocom_beep_off(this, delay)
         !! Sends *IOS_BeepOff* request to sensor. Stops an active beep signal.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -894,7 +1016,7 @@ contains
         !! the default `GEOCOM_IOS_BEEP_STDINTENS` is used.
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         integer,             intent(in), optional :: intensity !! Intensity of beep, from 0 to 100.
-        integer,             intent(in), optional :: delay     !! Request delay [msec].
+        integer,             intent(in), optional :: delay     !! Post-request delay [msec].
 
         integer            :: intensity_
         type(request_type) :: request
@@ -921,7 +1043,7 @@ contains
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
         integer,             intent(in)           :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
-        integer,             intent(in), optional :: delay    !! Request delay [msec].
+        integer,             intent(in), optional :: delay    !! Post-request delay [msec].
 
         integer            :: atr_mode_, pos_mode_
         integer            :: rc1, rc2
@@ -949,7 +1071,7 @@ contains
         integer,             intent(in)            :: year        !! Year (`YY`).
         character(len=*),    intent(in)            :: file_name   !! Name of file to delete.
         integer,             intent(out), optional :: nfiles      !! Number of files deleted.
-        integer,             intent(in),  optional :: delay       !! Request delay [msec].
+        integer,             intent(in),  optional :: delay       !! Post-request delay [msec].
 
         integer            :: device_type_, file_type_
         integer            :: day_, month_, year_
@@ -1004,7 +1126,7 @@ contains
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
         integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay    !! Request delay [msec].
+        integer,             intent(in), optional :: delay    !! Post-request delay [msec].
 
         integer            :: inc_mode_, tmc_prog_
         integer            :: rc1, rc2
@@ -1033,7 +1155,7 @@ contains
         integer,             intent(in)           :: block_number !! Block number, from 0 to 65535.
         character,           intent(out)          :: block_value  !! Block value [byte].
         integer,             intent(out)          :: block_length !! Block length.
-        integer,             intent(in), optional :: delay        !! Request delay [msec].
+        integer,             intent(in), optional :: delay        !! Post-request delay [msec].
 
         integer            :: block_number_
         type(request_type) :: request
@@ -1071,7 +1193,7 @@ contains
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         real(kind=r8),       intent(in)           :: search_hz !! Search range, Hz axis [rad].
         real(kind=r8),       intent(in)           :: search_v  !! Search range, V axis [rad].
-        integer,             intent(in), optional :: delay     !! Request delay [msec].
+        integer,             intent(in), optional :: delay     !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1088,7 +1210,7 @@ contains
         real(kind=r8),       intent(out)          :: hz       !! Horizontal angle [rad].
         real(kind=r8),       intent(out)          :: v        !! Vertical angle [rad].
         integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay    !! Request delay [msec].
+        integer,             intent(in), optional :: delay    !! Post-request delay [msec].
 
         integer            :: inc_mode_
         type(request_type) :: request
@@ -1119,7 +1241,7 @@ contains
         integer(kind=i8),    intent(out), optional :: inc_time       !! Moment of measurement [msec].
         integer,             intent(out), optional :: face           !! Face position of telescope (`GEOCOM_TMC_FACE`).
         integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in),  optional :: delay          !! Request delay [msec].
+        integer,             intent(in),  optional :: delay          !! Post-request delay [msec].
 
         integer            :: inc_mode_
         type(request_type) :: request
@@ -1149,7 +1271,7 @@ contains
         logical,             intent(out), optional :: stand_axis  !! Standing axis correction enabled.
         logical,             intent(out), optional :: collimation !! Collimation error correction enabled.
         logical,             intent(out), optional :: tilt_axis   !! Tilting axis correction enabled.
-        integer,             intent(in),  optional :: delay       !! Request delay [msec].
+        integer,             intent(in),  optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1171,7 +1293,7 @@ contains
         real(kind=r8),       intent(out), optional :: pressure !! Atmospheric pressure [mbar].
         real(kind=r8),       intent(out), optional :: dry_temp !! Dry temperature [°C].
         real(kind=r8),       intent(out), optional :: wet_temp !! Wet temperature [°C].
-        integer,             intent(in),  optional :: delay    !! Request delay [msec].
+        integer,             intent(in),  optional :: delay    !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1190,7 +1312,7 @@ contains
         !! atmospheric ppm correction factor in `ppm`.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         real(kind=r8),       intent(out)          :: ppm   !! Atmospheric ppm correction factor [ppm].
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1205,7 +1327,7 @@ contains
         !! ATR error status in `error`.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         logical,             intent(out)          :: error !! ATR correction error occured.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1220,7 +1342,7 @@ contains
         !! the current ATR Low-Vis mode in `setting`.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         integer,             intent(out)          :: setting !! ATR setting (`GEOCOM_BAP_ATRSETTING`).
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1235,7 +1357,7 @@ contains
         !! binary attribute of the server in `enabled`.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(out)          :: enabled !! Binary operation is enabled.
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1253,7 +1375,7 @@ contains
         class(geocom_class), intent(inout)        :: this       !! GeoCOM object.
         integer,             intent(out)          :: auto_power !! Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
         integer,             intent(out)          :: timeout    !! Power timeout [msec].
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1288,7 +1410,7 @@ contains
         integer(kind=i8),    intent(out), optional :: cont_time     !! Timestamp of continuous measurement [msec].
         integer,             intent(in),  optional :: wait_time     !! Delay to wait for the distance measurement to finish [msec].
         integer,             intent(in),  optional :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in),  optional :: delay         !! Request delay [msec].
+        integer,             intent(in),  optional :: delay         !! Post-request delay [msec].
 
         integer            :: inc_mode_, wait_time_
         type(request_type) :: request
@@ -1320,7 +1442,7 @@ contains
         integer,             intent(out), optional :: hour   !! Hours.
         integer,             intent(out), optional :: minute !! Minutes.
         integer,             intent(out), optional :: second !! Seconds.
-        integer,             intent(in),  optional :: delay  !! Request delay [msec].
+        integer,             intent(in),  optional :: delay  !! Post-request delay [msec].
 
         character          :: month_, day_, hour_, minute_, second_
         integer            :: year_
@@ -1357,7 +1479,7 @@ contains
         integer,             intent(out), optional :: minute  !! Minutes.
         integer,             intent(out), optional :: second  !! Seconds.
         integer,             intent(out), optional :: csecond !! Centiseconds.
-        integer,             intent(in),  optional :: delay   !! Request delay [msec].
+        integer,             intent(in),  optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1380,7 +1502,7 @@ contains
         class(geocom_class), intent(inout)        :: this         !! GeoCOM object.
         integer,             intent(out)          :: device_class !! Device precision class (`GEOCOM_TPS_DEVICE_CLASS`).
         integer,             intent(out)          :: device_type  !! Device configuration type (`GEOCOM_TPS_DEVICE_TYPE`).
-        integer,             intent(in), optional :: delay        !! Request delay [msec].
+        integer,             intent(in), optional :: delay        !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1398,7 +1520,7 @@ contains
         !! transmitted in `ndigits`.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         integer,             intent(out)          :: ndigits !! Number of digits to the right of the decimal point.
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1413,7 +1535,7 @@ contains
         !! EDM measurement mode in `edm_mode`.
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(out)          :: edm_mode !! EDM mode (`GEOCOM_EDM_MODE`).
-        integer,             intent(in), optional :: delay    !! Request delay [msec].
+        integer,             intent(in), optional :: delay    !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1429,7 +1551,7 @@ contains
         !! `intensity`.
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         integer,             intent(out)          :: intensity !! EDM EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
-        integer,             intent(in), optional :: delay     !! Request delay [msec].
+        integer,             intent(in), optional :: delay     !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1444,7 +1566,7 @@ contains
         !! of the current telescope position in `face`.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(out)          :: face  !! Telescope face (`GEOCOM_TMC_FACE`).
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1459,7 +1581,7 @@ contains
         !! fine adjustment positioning mode in `adjust_mode`.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         integer,             intent(out)          :: adjust_mode !! Fine adjustment positioning mode (`GEOCOM_AUT_ADJMODE`).
-        integer,             intent(in), optional :: delay       !! Request delay [msec].
+        integer,             intent(in), optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1492,7 +1614,7 @@ contains
         real(kind=r8),       intent(out), optional :: dist_time      !! Time of distance measurement [msec].
         integer,             intent(in),  optional :: wait_time      !! Delay to wait for the distance measurement to finish [msec].
         integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in),  optional :: delay          !! Request delay [msec].
+        integer,             intent(in),  optional :: delay          !! Post-request delay [msec].
 
         integer            :: inc_mode_, wait_time_
         type(request_type) :: request
@@ -1521,7 +1643,7 @@ contains
         integer,             intent(out), optional :: release    !! GeoCOM software release.
         integer,             intent(out), optional :: version    !! GeoCOM software version.
         integer,             intent(out), optional :: subversion !! GeoCOM software sub-version.
-        integer,             intent(in),  optional :: delay      !! Request delay [msec].
+        integer,             intent(in),  optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1543,7 +1665,7 @@ contains
         real(kind=r8),       intent(out), optional :: offset         !! Offset from central meridian [m].
         real(kind=r8),       intent(out), optional :: height_ppm     !! Height above reference ppm value [ppm].
         real(kind=r8),       intent(out), optional :: individual_ppm !! Individual ppm value [ppm].
-        integer,             intent(in),  optional :: delay          !! Request delay [msec].
+        integer,             intent(in),  optional :: delay          !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1563,7 +1685,7 @@ contains
         !! current reflector height.
         class(geocom_class), intent(inout)        :: this   !! GeoCOM object.
         real(kind=r8),       intent(out)          :: height !! Reflector height [m].
-        integer,             intent(in), optional :: delay  !! Request delay [msec].
+        integer,             intent(in), optional :: delay  !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1595,7 +1717,7 @@ contains
         integer,                       intent(out)          :: sub_func     !! Binary combination of sub-function number.
         character(len=:), allocatable, intent(out)          :: file_prefix  !! File name prefix.
         integer,                       intent(in), optional :: mem_type     !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
-        integer,                       intent(in), optional :: delay        !! Request delay [msec].
+        integer,                       intent(in), optional :: delay        !! Post-request delay [msec].
 
         integer            :: mem_type_
         type(request_type) :: request
@@ -1616,7 +1738,7 @@ contains
         !! returns the dual-axis compensator status.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(out)          :: enabled !! Compensator is enabled.
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1632,7 +1754,7 @@ contains
         !! last measurement is not incline-corrected.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         logical,             intent(out)          :: error !! Last measurement not incline-corrected.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1650,7 +1772,7 @@ contains
 
         class(geocom_class),           intent(inout)        :: this  !! GeoCOM object.
         character(len=:), allocatable, intent(out)          :: name  !! Instrument name
-        integer,                       intent(in), optional :: delay !! Request delay [msec].
+        integer,                       intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1665,7 +1787,7 @@ contains
         !! the factory defined instrument number.
         class(geocom_class), intent(inout)        :: this   !! GeoCOM object.
         integer,             intent(out)          :: number !! Serial number of the instrument.
-        integer,             intent(in), optional :: delay  !! Request delay [msec].
+        integer,             intent(in), optional :: delay  !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1681,7 +1803,7 @@ contains
         !! side.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         real(kind=r8),       intent(out)          :: temp  !! Instrument temperature [°C].
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1696,7 +1818,7 @@ contains
         !! the condition of the Lock-in control.
         class(geocom_class), intent(inout)        :: this   !! GeoCOM object.
         integer,             intent(out)          :: status !! Lock status (`GEOCOM_MOT_LOCK_STATUS`).
-        integer,             intent(in), optional :: delay  !! Request delay [msec].
+        integer,             intent(in), optional :: delay  !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1711,7 +1833,7 @@ contains
         !! distance measurement program of the instrument.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(out)          :: prg   !! Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1728,7 +1850,7 @@ contains
         integer,             intent(out), optional :: battery_life  !! Battery capacity [%].
         integer,             intent(out), optional :: power_source  !! Power source (`GEOCOM_CSV_POWER_PATH`).
         integer,             intent(out), optional :: power_suggest !! Not supported (`GEOCOM_CSV_POWER_PATH`).
-        integer,             intent(in),  optional :: delay         !! Request delay [msec].
+        integer,             intent(in),  optional :: delay         !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1746,7 +1868,7 @@ contains
         !! the prism constant.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         real(kind=r8),       intent(out)          :: prism_const !! Prism correction constant [m].
-        integer,             intent(in), optional :: delay       !! Request delay [msec].
+        integer,             intent(in), optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1767,7 +1889,7 @@ contains
         integer,                       intent(in)           :: prism_type  !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
         character(len=:), allocatable, intent(out)          :: prism_name  !! Prism name.
         real(kind=r8),                 intent(out)          :: prism_const !! Prism correction constant [m].
-        integer,                       intent(in), optional :: delay       !! Request delay [msec].
+        integer,                       intent(in), optional :: delay       !! Post-request delay [msec].
 
         integer            :: prism_type_
         type(request_type) :: request
@@ -1786,7 +1908,7 @@ contains
         !! default prism type.
         class(geocom_class), intent(inout)        :: this       !! GeoCOM object.
         integer,             intent(out)          :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1801,7 +1923,7 @@ contains
         !! the default or user prism type.
         class(geocom_class), intent(inout)        :: this       !! GeoCOM object.
         integer,             intent(out)          :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1824,7 +1946,7 @@ contains
         real(kind=r8),       intent(out), optional :: hz         !! Horizontal angle [rad].
         real(kind=r8),       intent(out), optional :: v          !! Vertical angle [rad].
         real(kind=r8),       intent(out), optional :: slope_dist !! Slope distance [m].
-        integer,             intent(in),  optional :: delay      !! Request delay [msec].
+        integer,             intent(in),  optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1842,7 +1964,7 @@ contains
         !! whether or not reduced field of view is used by ATR.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(out)          :: enabled !! ATR uses reduced field of view (about 1/9)
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1858,7 +1980,7 @@ contains
         !! measurement of the instrument.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(out)          :: class !! Reflectorless class (`GEOCOM_TPS_REFLESS_CLASS`).
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1874,7 +1996,7 @@ contains
         !! on the interface of the instrument.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(out)          :: mode  !! Refraction mode (`1` for world, `2` for Australia).
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1896,7 +2018,7 @@ contains
         real(kind=r8),       intent(out), optional :: range_hz  !! Width of search area [rad].
         real(kind=r8),       intent(out), optional :: range_v   !! Max. height of search area [rad].
         logical,             intent(out), optional :: user_area !! User-defined search area is active.
-        integer,             intent(in),  optional :: delay     !! Request delay [msec].
+        integer,             intent(in),  optional :: delay     !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1924,7 +2046,7 @@ contains
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
         real(kind=r8),       intent(out)           :: intensity !! Signal intensity of EDM [%].
         integer,             intent(out), optional :: time      !! Timestamp [msec].
-        integer,             intent(in),  optional :: delay     !! Request delay [msec].
+        integer,             intent(in),  optional :: delay     !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -1949,7 +2071,7 @@ contains
         real(kind=r8),       intent(out)          :: height    !! Orthometric height [m].
         integer,             intent(in), optional :: wait_time !! Delay to wait for the distance measurement to finish [msec].
         integer,             intent(in), optional :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay     !! Request delay [msec].
+        integer,             intent(in), optional :: delay     !! Post-request delay [msec].
 
         integer            :: inc_mode_, wait_time_
         type(request_type) :: request
@@ -1977,7 +2099,7 @@ contains
         real(kind=r8),       intent(out)          :: slope_dist !! Slope distance [m].
         integer,             intent(in), optional :: wait_time  !! Delay to wait for the distance measurement to finish [msec].
         integer,             intent(in), optional :: inc_mode   !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         integer            :: inc_mode_, wait_time_
         type(request_type) :: request
@@ -2001,7 +2123,7 @@ contains
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         real(kind=r8),       intent(out)          :: dist_ppm    !! Total correction of distance [ppm].
         real(kind=r8),       intent(out)          :: prism_const !! Correction of the reflector [m].
-        integer,             intent(in), optional :: delay       !! Request delay [msec].
+        integer,             intent(in), optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2020,7 +2142,7 @@ contains
         integer,             intent(out)          :: release    !! Software release.
         integer,             intent(out)          :: version    !! Software version.
         integer,             intent(out)          :: subversion !! Software sub-version.
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2041,7 +2163,7 @@ contains
         real(kind=r8),       intent(out)          :: northing          !! Station northing coordinate [m].
         real(kind=r8),       intent(out)          :: height            !! Station height coordinate [m].
         real(kind=r8),       intent(out)          :: instrument_height !! Instrument height [m].
-        integer,             intent(in), optional :: delay             !! Request delay [msec].
+        integer,             intent(in), optional :: delay             !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2061,7 +2183,7 @@ contains
         !! reflectorless (RL).
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         integer,             intent(out)          :: target_type !! Target type (`GEOCOM_BAP_TARGET_TYPE`).
-        integer,             intent(in), optional :: delay       !! Request delay [msec].
+        integer,             intent(in), optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2077,7 +2199,7 @@ contains
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         integer(kind=i8),    intent(out)          :: time_hz !! Positioning timeout in Hz [sec].
         integer(kind=i8),    intent(out)          :: time_v  !! Positioning timeout in V [sec].
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2094,7 +2216,7 @@ contains
         class(geocom_class), intent(inout)        :: this         !! GeoCOM object.
         real(kind=r8),       intent(out)          :: tolerance_hz !! Positioning tolerance in Hz [rad].
         real(kind=r8),       intent(out)          :: tolerance_v  !! Positioning tolerance in V [rad].
-        integer,             intent(in), optional :: delay        !! Request delay [msec].
+        integer,             intent(in), optional :: delay        !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2110,7 +2232,7 @@ contains
         !! the status of the ATR mode.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(out)          :: enabled !! ATR mode is enabled.
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2125,7 +2247,7 @@ contains
         !! returns the status of the Lock mode
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(out)          :: enabled !! Lock mode is enabled.
-        integer,             intent(in), optional :: delay   !! Request delay [msec].
+        integer,             intent(in), optional :: delay   !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2146,7 +2268,7 @@ contains
         real(kind=r8),                 intent(out), optional :: prism_const !! Prism correction constant [m].
         integer,                       intent(out), optional :: prism_type  !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
         character(len=:), allocatable, intent(out), optional :: prism_user  !! Name of creator.
-        integer,                       intent(in),  optional :: delay       !! Request delay [msec].
+        integer,                       intent(in),  optional :: delay       !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2166,7 +2288,7 @@ contains
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         real(kind=r8),       intent(out)          :: range_hz !! Horizontal angle [rad].
         real(kind=r8),       intent(out)          :: range_v  !! Vertical angle [rad].
-        integer,             intent(in), optional :: delay    !! Request delay [msec].
+        integer,             intent(in), optional :: delay    !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2195,7 +2317,7 @@ contains
         integer,                       intent(out), optional :: hour   !! UTC modification hour.
         integer,                       intent(out), optional :: minute !! UTC modification minute
         integer,                       intent(out), optional :: second !! UTC modification second.
-        integer,                       intent(in),  optional :: delay  !! Request delay [msec].
+        integer,                       intent(in),  optional :: delay  !! Post-request delay [msec].
 
         character          :: year_, month_, day_, hour_, minute_, second_
         type(request_type) :: request
@@ -2227,9 +2349,9 @@ contains
         !! Sends *AUT_LockIn* request to sensor. The procedure will start the
         !! target tracking if the Lock mode is activated
         !! (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must have
-        !! finished successfully before executing this function.
+        !! finished successfully before executing this procedure.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 
@@ -2253,13 +2375,13 @@ contains
         real(kind=r8),       intent(out)          :: v          !! Vertical angle [rad].
         real(kind=r8),       intent(out)          :: slope_dist !! Slope distance [m].
         integer,             intent(in), optional :: dist_mode  !! Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
-        integer,             intent(in), optional :: delay      !! Request delay [msec].
+        integer,             intent(in), optional :: delay      !! Post-request delay [msec].
 
         integer            :: dist_mode_
         type(request_type) :: request
 
         call this%reset()
-        dist_mode_ = dm_geocom_type_validated(GEOCOM_BAP_MEASURE_PRG, dist_mode)
+        dist_mode_ = dm_geocom_type_validated(GEOCOM_BAP_MEASURE_PRG, dist_mode, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_request_measure_distance_angle(request, dist_mode_)
         call this%send(request, delay)
 
@@ -2272,7 +2394,7 @@ contains
         !! Sends *COM_NullProc* request to sensor. API call for checking the
         !! communication.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        integer,             intent(in), optional :: delay !! Request delay [msec].
+        integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
         type(request_type) :: request
 

@@ -16,7 +16,8 @@ program dmtestthread
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        integer           :: arg, rc
+        integer, target   :: arg
+        integer           :: rc
         type(thread_type) :: thread
 
         stat = TEST_FAILED
