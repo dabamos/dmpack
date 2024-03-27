@@ -101,7 +101,8 @@ contains
     end function dm_api_status_equals
 
     function dm_api_status_to_string(api) result(str)
-        !! Returns string representation of given API status type.
+        !! Returns string representation of given API status type. The string
+        !! contains new-line characters.
         type(api_status_type), intent(inout) :: api !! API status type.
         character(len=:), allocatable        :: str !! String representation.
 

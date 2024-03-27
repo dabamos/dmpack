@@ -53,11 +53,11 @@ program dmdbctl
 
     ! Get command-line arguments.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Run database operation.
     rc = crud(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function crud(app) result(rc)
         !! Performs database operation.

@@ -46,7 +46,7 @@ program dmbeat
 
     ! Read command-line options and configuration from file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -62,15 +62,16 @@ program dmbeat
 
     if (dm_is_error(rc)) then
         call logger%error('failed to initialize libcurl', error=rc)
-        call dm_stop(1)
+        call dm_stop(STOP_FAILURE)
     end if
 
     ! Run main loop.
     call dm_signal_register(signal_handler)
-    call run(app)
+    call run(app, rc)
 
     ! Clean-up.
     call dm_rpc_destroy()
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -181,9 +182,10 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine run(app)
+    subroutine run(app, error)
         !! Runs main loop to emit heartbeats.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(inout)         :: app   !! App type.
+        integer,        intent(out), optional :: error !! Error code.
 
         character(len=BEAT_CLIENT_LEN) :: client ! Client name and version.
         character(len=:), allocatable  :: url    ! URL of HTTP-RPC API endpoint.
@@ -198,6 +200,7 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
+        if (present(error)) error = E_NONE
         call logger%info('started ' // app%name)
 
         ! Client and library version.
@@ -205,6 +208,11 @@ contains
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
+
+        if (len_trim(url) == 0) then
+            if (present(error)) error = E_CORRUPT
+            return
+        end if
 
         last_error = E_NONE
         niter = 0
@@ -307,7 +315,7 @@ contains
             case default
                 call logger%info('exit on signal ' // dm_itoa(signum))
                 call dm_rpc_destroy()
-                call dm_stop(0)
+                call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_handler
 end program dmbeat

@@ -32,11 +32,11 @@ program dmimport
 
     ! Read command-line arguments.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Create selected database type.
     rc = import(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function import(app) result(rc)
         integer(kind=i8), parameter :: PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.

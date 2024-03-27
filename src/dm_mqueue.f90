@@ -267,9 +267,9 @@ contains
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
         !! larger than parameter `LOG_SIZE`. Returns `E_MQUEUE` on error.
-        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
-        type(log_type),    intent(out)           :: log      !! Log type.
-        integer(kind=i8),  intent(in),  optional :: timeout  !! Timeout in seconds.
+        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
+        type(log_type),    intent(out)          :: log     !! Log type.
+        integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
 
         character(len=LOG_SIZE) :: buffer
 
@@ -287,9 +287,9 @@ contains
         !! Receives observation from message queue. The received message shall
         !! not be larger than parameter `OBSERV_SIZE`. Returns `E_MQUEUE` on
         !! error.
-        type(mqueue_type), intent(inout)         :: mqueue  !! Message queue type.
-        type(observ_type), intent(out)           :: observ  !! Observation type.
-        integer(kind=i8),  intent(in),  optional :: timeout !! Timeout in seconds.
+        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
+        type(observ_type), intent(out)          :: observ  !! Observation type.
+        integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
 
         character(len=OBSERV_SIZE) :: buffer
 

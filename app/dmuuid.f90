@@ -32,12 +32,12 @@ program dmuuid
 
     ! Get command-line arguments.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Read UUID4s from stdin and add hyphens.
     if (app%convert) then
         call convert()
-        call dm_stop(0)
+        call dm_stop(STOP_SUCCESS)
     end if
 
     ! Generate and output UUIDs.

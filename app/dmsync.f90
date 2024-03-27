@@ -55,7 +55,7 @@ program dmsync
 
     ! Read command-line options and configuration from file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -302,6 +302,9 @@ contains
                 call logger%error('invalid sync type', error=rc)
                 return
         end select
+
+        rc = E_CORRUPT
+        if (len_trim(url) == 0) return
 
         rc = E_ALLOC
         if (stat /= 0) return
@@ -567,8 +570,8 @@ contains
 
         integer :: rc, stat
 
-        stat = 0
-        if (dm_is_error(error)) stat = 1
+        stat = STOP_SUCCESS
+        if (dm_is_error(error)) stat = STOP_FAILURE
 
         call dm_rpc_destroy()
         if (app%ipc) rc = dm_sem_close(sem)

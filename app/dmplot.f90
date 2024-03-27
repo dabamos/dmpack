@@ -41,7 +41,7 @@ program dmplot
 
     ! Get command-line arguments and configuration file options.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     plot_block: block
         character(len=:), allocatable :: path
@@ -67,8 +67,7 @@ program dmplot
         call dm_error_out(rc)
     end block plot_block
 
-    if (dm_is_error(rc)) call dm_stop(1)
-    call dm_stop(0)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function create_graph(dps, terminal, output, background, foreground, &
                                   font, title, width, height, xlabel, ylabel) result(rc)

@@ -129,7 +129,7 @@ contains
                            trim(command) // c_null_char, &
                            c_null_ptr)
 
-            call c_exit(0)
+            call c_exit(EXIT_SUCCESS)
         end if
     end function dm_pipe_open2
 

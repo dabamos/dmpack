@@ -20,11 +20,11 @@ module dm_observ
     ! ******************************************************************
     ! OBSERVATION.
     ! ******************************************************************
-    integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Observation id length.
-    integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Observation name length.
-    integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Observation source length.
-    integer, parameter, public :: OBSERV_PATH_LEN       = 32       !! Observation path length.
-    integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN   !! Observation receiver length.
+    integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
+    integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Max. observation name length.
+    integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Max. observation source length.
+    integer, parameter, public :: OBSERV_PATH_LEN       = 32       !! Max. observation path length.
+    integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN   !! Max. observation receiver length.
     integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16       !! Max. number of receivers.
     integer, parameter, public :: OBSERV_MAX_NREQUESTS  = 8        !! Max. number of requests.
 
@@ -36,7 +36,7 @@ module dm_observ
         character(len=NODE_ID_LEN)         :: node_id    = ' '          !! Node id (`-0-9A-Z_a-z`).
         character(len=SENSOR_ID_LEN)       :: sensor_id  = ' '          !! Sensor id (`-0-9A-Z_a-z`).
         character(len=TARGET_ID_LEN)       :: target_id  = ' '          !! Target id (`-0-9A-Z_a-z`).
-        character(len=OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name.
+        character(len=OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name (`-0-9A-Z_a-z`).
         character(len=TIME_LEN)            :: timestamp  = ' '          !! ISO 8601 timestamp.
         character(len=OBSERV_SOURCE_LEN)   :: source     = ' '          !! Observation source (`-0-9A-Z_a-z`).
         character(len=OBSERV_PATH_LEN)     :: path       = ' '          !! TTY/PTY path.

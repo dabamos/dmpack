@@ -603,7 +603,7 @@ contains
                 end if
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                    call html_error('Database Query Failed', error=rc)
+                    call html_error('Database Query Failed', error=rc, extra=dm_db_error_message(db))
                     exit response_block
                 end if
 

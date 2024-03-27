@@ -118,8 +118,11 @@ module dm_error
     integer, parameter, public :: E_FCGI           = 131 !! FastCGI error.
     integer, parameter, public :: E_HDF5           = 132 !! HDF5 error.
     integer, parameter, public :: E_ZLIB           = 133 !! zlib error.
-
     integer, parameter, public :: E_LAST           = 133 !! Never use this.
+
+    ! Exit status codes for `dm_stop(stat)`.
+    integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
+    integer, parameter, public :: STOP_FAILURE = 1 !! Exit status 1.
 
     interface dm_perror
         !! Alias for `dm_error_out()`, do not use.
@@ -134,200 +137,200 @@ module dm_error
     public :: dm_perror
     public :: dm_stop
 contains
-    pure function dm_error_message(error) result(str)
+    pure function dm_error_message(error) result(message)
         !! Returns error message of given error code `error`.
-        integer, intent(in)           :: error !! Error code.
-        character(len=:), allocatable :: str   !! Error string.
+        integer, intent(in)           :: error   !! Error code.
+        character(len=:), allocatable :: message !! Error message.
 
         select case (error)
             ! General errors.
             case (E_NONE)
-                str = 'none'
+                message = 'none'
             case (E_ERROR)
-                str = 'error'
+                message = 'error'
             case (E_DUMMY)
-                str = 'dummy error'
+                message = 'dummy error'
             case (E_INVALID)
-                str = 'invalid'
+                message = 'invalid'
             case (E_INCOMPLETE)
-                str = 'incomplete'
+                message = 'incomplete'
             case (E_TYPE)
-                str = 'type error'
+                message = 'type error'
             case (E_IO)
-                str = 'I/O error'
+                message = 'I/O error'
             case (E_READ)
-                str = 'read error'
+                message = 'read error'
             case (E_WRITE)
-                str = 'write error'
+                message = 'write error'
             case (E_EOF)
-                str = 'end of file'
+                message = 'end of file'
             case (E_EOR)
-                str = 'end of record'
+                message = 'end of record'
             case (E_ALLOC)
-                str = 'memory allocation error'
+                message = 'memory allocation error'
             case (E_BOUNDS)
-                str = 'out of bounds'
+                message = 'out of bounds'
             case (E_EXIST)
-                str = 'resource exists'
+                message = 'resource exists'
             case (E_SYSTEM)
-                str = 'system call failed'
+                message = 'system call failed'
             case (E_MEMORY)
-                str = 'no memory'
+                message = 'no memory'
             case (E_FULL)
-                str = 'disk full'
+                message = 'disk full'
             case (E_EMPTY)
-                str = 'no data'
+                message = 'no data'
             case (E_LIMIT)
-                str = 'limit reached'
+                message = 'limit reached'
             case (E_TIMEOUT)
-                str = 'timeout'
+                message = 'timeout'
             case (E_FORMAT)
-                str = 'format error'
+                message = 'format error'
             case (E_NOT_FOUND)
-                str = 'resource not found'
+                message = 'resource not found'
             case (E_PERM)
-                str = 'no permission'
+                message = 'no permission'
             case (E_READ_ONLY)
-                str = 'read only'
+                message = 'read only'
             case (E_CORRUPT)
-                str = 'data corrupted'
+                message = 'data corrupted'
             case (E_CONFIG)
-                str = 'configuration error'
+                message = 'configuration error'
             case (E_GEOCOM)
-                str = 'GeoCOM error'
+                message = 'GeoCOM error'
 
             ! Database.
             case (E_DB)
-                str = 'database error'
+                message = 'database error'
             case (E_DB_ID)
-                str = 'database application id invalid'
+                message = 'database application id invalid'
             case (E_DB_BUSY)
-                str = 'database busy'
+                message = 'database busy'
             case (E_DB_LOCKED)
-                str = 'database locked'
+                message = 'database locked'
             case (E_DB_EXEC)
-                str = 'database execution failed'
+                message = 'database execution failed'
             case (E_DB_CONSTRAINT)
-                str = 'database contraint error'
+                message = 'database contraint error'
             case (E_DB_TRANSACTION)
-                str = 'database transaction failed'
+                message = 'database transaction failed'
             case (E_DB_ROLLBACK)
-                str = 'database rollback failed'
+                message = 'database rollback failed'
             case (E_DB_PREPARE)
-                str = 'database statement preparation failed'
+                message = 'database statement preparation failed'
             case (E_DB_FINALIZE)
-                str = 'database statement finalization failed'
+                message = 'database statement finalization failed'
             case (E_DB_BIND)
-                str = 'database bind failed'
+                message = 'database bind failed'
             case (E_DB_TYPE)
-                str = 'database type mismatch'
+                message = 'database type mismatch'
             case (E_DB_STEP)
-                str = 'database execution step failed'
+                message = 'database execution step failed'
             case (E_DB_NO_ROWS)
-                str = 'database returned no rows'
+                message = 'database returned no rows'
             case (E_DB_BACKUP)
-                str = 'database backup error'
+                message = 'database backup error'
             case (E_DB_ATTACH)
-                str = 'database attach failed'
+                message = 'database attach failed'
             case (E_DB_DETACH)
-                str = 'database detach failed'
+                message = 'database detach failed'
 
             ! Options.
             case (E_ARG)
-                str = 'argument error'
+                message = 'argument error'
             case (E_ARG_NOT_FOUND)
-                str = 'argument not found'
+                message = 'argument not found'
             case (E_ARG_INVALID)
-                str = 'argument invalid or missing'
+                message = 'argument invalid or missing'
             case (E_ARG_NO_VALUE)
-                str = 'argument value missing'
+                message = 'argument value missing'
             case (E_ARG_TYPE)
-                str = 'argument type invalid'
+                message = 'argument type invalid'
             case (E_ARG_LENGTH)
-                str = 'argument length invalid'
+                message = 'argument length invalid'
             case (E_ARG_UNKNOWN)
-                str = 'argument is unknown'
+                message = 'argument is unknown'
 
             ! POSIX message queue.
             case (E_MQUEUE)
-                str = 'message queue operation failed'
+                message = 'message queue operation failed'
             case (E_MQUEUE_EMPTY)
-                str = 'message empty'
+                message = 'message empty'
 
             ! Regular expressions.
             case (E_REGEX)
-                str = 'regular expression failed'
+                message = 'regular expression failed'
             case (E_REGEX_COMPILE)
-                str = 'regular expression failed to compile'
+                message = 'regular expression failed to compile'
             case (E_REGEX_EXCEEDED)
-                str = 'regular expression pattern exceeds maximum matches'
+                message = 'regular expression pattern exceeds maximum matches'
             case (E_REGEX_NO_MATCH)
-                str = 'regular expression pattern does not match'
+                message = 'regular expression pattern does not match'
             case (E_REGEX_NO_GROUP)
-                str = 'regular expression group not found'
+                message = 'regular expression group not found'
 
             ! Sensor.
             case (E_SENSOR)
-                str = 'sensor error'
+                message = 'sensor error'
 
             ! RPC.
             case (E_RPC)
-                str = 'RPC error'
+                message = 'RPC error'
             case (E_RPC_CONNECT)
-                str = 'RPC connection error'
+                message = 'RPC connection error'
             case (E_RPC_SSL)
-                str = 'RPC SSL error'
+                message = 'RPC SSL error'
             case (E_RPC_API)
-                str = 'RPC API error'
+                message = 'RPC API error'
             case (E_RPC_AUTH)
-                str = 'RPC authorization error'
+                message = 'RPC authorization error'
             case (E_RPC_CONFLICT)
-                str = 'RPC conflict'
+                message = 'RPC conflict'
             case (E_RPC_SERVER)
-                str = 'RPC server error'
+                message = 'RPC server error'
 
             ! Mail.
             case (E_MAIL)
-                str = 'mail error'
+                message = 'mail error'
             case (E_MAIL_CONNECT)
-                str = 'mail connection error'
+                message = 'mail connection error'
             case (E_MAIL_SSL)
-                str = 'mail SSL error'
+                message = 'mail SSL error'
             case (E_MAIL_AUTH)
-                str = 'mail authorization error'
+                message = 'mail authorization error'
 
             ! MQTT.
             case (E_MQTT)
-                str = 'MQTT error'
+                message = 'MQTT error'
 
             ! Lua.
             case (E_LUA)
-                str = 'Lua error'
+                message = 'Lua error'
             case (E_LUA_YIELD)
-                str = 'Lua thread yields'
+                message = 'Lua thread yields'
             case (E_LUA_RUNTIME)
-                str = 'Lua runtime error'
+                message = 'Lua runtime error'
             case (E_LUA_SYNTAX)
-                str = 'Lua syntax error'
+                message = 'Lua syntax error'
             case (E_LUA_MEM)
-                str = 'Lua memory error'
+                message = 'Lua memory error'
             case (E_LUA_ERROR)
-                str = 'Lua message handling error'
+                message = 'Lua message handling error'
             case (E_LUA_FILE)
-                str = 'Lua file I/O error'
+                message = 'Lua file I/O error'
 
             ! Libraries.
             case (E_LIB)
-                str = 'library error'
+                message = 'library error'
             case (E_FCGI)
-                str = 'FastCGI error'
+                message = 'FastCGI error'
             case (E_HDF5)
-                str = 'HDF5 error'
+                message = 'HDF5 error'
             case (E_ZLIB)
-                str = 'zlib error'
+                message = 'zlib error'
 
             case default
-                str = 'unknown error'
+                message = 'unknown error'
         end select
     end function dm_error_message
 
@@ -365,9 +368,9 @@ contains
 
         integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
-        logical,          intent(in), optional :: verbose !! If true, print message on `E_NONE`.
-        logical,          intent(in), optional :: extra   !! If true, print default message instead of code.
-        logical,          intent(in), optional :: quit    !! If true, stop program.
+        logical,          intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE`.
+        logical,          intent(in), optional :: extra   !! If `.true.`, print default message instead of code.
+        logical,          intent(in), optional :: quit    !! If `.true.`, stop program.
 
         integer :: stat
         logical :: extra_, verbose_, quit_
@@ -382,8 +385,8 @@ contains
 
         if (error == E_NONE .and. .not. verbose_) return
 
-        stat = 0
-        if (error /= E_NONE) stat = 1
+        stat = STOP_SUCCESS
+        if (error /= E_NONE) stat = STOP_FAILURE
 
         if (present(message)) then
             if (extra_) then
@@ -401,14 +404,16 @@ contains
     end subroutine dm_error_out
 
     subroutine dm_stop(stat)
-        !! Stops program execution with optional exit status `stat`.
+        !! Stops program execution with optional exit status `stat`. The exit
+        !! status may be `STOP_SUCCESS` or `STOP_FAILURE`.
         use :: unix, only: c_exit
+
         integer, intent(in), optional :: stat !! Exit status.
 
         if (present(stat)) then
             call c_exit(stat)
         else
-            call c_exit(0)
+            call c_exit(STOP_SUCCESS)
         end if
     end subroutine dm_stop
 end module dm_error

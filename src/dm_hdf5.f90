@@ -162,6 +162,7 @@ contains
         !!
         !! * `E_INVALID` if the passed HDF5 file is not opened.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         type(hdf5_file_type), intent(inout) :: file       !! HDF5 file type.
         integer(kind=i8),     intent(out)   :: free_space !! Free space in bytes.
 
@@ -189,6 +190,7 @@ contains
         !!
         !! * `E_INVALID` if the passed HDF5 file is not opened.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         type(hdf5_file_type), intent(inout)         :: file !! HDF5 file type.
         character(len=*),     intent(inout)         :: path !! Path of HDF5 file.
         integer,              intent(out), optional :: n    !! Path length.
@@ -215,6 +217,7 @@ contains
         !! * `E_FORMAT` if the file is not an HDF5 file.
         !! * `E_NOT_FOUND` if the file does not exist.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_file, only: dm_file_exists
 
         character(len=*), intent(in) :: path !! File path.
@@ -285,6 +288,7 @@ contains
         !!
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         class(hdf5_id_type), intent(inout)         :: id    !! HDF5 file or group type.
         character(len=*),    intent(in)            :: name  !! Group name.
         integer,             intent(out), optional :: error !! Error code.
@@ -828,6 +832,7 @@ contains
         !! * `E_HDF5` if opening or creating the file failed.
         !! * `E_INVALID` if the file is opened already or argument `mode` is invalid.
         !! * `E_NOT_FOUND` if the file was not found.
+        !!
         use :: dm_file, only: dm_file_exists
 
         type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
@@ -925,6 +930,7 @@ contains
         !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `nodes` failed.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_node
 
         class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
@@ -997,6 +1003,7 @@ contains
         !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `observs` failed.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_observ
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
@@ -1069,6 +1076,7 @@ contains
         !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `sensors` failed.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_sensor
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
@@ -1141,6 +1149,7 @@ contains
         !! * `E_INVALID` if the passed `id` is invalid.
         !! * `E_ALLOC` if allocation of array `targets` failed.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_target
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
@@ -1254,6 +1263,7 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed node array is of size 0.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_node
 
         class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
@@ -1296,6 +1306,7 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed observation array is of size 0.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_observ
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
@@ -1338,6 +1349,7 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed sensor array is of size 0.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_sensor
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
@@ -1380,6 +1392,7 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_EMPTY` if the passed target array is of size 0.
         !! * `E_HDF5` if the HDF5 library call failed.
+        !!
         use :: dm_target
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.

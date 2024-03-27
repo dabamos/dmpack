@@ -29,7 +29,7 @@ program dmlog
 
     ! Get command-line arguments.
     rc = read_args(app, log)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()

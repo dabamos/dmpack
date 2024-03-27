@@ -38,7 +38,7 @@ contains
         rc = E_SYSTEM
 
         ! Clear file creation mask.
-        mode = c_umask(int(0, kind=c_mode_t))
+        mode = c_umask(0_c_mode_t)
 
         ! Spawn a new process and exit.
         pid = c_fork()
@@ -48,7 +48,7 @@ contains
             return
         else if (pid > 0) then
             ! Parent process.
-            call c_exit(0)
+            call c_exit(EXIT_SUCCESS)
         end if
 
         ! Child process from here on.

@@ -92,7 +92,7 @@ contains
 
         character(len=SENSOR_TYPE_NAME_LEN) :: name_
 
-        ! Normalised name.
+        ! Normalise name.
         name_ = dm_lower(name)
 
         select case (name_)
@@ -118,12 +118,11 @@ contains
     end function dm_sensor_type_from_name
 
     pure elemental logical function dm_sensor_type_valid(type) result(valid)
-        !! Returns `.true.` if `type` is valid sensor type.
+        !! Returns `.true.` if `type` is valid sensor type. The type
+        !! `SENSOR_TYPE_NONE` is a valid type.
         integer, intent(in) :: type !! Sensor type.
 
-        valid = .false.
-        if (type < SENSOR_TYPE_NONE .or. type > SENSOR_TYPE_LAST) return
-        valid = .true.
+        valid = (type >= SENSOR_TYPE_NONE .and. type <= SENSOR_TYPE_LAST)
     end function dm_sensor_type_valid
 
     pure elemental logical function dm_sensor_valid(sensor) result(valid)

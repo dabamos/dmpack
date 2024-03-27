@@ -37,11 +37,11 @@ program dmfeed
 
     ! Read command-line arguments and configuration from file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Write Atom XML feed to file or standard output.
     call create_feed(app, rc)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     logical function is_stale_file(path, time) result(is_stale)
         !! Returns `.true.` if last modification time of file at `path` is

@@ -71,6 +71,7 @@ contains
         !! Returns `.true.` and outputs a debug message if environment variable
         !! of name `env_var` is set to 1.
         use :: dm_env, only: dm_env_get, dm_env_has
+
         character(len=*), intent(in) :: env_var !! Name of the environment variable.
 
         integer :: rc
@@ -91,6 +92,7 @@ contains
         !! Generates dummy beat data type.
         use :: dm_beat
         use :: dm_version
+
         type(beat_type), intent(out) :: beat !! Beat type.
 
         beat = beat_type(node_id   = 'dummy-node', &
@@ -105,6 +107,7 @@ contains
     impure elemental subroutine dm_test_dummy_log(log, timestamp)
         !! Generates dummy log data type.
         use :: dm_log
+
         type(log_type),   intent(out)          :: log       !! Log type.
         character(len=*), intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
         real                                   :: r(2)
@@ -128,6 +131,7 @@ contains
     pure elemental subroutine dm_test_dummy_node(node, id, name)
         !! Generates dummy sensor node data type.
         use :: dm_node
+
         type(node_type),  intent(out)          :: node !! Node type.
         character(len=*), intent(in), optional :: id   !! Node id.
         character(len=*), intent(in), optional :: name !! Node name.
@@ -148,6 +152,7 @@ contains
         !! Generates dummy observation data type.
         use :: dm_observ
         use :: dm_request
+
         type(observ_type), intent(out)          :: observ         !! Observation type.
         character(len=*),  intent(in), optional :: id             !! Observation id.
         character(len=*),  intent(in), optional :: node_id        !! Node id.
@@ -203,6 +208,7 @@ contains
         !! Generates dummy request data type.
         use :: dm_request
         use :: dm_response
+
         type(request_type), intent(out)          :: request        !! Request type.
         character(len=*),   intent(in), optional :: name           !! Request name.
         character(len=*),   intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
@@ -240,6 +246,7 @@ contains
     pure elemental subroutine dm_test_dummy_sensor(sensor, node_id, id, name)
         !! Generates dummy sensor data type.
         use :: dm_sensor
+
         type(sensor_type), intent(out)          :: sensor  !! Sensor type.
         character(len=*),  intent(in), optional :: node_id !! Node id.
         character(len=*),  intent(in), optional :: id      !! Sensor id.
@@ -274,6 +281,7 @@ contains
     pure elemental subroutine dm_test_dummy_target(target, id, name)
         !! Generates dummy target data type.
         use :: dm_target
+
         type(target_type), intent(out)          :: target !! Target type.
         character(len=*),  intent(in), optional :: id     !! Target id.
         character(len=*),  intent(in), optional :: name   !! Target name.
@@ -304,6 +312,7 @@ contains
         use :: dm_time
         use :: dm_timer
         use :: dm_version
+
         type(test_type), intent(inout)        :: tests(:) !! Test types.
         logical,         intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
         logical,         intent(in), optional :: no_color
@@ -368,7 +377,7 @@ contains
         call dm_ansi_reset(no_color_)
 
         print *
-        if (nfail > 0) call dm_stop(1)
+        if (nfail > 0) call dm_stop(STOP_FAILURE)
     end subroutine dm_test_run
 
     ! ******************************************************************

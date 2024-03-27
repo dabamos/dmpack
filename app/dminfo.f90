@@ -25,10 +25,10 @@ program dminfo
 
     ! Read command-line arguments.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     rc = output_info(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.

@@ -18,7 +18,7 @@ module dm_uuid
     public :: dm_uuid4_valid
 contains
     impure elemental function dm_uuid4() result(uuid)
-        !! Generates random UUID (RFC 4122) in hexadecimal format, i.e.,
+        !! Generates random UUID4 (RFC 4122) in hexadecimal format, i.e.,
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
         character(len=UUID_LEN) :: uuid
@@ -81,7 +81,8 @@ contains
     end function dm_uuid4_hyphenize
 
     pure elemental logical function dm_uuid4_valid(uuid) result(valid)
-        !! Returns `.true.` if given UUID in hex format is a valid UUID4.
+        !! Returns `.true.` if given UUID in hex format is a valid UUID4. Only
+        !! lower-case letters are valid.
         character(len=*), intent(in) :: uuid !! UUID to validate.
 
         character :: a

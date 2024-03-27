@@ -1,12 +1,13 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_time
-    !! Date and time functions. ISO 8601/RFC 3339 is used as the universal
-    !! date and time format. Date and time are separated by character `T`. The
-    !! time has microsecond resolution, a time zone is mandatory. A valid
-    !! timestamp must contain at least the full year, and be between 4 and 32
-    !! characters long. For example, the string
-    !! `1970-01-01T00:00:00.000000+00:00` is a valid DMPACK time stamp.
+    !! Date and time functions.
+    !!
+    !! ISO 8601/RFC 3339 is used as the universal date and time format. Date and
+    !! time are separated by character `T`. The time has microsecond resolution,
+    !! a time zone is mandatory. A valid timestamp must contain at least the
+    !! full year, and be between 4 and 32 characters long. For example, the
+    !! string `1970-01-01T00:00:00.000000+00:00` is a valid DMPACK time stamp.
     use :: dm_error
     use :: dm_kind
     use :: dm_util

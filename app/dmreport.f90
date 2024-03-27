@@ -31,11 +31,11 @@ program dmreport
 
     ! Get command-line arguments and configuration file options.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Create HTML report.
     call create_report(app%report, rc)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     function html_footer() result(html)
         !! Returns HTML footer with current date and time.

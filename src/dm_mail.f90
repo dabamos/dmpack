@@ -46,9 +46,9 @@ module dm_mail
 
     type :: payload_type
         !! Private payload type.
-        character(len=:), allocatable :: data
-        integer(kind=i8)              :: length = 0_i8
-        integer(kind=i8)              :: nbytes = 0_i8
+        character(len=:), allocatable :: data          !! Bytes to send.
+        integer(kind=i8)              :: length = 0_i8 !! Length of bytes string.
+        integer(kind=i8)              :: nbytes = 0_i8 !! Number of bytes sent.
     end type payload_type
 
     type, public :: mail_server_type
@@ -149,7 +149,7 @@ contains
     integer function dm_mail_create_server(server, host, username, password, port, tls, &
                                            timeout, connect_timeout, verify_ssl) result(rc)
         !! Returns SMTP server type. The function returns `E_INVALID` on error.
-        type(mail_server_type), intent(out)          :: server          !! SMTP server type.
+        type(mail_server_type), intent(out)          :: server          !! Mail server type.
         character(len=*),       intent(in)           :: host            !! SMTP server host.
         character(len=*),       intent(in)           :: username        !! SMTP user name.
         character(len=*),       intent(in)           :: password        !! SMTP password.
@@ -269,11 +269,11 @@ contains
         !! * `E_MAIL_CONNECT` if connection to server could not be established.
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
         !!
-        type(mail_type),               intent(inout)         :: mail
-        type(mail_server_type),        intent(inout)         :: server
-        character(len=:), allocatable, intent(out), optional :: error_message
-        integer,                       intent(out), optional :: error_curl
-        logical,                       intent(in),  optional :: debug
+        type(mail_type),               intent(inout)         :: mail          !! Mail type.
+        type(mail_server_type),        intent(inout)         :: server        !! Mail server type.
+        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
 
         integer                    :: i, stat
         logical                    :: debug_
@@ -453,8 +453,8 @@ contains
         !! public to simplify testing.
         use :: dm_ascii, only: CR_LF
 
-        type(mail_type), intent(inout) :: mail !! Mail type.
-        character(len=:), allocatable  :: payload
+        type(mail_type), intent(inout) :: mail    !! Mail type.
+        character(len=:), allocatable  :: payload !! E-mail data.
 
         payload = 'Date: ' // dm_time_rfc2822()          // CR_LF // &
                   'To: '   // dm_mail_address(mail%to)   // CR_LF // &

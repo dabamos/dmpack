@@ -14,7 +14,7 @@ module dm_rpc
     !! type(rpc_response_type)       :: response
     !!
     !! rc = dm_rpc_init()
-    !! if (dm_is_error(rc)) call dm_stop(1)
+    !! if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
     !! rc  = dm_rpc_send(request, response, observ, url)

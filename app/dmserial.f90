@@ -54,7 +54,7 @@ program dmserial
 
     ! Get command-line arguments, read options from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Create TTY type.
     rc = create_tty(tty       = tty, &
@@ -65,7 +65,7 @@ program dmserial
                     stop_bits = app%stop_bits, &
                     dtr       = app%dtr, &
                     rts       = app%rts)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -81,7 +81,7 @@ program dmserial
 
     ! Run main loop.
     rc = run(app, tty)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
         !! Creates TTY type from application settings.
@@ -610,7 +610,7 @@ contains
                     call dm_tty_close(tty)
                 end if
 
-                call dm_stop(0)
+                call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_handler
 end program dmserial

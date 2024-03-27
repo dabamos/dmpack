@@ -294,548 +294,548 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure function dm_geocom_error_message(grc) result(str)
+    pure function dm_geocom_error_message(grc) result(message)
         !! Returns message associated with given GeoCOM (error) code.
         use :: dm_util, only: dm_itoa
 
-        integer, intent(in)           :: grc !! GeoCOM return code.
-        character(len=:), allocatable :: str !! GeoCOM return code message.
+        integer, intent(in)           :: grc     !! GeoCOM return code.
+        character(len=:), allocatable :: message !! GeoCOM return code message.
 
         select case (grc)
             ! TPS
             case (GRC_OK)
-                str = 'function successfully completed'
+                message = 'function successfully completed'
             case (GRC_UNDEFINED)
-                str = 'unknown error, result unspecified'
+                message = 'unknown error, result unspecified'
             case (GRC_IVPARAM)
-                str = 'invalid parameter detected, result unspecified'
+                message = 'invalid parameter detected, result unspecified'
             case (GRC_IVRESULT)
-                str = 'invalid result'
+                message = 'invalid result'
             case (GRC_FATAL)
-                str = 'fatal error'
+                message = 'fatal error'
             case (GRC_NOT_IMPL)
-                str = 'not implemented'
+                message = 'not implemented'
             case (GRC_TIME_OUT)
-                str = 'function execution timed out, result unspecified'
+                message = 'function execution timed out, result unspecified'
             case (GRC_SET_INCOMPL)
-                str = 'parameter setup for subsystem is incomplete'
+                message = 'parameter setup for subsystem is incomplete'
             case (GRC_ABORT)
-                str = 'function execution has been aborted'
+                message = 'function execution has been aborted'
             case (GRC_NOMEMORY)
-                str = 'fatal error (not enough memory)'
+                message = 'fatal error (not enough memory)'
             case (GRC_NOTINIT)
-                str = 'fatal error (subsystem not initialised)'
+                message = 'fatal error (subsystem not initialised)'
             case (GRC_SHUT_DOWN)
-                str = 'subsystem is down'
+                message = 'subsystem is down'
             case (GRC_SYSBUSY)
-                str = 'system busy/already in use of another process'
+                message = 'system busy/already in use of another process'
             case (GRC_HWFAILURE)
-                str = 'fatal error (hardware failure)'
+                message = 'fatal error (hardware failure)'
             case (GRC_ABORT_APPL)
-                str = 'execution of application has been aborted'
+                message = 'execution of application has been aborted'
             case (GRC_LOW_POWER)
-                str = 'operation aborted (insufficient power supply level)'
+                message = 'operation aborted (insufficient power supply level)'
             case (GRC_IVVERSION)
-                str = 'invalid version of file'
+                message = 'invalid version of file'
             case (GRC_BAT_EMPTY)
-                str = 'battery empty, about 1 min remaining'
+                message = 'battery empty, about 1 min remaining'
             case (GRC_NO_EVENT)
-                str = 'no event pending'
+                message = 'no event pending'
             case (GRC_OUT_OF_TEMP)
-                str = 'out of temperature range'
+                message = 'out of temperature range'
             case (GRC_INSTRUMENT_TILT)
-                str = 'instrument tilting out of range'
+                message = 'instrument tilting out of range'
             case (GRC_COM_SETTING)
-                str = 'communication error'
+                message = 'communication error'
             case (GRC_NO_ACTION)
-                str = 'GRC_TYPE input (do no action)'
+                message = 'GRC_TYPE input (do no action)'
             case (GRC_SLEEP_MODE)
-                str = 'instrument went into sleep mode'
+                message = 'instrument went into sleep mode'
             case (GRC_NOTOK)
-                str = 'function not successfully completed'
+                message = 'function not successfully completed'
             case (GRC_NA)
-                str = 'not available'
+                message = 'not available'
             case (GRC_OVERFLOW)
-                str = 'overflow error'
+                message = 'overflow error'
             case (GRC_STOPPED)
-                str = 'system or subsystem has been stopped'
+                message = 'system or subsystem has been stopped'
 
             ! ANG
             case (GRC_ANG)
-                str = 'ANG error'
+                message = 'ANG error'
             case (GRC_ANG_ERROR)
-                str = 'angles and inclinations not valid'
+                message = 'angles and inclinations not valid'
             case (GRC_ANG_INCL_ERROR)
-                str = 'inclinations not valid'
+                message = 'inclinations not valid'
             case (GRC_ANG_BAD_ACC)
-                str = 'value accuracies not reached'
+                message = 'value accuracies not reached'
             case (GRC_ANG_BAD_ANGLE_ACC)
-                str = 'angle accuracies not reached'
+                message = 'angle accuracies not reached'
             case (GRC_ANG_BAD_INCLIN_ACC)
-                str = 'inclination accuracies not reached'
+                message = 'inclination accuracies not reached'
             case (GRC_ANG_WRITE_PROTECTED)
-                str = 'no write access allowed'
+                message = 'no write access allowed'
             case (GRC_ANG_OUT_OF_RANGE)
-                str = 'value out of range'
+                message = 'value out of range'
             case (GRC_ANG_IR_OCCURED)
-                str = 'function aborted due to interrupt'
+                message = 'function aborted due to interrupt'
             case (GRC_ANG_HZ_MOVED)
-                str = 'Hz moved during incline measurement'
+                message = 'Hz moved during incline measurement'
             case (GRC_ANG_OS_ERROR)
-                str = 'troubles with operation system'
+                message = 'troubles with operation system'
             case (GRC_ANG_DATA_ERROR)
-                str = 'overflow at parameter values'
+                message = 'overflow at parameter values'
             case (GRC_ANG_PEAK_CNT_UFL)
-                str = 'not enough peaks'
+                message = 'not enough peaks'
             case (GRC_ANG_TIME_OUT)
-                str = 'reading timeout'
+                message = 'reading timeout'
             case (GRC_ANG_TOO_MANY_EXPOS)
-                str = 'too many exposures wanted'
+                message = 'too many exposures wanted'
             case (GRC_ANG_PIX_CTRL_ERR)
-                str = 'picture height out of range'
+                message = 'picture height out of range'
             case (GRC_ANG_MAX_POS_SKIP)
-                str = 'positive exposure dynamic overflow'
+                message = 'positive exposure dynamic overflow'
             case (GRC_ANG_MAX_NEG_SKIP)
-                str = 'negative exposure dynamic overflow'
+                message = 'negative exposure dynamic overflow'
             case (GRC_ANG_EXP_LIMIT)
-                str = 'exposure time overflow'
+                message = 'exposure time overflow'
             case (GRC_ANG_UNDER_EXPOSURE)
-                str = 'picture under-exposured'
+                message = 'picture under-exposured'
             case (GRC_ANG_OVER_EXPOSURE)
-                str = 'picture over-exposured'
+                message = 'picture over-exposured'
             case (GRC_ANG_TMANY_PEAKS)
-                str = 'too many peaks detected'
+                message = 'too many peaks detected'
             case (GRC_ANG_TLESS_PEAKS)
-                str = 'not enough peaks detected'
+                message = 'not enough peaks detected'
             case (GRC_ANG_PEAK_TOO_SLIM)
-                str = 'peak too slim'
+                message = 'peak too slim'
             case (GRC_ANG_PEAK_TOO_WIDE)
-                str = 'peak too wide'
+                message = 'peak too wide'
             case (GRC_ANG_BAD_PEAKDIFF)
-                str = 'bad peak difference'
+                message = 'bad peak difference'
             case (GRC_ANG_UNDER_EXP_PICT)
-                str = 'peak amplitude to low'
+                message = 'peak amplitude to low'
             case (GRC_ANG_PEAKS_INHOMOGEN)
-                str = 'inhomogeneous peak amplitudes'
+                message = 'inhomogeneous peak amplitudes'
             case (GRC_ANG_NO_DECOD_POSS)
-                str = 'no peak decoding possible'
+                message = 'no peak decoding possible'
             case (GRC_ANG_UNSTABLE_DECOD)
-                str = 'peak decoding not stable'
+                message = 'peak decoding not stable'
             case (GRC_ANG_TLESS_FPEAKS)
-                str = 'not enough valid fine-peaks'
+                message = 'not enough valid fine-peaks'
             case (GRC_ANG_INCL_OLD_PLANE)
-                str = 'inclination plane out of time range'
+                message = 'inclination plane out of time range'
             case (GRC_ANG_INCL_NO_PLANE)
-                str = 'inclination plane not available'
+                message = 'inclination plane not available'
             case (GRC_ANG_FAST_ANG_ERR)
-                str = 'errors in 5 kHz and or 2.5 kHz angle'
+                message = 'errors in 5 kHz and or 2.5 kHz angle'
             case (GRC_ANG_FAST_ANG_ERR_5)
-                str = 'errors in 5 kHz angle'
+                message = 'errors in 5 kHz angle'
             case (GRC_ANG_FAST_ANG_ERR_25)
-                str = 'errors in 2.5 kHz angle'
+                message = 'errors in 2.5 kHz angle'
             case (GRC_ANG_TRANS_ERR)
-                str = 'LVDS transfer error detected'
+                message = 'LVDS transfer error detected'
             case (GRC_ANG_TRANS_ERR_5)
-                str = 'LVDS transfer error detected in 5 kHz mode'
+                message = 'LVDS transfer error detected in 5 kHz mode'
             case (GRC_ANG_TRANS_ERR_25)
-                str = 'LVDS transfer error detected in 2.5 kHz mode'
+                message = 'LVDS transfer error detected in 2.5 kHz mode'
 
             ! ATA
             case (GRC_ATA_NOT_READY)
-                str = 'ATR system is not ready'
+                message = 'ATR system is not ready'
             case (GRC_ATA_NO_RESULT)
-                str = 'result is not available yet'
+                message = 'result is not available yet'
             case (GRC_ATA_SEVERAL_TARGETS)
-                str = 'several targets detected'
+                message = 'several targets detected'
             case (GRC_ATA_BIG_SPOT)
-                str = 'spot is too big for analyse'
+                message = 'spot is too big for analyse'
             case (GRC_ATA_BACKGROUND)
-                str = 'background is too bright'
+                message = 'background is too bright'
             case (GRC_ATA_NO_TARGETS)
-                str = 'no targets detected'
+                message = 'no targets detected'
             case (GRC_ATA_NOT_ACCURAT)
-                str = 'accuracy worse than asked for'
+                message = 'accuracy worse than asked for'
             case (GRC_ATA_SPOT_ON_EDGE)
-                str = 'spot is on the edge of the sensing area'
+                message = 'spot is on the edge of the sensing area'
             case (GRC_ATA_BLOOMING)
-                str = 'blooming or spot on edge detected'
+                message = 'blooming or spot on edge detected'
             case (GRC_ATA_NOT_BUSY)
-                str = 'ATR is not in a continuous mode'
+                message = 'ATR is not in a continuous mode'
             case (GRC_ATA_STRANGE_LIGHT)
-                str = 'not the spot of the own target illuminator'
+                message = 'not the spot of the own target illuminator'
             case (GRC_ATA_V24_FAIL)
-                str = 'communication error to sensor (ATR)'
+                message = 'communication error to sensor (ATR)'
             case (GRC_ATA_DECODE_ERROR)
-                str = 'received Arguments cannot be decoded'
+                message = 'received Arguments cannot be decoded'
             case (GRC_ATA_HZ_FAIL)
-                str = 'no spot detected in Hz direction'
+                message = 'no spot detected in Hz direction'
             case (GRC_ATA_V_FAIL)
-                str = 'no spot detected in V direction'
+                message = 'no spot detected in V direction'
             case (GRC_ATA_HZ_STRANGE_L)
-                str = 'strange light in Hz direction'
+                message = 'strange light in Hz direction'
             case (GRC_ATA_V_STRANGE_L)
-                str = 'strange light in V direction'
+                message = 'strange light in V direction'
             case (GRC_ATA_SLDR_TRANSFER_PENDING)
-                str = 'on multiple ATA_SLDR_OpenTransfer'
+                message = 'on multiple ATA_SLDR_OpenTransfer'
             case (GRC_ATA_SLDR_TRANSFER_ILLEGAL)
-                str = 'no ATA_SLDR_OpenTransfer happened'
+                message = 'no ATA_SLDR_OpenTransfer happened'
             case (GRC_ATA_SLDR_DATA_ERROR)
-                str = 'unexpected data format received'
+                message = 'unexpected data format received'
             case (GRC_ATA_SLDR_CHK_SUM_ERROR)
-                str = 'checksum error in transmitted data'
+                message = 'checksum error in transmitted data'
             case (GRC_ATA_SLDR_ADDRESS_ERROR)
-                str = 'address out of valid range'
+                message = 'address out of valid range'
             case (GRC_ATA_SLDR_INV_LOADFILE)
-                str = 'firmware file has invalid format'
+                message = 'firmware file has invalid format'
             case (GRC_ATA_SLDR_UNSUPPORTED)
-                str = 'currently loaded firmware does not support upload'
+                message = 'currently loaded firmware does not support upload'
             case (GRC_ATA_PS_NOT_READY)
-                str = 'PowerSearch system is not ready'
+                message = 'PowerSearch system is not ready'
             case (GRC_ATA_ATR_SYSTEM_ERR)
-                str = 'ATR system error'
+                message = 'ATR system error'
 
             ! EDM
             case (GRC_EDM)
-                str = 'EDM error'
+                message = 'EDM error'
             case (GRC_EDM_SYSTEM_ERR)
-                str = 'fatal EDM sensor error'
+                message = 'fatal EDM sensor error'
             case (GRC_EDM_INVALID_COMMAND)
-                str = 'invalid command or unknown command'
+                message = 'invalid command or unknown command'
             case (GRC_EDM_BOOM_ERR)
-                str = 'boomerang error'
+                message = 'boomerang error'
             case (GRC_EDM_SIGN_LOW_ERR)
-                str = 'received signal too low, prism too far away, or natural barrier, bad environment'
+                message = 'received signal too low, prism too far away, or natural barrier, bad environment'
             case (GRC_EDM_DIL_ERR)
-                str = 'obsolete'
+                message = 'obsolete'
             case (GRC_EDM_SIGN_HIGH_ERR)
-                str = 'received signal to strong, prism to near, strange light effect'
+                message = 'received signal to strong, prism to near, strange light effect'
             case (GRC_EDM_TIMEOUT)
-                str = 'timeout, measuring time exceeded (signal too weak, beam interrupted)'
+                message = 'timeout, measuring time exceeded (signal too weak, beam interrupted)'
             case (GRC_EDM_FLUKT_ERR)
-                str = 'too much turbulences or distractions'
+                message = 'too much turbulences or distractions'
             case (GRC_EDM_FMOT_ERR)
-                str = 'filter motor defective'
+                message = 'filter motor defective'
             case (GRC_EDM_DEV_NOT_INSTALLED)
-                str = 'device like EGL, DL is not installed'
+                message = 'device like EGL, DL is not installed'
             case (GRC_EDM_NOT_FOUND)
-                str = 'search result invalid'
+                message = 'search result invalid'
             case (GRC_EDM_ERROR_RECEIVED)
-                str = 'communication ok, but error reported from the EDM sensor'
+                message = 'communication ok, but error reported from the EDM sensor'
             case (GRC_EDM_MISSING_SRVPWD)
-                str = 'no service password is set'
+                message = 'no service password is set'
             case (GRC_EDM_INVALID_ANSWER)
-                str = 'communication ok, but unexpected answer received'
+                message = 'communication ok, but unexpected answer received'
             case (GRC_EDM_SEND_ERR)
-                str = 'data send error, sending buffer is full'
+                message = 'data send error, sending buffer is full'
             case (GRC_EDM_RECEIVE_ERR)
-                str = 'data receive error, like parity buffer overflow'
+                message = 'data receive error, like parity buffer overflow'
             case (GRC_EDM_INTERNAL_ERR)
-                str = 'internal EDM subsystem error'
+                message = 'internal EDM subsystem error'
             case (GRC_EDM_BUSY)
-                str = 'sensor is working already, abort current measuring first'
+                message = 'sensor is working already, abort current measuring first'
             case (GRC_EDM_NO_MEASACTIVITY)
-                str = 'no measurement activity started'
+                message = 'no measurement activity started'
             case (GRC_EDM_CHKSUM_ERR)
-                str = 'calculated checksum, resp. received data wrong'
+                message = 'calculated checksum, resp. received data wrong'
             case (GRC_EDM_INIT_OR_STOP_ERR)
-                str = 'during start up or shut down phase an error occured'
+                message = 'during start up or shut down phase an error occured'
             case (GRC_EDM_SRL_NOT_AVAILABLE)
-                str = 'red laser not available on this sensor hardware'
+                message = 'red laser not available on this sensor hardware'
             case (GRC_EDM_MEAS_ABORTED)
-                str = 'measurement will be aborted for laser security'
+                message = 'measurement will be aborted for laser security'
             case (GRC_EDM_SLDR_TRANSFER_PENDING)
-                str = 'multiple open transfer calls'
+                message = 'multiple open transfer calls'
             case (GRC_EDM_SLDR_TRANSFER_ILLEGAL)
-                str = 'no open transfer happened'
+                message = 'no open transfer happened'
             case (GRC_EDM_SLDR_DATA_ERROR)
-                str = 'unexpected data format received'
+                message = 'unexpected data format received'
             case (GRC_EDM_SLDR_CHK_SUM_ERROR)
-                str = 'checksum error in transmitted data'
+                message = 'checksum error in transmitted data'
             case (GRC_EDM_SLDR_ADDR_ERROR)
-                str = 'address out of valid range'
+                message = 'address out of valid range'
             case (GRC_EDM_SLDR_INV_LOADFILE)
-                str = 'firmware file has invalid format'
+                message = 'firmware file has invalid format'
             case (GRC_EDM_SLDR_UNSUPPORTED)
-                str = 'currently loaded firmware does not support upload'
+                message = 'currently loaded firmware does not support upload'
             case (GRC_EDM_UNKNOW_ERR)
-                str = 'undocumented error from the EDM sensor'
+                message = 'undocumented error from the EDM sensor'
             case (GRC_EDM_DISTRANGE_ERR)
-                str = 'out of distance range (too short or too long)'
+                message = 'out of distance range (too short or too long)'
             case (GRC_EDM_SIGNTONOISE_ERR)
-                str = 'signal to noise ratio too small'
+                message = 'signal to noise ratio too small'
             case (GRC_EDM_NOISEHIGH_ERR)
-                str = 'noise to high'
+                message = 'noise to high'
             case (GRC_EDM_PWD_NOTSET)
-                str = 'password is not set'
+                message = 'password is not set'
             case (GRC_EDM_ACTION_NO_MORE_VALID)
-                str = 'elapsed time between prepare and start of fast measurement for ATR too long'
+                message = 'elapsed time between prepare and start of fast measurement for ATR too long'
             case (GRC_EDM_MULTRG_ERR)
-                str = 'possibly more than one target (also a sensor error)'
+                message = 'possibly more than one target (also a sensor error)'
             case (GRC_EDM_MISSING_EE_CONSTS)
-                str = 'EEPROM consts are missing'
+                message = 'EEPROM consts are missing'
             case (GRC_EDM_NOPRECISE)
-                str = 'no precise measurement possible'
+                message = 'no precise measurement possible'
             case (GRC_EDM_MEAS_DIST_NOT_ALLOWED)
-                str = 'measured distance is too long (not allowed)'
+                message = 'measured distance is too long (not allowed)'
 
             ! GMF
             case (GRC_GMF)
-                str = 'GMF error'
+                message = 'GMF error'
             case (GRC_GMF_WRONG_AREA_DEF)
-                str = 'wrong area definition'
+                message = 'wrong area definition'
             case (GRC_GMF_IDENTICAL_PTS)
-                str = 'identical points'
+                message = 'identical points'
             case (GRC_GMF_PTS_IN_LINE)
-                str = 'points on one line'
+                message = 'points on one line'
             case (GRC_GMF_OUT_OF_RANGE)
-                str = 'out of range'
+                message = 'out of range'
             case (GRC_GMF_PLAUSIBILITY_ERR)
-                str = 'plausibility error'
+                message = 'plausibility error'
             case (GRC_GMF_TOO_FEW_OBSERVATIONS)
-                str = 'too few observations to calculate the average'
+                message = 'too few observations to calculate the average'
             case (GRC_GMF_NO_SOLUTION)
-                str = 'no solution'
+                message = 'no solution'
             case (GRC_GMF_ONE_SOLUTION)
-                str = 'only one solution'
+                message = 'only one solution'
             case (GRC_GMF_TWO_SOLUTIONS)
-                str = 'second solution'
+                message = 'second solution'
             case (GRC_GMF_ANGLE_SMALLER_15GON)
-                str = 'intersection angle < 15 gon'
+                message = 'intersection angle < 15 gon'
             case (GRC_GMF_INVALID_TRIANGLE_TYPE)
-                str = 'invalid triangle'
+                message = 'invalid triangle'
             case (GRC_GMF_INVALID_ANGLE_SYSTEM)
-                str = 'invalid angle unit'
+                message = 'invalid angle unit'
             case (GRC_GMF_INVALID_DIST_SYSTEM)
-                str = 'invalid distance unit'
+                message = 'invalid distance unit'
             case (GRC_GMF_INVALID_V_SYSTEM)
-                str = 'invalid vertical angle'
+                message = 'invalid vertical angle'
             case (GRC_GMF_INVALID_TEMP_SYSTEM)
-                str = 'invalid temperature system'
+                message = 'invalid temperature system'
             case (GRC_GMF_INVALID_PRES_SYSTEM)
-                str = 'invalid pressure unit'
+                message = 'invalid pressure unit'
             case (GRC_GMF_RADIUS_NOT_POSSIBLE)
-                str = 'invalid radius'
+                message = 'invalid radius'
             case (GRC_GMF_NO_PROVISIONAL_VALUES)
-                str = 'insufficient data (GM2)'
+                message = 'insufficient data (GM2)'
             case (GRC_GMF_SINGULAR_MATRIX)
-                str = 'bad data (GM2)'
+                message = 'bad data (GM2)'
             case (GRC_GMF_TOO_MANY_ITERATIONS)
-                str = 'bad data distr (GM2)'
+                message = 'bad data distr (GM2)'
             case (GRC_GMF_IDENTICAL_TIE_POINTS)
-                str = 'same tie points (GM2)'
+                message = 'same tie points (GM2)'
             case (GRC_GMF_SETUP_EQUALS_TIE_POINT)
-                str = 'station and tie point same (GM2)'
+                message = 'station and tie point same (GM2)'
 
             ! TMC
             case (GRC_TMC)
-                str = 'TMC error'
+                message = 'TMC error'
             case (GRC_TMC_NO_FULL_CORRECTION)
-                str = 'measurement without full correction'
+                message = 'measurement without full correction'
             case (GRC_TMC_ACCURACY_GUARANTEE)
-                str = 'accuracy can not be guaranteed'
+                message = 'accuracy can not be guaranteed'
             case (GRC_TMC_ANGLE_OK)
-                str = 'only angle measurement valid'
+                message = 'only angle measurement valid'
             case (GRC_TMC_ANGLE_NOT_FULL_CORR)
-                str = 'only angle measurement valid but without full correction'
+                message = 'only angle measurement valid but without full correction'
             case (GRC_TMC_ANGLE_NO_ACC_GUARANTY)
-                str = 'only angle measurement valid but accuracy can not be guaranteed'
+                message = 'only angle measurement valid but accuracy can not be guaranteed'
             case (GRC_TMC_ANGLE_ERROR)
-                str = 'no angle measurement'
+                message = 'no angle measurement'
             case (GRC_TMC_DIST_PPM)
-                str = 'wrong setting of ppm or mm on EDM'
+                message = 'wrong setting of ppm or mm on EDM'
             case (GRC_TMC_DIST_ERROR)
-                str = 'distance measurement not done (no aim)'
+                message = 'distance measurement not done (no aim)'
             case (GRC_TMC_BUSY)
-                str = 'system is busy (no measurement done)'
+                message = 'system is busy (no measurement done)'
             case (GRC_TMC_SIGNAL_ERROR)
-                str = 'no signal on EDM (only in signal mode)'
+                message = 'no signal on EDM (only in signal mode)'
 
             ! MOT
             case (GRC_MOT_UNREADY)
-                str = 'motorisation is not ready'
+                message = 'motorisation is not ready'
             case (GRC_MOT_BUSY)
-                str = 'motorisation is handling another task'
+                message = 'motorisation is handling another task'
             case (GRC_MOT_NOT_OCONST)
-                str = 'motorisation is not in velocity mode'
+                message = 'motorisation is not in velocity mode'
             case (GRC_MOT_NOT_CONFIG)
-                str = 'motorisation is in the wrong mode or busy'
+                message = 'motorisation is in the wrong mode or busy'
             case (GRC_MOT_NOT_POSIT)
-                str = 'motorisation is not in posit mode'
+                message = 'motorisation is not in posit mode'
             case (GRC_MOT_NOT_SERVICE)
-                str = 'motorisation is not in service mode'
+                message = 'motorisation is not in service mode'
             case (GRC_MOT_NOT_BUSY)
-                str = 'motorisation is handling no task'
+                message = 'motorisation is handling no task'
             case (GRC_MOT_NOT_LOCK)
-                str = 'motorisation is not in tracking mode'
+                message = 'motorisation is not in tracking mode'
             case (GRC_MOT_NOT_SPIRAL)
-                str = 'motorisation is not in spiral mode'
+                message = 'motorisation is not in spiral mode'
             case (GRC_MOT_V_ENCODER)
-                str = 'vertical encoder/motor error'
+                message = 'vertical encoder/motor error'
             case (GRC_MOT_HZ_ENCODER)
-                str = 'horizontal encoder/motor error'
+                message = 'horizontal encoder/motor error'
             case (GRC_MOT_HZ_V_ENCODER)
-                str = 'horizontal and vertical encoder/motor error'
+                message = 'horizontal and vertical encoder/motor error'
 
             ! BMM
             case (GRC_BMM)
-                str = 'BMM error'
+                message = 'BMM error'
             case (GRC_BMM_XFER_PENDING)
-                str = 'loading process already opened'
+                message = 'loading process already opened'
             case (GRC_BMM_NO_XFER_OPEN)
-                str = 'transfer not opened'
+                message = 'transfer not opened'
             case (GRC_BMM_UNKNOWN_CHARSET)
-                str = 'unknown character set'
+                message = 'unknown character set'
             case (GRC_BMM_NOT_INSTALLED)
-                str = 'display module not present'
+                message = 'display module not present'
             case (GRC_BMM_ALREADY_EXIST)
-                str = 'character set already exists'
+                message = 'character set already exists'
             case (GRC_BMM_CANT_DELETE)
-                str = 'character set cannot be deleted'
+                message = 'character set cannot be deleted'
             case (GRC_BMM_MEM_ERROR)
-                str = 'memory cannot be allocated'
+                message = 'memory cannot be allocated'
             case (GRC_BMM_CHARSET_USED)
-                str = 'character set still used'
+                message = 'character set still used'
             case (GRC_BMM_CHARSET_SAVED)
-                str = 'charset cannot be deleted or is protected'
+                message = 'charset cannot be deleted or is protected'
             case (GRC_BMM_INVALID_ADR)
-                str = 'attempt to copy a character block outside the allocated memory'
+                message = 'attempt to copy a character block outside the allocated memory'
             case (GRC_BMM_CANCELANDADR_ERROR)
-                str = 'error during release of allocated memory'
+                message = 'error during release of allocated memory'
             case (GRC_BMM_INVALID_SIZE)
-                str = 'number of bytes specified in header does not match the bytes read'
+                message = 'number of bytes specified in header does not match the bytes read'
             case (GRC_BMM_CANCELANDINVSIZE_ERROR)
-                str = 'allocated memory could not be released'
+                message = 'allocated memory could not be released'
             case (GRC_BMM_ALL_GROUP_OCC)
-                str = 'max. number of character sets already loaded'
+                message = 'max. number of character sets already loaded'
             case (GRC_BMM_CANT_DEL_LAYERS)
-                str = 'layer cannot be deleted'
+                message = 'layer cannot be deleted'
             case (GRC_BMM_UNKNOWN_LAYER)
-                str = 'required layer does not exist'
+                message = 'required layer does not exist'
             case (GRC_BMM_INVALID_LAYERLEN)
-                str = 'layer length exceeds maximum'
+                message = 'layer length exceeds maximum'
 
             ! COM
             case (GRC_COM_ERO)
-                str = 'initiate Extended Runtime Operation (ERO)'
+                message = 'initiate Extended Runtime Operation (ERO)'
             case (GRC_COM_CANT_ENCODE)
-                str = 'cannot encode arguments in client'
+                message = 'cannot encode arguments in client'
             case (GRC_COM_CANT_DECODE)
-                str = 'cannot decode results in client'
+                message = 'cannot decode results in client'
             case (GRC_COM_CANT_SEND)
-                str = 'hardware error while sending'
+                message = 'hardware error while sending'
             case (GRC_COM_CANT_RECV)
-                str = 'hardware error while receiving'
+                message = 'hardware error while receiving'
             case (GRC_COM_TIMEDOUT)
-                str = 'request timed out'
+                message = 'request timed out'
             case (GRC_COM_WRONG_FORMAT)
-                str = 'packet format error'
+                message = 'packet format error'
             case (GRC_COM_VER_MISMATCH)
-                str = 'version mismatch between client and server'
+                message = 'version mismatch between client and server'
             case (GRC_COM_CANT_DECODE_REQ)
-                str = 'cannot decode arguments in server'
+                message = 'cannot decode arguments in server'
             case (GRC_COM_PROC_UNAVAIL)
-                str = 'unknown RPC, procedure ID invalid'
+                message = 'unknown RPC, procedure ID invalid'
             case (GRC_COM_CANT_ENCODE_REP)
-                str = 'cannot encode results in server'
+                message = 'cannot encode results in server'
             case (GRC_COM_SYSTEM_ERR)
-                str = 'unspecified generic system error'
+                message = 'unspecified generic system error'
             case (GRC_COM_FAILED)
-                str = 'unspecified error'
+                message = 'unspecified error'
             case (GRC_COM_NO_BINARY)
-                str = 'binary protocol not available'
+                message = 'binary protocol not available'
             case (GRC_COM_INTR)
-                str = 'call interrupted'
+                message = 'call interrupted'
             case (GRC_COM_REQUIRES_8DBITS)
-                str = 'protocol needs 8 bit encoded characters'
+                message = 'protocol needs 8 bit encoded characters'
             case (GRC_COM_TR_ID_MISMATCH)
-                str = 'transaction id mismatch error'
+                message = 'transaction id mismatch error'
             case (GRC_COM_NOT_GEOCOM)
-                str = 'protocol not recognisable'
+                message = 'protocol not recognisable'
             case (GRC_COM_UNKNOWN_PORT)
-                str = 'invalid port address'
+                message = 'invalid port address'
             case (GRC_COM_ERO_END)
-                str = 'ERO is terminating'
+                message = 'ERO is terminating'
             case (GRC_COM_OVERRUN)
-                str = 'internal error (data buffer overflow)'
+                message = 'internal error (data buffer overflow)'
             case (GRC_COM_SRVR_RX_CHECKSUM_ERRR)
-                str = 'invalid checksum on server side received'
+                message = 'invalid checksum on server side received'
             case (GRC_COM_CLNT_RX_CHECKSUM_ERRR)
-                str = 'invalid checksum on client side received'
+                message = 'invalid checksum on client side received'
             case (GRC_COM_PORT_NOT_AVAILABLE)
-                str = 'port not available'
+                message = 'port not available'
             case (GRC_COM_PORT_NOT_OPEN)
-                str = 'port not opened'
+                message = 'port not opened'
             case (GRC_COM_NO_PARTNER)
-                str = 'unable to find TPS'
+                message = 'unable to find TPS'
             case (GRC_COM_ERO_NOT_STARTED)
-                str = 'Extended Runtime Operation could not be started'
+                message = 'Extended Runtime Operation could not be started'
             case (GRC_COM_CONS_REQ)
-                str = 'att to send cons reqs'
+                message = 'att to send cons reqs'
             case (GRC_COM_SRVR_IS_SLEEPING)
-                str = 'TPS has gone to sleep (wait and try again)'
+                message = 'TPS has gone to sleep (wait and try again)'
             case (GRC_COM_SRVR_IS_OFF)
-                str = 'TPS has shut down (wait and try again)'
+                message = 'TPS has shut down (wait and try again)'
             case (GRC_COM_NO_CHECKSUM)
-                str = 'no checksum in ASCII protocol available'
+                message = 'no checksum in ASCII protocol available'
 
             ! AUT
             case (GRC_AUT_TIMEOUT)
-                str = 'position not reached'
+                message = 'position not reached'
             case (GRC_AUT_DETENT_ERROR)
-                str = 'positioning not possible due to mounted EDM'
+                message = 'positioning not possible due to mounted EDM'
             case (GRC_AUT_ANGLE_ERROR)
-                str = 'angle measurement error'
+                message = 'angle measurement error'
             case (GRC_AUT_MOTOR_ERROR)
-                str = 'motorisation error'
+                message = 'motorisation error'
             case (GRC_AUT_INCACC)
-                str = 'position not exactly reached'
+                message = 'position not exactly reached'
             case (GRC_AUT_DEV_ERROR)
-                str = 'deviation measurement error'
+                message = 'deviation measurement error'
             case (GRC_AUT_NO_TARGET)
-                str = 'no target detected'
+                message = 'no target detected'
             case (GRC_AUT_MULTIPLE_TARGETS)
-                str = 'multiple targets detected'
+                message = 'multiple targets detected'
             case (GRC_AUT_BAD_ENVIRONMENT)
-                str = 'bad environment conditions'
+                message = 'bad environment conditions'
             case (GRC_AUT_DETECTOR_ERROR)
-                str = 'error in target acquisition'
+                message = 'error in target acquisition'
             case (GRC_AUT_NOT_ENABLED)
-                str = 'target acquisition not enabled'
+                message = 'target acquisition not enabled'
             case (GRC_AUT_CALACC)
-                str = 'ATR calibration failed'
+                message = 'ATR calibration failed'
             case (GRC_AUT_ACCURACY)
-                str = 'target position not exactly reached'
+                message = 'target position not exactly reached'
             case (GRC_AUT_DIST_STARTED)
-                str = 'distance measurement has been started'
+                message = 'distance measurement has been started'
             case (GRC_AUT_SUPPLY_TOO_HIGH)
-                str = 'external supply voltage is too high'
+                message = 'external supply voltage is too high'
             case (GRC_AUT_SUPPLY_TOO_LOW)
-                str = 'internal or external supply voltage is too low'
+                message = 'internal or external supply voltage is too low'
             case (GRC_AUT_NO_WORKING_AREA)
-                str = 'working area not set'
+                message = 'working area not set'
             case (GRC_AUT_ARRAY_FULL)
-                str = 'power search data array is filled'
+                message = 'power search data array is filled'
             case (GRC_AUT_NO_DATA)
-                str = 'no data available'
+                message = 'no data available'
 
             ! KDM
             case (GRC_KDM_NOT_AVAILABLE)
-                str = 'KDM device is not available'
+                message = 'KDM device is not available'
 
             ! FTR
             case (GRC_FTR_FILEACCESS)
-                str = 'file access error'
+                message = 'file access error'
             case (GRC_FTR_WRONGFILEBLOCKNUMBER)
-                str = 'block number was not the expected one'
+                message = 'block number was not the expected one'
             case (GRC_FTR_NOTENOUGHSPACE)
-                str = 'not enough space on device to proceed uploading'
+                message = 'not enough space on device to proceed uploading'
             case (GRC_FTR_INVALIDINPUT)
-                str = 'rename of file failed'
+                message = 'rename of file failed'
             case (GRC_FTR_MISSINGSETUP)
-                str = 'invalid parameter as input'
+                message = 'invalid parameter as input'
 
             case default
-                str = 'unknown GeoCOM code (' // dm_itoa(grc) // ')'
+                message = 'unknown GeoCOM code (' // dm_itoa(grc) // ')'
         end select
     end function dm_geocom_error_message
 

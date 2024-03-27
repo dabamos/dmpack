@@ -48,7 +48,7 @@ program dmpipe
 
     ! Get command-line arguments, read options from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -62,7 +62,6 @@ program dmpipe
     ! Run main loop.
     call dm_signal_register(signal_handler)
     call run(app)
-    call dm_stop(0)
 contains
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file or _stdout_ if `type` is not
@@ -450,7 +449,7 @@ contains
         select case (signum)
             case default
                 call logger%info('exit on signal ' // dm_itoa(signum))
-                call dm_stop(0)
+                call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_handler
 end program dmpipe

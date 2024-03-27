@@ -88,9 +88,7 @@ contains
         !! Returns `.true.` if the state of the given target type is known.
         integer, intent(in) :: state !! Target state.
 
-        valid = .false.
-        if (state < TARGET_STATE_NONE .or. state > TARGET_STATE_LAST) return
-        valid = .true.
+        valid = (state >= TARGET_STATE_NONE .and. state <= TARGET_STATE_LAST)
     end function dm_target_state_valid
 
     pure elemental logical function dm_target_valid(target) result(valid)

@@ -32,11 +32,11 @@ program dmbackup
 
     ! Get command-line arguments.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Create selected database type.
     rc = backup(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function backup(app) result(rc)
         !! Creates database backup.

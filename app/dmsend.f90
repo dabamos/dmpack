@@ -42,7 +42,7 @@ program dmsend
 
     ! Read command-line arguments and options from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -55,7 +55,7 @@ program dmsend
 
     ! Read and send data.
     rc = run(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.

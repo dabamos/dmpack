@@ -266,13 +266,13 @@ contains
                 write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
             end if
 
-            call dm_stop(0)
+            call dm_stop(STOP_SUCCESS)
         end if
 
         ! Print help, then stop.
         if (dm_arg_has('help', 'h')) then
             call dm_arg_help(args)
-            call dm_stop(0)
+            call dm_stop(STOP_SUCCESS)
         end if
 
         ! Parse command-line argument and stop on error.
@@ -281,7 +281,7 @@ contains
         if (dm_is_error(rc)) then
             print *
             call dm_arg_help(args)
-            call dm_stop(1)
+            call dm_stop(STOP_FAILURE)
         end if
 
         ! Validate passed arguments.

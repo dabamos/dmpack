@@ -44,7 +44,7 @@ program dmgrc
 
     ! Get command-line arguments, read settings from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -213,8 +213,8 @@ contains
 
         integer :: rc, stat
 
-        stat = 0
-        if (dm_is_error(error)) stat = 1
+        stat = STOP_SUCCESS
+        if (dm_is_error(error)) stat = STOP_FAILURE
 
         rc = dm_mqueue_close(mqueue)
         rc = dm_mqueue_unlink(mqueue)

@@ -45,7 +45,7 @@ program dmfs
 
     ! Get command-line arguments, read options from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
     logger => dm_logger_get()
@@ -461,7 +461,7 @@ contains
         select case (signum)
             case default
                 call logger%info('exit on signal ' // dm_itoa(signum))
-                call dm_stop(0)
+                call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_handler
 end program dmfs
