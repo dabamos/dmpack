@@ -2758,11 +2758,11 @@ contains
 
         if (has_param) then
             more = .false.
-            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+            if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
+            if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
+            if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
+            if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
         end if
 
         sql_block: block
@@ -6704,11 +6704,11 @@ contains
 
         if (has_param) then
             more = .false.
-            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+            if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
+            if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
+            if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
+            if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
+            if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
         end if
 
         sql_block: block
@@ -6900,11 +6900,11 @@ contains
 
             if (has_param) then
                 more = .false.
-                if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-                if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-                if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-                if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-                if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
+                if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
+                if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
+                if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
+                if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
+                if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
             end if
 
             query = query // ' ORDER BY observs.timestamp'
