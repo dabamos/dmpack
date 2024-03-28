@@ -29,12 +29,14 @@ module dm_log
     integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN   !! Max. log source length.
     integer, parameter, public :: LOG_MESSAGE_LEN = 512      !! Max. log message length.
 
+    integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8
+
     character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LVL_LAST) = [ &
-        character(len=8) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' &
+        character(len=LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' &
     ] !! Log level strings.
 
     character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LVL_LAST) = [ &
-        character(len=8) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' &
+        character(len=LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' &
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
@@ -107,7 +109,12 @@ contains
 
         character(len=*), intent(in) :: name !! Log level name.
 
-        select case (dm_lower(name))
+        character(len=LOG_LEVEL_NAME_LEN) :: name_
+
+        ! Normalise name.
+        name_ = dm_lower(name)
+
+        select case (name_)
             case (LOG_LEVEL_NAMES_LOWER(LVL_NONE))
                 level = LVL_NONE
             case (LOG_LEVEL_NAMES_LOWER(LVL_DEBUG))

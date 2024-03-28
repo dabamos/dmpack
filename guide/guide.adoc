@@ -1315,7 +1315,7 @@ The following log levels are accepted:
 
 | `--error _n_`        | `-e`  | 0          | DMPACK <<error-codes,error code>> (optional).
 | `--help`             | `-h`  | –          | Output available command-line arguments and quit.
-| `--level _level_`    | `-L`  | 2          | <<data-log-level,Log level>>, from 1 to 5.
+| `--level _level_`    | `-L`  | 2          | <<data-log-level,Log level>>, from 1 to 5 (level or name).
 | `--logger _name_`    | `-l`  | `dmlogger` | Name of logger instance and POSIX message queue.
 | `--message _string_` | `-m`  | –          | Log message (max. 512 characters).
 | `--node _id_`        | `-N`  | –          | Node id (optional).
@@ -1332,7 +1332,7 @@ The following log levels are accepted:
 Send a log message to the message queue of logger `dmlogger`:
 
 ....
-$ dmlog --level 3 --message "low battery" --source dmlog --verbose
+$ dmlog --level warning --message "low battery" --source dmlog --verbose
 2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....
 

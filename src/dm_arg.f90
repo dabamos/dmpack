@@ -346,7 +346,10 @@ contains
     end function dm_arg_read
 
     integer function dm_arg_validate(arg) result(rc)
-        !! Validates given argument.
+        !! Validates given argument. Arguments of type `ARG_TYPE_LEVEL` are
+        !! additionally converted to integer if the passed argument value is a
+        !! valid log level name. For example, the argument value `warning` is
+        !! converted to integer `3`, to match log level `LVL_WARNING`.
         use :: dm_id
         use :: dm_log
         use :: dm_string
@@ -399,8 +402,18 @@ contains
 
             case (ARG_TYPE_LEVEL)
                 if (arg%length == 0) return
+
+                ! Convert string to integer.
                 call dm_string_to(arg%value, level, error)
-                if (dm_is_error(error)) level = dm_log_level_from_name(trim(arg%value))
+
+                ! On error, try to read level from level name, and convert the
+                ! result back to string. An invalid log level name is turned
+                ! into `LVL_NONE`.
+                if (dm_is_error(error)) then
+                    level     = dm_log_level_from_name(arg%value)
+                    arg%value = dm_itoa(level)
+                end if
+
                 if (.not. dm_log_valid(level)) return
 
             case (ARG_TYPE_FILE, ARG_TYPE_DB)
