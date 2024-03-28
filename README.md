@@ -18,8 +18,7 @@ FreeBSD only.
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [Source Code Repository](https://github.com/dabamos/dmpack)
 
-The current development version is 0.9.4. Breaking API changes have to be
-expected until version 1.0.0.
+Breaking API changes have to be expected until version 1.0.0.
 
 ## Description
 
