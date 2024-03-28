@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.4
 :lang: en
-:docdate: 2024-02-18
+:docdate: 2024-03-28
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -38,6 +38,7 @@ solutions to various problems in deformation monitoring, such as:
 * web-based data access
 * distributed logging
 * MQTT connectivity
+* Leica GeoCOM API
 * scripting
 * e-mail
 

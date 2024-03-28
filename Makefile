@@ -140,7 +140,6 @@ TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
-#DEBUG  = -g -O0 -Wall -fcheck=all -fmax-errors=1 -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer
 DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
@@ -150,7 +149,6 @@ CFLAGS  = $(RELEASE) -fPIC
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L$(PREFIX)/lib -z execstack -z now
-#LDLIBS = -pie -static-libasan -fsanitize=address -fno-omit-frame-pointer
 LDLIBS  =
 
 # Additional include search directories.

@@ -64,7 +64,7 @@ DMPACK includes modules for:
 * distributed logging
 * client status messages (heartbeats)
 * server-side web applications
-* GeoCOM API for Fortran and Lua
+* Leica GeoCOM API for Fortran
 * time series plotting
 * MQTT connectivity
 * Lua scripting
@@ -153,7 +153,7 @@ Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
 does not depend on X11 (but lacks raster graphic terminals).
 
 Optionally, install Pygments and AsciiDoctor to generate the man pages and the
-User’s Guide:
+User’s Guide from source:
 
 ```
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
@@ -174,14 +174,6 @@ You can change the installation prefix with argument `PREFIX` (by default,
 
 ```
 $ doas make install PREFIX=/opt
-```
-
-For a debug build with AddressSanitizer (ASan) to detect memory errors, run
-instead:
-
-```
-$ make freebsd_debug DEBUG="-g -fPIE -ffpe-trap=invalid,zero,overflow -fno-omit-frame-pointer" \
-  LDLIBS="-pie -static-libasan -fsanitize=address -fno-omit-frame-pointer"
 ```
 
 ### Linux
