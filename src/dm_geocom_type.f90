@@ -369,6 +369,7 @@ contains
         !! | `GEOCOM_AUT_ADJMODE`           | `GEOCOM_AUT_NORM_MODE`           |
         !! | `GEOCOM_AUT_ATRMODE`           | `GEOCOM_AUT_POSITION`            |
         !! | `GEOCOM_AUT_POSMODE`           | `GEOCOM_AUT_NORMAL`              |
+        !! | `GEOCOM_BAP_ATRSETTING`        | `GEOCOM_BAP_ATRSET_NORMAL`       |
         !! | `GEOCOM_BAP_MEASURE_PRG`       | `GEOCOM_BAP_DEF_DIST`            |
         !! | `GEOCOM_BAP_PRISMTYPE`         | `GEOCOM_BAP_PRISM_ROUND`         |
         !! | `GEOCOM_BAP_REFLTYPE`          | `GEOCOM_BAP_REFL_UNDEF`          |
@@ -439,6 +440,19 @@ contains
                         n  = value_
                     case default
                         n = GEOCOM_AUT_NORMAL
+                end select
+
+            case (GEOCOM_BAP_ATRSETTING)
+                select case (value_)
+                    case (GEOCOM_BAP_ATRSET_NORMAL,     &
+                          GEOCOM_BAP_ATRSET_LOWVIS_ON,  &
+                          GEOCOM_BAP_ATRSET_LOWVIS_AON, &
+                          GEOCOM_BAP_ATRSET_SRANGE_ON,  &
+                          GEOCOM_BAP_ATRSET_SRANGE_AON)
+                        rc = E_NONE
+                        n  = value_
+                    case default
+                        n = GEOCOM_BAP_ATRSET_NORMAL
                 end select
 
             case (GEOCOM_BAP_MEASURE_PRG)

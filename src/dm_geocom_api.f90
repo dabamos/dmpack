@@ -640,7 +640,7 @@ contains
         !! the initial start position.
         !!
         !! The Fine Adjust Lock-in towards a target is terminated by this
-        !! procedure call. After positioning, the LOCK mode will be active. The
+        !! procedure call. After positioning, the Lock mode will be active. The
         !! timeout of the operation is set to 5 seconds, regardless of the
         !! general position timeout settings. The position tolerance depends on
         !! the previously selected find adjust mode.
@@ -2468,12 +2468,12 @@ contains
 
     pure subroutine dm_geocom_api_request_get_user_lock_mode(request)
         !! Request of *AUS_GetUserLockState* procedure. Creates request for
-        !! getting the status of the LOCK mode.
+        !! getting the status of the Lock mode.
         !!
         !! The instrument returns the following responses:
         !!
         !! * `grc`  – GeoCOM return code.
-        !! * `lock` – LOCK mode is enabled [bool].
+        !! * `lock` – Lock mode is enabled [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -2628,7 +2628,7 @@ contains
         !! Request of *AUT_LockIn* procedure. Creates request for starting the
         !! target tracking.
         !!
-        !! The API function will start the target tracking if the LOCK mode is
+        !! The API function will start the target tracking if the Lock mode is
         !! activated (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must
         !! have finished successfully before executing this function.
         !!
@@ -2656,7 +2656,7 @@ contains
         !!
         !! The API function measures angles and a single distance depending on
         !! the distance measurement mode `dist_mode`. It is not suited for
-        !! continuous measurements (LOCK mode and TRK mode), and uses the
+        !! continuous measurements (Lock mode and TRK mode), and uses the
         !! current automation settings.
         !!
         !! The instrument returns the following responses:
@@ -2752,7 +2752,7 @@ contains
 
     pure subroutine dm_geocom_api_request_ps_search_next(request, direction, swing)
         !! Request of *AUT_PS_SearchNext* procedure. Creates request for
-        !! searching for the next target
+        !! searching for the next target.
         !!
         !! The function executes the 360° default PowerSearch and searches for
         !! the next targets. A previously defined PowerSearch window
@@ -3847,9 +3847,9 @@ contains
         !!
         !! The function activates or deactivates the ATR mode (requires GeoCOM
         !! robotic licence). If `enabled` is `.true.`, ATR mode is activated,
-        !! and if LOCK mode is enabled while the API call is made, LOCK mode
+        !! and if Lock mode is enabled while the API call is made, Lock mode
         !! will change to ATR mode. If `enabled` is `.false.`, ATR mode is
-        !! deactivated, and if LOCK mode is enabled then it stays enabled.
+        !! deactivated, and if Lock mode is enabled then it stays enabled.
         !!
         !! The instrument returns the following responses:
         !!
@@ -3875,12 +3875,12 @@ contains
 
     pure subroutine dm_geocom_api_request_set_user_lock_mode(request, enabled)
         !! Request of *AUS_SetUserLockState* procedure. Creates request for
-        !! setting the status of the LOCK state.
+        !! setting the status of the Lock state.
         !!
-        !! The function activated or deactivates the LOCK mode (GeoCOM robotic
-        !! licence required). If `enabled` is `.true.`, LOCK mode is activated.
+        !! The function activates or deactivates the Lock mode (GeoCOM robotic
+        !! licence required). If `enabled` is `.true.`, Lock mode is activated.
         !! In order to lock and follow a moving target, call API function
-        !! *AUT_LockIn*. If `enabled` is `.false.`, LOCK mode is deactivated.
+        !! *AUT_LockIn*. If `enabled` is `.false.`, Lock mode is deactivated.
         !! Tracking of a moving target will be aborted, and the manual drive
         !! wheel is activated.
         !!
@@ -3898,7 +3898,7 @@ contains
         integer,          parameter :: REQUEST_CODE = 18007
 
         type(request_type), intent(out) :: request !! Prepared request.
-        logical,            intent(in)  :: enabled !! Enable LOCK mode.
+        logical,            intent(in)  :: enabled !! Enable Lock mode.
 
         character(len=80) :: args
 
@@ -4071,14 +4071,18 @@ contains
         character(len=*), parameter :: REQUEST_NAME = 'setup_list'
         integer,          parameter :: REQUEST_CODE = 23306
 
-        type(request_type), intent(out) :: request     !! Prepared request.
-        integer,            intent(in)  :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
-        integer,            intent(in)  :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
-        character(len=*),   intent(in)  :: search_path !! Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
+        type(request_type), intent(out)          :: request     !! Prepared request.
+        integer,            intent(in)           :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
+        integer,            intent(in)           :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
+        character(len=*),   intent(in), optional :: search_path !! Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
 
         character(len=80) :: args
 
-        write (args, '(2(i0, ","), a)') device_type, file_type, search_path
+        if (present(search_path)) then
+            write (args, '(2(i0, ","), """", a, """")') device_type, file_type, trim(search_path)
+        else
+            write (args, '(2(i0, ","), a)') device_type, file_type, '""'
+        end if
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_request_setup_list
 
@@ -4094,8 +4098,8 @@ contains
         !! * `GEOCOM_MOT_POSIT`   –  Relative positioning.
         !! * `GEOCOM_MOT_OCONST`  –  Constant speed.
         !! * `GEOCOM_MOT_MANUPOS` –  Manual positioning (default setting).
-        !! * `GEOCOM_MOT_LOCK`    –  "Lock-in" controller.
-        !! * `GEOCOM_MOT_BREAK`   –  "Brake" controller.
+        !! * `GEOCOM_MOT_LOCK`    –  “Lock-in” controller.
+        !! * `GEOCOM_MOT_BREAK`   –  “Brake” controller.
         !! * `GEOCOM_MOT_TERM`    –  Terminates the controller task.
         !!
         !! The instrument returns the following responses:

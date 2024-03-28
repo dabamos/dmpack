@@ -1824,7 +1824,7 @@ contains
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 1))
+        atr_mode = dm_geocom_type_validated(GEOCOM_BAP_ATRSETTING, dm_lua_to_int32(lua, 1))
         call dm_geocom_api_request_set_atr_mode(request, atr_mode)
         call dm_lua_from(lua, request)
         n = 1
@@ -2081,14 +2081,14 @@ contains
     integer(kind=c_int) function lua_geocom_set_positioning_timeout(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        real(kind=r8)        :: hz, v
+        real(kind=r8)        :: time_hz, time_v
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        hz = dm_lua_to_real64(lua, 1)
-        v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_set_positioning_timeout(request, hz, v)
+        time_hz = dm_lua_to_real64(lua, 1)
+        time_v  = dm_lua_to_real64(lua, 2)
+        call dm_geocom_api_request_set_positioning_timeout(request, time_hz, time_v)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_set_positioning_timeout
@@ -2096,13 +2096,13 @@ contains
     integer(kind=c_int) function lua_geocom_set_prism_constant(ptr) bind(c) result(n)
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        real(kind=r8)        :: prism_corr
+        real(kind=r8)        :: prism_const
         type(lua_state_type) :: lua
         type(request_type)   :: request
 
         lua = lua_state_type(ptr)
-        prism_corr = dm_lua_to_real64(lua, 1)
-        call dm_geocom_api_request_set_prism_constant(request, prism_corr)
+        prism_const = dm_lua_to_real64(lua, 1)
+        call dm_geocom_api_request_set_prism_constant(request, prism_const)
         call dm_lua_from(lua, request)
         n = 1
     end function lua_geocom_set_prism_constant
