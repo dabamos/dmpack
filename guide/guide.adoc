@@ -2,7 +2,7 @@
 :author: Philipp Engel
 :copyright: CC BY 4.0
 :orgname: DABAMOS
-:revnumber: 0.9.4
+:revnumber: 0.9.5
 :lang: en
 :docdate: 2024-03-28
 :doctype: book
