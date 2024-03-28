@@ -7,9 +7,11 @@ module dm_geocom
     !! for C/C++ and Visual Basic. Functions are given more memorable names,
     !! without any sub-system prefix. Structured types have been removed
     !! altogether. If invalid parameters are passed to the GeoCOM methods, they
-    !! will be replaced with their default values. Open the serial port with
-    !! argument `verbose` set to `.true.` to output error messages to standard
-    !! error.
+    !! will be replaced with their default values, and an error message will
+    !! printed in verbose mode.
+    !!
+    !! Open the serial port with argument `verbose` set to `.true.` to output
+    !! error messages to standard error.
     !!
     !! The following example opens the TTY `/dev/ttyUSB0` at 115,200 baud, and
     !! calls the null procedure of the instrument (`COM_NullProc`):
@@ -2921,7 +2923,7 @@ contains
         call this%reset()
         pos_mode_ = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, pos_mode, verbose=this%verbose, error=rc1)
         atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode, verbose=this%verbose, error=rc2)
-        this%rc = max(rc1, rc2)
+        this%rc   = max(rc1, rc2)
         call dm_geocom_api_request_set_position(request, hz, v, pos_mode_, atr_mode_)
         call this%send(request, delay)
     end subroutine geocom_set_position
@@ -3240,7 +3242,7 @@ contains
         call this%reset()
         device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=rc1)
         file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=rc2)
-        this%rc = max(rc1, rc2)
+        this%rc      = max(rc1, rc2)
         call dm_geocom_api_request_setup_download(request, device_type_, file_type_, file_name, block_size)
         call this%send(request, delay)
         call dm_request_get(this%request, 'nblocks', nblocks, default=0)
@@ -3263,7 +3265,7 @@ contains
         call this%reset()
         device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=rc1)
         file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=rc2)
-        this%rc = max(rc1, rc2)
+        this%rc      = max(rc1, rc2)
         call dm_geocom_api_request_setup_list(request, device_type_, file_type_, search_path)
         call this%send(request, delay)
     end subroutine geocom_setup_list
