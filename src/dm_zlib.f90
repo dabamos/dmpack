@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_z
+module dm_zlib
     !! Abstraction layer over zlib (deflate, inflate).
     use, intrinsic :: iso_c_binding, only: c_loc
     use :: zlib
@@ -9,12 +9,12 @@ module dm_z
     implicit none (type, external)
     private
 
-    public :: dm_z_compress
-    public :: dm_z_deflate
-    public :: dm_z_inflate
-    public :: dm_z_uncompress
+    public :: dm_zlib_compress
+    public :: dm_zlib_deflate
+    public :: dm_zlib_inflate
+    public :: dm_zlib_uncompress
 contains
-    integer function dm_z_compress(input, output, output_size) result(rc)
+    integer function dm_zlib_compress(input, output, output_size) result(rc)
         !! Compresses input string using the zlib utility function.
         !!
         !! The function returns the following error codes:
@@ -45,9 +45,9 @@ contains
         if (stat /= Z_OK) return
 
         rc = E_NONE
-    end function dm_z_compress
+    end function dm_zlib_compress
 
-    integer function dm_z_deflate(input, output) result(rc)
+    integer function dm_zlib_deflate(input, output) result(rc)
         !! Compresses input string. Returns `E_ZLIB` if the compression
         !! failed.
         character(len=*), target,      intent(inout) :: input  !! Input bytes.
@@ -82,9 +82,9 @@ contains
         end block def_block
 
         stat = deflate_end(strm)
-    end function dm_z_deflate
+    end function dm_zlib_deflate
 
-    integer function dm_z_inflate(input, output, buffer_size) result(rc)
+    integer function dm_zlib_inflate(input, output, buffer_size) result(rc)
         !! Decompresses input string. The argument `buffer_size` specifies the
         !! size of the inflate buffer and must be large enough for the buffer
         !! to hold the result. Returns `E_ZLIB` if the decompression failed.
@@ -121,9 +121,9 @@ contains
         end block inf_block
 
         stat = inflate_end(strm)
-    end function dm_z_inflate
+    end function dm_zlib_inflate
 
-    integer function dm_z_uncompress(input, output, output_size) result(rc)
+    integer function dm_zlib_uncompress(input, output, output_size) result(rc)
         !! Uncompresses input string using the zlib utility function. The output
         !! buffer must be large enough to hold the uncompressed result. Returns
         !! `E_ZLIB` if the decompression failed.
@@ -140,5 +140,5 @@ contains
         if (present(output_size)) output_size = int(sz, kind=i8)
         if (stat /= Z_OK) return
         rc = E_NONE
-    end function dm_z_uncompress
-end module dm_z
+    end function dm_zlib_uncompress
+end module dm_zlib

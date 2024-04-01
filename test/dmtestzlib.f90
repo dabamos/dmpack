@@ -1,8 +1,8 @@
-! dmtestz.f90
+! dmtestzlib.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestz
+program dmtestzlib
     !! Test program for DEFLATE.
     use :: dmpack
     implicit none (type, external)
@@ -11,7 +11,7 @@ program dmtestz
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestz.test01', test01)
+    tests(1) = test_type('dmtestzlib.test01', test01)
 
     call dm_init()
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
@@ -28,11 +28,11 @@ contains
         rc = dm_nml_from(observ1, input)
 
         print *, 'deflate ...'
-        rc = dm_z_deflate(input, output1)
+        rc = dm_zlib_deflate(input, output1)
         if (dm_is_error(rc)) return
 
         print *, 'inflate ...'
-        rc = dm_z_inflate(output1, output2, len(input))
+        rc = dm_zlib_inflate(output1, output2, len(input))
         if (dm_is_error(rc)) return
 
         print '(" source size.: ", i0)', len(input)
@@ -50,11 +50,11 @@ contains
         deallocate (output1, output2)
 
         print *, 'compress ...'
-        rc = dm_z_compress(input, output1)
+        rc = dm_zlib_compress(input, output1)
         if (dm_is_error(rc)) return
 
         print *, 'uncompress ...'
-        rc = dm_z_uncompress(output1, output)
+        rc = dm_zlib_uncompress(output1, output)
         if (dm_is_error(rc)) return
 
         print *, 'matching ...'
@@ -63,4 +63,4 @@ contains
 
         stat = TEST_PASSED
     end function test01
-end program dmtestz
+end program dmtestzlib

@@ -39,7 +39,7 @@ dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
 dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue \
 dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
 dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread dmtesttime dmtesttty \
-dmtestunit dmtestutil dmtestuuid"
+dmtestunit dmtestutil dmtestuuid dmtestzlib"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 

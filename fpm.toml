@@ -305,6 +305,6 @@ name = "dmtestuuid"
 main = "dmtestuuid.f90"
 
 [[test]]
-name = "dmtestz"
-main = "dmtestz.f90"
+name = "dmtestzlib"
+main = "dmtestzib.f90"
 link = [ "z" ]

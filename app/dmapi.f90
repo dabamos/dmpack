@@ -173,7 +173,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
@@ -420,7 +420,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
@@ -744,7 +744,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
@@ -992,7 +992,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
@@ -1386,7 +1386,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
@@ -1635,7 +1635,7 @@ contains
                 ! Read namelist into type.
                 if (env%http_content_encoding == 'deflate') then
                     ! Inflate request body.
-                    rc = dm_z_uncompress(content, buffer)
+                    rc = dm_zlib_uncompress(content, buffer)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)

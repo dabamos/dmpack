@@ -37,7 +37,7 @@ module dm_rpc
     use :: dm_mime
     use :: dm_util
     use :: dm_version
-    use :: dm_z
+    use :: dm_zlib
     implicit none (type, external)
     private
 
@@ -615,27 +615,27 @@ contains
                 type is (beat_type)
                     rc = dm_nml_from(t, payload_beat)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_beat, payload)
+                    rc = dm_zlib_compress(payload_beat, payload)
                 type is (log_type)
                     rc = dm_nml_from(t, payload_log)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_log, payload)
+                    rc = dm_zlib_compress(payload_log, payload)
                 type is (node_type)
                     rc = dm_nml_from(t, payload_node)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_node, payload)
+                    rc = dm_zlib_compress(payload_node, payload)
                 type is (observ_type)
                     rc = dm_nml_from(t, payload_observ)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_observ, payload)
+                    rc = dm_zlib_compress(payload_observ, payload)
                 type is (sensor_type)
                     rc = dm_nml_from(t, payload_sensor)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_sensor, payload)
+                    rc = dm_zlib_compress(payload_sensor, payload)
                 type is (target_type)
                     rc = dm_nml_from(t, payload_target)
                     if (dm_is_error(rc)) return
-                    rc = dm_z_compress(payload_target, payload)
+                    rc = dm_zlib_compress(payload_target, payload)
                 class default
                     rc = E_TYPE
             end select
