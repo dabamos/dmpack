@@ -68,8 +68,8 @@ module dm_geocom
     !! | `BAP_SetAtmCorr`            | `set_atmospheric_correction`    |
     !! | `BAP_SetAtmPpm`             | `set_atmospheric_ppm`           |
     !! | `BAP_SetMeasPrg`            | `set_measurement_program`       |
-    !! | `BAP_SetPrismType2`         | `set_prism_type_v2`             |
     !! | `BAP_SetPrismType`          | `set_prism_type`                |
+    !! | `BAP_SetPrismType2`         | `set_prism_type_v2`             |
     !! | `BAP_SetRedATRFov`          | `set_reduced_atr_fov`           |
     !! | `BAP_SetTargetType`         | `set_target_type`               |
     !! | `BAP_SetUserPrismDef`       | `set_user_prism_definition`     |
@@ -128,8 +128,8 @@ module dm_geocom
     !! | `TMC_GetHeight`             | `get_height`                    |
     !! | `TMC_GetInclineSwitch`      | `get_inclination_correction`    |
     !! | `TMC_GetPrismCorr`          | `get_prism_constant`            |
-    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
     !! | `TMC_GetPrismType`          | `get_prism_type`                |
+    !! | `TMC_GetPrismType2`         | `get_prism_type_v2`             |
     !! | `TMC_GetQuickDist`          | `get_quick_distance`            |
     !! | `TMC_GetRefractiveMethod`   | `get_refraction_mode`           |
     !! | `TMC_GetSignal`             | `get_signal`                    |
@@ -1144,7 +1144,7 @@ contains
 
     subroutine geocom_download(this, block_number, block_value, block_length, delay)
         !! Sends *FTR_Download* request to sensor. Reads a single block of
-        !! data. The *FTR_SetupDownload* command has to be called first.
+        !! data. The `setup_download()` method has to be called first.
         !!
         !! The block sequence starts with 1. The download process will be
         !! aborted if the block number is 0.
@@ -1943,7 +1943,7 @@ contains
         !! distance has been measured. Then, it returns the angles and the
         !! slope distance, but no coordinates. If no distance could be
         !! measured, only angles and an error code are returned. A measurement
-        !! may be aborted by calling *TMC_DoMeasure*.
+        !! may be aborted by calling method `do_measure()`.
         class(geocom_class), intent(inout)         :: this       !! GeoCOM object.
         real(kind=r8),       intent(out), optional :: hz         !! Horizontal angle [rad].
         real(kind=r8),       intent(out), optional :: v          !! Vertical angle [rad].
@@ -2036,13 +2036,13 @@ contains
     end subroutine geocom_get_search_area
 
     subroutine geocom_get_signal(this, intensity, time, delay)
-        !! Sends *TMC_GetSignal* request to sensor. The procedure returns the EDM
-        !! signal intensity.
+        !! Sends *TMC_GetSignal* request to sensor. The procedure returns the
+        !! EDM signal intensity.
         !!
         !! The procedure can only perform a measurement if the signal
         !! measurement program is activated. Start the signal measurement
-        !! program with *TMC_DoMeasure* in program `GEOCOM_TMC_SIGNAL`. After
-        !! the measurement, the EDM must be switched off with program
+        !! program with method `do_measure()` in program `GEOCOM_TMC_SIGNAL`.
+        !! After the measurement, the EDM must be switched off with program
         !! `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data
         !! available.
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
@@ -2350,8 +2350,8 @@ contains
     subroutine geocom_lock_in(this, delay)
         !! Sends *AUT_LockIn* request to sensor. The procedure will start the
         !! target tracking if the Lock mode is activated
-        !! (*AUS_SetUserLockState*). The *AUT_FineAdjust* call must have
-        !! finished successfully before executing this procedure.
+        !! (method `set_user_lock_mode()`). The `fine_adjust()` method call
+        !! must have finished successfully before executing this procedure.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
@@ -2408,9 +2408,9 @@ contains
     subroutine geocom_ps_enable_range(this, enabled, delay)
         !! Sends *AUT_PS_EnableRange* request to sensor. The procedure enabled or
         !! disables the predefined PowerSearch window including the PowerSearch
-        !! range limits set by API call *AUT_PS_SetRange* (requires GeoCOM
-        !! robotic licence). If `enabled` is `.false.`, the default range is set
-        !! to ≤ 400 m.
+        !! range limits set by method `ps_set_range()` (requires GeoCOM robotic
+        !! licence). If `enabled` is `.false.`, the default range is set to
+        !! ≤ 400 m.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(in)           :: enabled !! Enable PowerSearch.
         integer,             intent(in), optional :: delay   !! Post-request delay [msec].
@@ -2427,14 +2427,14 @@ contains
         !! for the next target.
         !!
         !! The procedure executes the 360° default PowerSearch and searches for
-        !! the next targets. A previously defined PowerSearch window
-        !! (*AUT_SetSearchArea*) is not taken into account. Use API call
-        !! *AUT_PS_SearchWindow* first.
+        !! the next targets. A previously defined PowerSearch window (method
+        !! `set_search_area()`) is not taken into account. Use method
+        !! `ps_search_window()` first.
         !!
         !! The argument `direction` may be one of the following enumerators:
         !!
-        !! * `GEOCOM_AUT_CLOCKWISE`     – Direction close-wise (1).
-        !! * `GEOCOM_AUT_ANTICLOCKWISE` – Direction counter clock-wise (–1).
+        !! * `GEOCOM_AUT_CLOCKWISE`     – Direction close-wise (`1`).
+        !! * `GEOCOM_AUT_ANTICLOCKWISE` – Direction counter clock-wise (`-1`).
         !!
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         integer,             intent(in)           :: direction !! Searching direction (`1` for clockwise, `-1` for counter-clockwise).
@@ -2452,8 +2452,8 @@ contains
 
     subroutine geocom_ps_search_window(this, delay)
         !! Sends *AUT_PS_SearchWindow* request to sensor. The procedure starts
-        !! PowerSearch in the window defined by API calls *AUT_SetSearchArea*
-        !! and *AUT_PS_SetRange* (requires GeoCOM robotic licence).
+        !! PowerSearch in the window defined by method calls `set_search_area()`
+        !! and `ps_set_range()` (requires GeoCOM robotic licence).
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         integer,             intent(in), optional :: delay !! Post-request delay [msec].
 
@@ -2488,10 +2488,10 @@ contains
         !! of the ATR sensor. If no prism is found in the specified area, the
         !! instrument turns back into the initial position. For an exact
         !! positioning onto the prism centre, use the fine-adjust API call
-        !! afterwards (*AUT_FineAdjust*).
+        !! afterwards (method `fine_adjust()`).
         !!
-        !! If the search range of the API function *AUT_FineAdjust* is
-        !! expanded, target search and fine positioning are done in one step.
+        !! If the search range of method `fine_adjust()` is expanded, target
+        !! search and fine positioning are done in one step.
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         real(kind=r8),       intent(in)           :: search_hz !! Horizontal search region [rad].
         real(kind=r8),       intent(in)           :: search_v  !! Vertical search region [rad].
@@ -2537,7 +2537,7 @@ contains
     subroutine geocom_set_atmospheric_correction(this, lambda, pressure, dry_temp, wet_temp, delay)
         !! Sends *BAP_SetAtmCorr* request to sensor. The procedure sets the
         !! atmospheric correction parameters. The argument `lambda` should be
-        !! queried with API call *TMC_GetAtmCorr*.
+        !! queried with method `get_atmospheric_correction()`.
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         real(kind=r8),       intent(in)           :: lambda   !! Wave-length of EDM transmitter [m].
         real(kind=r8),       intent(in)           :: pressure !! Atmospheric pressure [mbar].
@@ -2701,8 +2701,8 @@ contains
 
     subroutine geocom_set_edm_mode(this, edm_mode, delay)
         !! Sends *TMC_SetEdmMode* request to sensor. The procedure sets the EDM
-        !! measurement mode. The mode set by this API function is used by
-        !! *TMC_DoMeasure(TMC_DEF_DIST)*.
+        !! measurement mode. The EDM mode is used by method `do_measure()` in
+        !! program `GEOCOM_TMC_DEF_DIST`.
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: edm_mode !! EDM measurement mode (`GEOCOM_EDM_MODE`).
         integer,             intent(in), optional :: delay    !! Post-request delay [msec].
@@ -2858,12 +2858,10 @@ contains
 
     subroutine geocom_set_measurement_program(this, bap_prog, delay)
         !! Sends *BAP_SetMeasPrg* request to sensor. The procedure sets the
-        !! distance measurement program.
-        !!
-        !! The API function sets the distance measurement program, for example,
-        !! for API call *BAP_MeasDistanceAngle*. The RL EDM type programs are
-        !! not available on all instruments. Changing the measurement program
-        !! may change the EDM type as well (IR, RL).
+        !! distance measurement program, for example, for method
+        !! `measure_distance_angle()`. The RL EDM type programs are not
+        !! available on all instruments. Changing the measurement program may
+        !! change the EDM type as well (IR, RL).
         class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
         integer,             intent(in)           :: bap_prog !! Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
         integer,             intent(in), optional :: delay    !! Post-request delay [msec].
@@ -2884,8 +2882,8 @@ contains
         !! The API function is a combination of an angle measurement to get the
         !! horizontal offset and setting the angle offset afterwards, in order
         !! to orientate to a target. Before the new orientation can be set, an
-        !! existing distance must be cleared by calling API function
-        !! *TMC_DoMeasure* with command `GEOCOM_TMC_CLEAR`.
+        !! existing distance must be cleared by calling method `do_measure()`
+        !! with program `GEOCOM_TMC_CLEAR`.
         class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
         real(kind=r8),       intent(in)           :: hz    !! Horizontal orientation [rad].
         integer,             intent(in), optional :: delay !! Post-request delay [msec].
@@ -2949,7 +2947,7 @@ contains
 
     subroutine geocom_set_prism_constant(this, prism_const, delay)
         !! Sends *TMC_SetPrismCorr* request to sensor. The procedure sets the
-        !! prism constant. The API function *BAP_SetPrismType* overwrites this
+        !! prism constant. The method `set_prism_type()` overwrites this
         !! setting.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         real(kind=r8),       intent(in)           :: prism_const !! Prism constant [mm].
@@ -2966,7 +2964,7 @@ contains
         !! Sends *BAP_SetPrismType* request to sensor. The procedure sets the
         !! default prism type for measurement with a reflector
         !! (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by
-        !! API call *TMC_SetPrimCorr*.
+        !! method `set_prism_constant()`.
         class(geocom_class), intent(inout)        :: this       !! GeoCOM object.
         integer,             intent(in)           :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
         integer,             intent(in), optional :: delay      !! Post-request delay [msec].
@@ -2983,9 +2981,9 @@ contains
     subroutine geocom_set_prism_type_v2(this, prism_type, prism_name, delay)
         !! Sends *BAP_SetPrismType2* request to sensor. The procedure sets the
         !! default or user prism type for measurements with a reflector. It
-        !! overwrites the prism constant set by *TMC_SetPrismCorr*. The user
-        !! defined prism must have been added with API call
-        !! *BAP_SetUserPrismDef* beforehand.
+        !! overwrites the prism constant set by method `set_prism_constant()`.
+        !! The user-defined prism must have been added with method
+        !! `set_user_prism_definition()` beforehand.
         class(geocom_class), intent(inout)        :: this       !! GeoCOM object.
         integer,             intent(in)           :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
         character(len=*),    intent(in)           :: prism_name !! Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
@@ -3076,8 +3074,8 @@ contains
         !!
         !! For each EDM type, the EDM mode used last is remembered and actived
         !! if the EDM type is changed. If EDM type IR is selected, the
-        !! automation mode used last is activated automatically. The API
-        !! function *BAP_SetMeasPrg* can also change the target type. The EDM
+        !! automation mode used last is activated automatically. The method
+        !! `set_measurement_program()` can also change the target type. The EDM
         !! type RL is not available on all instruments.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         integer,             intent(in)           :: target_type !! Target type (`GEOCOM_BAP_TARGET_TYPE`).
@@ -3139,10 +3137,9 @@ contains
         !! required).
         !!
         !! If `enabled` is `.true.`, Lock mode is activated. In order to lock
-        !! and follow a moving target, call API function *AUT_LockIn*. If
-        !! `enabled` is `.false.`, Lock mode is deactivated. Tracking of a
-        !! moving target will be aborted, and the manual drive wheel is
-        !!activated.
+        !! and follow a moving target, call method `lock_in()`. If `enabled` is
+        !! `.false.`, Lock mode is deactivated. Tracking of a moving target
+        !! will be aborted, and the manual drive wheel is activated.
         class(geocom_class), intent(inout)        :: this    !! GeoCOM object.
         logical,             intent(in)           :: enabled !! Enable Lock mode.
         integer,             intent(in), optional :: delay   !! Post-request delay [msec].
@@ -3194,8 +3191,8 @@ contains
         !! instrument with constant speed (GeoCOM robotic licence required).
         !!
         !! The API function is used to set up the velocity of the motorisation.
-        !! An API call to *MOT_StartController* must have been made with
-        !! argument `GEOCOM_MOT_OCONST` before.
+        !! The method `start_controller()` must have been called with argument
+        !! `GEOCOM_MOT_OCONST` before.
         !!
         !! The velocity in horizontal and vertical direction are in [rad/s].
         !! The maximum velocity is ±3.14 rad/s for TM30/TS30, and ±0.79 rad/s
@@ -3216,9 +3213,8 @@ contains
         !! Sends *FTR_SetupDownload* request to sensor. The procedure sets up a
         !! file download.
         !!
-        !! The API function has to be called before *FTR_Download*. If the file
-        !! type is `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is
-        !! required.
+        !! This method must be called before `download()`. If the file type is
+        !! `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
         !!
         !! The argument `device_type` must be one of the following enumerators:
         !!
@@ -3251,7 +3247,7 @@ contains
     subroutine geocom_setup_list(this, delay, device_type, file_type, search_path)
         !! Sends *FTR_SetupList* request to sensor. The procedure sets up the
         !! device type, file type, and search path. It has to be called before
-        !! *FTR_List*.
+        !! `list()`.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         integer,             intent(in)           :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
         integer,             intent(in)           :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
@@ -3275,7 +3271,7 @@ contains
         !! the motor controller.
         !!
         !! If this function is used in combination with API call
-        !! *MOT_SetVelocity*, the controller mode has to be `GEOCOM_MOT_OCONST`.
+        !! `set_velocity()`, the controller mode has to be `GEOCOM_MOT_OCONST`.
         !!
         !! The argument `start_mode` must be one of the following enumerators:
         !!

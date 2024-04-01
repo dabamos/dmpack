@@ -23,30 +23,30 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function mqueue_forward_observ(observ, name, blocking, self, verbose) result(rc)
+    integer function mqueue_forward_observ(observ, name, blocking, allow_self, verbose) result(rc)
         !! Forwards given observation to next receiver. This function creates
         !! log messages, unless `verbose` is passed and `.false.`.
         !!
         !! If `name` is passed and equals the next receiver, the receiver will
-        !! be skipped, unless `self` is `.true.`. This behaviour prevents the
-        !! observation to be forwarded back to the sender if the sender is the
-        !! next receiver in the list.
+        !! be skipped, unless `allow_self` is `.true.`. This behaviour prevents
+        !! the observation to be forwarded back to the sender if the sender is
+        !! the next receiver in the list.
         use :: dm_id
         use :: dm_log
         use :: dm_logger
         use :: dm_observ
         use :: dm_system, only: dm_system_error_message
 
-        type(observ_type),            intent(inout)        :: observ   !! Observation to forward.
-        character(len=*),             intent(in), optional :: name     !! App name.
-        logical,                      intent(in), optional :: blocking !! Blocking message queue access.
-        logical,                      intent(in), optional :: self     !! Allow forwarding to `name`.
-        logical,                      intent(in), optional :: verbose  !! Create log messages (enabled by default).
+        type(observ_type),            intent(inout)        :: observ     !! Observation to forward.
+        character(len=*),             intent(in), optional :: name       !! App name.
+        logical,                      intent(in), optional :: blocking   !! Blocking message queue access.
+        logical,                      intent(in), optional :: allow_self !! Allow forwarding to `name`.
+        logical,                      intent(in), optional :: verbose    !! Create log messages (enabled by default).
 
         class(logger_class), pointer :: logger
 
         integer           :: next, stat
-        logical           :: blocking_, self_, verbose_
+        logical           :: allow_self_, blocking_, verbose_
         type(mqueue_type) :: mqueue
 
         rc   = E_NONE
@@ -57,8 +57,8 @@ contains
         if (present(blocking)) blocking_ = blocking
 
         ! Allow forwarding to sender.
-        self_ = .false.
-        if (present(self)) self_ = self
+        allow_self_ = .false.
+        if (present(allow_self)) allow_self_ = allow_self
 
         ! Enable logging.
         verbose_ = .true.
@@ -91,7 +91,7 @@ contains
             if (.not. present(name)) exit
 
             ! Forwarding to self is allowed, or valid receiver is found?
-            if (self_ .or. observ%receivers(next) /= name) exit
+            if (allow_self_ .or. observ%receivers(next) /= name) exit
 
             if (verbose_) then
                 call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // &

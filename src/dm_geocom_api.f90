@@ -3187,8 +3187,8 @@ contains
         !! Request of *TMC_SetEdmMode* procedure. Creates request for setting
         !! the EDM measurement mode.
         !!
-        !! The mode set by this API function is used by
-        !! *TMC_DoMeasure(TMC_DEF_DIST)*.
+        !! The mode set by this API function is used by *TMC_DoMeasure* in
+        !! program `GEOCOM_TMC_DEF_DIST`.
         !!
         !! The instrument returns the following responses:
         !!

@@ -9,12 +9,12 @@ module dm_lua_lib
     !!
     !! The following procedures are registered by default:
     !!
-    !! * `deg2gon(deg)` – degrees to gon
+    !! * `deg2gon(deg)` – degrees to gradians
     !! * `deg2rad(deg)` – degrees to radiants
-    !! * `gon2deg(gon)` – gon to degrees
-    !! * `gon2rad(gon)` – gon to radiants
+    !! * `gon2deg(gon)` – gradians to degrees
+    !! * `gon2rad(gon)` – gradians to radiants
     !! * `rad2deg(rad)` – radiants to degrees
-    !! * `rad2gon(rad)` – radiants to gon
+    !! * `rad2gon(rad)` – radiants to gradians
     !!
     !! Additionally, error codes, log parameters, and the GeoCOM API for Lua are
     !! exported as well.

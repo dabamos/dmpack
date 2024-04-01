@@ -226,14 +226,14 @@ contains
         character(len=*),          intent(in)           :: source    !! Source of observation.
         logical,                   intent(in), optional :: debug     !! Output debug messages.
 
-        character(len=REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
+        character(len=REQUEST_RESPONSE_LEN) :: raw      ! Raw response (unescaped).
+        type(request_type),  pointer        :: request  ! Next request to execute.
+        type(response_type), pointer        :: response ! Single response in request.
 
-        integer                      :: delay
-        integer                      :: fu, stat
-        integer                      :: i, j, n
-        logical                      :: debug_
-        type(request_type),  pointer :: request  ! Next request to execute.
-        type(response_type), pointer :: response ! Single response in request.
+        integer :: delay
+        integer :: fu, stat
+        integer :: i, j, n
+        logical :: debug_
 
         rc = E_EMPTY
 

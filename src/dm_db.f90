@@ -485,7 +485,7 @@ contains
         integer,          intent(in),    optional :: nsteps     !! Number of steps per iteration (default: 500).
         integer,          intent(in),    optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
 
-        integer       :: err
+        integer       :: stat
         integer       :: nsteps_, sleep_time_
         logical       :: wal_
         type(db_type) :: backup
@@ -515,14 +515,14 @@ contains
             if (.not. c_associated(ptr)) exit sql_block
 
             do
-                err = sqlite3_backup_step(ptr, nsteps_)
+                stat = sqlite3_backup_step(ptr, nsteps_)
 
                 if (present(callback)) then
                     call callback(remaining  = sqlite3_backup_remaining(ptr), &
                                   page_count = sqlite3_backup_pagecount(ptr))
                 end if
 
-                if (err == SQLITE_OK .or. err == SQLITE_BUSY .or. err == SQLITE_LOCKED) then
+                if (stat == SQLITE_OK .or. stat == SQLITE_BUSY .or. stat == SQLITE_LOCKED) then
                     call dm_db_sleep(sleep_time_)
                     cycle
                 end if

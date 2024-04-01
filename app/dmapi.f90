@@ -75,9 +75,9 @@ program dmapi
                cgi_route_type('/timeseries', route_timeseries) ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n); if (dm_is_error(rc)) call dm_stop(1)
-    rc = dm_env_get('DM_DB_LOG',    db_log,    n); if (dm_is_error(rc)) call dm_stop(1)
-    rc = dm_env_get('DM_DB_OBSERV', db_observ, n); if (dm_is_error(rc)) call dm_stop(1)
+    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    rc = dm_env_get('DM_DB_LOG',    db_log,    n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    rc = dm_env_get('DM_DB_OBSERV', db_observ, n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     rc = dm_env_get('DM_READ_ONLY', read_only, .false.)
 

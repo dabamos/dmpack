@@ -100,8 +100,7 @@ contains
         !! Returns `.true.` is CGI environment variable `AUTH` is set.
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        auth = .false.
-        if (len_trim(env%auth_type) > 0) auth = .true.
+        auth = (len_trim(env%auth_type) > 0)
     end function dm_cgi_auth
 
     integer function dm_cgi_content(env, content) result(rc)
@@ -125,7 +124,7 @@ contains
         if (stat /= 0) return
 
         do i = 1, env%content_length
-            rc = E_IO
+            rc = E_READ
             sz = c_read(STDIN_FILENO, c_loc(buf), 1_c_size_t)
             if (sz < 1) exit
             content(i:i) = buf
@@ -141,11 +140,11 @@ contains
         integer :: i, j, k, n, m
         integer :: stat
 
-        rc = E_BOUNDS
         n = len_trim(input)
         m = len(output)
         output = ' '
 
+        rc = E_BOUNDS
         if (m < n) return
 
         i = 1
