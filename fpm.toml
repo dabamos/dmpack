@@ -309,3 +309,8 @@ main = "dmtestuuid.f90"
 name = "dmtestzlib"
 main = "dmtestzib.f90"
 link = [ "z" ]
+
+[[test]]
+name = "dmtestzstd"
+main = "dmtestzstd.f90"
+link = [ "zstd" ]
