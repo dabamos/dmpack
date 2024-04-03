@@ -7,7 +7,7 @@ program dmapi
     !! server, such as lighttpd, is required to run this web app.
     !!
     !! Observations and log messages sent via HTTP POST are expected to be in
-    !! Fortran 90 Namelist format, with optional deflate compression
+    !! Fortran 95 Namelist format, with optional deflate compression
     !! (`Content-Encoding: deflate`). The server returns data in CSV format
     !! with optional header by default. The client has to set an HTTP Accept
     !! header to request JSON or JSON Lines format. Error and status messages
