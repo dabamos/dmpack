@@ -145,6 +145,7 @@ package:
 * PCRE2
 * SQLite 3 (≥ 3.39.0)
 * zlib
+* zstd
 
 To generate the man pages, the User’s Guide, and the source code documentation,
 you will also need:
@@ -162,6 +163,7 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-sqlite3[fortran-sqlite3]
 * link:https://github.com/interkosmos/fortran-unix[fortran-unix]
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
+* link:https://github.com/interkosmos/fortran-zstd[fortran-zstd]
 
 If the repository is cloned recursively with Git, or if the project is built
 using FPM, the submodules will be downloaded automatically. Without Git or FPM,
@@ -206,8 +208,9 @@ have been compiled with GNU Fortran.
 First, install the build and run-time dependencies:
 
 ....
-$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl \
-  lang/gcc lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
+$ doas pkg install archivers/zstd databases/sqlite3 devel/git devel/pcre2 \
+  devel/pkgconf ftp/curl lang/gcc lang/lua54 math/gnuplot math/lapack \
+  science/hdf5 www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -290,7 +293,8 @@ The third-party dependencies have to be installed with development headers:
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
   libhdf5 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
-  libpcre2-dev sqlite3 libsqlite3-dev zlib1g zlib1g-dev
+  libpcre2-dev sqlite3 libsqlite3-dev zlib1g zlib1g-dev libzstd1 \
+  libzstd-dev
 ....
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
@@ -6798,4 +6802,5 @@ $ sh hdfview.sh
 | 131  | `E_FCGI`            | FastCGI library error.
 | 132  | `E_HDF5`            | HDF5 library error.
 | 133  | `E_ZLIB`            | Zlib library error.
+| 134  | `E_ZSTD`            | Zstandard library error.
 |===

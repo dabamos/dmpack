@@ -16,3 +16,6 @@
 [submodule "vendor/fortran-zlib"]
 	path = vendor/fortran-zlib
 	url = https://github.com/interkosmos/fortran-zlib
+[submodule "vendor/fortran-zstd"]
+	path = vendor/fortran-zstd
+	url = https://github.com/interkosmos/fortran-zstd

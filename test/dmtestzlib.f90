@@ -17,49 +17,27 @@ program dmtestzlib
     call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=NML_OBSERV_LEN) :: input, output
-        character(len=:), allocatable :: output1, output2
+        character(len=NML_OBSERV_LEN) :: input, output2
+        character(len=:), allocatable :: output1
         integer                       :: rc
-        type(observ_type)             :: observ1, observ2, observ3
+        type(observ_type)             :: observ1, observ2
 
         stat = TEST_FAILED
 
         call dm_test_dummy(observ1)
         rc = dm_nml_from(observ1, input)
 
-        print *, 'deflate ...'
-        rc = dm_zlib_deflate(input, output1)
-        if (dm_is_error(rc)) return
-
-        print *, 'inflate ...'
-        rc = dm_zlib_inflate(output1, output2, len(input))
-        if (dm_is_error(rc)) return
-
-        print '(" source size.: ", i0)', len(input)
-        print '(" deflate size: ", i0)', len(output1)
-        print '(" inflate size: ", i0)', len(output2)
-
-        print *, 'converting ...'
-        rc = dm_nml_to(output2, observ2)
-        call dm_perror(rc)
-        if (dm_is_error(rc)) return
-
-        print *, 'matching ...'
-        if (.not. (observ2 == observ1)) return
-
-        deallocate (output1, output2)
-
         print *, 'compress ...'
         rc = dm_zlib_compress(input, output1)
         if (dm_is_error(rc)) return
 
         print *, 'uncompress ...'
-        rc = dm_zlib_uncompress(output1, output)
+        rc = dm_zlib_uncompress(output1, output2)
         if (dm_is_error(rc)) return
 
         print *, 'matching ...'
-        rc = dm_nml_to(output, observ3)
-        if (.not. (observ3 == observ1)) return
+        rc = dm_nml_to(output2, observ2)
+        if (.not. (observ2 == observ1)) return
 
         stat = TEST_PASSED
     end function test01

@@ -144,8 +144,8 @@ installation instructions.
 First, install the build and run-time dependencies:
 
 ```
-$ doas pkg install databases/sqlite3 devel/git devel/pcre2 devel/pkgconf ftp/curl lang/gcc \
-  lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
+$ doas pkg install archivers/zstd databases/sqlite3 devel/git devel/pcre2 devel/pkgconf \
+  ftp/curl lang/gcc lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
 ```
 
 Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
@@ -189,7 +189,7 @@ The third-party dependencies have to be installed with development headers:
 $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
   libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
-  sqlite3 libsqlite3-dev zlib1g zlib1g-dev
+  sqlite3 libsqlite3-dev zlib1g zlib1g-dev libzstd1 libzstd-dev
 ```
 
 Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
@@ -265,6 +265,7 @@ containing the DMPACK module files is passed through argument `-I`.
 | `dm_thread`     | POSIX         | `-lpthread`                                           |
 | `dm_transform`  | LAPACK, BLAS  | `pkg-config --libs lapack blas`                       |
 | `dm_zlib`       | zlib          | `pkg-config --libs zlib`                              |
+| `dm_zstd`       | zstd          | `pkg-config --libs zstd`                              |
 
 ## Source Code Structure
 
@@ -322,57 +323,6 @@ $ make doc
 
 The HTML files will be written to directory `doc/`. Open `index.html` in a web
 browser.
-
-## Test Programs
-
-The DMPACK test programs are compiled by default. In order to run the RPC API
-program `dmtestrpc`, set the hostname and the credentials of the server first:
-
-```
-$ export DM_API_HOST="localhost"
-$ export DM_API_USERNAME="dummy-node"
-$ export DM_API_PASSWORD="secret"
-```
-
-The following environment variables have to be set for `dmtestmail`:
-
-```
-$ export DM_MAIL_FROM="from@example.com"
-$ export DM_MAIL_TO="to@example.com"
-$ export DM_MAIL_HOST="example.com"
-$ export DM_MAIL_USERNAME="username"
-$ export DM_MAIL_PASSWORD="password"
-```
-
-The program `dmtestmqtt` requires host and port of the MQTT server:
-
-```
-$ export DM_MQTT_HOST="localhost"
-$ export DM_MQTT_PORT="1883"
-```
-
-If not set, the affected tests will be skipped. To skip the pipe, plotting and
-message queue tests, set:
-
-```
-$ export DM_MQUEUE_SKIP=1
-$ export DM_PIPE_SKIP=1
-```
-
-You may want to uncomment the variables in `runtest.sh`. Run all test programs
-with:
-
-```
-$ sh runtests.sh
-```
-
-To write the test protocols to file, disable coloured output first by setting
-the environment variable `NO_COLOR`:
-
-```
-$ export NO_COLOR=1
-$ sh runtests.sh &> tests.log
-```
 
 ## Licence
 

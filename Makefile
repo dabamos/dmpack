@@ -165,10 +165,11 @@ LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBZ       = `pkg-config --libs-only-l zlib`
+LIBZSTD    = `pkg-config --libs-only-l zstd`
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
-             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ)
+             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -177,7 +178,8 @@ LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFZ       = $(LIBDIR)/libfortran-zlib.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ)
+LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -206,42 +208,176 @@ DMUUID   = $(DISTDIR)/dmuuid
 DMWEB    = $(DISTDIR)/dmweb
 
 # Library source files.
-SRC = src/dm_version.f90 src/dm_kind.f90 src/dm_platform.f90 src/dm_ascii.f90 \
-      src/dm_const.f90 src/dm_error.f90 src/dm_string.f90 src/dm_type.f90 \
-      src/dm_format.f90 src/dm_ansi.f90 src/dm_env.f90 src/dm_util.f90 \
-      src/dm_time.f90 src/dm_timer.f90 src/dm_base64.f90 src/dm_path.f90 \
-      src/dm_file.f90 src/dm_hash.f90 src/dm_hash_table.f90 src/dm_hdf5.f90 \
-      src/dm_unit.f90 src/dm_id.f90 src/dm_uuid.f90 src/dm_signal.f90 \
-      src/dm_system.f90 src/dm_pipe.f90 src/dm_thread.f90 src/dm_sem.f90 \
-      src/dm_mutex.f90 src/dm_dp.f90 src/dm_fifo.f90 src/dm_node.f90 \
-      src/dm_sensor.f90 src/dm_target.f90 src/dm_response.f90 src/dm_request.f90 \
-      src/dm_observ.f90 src/dm_log.f90 src/dm_arg.f90 src/dm_job.f90 \
-      src/dm_tty.f90 src/dm_plot.f90 src/dm_report.f90 src/dm_regex.f90 \
-      src/dm_sync.f90 src/dm_beat.f90 src/dm_mqueue.f90 src/dm_logger.f90 \
-      src/dm_test.f90 src/dm_nml.f90 src/dm_sql.f90 src/dm_db.f90 src/dm_zlib.f90 \
-      src/dm_person.f90 src/dm_mail.f90 src/dm_http.f90 src/dm_mime.f90 \
-      src/dm_api.f90 src/dm_rpc.f90 src/dm_mqtt.f90 src/dm_cgi.f90 src/dm_fcgi.f90 \
-      src/dm_block.f90 src/dm_csv.f90 src/dm_json.f90 src/dm_jsonl.f90 \
-      src/dm_html.f90 src/dm_atom.f90 src/dm_cgi_router.f90 src/dm_la.f90 \
-      src/dm_transform.f90 src/dm_geocom_error.f90 src/dm_geocom_type.f90 \
-      src/dm_geocom_api.f90 src/dm_geocom.f90 src/dm_lua.f90 src/dm_lua_api.f90 \
-      src/dm_lua_geocom.f90 src/dm_lua_lib.f90 src/dm_config.f90 src/dm_rts.f90 \
-      src/dm_mqueue_util.f90 src/dmpack.f90
+SRC = $(SRCDIR)/dm_ansi.f90 \
+      $(SRCDIR)/dm_api.f90 \
+      $(SRCDIR)/dm_arg.f90 \
+      $(SRCDIR)/dm_ascii.f90 \
+      $(SRCDIR)/dm_atom.f90 \
+      $(SRCDIR)/dm_base64.f90 \
+      $(SRCDIR)/dm_beat.f90 \
+      $(SRCDIR)/dm_block.f90 \
+      $(SRCDIR)/dm_cgi.f90 \
+      $(SRCDIR)/dm_cgi_router.f90 \
+      $(SRCDIR)/dm_config.f90 \
+      $(SRCDIR)/dm_const.f90 \
+      $(SRCDIR)/dm_csv.f90 \
+      $(SRCDIR)/dm_db.f90 \
+      $(SRCDIR)/dm_dp.f90 \
+      $(SRCDIR)/dm_env.f90 \
+      $(SRCDIR)/dm_error.f90 \
+      $(SRCDIR)/dm_fcgi.f90 \
+      $(SRCDIR)/dm_fifo.f90 \
+      $(SRCDIR)/dm_file.f90 \
+      $(SRCDIR)/dm_format.f90 \
+      $(SRCDIR)/dm_geocom.f90 \
+      $(SRCDIR)/dm_geocom_api.f90 \
+      $(SRCDIR)/dm_geocom_error.f90 \
+      $(SRCDIR)/dm_geocom_type.f90 \
+      $(SRCDIR)/dm_hash.f90 \
+      $(SRCDIR)/dm_hash_table.f90 \
+      $(SRCDIR)/dm_hdf5.f90 \
+      $(SRCDIR)/dm_html.f90 \
+      $(SRCDIR)/dm_http.f90 \
+      $(SRCDIR)/dm_id.f90 \
+      $(SRCDIR)/dm_job.f90 \
+      $(SRCDIR)/dm_json.f90 \
+      $(SRCDIR)/dm_jsonl.f90 \
+      $(SRCDIR)/dm_kind.f90 \
+      $(SRCDIR)/dm_la.f90 \
+      $(SRCDIR)/dm_log.f90 \
+      $(SRCDIR)/dm_logger.f90 \
+      $(SRCDIR)/dm_lua.f90 \
+      $(SRCDIR)/dm_lua_api.f90 \
+      $(SRCDIR)/dm_lua_geocom.f90 \
+      $(SRCDIR)/dm_lua_lib.f90 \
+      $(SRCDIR)/dm_mail.f90 \
+      $(SRCDIR)/dm_mime.f90 \
+      $(SRCDIR)/dm_mqtt.f90 \
+      $(SRCDIR)/dm_mqueue.f90 \
+      $(SRCDIR)/dm_mqueue_util.f90 \
+      $(SRCDIR)/dm_mutex.f90 \
+      $(SRCDIR)/dm_nml.f90 \
+      $(SRCDIR)/dm_node.f90 \
+      $(SRCDIR)/dm_observ.f90 \
+      $(SRCDIR)/dm_path.f90 \
+      $(SRCDIR)/dm_person.f90 \
+      $(SRCDIR)/dm_pipe.f90 \
+      $(SRCDIR)/dm_platform.f90 \
+      $(SRCDIR)/dm_plot.f90 \
+      $(SRCDIR)/dm_regex.f90 \
+      $(SRCDIR)/dm_report.f90 \
+      $(SRCDIR)/dm_request.f90 \
+      $(SRCDIR)/dm_response.f90 \
+      $(SRCDIR)/dm_rpc.f90 \
+      $(SRCDIR)/dm_rts.f90 \
+      $(SRCDIR)/dm_sem.f90 \
+      $(SRCDIR)/dm_sensor.f90 \
+      $(SRCDIR)/dm_signal.f90 \
+      $(SRCDIR)/dm_sql.f90 \
+      $(SRCDIR)/dm_string.f90 \
+      $(SRCDIR)/dm_sync.f90 \
+      $(SRCDIR)/dm_system.f90 \
+      $(SRCDIR)/dm_target.f90 \
+      $(SRCDIR)/dm_test.f90 \
+      $(SRCDIR)/dm_thread.f90 \
+      $(SRCDIR)/dm_time.f90 \
+      $(SRCDIR)/dm_timer.f90 \
+      $(SRCDIR)/dm_transform.f90 \
+      $(SRCDIR)/dm_tty.f90 \
+      $(SRCDIR)/dm_type.f90 \
+      $(SRCDIR)/dm_unit.f90 \
+      $(SRCDIR)/dm_util.f90 \
+      $(SRCDIR)/dm_uuid.f90 \
+      $(SRCDIR)/dm_version.f90 \
+      $(SRCDIR)/dm_zlib.f90 \
+      $(SRCDIR)/dm_zstd.f90 \
+      $(SRCDIR)/dmpack.f90
 
 # Library object files.
-OBJ = dm_version.o dm_kind.o dm_platform.o dm_ascii.o dm_const.o dm_error.o \
-      dm_string.o dm_type.o dm_format.o dm_ansi.o dm_env.o dm_util.o dm_time.o \
-      dm_timer.o dm_base64.o dm_path.o dm_file.o dm_hash.o dm_hash_table.o \
-      dm_hdf5.o dm_unit.o dm_id.o dm_uuid.o dm_signal.o dm_system.o dm_pipe.o \
-      dm_thread.o dm_sem.o dm_mutex.o dm_dp.o dm_fifo.o dm_node.o dm_sensor.o \
-      dm_target.o dm_response.o dm_request.o dm_observ.o dm_log.o dm_arg.o dm_job.o \
-      dm_tty.o dm_plot.o dm_report.o dm_regex.o dm_sync.o dm_beat.o dm_mqueue.o \
-      dm_logger.o dm_test.o dm_nml.o dm_sql.o dm_db.o dm_zlib.o dm_person.o dm_mail.o \
-      dm_http.o dm_mime.o dm_api.o dm_rpc.o dm_mqtt.o dm_cgi.o dm_fcgi.o dm_block.o \
-      dm_csv.o dm_json.o dm_jsonl.o dm_html.o dm_atom.o dm_cgi_router.o dm_la.o \
-      dm_transform.o dm_geocom_error.o dm_geocom_type.o dm_geocom_api.o dm_geocom.o \
-      dm_lua.o dm_lua_api.o dm_lua_geocom.o dm_lua_lib.o dm_config.o dm_rts.o \
-      dm_mqueue_util.o dmpack.o
+OBJ = dm_ansi.o \
+      dm_api.o \
+      dm_arg.o \
+      dm_ascii.o \
+      dm_atom.o \
+      dm_base64.o \
+      dm_beat.o \
+      dm_block.o \
+      dm_cgi.o \
+      dm_cgi_router.o \
+      dm_config.o \
+      dm_const.o \
+      dm_csv.o \
+      dm_db.o \
+      dm_dp.o \
+      dm_env.o \
+      dm_error.o \
+      dm_fcgi.o \
+      dm_fifo.o \
+      dm_file.o \
+      dm_format.o \
+      dm_geocom.o \
+      dm_geocom_api.o \
+      dm_geocom_error.o \
+      dm_geocom_type.o \
+      dm_hash.o \
+      dm_hash_table.o \
+      dm_hdf5.o \
+      dm_html.o \
+      dm_http.o \
+      dm_id.o \
+      dm_job.o \
+      dm_json.o \
+      dm_jsonl.o \
+      dm_kind.o \
+      dm_la.o \
+      dm_log.o \
+      dm_logger.o \
+      dm_lua.o \
+      dm_lua_api.o \
+      dm_lua_geocom.o \
+      dm_lua_lib.o \
+      dm_mail.o \
+      dm_mime.o \
+      dm_mqtt.o \
+      dm_mqueue.o \
+      dm_mqueue_util.o \
+      dm_mutex.o \
+      dm_nml.o \
+      dm_node.o \
+      dm_observ.o \
+      dm_path.o \
+      dm_person.o \
+      dm_pipe.o \
+      dm_platform.o \
+      dm_plot.o \
+      dm_regex.o \
+      dm_report.o \
+      dm_request.o \
+      dm_response.o \
+      dm_rpc.o \
+      dm_rts.o \
+      dm_sem.o \
+      dm_sensor.o \
+      dm_signal.o \
+      dm_sql.o \
+      dm_string.o \
+      dm_sync.o \
+      dm_system.o \
+      dm_target.o \
+      dm_test.o \
+      dm_thread.o \
+      dm_time.o \
+      dm_timer.o \
+      dm_transform.o \
+      dm_tty.o \
+      dm_type.o \
+      dm_unit.o \
+      dm_util.o \
+      dm_uuid.o \
+      dm_version.o \
+      dm_zlib.o \
+      dm_zstd.o \
+      dmpack.o
 
 # ******************************************************************************
 #
@@ -347,6 +483,10 @@ $(LIBFZ): setup
 	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
 	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
 
+$(LIBFZSTD): setup
+	cd vendor/fortran-zstd/ && make FC=$(FC) FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZSTD)"
+	cp ./vendor/fortran-zstd/*.mod $(INCDIR)/
+
 # ******************************************************************************
 #
 # DMPACK static libraries.
@@ -407,6 +547,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zlib.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zstd.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_person.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mail.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_http.f90
@@ -871,6 +1012,9 @@ purge: clean
 	@echo "--- Cleaning fortran-zlib ..."
 	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZ)"
 	@echo
+	@echo "--- Cleaning fortran-zstd ..."
+	cd vendor/fortran-zstd/ && make clean TARGET="../../$(LIBFZSTD)"
+	@echo
 	@echo "--- Deleting module files ..."
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
 	@echo
@@ -878,10 +1022,10 @@ purge: clean
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
 	@echo
 	@echo "--- Deleting stale test files ..."
-	if [ -e testobserv.hdf5 ]; then $(RM) testobserv.hdf5; fi
-	if [ -e testbeat.sqlite ]; then $(RM) testbeat.sqlite; fi
-	if [ -e testlog.sqlite ]; then $(RM) testlog.sqlite; fi
-	if [ -e testobserv.sqlite ]; then $(RM) testobserv.sqlite; fi
+	if [ -e testobserv.hdf5 ];          then $(RM) testobserv.hdf5;          fi
+	if [ -e testbeat.sqlite ];          then $(RM) testbeat.sqlite;          fi
+	if [ -e testlog.sqlite ];           then $(RM) testlog.sqlite;           fi
+	if [ -e testobserv.sqlite ];        then $(RM) testobserv.sqlite;        fi
 	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
 	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
 
@@ -930,6 +1074,7 @@ options:
 	@echo "LIBRT      = $(LIBRT)"
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBZ       = $(LIBZ)"
+	@echo "LIBZSTD    = $(LIBZSTD)"
 
 # ******************************************************************************
 #

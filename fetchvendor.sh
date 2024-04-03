@@ -10,6 +10,7 @@
 # * fortran-sqlite3
 # * fortran-unix
 # * fortran-zlib
+# * fortran-zstd
 #
 # The curl(1) and unzip(1) command-line programs are required.
 #
@@ -18,7 +19,7 @@ set -e
 VENDOR=${1-"./vendor"}
 CURL=curl
 UNZIP=unzip
-LIBS="curl lua54 pcre2 sqlite3 unix zlib"
+LIBS="curl lua54 pcre2 sqlite3 unix zlib zstd"
 
 echo "Creating ${VENDOR} ..."
 mkdir -p ${VENDOR}

@@ -20,6 +20,7 @@ fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
 fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
+fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 
 [build]
 auto-examples    = false
