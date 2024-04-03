@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestzlib
-    !! Test program for DEFLATE.
+    !! Test program for deflate compression (zlib).
     use :: dmpack
     implicit none (type, external)
     integer, parameter :: NTESTS = 1
@@ -27,11 +27,11 @@ contains
         call dm_test_dummy(observ1)
         rc = dm_nml_from(observ1, input)
 
-        print *, 'compress ...'
+        print *, 'compressing ...'
         rc = dm_zlib_compress(input, output1)
         if (dm_is_error(rc)) return
 
-        print *, 'uncompress ...'
+        print *, 'uncompressing ...'
         rc = dm_zlib_uncompress(output1, output2)
         if (dm_is_error(rc)) return
 

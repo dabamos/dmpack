@@ -91,6 +91,7 @@ this package:
 * PCRE2
 * SQLite 3
 * zlib
+* zstd
 
 On Linux, additional development headers are required for the build step. To
 generate the [man pages](adoc/README.md), the [User’s Guide](guide/README.md),

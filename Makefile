@@ -165,7 +165,7 @@ LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBZ       = `pkg-config --libs-only-l zlib`
-LIBZSTD    = `pkg-config --libs-only-l zstd`
+LIBZSTD    = `pkg-config --libs-only-l libzstd`
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
@@ -405,7 +405,8 @@ test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
       dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
       dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe \
       dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
-      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestzlib
+      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestzlib \
+      dmtestzstd
 
 # ******************************************************************************
 #
@@ -713,6 +714,9 @@ dmtestuuid: test/dmtestuuid.f90 $(TARGET)
 
 dmtestzlib: test/dmtestzlib.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZ) $(LDLIBS)
+
+dmtestzstd: test/dmtestzstd.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestzstd test/dmtestzstd.f90 $(TARGET) $(LIBZSTD) $(LDLIBS)
 
 # ******************************************************************************
 #
