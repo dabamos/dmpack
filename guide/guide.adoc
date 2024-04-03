@@ -145,7 +145,7 @@ package:
 * PCRE2
 * SQLite 3 (≥ 3.39.0)
 * zlib
-* zstd
+* zstd (≥ 1.5.5)
 
 To generate the man pages, the User’s Guide, and the source code documentation,
 you will also need:

@@ -266,7 +266,7 @@ containing the DMPACK module files is passed through argument `-I`.
 | `dm_thread`     | POSIX         | `-lpthread`                                           |
 | `dm_transform`  | LAPACK, BLAS  | `pkg-config --libs lapack blas`                       |
 | `dm_zlib`       | zlib          | `pkg-config --libs zlib`                              |
-| `dm_zstd`       | zstd          | `pkg-config --libs zstd`                              |
+| `dm_zstd`       | zstd          | `pkg-config --libs libzstd`                           |
 
 ## Source Code Structure
 
