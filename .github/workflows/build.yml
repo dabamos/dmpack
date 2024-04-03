@@ -22,11 +22,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Prepare System
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        git config --global url.https://github.com/.insteadOf git://github.com/
-
     - name: List Packages
       if: contains(matrix.os, 'ubuntu')
       run: |
@@ -48,6 +43,7 @@ jobs:
     - name: Build and Install SQLite 3
       if: contains(matrix.os, 'ubuntu')
       run: |
+        git config --global url.https://github.com/.insteadOf git://github.com/
         git clone --depth 1 https://github.com/sqlite/sqlite.git
         cd sqlite/
         ./configure
@@ -57,6 +53,7 @@ jobs:
     - name: Build and Install Zstandard
       if: contains(matrix.os, 'ubuntu')
       run: |
+        git config --global url.https://github.com/.insteadOf git://github.com/
         git clone --depth 1 https://github.com/facebook/zstd.git
         cd zstd/build/cmake/
         cmake --build . --config Release
