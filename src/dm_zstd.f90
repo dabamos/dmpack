@@ -87,6 +87,9 @@ contains
         !! Zstandard context `context` has to be destroy with
         !! `dm_zstd_destroy()` once finished.
         !!
+        !! The string `output` may be larger than the actual length. The
+        !! argument `output_len` contains the actual length.
+        !!
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if the allocation of the output string failed.
@@ -99,11 +102,11 @@ contains
         integer,                       intent(in),  optional :: level      !! Compression level.
         integer(kind=i8),              intent(out), optional :: output_len !! Actual output length.
 
-        integer                :: level_, stat
-        integer(kind=c_size_t) :: in_len, out_len
-        integer(kind=c_size_t) :: n
+        integer                :: level_
+        integer(kind=c_size_t) :: in_len, out_len, stat
+        integer(kind=i8)       :: output_len_
 
-        n = 0
+        output_len_ = 0
 
         zstd_block: block
             rc = E_EMPTY
@@ -128,17 +131,22 @@ contains
                 level_ = dm_zstd_level_default()
             end if
 
-            n = zstd_compress_c_ctx(context%c, output, out_len, input, in_len, level_)
-            if (zstd_is_error(n)) exit zstd_block
+            stat = zstd_compress_c_ctx(context%c, output, out_len, input, in_len, level_)
+            if (zstd_is_error(stat)) exit zstd_block
+            output_len_ = stat
+
             rc = E_NONE
         end block zstd_block
 
-        if (present(output_len)) output_len = n
+        if (present(output_len)) output_len = output_len_
     end function zstd_compress_multi
 
     integer function zstd_compress_single(input, output, level, output_len) result(rc)
         !! Compresses input string using the zstd simple function. If no
         !! compression level is passed, the Zstandard default is used.
+        !!
+        !! The string `output` may be larger than the actual length. The
+        !! argument `output_len` contains the actual length.
         !!
         !! The function returns the following error codes:
         !!
@@ -151,11 +159,11 @@ contains
         integer,                       intent(in),  optional :: level      !! Compression level.
         integer(kind=i8),              intent(out), optional :: output_len !! Actual output length.
 
-        integer                :: level_, stat
-        integer(kind=c_size_t) :: in_len, out_len
-        integer(kind=c_size_t) :: n
+        integer                :: level_
+        integer(kind=c_size_t) :: in_len, out_len, stat
+        integer(kind=i8)       :: output_len_
 
-        n = 0
+        output_len_ = 0
 
         zstd_block: block
             rc = E_EMPTY
@@ -175,13 +183,14 @@ contains
             end if
 
             rc = E_ZSTD
-            n = zstd_compress(output, out_len, input, in_len, level_)
-            if (zstd_is_error(n)) exit zstd_block
+            stat = zstd_compress(output, out_len, input, in_len, level_)
+            if (zstd_is_error(stat)) exit zstd_block
+            output_len_ = stat
 
             rc = E_NONE
         end block zstd_block
 
-        if (present(output_len)) output_len = n
+        if (present(output_len)) output_len = output_len_
     end function zstd_compress_single
 
     integer function zstd_uncompress_multi(context, input, output, input_len, output_len) result(rc)
@@ -196,9 +205,10 @@ contains
         integer(kind=i8),        intent(in),  optional :: input_len  !! Actual input length.
         integer(kind=i8),        intent(out), optional :: output_len !! Actual output length.
 
-        integer(kind=c_size_t) :: input_len_, n
+        integer(kind=c_size_t) :: input_len_, stat
+        integer(kind=i8)       :: output_len_
 
-        n = 0
+        output_len_ = 0
 
         zstd_block: block
             rc = E_ZSTD
@@ -213,12 +223,14 @@ contains
                 input_len_ = len(input, kind=c_size_t)
             end if
 
-            n = zstd_decompress_d_ctx(context%d, output, len(output, kind=c_size_t), input, input_len_)
-            if (zstd_is_error(n)) exit zstd_block
+            stat = zstd_decompress_d_ctx(context%d, output, len(output, kind=c_size_t), input, input_len_)
+            if (zstd_is_error(stat)) exit zstd_block
+            output_len_ = stat
+
             rc = E_NONE
         end block zstd_block
 
-        if (present(output_len)) output_len = n
+        if (present(output_len)) output_len = output_len_
     end function zstd_uncompress_multi
 
     integer function zstd_uncompress_single(input, output, input_len, output_len) result(rc)
@@ -230,9 +242,11 @@ contains
         integer(kind=i8), intent(in),  optional :: input_len  !! Actual input length.
         integer(kind=i8), intent(out), optional :: output_len !! Actual output length.
 
-        integer(kind=c_size_t) :: input_len_, n
+        integer(kind=c_size_t) :: input_len_, stat
+        integer(kind=i8)       :: output_len_
 
         rc = E_ZSTD
+        output_len_ = 0
 
         if (present(input_len)) then
             input_len_ = int(input_len, kind=c_size_t)
@@ -240,9 +254,13 @@ contains
             input_len_ = len(input, kind=c_size_t)
         end if
 
-        n = zstd_decompress(output, len(output, kind=c_size_t), input, input_len_)
-        if (.not. zstd_is_error(n)) rc = E_NONE
+        stat = zstd_decompress(output, len(output, kind=c_size_t), input, input_len_)
 
-        if (present(output_len)) output_len = n
+        if (.not. zstd_is_error(stat)) then
+            rc = E_NONE
+            output_len_ = stat
+        end if
+
+        if (present(output_len)) output_len = output_len_
     end function zstd_uncompress_single
 end module dm_zstd

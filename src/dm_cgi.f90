@@ -97,7 +97,7 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     logical function dm_cgi_auth(env) result(auth)
-        !! Returns `.true.` is CGI environment variable `AUTH` is set.
+        !! Returns `.true.` if CGI environment variable `AUTH` is set.
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         auth = (len_trim(env%auth_type) > 0)
@@ -188,13 +188,13 @@ contains
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         logical          :: has
-        integer          :: i
+        integer          :: loc
         integer(kind=i8) :: hash
 
-        has = .false.
+        has  = .false.
         hash = dm_hash_fnv1a(trim(key))
-        i = findloc(param%hashes, hash, dim=1)
-        if (i == 0) return
+        loc  = findloc(param%hashes, hash, dim=1)
+        if (loc == 0) return
         has = .true.
     end function dm_cgi_has
 
@@ -204,29 +204,29 @@ contains
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         logical          :: has
-        integer          :: i
+        integer          :: loc
         integer(kind=i8) :: hash
 
-        has = .false.
+        has  = .false.
         hash = dm_hash_fnv1a(trim(key))
-        i = findloc(param%hashes, hash, dim=1)
-        if (i == 0) return
-        if (len_trim(param%values(i)) == 0) return
+        loc  = findloc(param%hashes, hash, dim=1)
+        if (loc == 0) return
+        if (len_trim(param%values(loc)) == 0) return
         has = .true.
     end function dm_cgi_has_value
 
-    function dm_cgi_key(param, i) result(str)
-        !! Returns key at index `i` in keys array of `param`.
+    function dm_cgi_key(param, loc) result(str)
+        !! Returns key at index `loc` in keys array of `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
-        integer,              intent(in)    :: i     !! Array index.
+        integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: str   !! Key or empty.
 
-        if ((param%cursor == 0) .or. (i < 1) .or. (i > param%cursor)) then
+        if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
             str = ''
             return
         end if
 
-        str = trim(param%keys(i))
+        str = trim(param%keys(loc))
     end function dm_cgi_key
 
     function dm_cgi_size(param) result(sz)
@@ -238,18 +238,18 @@ contains
         sz = param%cursor
     end function dm_cgi_size
 
-    function dm_cgi_value(param, i) result(str)
+    function dm_cgi_value(param, loc) result(str)
         !! Returns value at index `i` in values array of `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
-        integer,              intent(in)    :: i     !! Array index.
+        integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: str   !! Value or empty.
 
-        if ((param%cursor == 0) .or. (i < 1) .or. (i > param%cursor)) then
+        if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
             str = ''
             return
         end if
 
-        str = trim(param%values(i))
+        str = trim(param%values(loc))
     end function dm_cgi_value
 
     subroutine dm_cgi_env(env)
@@ -384,14 +384,14 @@ contains
     integer function cgi_get_int32(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 32-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and
-        !! `required` has not been not passed or is `.true.`
+        !! `required` has not been passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         integer(kind=i4),     intent(out)          :: value    !! Parameter value.
         integer(kind=i4),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i
+        integer :: loc
 
         rc = E_EMPTY
         if (present(required)) then
@@ -401,23 +401,23 @@ contains
         value = 0
         if (present(default)) value = default
 
-        i = cgi_param_loc(param, key)
-        if (i == 0) return
-        if (len_trim(param%values(i)) == 0) return
-        call dm_string_to(param%values(i), value, rc)
+        loc = cgi_param_loc(param, key)
+        if (loc == 0) return
+        if (len_trim(param%values(loc)) == 0) return
+        call dm_string_to(param%values(loc), value, rc)
     end function cgi_get_int32
 
     integer function cgi_get_int64(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 64-bit
         !! integer. The return code is set to `E_EMPTY` if the key does not
-        !! exist and `required` has not been not passed or is `.true.`
+        !! exist and `required` has not been passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameters.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         integer(kind=i8),     intent(out)          :: value    !! Parameter value.
         integer(kind=i8),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i
+        integer :: loc
 
         rc = E_EMPTY
         if (present(required)) then
@@ -427,23 +427,23 @@ contains
         value = 0
         if (present(default)) value = default
 
-        i = cgi_param_loc(param, key)
-        if (i == 0) return
-        if (len_trim(param%values(i)) == 0) return
-        call dm_string_to(param%values(i), value, rc)
+        loc = cgi_param_loc(param, key)
+        if (loc == 0) return
+        if (len_trim(param%values(loc)) == 0) return
+        call dm_string_to(param%values(loc), value, rc)
     end function cgi_get_int64
 
     integer function cgi_get_logical(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as logical. The
         !! return code is set to `E_EMPTY` if the key does not exist and
-        !! `required` has not been not passed or is `.true.`
+        !! `required` has not been passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         logical,              intent(out)          :: value    !! Parameter value.
         logical,              intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i, j, stat
+        integer :: i, loc, stat
 
         rc = E_EMPTY
         if (present(required)) then
@@ -453,27 +453,27 @@ contains
         value = .false.
         if (present(default)) value = default
 
-        i = cgi_param_loc(param, key)
-        if (i == 0) return
+        loc = cgi_param_loc(param, key)
+        if (loc == 0) return
 
         rc = E_TYPE
-        call dm_string_to(param%values(i), j, stat)
+        call dm_string_to(param%values(loc), i, stat)
         if (stat /= E_NONE) return
-        value = .not. (j == 0)
+        value = .not. (i == 0)
         rc = E_NONE
     end function cgi_get_logical
 
     integer function cgi_get_real32(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 32-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
-        !! `required` has not been not passed or is `.true.`
+        !! `required` has not been passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         real(kind=r4),        intent(out)          :: value    !! Parameter value.
         real(kind=r4),        intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i
+        integer :: loc
 
         rc = E_EMPTY
         if (present(required)) then
@@ -483,23 +483,23 @@ contains
         value = 0.0
         if (present(default)) value = default
 
-        i = cgi_param_loc(param, key)
-        if (i == 0) return
-        if (len_trim(param%values(i)) == 0) return
-        call dm_string_to(param%values(i), value, rc)
+        loc = cgi_param_loc(param, key)
+        if (loc == 0) return
+        if (len_trim(param%values(loc)) == 0) return
+        call dm_string_to(param%values(loc), value, rc)
     end function cgi_get_real32
 
     integer function cgi_get_real64(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 64-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
-        !! `required` has not been not passed or is `.true.`.
+        !! `required` has not been passed or is `.true.`.
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         real(kind=r8),        intent(out)          :: value    !! Parameter value.
         real(kind=r8),        intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i
+        integer :: loc
 
         rc = E_EMPTY
         if (present(required)) then
@@ -509,23 +509,23 @@ contains
         value = 0.0
         if (present(default)) value = default
 
-        i = cgi_param_loc(param, key)
-        if (i == 0) return
-        if (len_trim(param%values(i)) == 0) return
-        call dm_string_to(param%values(i), value, rc)
+        loc = cgi_param_loc(param, key)
+        if (loc == 0) return
+        if (len_trim(param%values(loc)) == 0) return
+        call dm_string_to(param%values(loc), value, rc)
     end function cgi_get_real64
 
     integer function cgi_get_string(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param`. The return code
         !! is set to `E_EMPTY` if the key does not exist and `required` has not
-        !! been not passed or is `.true.`
+        !! been passed or is `.true.`
         type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         character(len=*),     intent(inout)        :: value    !! Parameter value.
         character(len=*),     intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
-        integer :: i
+        integer :: loc
 
         rc = E_EMPTY
         if (present(required)) then
@@ -534,10 +534,10 @@ contains
 
         get_block: block
             value = ''
-            i = cgi_param_loc(param, key)
-            if (i == 0) exit get_block
-            if (len_trim(param%values(i)) == 0) exit get_block
-            value = trim(param%values(i))
+            loc = cgi_param_loc(param, key)
+            if (loc == 0) exit get_block
+            if (len_trim(param%values(loc)) == 0) exit get_block
+            value = trim(param%values(loc))
             rc = E_NONE
             return
         end block get_block
@@ -545,7 +545,7 @@ contains
         if (present(default)) value = default
     end function cgi_get_string
 
-    integer function cgi_param_loc(param, key) result(i)
+    integer function cgi_param_loc(param, key) result(loc)
         !! Returns location of key in parameter keys array, or 0 if not found.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
@@ -553,6 +553,6 @@ contains
         integer(kind=i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
-        i = findloc(param%hashes, hash, dim=1, back=.true.)
+        loc  = findloc(param%hashes, hash, dim=1, back=.true.)
     end function cgi_param_loc
 end module dm_cgi

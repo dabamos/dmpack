@@ -140,7 +140,7 @@ TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
-DEBUG   = -g -O0 -Wall -fcheck=all -fmax-errors=1
+DEBUG   = -g -O0 -Wall -Wpedantic -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
 # Common build options.
@@ -289,6 +289,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_util.f90 \
       $(SRCDIR)/dm_uuid.f90 \
       $(SRCDIR)/dm_version.f90 \
+      $(SRCDIR)/dm_z.f90 \
       $(SRCDIR)/dm_zlib.f90 \
       $(SRCDIR)/dm_zstd.f90 \
       $(SRCDIR)/dmpack.f90
@@ -375,6 +376,7 @@ OBJ = dm_ansi.o \
       dm_util.o \
       dm_uuid.o \
       dm_version.o \
+      dm_z.o \
       dm_zlib.o \
       dm_zstd.o \
       dmpack.o
@@ -549,6 +551,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zstd.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_person.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mail.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_http.f90

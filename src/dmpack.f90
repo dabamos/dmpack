@@ -109,6 +109,7 @@ module dmpack
     use :: dm_util
     use :: dm_uuid
     use :: dm_version
+    use :: dm_z
     use :: dm_zlib
     use :: dm_zstd
     implicit none (type, external)

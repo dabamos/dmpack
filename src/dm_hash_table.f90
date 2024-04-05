@@ -42,11 +42,11 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    logical function dm_hash_table_allocated(hash_table) result(is_alloc)
+    logical function dm_hash_table_allocated(hash_table) result(is)
         !! Returns `.true.` if hash table arrays have been allocated.
         type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
 
-        is_alloc = (allocated(hash_table%hashes) .and. allocated(hash_table%values))
+        is = (allocated(hash_table%hashes) .and. allocated(hash_table%values))
     end function dm_hash_table_allocated
 
     integer function dm_hash_table_create(hash_table, max_entries) result(rc)
@@ -76,17 +76,17 @@ contains
         character(len=*),      intent(in)    :: key        !! Hash table key.
         class(*), target,      intent(inout) :: value      !! Associated value.
 
-        integer          :: i
+        integer          :: loc
         integer(kind=i8) :: hash
 
         rc = E_LIMIT
 
         hash = hash_table_hash(key)
-        i = findloc(hash_table%hashes, hash, dim=1)
+        loc  = findloc(hash_table%hashes, hash, dim=1)
 
-        if (i == 0) i = hash_table%cursor + 1
-        if (i > size(hash_table%hashes)) return
-        if (i > 0) hash_table%cursor = i
+        if (loc == 0) loc = hash_table%cursor + 1
+        if (loc > size(hash_table%hashes)) return
+        if (loc > 0) hash_table%cursor = loc
 
         hash_table%hashes(hash_table%cursor) = hash
         hash_table%values(hash_table%cursor)%ptr => value
@@ -129,22 +129,22 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function hash_table_get_index(hash_table, i, value) result(rc)
+    integer function hash_table_get_index(hash_table, loc, value) result(rc)
         !! Returns pointer to element in hash table by index `i`. On error,
         !! `value` will point to null.
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
-        integer,               intent(in)    :: i          !! Hash value index.
+        integer,               intent(in)    :: loc        !! Hash value index.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
 
         rc = E_BOUNDS
         value => null()
 
-        if (i < 1 .or. i > size(hash_table%values)) return
+        if (loc < 1 .or. loc > size(hash_table%values)) return
 
         rc = E_INVALID
-        if (.not. associated(hash_table%values(i)%ptr)) return
+        if (.not. associated(hash_table%values(loc)%ptr)) return
 
-        value => hash_table%values(i)%ptr
+        value => hash_table%values(loc)%ptr
         rc = E_NONE
     end function hash_table_get_index
 
@@ -157,20 +157,20 @@ contains
         character(len=*),      intent(in)    :: key        !! Hash table key.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
 
-        integer          :: i
+        integer          :: loc
         integer(kind=i8) :: hash
 
         rc = E_EMPTY
         value => null()
 
         hash = hash_table_hash(key)
-        i = findloc(hash_table%hashes, hash, dim=1)
-        if (i == 0) return
+        loc  = findloc(hash_table%hashes, hash, dim=1)
+        if (loc == 0) return
 
         rc = E_INVALID
-        if (.not. associated(hash_table%values(i)%ptr)) return
+        if (.not. associated(hash_table%values(loc)%ptr)) return
 
-        value => hash_table%values(i)%ptr
+        value => hash_table%values(loc)%ptr
         rc = E_NONE
     end function hash_table_get_key
 

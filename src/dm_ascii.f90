@@ -42,7 +42,7 @@ module dm_ascii
 
     public :: dm_ascii_escape
     public :: dm_ascii_is_alpha
-    public :: dm_ascii_is_alpha_num
+    public :: dm_ascii_is_alpha_numeric
     public :: dm_ascii_is_blank
     public :: dm_ascii_is_control
     public :: dm_ascii_is_digit
@@ -97,96 +97,96 @@ contains
         end do
     end function dm_ascii_escape
 
-    pure elemental logical function dm_ascii_is_alpha(a) result(is_alpha)
+    pure elemental logical function dm_ascii_is_alpha(a) result(is)
         !! Returns whether character is alpha letter.
         character, intent(in) :: a !! Character to check.
 
-        is_alpha = (a >= 'A' .and. a <= 'Z') .or. (a >= 'a' .and. a <= 'z')
+        is = ((a >= 'A' .and. a <= 'Z') .or. (a >= 'a' .and. a <= 'z'))
     end function dm_ascii_is_alpha
 
-    pure elemental logical function dm_ascii_is_alpha_num(a) result(is_alpha_num)
+    pure elemental logical function dm_ascii_is_alpha_numeric(a) result(is)
         !! Returns whether character is alpha-numeric.
         character, intent(in) :: a !! Character to check.
 
-        is_alpha_num = (a >= '0' .and. a <= '9') .or. &
-                       (a >= 'A' .and. a <= 'Z') .or. &
-                       (a >= 'a' .and. a <= 'z')
-    end function dm_ascii_is_alpha_num
+        is = ((a >= '0' .and. a <= '9') .or. &
+              (a >= 'A' .and. a <= 'Z') .or. &
+              (a >= 'a' .and. a <= 'z'))
+    end function dm_ascii_is_alpha_numeric
 
-    pure elemental logical function dm_ascii_is_blank(a) result(is_blank)
+    pure elemental logical function dm_ascii_is_blank(a) result(is)
         !! Returns whether character is space or tabular.
         character, intent(in) :: a !! Character to check.
-        integer               :: i
+        integer               :: ia
 
-        i = iachar(a)
-        is_blank = (a == ' ') .or. (i == int(z'09'))
+        ia = iachar(a)
+        is = ((a == ' ') .or. (ia == int(z'09')))
     end function dm_ascii_is_blank
 
-    pure elemental logical function dm_ascii_is_control(a) result(is_control)
+    pure elemental logical function dm_ascii_is_control(a) result(is)
         !! Returns whether character is control character.
         character, intent(in) :: a !! Character to check.
-        integer               :: i
+        integer               :: ia
 
-        i = iachar(a)
-        is_control = (i < int(z'20')) .or. (i == int(z'7F'))
+        ia = iachar(a)
+        is = ((ia < int(z'20')) .or. (ia == int(z'7F')))
     end function dm_ascii_is_control
 
-    pure elemental logical function dm_ascii_is_digit(a) result(is_digit)
+    pure elemental logical function dm_ascii_is_digit(a) result(is)
         !! Returns whether character is digit.
         character, intent(in) :: a !! Character to check.
 
-        is_digit = (a >= '0') .and. (a <= '9')
+        is = ((a >= '0') .and. (a <= '9'))
     end function dm_ascii_is_digit
 
-    pure elemental logical function dm_ascii_is_hex_digit(a) result(is_hex)
+    pure elemental logical function dm_ascii_is_hex_digit(a) result(is)
         !! Returns whether character is hex digit.
         character, intent(in) :: a !! Character to check.
 
-        is_hex = (a >= '0' .and. a <= '9') .or. &
-                 (a >= 'A' .and. a <= 'F') .or. &
-                 (a >= 'a' .and. a <= 'f')
+        is = ((a >= '0' .and. a <= '9') .or. &
+              (a >= 'A' .and. a <= 'F') .or. &
+              (a >= 'a' .and. a <= 'f'))
     end function dm_ascii_is_hex_digit
 
-    pure elemental logical function dm_ascii_is_lower(a) result(is_lower)
+    pure elemental logical function dm_ascii_is_lower(a) result(is)
         !! Returns whether character is lower-case.
         character, intent(in) :: a !! Character to check.
-        integer               :: i
+        integer               :: ia
 
-        i = iachar(a)
-        is_lower = (i >= iachar('a')) .and. (i <= iachar('z'))
+        ia = iachar(a)
+        is = ((ia >= iachar('a')) .and. (ia <= iachar('z')))
     end function dm_ascii_is_lower
 
-    pure elemental logical function dm_ascii_is_octal_digit(a) result(is_octal)
+    pure elemental logical function dm_ascii_is_octal_digit(a) result(is)
         !! Returns whether character is an octal digit.
         character, intent(in) :: a !! Character to check.
 
-        is_octal = (a >= '0') .and. (a <= '7')
+        is = ((a >= '0') .and. (a <= '7'))
     end function dm_ascii_is_octal_digit
 
-    pure elemental logical function dm_ascii_is_printable(a) result(is_printable)
+    pure elemental logical function dm_ascii_is_printable(a) result(is)
         !! Returns whether character is printable.
         character, intent(in) :: a !! Character to check.
-        integer               :: i
+        integer               :: ia
 
-        i = iachar(a)
-        is_printable = (i >= iachar(' ')) .and. (i <= int(z'7E'))
+        ia = iachar(a)
+        is = ((ia >= iachar(' ')) .and. (ia <= int(z'7E')))
     end function dm_ascii_is_printable
 
-    pure elemental logical function dm_ascii_is_upper(a) result(is_upper)
+    pure elemental logical function dm_ascii_is_upper(a) result(is)
         !! Returns whether character is upper-case.
         character, intent(in) :: a !! Character to check.
 
-        is_upper = (a >= 'A') .and. (a <= 'Z')
+        is = ((a >= 'A') .and. (a <= 'Z'))
     end function dm_ascii_is_upper
 
-    pure elemental logical function dm_ascii_is_white_space(a) result(is_white)
+    pure elemental logical function dm_ascii_is_white_space(a) result(is)
         !! Returns whether character is white space (either `SPACE`, `TAB`,
         !! `LF`, `VT`, `FF`, or `CR`).
         character, intent(in) :: a !! Character to check.
-        integer               :: i
+        integer               :: ia
 
-        i = iachar(a)
-        is_white = (a == ' ') .or. (i >= int(z'09') .and. i <= int(z'0D'))
+        ia = iachar(a)
+        is = ((a == ' ') .or. (ia >= int(z'09') .and. ia <= int(z'0D')))
     end function dm_ascii_is_white_space
 
     pure function dm_ascii_unescape(str) result(res)
