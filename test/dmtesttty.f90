@@ -6,18 +6,23 @@ program dmtesttty
     use :: unix
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 1
-    logical, parameter :: SKIP   = .true.
+
+    character(len=*), parameter :: TEST_NAME = 'dmtesttty'
+    integer,          parameter :: NTESTS    = 1
+    logical,          parameter :: SKIP      = .true.
 
     logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
     no_color = dm_env_has('NO_COLOR')
-    tests(1) = test_type('dmtesttty.test01', test01)
+
+    tests = [ &
+        test_type('test01', test01) &
+    ]
 
     call dm_init()
-    call dm_test_run(tests, stats, no_color=no_color)
+    call dm_test_run(TEST_NAME, tests, stats, no_color=no_color)
 contains
     logical function test01() result(stat)
         character(len=128) :: buf

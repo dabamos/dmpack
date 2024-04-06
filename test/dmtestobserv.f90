@@ -7,19 +7,21 @@ program dmtestobserv
     !! handling,
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 3
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestobserv'
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('dmtestobserv.test01', test01), &
-        test_type('dmtestobserv.test02', test02), &
-        test_type('dmtestobserv.test03', test03)  &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         integer             :: rc

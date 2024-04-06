@@ -6,26 +6,28 @@ program dmtestjson
     !! Test program that tries JSON export.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 10
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestjson'
+    integer,          parameter :: NTESTS    = 10
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('dmtestjson.test01', test01), &
-        test_type('dmtestjson.test02', test02), &
-        test_type('dmtestjson.test03', test03), &
-        test_type('dmtestjson.test04', test04), &
-        test_type('dmtestjson.test05', test05), &
-        test_type('dmtestjson.test06', test06), &
-        test_type('dmtestjson.test07', test07), &
-        test_type('dmtestjson.test08', test08), &
-        test_type('dmtestjson.test09', test09), &
-        test_type('dmtestjson.test10', test10)  &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03), &
+        test_type('test04', test04), &
+        test_type('test05', test05), &
+        test_type('test06', test06), &
+        test_type('test07', test07), &
+        test_type('test08', test08), &
+        test_type('test09', test09), &
+        test_type('test10', test10)  &
     ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         character(len=:), allocatable :: json

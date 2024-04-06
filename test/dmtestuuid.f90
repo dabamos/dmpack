@@ -7,17 +7,21 @@ program dmtestuuid
     !! UUIDs to be generated.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 2
-    integer, parameter :: NUUIDS = 1024
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestuuid'
+    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NUUIDS    = 1024
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestuuid.test01', test01)
-    tests(2) = test_type('dmtestuuid.test02', test02)
+    tests = [ &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
+    ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         character(len=UUID_LEN) :: uuids(NUUIDS)

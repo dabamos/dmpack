@@ -6,6 +6,10 @@ program dmtestdb
     !! Tests database access using `dm_db` module.
     use :: dmpack
     implicit none (type, external)
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestdb'
+    integer,          parameter :: NTESTS    = 19
+
     character(len=*), parameter :: DB_BEAT          = 'testbeat.sqlite'
     character(len=*), parameter :: DB_LOG           = 'testlog.sqlite'
     character(len=*), parameter :: DB_OBSERV        = 'testobserv.sqlite'
@@ -14,36 +18,35 @@ program dmtestdb
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
-    integer, parameter :: NTESTS   = 19
+
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    call dm_init()
-
     tests = [ &
-        test_type('dmtestdb.test01', test01), &
-        test_type('dmtestdb.test02', test02), &
-        test_type('dmtestdb.test03', test03), &
-        test_type('dmtestdb.test04', test04), &
-        test_type('dmtestdb.test05', test05), &
-        test_type('dmtestdb.test06', test06), &
-        test_type('dmtestdb.test07', test07), &
-        test_type('dmtestdb.test08', test08), &
-        test_type('dmtestdb.test09', test09), &
-        test_type('dmtestdb.test10', test10), &
-        test_type('dmtestdb.test11', test11), &
-        test_type('dmtestdb.test12', test12), &
-        test_type('dmtestdb.test13', test13), &
-        test_type('dmtestdb.test14', test14), &
-        test_type('dmtestdb.test15', test15), &
-        test_type('dmtestdb.test16', test16), &
-        test_type('dmtestdb.test17', test17), &
-        test_type('dmtestdb.test18', test18), &
-        test_type('dmtestdb.test19', test19)  &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03), &
+        test_type('test04', test04), &
+        test_type('test05', test05), &
+        test_type('test06', test06), &
+        test_type('test07', test07), &
+        test_type('test08', test08), &
+        test_type('test09', test09), &
+        test_type('test10', test10), &
+        test_type('test11', test11), &
+        test_type('test12', test12), &
+        test_type('test13', test13), &
+        test_type('test14', test14), &
+        test_type('test15', test15), &
+        test_type('test16', test16), &
+        test_type('test17', test17), &
+        test_type('test18', test18), &
+        test_type('test19', test19)  &
     ]
 
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_init()
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         !! Creates observation database.

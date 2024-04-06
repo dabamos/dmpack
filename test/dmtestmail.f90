@@ -17,19 +17,23 @@ program dmtestmail
     !! Some tests may be skipped if these are not set.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 2
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestmail'
+    integer,          parameter :: NTESTS    = 2
 
     logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
-    call dm_init()
     no_color = dm_env_has('NO_COLOR')
 
-    tests(1) = test_type('dmtestmail.test01', test01)
-    tests(2) = test_type('dmtestmail.test02', test02)
+    tests = [ &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
+    ]
 
-    call dm_test_run(tests, stats, no_color)
+    call dm_init()
+    call dm_test_run(TEST_NAME, tests, stats, no_color)
 contains
     logical function get_env(from, to, host, username, password) result(has)
         character(len=:), allocatable, intent(out) :: from

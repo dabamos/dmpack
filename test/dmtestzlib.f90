@@ -6,15 +6,19 @@ program dmtestzlib
     !! Test program for deflate compression (zlib).
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 1
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestzlib'
+    integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests(1) = test_type('dmtestzlib.test01', test01)
+    tests = [ &
+        test_type('test01', test01) &
+    ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         character(len=NML_OBSERV_LEN) :: input, output2

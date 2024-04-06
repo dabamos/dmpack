@@ -5,19 +5,22 @@
 program dmtesthtml
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 4
+
+    character(len=*), parameter :: TEST_NAME = 'dmtesthtml'
+    integer,          parameter :: NTESTS    = 4
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
+    tests = [ &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
+    ]
+
     call dm_init()
-
-    tests(1) = test_type('dmtesthtml.test01', test01)
-    tests(2) = test_type('dmtesthtml.test02', test02)
-    tests(3) = test_type('dmtesthtml.test03', test03)
-    tests(4) = test_type('dmtesthtml.test04', test04)
-
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         type(cgi_env_type) :: env

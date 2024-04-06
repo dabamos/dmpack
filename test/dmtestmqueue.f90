@@ -19,21 +19,23 @@ program dmtestmqueue
     use :: dmpack
     implicit none (type, external)
 
+    character(len=*), parameter :: TEST_NAME = 'dmtestmqueue'
+    integer,          parameter :: NTESTS    = 2
+
     character(len=*), parameter :: MQ_NAME    = 'dmtest'     !! Message queue name (without leading `/`).
     integer,          parameter :: MQ_MAX_MSG = 32           !! Maximum number of messages in queue.
     integer,          parameter :: MQ_MODE    = int(o'0644') !! Access permissions (octal).
 
-    integer, parameter :: NTESTS = 2
-
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
+    tests = [ &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
+    ]
+
     call dm_init()
-
-    tests(1) = test_type('dmtestmqueue.test01', test01)
-    tests(2) = test_type('dmtestmqueue.test02', test02)
-
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         !! Tests observation exchange using a single message queue descriptor.

@@ -304,7 +304,7 @@ contains
         target%z    = 10.0_r8
     end subroutine dm_test_dummy_target
 
-    subroutine dm_test_run(tests, stats, no_color)
+    subroutine dm_test_run(name, tests, stats, no_color)
         !! Runs all tests in given array `tests`, returns test states in array
         !! `stats`.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
@@ -313,15 +313,17 @@ contains
         use :: dm_timer
         use :: dm_version
 
-        type(test_type), intent(inout)        :: tests(:) !! Test types.
-        logical,         intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
-        logical,         intent(in), optional :: no_color
+        character(len=*), intent(in)           :: name     !! Test name.
+        type(test_type),  intent(inout)        :: tests(:) !! Test types.
+        logical,          intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
+        logical,          intent(in), optional :: no_color
 
-        integer          :: i, n, nfail, npass, state
-        logical          :: no_color_
-        real(kind=r8)    :: time, total_time
-        type(timer_type) :: timer
-        type(uname_type) :: uname
+        character(len=TEST_NAME_LEN) :: test_name
+        integer                      :: i, n, nfail, npass, state
+        logical                      :: no_color_
+        real(kind=r8)                :: time, total_time
+        type(timer_type)             :: timer
+        type(uname_type)             :: uname
 
         n = size(tests)
 
@@ -334,19 +336,28 @@ contains
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color_)
 
-        print '("Time....: ", a)',    dm_time_strip_useconds(dm_time_now())
-        print '("System..: ", a, 1x, a, " (", a, ")")', &
-            trim(uname%system_name), trim(uname%release), trim(uname%machine)
-        print '("Compiler: ", a)',    compiler_version()
-        print '("Options.: ", a)',    compiler_options()
+        print '("Name....: ", a)', trim(name)
+        print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
+        print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
+                                                        trim(uname%release), &
+                                                        trim(uname%machine)
+        print '("Compiler: ", a)', compiler_version()
+        print '("Options.: ", a)', compiler_options()
         print '("DMPACK..: ", a, /)', DM_VERSION_STRING
 
-        print '("Running ", i0, " test(s) ...")', n
+        if (n == 1) then
+            print '("Running ", i0, " test ...")', n
+        else
+            print '("Running ", i0, " tests ...")', n
+        end if
+
         total_time = 0.0
 
         do i = 1, n
+            test_name = trim(name) // '.' // trim(tests(i)%name)
+
             print '(a)', repeat('-', TEST_LINE_LEN)
-            call test_print(i, n, tests(i)%name, TEST_STATE_RUNNING, no_color=no_color_)
+            call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color_)
 
             call dm_timer_start(timer)
             stats(i) = tests(i)%proc()
@@ -356,7 +367,7 @@ contains
             state = TEST_STATE_FAILED
             if (stats(i) .eqv. TEST_PASSED) state = TEST_STATE_PASSED
 
-            call test_print(i, n, tests(i)%name, state, time, no_color=no_color_)
+            call test_print(i, n, test_name, state, time, no_color=no_color_)
         end do
 
         call test_title('TEST SUMMARY', TEST_LINE_LEN, '-')
@@ -385,8 +396,8 @@ contains
     ! ******************************************************************
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
-        character(len=*), parameter :: FMT_STATE = '("[TEST ",i2,"/",i2,"] ",a,20x,a)'
-        character(len=*), parameter :: FMT_TIME  = '("[TEST ",i2,"/",i2,"] ",a," in ",f8.4," sec.",3x,a)'
+        character(len=*), parameter :: FMT_STATE = '("[TEST ",i2,"/",i2,"] ", a, 20x, a)'
+        character(len=*), parameter :: FMT_TIME  = '("[TEST ",i2,"/",i2,"] ", a, " in ", f8.4, " sec.", 3x, a)'
 
         integer,          intent(in)           :: index    !! Test number.
         integer,          intent(in)           :: ntests   !! Number of tests.
@@ -401,11 +412,13 @@ contains
         if (present(no_color)) no_color_ = no_color
 
         call dm_ansi_color(TEST_COLORS(state), no_color_)
+
         if (present(time)) then
             write (*, FMT_TIME)  index, ntests, name, time, TEST_STATES(state)
         else
             write (*, FMT_STATE) index, ntests, name, TEST_STATES(state)
         end if
+
         call dm_ansi_reset(no_color_)
     end subroutine test_print
 

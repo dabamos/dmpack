@@ -6,29 +6,30 @@ program dmtestlua
     !! Tests Lua abstraction layer.
     use :: dmpack
     implicit none (type, external)
-    character(len=*), parameter :: LUA_FILE = 'test/test.lua'
 
-    integer, parameter :: NTESTS = 11
+    character(len=*), parameter :: TEST_NAME = 'dmtestlua'
+    character(len=*), parameter :: LUA_FILE  = 'test/test.lua'
+    integer,          parameter :: NTESTS    = 11
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('dmtestlua.test01', test01), &
-        test_type('dmtestlua.test02', test02), &
-        test_type('dmtestlua.test03', test03), &
-        test_type('dmtestlua.test04', test04), &
-        test_type('dmtestlua.test05', test05), &
-        test_type('dmtestlua.test06', test06), &
-        test_type('dmtestlua.test07', test07), &
-        test_type('dmtestlua.test08', test08), &
-        test_type('dmtestlua.test09', test09), &
-        test_type('dmtestlua.test10', test10), &
-        test_type('dmtestlua.test11', test11)  &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03), &
+        test_type('test04', test04), &
+        test_type('test05', test05), &
+        test_type('test06', test06), &
+        test_type('test07', test07), &
+        test_type('test08', test08), &
+        test_type('test09', test09), &
+        test_type('test10', test10), &
+        test_type('test11', test11)  &
     ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         !! Reads Lua global variables from file.

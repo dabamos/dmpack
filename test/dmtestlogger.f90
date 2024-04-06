@@ -6,14 +6,19 @@ program dmtestlogger
     !! Test program that writes to and reads from the logger queue.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 1
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestlogger'
+    integer,          parameter :: NTESTS    = 1
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
+    tests = [ &
+        test_type('test01', test01) &
+    ]
+
     call dm_init()
-    tests = [ test_type('dmtestlogger.test01', test01) ]
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         character(len=*), parameter :: JSON = &

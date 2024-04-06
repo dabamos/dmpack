@@ -7,25 +7,28 @@ program dmtesthdf5
     use :: dmpack
     implicit none (type, external)
 
+    character(len=*), parameter :: TEST_NAME  = 'dmtesthdf5'
+    integer,          parameter :: NTESTS     = 7
+
     character(len=*), parameter :: FILE_PATH  = 'testobserv.hdf5'
     character(len=*), parameter :: GROUP_NAME = 'timeseries'
-
-    integer, parameter :: NTESTS = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     call dm_init()
 
-    tests(1) = test_type('dmtesthdf5.test01', test01)
-    tests(2) = test_type('dmtesthdf5.test02', test02)
-    tests(3) = test_type('dmtesthdf5.test03', test03)
-    tests(4) = test_type('dmtesthdf5.test04', test04)
-    tests(5) = test_type('dmtesthdf5.test05', test05)
-    tests(6) = test_type('dmtesthdf5.test06', test06)
-    tests(7) = test_type('dmtesthdf5.test07', test07)
+    tests = [ &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03), &
+        test_type('test04', test04), &
+        test_type('test05', test05), &
+        test_type('test06', test06), &
+        test_type('test07', test07)  &
+    ]
 
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         !! Tests HDF5 library access.

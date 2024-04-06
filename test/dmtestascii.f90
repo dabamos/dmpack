@@ -6,15 +6,19 @@ program dmtestascii
     !! Test program for ASCII procedures.
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 1
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestascii'
+    integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    tests = [ test_type('dmtestascii.test01', test01) ]
+    tests = [ &
+        test_type('test01', test01) &
+    ]
 
     call dm_init()
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
         character(len=:), allocatable :: str

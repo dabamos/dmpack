@@ -15,19 +15,25 @@ program dmtestpipe
     !!
     !! This may be necessary on test platforms where bi-directional pipes are
     !! not available.
-    use, intrinsic :: iso_c_binding, only: c_associated
     use :: dmpack
     implicit none (type, external)
-    integer, parameter :: NTESTS = 1
+
+    character(len=*), parameter :: TEST_NAME = 'dmtestpipe'
+    integer,          parameter :: NTESTS    = 1
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
+    tests = [ &
+        test_type('test01', test01) &
+    ]
+
     call dm_init()
-    tests(1) = test_type('dmtestpipe.test01', test01)
-    call dm_test_run(tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
+        use, intrinsic :: iso_c_binding, only: c_associated
+
         character(len=*), parameter :: COMMAND = 'cat -n'
 
         character(len=4)  :: message
