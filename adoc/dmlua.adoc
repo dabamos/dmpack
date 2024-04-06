@@ -41,7 +41,7 @@ script.
   File path to the optional configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level DEBUG via IPC (if logger is set).
+  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

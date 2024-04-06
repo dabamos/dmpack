@@ -2,12 +2,12 @@
 .\"     Title: dmapi
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.22
-.\"      Date: 2024-02-16
+.\"      Date: 2024-04-06
 .\"    Manual: User Commands
 .\"    Source: DMAPI
 .\"  Language: English
 .\"
-.TH "DMAPI" "1" "2024-02-16" "DMAPI" "User Commands"
+.TH "DMAPI" "1" "2024-04-06" "DMAPI" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -45,8 +45,8 @@ encryption are independent from \fBdmapi\fP and have to be provided by the
 environment.
 .sp
 The POST data sent by clients must be serialised in Fortran 95 Namelist format,
-with optional deflate compression. The content type and the content encoding
-have to be passed in the HTTP header of the request.
+with optional deflate or zstd compression. The content type and the content
+encoding have to be passed in the HTTP header of the request.
 .sp
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
 and observation sent to the RPC service must match the name of the

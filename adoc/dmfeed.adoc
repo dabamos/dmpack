@@ -67,10 +67,12 @@ file modification of the feed, the output file is not updated, unless argument
 
 *--maxlevel*, *-K* _level_::
   Select log messages of the given maximum log level (from 1 to 5).
-  Must be greater or equal the minimum level.
+  Must be greater or equal the minimum level. The argument may be an integer or
+  name string.
 
 *--minlevel*, *-L* _level_::
-  Select log messages of the given minimum log level (from 1 to 5).
+  Select log messages of the given minimum log level (from 1 to 5). The
+  argument may be an integer or name string.
 
 *--name*, *-n* _name_::
   Name of instance and table in given configuration file (default is `dmfeed`).

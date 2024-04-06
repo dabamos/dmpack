@@ -2,12 +2,12 @@
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.22
-.\"      Date: 2024-02-16
+.\"      Date: 2024-04-06
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2024-02-16" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2024-04-06" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -41,11 +41,11 @@ dmlog \- sends log to POSIX message queue
 .SH "DESCRIPTION"
 .sp
 The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
-\fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. The default log
-level is INFO.
+\fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. The default log level
+is \f(CRinfo\fP.
 .sp
-Valid log levels are: 1 (DEBUG), 2 (INFO), 3 (WARNING), 4 (ERROR), and 5
-(CRITICAL).
+Valid log levels are: 1 (\f(CRdebug\fP), 2 (\f(CRinfo\fP), 3 (\f(CRwarning\fP), 4 (\f(CRerror\fP), and 5
+(\f(CRcritical\fP).
 .sp
 The program terminates after log transmission.
 .SH "OPTIONS"
@@ -60,9 +60,10 @@ DMPACK error code (>= 0).
 Output available command\-line arguments and quit.
 .RE
 .sp
-\fB\-\-level\fP, \fB\-L\fP \fIn\fP
+\fB\-\-level\fP, \fB\-L\fP \fIlevel\fP
 .RS 4
-Log level, from 1 to 5 (default is 2).
+Log level, from 1 (\f(CRLVL_DEBUG\fP) to 5 (\f(CRLVL_CRITICAL\fP). The default level is
+2 (\f(CRLVL_INFO\fP). The argument may be an integer or name string.
 .RE
 .sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP

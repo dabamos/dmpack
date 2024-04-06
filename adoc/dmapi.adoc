@@ -26,8 +26,8 @@ encryption are independent from *dmapi* and have to be provided by the
 environment.
 
 The POST data sent by clients must be serialised in Fortran 95 Namelist format,
-with optional deflate compression. The content type and the content encoding
-have to be passed in the HTTP header of the request.
+with optional deflate or zstd compression. The content type and the content
+encoding have to be passed in the HTTP header of the request.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
 and observation sent to the RPC service must match the name of the

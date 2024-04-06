@@ -1073,7 +1073,7 @@ dmfs = {
               {
                 name = "temp",  -- RegEx group name (max. 8 characters).
                 unit = "degC",  -- Response unit (max. 8 characters).
-                type = RESPONSE_TYPE_REAL64 -- Type.
+                type = RESPONSE_TYPE_REAL64 -- Response value type.
               }
             }
           }
@@ -1585,7 +1585,7 @@ dmpipe = {
               {
                 name = "battery",   -- RegEx group name (max. 8 characters).
                 unit = "%"          -- Response unit (max. 8 characters).
-                type = RESPONSE_TYPE_REAL64 -- Type.
+                type = RESPONSE_TYPE_REAL64 -- Response value type.
               }
             }
           }

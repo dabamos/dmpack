@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.22
-.\"      Date: 2024-03-06
+.\"      Date: 2024-04-06
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2024-03-06" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2024-04-06" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -102,12 +102,14 @@ UUID of the feed, 36 characters long with hyphens.
 \fB\-\-maxlevel\fP, \fB\-K\fP \fIlevel\fP
 .RS 4
 Select log messages of the given maximum log level (from 1 to 5).
-Must be greater or equal the minimum level.
+Must be greater or equal the minimum level. The argument may be an integer or
+name string.
 .RE
 .sp
 \fB\-\-minlevel\fP, \fB\-L\fP \fIlevel\fP
 .RS 4
-Select log messages of the given minimum log level (from 1 to 5).
+Select log messages of the given minimum log level (from 1 to 5). The
+argument may be an integer or name string.
 .RE
 .sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP

@@ -22,11 +22,11 @@ dmlog - sends log to POSIX message queue
 == DESCRIPTION
 
 The *dmlog* utility forwards a log message to the POSIX message queue of a
-_dmlogger(1)_ instance. Argument `--message` is mandatory. The default log
-level is INFO.
+_dmlogger(1)_ instance. Argument `--message` is mandatory. The default log level
+is `info`.
 
-Valid log levels are: 1 (DEBUG), 2 (INFO), 3 (WARNING), 4 (ERROR), and 5
-(CRITICAL).
+Valid log levels are: 1 (`debug`), 2 (`info`), 3 (`warning`), 4 (`error`), and 5
+(`critical`).
 
 The program terminates after log transmission.
 
@@ -38,8 +38,9 @@ The program terminates after log transmission.
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
-*--level*, *-L* _n_::
-  Log level, from 1 to 5 (default is 2).
+*--level*, *-L* _level_::
+  Log level, from 1 (`LVL_DEBUG`) to 5 (`LVL_CRITICAL`). The default level is
+  2 (`LVL_INFO`). The argument may be an integer or name string.
 
 *--logger*, *-l* _name_::
   Name of logger instance and POSIX message queue (default is `dmlogger`).

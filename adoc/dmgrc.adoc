@@ -37,14 +37,14 @@ Otherwise, the default log level is used instead.
   File path to the optional configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level DEBUG via IPC (if logger is set).
+  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
 *--level*, *-L* _level_::
   Default log level of return codes other than `GRC_OK` (`LVL_WARNING` by
-  default).
+  default). The argument may be an integer or name string.
 
 *--logger*, *-l* _name_::
   Name of _dmlogger(1)_ process to send logs to.

@@ -43,7 +43,7 @@ for testing.
   Maximum number of heartbeats to send. The default is 0 (unlimited).
 
 *--debug*, *-D*::
-  Forward logs messages of level DEBUG via IPC (if logger is set).
+  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
