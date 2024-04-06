@@ -143,10 +143,8 @@ contains
         end if
 
         ! Allocate return code arrays.
-        do i = LVL_DEBUG, LVL_LAST
-            if (.not. allocated(app%levels(i)%codes)) then
-                allocate (app%levels(i)%codes(0))
-            end if
+        do i = 1, size(app%levels)
+            if (.not. allocated(app%levels(i)%codes)) allocate (app%levels(i)%codes(0))
         end do
 
         rc = E_NONE

@@ -468,8 +468,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_BACKUP` if SQLite backup failed.
         !! * `E_DB` if closing the database failed.
+        !! * `E_DB_BACKUP` if SQLite backup failed.
         !! * `E_EXIST` if backup database exists.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
@@ -1447,10 +1447,10 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_DB` if statement reset failed.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_DB` if statement reset failed.
         !! * `E_INVALID` if argument `beat` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
@@ -1519,13 +1519,13 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_DB` if statement reset failed.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_EXEC` if execution of transaction statement failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_ROLLBACK` if transaction rollback failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TRANSACTION` if transaction failed.
-        !! * `E_DB` if statement reset failed.
         !! * `E_EMPTY` if array `beats` is empty.
         !! * `E_INVALID` if an element in `beats` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
@@ -1695,13 +1695,13 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_DB` if statement reset failed.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_EXEC` if execution of transaction statement failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_ROLLBACK` if transaction rollback failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TRANSACTION` if transaction failed.
-        !! * `E_DB` if statement reset failed.
         !! * `E_INVALID` if argument `observ` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
@@ -1811,13 +1811,13 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_DB` if statement reset failed.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_EXEC` if execution of transaction statement failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_ROLLBACK` if transaction rollback failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TRANSACTION` if transaction failed.
-        !! * `E_DB` if statement reset failed.
         !! * `E_EMPTY` if array `observs` is empty.
         !! * `E_INVALID` if an element in `observs` is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.

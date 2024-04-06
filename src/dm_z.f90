@@ -426,7 +426,7 @@ contains
         if (present(output_len)) output_len = output_len_
     end function z_compress_target
 
-    integer function z_uncompress(input, output, z, input_len, output_len) result(rc)
+    integer function z_uncompress(input, output, z, input_len, output_len, context) result(rc)
         !! Uncompresses given input and returns the result in string `output`.
         !! The string must be allocated and large enough to hold the
         !! uncompressed data. The actual length may be smaller than the output
@@ -444,11 +444,12 @@ contains
         !! * `E_ZLIB` if zlib library call failed.
         !! * `E_ZSTD` if zstd library call failed.
         !!
-        character(len=*), intent(inout)         :: input      !! Compressed data.
-        character(len=*), intent(inout)         :: output     !! Uncompressed data.
-        integer,          intent(in)            :: z          !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8), intent(in),  optional :: input_len  !! Actual input length.
-        integer(kind=i8), intent(out), optional :: output_len !! Actual output length.
+        character(len=*),        intent(inout)           :: input      !! Compressed data.
+        character(len=*),        intent(inout)           :: output     !! Uncompressed data.
+        integer,                 intent(in)              :: z          !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len  !! Actual input length.
+        integer(kind=i8),        intent(out),   optional :: output_len !! Actual output length.
+        type(zstd_context_type), intent(inout), optional :: context    !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         if (present(output_len)) output_len = 0_i8
 
@@ -469,108 +470,118 @@ contains
                 rc = dm_zlib_uncompress(input, output, input_len=input_len, output_len=output_len)
 
             case (Z_TYPE_ZSTD)
-                rc = dm_zstd_uncompress(input, output, input_len=input_len, output_len=output_len)
+                if (present(context)) then
+                    rc = dm_zstd_uncompress(context, input, output, input_len=input_len, output_len=output_len)
+                else
+                    rc = dm_zstd_uncompress(input, output, input_len=input_len, output_len=output_len)
+                end if
         end select
     end function z_uncompress
 
-    integer function z_uncompress_beat(input, beat, z, input_len) result(rc)
+    integer function z_uncompress_beat(input, beat, z, input_len, context) result(rc)
         !! Uncompressed compressed beat namelist `input` and returns
         !! deserialised type in `beat`.
         use :: dm_beat
 
-        character(len=*), intent(inout)        :: input     !! Compressed and Namelist-serialised beat.
-        type(beat_type),  intent(out)          :: beat      !! Uncompressed and deserialised beat.
-        integer,          intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8), intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised beat.
+        type(beat_type),         intent(out)             :: beat      !! Uncompressed and deserialised beat.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_BEAT_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, beat)
     end function z_uncompress_beat
 
-    integer function z_uncompress_log(input, log, z, input_len) result(rc)
+    integer function z_uncompress_log(input, log, z, input_len, context) result(rc)
         !! Uncompressed compressed log namelist `input` and returns
         !! deserialised type in `log`.
         use :: dm_log
 
-        character(len=*), intent(inout)        :: input     !! Compressed and Namelist-serialised log.
-        type(log_type),   intent(out)          :: log       !! Uncompressed and deserialised log.
-        integer,          intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8), intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised log.
+        type(log_type),          intent(out)             :: log       !! Uncompressed and deserialised log.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_LOG_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, log)
     end function z_uncompress_log
 
-    integer function z_uncompress_node(input, node, z, input_len) result(rc)
+    integer function z_uncompress_node(input, node, z, input_len, context) result(rc)
         !! Uncompressed compressed node namelist `input` and returns
         !! deserialised type in `node`.
         use :: dm_node
 
-        character(len=*), intent(inout)        :: input     !! Compressed and Namelist-serialised node.
-        type(node_type),  intent(out)          :: node      !! Uncompressed and deserialised node.
-        integer,          intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8), intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised node.
+        type(node_type),         intent(out)             :: node      !! Uncompressed and deserialised node.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_NODE_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, node)
     end function z_uncompress_node
 
-    integer function z_uncompress_observ(input, observ, z, input_len) result(rc)
+    integer function z_uncompress_observ(input, observ, z, input_len, context) result(rc)
         !! Uncompressed compressed observation namelist `input` and returns
         !! deserialised z in `observ`.
         use :: dm_observ
 
-        character(len=*),  intent(inout)        :: input     !! Compressed and Namelist-serialised observation.
-        type(observ_type), intent(out)          :: observ    !! Uncompressed and deserialised observation.
-        integer,           intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8),  intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised observation.
+        type(observ_type),       intent(out)             :: observ    !! Uncompressed and deserialised observation.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_OBSERV_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, observ)
     end function z_uncompress_observ
 
-    integer function z_uncompress_sensor(input, sensor, z, input_len) result(rc)
+    integer function z_uncompress_sensor(input, sensor, z, input_len, context) result(rc)
         !! Uncompressed compressed sensor namelist `input` and returns
         !! deserialised type in `sensor`.
         use :: dm_sensor
 
-        character(len=*),  intent(inout)        :: input     !! Compressed and Namelist-serialised sensor.
-        type(sensor_type), intent(out)          :: sensor    !! Uncompressed and deserialised sensor.
-        integer,           intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8),  intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised sensor.
+        type(sensor_type),       intent(out)             :: sensor    !! Uncompressed and deserialised sensor.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_SENSOR_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, sensor)
     end function z_uncompress_sensor
 
-    integer function z_uncompress_target(input, target, z, input_len) result(rc)
+    integer function z_uncompress_target(input, target, z, input_len, context) result(rc)
         !! Uncompressed compressed target namelist `input` and returns
         !! deserialised type in `target`.
         use :: dm_target
 
-        character(len=*),  intent(inout)        :: input     !! Compressed and Namelist-serialised target.
-        type(target_type), intent(out)          :: target    !! Uncompressed and deserialised target.
-        integer,           intent(in)           :: z         !! Input compression enumerator (`Z_TYPE_*`).
-        integer(kind=i8),  intent(in), optional :: input_len !! Actual input length.
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised target.
+        type(target_type),       intent(out)             :: target    !! Uncompressed and deserialised target.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
 
         character(len=NML_TARGET_LEN) :: output
 
-        rc = z_uncompress(input, output, z, input_len=input_len)
+        rc = z_uncompress(input, output, z, input_len=input_len, context=context)
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, target)
     end function z_uncompress_target

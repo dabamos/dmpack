@@ -294,7 +294,7 @@ contains
         type(rpc_response_type), intent(out)             :: response     !! RPC response type.
         character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),        intent(inout), optional :: payload      !! Payload date (for POST only).
+        character(len=*),        intent(inout), optional :: payload      !! Payload data (for POST only).
         character(len=*),        intent(in),    optional :: content_type !! Payload content type (for POST only).
         character(len=*),        intent(in),    optional :: accept       !! HTTP Accept header.
         character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
@@ -338,10 +338,10 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if compression type is invalid.
-        !! * `E_ZLIB` if zlib libray call failed.
-        !! * `E_ZSTD` if zstd libray call failed.
         !! * `E_RPC` if request failed.
         !! * `E_TYPE` if `type` is unsupported.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
         !!
         type(rpc_request_type),  intent(inout)        :: request     !! RPC request type.
         type(rpc_response_type), intent(out)          :: response    !! RPC response type.
@@ -394,10 +394,10 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_CORRUPT` if sizes of requests and types array mismatch.
         !! * `E_INVALID` if compression type is invalid.
-        !! * `E_ZLIB` if zlib libray call failed.
-        !! * `E_ZSTD` if zstd libray call failed.
         !! * `E_RPC` if request failed.
         !! * `E_TYPE` if type of `types` is unsupported.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
         !!
         !! On error, array `responses` may be unallocated.
         use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
