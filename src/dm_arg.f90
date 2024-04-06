@@ -45,7 +45,7 @@ module dm_arg
     integer, parameter, public :: ARG_TYPE_ID      =  6 !! Valid ID value.
     integer, parameter, public :: ARG_TYPE_UUID    =  7 !! Valid UUID4 value.
     integer, parameter, public :: ARG_TYPE_TIME    =  8 !! Valid ISO 8601 value.
-    integer, parameter, public :: ARG_TYPE_LEVEL   =  9 !! Log level.
+    integer, parameter, public :: ARG_TYPE_LEVEL   =  9 !! Log level (name string or integer value).
     integer, parameter, public :: ARG_TYPE_FILE    = 10 !! Path to file on file system (must exist).
     integer, parameter, public :: ARG_TYPE_DB      = 11 !! Path to database on file system (must exist).
     integer, parameter, public :: ARG_TYPE_LAST    = 11 !! Never use this.

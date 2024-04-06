@@ -37,6 +37,8 @@ module dm_config
     public :: dm_config_size
 
     private :: config_error
+    private :: config_get_array_int32
+    private :: config_get_array_int64
     private :: config_get_int32
     private :: config_get_int64
     private :: config_get_job_list

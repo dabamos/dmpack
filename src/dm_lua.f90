@@ -702,6 +702,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if the field of given name is null.
+        !!
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
         character(len=*),     intent(in)    :: name !! Field name.
 
@@ -889,6 +890,7 @@ contains
         !!
         !! * `E_INVALID` if the element on top of the stack is not a table.
         !! * `E_EMPTY` if the table is empty.
+        !!
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: i   !! Variable index.
 
@@ -1179,6 +1181,7 @@ contains
         !! * `E_ALLOC` if the array allocation failed.
         !! * `E_EMPTY` if the table is empty.
         !! * `E_TYPE` if the stack element is not a table.
+        !!
         use :: dm_job
 
         type(lua_state_type),        intent(inout) :: lua     !! Lua type.

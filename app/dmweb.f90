@@ -55,6 +55,9 @@ program dmweb
     type(cgi_route_type)  :: routes(18)
     type(cgi_router_type) :: router
 
+    ! Initialise DMPACK.
+    call dm_init()
+
     ! Routes to dynamic pages.
     routes = [ cgi_route_type('',         route_dashboard), &
                cgi_route_type('/',        route_dashboard), &
@@ -74,9 +77,6 @@ program dmweb
                cgi_route_type('/status',  route_status),    &
                cgi_route_type('/target',  route_target),    &
                cgi_route_type('/targets', route_targets) ]
-
-    ! Initialise DMPACK.
-    call dm_init()
 
     ! Dispatch request and output response.
     route_block: block
@@ -124,7 +124,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -182,7 +182,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -270,7 +270,7 @@ contains
         beat_if: &
         if (has_db_beat) then
             call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 10 Beats'))
-            rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
@@ -302,7 +302,7 @@ contains
         log_if: &
         if (has_db_log) then
             call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 10 Logs'))
-            rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
@@ -327,7 +327,7 @@ contains
         observ_if: &
         if (has_db_observ) then
             call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 10 Observations'))
-            rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_out(dm_html_p('Database connection failed.'))
@@ -430,7 +430,7 @@ contains
         type(db_type)             :: db
         type(log_type)            :: log
 
-        rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -660,7 +660,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -828,7 +828,7 @@ contains
             return
         end if
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -853,7 +853,7 @@ contains
 
             ! Get associated logs from database.
             rc = dm_db_close(db)
-            rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call html_error('Database Connection Failed', error=rc)
@@ -1045,7 +1045,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1208,7 +1208,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1492,7 +1492,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)

@@ -164,12 +164,13 @@ LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
-LIBZ       = `pkg-config --libs-only-l zlib`
+LIBZ       = `pkg-config --libs-only-l zlib libzstd`
+LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
-             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ) $(LIBZSTD)
+             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -177,9 +178,9 @@ LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
-LIBFZ       = $(LIBDIR)/libfortran-zlib.a
+LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZ) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -407,7 +408,7 @@ test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
       dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
       dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe \
       dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
-      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestzlib \
+      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz dmtestzlib \
       dmtestzstd
 
 # ******************************************************************************
@@ -482,8 +483,8 @@ $(LIBFUNIX): setup
 	cd vendor/fortran-unix/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	cp ./vendor/fortran-unix/*.mod $(INCDIR)/
 
-$(LIBFZ): setup
-	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZ)"
+$(LIBFZLIB): setup
+	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
 	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
 
 $(LIBFZSTD): setup
@@ -715,8 +716,11 @@ dmtestutil: test/dmtestutil.f90 $(TARGET)
 dmtestuuid: test/dmtestuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid test/dmtestuuid.f90 $(TARGET) $(LDLIBS)
 
+dmtestz: test/dmtestz.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestz test/dmtestz.f90 $(TARGET) $(LIBZ) $(LDLIBS)
+
 dmtestzlib: test/dmtestzlib.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZ) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZLIB) $(LDLIBS)
 
 dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestzstd test/dmtestzstd.f90 $(TARGET) $(LIBZSTD) $(LDLIBS)
@@ -1017,7 +1021,7 @@ purge: clean
 	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
 	@echo
 	@echo "--- Cleaning fortran-zlib ..."
-	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZ)"
+	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZLIB)"
 	@echo
 	@echo "--- Cleaning fortran-zstd ..."
 	cd vendor/fortran-zstd/ && make clean TARGET="../../$(LIBFZSTD)"

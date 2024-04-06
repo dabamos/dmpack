@@ -242,10 +242,10 @@ contains
         !! Returns the status of the given filter. The following filters are
         !! supported:
         !!
-        !! * `HDF5_FILTER_DEFLATE` – gzip or deflate compression.
-        !! * `HDF5_FILTER_SHUFFLE` – Shuffle algorithm.
+        !! * `HDF5_FILTER_DEFLATE`    – gzip or deflate compression.
+        !! * `HDF5_FILTER_SHUFFLE`    – Shuffle algorithm.
         !! * `HDF5_FILTER_FLETCHER32` – Fletcher32 checksum.
-        !! * `HDF5_FILTER_SZIP` – SZIP compression.
+        !! * `HDF5_FILTER_SZIP`       – SZIP compression.
         !!
         !! Argument `error` is set to `E_INVALID` if the given filter is
         !! invalid, and to `E_HDF5` if the library call failed.

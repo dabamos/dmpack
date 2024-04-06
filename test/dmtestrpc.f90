@@ -127,13 +127,13 @@ contains
         do i = 1, NOBSERVS
             if (modulo(i, 10) == 0) print *, '>>> ', i
 
-            rc = dm_rpc_send(request  = request, &
-                             response = response, &
-                             type     = observs(i), &
-                             username = username, &
-                             password = password, &
-                             deflate  = .true., &
-                             url      = dm_rpc_url(host, endpoint='/observ'))
+            rc = dm_rpc_send(request     = request, &
+                             response    = response, &
+                             type        = observs(i), &
+                             username    = username, &
+                             password    = password, &
+                             compression = Z_TYPE_ZSTD, &
+                             url         = dm_rpc_url(host, endpoint='/observ'))
 
             call dm_rpc_reset(request)
 
@@ -184,9 +184,8 @@ contains
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(requests, responses, observs, &
-                         dm_rpc_url(host, endpoint='/observ'), &
-                         username, password, deflate=.true.)
+        rc = dm_rpc_send(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
+                         username, password, compression=Z_TYPE_ZSTD)
         call dm_timer_stop(timer, dt)
 
         call dm_error_out(rc)
@@ -239,9 +238,8 @@ contains
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(requests, responses, observs, &
-                         dm_rpc_url(host, endpoint='/observ'), &
-                         username, password, deflate=.true., sequential=.true.)
+        rc = dm_rpc_send(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
+                         username, password, compression=Z_TYPE_ZSTD, sequential=.true.)
         call dm_timer_stop(timer, dt)
 
         call dm_error_out(rc)
@@ -289,13 +287,13 @@ contains
 
         print *, 'Sending beat via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(request  = request, &
-                         response = response, &
-                         type     = beat, &
-                         username = username, &
-                         password = password, &
-                         deflate  = .true., &
-                         url      = dm_rpc_url(host, endpoint='/beat'))
+        rc = dm_rpc_send(request     = request, &
+                         response    = response, &
+                         type        = beat, &
+                         username    = username, &
+                         password    = password, &
+                         compression = Z_TYPE_ZLIB, &
+                         url         = dm_rpc_url(host, endpoint='/beat'))
         call dm_timer_stop(timer, dt)
         call dm_error_out(rc)
 

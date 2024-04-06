@@ -194,6 +194,7 @@ contains
         has  = .false.
         hash = dm_hash_fnv1a(trim(key))
         loc  = findloc(param%hashes, hash, dim=1)
+
         if (loc == 0) return
         has = .true.
     end function dm_cgi_has
@@ -210,6 +211,7 @@ contains
         has  = .false.
         hash = dm_hash_fnv1a(trim(key))
         loc  = findloc(param%hashes, hash, dim=1)
+
         if (loc == 0) return
         if (len_trim(param%values(loc)) == 0) return
         has = .true.
@@ -239,7 +241,7 @@ contains
     end function dm_cgi_size
 
     function dm_cgi_value(param, loc) result(str)
-        !! Returns value at index `i` in values array of `param`.
+        !! Returns value at index `loc` in values array of `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: str   !! Value or empty.
@@ -365,7 +367,7 @@ contains
             end if
 
             param%hashes(i) = dm_hash_fnv1a(trim(param%keys(i)))
-            param%cursor = param%cursor + 1
+            param%cursor    = param%cursor + 1
         end do
     end subroutine dm_cgi_parse
 

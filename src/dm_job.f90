@@ -118,12 +118,12 @@ contains
     integer function dm_job_list_next(job_list, job, index, disabled, revolved) result(rc)
         !! Returns copy of next enabled job. If `disabled` is `.true.`, the next
         !! job is returned regardless of state. One-time jobs are disabled by
-        !! this functions. If the job list has been finished and restarted from
+        !! this function. If the job list has been finished and restarted from
         !! the beginning, `revolved` is set to `.true.`.
         !!
         !! Call `dm_job_list_any()` or `dm_job_list_count()` beforehand to check
         !! if the job list contains any enabled jobs. Otherwise, this function
-        !! return `E_EMPTY`.
+        !! returns `E_EMPTY`.
         !!
         !! The function returns the following error codes:
         !!

@@ -12,10 +12,10 @@ program dmsync
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 4
 
-    integer, parameter :: APP_DB_NATTEMPTS = 10                 !! Max. number of database insert attempts.
-    integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer, parameter :: APP_SYNC_LIMIT   = 10                 !! Max. number of records to sync at once.
-    logical, parameter :: APP_RPC_DEFLATE  = .true.             !! Compress RPC payload.
+    integer, parameter :: APP_DB_NATTEMPTS    = 10                 !! Max. number of database insert attempts.
+    integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
+    integer, parameter :: APP_RPC_COMPRESSION = Z_TYPE_ZSTD        !! RPC payload compression (none, deflate, zstd).
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
@@ -319,9 +319,9 @@ contains
 
         ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
-            requests(i)%url        = url
-            requests(i)%user_agent = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-            requests(i)%deflate    = APP_RPC_DEFLATE
+            requests(i)%url         = url
+            requests(i)%user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
+            requests(i)%compression = APP_RPC_COMPRESSION
 
             if (len_trim(app%username) > 0 .and. len_trim(app%password) > 0) then
                 requests(i)%auth     = RPC_AUTH_BASIC

@@ -118,7 +118,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -148,8 +148,9 @@ contains
 
         response_block: block
             character(len=:), allocatable :: content
-            character(len=NML_BEAT_LEN)   :: buffer
+            character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(beat_type)               :: beat
 
@@ -170,24 +171,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, beat)
-                else
-                    rc = dm_nml_to(content, beat)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, beat, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -299,7 +295,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -364,7 +360,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -395,8 +391,9 @@ contains
 
         response_block: block
             character(len=:), allocatable :: content
-            character(len=NML_LOG_LEN)    :: buffer
+            character(len=NML_NODE_LEN)   :: buffer
             character(len=LOG_ID_LEN)     :: id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(log_type)                :: log
 
@@ -417,24 +414,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, log)
-                else
-                    rc = dm_nml_to(content, log)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, log, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -552,7 +544,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -688,7 +680,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -721,6 +713,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(node_type)               :: node
 
@@ -741,24 +734,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, node)
-                else
-                    rc = dm_nml_to(content, node)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, node, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -871,7 +859,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -936,7 +924,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -969,6 +957,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_OBSERV_LEN) :: buffer
             character(len=OBSERV_ID_LEN)  :: id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(observ_type)             :: observ
 
@@ -989,24 +978,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, observ)
-                else
-                    rc = dm_nml_to(content, observ)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, observ, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -1127,7 +1111,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1291,12 +1275,12 @@ contains
         rc = E_NONE
 
         ! Check database availability.
-        if (.not. dm_file_exists(db_beat) .or. &
-            .not. dm_file_exists(db_log)  .or. &
-            .not. dm_file_exists(db_observ)) rc = E_NOT_FOUND
-
-        if (dm_is_error(rc)) then
-            message = dm_error_message(rc)
+        if (.not. dm_file_exists(db_beat)) then
+            rc = E_NOT_FOUND; message = 'beat database not found'
+        else if (.not. dm_file_exists(db_log)) then
+            rc = E_NOT_FOUND; message = 'log database not found'
+        else if (.not. dm_file_exists(db_observ)) then
+            rc = E_NOT_FOUND; message = 'observation database not found'
         else
             message = 'online'
         end if
@@ -1330,7 +1314,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -1363,6 +1347,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_SENSOR_LEN) :: buffer
             character(len=SENSOR_ID_LEN)  :: id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(sensor_type)             :: sensor
 
@@ -1383,24 +1368,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, sensor)
-                else
-                    rc = dm_nml_to(content, sensor)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, sensor, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -1514,7 +1494,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1579,7 +1559,7 @@ contains
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
-        !! * `Content-Encoding` - `deflate` (optional)
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
@@ -1612,6 +1592,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_TARGET_LEN) :: buffer
             character(len=TARGET_ID_LEN)  :: id
+            integer                       :: encoding
             type(cgi_param_type)          :: param
             type(target_type)             :: target
 
@@ -1632,24 +1613,19 @@ contains
                     exit response_block
                 end if
 
-                ! Read namelist into type.
-                if (env%http_content_encoding == 'deflate') then
-                    ! Inflate request body.
-                    rc = dm_zlib_uncompress(content, buffer)
+                ! Select payload compression type.
+                encoding = dm_z_type_from_encoding(env%http_content_encoding)
 
-                    if (dm_is_error(rc)) then
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', rc)
-                        exit response_block
-                    end if
-
-                    rc = dm_nml_to(buffer, target)
-                else
-                    rc = dm_nml_to(content, target)
+                if (encoding == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit response_block
                 end if
 
-                ! Validate namelist error.
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, target, encoding)
+
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid namelist format', rc)
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
@@ -1754,7 +1730,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1837,7 +1813,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)

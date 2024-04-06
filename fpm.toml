@@ -31,7 +31,7 @@ external-modules = [ "hdf5", "h5lib", "h5tb" ]
 [[executable]]
 name = "dmapi"
 main = "dmapi.f90"
-link = [ "fcgi", "sqlite3", "z" ]
+link = [ "fcgi", "sqlite3", "z", "zstd" ]
 
 [[executable]]
 name = "dmbackup"
@@ -41,7 +41,7 @@ link = [ "sqlite3" ]
 [[executable]]
 name = "dmbeat"
 main = "dmbeat.f90"
-link = [ "curl", "lua-5.4", "rt", "z" ]
+link = [ "curl", "lua-5.4", "rt", "z", "zstd" ]
 
 [[executable]]
 name = "dmdb"
@@ -136,7 +136,7 @@ link = [ "lua-5.4", "pcre2-8", "rt" ]
 [[executable]]
 name = "dmsync"
 main = "dmsync.f90"
-link = [ "curl", "lua-5.4", "pthread", "rt", "sqlite3", "z" ]
+link = [ "curl", "lua-5.4", "pthread", "rt", "sqlite3", "z", "zstd" ]
 
 [[executable]]
 name = "dmuuid"
@@ -270,7 +270,7 @@ link = [ "pcre2-8" ]
 [[test]]
 name = "dmtestrpc"
 main = "dmtestrpc.f90"
-link = [ "curl", "z" ]
+link = [ "curl", "z", "zstd" ]
 
 [[test]]
 name = "dmtestrts"
@@ -304,6 +304,11 @@ main = "dmtestutil.f90"
 [[test]]
 name = "dmtestuuid"
 main = "dmtestuuid.f90"
+
+[[test]]
+name = "dmtestz"
+main = "dmtestz.f90"
+link = [ "z", "zstd" ]
 
 [[test]]
 name = "dmtestzlib"

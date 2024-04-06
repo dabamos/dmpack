@@ -37,7 +37,7 @@ module dm_rpc
     use :: dm_mime
     use :: dm_util
     use :: dm_version
-    use :: dm_zlib
+    use :: dm_z
     implicit none (type, external)
     private
 
@@ -92,9 +92,9 @@ module dm_rpc
         !! HTTP-RPC request type.
         integer                                     :: auth            = RPC_AUTH_NONE  !! HTTP Auth.
         integer                                     :: method          = RPC_METHOD_GET !! HTTP method (GET, POST).
-        integer                                     :: timeout         = 30             !! Timeout in seconds.
+        integer                                     :: compression     = Z_TYPE_NONE    !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer                                     :: connect_timeout = 30             !! Connection timeout in seconds.
-        logical                                     :: deflate         = .false.        !! Use deflate compression.
+        integer                                     :: timeout         = 30             !! Timeout in seconds.
         logical                                     :: follow_location = .true.         !! Follow HTTP 3xx redirects.
         character(len=:), allocatable               :: payload                          !! Request payload.
         character(len=:), allocatable               :: content_type                     !! Request payload type (MIME).
@@ -141,7 +141,6 @@ module dm_rpc
     public :: dm_rpc_url
     public :: dm_rpc_write_callback
 
-    private :: rpc_payload_prepare
     private :: rpc_request
     private :: rpc_request_multi
     private :: rpc_request_prepare
@@ -251,8 +250,9 @@ contains
     end function dm_rpc_init
 
     integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &
-                                          user_agent, deflate) result(rc)
-        !! Sends multiple HTTP requests by GET or POST method.
+                                          user_agent, compression) result(rc)
+        !! Sends multiple HTTP requests by GET or POST method, with optional
+        !! deflate or zstd compression.
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
@@ -261,7 +261,7 @@ contains
         character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
         character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
         character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
-        logical,                              intent(in), optional :: deflate      !! Deflate-compression of payload (for POST only).
+        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         integer :: i
 
@@ -269,11 +269,11 @@ contains
             ! Set request parameters.
             if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
 
-            if (present(accept))     requests(i)%accept     = trim(accept)
-            if (present(method))     requests(i)%method     = method
-            if (present(url))        requests(i)%url        = trim(url)
-            if (present(user_agent)) requests(i)%user_agent = trim(user_agent)
-            if (present(deflate))    requests(i)%deflate    = deflate
+            if (present(accept))      requests(i)%accept      = trim(accept)
+            if (present(method))      requests(i)%method      = method
+            if (present(url))         requests(i)%url         = trim(url)
+            if (present(user_agent))  requests(i)%user_agent  = trim(user_agent)
+            if (present(compression)) requests(i)%compression = compression
 
             ! HTTP Basic Auth.
             if (present(username) .and. present(password)) then
@@ -287,9 +287,9 @@ contains
     end function dm_rpc_request_multi
 
     integer function dm_rpc_request_single(request, response, url, method, payload, content_type, &
-                                           accept, username, password, user_agent, deflate) result(rc)
+                                           accept, username, password, user_agent, compression) result(rc)
         !! Sends single HTTP request by GET or POST method, and with optional
-        !! deflate compression.
+        !! deflate or zstd compression.
         type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
         type(rpc_response_type), intent(out)             :: response     !! RPC response type.
         character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
@@ -300,16 +300,16 @@ contains
         character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
         character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
         character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
-        logical,                 intent(in),    optional :: deflate      !! Deflate-compression of payload (for POST only).
+        integer,                 intent(in),    optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         ! Set request parameters.
         if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
 
-        if (present(url))        request%url        = trim(url)
-        if (present(method))     request%method     = method
-        if (present(accept))     request%accept     = trim(accept)
-        if (present(user_agent)) request%user_agent = trim(user_agent)
-        if (present(deflate))    request%deflate    = deflate
+        if (present(url))         request%url         = trim(url)
+        if (present(method))      request%method      = method
+        if (present(accept))      request%accept      = trim(accept)
+        if (present(user_agent))  request%user_agent  = trim(user_agent)
+        if (present(compression)) request%compression = compression
 
         if (present(username) .and. present(password)) then
             request%auth     = RPC_AUTH_BASIC
@@ -326,30 +326,39 @@ contains
     end function dm_rpc_request_single
 
     integer function dm_rpc_send_type(request, response, type, url, username, password, &
-                                      user_agent, deflate) result(rc)
+                                      user_agent, compression) result(rc)
         !! Sends a single derived type in Namelist format to a given URL, with
-        !! optional authentication and deflate compression. The URL has to be
-        !! the API endpoint that accepts HTTP POST requests.
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
         !!
         !! The dummy argument `type` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
         !! `target_type`. The function returns `E_TYPE` on any other type.
-        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
-        type(rpc_response_type), intent(out)          :: response   !! RPC response type.
-        class(*),                intent(inout)        :: type       !! Derived type.
-        character(len=*),        intent(in), optional :: url        !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: username   !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password   !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent !! HTTP User Agent.
-        logical,                 intent(in), optional :: deflate    !! Deflate compression.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !! * `E_RPC` if request failed.
+        !! * `E_TYPE` if `type` is unsupported.
+        !!
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request type.
+        type(rpc_response_type), intent(out)          :: response    !! RPC response type.
+        class(*),                intent(inout)        :: type        !! Derived type.
+        character(len=*),        intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         request%accept       = MIME_TEXT
         request%content_type = MIME_NML
         request%method       = RPC_METHOD_POST
 
-        if (present(url))        request%url        = trim(url)
-        if (present(user_agent)) request%user_agent = trim(user_agent)
-        if (present(deflate))    request%deflate    = deflate
+        if (present(url))         request%url         = trim(url)
+        if (present(user_agent))  request%user_agent  = trim(user_agent)
+        if (present(compression)) request%compression = compression
 
         if (present(username) .and. present(password)) then
             request%auth     = RPC_AUTH_BASIC
@@ -357,18 +366,20 @@ contains
             request%password = trim(password)
         end if
 
-        ! Convert derived type to Namelist representation.
-        rc = rpc_payload_prepare(type, request%payload, request%deflate)
+        rc = E_INVALID
+        if (.not. dm_z_valid(request%compression)) return
+
+        rc = dm_z_compress_type(type, request%payload, request%compression)
         if (dm_is_error(rc)) return
 
         rc = rpc_request(request, response)
     end function dm_rpc_send_type
 
     integer function dm_rpc_send_types(requests, responses, types, url, username, password, &
-                                       user_agent, deflate, sequential) result(rc)
+                                       user_agent, compression, sequential) result(rc)
         !! Sends multiple derived types concurrently in Namelist format to the
-        !! given URL, with optional authentication and deflate compression.
-        !! The URL has to be the API endpoint that accepts HTTP POST requests.
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
         !!
         !! The dummy argument `types` may be of derived type `beat_type`,
         !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
@@ -377,6 +388,20 @@ contains
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently. The number of requests must match the
         !! number of types, or `E_CORRUPT` is returned.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_CORRUPT` if sizes of requests and types array mismatch.
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !! * `E_RPC` if request failed.
+        !! * `E_TYPE` if type of `types` is unsupported.
+        !!
+        !! On error, array `responses` may be unallocated.
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
         type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
         class(*),                             intent(inout)        :: types(:)     !! Derived type array.
@@ -384,14 +409,21 @@ contains
         character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
         character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
         character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
-        logical,                              intent(in), optional :: deflate      !! Deflate compression.
+        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
         logical,                              intent(in), optional :: sequential   !! Sequential instead of concurrent transfer.
 
-        integer :: i, n, stat
-        logical :: sequential_
+        integer                 :: i, n, stat, z
+        logical                 :: sequential_
+        type(zstd_context_type) :: context
 
         rc = E_CORRUPT
         if (size(requests) /= size(types)) return
+
+        z = Z_TYPE_NONE
+        if (present(compression)) z = compression
+
+        rc = E_INVALID
+        if (.not. dm_z_valid(z)) return
 
         sequential_ = .false.
         if (present(sequential)) sequential_ = sequential
@@ -411,10 +443,10 @@ contains
             requests(i)%accept       = MIME_TEXT
             requests(i)%content_type = MIME_NML
             requests(i)%method       = RPC_METHOD_POST
+            requests(i)%compression  = z
 
             if (present(url))        requests(i)%url        = trim(url)
             if (present(user_agent)) requests(i)%user_agent = trim(user_agent)
-            if (present(deflate))    requests(i)%deflate    = deflate
 
             if (present(username) .and. present(password)) then
                 requests(i)%auth     = RPC_AUTH_BASIC
@@ -422,10 +454,19 @@ contains
                 requests(i)%password = trim(password)
             end if
 
-            ! Convert derived type to Namelist representation.
-            rc = rpc_payload_prepare(types(i), requests(i)%payload, requests(i)%deflate)
-            if (dm_is_error(rc)) return
+            ! Serialise and compress payload.
+            if (z == Z_TYPE_ZSTD) then
+                ! Use Zstandard compression context.
+                rc = dm_z_compress_type(types(i), requests(i)%payload, z, context=context)
+            else
+                rc = dm_z_compress_type(types(i), requests(i)%payload, z)
+            end if
+
+            if (dm_is_error(rc)) exit
         end do
+
+        ! Clean-up Zstandard context.
+        if (z == Z_TYPE_ZSTD) stat = dm_zstd_destroy(context)
 
         ! Send requests concurrently.
         if (.not. sequential_) then
@@ -564,102 +605,6 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function rpc_payload_prepare(type, payload, deflate) result(rc)
-        !! Serialises given derived type `type` to Namelist format, with
-        !! optional deflate compression.
-        !!
-        !! The following derived types are supported:
-        !!
-        !! | Type          | Payload Length   |
-        !! |---------------|------------------|
-        !! | `beat_type`   | `NML_BEAT_LEN`   |
-        !! | `log_type`    | `NML_LOG_LEN`    |
-        !! | `node_type`   | `NML_NODE_LEN`   |
-        !! | `observ_type` | `NML_OBSERV_LEN` |
-        !! | `sensor_type` | `NML_SENSOR_LEN` |
-        !! | `target_type` | `NML_TARGET_LEN` |
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_TYPE` if an unsupported payload type is passed.
-        !! * `E_WRITE` if namelist serialisation failed.
-        !! * `E_ZLIB` if deflate-compression failed.
-        !!
-        use :: dm_beat
-        use :: dm_log
-        use :: dm_nml
-        use :: dm_node
-        use :: dm_observ
-        use :: dm_sensor
-        use :: dm_target
-
-        class(*),                      intent(inout)        :: type    !! Derived type.
-        character(len=:), allocatable, intent(out)          :: payload !! Serialised type.
-        logical,                       intent(in), optional :: deflate !! Enable deflate compression.
-
-        character(len=NML_BEAT_LEN)   :: payload_beat
-        character(len=NML_LOG_LEN)    :: payload_log
-        character(len=NML_NODE_LEN)   :: payload_node
-        character(len=NML_OBSERV_LEN) :: payload_observ
-        character(len=NML_SENSOR_LEN) :: payload_sensor
-        character(len=NML_TARGET_LEN) :: payload_target
-
-        logical :: deflate_
-
-        deflate_ = .false.
-        if (present(deflate)) deflate_ = deflate
-
-        if (deflate_) then
-            ! Compressed payload.
-            select type (t => type)
-                type is (beat_type)
-                    rc = dm_nml_from(t, payload_beat)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_beat, payload)
-                type is (log_type)
-                    rc = dm_nml_from(t, payload_log)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_log, payload)
-                type is (node_type)
-                    rc = dm_nml_from(t, payload_node)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_node, payload)
-                type is (observ_type)
-                    rc = dm_nml_from(t, payload_observ)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_observ, payload)
-                type is (sensor_type)
-                    rc = dm_nml_from(t, payload_sensor)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_sensor, payload)
-                type is (target_type)
-                    rc = dm_nml_from(t, payload_target)
-                    if (dm_is_error(rc)) return
-                    rc = dm_zlib_compress(payload_target, payload)
-                class default
-                    rc = E_TYPE
-            end select
-        else
-            ! Uncompressed payload.
-            select type (t => type)
-                type is (beat_type)
-                    rc = dm_nml_from(t, payload, len(payload_beat))
-                type is (log_type)
-                    rc = dm_nml_from(t, payload, len(payload_log))
-                type is (node_type)
-                    rc = dm_nml_from(t, payload, len(payload_node))
-                type is (observ_type)
-                    rc = dm_nml_from(t, payload, len(payload_observ))
-                type is (sensor_type)
-                    rc = dm_nml_from(t, payload, len(payload_sensor))
-                type is (target_type)
-                    rc = dm_nml_from(t, payload, len(payload_target))
-                class default
-                    rc = E_TYPE
-            end select
-        end if
-    end function rpc_payload_prepare
-
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
         !!
@@ -882,9 +827,10 @@ contains
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_POSTFIELDS, c_loc(request%payload))
             if (stat /= CURLE_OK) return
 
-            ! Signal deflate encoding.
-            if (request%deflate) then
-                request%list_ptr = curl_slist_append(request%list_ptr, 'Content-Encoding: deflate')
+            ! Signal content encoding (deflate, zstd).
+            if (request%compression > Z_TYPE_NONE) then
+                request%list_ptr = curl_slist_append(request%list_ptr, 'Content-Encoding: ' // &
+                                                     dm_z_type_to_encoding(request%compression))
             end if
 
             ! Set content type.

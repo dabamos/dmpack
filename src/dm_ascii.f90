@@ -41,6 +41,8 @@ module dm_ascii
     character(len=*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! Carriage return + line feed (`\r\n`).
 
     public :: dm_ascii_escape
+    public :: dm_ascii_unescape
+
     public :: dm_ascii_is_alpha
     public :: dm_ascii_is_alpha_numeric
     public :: dm_ascii_is_blank
@@ -52,7 +54,6 @@ module dm_ascii
     public :: dm_ascii_is_octal_digit
     public :: dm_ascii_is_upper
     public :: dm_ascii_is_white_space
-    public :: dm_ascii_unescape
 contains
     pure function dm_ascii_escape(str) result(res)
         !! Escapes given character string by replacing ASCII control characters

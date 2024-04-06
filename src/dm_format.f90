@@ -26,8 +26,7 @@ contains
         !! valid format, the function returns `FORMAT_NONE`.
         use :: dm_string, only: dm_lower
 
-        character(len=*), intent(in) :: name !! Format name.
-
+        character(len=*), intent(in)   :: name !! Format name.
         character(len=FORMAT_NAME_LEN) :: name_
 
         ! Normalise name.

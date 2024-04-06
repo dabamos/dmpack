@@ -233,14 +233,14 @@ contains
             beat%uptime = int(uptime, kind=i4)
 
             ! Send RPC request to API.
-            rc = dm_rpc_send(request    = request, &
-                             response   = response, &
-                             type       = beat, &
-                             url        = url, &
-                             username   = app%username, &
-                             password   = app%password, &
-                             user_agent = client, &
-                             deflate    = APP_RPC_DEFLATE)
+            rc = dm_rpc_send(request     = request, &
+                             response    = response, &
+                             type        = beat, &
+                             url         = url, &
+                             username    = app%username, &
+                             password    = app%password, &
+                             user_agent  = client, &
+                             compression = Z_TYPE_ZSTD)
 
             if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
             has_api_status = .false.

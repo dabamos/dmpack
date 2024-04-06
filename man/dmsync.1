@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.21
-.\"      Date: 2024-02-20
+.\" Generator: Asciidoctor 2.0.22
+.\"      Date: 2024-04-06
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2024-02-20" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2024-04-06" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -58,7 +58,7 @@ The client databases must contain synchronisation tables. The tables are
 created automatically by \fIdminit(1)\fP if command\-line argument \f(CR\-\-sync\fP is
 passed.  Alternatively, start \fBdmsync\fP with argument \f(CR\-\-create\fP once.
 .sp
-Database records are sent deflate\-compressed in Fortran 95 Namelist format via
+Database records are sent Zstandard\-compressed in Fortran 95 Namelist format via
 HTTP to the server. The program uses libcurl for data transfer. The called
 HTTP\-RPC API endpoints are expected under base URI
 \f(CR[http|https]://<host>:<port>/api/v1/\fP.

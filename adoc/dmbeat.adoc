@@ -28,7 +28,7 @@ DMPACK HTTP-RPC API. The status messages include timestamp, system uptime, and
 last connection error. The server may inspect this data to check if a client is
 still running and has network access. The RPC endpoint is expected at
 `[http|https]://<host>:<port>/api/v1/beat`. The heartbeat is transmitted in
-deflate-compressed Fortran 95 Namelist format.
+Zstandard-compressed Fortran 95 Namelist format.
 
 Passing the server credentials via the command-line arguments `--username` and
 `--password` is insecure on multi-user operating systems and only recommended

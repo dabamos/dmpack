@@ -545,7 +545,7 @@ format. Authentication and encryption are independent from *dmapi* and have to
 be provided by the web server.
 
 All POST data has to be serialised in Fortran 95 Namelist format, with optional
-deflate compression.
+deflate or zstd compression.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
 and observation sent to the HTTP-RPC service must match the name of the
@@ -3010,8 +3010,8 @@ Returns heartbeat of a given node in <<data-beat-csv,CSV>>,
 <<data-beat-json,JSON>>, or <<data-beat-nml,Namelist>> format from database.
 
 On POST, adds or updates heartbeat given in Namelist format. Optionally, the
-payload may be deflate compressed. The API returns HTTP 201 Created if the beat
-was accepted.
+payload may be deflate or zstd compressed. The API returns HTTP 201 Created if
+the beat was accepted.
 
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
@@ -3050,7 +3050,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
@@ -3098,7 +3098,7 @@ Returns single log of passed id in <<data-log-csv,CSV>>,
 <<data-log-json,JSON>>, or <<data-log-nml,Namelist>> format from database.
 
 On POST, adds log in Namelist format to database. Optionally, the payload may
-be deflate compressed. The API returns HTTP 201 Created if the log was
+be deflate or zstd compressed. The API returns HTTP 201 Created if the log was
 accepted.
 
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
@@ -3138,7 +3138,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
@@ -3187,7 +3187,7 @@ Returns node of given id in <<data-node-csv,CSV>>, <<data-node-json,JSON>>, or
 <<data-node-nml,Namelist>> format from database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
-be deflate compressed. The API returns HTTP 201 Created if the node was
+be deflate or zstd compressed. The API returns HTTP 201 Created if the node was
 accepted.
 
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
@@ -3227,7 +3227,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
@@ -3276,8 +3276,8 @@ Returns observation of given id from database, in <<data-observ-csv,CSV>>,
 <<data-observ-json,JSON>>, or <<data-observ-nml,Namelist>> format.
 
 On POST, adds observation in Namelist format to database. Optionally, the
-payload may be deflate compressed. The API returns HTTP 201 Created if the
-observation was accepted.
+payload may be deflate or zstd compressed. The API returns HTTP 201 Created if
+the observation was accepted.
 
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the observation, otherwise, the request will be rejected as unauthorised (HTTP
@@ -3317,7 +3317,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
@@ -3367,8 +3367,8 @@ Returns sensor of given id in <<data-sensor-csv,CSV>>,
 database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
-be deflate compressed. The API returns HTTP 201 Created if the sensor was
-accepted.
+be deflate or zstd compressed. The API returns HTTP 201 Created if the sensor
+was accepted.
 
 If HTTP Basic Auth is used, the user name must match the `node_id` attribute of
 the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
@@ -3407,7 +3407,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
@@ -3457,8 +3457,8 @@ Returns target of given id in <<data-target-csv,CSV>>,
 database.
 
 On POST, adds target in Namelist format to database. Optionally, the payload
-may be deflate compressed. The API returns HTTP 201 Created if the target was
-accepted.
+may be deflate or zstd compressed. The API returns HTTP 201 Created if the
+target was accepted.
 
 ==== Endpoint
 
@@ -3494,7 +3494,7 @@ accepted.
 |===
 | Name             | Values
 
-| Content-Encoding | `deflate` (optional)
+| Content-Encoding | `deflate`, `zstd` (optional)
 | Content-Type     | `application/namelist`
 |===
 
