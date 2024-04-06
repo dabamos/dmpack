@@ -6466,8 +6466,8 @@ the status of the ATR state.
 The function activates or deactivates the ATR mode (requires GeoCOM robotic
 licence). If `enabled` is `true`, ATR mode is activated, and if _lock_ mode is
 enabled while the API call is made, _lock_ mode will change to ATR mode. If
-`enabled` is `false`, ATR mode is deactivated, and if LOCK mode is enabled then
-it stays enabled.
+`enabled` is `false`, ATR mode is deactivated, and if _lock_ mode is enabled
+then it stays enabled.
 
 ==== geocom_set_user_lock_mode(enabled) [[lua-api-geocom-set-user-lock-mode]]
 
@@ -6579,7 +6579,7 @@ The argument `stop_mode` must be one of the following:
 
 ==== geocom_switch_off(stop_mode) [[lua-api-geocom-switch-off]]
 
-* `stop_mode` (_integer_) – Switch-off mode (<<geocom-api-com-tps-stop-mode,GEOCOM_COM_TPS_STOP_MODE>>).
+* `stop_mode` (_integer_) – Switch-off mode (<<geocom-api-tps-stop-mode,GEOCOM_COM_TPS_STOP_MODE>>).
 
 Returns request of *COM_SwitchOffTPS* procedure. Creates request for turning the
 instrument off.
@@ -6591,7 +6591,7 @@ The argument `stop_mode` has to be one of the following:
 
 ==== geocom_switch_on(start_mode) [[lua-api-geocom-switch-on]]
 
-* `start_mode` (_integer_) – Switch-on mode (<<geocom-api-com-tps-startup-mode,GEOCOM_COM_TPS_STARTUP_MODE>>).
+* `start_mode` (_integer_) – Switch-on mode (<<geocom-api-tps-startup-mode,GEOCOM_COM_TPS_STARTUP_MODE>>).
 
 Returns request of *COM_SwitchOnTPS* procedure. Creates request for turning the
 instrument on.
