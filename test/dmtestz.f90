@@ -8,14 +8,15 @@ program dmtestz
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestz'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -24,7 +25,7 @@ contains
     logical function test01() result(stat)
         stat = TEST_FAILED
 
-        print *, 'Converting content encoding to compression enumerator ...'
+        print *, 'Content encoding to compression enumerator ...'
         if (dm_z_type_from_encoding('')        /= Z_TYPE_NONE)    return
         if (dm_z_type_from_encoding('       ') /= Z_TYPE_NONE)    return
         if (dm_z_type_from_encoding('deflate') /= Z_TYPE_ZLIB)    return
@@ -32,7 +33,7 @@ contains
         if (dm_z_type_from_encoding('DEFLATE') /= Z_TYPE_INVALID) return
         if (dm_z_type_from_encoding('dummy')   /= Z_TYPE_INVALID) return
 
-        print *, 'Converting compression enumerator to content encoding ...'
+        print *, 'Compression enumerator to content encoding ...'
         if (dm_z_type_to_encoding(Z_TYPE_INVALID) /= '')        return
         if (dm_z_type_to_encoding(Z_TYPE_NONE)    /= '')        return
         if (dm_z_type_to_encoding(Z_TYPE_ZLIB)    /= 'deflate') return
@@ -48,10 +49,11 @@ contains
 
         test_block: block
             character(len=:), allocatable :: str
-            integer                       :: z
-            real(kind=r8)                 :: t
 
-            type(timer_type)  :: timer
+            integer          :: z
+            real(kind=r8)    :: t
+            type(timer_type) :: timer
+
             type(beat_type)   :: beat1, beat2
             type(log_type)    :: log1, log2
             type(node_type)   :: node1, node2
@@ -145,4 +147,94 @@ contains
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        integer, parameter :: N = 100
+
+        integer                        :: i, rc, rc2
+        real(kind=r8)                  :: t
+        type(timer_type)               :: timer
+        type(zstd_context_type)        :: context
+        type(observ_type), allocatable :: observs(:)
+        character(len=:),  allocatable :: str
+        type(string_type), allocatable :: strings(:)
+
+        stat = TEST_FAILED
+
+        allocate (observs(N))
+        call dm_test_dummy(observs)
+
+        ! No context.
+        print *, 'Compressing without zstd context ...'
+        call dm_timer_start(timer)
+        do i = 1, N
+            rc = dm_z_compress(observs(i), str, Z_TYPE_ZSTD)
+            if (dm_is_error(rc)) exit
+        end do
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        print *, 'Uncompressing without zstd context ...'
+        call dm_timer_start(timer)
+        do i = 1, N
+            rc = dm_z_uncompress(str, observs(i), Z_TYPE_ZSTD)
+            if (dm_is_error(rc)) exit
+        end do
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        ! Context.
+        print *, 'Compressing with zstd context ...'
+        call dm_timer_start(timer)
+        do i = 1, N
+            rc = dm_z_compress(observs(i), str, Z_TYPE_ZSTD, context=context)
+            if (dm_is_error(rc)) exit
+        end do
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        print *, 'Uncompressing with zstd context ...'
+        call dm_timer_start(timer)
+        do i = 1, N
+            rc = dm_z_uncompress(str, observs(i), Z_TYPE_ZSTD, context=context)
+            if (dm_is_error(rc)) exit
+        end do
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        call dm_error_out(rc)
+        rc2 = dm_zstd_destroy(context)
+        call dm_error_out(rc2)
+        if (dm_is_error(rc)) return
+
+        ! Type context.
+        print *, 'Compressing type with zstd context ...'
+        call dm_timer_start(timer)
+        do i = 1, N
+            rc = dm_z_compress_type(observs(i), str, Z_TYPE_ZSTD, context=context)
+            if (dm_is_error(rc)) exit
+        end do
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        call dm_error_out(rc)
+        rc2 = dm_zstd_destroy(context)
+        call dm_error_out(rc2)
+        if (dm_is_error(rc)) return
+
+        ! Types context.
+        print *, 'Compressing types with zstd context ...'
+        call dm_timer_start(timer)
+        rc = dm_z_compress_types(observs, strings, Z_TYPE_ZSTD)
+        call dm_timer_stop(timer, t)
+        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestz
