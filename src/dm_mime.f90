@@ -23,4 +23,5 @@ module dm_mime
     character(len=*), parameter, public :: MIME_XHTML     = 'application/xhtml+xml'
     character(len=*), parameter, public :: MIME_XML       = 'text/xml'
     character(len=*), parameter, public :: MIME_ZIP       = 'application/zip'
+    character(len=*), parameter, public :: MIME_ZSTD      = 'application/zstd'
 end module dm_mime

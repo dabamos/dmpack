@@ -1084,7 +1084,7 @@ options:
 	@echo "LIBPTHREAD = $(LIBPTHREAD)"
 	@echo "LIBRT      = $(LIBRT)"
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
-	@echo "LIBZ       = $(LIBZ)"
+	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
 
 # ******************************************************************************

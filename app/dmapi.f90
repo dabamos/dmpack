@@ -79,7 +79,7 @@ program dmapi
     rc = dm_env_get('DM_DB_LOG',    db_log,    n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
     rc = dm_env_get('DM_DB_OBSERV', db_observ, n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    rc = dm_env_get('DM_READ_ONLY', read_only, .false.)
+    rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
     ! Set API routes.
     rc = dm_cgi_router_set(router, routes)
