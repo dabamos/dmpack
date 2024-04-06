@@ -65,6 +65,7 @@ DMPACK includes modules for:
 * server-side web applications
 * Leica GeoCOM API for Fortran
 * time series plotting
+* compression (deflate, zstd)
 * MQTT connectivity
 * Lua scripting
 * HTML5 reports

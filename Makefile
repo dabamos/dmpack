@@ -164,9 +164,9 @@ LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
-LIBZ       = `pkg-config --libs-only-l zlib libzstd`
 LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
+LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
