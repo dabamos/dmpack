@@ -39,7 +39,8 @@ to _stdout_, else to file.
 
 A configuration file is required to configure the jobs to perform. Each
 observation must have a valid target id. The database must contain the specified
-node, sensor, and targets.
+node, sensor, and targets. The observation requests may be created by using
+GeoCOM API functions.
 
 == OPTIONS
 
