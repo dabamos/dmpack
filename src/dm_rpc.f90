@@ -139,6 +139,7 @@ module dm_rpc
     public :: dm_rpc_send_type
     public :: dm_rpc_send_types
     public :: dm_rpc_url
+
     public :: dm_rpc_write_callback
 
     private :: rpc_request
@@ -468,6 +469,8 @@ contains
         ! Clean-up Zstandard context.
         if (z == Z_TYPE_ZSTD) stat = dm_zstd_destroy(context)
 
+        if (dm_is_error(rc)) return
+
         ! Send requests concurrently.
         if (.not. sequential_) then
             rc = rpc_request(requests, responses)
@@ -673,13 +676,13 @@ contains
 
             do while (nrun > 0)
                 error = curl_multi_perform(multi_ptr, nrun)
-                if (error /= CURLM_OK) exit curl_block
+                if (error /= CURLM_OK) exit
 
                 ! Wait for activity, timeout, or "nothing".
                 if (nrun > 0) then
                     nfds = 0
                     stat = curl_multi_poll(multi_ptr, c_null_ptr, 0, POLL_TIMEOUT, nfds)
-                    if (stat /= CURLM_OK) exit curl_block
+                    if (stat /= CURLM_OK) exit
                 end if
             end do
 

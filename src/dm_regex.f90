@@ -66,11 +66,10 @@ contains
         !! The functions returns the following error codes:
         !!
         !! * `E_INVALID` if `regex` is invalid.
-        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector
-        !!    size.
+        !! * `E_REGEX` if a PCRE2 library error occured.
+        !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_GROUP` if no group matches.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
-        !! * `E_REGEX` if an PCRE2 library error occured.
         !!
         type(regex_type),              intent(inout) :: regex   !! Regular expression type.
         character(len=*),              intent(in)    :: subject !! Input string.
@@ -120,9 +119,9 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if `regex` is invalid.
+        !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
-        !! * `E_REGEX` if an PCRE2 library error occured.
         !!
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
         character(len=*), intent(in)    :: subject !! Input string to match against.

@@ -248,7 +248,7 @@ contains
 
             if (is_file .and. .not. app%force) then
                 ! Write output file only if the time stamp of the last log
-                ! record is greater than file modification time.
+                ! record is greater than the file modification time.
                 if (.not. is_stale_file(app%output, app%atom%updated)) then
                     ! Nothing to do here.
                     rc = E_NONE

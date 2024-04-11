@@ -191,7 +191,7 @@ contains
         integer :: n_
 
         n_ = 0
-        if (present(n)) n_ = n
+        if (present(n)) n_ = max(0, n)
         if (.not. allocated(string%data)) allocate (character(len=n_) :: string%data)
     end subroutine dm_string_allocate
 
@@ -269,8 +269,6 @@ contains
 
         integer :: n, stat
 
-        if (present(error)) error = E_FORMAT
-
         if (i == 0) then
             n = 1
         else
@@ -278,10 +276,10 @@ contains
             if (i < 0) n = n + 1
         end if
 
+        if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: str)
         write (str, '(i0)', iostat=stat) i
         if (stat /= 0) return
-
         if (present(error)) error = E_NONE
     end subroutine string_from_int32
 
@@ -293,8 +291,6 @@ contains
 
         integer :: n, stat
 
-        if (present(error)) error = E_FORMAT
-
         if (i == 0) then
             n = 1
         else
@@ -302,10 +298,10 @@ contains
             if (i < 0) n = n + 1
         end if
 
+        if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: str)
         write (str, '(i0)', iostat=stat) i
         if (stat /= 0) return
-
         if (present(error)) error = E_NONE
     end subroutine string_from_int64
 
@@ -318,12 +314,14 @@ contains
         integer           :: stat
         character(len=20) :: buf
 
-        str = ''
-        if (present(error)) error = E_FORMAT
-        write (buf, '(f0.12)', iostat=stat) f
-        if (stat /= 0) return
-        str = trim(buf)
         if (present(error)) error = E_NONE
+        write (buf, '(f0.12)', iostat=stat) f
+        if (stat /= 0) then
+            if (present(error)) error = E_FORMAT
+            str = ''
+            return
+        end if
+        str = trim(buf)
     end subroutine string_from_real32
 
     pure subroutine string_from_real64(f, str, error)
@@ -335,12 +333,14 @@ contains
         integer           :: stat
         character(len=20) :: buf
 
-        str = ''
-        if (present(error)) error = E_FORMAT
-        write (buf, '(f0.12)', iostat=stat) f
-        if (stat /= 0) return
-        str = trim(buf)
         if (present(error)) error = E_NONE
+        write (buf, '(f0.12)', iostat=stat) f
+        if (stat /= 0) then
+            if (present(error)) error = E_FORMAT
+            str = ''
+            return
+        end if
+        str = trim(buf)
     end subroutine string_from_real64
 
     pure elemental subroutine string_to_int32(str, i, error)

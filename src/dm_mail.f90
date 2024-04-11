@@ -100,9 +100,10 @@ module dm_mail
     public :: dm_mail_url
     public :: dm_mail_write
 
+    public :: dm_mail_read_callback
+
     private :: mail_address_person
     private :: mail_address_persons
-    private :: mail_read_callback
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -362,7 +363,7 @@ contains
             if (stat /= CURLE_OK) exit curl_block
 
             ! Set callback function.
-            stat = curl_easy_setopt(curl_ptr, CURLOPT_READFUNCTION, c_funloc(mail_read_callback))
+            stat = curl_easy_setopt(curl_ptr, CURLOPT_READFUNCTION, c_funloc(dm_mail_read_callback))
             if (stat /= CURLE_OK) exit curl_block
 
             stat = curl_easy_setopt(curl_ptr, CURLOPT_READDATA, c_loc(payload))
@@ -475,6 +476,49 @@ contains
     end subroutine dm_mail_destroy
 
     ! ******************************************************************
+    ! PUBLIC CALLBACK FUNCTIONS.
+    ! ******************************************************************
+    function dm_mail_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
+        !! Callback function to upload payload passed via `data` to the
+        !! memory chunk in `ptr`. Do not call this function directly.
+        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(kind=c_size_t)                    :: n     !! Function return value.
+
+        character(len=:),   pointer :: chunk
+        integer(kind=i8)            :: length, room
+        type(payload_type), pointer :: payload
+
+        n = int(0, kind=c_size_t)
+        room = sz * nmemb
+
+        if (sz == 0 .or. nmemb == 0 .or. room < 1) return
+        if (.not. c_associated(ptr) .or. .not. c_associated(data)) return
+
+        chunk   => null()
+        payload => null()
+
+        call c_f_pointer(ptr, chunk)
+        call c_f_pointer(data, payload)
+
+        if (.not. associated(chunk))   return
+        if (.not. associated(payload)) return
+
+        if (.not. allocated(payload%data) .or. payload%length <= 0) return
+        if (payload%nbytes == payload%length) return
+
+        length = payload%length - payload%nbytes
+        if (room < length) length = room
+
+        chunk = payload%data(payload%nbytes + 1:payload%nbytes + length)
+        payload%nbytes = payload%nbytes + length
+
+        n = int(length, kind=c_size_t)
+    end function dm_mail_read_callback
+ 
+    ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     pure function mail_address_person(person) result(str)
@@ -511,44 +555,4 @@ contains
             str = str // ', ' // dm_mail_address(persons(i))
         end do
     end function mail_address_persons
-
-    function mail_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
-        !! Callback function to upload payload passed via `data` to the
-        !! memory chunk in `ptr`.
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
-
-        character(len=:),   pointer :: chunk
-        integer(kind=i8)            :: length, room
-        type(payload_type), pointer :: payload
-
-        n = int(0, kind=c_size_t)
-        room = sz * nmemb
-
-        if (sz == 0 .or. nmemb == 0 .or. room < 1) return
-        if (.not. c_associated(ptr) .or. .not. c_associated(data)) return
-
-        chunk   => null()
-        payload => null()
-
-        call c_f_pointer(ptr, chunk)
-        call c_f_pointer(data, payload)
-
-        if (.not. associated(chunk))   return
-        if (.not. associated(payload)) return
-
-        if (.not. allocated(payload%data) .or. payload%length <= 0) return
-        if (payload%nbytes == payload%length) return
-
-        length = payload%length - payload%nbytes
-        if (room < length) length = room
-
-        chunk = payload%data(payload%nbytes + 1:payload%nbytes + length)
-        payload%nbytes = payload%nbytes + length
-
-        n = int(length, kind=c_size_t)
-    end function mail_read_callback
 end module dm_mail

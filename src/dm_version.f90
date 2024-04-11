@@ -57,12 +57,8 @@ contains
         library_ = .false.
         if (present(library)) library_ = library
 
-        if (library_) then
-            str = trim(name) // ' ' // dm_version_to_string(major, minor, patch) // &
-                  ' (DMPACK ' // DM_VERSION_STRING // ')'
-        else
-            str = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
-        end if
+        str = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
+        if (library_) str = str // ' (DMPACK ' // DM_VERSION_STRING // ')'
     end function dm_version_to_string_app
 
     pure elemental function dm_version_to_string_long(major, minor, patch) result(str)

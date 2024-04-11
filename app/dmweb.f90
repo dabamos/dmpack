@@ -532,7 +532,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -736,7 +736,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -757,7 +757,7 @@ contains
                 rc = dm_cgi_get(param, 'y',    node%y)
                 rc = dm_cgi_get(param, 'z',    node%z)
 
-                ! Valid node data?
+                ! Validate node data.
                 if (.not. dm_node_valid(node)) then
                     call html_error('Invalid Node', error=E_INVALID)
                     exit response_block
@@ -936,7 +936,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -1079,7 +1079,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -1284,7 +1284,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -1308,7 +1308,7 @@ contains
                 rc = dm_cgi_get(param, 'y',    sensor%y)
                 rc = dm_cgi_get(param, 'z',    sensor%z)
 
-                ! Valid sensor data?
+                ! Validate sensor data.
                 if (.not. dm_sensor_valid(sensor)) then
                     call html_error('Invalid Sensor', error=E_INVALID)
                     exit response_block
@@ -1567,7 +1567,7 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
-                ! Correct content type?
+                ! Validate content type.
                 if (env%content_type /= MIME_FORM) then
                     call html_error(status=HTTP_BAD_REQUEST)
                     exit response_block
@@ -1590,7 +1590,7 @@ contains
                 rc = dm_cgi_get(param, 'y',     target%y)
                 rc = dm_cgi_get(param, 'z',     target%z)
 
-                ! Valid target data?
+                ! Validate target data.
                 if (.not. dm_target_valid(target)) then
                     call html_error('Invalid Target', error=E_INVALID)
                     exit response_block

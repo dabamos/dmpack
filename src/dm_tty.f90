@@ -562,7 +562,7 @@ contains
 
             ! Input modes.
             c_iflag = iand(c_iflag, not(int(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL, kind=i8))) ! No special handling of received bytes.
-            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY,                                      kind=i8))) ! Turn XON/XOFF control off.
+            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY, kind=i8))) ! Turn XON/XOFF control off.
 
             ! Output modes.
             c_oflag = iand(c_oflag, not(int(OPOST, kind=i8))) ! No special interpretation of output bytes.
@@ -769,8 +769,7 @@ contains
         !! Returns `.true.` if given timeout value is valid, else `.false.`.
         integer, intent(in) :: timeout !! Timeout.
 
-        valid = .false.
-        if (timeout >= 0) valid = .true.
+        valid = (timeout >= 0)
     end function dm_tty_valid_timeout
 
     integer function dm_tty_write_bytes(tty, bytes, nbytes) result(rc)
