@@ -201,14 +201,11 @@ contains
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is passed and `E_NONE` (`.false.` by default).
 
         logical        :: escape_, verbose_
-        integer        :: error_
         type(log_type) :: log
 
-        error_   = E_NONE
         escape_  = .true.
         verbose_ = .false.
 
-        if (present(error))   error_   = error
         if (present(escape))  escape_  = escape
         if (present(verbose)) verbose_ = verbose
 
@@ -216,7 +213,9 @@ contains
         if (level == LVL_DEBUG .and. this%min_level > LVL_DEBUG .and. .not. this%verbose) return
 
         ! Ignore error code `E_NONE` if not verbose.
-        if (dm_is_ok(error_) .and. .not. verbose_) return
+        if (present(error)) then
+            if (dm_is_ok(error) .and. .not. verbose_) return
+        end if
 
         ! Replace invalid log level with `LVL_ERROR`.
         log%level = LVL_ERROR
