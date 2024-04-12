@@ -12,8 +12,6 @@ program dmbeat
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 4
 
-    logical, parameter :: APP_RPC_DEFLATE = .true. !! Compress RPC data.
-
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
     integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
@@ -39,7 +37,7 @@ program dmbeat
     class(logger_class), pointer :: logger ! Logger object.
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -232,7 +230,7 @@ contains
             call dm_system_uptime(uptime, rc)
             beat%uptime = int(uptime, kind=i4)
 
-            ! Send RPC request to API.
+            ! Send RPC request to API, use Zstandard compression.
             rc = dm_rpc_send(request     = request, &
                              response    = response, &
                              type        = beat, &
@@ -243,6 +241,7 @@ contains
                              compression = Z_TYPE_ZSTD)
 
             if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
+
             has_api_status = .false.
 
             if (response%content_type == MIME_TEXT) then

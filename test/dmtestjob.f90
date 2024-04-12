@@ -50,7 +50,7 @@ contains
         do i = 1, 2 * size(observs)
             j = 1 + modulo(i - 1, size(observs))
             rc = dm_job_list_next(job_list, job)
-            call dm_perror(rc)
+            call dm_error_out(rc)
             if (dm_is_error(rc)) return
             if (job%observ%id /= observs(j)%id) return
         end do
@@ -69,7 +69,7 @@ contains
         print *, 'Retrieving all jobs in correct order ...'
         do i = 1, size(observs)
             rc = dm_job_list_next(job_list, job, disabled=.true.)
-            call dm_perror(rc)
+            call dm_error_out(rc)
             if (dm_is_error(rc)) return
             if (job%observ%id /= observs(i)%id) return
         end do
@@ -77,7 +77,7 @@ contains
         print *, 'Retrieving enabled jobs in correct order ...'
         do i = 1, size(observs)
             rc = dm_job_list_next(job_list, job)
-            call dm_perror(rc)
+            call dm_error_out(rc)
             if (dm_is_error(rc)) return
             if (job%observ%id /= observs(1)%id) return
         end do

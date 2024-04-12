@@ -10,7 +10,7 @@ program dmfs
     character(len=*), parameter :: APP_NAME  = 'dmfs'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -338,7 +338,7 @@ contains
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)
-            if (delay <= 0) cycle req_loop
+            if (delay == 0) cycle req_loop
 
             if (debug_ .and. i < n) then
                 call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &

@@ -517,7 +517,7 @@ contains
 
         n = int(length, kind=c_size_t)
     end function dm_mail_read_callback
- 
+
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************

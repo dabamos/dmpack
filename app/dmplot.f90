@@ -34,7 +34,7 @@ program dmplot
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()

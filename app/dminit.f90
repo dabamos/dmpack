@@ -26,7 +26,7 @@ program dminit
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App type.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()

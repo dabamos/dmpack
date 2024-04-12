@@ -40,14 +40,14 @@ contains
 
         if (dm_is_error(rc)) then
             print *, str
-            call dm_perror(rc)
+            call dm_error_out(rc)
             return
         end if
 
         print *, 'Reading observation from namelist string ...'
         rc = dm_nml_to(str, observ2)
 
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching observations ...'
@@ -69,12 +69,12 @@ contains
 
         print *, 'Writing beat to namelist string ...'
         rc = dm_nml_from(beat1, str)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Reading beat from namelist string ...'
         rc = dm_nml_to(str, beat2)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching beats ...'
@@ -99,12 +99,12 @@ contains
 
         print *, 'Writing log to namelist string ...'
         rc = dm_nml_from(log1, str)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Reading log from namelist string ...'
         rc = dm_nml_to(str, log2)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching logs ...'
@@ -129,12 +129,12 @@ contains
 
         print *, 'Writing node to namelist string ...'
         rc = dm_nml_from(node1, str)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Reading node from namelist string ...'
         rc = dm_nml_to(str, node2)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching nodes ...'
@@ -159,12 +159,12 @@ contains
 
         print *, 'Writing sensor to namelist string ...'
         rc = dm_nml_from(sensor1, str)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Reading sensor from namelist string ...'
         rc = dm_nml_to(str, sensor2)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching sensors ...'
@@ -189,12 +189,12 @@ contains
 
         print *, 'Writing target to namelist string ...'
         rc = dm_nml_from(target1, str)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Reading target from namelist string ...'
         rc = dm_nml_to(str, target2)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Matching targets ...'

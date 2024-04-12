@@ -34,8 +34,8 @@ program dmsend
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc
-    type(app_type) :: app
+    integer        :: rc  ! Return code.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -221,7 +221,7 @@ contains
                 end if
             end if
 
-            ! Read serialised log or observation from file/stdout.
+            ! Read serialised log or observation from file/stdin.
             ipc_loop: do
                 ! ******************************************************
                 ! OBSERV TYPE.

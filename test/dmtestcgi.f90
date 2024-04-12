@@ -40,7 +40,7 @@ contains
         print *, output
 
         if (dm_is_error(rc)) then
-            call dm_perror(rc)
+            call dm_error_out(rc)
             return
         end if
 
@@ -64,7 +64,7 @@ contains
 
         call dm_cgi_env(env)
         rc = dm_cgi_content(env, content)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         print *, 'Content length: ', env%content_length
         call dm_cgi_header(MIME_HTML, HTTP_OK)
 

@@ -36,10 +36,8 @@
 #
 # Targets for system-wide installation:
 #
-#   install         - Install to `/usr/local` (pass `PREFIX` to overwrite).
-#   install_freebsd - Install to `/usr/local` (pass `PREFIX` to overwrite).
-#   install_linux   - Install to `/usr` (pass `PREFIX` to overwrite).
-#   deinstall       - Remove from `/usr/local` (pass `PREFIX` to overwrite).
+#   install   - Install to `/usr/local` (pass `PREFIX` to overwrite).
+#   deinstall - Remove from `/usr/local` (pass `PREFIX` to overwrite).
 #
 # Targets related to the documentation:
 #
@@ -390,8 +388,8 @@ OBJ = dm_ansi.o \
 
 # Named build targets.
 .PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
-        help html install install_freebsd install_linux linux linux_debug \
-        linux_release man options pdf purge setup test
+        help html install linux linux_debug linux_release man options pdf purge \
+        setup test
 
 # Library target.
 all: $(TARGET) $(SHARED) test app
@@ -904,12 +902,6 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmuuid.1   > $(IMANDIR)/dmuuid.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmweb.1    > $(IMANDIR)/dmweb.1.gz
 
-install_freebsd:
-	$(MAKE) install PREFIX=/usr/local
-
-install_linux:
-	$(MAKE) install PREFIX=/usr
-
 deinstall:
 	@echo "--- Deleting DMPACK from $(PREFIX) ..."
 	$(RM) -r $(IINCDIR)
@@ -1108,8 +1100,6 @@ help:
 	@echo "    help            - Show this help."
 	@echo "    html            - Convert man pages to HTML (requires mandoc)."
 	@echo "    install         - Install DMPACK to PREFIX."
-	@echo "    install_freebsd - Install DMPACK to /usr/local/."
-	@echo "    install_linux   - Install DMPACK to /usr/."
 	@echo "    linux           - Build Linux release version."
 	@echo "    linux_debug     - Build Linux debug version."
 	@echo "    linux_release   - Build Linux release version."

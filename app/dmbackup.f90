@@ -25,7 +25,7 @@ program dmbackup
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App type.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -48,13 +48,13 @@ contains
         if (dm_is_error(rc)) return
 
         backup_block: block
-            ! VACUUM INTO.
+            ! Use VACUUM INTO.
             if (app%vacuum) then
                 rc = dm_db_vacuum(db, into=app%backup)
                 exit backup_block
             end if
 
-            ! SQLite backup API.
+            ! Use SQLite backup API.
             if (app%verbose) then
                 ! Using callback.
                 rc = dm_db_backup(db         = db, &

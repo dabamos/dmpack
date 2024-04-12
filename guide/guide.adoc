@@ -175,9 +175,25 @@ $ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
 $ make [freebsd|linux]
+$ make install
 ....
 
-The shell script requires _curl(1)_ and _unzip(1)_.
+The shell script `fetchvendor.sh` requires _curl(1)_ and _unzip(1)_. 
+
+.Paths used by default [[requirements-paths]]
+[cols="3,6"]
+|===
+| Path                         | Description
+
+| `/usr/local/bin/`            | DMPACK programs.
+| `/usr/local/etc/dmpack/`     | DMPACK configuration files.
+| `/usr/local/include/dmpack/` | DMPACK module files.
+| `/usr/local/lib/`            | DMPACK libraries.
+| `/usr/local/man/man1/`       | DMPACK man pages.
+| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
+| `/var/dmpack/`               | DMPACK databases.
+| `/var/www/`                  | WWW root directory.
+|===
 
 == Installation
 
@@ -232,10 +248,10 @@ $ cd dmpack/
 $ make freebsd
 ....
 
-Install the library and all programs system-wide to `/usr/local/`:
+Install the library and all programs system-wide to `/usr/local`:
 
 ....
-$ doas make install_freebsd
+$ doas make install
 ....
 
 You can change the installation prefix with argument `PREFIX`. To install to
@@ -245,20 +261,7 @@ directory `/opt` instead, run:
 $ doas make install PREFIX=/opt
 ....
 
-.Default paths on FreeBSD
-[cols="3,6"]
-|===
-| Path                         | Description
-
-| `/usr/local/bin/`            | DMPACK programs.
-| `/usr/local/etc/dmpack/`     | DMPACK configuration files.
-| `/usr/local/include/dmpack/` | DMPACK module files.
-| `/usr/local/lib/`            | DMPACK libraries.
-| `/usr/local/man/man1/`       | DMPACK man pages.
-| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.
-| `/var/dmpack/`               | DMPACK databases.
-| `/var/www/`                  | WWW root directory.
-|===
+In this case, path `/opt/bin` must be in environment variable `PATH`.
 
 ==== Fortran Package Manager [[freebsd-fpm]]
 
@@ -320,17 +323,19 @@ $ cd dmpack/
 $ make linux
 ....
 
-Install the DMPACK libraries and programs system-wide to `/usr`:
+Install the DMPACK libraries and programs system-wide to `/usr/local`:
 
 ....
-$ sudo make install_linux
+$ sudo make install
 ....
 
-To install to directory `/opt`, run:
+To install to directory `/opt` instead, run:
 
 ....
 $ sudo make install PREFIX=/opt
 ....
+
+Path `/opt/bin` must be added to the global `PATH` environment variable.
 
 [NOTE]
 .Custom SQLite 3

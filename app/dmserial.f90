@@ -10,7 +10,7 @@ program dmserial
     character(len=*), parameter :: APP_NAME  = 'dmserial'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -52,7 +52,7 @@ program dmserial
     ! Initialise DMPACK.
     call dm_init()
 
-    ! Get command-line arguments, read options from configuration file.
+    ! Get command-line arguments and read options from configuration file.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
@@ -117,8 +117,8 @@ contains
     end function create_tty
 
     integer function output_observ(observ, type) result(rc)
-        !! Outputs observation to file or _stdout_ if `type` is `OUTPUT_STDOUT`
-        !! or `OUTPUT_FILE`.
+        !! Outputs observation to file if `type` is `OUTPUT_FILE`, or to
+        !! _stdout_ if `OUTPUT_STDOUT`.
         type(observ_type), intent(inout) :: observ !! Observation type.
         integer,           intent(in)    :: type   !! Output I/O type.
 
@@ -136,7 +136,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to output observ', error=rc)
+                    call logger%error('failed to output observ', observ=observ, error=rc)
                     return
                 end if
 
@@ -148,7 +148,7 @@ contains
                       newunit=fu, position='append', status='unknown')
 
                 if (stat /= 0) then
-                    call logger%error('failed to open file ' // app%output, error=rc)
+                    call logger%error('failed to open file ' // app%output, observ=observ, error=rc)
                     return
                 end if
 
@@ -156,7 +156,7 @@ contains
                 rc = write_observ(observ, unit=fu, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write observ to file ' // app%output, error=rc)
+                    call logger%error('failed to write observ to file ' // app%output, observ=observ, error=rc)
                 end if
 
                 close (fu)
@@ -310,6 +310,7 @@ contains
         rc = E_INVALID
         if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
 
+        ! Enable Leica GeoCOM API in configuration file.
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
@@ -371,7 +372,7 @@ contains
             return
         end if
 
-        ! Read files in requests sequentially.
+        ! Send requests sequentially to sensor.
         req_loop: do i = 1, n
             request => observ%requests(i)
 
@@ -387,9 +388,9 @@ contains
 
             ! Flush buffers.
             rc = dm_tty_flush(tty)
+            if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
 
             if (debug_) then
-                if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
                 call logger%debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, &
                                   observ=observ, escape=.false.)
             end if
@@ -416,7 +417,7 @@ contains
             if (dm_is_error(rc)) then
                 request%error = rc
                 call logger%error('failed to read response of ' // request_name_string(request%name, i) // &
-                                  ' from TTY ' // app%tty, observ=observ, error=request%error)
+                                  ' from TTY ' // app%tty, observ=observ, error=rc)
                 cycle req_loop
             end if
 
@@ -427,9 +428,7 @@ contains
 
             ! Do not extract responses if no pattern is set.
             if (len_trim(request%pattern) == 0) then
-                if (debug_) then
-                    call logger%debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
-                end if
+                if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
                 cycle req_loop
             end if
 
@@ -439,7 +438,7 @@ contains
             if (dm_is_error(rc)) then
                 request%error = rc
                 call logger%warning('response of ' // request_name_string(request%name, i) // ' does not match pattern', &
-                                    observ=observ, error=request%error)
+                                    observ=observ, error=rc)
                 cycle req_loop
             end if
 
@@ -458,7 +457,7 @@ contains
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)
-            if (delay <= 0) cycle req_loop
+            if (delay == 0) cycle req_loop
 
             if (debug_ .and. i < n) then
                 call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
@@ -513,7 +512,7 @@ contains
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
             call logger%error('failed to open TTY ' // trim(app%tty) // ', next attempt in 5 sec', error=rc)
-            call dm_sleep(5)
+            call dm_sleep(5) ! Wait grace period.
         end do
 
         ! Run until no jobs are left.
@@ -548,11 +547,13 @@ contains
                 ! Read observation from TTY.
                 rc = read_observ(tty, observ, app%node, app%sensor, app%name, debug=debug)
 
-                ! Forward observation.
+                ! Forward observation via POSIX message queue.
                 rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
                 ! Output observation.
-                rc = output_observ(observ, app%output_type)
+                if (app%output_type /= OUTPUT_NONE) then
+                    rc = output_observ(observ, app%output_type)
+                end if
 
                 if (debug) then
                     call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // &
@@ -562,7 +563,7 @@ contains
 
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
-            if (delay <= 0) cycle job_loop
+            if (delay == 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             call dm_usleep(delay * 1000) ! [msec] to [us].
         end do job_loop
@@ -586,8 +587,7 @@ contains
         select case (format)
             case (FORMAT_CSV)
                 ! CSV format.
-                rc = dm_csv_write(observ, unit=unit, header=.false., &
-                                  separator=APP_CSV_SEPARATOR)
+                rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL)
                 ! JSON Lines format.
                 rc = dm_json_write(observ, unit=unit)

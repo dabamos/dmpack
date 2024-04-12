@@ -35,7 +35,7 @@ contains
 
         timestamp = dm_time_now()
         rc = dm_time_to_unix(timestamp, seconds, useconds)
-        call dm_perror(rc)
+        call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print '(" ISO 8601: ", a)',  timestamp

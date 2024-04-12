@@ -206,10 +206,10 @@ $ cd dmpack/
 $ make linux
 ```
 
-Install the library and all programs system-wide:
+Install the library and all programs system-wide to `/usr/local`:
 
 ```
-$ sudo make install_linux
+$ sudo make install
 ```
 
 To install to a custom directory, run:

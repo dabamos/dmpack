@@ -20,7 +20,7 @@ program dmuuid
     type :: app_type
         !! Command-line arguments.
         integer :: count   = 1       !! Number of UUID4s to generate (>= 1).
-        logical :: convert = .false. !! Convert 32 characters long UUID4 to 36 characters (add hyphens).
+        logical :: convert = .false. !! Add hyphens to 32 characters long UUID4.
         logical :: hyphens = .false. !! Add hyphens to generated UUID4s.
     end type app_type
 
@@ -94,14 +94,14 @@ contains
         !! Reads UUID4s from standard input, adds hyphens, and prints the result
         !! to standard output.
         character(len=UUID_LEN) :: uuid
-        integer                 :: rc
+        integer                 :: stat
 
         do
             uuid = ' '
-            read (*, '(a)', iostat=rc) uuid
+            read (*, '(a)', iostat=stat) uuid
 
             if (is_iostat_end(rc)) exit
-            if (rc /= 0 .or. .not. dm_uuid4_valid(uuid)) uuid = UUID_DEFAULT
+            if (stat /= 0 .or. .not. dm_uuid4_valid(uuid)) uuid = UUID_DEFAULT
 
             print '(a)', dm_uuid4_hyphenize(uuid)
         end do

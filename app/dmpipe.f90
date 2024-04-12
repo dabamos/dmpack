@@ -13,7 +13,7 @@ program dmpipe
     character(len=*), parameter :: APP_NAME  = 'dmpipe'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -41,7 +41,7 @@ program dmpipe
     class(logger_class), pointer :: logger ! Logger object.
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -255,7 +255,7 @@ contains
             return
         end if
 
-        ! Read files in requests sequentially.
+        ! Read pipes in requests sequentially.
         req_loop: do i = 1, n
             ! Get pointer to next request.
             request => observ%requests(i)
@@ -331,7 +331,7 @@ contains
 
             ! Wait the set delay time of the request.
             delay = max(0, request%delay)
-            if (delay <= 0) cycle req_loop
+            if (delay == 0) cycle req_loop
 
             if (debug_ .and. i < n) then
                 call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &

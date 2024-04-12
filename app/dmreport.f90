@@ -10,7 +10,7 @@ program dmreport
     character(len=*), parameter :: APP_NAME  = 'dmreport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     character(len=*), parameter :: APP_FONT        = 'Open Sans' !! Default font name.
     integer,          parameter :: APP_PLOT_WIDTH  = 1000        !! Default plot width.
@@ -24,7 +24,7 @@ program dmreport
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -44,7 +44,8 @@ contains
         html = H_FOOTER // H_HR // H_P // H_SMALL // &
                'This report was generated ' // dm_html_time(dm_time_now(), human=.true.) // ' by ' // &
                dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.) // &
-               H_SMALL_END // H_P_END // H_FOOTER_END // dm_html_footer()
+               H_SMALL_END // H_P_END // H_FOOTER_END // &
+               dm_html_footer()
     end function html_footer
 
     function html_plot(data_points, response, unit, format, title, meta, color, width, height) result(html)
@@ -66,13 +67,13 @@ contains
         type(plot_type)               :: plot
 
         ! Plot settings.
-        plot%bidirect = .true.
-        plot%term     = format
-        plot%font     = APP_FONT
-        plot%width    = APP_PLOT_WIDTH
-        plot%height   = APP_PLOT_HEIGHT
-        plot%xlabel   = 'Time'
-        plot%ylabel   = response
+        plot%bidirect = .true.          ! Bi-directional pipe to Gnuplot.
+        plot%term     = format          ! Gnuplot terminal.
+        plot%font     = APP_FONT        ! Font name.
+        plot%width    = APP_PLOT_WIDTH  ! Plot width.
+        plot%height   = APP_PLOT_HEIGHT ! Plot height.
+        plot%xlabel   = 'Time'          ! X axis label.
+        plot%ylabel   = response        ! Y axis label.
 
         ! Add unit to Y label of plot.
         if (len_trim(unit) > 0) then
@@ -200,24 +201,24 @@ contains
             return
         end if
 
-        if (.not. dm_time_valid(app%report%from)) then
+        if (.not. dm_time_valid(app%report%from, strict=.false.)) then
             call dm_error_out(rc, 'invalid from timestamp')
             return
         end if
 
-        if (.not. dm_time_valid(app%report%to)) then
+        if (.not. dm_time_valid(app%report%to, strict=.false.)) then
             call dm_error_out(rc, 'invalid to timestamp')
             return
         end if
 
-        ! Create pointers.
+        ! Associate pointers.
         plot => app%report%plot
         log  => app%report%log
 
         ! Validate plot settings.
         if (.not. plot%disabled) then
             if (len_trim(plot%database) == 0) then
-                call dm_error_out(rc, 'missing path to observations database')
+                call dm_error_out(rc, 'missing path to observation database')
                 return
             end if
 
@@ -268,7 +269,7 @@ contains
            end if
 
             if (len_trim(log%database) == 0) then
-                call dm_error_out(rc, 'missing path to logs database')
+                call dm_error_out(rc, 'missing path to log database')
                 return
             end if
         end if
@@ -400,14 +401,14 @@ contains
                 end if
             end if
 
-            ! Output HTML header with optional inline CSS.
+            ! Add HTML header with optional inline CSS.
             if (len_trim(style) > 0) then
                 write (fu, '(a)') dm_html_header(report%title, report%subtitle, internal_style=style)
             else
                 write (fu, '(a)') dm_html_header(report%title, report%subtitle)
             end if
 
-            ! Output report table.
+            ! Add report overview table.
             rc = read_node(node, report%node, report%plot%database)
 
             if (dm_is_error(rc)) then
@@ -416,16 +417,17 @@ contains
                 write (fu, '(a)') html_report_table(node, report%from, report%to)
             end if
 
+            ! Add optional report description.
             if (len_trim(report%meta) > 0) then
                 write (fu, '(a)') dm_html_p(dm_html_encode(report%meta))
             end if
 
-            ! Output plots.
+            ! Add plots to HTML document if enabled.
             plot_if: if (.not. report%plot%disabled) then
-                ! Output heading.
+                ! Add plot section heading.
                 write (fu, '(a)') dm_html_heading(2, report%plot%title)
 
-                ! Output meta description.
+                ! Add meta description.
                 if (len_trim(report%plot%meta) > 0) then
                     write (fu, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
                 end if
@@ -435,7 +437,7 @@ contains
 
                 ! Plot loop.
                 do i = 1, n
-                    ! Output plot heading.
+                    ! Add plot heading.
                     write (fu, '(a)') dm_html_heading(3, report%plot%observs(i)%title, &
                                                       report%plot%observs(i)%subtitle)
 
@@ -450,6 +452,7 @@ contains
                                               from     = report%from, &
                                               to       = report%to)
 
+                        ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
                             write (fu, '(a)') dm_html_p('No observations found in database.')
                             exit plot_block
@@ -460,6 +463,7 @@ contains
                             exit plot_block
                         end if
 
+                        ! Get Gnuplot terminal name.
                         format = dm_plot_term_from_name(report%plot%observs(i)%format)
 
                         if (format /= PLOT_TERM_GIF       .and. format /= PLOT_TERM_PNG .and. &
@@ -469,7 +473,7 @@ contains
                             exit plot_block
                         end if
 
-                        ! Output HTML plot figure.
+                        ! Add HTML plot figure.
                         write (fu, '(a)') html_plot(data_points, &
                                                     response = report%plot%observs(i)%response, &
                                                     unit     = report%plot%observs(i)%unit, &
@@ -483,12 +487,12 @@ contains
                 end do
             end if plot_if
 
-            ! Output logs.
+            ! Add table of logs to HTML document if enabled.
             log_if: if (.not. report%log%disabled) then
-                ! Output heading.
+                ! Add section heading.
                 write (fu, '(a)') dm_html_heading(2, report%log%title)
 
-                ! Output meta description.
+                ! Add meta description.
                 if (len_trim(report%log%meta) > 0) then
                     write (fu, '(a)') dm_html_p(dm_html_encode(report%log%meta))
                 end if
@@ -502,6 +506,7 @@ contains
                                min_level = report%log%min_level, &
                                max_level = report%log%max_level)
 
+                ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
                     write (fu, '(a)') dm_html_p('No logs found in database.')
                     exit log_if
@@ -512,11 +517,11 @@ contains
                     exit log_if
                 end if
 
-                ! Output logs table.
+                ! Add logs table.
                 write (fu, '(a)') dm_html_logs(logs, node=.false.)
             end if log_if
 
-            ! Output HTML footer.
+            ! Add HTML footer.
             write (fu, '(a)') html_footer()
 
             rc = E_NONE

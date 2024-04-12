@@ -36,8 +36,8 @@ program dmgrc
     class(logger_class), pointer :: logger ! Logger object.
 
     integer           :: rc     ! Return code.
-    type(app_type)    :: app    ! App configuration.
-    type(mqueue_type) :: mqueue ! Message queue.
+    type(app_type)    :: app    ! App settings.
+    type(mqueue_type) :: mqueue ! POSIX message queue.
 
     ! Initialise DMPACK.
     call dm_init()

@@ -23,7 +23,7 @@ program dmrecv
     character(len=*), parameter :: APP_NAME  = 'dmrecv'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -48,14 +48,14 @@ program dmrecv
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer           :: rc
-    type(app_type)    :: app
-    type(mqueue_type) :: mqueue
+    integer           :: rc     ! Return code.
+    type(app_type)    :: app    ! App settings.
+    type(mqueue_type) :: mqueue ! POSIX message queue.
 
     ! Initialise DMPACK.
     call dm_init()
 
-    ! Get command-line arguments, read options from configuration file.
+    ! Get command-line arguments and read options from configuration file.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
@@ -165,11 +165,13 @@ contains
             return
         end if
 
-        if (app%format /= FORMAT_BLOCK .and. app%format /= FORMAT_CSV .and. &
-            app%format /= FORMAT_JSONL .and. app%format /= FORMAT_NML) then
-            call dm_error_out(rc, 'invalid format')
-            return
-        end if
+        select case (app%format)
+            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSONL, FORMAT_NML)
+                continue
+            case default
+                call dm_error_out(rc, 'invalid format')
+                return
+        end select
 
         if (app%type /= TYPE_OBSERV .and. app%type /= TYPE_LOG) then
             call dm_error_out(rc, 'invalid type')
@@ -266,7 +268,7 @@ contains
             ! Handle message queue error.
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from mqueue /' // app%name, error=rc)
-                call dm_sleep(1)
+                call dm_sleep(5)
                 cycle ipc_loop
             end if
 

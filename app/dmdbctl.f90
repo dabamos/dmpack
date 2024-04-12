@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -18,7 +18,7 @@ program dmdbctl
     integer, parameter :: OP_READ   = 2
     integer, parameter :: OP_UPDATE = 3
     integer, parameter :: OP_DELETE = 4
-    integer, parameter :: NOPS      = 4
+    integer, parameter :: OP_LAST   = 4
 
     ! Affected data type attributes.
     integer, parameter :: ATTR_NONE  = 0
@@ -31,22 +31,22 @@ program dmdbctl
     integer, parameter :: ATTR_X     = 7
     integer, parameter :: ATTR_Y     = 8
     integer, parameter :: ATTR_Z     = 9
-    integer, parameter :: NATTRS     = 9
+    integer, parameter :: ATTR_LAST  = 9
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database     = ' '       !! Path to SQLite database file.
-        integer                      :: operation    = OP_NONE   !! Database operation (CRUD).
-        integer                      :: type         = TYPE_NONE !! Entity type (node, sensor, target).
-        logical                      :: mask(NATTRS) = .false.   !! Attribute mask.
-        logical                      :: verbose      = .false.   !! Print debug messages to stderr.
-        type(node_type)              :: node                     !! Node type.
-        type(sensor_type)            :: sensor                   !! Sensor type.
-        type(target_type)            :: target                   !! Target type.
+        character(len=FILE_PATH_LEN) :: database        = ' '       !! Path to SQLite database file.
+        integer                      :: operation       = OP_NONE   !! Database operation (CRUD).
+        integer                      :: type            = TYPE_NONE !! Entity type (node, sensor, target).
+        logical                      :: mask(ATTR_LAST) = .false.   !! Attribute mask.
+        logical                      :: verbose         = .false.   !! Print debug messages to stderr.
+        type(node_type)              :: node                        !! Node type.
+        type(sensor_type)            :: sensor                      !! Sensor type.
+        type(target_type)            :: target                      !! Target type.
     end type app_type
 
     integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    type(app_type) :: app ! App settings.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -382,7 +382,7 @@ contains
         character(len=TYPE_NAME_LEN)        :: type   ! DMPACK derived type name.
 
         integer        :: i, n
-        logical        :: mask(NOPS) ! CRUD operation mask.
+        logical        :: mask(OP_LAST) ! CRUD operation mask.
         type(arg_type) :: args(16)
 
         rc = E_NONE
@@ -412,7 +412,7 @@ contains
         if (dm_is_error(rc)) return
 
         ! CRUD operation.
-        mask = [ (args(i)%passed, i = 1, NOPS) ]
+        mask = [ (args(i)%passed, i = 1, OP_LAST) ]
         n = count(mask)
 
         rc = E_INVALID
