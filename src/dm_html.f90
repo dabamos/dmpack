@@ -217,8 +217,9 @@ contains
 
     function dm_html_beat(beat, delta, prefix) result(html)
         !! Returns table of single beat in HTML format.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
         use :: dm_time
+
         type(beat_type),  intent(inout)        :: beat   !! Beat type.
         integer(kind=i8), intent(in), optional :: delta  !! Time delta.
         character(len=*), intent(in), optional :: prefix !! GET argument name.
@@ -255,26 +256,27 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-               H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Address' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Client' // H_TH_END // &
-               H_TD // dm_html_encode(beat%client) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(beat%client) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Sent' // H_TH_END // &
-               H_TD // dm_html_time(beat%time_sent, human=.true.) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_time(beat%time_sent, human=.true.) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Received' // H_TH_END // &
-               H_TD // dm_html_time(beat%time_recv, human=.true.) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_time(beat%time_recv, human=.true.) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Now' // H_TH_END // &
-               H_TD // dm_html_time(now, human=.true.) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_time(now, human=.true.) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Time Delta' // H_TH_END // &
-               H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
+                       H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Interval' // H_TH_END // &
-               H_TD // dm_time_delta_to_string(time_inter) // H_TD_END // H_TR_END // &
+                       H_TD // dm_time_delta_to_string(time_inter) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Uptime' // H_TH_END // &
-               H_TD // dm_time_delta_to_string(time) // H_TD_END // H_TR_END // &
+                       H_TD // dm_time_delta_to_string(time) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Last Error' // H_TH_END // &
-               H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Status' // H_TH_END // H_TD
+                       H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Status' // H_TH_END // &
+                       H_TD
 
         if (delta_ <= int(beat%interval, kind=i8)) then
             html = html // dm_html_mark('on-time', class='debug')
@@ -289,8 +291,9 @@ contains
         !! Returns table of heartbeats in HTML format. If argument `prefix` is
         !! passed, the node ids are enclosed in HTML anchors, with the link
         !! set to `prefix`.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
         use :: dm_time
+
         type(beat_type),   intent(inout)           :: beats(:)  !! Beat types.
         integer(kind=i8),  intent(inout), optional :: deltas(:) !! Time deltas.
         character(len=*),  intent(in),    optional :: prefix    !! GET argument name.
@@ -354,7 +357,8 @@ contains
     end function dm_html_beats
 
     pure function dm_html_button(type, text, disabled) result(html)
-        !! Returns HTML button element. This function does not encode the
+        !! Returns HTML button element. An invalid button type will be replaced
+        !! with `HTML_BUTTON_TYPE_BUTTON`. This function does not encode the
         !! argument.
         character(len=*), parameter :: BUTTON_TYPES(3) = [ &
             character(len=6) :: 'button', 'reset', 'submit' ] ! Button type names.
@@ -388,69 +392,71 @@ contains
 
     function dm_html_cgi_env(env) result(html)
         !! Returns HTML table of CGI environment variables.
-        use :: dm_cgi
+        use :: dm_cgi, only: cgi_env_type
+
         type(cgi_env_type), intent(inout) :: env  !! CGI environment variables.
         character(len=:), allocatable     :: html !! Generated HTML.
 
         html = H_TABLE // H_THEAD // &
                H_TR // H_TH // 'Variable' // H_TH_END // &
-               H_TH // 'Value' // H_TH_END // H_TR_END // &
+                       H_TH // 'Value' // H_TH_END // H_TR_END // &
                H_THEAD_END // H_TBODY // &
                H_TR // H_TD // 'AUTH_TYPE' // H_TD_END // &
-               H_TD // dm_html_encode(env%auth_type) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%auth_type) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'CONTENT_LENGTH' // H_TD_END // &
-               H_TD // dm_itoa(env%content_length) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(env%content_length) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'CONTENT_TYPE' // H_TD_END // &
-               H_TD // dm_html_encode(env%content_type) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%content_type) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'DOCUMENT_ROOT' // H_TD_END // &
-               H_TD // dm_html_encode(env%document_root) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%document_root) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'GATEWAY_INTERFACE' // H_TD_END // &
-               H_TD // dm_html_encode(env%gateway_interface) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%gateway_interface) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_ACCEPT' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_accept) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_accept) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_CONTENT_ENCODING' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_content_encoding) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_content_encoding) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_COOKIE' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_cookie) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_cookie) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_FROM' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_from) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_from) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_REFERER' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_referer) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_referer) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'HTTP_USER_AGENT' // H_TD_END // &
-               H_TD // dm_html_encode(env%http_user_agent) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%http_user_agent) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'PATH_INFO' // H_TD_END // &
-               H_TD // dm_html_encode(env%path_info) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%path_info) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'PATH_TRANSLATED' // H_TD_END // &
-               H_TD // dm_html_encode(env%path_translated) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%path_translated) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'QUERY_STRING' // H_TD_END // &
-               H_TD // dm_html_encode(env%query_string) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%query_string) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REMOTE_ADDR' // H_TD_END // &
-               H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REMOTE_HOST' // H_TD_END // &
-               H_TD // dm_html_encode(env%remote_host) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%remote_host) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REMOTE_IDENT' // H_TD_END // &
-               H_TD // dm_html_encode(env%remote_ident) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%remote_ident) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REMOTE_USER' // H_TD_END // &
-               H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REQUEST_METHOD' // H_TD_END // &
-               H_TD // dm_html_encode(env%request_method) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%request_method) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'REQUEST_URI' // H_TD_END // &
-               H_TD // dm_html_encode(env%request_uri) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%request_uri) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'SCRIPT_NAME' // H_TD_END // &
-               H_TD // dm_html_encode(env%script_name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%script_name) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'SERVER_NAME' // H_TD_END // &
-               H_TD // dm_html_encode(env%server_name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%server_name) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'SERVER_PORT' // H_TD_END // &
-               H_TD // dm_itoa(env%server_port) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(env%server_port) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'SERVER_PROTOCOL' // H_TD_END // &
-               H_TD // dm_html_encode(env%server_protocol) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%server_protocol) // H_TD_END // H_TR_END // &
                H_TR // H_TD // 'SERVER_SOFTWARE' // H_TD_END // &
-               H_TD // dm_html_encode(env%server_software) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(env%server_software) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_cgi_env
 
     pure function dm_html_comment(str) result(html)
-        !! Returns HTML comment. This function does not encode the argument.
+        !! Returns HTML comment. The given string is enclosed by `<!-- ` and
+        !! ` //-->`. This function does not encode the argument.
         character(len=*), intent(in)  :: str  !! Comment string.
         character(len=:), allocatable :: html !! Generated HTML.
 
@@ -459,7 +465,8 @@ contains
 
     function dm_html_data_uri(data, mime) result(uri)
         !! Returns base64-encoded data URI of given data and MIME type.
-        use :: dm_base64
+        use :: dm_base64, only: dm_base64_encode
+
         character(len=*), intent(inout) :: data !! Raw data.
         character(len=*), intent(in)    :: mime !! MIME type.
         character(len=:), allocatable   :: uri  !! Data URI.
@@ -535,13 +542,13 @@ contains
         character(len=:), allocatable          :: html       !! Generated HTML.
 
         if (present(message)) then
-            html = H_P // 'Error: ' // dm_html_encode(message) // ' (' // &
-                   dm_itoa(error_code) // ')' // H_P_END
+            html = H_P // 'Error: ' // dm_html_encode(message) // &
+                          ' (' // dm_itoa(error_code) // ')' // H_P_END
             return
         end if
 
         html = H_P // 'Error: ' // dm_error_message(error_code) // &
-               ' (' // dm_itoa(error_code) // ')' // H_P_END
+                      ' (' // dm_itoa(error_code) // ')' // H_P_END
     end function dm_html_error
 
     pure function dm_html_figure(content, caption) result(html)
@@ -554,8 +561,7 @@ contains
         html = H_FIGURE // trim(content)
 
         if (present(caption)) then
-            if (len_trim(caption) > 0) &
-                html = html // H_FIGCAPTION // dm_html_encode(caption) // H_FIGCAPTION_END
+            if (len_trim(caption) > 0) html = html // H_FIGCAPTION // dm_html_encode(caption) // H_FIGCAPTION_END
         end if
 
         html = html // H_FIGURE_END
@@ -565,7 +571,7 @@ contains
         !! Returns HTML footer. The content and the script URL will not be HTML
         !! encoded. The script element will be placed before the `</body>` tag.
         character(len=*), intent(in), optional :: content !! Optional footer content.
-        character(len=*), intent(in), optional :: script  !! Optional script URL.
+        character(len=*), intent(in), optional :: script  !! Optional URL to JS script.
         character(len=:), allocatable          :: html    !! Generated HTML.
 
         character(len=:), allocatable :: content_, script_
@@ -819,6 +825,7 @@ contains
         !! Returns log as HTML table. The input data will be trimmed and
         !! encoded.
         use :: dm_log
+
         type(log_type),   intent(inout)        :: log           !! Log type.
         character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
         character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -874,25 +881,25 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Level' // H_TH_END // &
-               H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-               H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
-               H_TD // sid // H_TD_END // H_TR_END // &
+                       H_TD // sid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
-               H_TD // tid // H_TD_END // H_TR_END // &
+                       H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Observation' // H_TH_END // &
-               H_TD // oid // H_TD_END // H_TR_END // &
+                       H_TD // oid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
-               H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Message' // H_TH_END // &
-               H_TD // dm_html_encode(log%message) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(log%message) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_log
 
@@ -903,6 +910,7 @@ contains
         !! table. Optionally, a maximum log message length can be set. The
         !! input data will be trimmed and encoded.
         use :: dm_log
+
         type(log_type),   intent(inout)        :: logs(:) !! Log types.
         logical,          intent(in), optional :: node    !! Show node id column.
         character(len=*), intent(in), optional :: prefix  !! Link address prefix.
@@ -927,10 +935,10 @@ contains
         if (node_) html = html // H_TH // 'Node' // H_TH_END
 
         html = html // H_TH // 'Source' // H_TH_END // &
-               H_TH // 'Level'   // H_TH_END // &
-               H_TH // 'Error'   // H_TH_END // &
-               H_TH // 'Message' // H_TH_END // &
-               H_TR_END // H_THEAD_END // H_TBODY
+                       H_TH // 'Level'   // H_TH_END // &
+                       H_TH // 'Error'   // H_TH_END // &
+                       H_TH // 'Message' // H_TH_END // &
+                       H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(logs)
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
@@ -959,9 +967,9 @@ contains
             end if
 
             html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
-                   H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // &
-                   H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
-                   H_TD // dm_html_encode(message) // H_TD_END // H_TR_END
+                           H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // &
+                           H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
+                           H_TD // dm_html_encode(message) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1010,30 +1018,32 @@ contains
     function dm_html_node(node) result(html)
         !! Returns sensor node as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type), intent(inout) :: node !! Node type.
         character(len=:), allocatable  :: html !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(node%id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(node%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
-               H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'X' // H_TH_END // &
-               H_TD // dm_ftoa(node%x) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(node%x) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Y' // H_TH_END // &
-               H_TD // dm_ftoa(node%y) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(node%y) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Z' // H_TH_END // &
-               H_TD // dm_ftoa(node%z) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(node%z) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
     function dm_html_nodes(nodes, prefix) result(html)
         !! Returns sensor nodes as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type),  intent(inout)        :: nodes(:) !! Node types.
         character(len=*), intent(in), optional :: prefix   !! Link address prefix.
         character(len=:), allocatable          :: html     !! Generated HTML.
@@ -1081,7 +1091,8 @@ contains
     function dm_html_observ(observ, prefix_node, prefix_sensor, prefix_target) result(html)
         !! Returns observation as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout)        :: observ        !! Observation type.
         character(len=*),  intent(in), optional :: prefix_node   !! Node link prefix.
         character(len=*),  intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -1124,38 +1135,38 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-               H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // nid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
-               H_TD // sid // H_TD_END // H_TR_END // &
+                       H_TD // sid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
-               H_TD // tid // H_TD_END // H_TR_END // &
+                       H_TD // tid // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
-               H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Path' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
-               H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Next' // H_TH_END // &
-               H_TD // dm_itoa(observ%next) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(observ%next) // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Receivers' // H_TH_END // &
-               H_TD // dm_itoa(observ%nreceivers) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(observ%nreceivers) // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Requests' // H_TH_END // &
-               H_TD // dm_itoa(observ%nrequests) // H_TD_END // H_TR_END
+                       H_TD // dm_itoa(observ%nrequests) // H_TD_END // H_TR_END
 
         ! Receivers.
         n = observ%nreceivers
 
         if (n > 0) then
             html = html // H_TR // dm_html_th('Receivers', row_span=n) // &
-                   H_TD // dm_html_encode(observ%receivers(1)) // H_TD_END // H_TR_END
+                           H_TD // dm_html_encode(observ%receivers(1)) // H_TD_END // H_TR_END
 
             do i = 2, n
                 html = html // H_TR // H_TD // dm_html_encode(observ%receivers(i)) // H_TD_END // H_TR_END
@@ -1186,7 +1197,8 @@ contains
         !! link set to `prefix`. The table always contains index and timestamp.
         !! The columns id, node id, sensor id, target id, name, and error are
         !! optional. Input data will be trimmed and encoded.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout)        :: observs(:) !! Observation types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         logical,           intent(in), optional :: id         !! Show observation ids.
@@ -1304,44 +1316,46 @@ contains
     function dm_html_request(request) result(html)
         !! Returns request as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_request
+        use :: dm_request, only: request_type
+
         type(request_type), intent(inout) :: request !! Observation request type.
         character(len=:), allocatable     :: html    !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(request%name) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(request%name) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
-               H_TD // dm_html_encode(request%timestamp) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(request%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Request' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Response' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(request%response) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(request%response) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Delimiter' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(request%delimiter) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(request%delimiter) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Pattern' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(request%pattern) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(request%pattern) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Delay' // H_TH_END // &
-               H_TD // dm_itoa(request%delay) // ' ms' // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%delay) // ' ms' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
-               H_TD // dm_error_message(request%error) // ' (' // dm_itoa(request%error) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_error_message(request%error) // ' (' // dm_itoa(request%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Mode' // H_TH_END // &
-               H_TD // dm_itoa(request%mode) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%mode) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Retries' // H_TH_END // &
-               H_TD // dm_itoa(request%retries) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%retries) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'State' // H_TH_END // &
-               H_TD // dm_itoa(request%state) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%state) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timeout' // H_TH_END // &
-               H_TD // dm_itoa(request%timeout) // ' ms' // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%timeout) // ' ms' // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Responses' // H_TH_END // &
-               H_TD // dm_itoa(request%nresponses) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(request%nresponses) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_request
 
     function dm_html_responses(responses) result(html)
         !! Returns responses as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_response
+        use :: dm_response, only: dm_response_type_name, response_type
+
         type(response_type), intent(inout) :: responses(:) !! Observation response type.
         character(len=:), allocatable      :: html         !! Generated HTML.
 
@@ -1374,7 +1388,7 @@ contains
     pure function dm_html_script(source) result(html)
         !! Returns `<script>` element with URL `source` to JavaScript file. The
         !! source will be encoded.
-        character(len=*), intent(in)  :: source !! JavaScript source URL.
+        character(len=*), intent(in)  :: source !! URL to JS script.
         character(len=:), allocatable :: html   !! Generated HTML.
 
         html = '<script src="' // dm_html_encode(source) // '"></script>' // NL
@@ -1414,6 +1428,7 @@ contains
         !! Returns sensor as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_sensor
+
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: html   !! Generated HTML.
 
@@ -1424,23 +1439,23 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Type' // H_TH_END // &
-               H_TD // trim(SENSOR_TYPE_NAMES(type)) // H_TD_END // H_TR_END // &
+                       H_TD // trim(SENSOR_TYPE_NAMES(type)) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Serial Number' // H_TH_END // &
-               H_TD // dm_html_encode(sensor%sn) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(sensor%sn) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
-               H_TD // dm_html_encode(sensor%meta) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(sensor%meta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'X' // H_TH_END // &
-               H_TD // dm_ftoa(sensor%x) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(sensor%x) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Y' // H_TH_END // &
-               H_TD // dm_ftoa(sensor%y) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(sensor%y) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Z' // H_TH_END // &
-               H_TD // dm_ftoa(sensor%z) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(sensor%z) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_sensor
 
@@ -1449,6 +1464,7 @@ contains
         !! passed, the sensor names are enclosed in HTML anchors, with the link
         !! set to `prefix`. Input data will be trimmed and encoded.
         use :: dm_sensor
+
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensor types.
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         character(len=:), allocatable           :: html       !! Generated HTML.
@@ -1489,14 +1505,14 @@ contains
             end if
 
             html = html // H_TD // dm_html_encode(sensors(i)%node_id) // H_TD_END // &
-                   H_TD // dm_html_encode(sensors(i)%name) // H_TD_END // &
-                   H_TD // trim(SENSOR_TYPE_NAMES(t)) // H_TD_END // &
-                   H_TD // dm_html_encode(sensors(i)%sn) // H_TD_END // &
-                   H_TD // dm_html_encode(sensors(i)%meta) // H_TD_END // &
-                   H_TD // dm_ftoa(sensors(i)%x) // H_TD_END // &
-                   H_TD // dm_ftoa(sensors(i)%y) // H_TD_END // &
-                   H_TD // dm_ftoa(sensors(i)%z) // H_TD_END // &
-                   H_TR_END
+                           H_TD // dm_html_encode(sensors(i)%name)    // H_TD_END // &
+                           H_TD // trim(SENSOR_TYPE_NAMES(t))         // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%sn)      // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%meta)    // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%x)              // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%y)              // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%z)              // H_TD_END // &
+                           H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1514,7 +1530,7 @@ contains
         !! Returns `<span>` element of optional class, with encoded `str`
         !! enclosed.
         character(len=*), intent(in)           :: str   !! Element content.
-        character(len=*), intent(in), optional :: class !! Element class.
+        character(len=*), intent(in), optional :: class !! Element CSS class.
         character(len=:), allocatable          :: html  !! Generated HTML.
 
         if (present(class)) then
@@ -1532,19 +1548,19 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-               H_TD // H_CODE // dm_html_encode(target%id) // H_CODE_END // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(target%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
-               H_TD // dm_html_encode(target%name) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(target%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
-               H_TD // dm_html_encode(target%meta) // H_TD_END // H_TR_END // &
+                       H_TD // dm_html_encode(target%meta) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'State' // H_TH_END // &
-               H_TD // dm_target_state_name(target%state) // ' (' // dm_itoa(target%state) // ')' // H_TD_END // H_TR_END // &
+                       H_TD // dm_target_state_name(target%state) // ' (' // dm_itoa(target%state) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'X' // H_TH_END // &
-               H_TD // dm_ftoa(target%x) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(target%x) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Y' // H_TH_END // &
-               H_TD // dm_ftoa(target%y) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(target%y) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Z' // H_TH_END // &
-               H_TD // dm_ftoa(target%z) // H_TD_END // H_TR_END // &
+                       H_TD // dm_ftoa(target%z) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_target
 
@@ -1638,6 +1654,7 @@ contains
         !! format of the time stamp will be changed to the slightly more
         !! human-readable format `1970-01-01 00:00:00 +00:00`.
         use :: dm_time, only: dm_time_strip_useconds, dm_time_to_human
+
         character(len=*), intent(in)           :: time  !! ISO 8601 time stamp.
         logical,          intent(in), optional :: human !! Turn time stamp into human-readable format.
         character(len=:), allocatable          :: html  !! Generated HTML.
@@ -1693,8 +1710,7 @@ contains
                 .not. allocated(select%values)) exit set_block
 
             rc = E_BOUNDS
-            if (index > min(size(select%options), size(select%values))) &
-                exit set_block
+            if (index > min(size(select%options), size(select%values))) exit set_block
 
             select%options(index) = option
             select%values(index)  = value

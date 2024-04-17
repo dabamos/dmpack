@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_cgi
     !! Common Gateway Interface (CGI) utility procedures.
-    use :: dm_ascii
+    use :: dm_ascii, only: CR_LF
     use :: dm_error
     use :: dm_hash
     use :: dm_http

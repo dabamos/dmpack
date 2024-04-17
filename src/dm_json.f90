@@ -101,7 +101,8 @@ contains
 
     function json_from_beat(beat) result(json)
         !! Returns beat in JSON format.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
+
         type(beat_type), intent(inout) :: beat !! Beat type.
         character(len=:), allocatable  :: json !! Alloctable JSON string.
 
@@ -117,7 +118,8 @@ contains
 
     function json_from_beats(beats) result(json)
         !! Returns array of beats in JSON format.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
+
         type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
         character(len=:), allocatable  :: json     !! Allocatable JSON string.
 
@@ -145,7 +147,8 @@ contains
 
     function json_from_data_point(data_point) result(json)
         !! Returns data point in JSON format.
-        use :: dm_dp
+        use :: dm_dp, only: dp_type
+
         type(dp_type), intent(inout)  :: data_point !! Data point type.
         character(len=:), allocatable :: json       !! Alloctable JSON string.
 
@@ -155,7 +158,8 @@ contains
 
     function json_from_data_points(data_points) result(json)
         !! Returns array of data points in JSON format.
-        use :: dm_dp
+        use :: dm_dp, only: dp_type
+
         type(dp_type), intent(inout)  :: data_points(:) !! Data points array.
         character(len=:), allocatable :: json           !! Allocatable JSON string.
 
@@ -183,7 +187,8 @@ contains
 
     function json_from_log(log) result(json)
         !! Returns log in JSON format.
-        use :: dm_log
+        use :: dm_log, only: log_type
+
         type(log_type), intent(inout) :: log  !! Log type.
         character(len=:), allocatable :: json !! Alloctable JSON string.
 
@@ -200,7 +205,8 @@ contains
 
     function json_from_logs(logs) result(json)
         !! Returns array of logs in JSON format.
-        use :: dm_log
+        use :: dm_log, only: log_type
+
         type(log_type), intent(inout) :: logs(:) !! Array of log types.
         character(len=:), allocatable :: json    !! Allocatable JSON string.
 
@@ -228,7 +234,8 @@ contains
 
     function json_from_node(node) result(json)
         !! Returns node in JSON format.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type), intent(inout) :: node !! Node type.
         character(len=:), allocatable  :: json !! Alloctable JSON string.
 
@@ -242,7 +249,8 @@ contains
 
     function json_from_nodes(nodes) result(json)
         !! Returns array of nodes in JSON format.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type), intent(inout) :: nodes(:) !! Array of node types.
         character(len=:), allocatable  :: json     !! Allocatable JSON string.
 
@@ -270,7 +278,8 @@ contains
 
     function json_from_observ(observ) result(json)
         !! JSON encoding of given observation type (for poor people).
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout) :: observ !! Observation data.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
@@ -345,7 +354,8 @@ contains
 
     function json_from_observs(observs) result(json)
         !! Returns array of observations in JSON format.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout) :: observs(:) !! Array of observations.
         character(len=:), allocatable    :: json       !! Allocatable JSON string.
 
@@ -373,7 +383,8 @@ contains
 
     function json_from_sensor(sensor) result(json)
         !! Returns sensor in JSON format.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
+
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
@@ -390,7 +401,8 @@ contains
 
     function json_from_sensors(sensors) result(json)
         !! Returns array of sensors in JSON format.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
+
         type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
         character(len=:), allocatable    :: json       !! Allocatable JSON string.
 
@@ -418,7 +430,8 @@ contains
 
     function json_from_target(target) result(json)
         !! Returns target in JSON format.
-        use :: dm_target
+        use :: dm_target, only: target_type
+
         type(target_type), intent(inout) :: target !! Sensor type.
         character(len=:), allocatable    :: json   !! Alloctable JSON string.
 
@@ -433,7 +446,8 @@ contains
 
     function json_from_targets(targets) result(json)
         !! Returns array of targets in JSON format.
-        use :: dm_target
+        use :: dm_target, only: target_type
+
         type(target_type), intent(inout) :: targets(:) !! Array of targets.
         character(len=:), allocatable    :: json       !! Allocatable JSON string.
 
@@ -461,7 +475,8 @@ contains
 
     integer function json_write_beat(beat, unit) result(rc)
         !! Writes beat to file or standard output.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
+
         type(beat_type), intent(inout)        :: beat !! Beat type.
         integer,         intent(in), optional :: unit !! File unit.
 
@@ -477,7 +492,8 @@ contains
 
     integer function json_write_beats(beats, unit) result(rc)
         !! Writes beats to file or standard output.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
+
         type(beat_type), intent(inout)        :: beats(:) !! Beat array.
         integer,         intent(in), optional :: unit     !! File unit.
 
@@ -511,7 +527,8 @@ contains
 
     integer function json_write_data_point(data_point, unit) result(rc)
         !! Writes data point to file or standard output.
-        use :: dm_dp
+        use :: dm_dp, only: dp_type
+
         type(dp_type), intent(inout)        :: data_point !! Data point type.
         integer,       intent(in), optional :: unit       !! File unit.
 
@@ -527,7 +544,8 @@ contains
 
     integer function json_write_data_points(data_points, unit) result(rc)
         !! Writes data_points to file or standard output.
-        use :: dm_dp
+        use :: dm_dp, only: dp_type
+
         type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
         integer,       intent(in), optional :: unit       !! File unit.
 
@@ -561,7 +579,8 @@ contains
 
     integer function json_write_log(log, unit) result(rc)
         !! Writes log to file or standard output.
-        use :: dm_log
+        use :: dm_log, only: log_type
+
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
@@ -577,7 +596,8 @@ contains
 
     integer function json_write_logs(logs, unit) result(rc)
         !! Writes logs to file or standard output.
-        use :: dm_log
+        use :: dm_log, only: log_type
+
         type(log_type), intent(inout)        :: logs(:) !! Log array.
         integer,        intent(in), optional :: unit    !! File unit.
 
@@ -611,7 +631,8 @@ contains
 
     integer function json_write_node(node, unit) result(rc)
         !! Writes node to file or standard output.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type), intent(inout)        :: node !! Node type.
         integer,         intent(in), optional :: unit !! File unit.
 
@@ -627,7 +648,8 @@ contains
 
     integer function json_write_nodes(nodes, unit) result(rc)
         !! Writes nodes to file or standard output.
-        use :: dm_node
+        use :: dm_node, only: node_type
+
         type(node_type), intent(inout)        :: nodes(:) !! Node array.
         integer,         intent(in), optional :: unit     !! File unit.
 
@@ -661,7 +683,8 @@ contains
 
     integer function json_write_observ(observ, unit) result(rc)
         !! Writes observation to file or standard output.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout)        :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -677,7 +700,8 @@ contains
 
     integer function json_write_observs(observs, unit) result(rc)
         !! Writes observations to file or standard output.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
+
         type(observ_type), intent(inout)        :: observs(:) !! Observation array.
         integer,           intent(in), optional :: unit       !! File unit.
 
@@ -711,7 +735,8 @@ contains
 
     integer function json_write_sensor(sensor, unit) result(rc)
         !! Writes sensor to file or standard output.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
+
         type(sensor_type), intent(inout)        :: sensor !! Sensor type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -727,7 +752,8 @@ contains
 
     integer function json_write_sensors(sensors, unit) result(rc)
         !! Writes sensors to file or standard output.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
+
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensor array.
         integer,           intent(in), optional :: unit       !! File unit.
 
@@ -761,7 +787,8 @@ contains
 
     integer function json_write_target(target, unit) result(rc)
         !! Writes target to file or standard output.
-        use :: dm_target
+        use :: dm_target, only: target_type
+
         type(target_type), intent(inout)        :: target !! Target type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -777,7 +804,8 @@ contains
 
     integer function json_write_targets(targets, unit) result(rc)
         !! Writes targets to file or standard output.
-        use :: dm_target
+        use :: dm_target, only: target_type
+
         type(target_type), intent(inout)        :: targets(:) !! Target array.
         integer,           intent(in), optional :: unit       !! File unit.
 

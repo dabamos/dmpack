@@ -400,7 +400,6 @@ contains
         !! * `E_ZLIB` if zlib libray call failed.
         !! * `E_ZSTD` if zstd libray call failed.
         !!
-        !! On error, array `responses` may be unallocated.
         use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
 
         type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
@@ -469,7 +468,10 @@ contains
         ! Clean-up Zstandard context.
         if (z == Z_TYPE_ZSTD) stat = dm_zstd_destroy(context)
 
-        if (dm_is_error(rc)) return
+        if (dm_is_error(rc)) then
+            allocate (responses(n), stat=stat)
+            return
+        end if
 
         ! Send requests concurrently.
         if (.not. sequential_) then
@@ -570,8 +572,15 @@ contains
         !! Cleans-up the cURL handles of the request.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
-        if (c_associated(request%list_ptr)) call curl_slist_free_all(request%list_ptr)
-        if (c_associated(request%curl_ptr)) call curl_easy_cleanup(request%curl_ptr)
+        if (c_associated(request%list_ptr)) then
+            call curl_slist_free_all(request%list_ptr)
+            request%list_ptr = c_null_ptr
+        end if
+
+        if (c_associated(request%curl_ptr)) then
+            call curl_easy_cleanup(request%curl_ptr)
+            request%curl_ptr = c_null_ptr
+        end if
 
         request = rpc_request_type()
     end subroutine dm_rpc_reset
@@ -594,7 +603,7 @@ contains
 
         n = 0_c_size_t
 
-        if (.not. c_associated(ptr)) return
+        if (.not. c_associated(ptr))  return
         if (.not. c_associated(data)) return
 
         call c_f_pointer(data, response)
@@ -620,7 +629,7 @@ contains
         !! Other DMPACK errors may occur, depending on the result of the
         !! transmission. Specific transfer error codes are returned in the
         !! responses.
-        integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout in msec.
+        integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout [msec].
 
         type(rpc_request_type),               intent(inout) :: requests(:)  !! Request type array.
         type(rpc_response_type), allocatable, intent(out)   :: responses(:) !! Response type array.

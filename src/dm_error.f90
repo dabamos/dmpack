@@ -330,7 +330,7 @@ contains
             case (E_ZLIB)
                 message = 'zlib error'
             case (E_ZSTD)
-                message = 'Zstandard error'
+                message = 'zstd error'
 
             case default
                 message = 'unknown error'

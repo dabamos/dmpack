@@ -45,6 +45,11 @@ module dm_z
         module procedure :: z_uncompress_target
     end interface
 
+    interface dm_z_valid
+        !! Generic validation function.
+        module procedure :: dm_z_valid_type
+    end interface
+
     ! Public procedures.
     public :: dm_z_compress
     public :: dm_z_compress_type
@@ -54,6 +59,7 @@ module dm_z
     public :: dm_z_type_to_encoding
     public :: dm_z_uncompress
     public :: dm_z_valid
+    public :: dm_z_valid_type
 
     ! Private procedures.
     private :: z_compress
@@ -81,12 +87,12 @@ contains
         !! result is returned in `output`. The argument `output_len` will equal
         !! the length of `output`. The function returns `E_INVALID` if `type`
         !! is unsupported.
-        use :: dm_beat
-        use :: dm_log
-        use :: dm_node
-        use :: dm_observ
-        use :: dm_sensor
-        use :: dm_target
+        use :: dm_beat,   only: beat_type
+        use :: dm_log,    only: log_type
+        use :: dm_node,   only: node_type
+        use :: dm_observ, only: observ_type
+        use :: dm_sensor, only: sensor_type
+        use :: dm_target, only: target_type
 
         class(*),                      intent(inout)           :: type       !! Derived type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed type.
@@ -121,13 +127,7 @@ contains
         !! compressed results are returned in `output`. The function returns
         !! `E_INVALID` if `types` is unsupported. On error, not all strings of
         !! `output` may be allocated.
-        use :: dm_beat
-        use :: dm_log
-        use :: dm_node
-        use :: dm_observ
-        use :: dm_sensor
-        use :: dm_string
-        use :: dm_target
+        use :: dm_string, only: string_type
 
         class(*),                       intent(inout) :: types(:)  !! Derived types to serialise and compress.
         type(string_type), allocatable, intent(out)   :: output(:) !! Serialised and compressed types.
@@ -221,14 +221,14 @@ contains
         end select
     end function dm_z_type_to_encoding
 
-    pure elemental logical function dm_z_valid(z) result(valid)
+    pure elemental logical function dm_z_valid_type(z) result(valid)
         !! Returns `.true.` if the given compression enumerator `z` is
         !! valid. The type `Z_TYPE_NONE` is a valid type, and `Z_TYPE_INVALID`
         !! is invalid.
         integer, intent(in) :: z !! Compression enumerator.
 
         valid = (z >= Z_TYPE_NONE .and. z <= Z_TYPE_LAST)
-    end function dm_z_valid
+    end function dm_z_valid_type
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
@@ -293,7 +293,7 @@ contains
         !! depending on `z`. The serialised and compressed result is returned
         !! in `output`. The argument `output_len` will equal the length of
         !! `output`.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
 
         type(beat_type),               intent(inout)           :: beat       !! Beat type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed beat.
@@ -316,7 +316,7 @@ contains
         !! on `z`. The serialised and compressed result is returned in
         !! `output`. The argument `output_len` will equal the length of
         !! `output`.
-        use :: dm_log
+        use :: dm_log, only: log_type
 
         type(log_type),                intent(inout)           :: log        !! Log type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed log.
@@ -339,7 +339,7 @@ contains
         !! depending on `z`. The serialised and compressed result is
         !! returned in `output`. The argument `output_len` will equal the
         !! length of `output`.
-        use :: dm_node
+        use :: dm_node, only: node_type
 
         type(node_type),               intent(inout)           :: node       !! Node type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed node.
@@ -362,7 +362,7 @@ contains
         !! depending on `z`. The serialised and compressed result is returned
         !! in `output`. The argument `output_len` will equal the length of
         !! `output`.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
 
         type(observ_type),             intent(inout)           :: observ     !! Observation type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed observation.
@@ -385,7 +385,7 @@ contains
         !! depending on `z`. The serialised and compressed result is
         !! returned in `output`. The argument `output_len` will equal the
         !! length of `output`.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
 
         type(sensor_type),             intent(inout)           :: sensor     !! Sensor type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed sensor.
@@ -408,7 +408,7 @@ contains
         !! depending on `z`. The serialised and compressed result is
         !! returned in `output`. The argument `output_len` will equal the
         !! length of `output`.
-        use :: dm_target
+        use :: dm_target, only: target_type
 
         type(target_type),             intent(inout)           :: target     !! Target type to serialise and compress.
         character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed target.
@@ -481,7 +481,7 @@ contains
     integer function z_uncompress_beat(input, beat, z, input_len, context) result(rc)
         !! Uncompressed compressed beat namelist `input` and returns
         !! deserialised type in `beat`.
-        use :: dm_beat
+        use :: dm_beat, only: beat_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised beat.
         type(beat_type),         intent(out)             :: beat      !! Uncompressed and deserialised beat.
@@ -499,7 +499,7 @@ contains
     integer function z_uncompress_log(input, log, z, input_len, context) result(rc)
         !! Uncompressed compressed log namelist `input` and returns
         !! deserialised type in `log`.
-        use :: dm_log
+        use :: dm_log, only: log_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised log.
         type(log_type),          intent(out)             :: log       !! Uncompressed and deserialised log.
@@ -517,7 +517,7 @@ contains
     integer function z_uncompress_node(input, node, z, input_len, context) result(rc)
         !! Uncompressed compressed node namelist `input` and returns
         !! deserialised type in `node`.
-        use :: dm_node
+        use :: dm_node, only: node_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised node.
         type(node_type),         intent(out)             :: node      !! Uncompressed and deserialised node.
@@ -535,7 +535,7 @@ contains
     integer function z_uncompress_observ(input, observ, z, input_len, context) result(rc)
         !! Uncompressed compressed observation namelist `input` and returns
         !! deserialised z in `observ`.
-        use :: dm_observ
+        use :: dm_observ, only: observ_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised observation.
         type(observ_type),       intent(out)             :: observ    !! Uncompressed and deserialised observation.
@@ -553,7 +553,7 @@ contains
     integer function z_uncompress_sensor(input, sensor, z, input_len, context) result(rc)
         !! Uncompressed compressed sensor namelist `input` and returns
         !! deserialised type in `sensor`.
-        use :: dm_sensor
+        use :: dm_sensor, only: sensor_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised sensor.
         type(sensor_type),       intent(out)             :: sensor    !! Uncompressed and deserialised sensor.
@@ -571,7 +571,7 @@ contains
     integer function z_uncompress_target(input, target, z, input_len, context) result(rc)
         !! Uncompressed compressed target namelist `input` and returns
         !! deserialised type in `target`.
-        use :: dm_target
+        use :: dm_target, only: target_type
 
         character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised target.
         type(target_type),       intent(out)             :: target    !! Uncompressed and deserialised target.

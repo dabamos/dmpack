@@ -27,6 +27,7 @@ module dm_response
 
     type, public :: response_type
         !! Response of a sensor.
+        sequence
         character(len=RESPONSE_NAME_LEN) :: name  = ' '                  !! Response name (`-0-9A-Z_a-z`).
         character(len=RESPONSE_UNIT_LEN) :: unit  = ' '                  !! Response unit.
         integer                          :: type  = RESPONSE_TYPE_REAL64 !! Response value type.
