@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.5
 :lang: en
-:docdate: 2024-03-28
+:docdate: 2024-04-17
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -147,6 +147,10 @@ package:
 * zlib
 * zstd (≥ 1.5.5)
 
+Additionally, the web applications require a compatible web server:
+
+* lighttpd
+
 To generate the man pages, the User’s Guide, and the source code documentation,
 you will also need:
 
@@ -165,7 +169,7 @@ DMPACK depends on the following interface libraries:
 * link:https://github.com/interkosmos/fortran-zlib[fortran-zlib]
 * link:https://github.com/interkosmos/fortran-zstd[fortran-zstd]
 
-If the repository is cloned recursively with Git, or if the project is built
+If the repository is cloned recursively through Git, or if the project is built
 using FPM, the submodules will be downloaded automatically. Without Git or FPM,
 this step has to be done manually by executing `fetchvendor.sh`, for example:
 
@@ -229,9 +233,16 @@ $ doas pkg install archivers/zstd databases/sqlite3 devel/git devel/pcre2 \
   science/hdf5 www/fcgi
 ....
 
-Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but lacks the raster graphic terminals). Optionally,
-install Pygments and AsciiDoctor to generate the man pages and the User’s Guide:
+Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
+which does not depend on X11 (but lacks the raster graphic terminals). The web
+applications additionally require a web server:
+
+....
+$ doas pkg install www/lighttpd
+....
+
+Optionally, install Pygments and AsciiDoctor to generate the man pages and the
+User’s Guide:
 
 ....
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
@@ -239,8 +250,8 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 
 ==== Make [[freebsd-make]]
 
-The repository has to be cloned recursively. Execute the Makefile with build
-target `freebsd`:
+The repository has to be cloned recursively using command-line argument
+`--recursive`. Execute the Makefile with build target `freebsd`:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -261,13 +272,13 @@ directory `/opt` instead, run:
 $ doas make install PREFIX=/opt
 ....
 
-In this case, path `/opt/bin` must be in environment variable `PATH`.
+In this case, path `/opt/bin` must be included in environment variable `PATH`.
 
 ==== Fortran Package Manager [[freebsd-fpm]]
 
-Either clone the repository with Git, or download the archive of the
-link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[master branch].
-Then, run:
+Either clone the repository with Git, or download the
+link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[archive of
+the master branch]. Then, run:
 
 ....
 $ cd dmpack/
@@ -279,12 +290,11 @@ $ fpm install
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually. The library and programs will be installed to `~/.local/` by default.
+manually. The library and programs will be installed to `~/.local` by default.
 
 === Linux [[linux]]
 
-On Debian, install GCC, GNU Fortran, and the rest of the build environment
-first:
+On Debian, install GCC, GNU Fortran, and the build environment first:
 
 ....
 $ sudo apt install gcc gfortran git make pkg-config
@@ -300,22 +310,23 @@ $ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
   libzstd-dev
 ....
 
-Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
-if raster image formats are not needed (SVG output only). The SQLite 3 package
-version must be ≥ 3.39.0. Depending on the package repository, the names of the
-HDF5 and Lua packages may differ.
+Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
+raster graphic formats are not required (essentially, SVG output only). The
+SQLite 3 package version must be ≥ 3.39.0. Depending on the package repository,
+the names of the HDF5 and Lua packages may differ.
 
 [NOTE]
 ====
 If Intel oneAPI is used instead of GCC to compile DMPACK, it is necessary to
 build HDF5 from source, as the versions in the Linux package repositories have
-been compiled with GNU Fortran and are therefore incompatible.
+been compiled with GNU Fortran and are therefore incompatible. See section
+<<hdfview>> for hints regarding the build process.
 ====
 
 ==== Make [[linux-make]]
 
-Clone the DMPACK repository recursively, and execute the Makefile with build
-target `linux`:
+Clone the DMPACK repository using command-line argument `--recursive`, and
+execute build target `linux` of the Makefile:
 
 ....
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -329,7 +340,7 @@ Install the DMPACK libraries and programs system-wide to `/usr/local`:
 $ sudo make install
 ....
 
-To install to directory `/opt` instead, run:
+Or, to install to directory `/opt` instead, run:
 
 ....
 $ sudo make install PREFIX=/opt
@@ -365,14 +376,15 @@ $ make CC=icx FC=ifx PPFLAGS= \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
 ....
 
-In this case, the HDF5 libraries are installed to `/opt/lib/`, and the HDF5
-modules files to `/opt/include/`. Change the paths to the actual locations.
+In this particular case, the HDF5 libraries are installed to `/opt/lib/`, and
+the HDF5 modules files to `/opt/include/`. Change the paths to the actual
+locations.
 ====
 
 ==== Fortran Package Manager [[linux-fpm]]
 
-To build DMPACK with the Fortran Package Manager, change to the cloned or
-fetched repository, then run:
+To build DMPACK using the Fortran Package Manager, change to the cloned or
+downloaded repository, and run:
 
 ....
 $ cd dmpack/
@@ -382,9 +394,9 @@ $ fpm build --profile release --flag "${FFLAGS}"
 $ fpm install
 ....
 
-The library and programs will be installed to directory `~/.local/` by default.
-If the compilation fails with an error message that `-llua-5.4` cannot be
-found, update the build manifests first:
+The library and programs will be installed to directory `~/.local` by default.
+If the compilation fails with an error message stating that `-llua-5.4` cannot
+be found, update the build manifests first:
 
 ....
 $ sed -i "s/lua-5/lua5/g" fpm.toml
@@ -394,9 +406,10 @@ $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 == Deformation Monitoring Entities [[entities]]
 
 The data structures of DMPACK are based on the following entities. The
-internally used date and time format is a 32-characters long ISO 8601 time stamp
+date and time format used internally is a 32-characters long ISO 8601 time stamp
 in microsecond resolution, with time separator `T` and mandatory GMT offset, for
-example, `1970-01-01T00:00:00.000000+00:00`.
+example, `1970-01-01T00:00:00.000000+00:00`. A human-readable format
+`1970-01-01 00:00:00 +00:00` may be used where reasonable.
 
 === Observation Entities
 
@@ -550,12 +563,13 @@ format. Authentication and encryption are independent from *dmapi* and have to
 be provided by the web server.
 
 All POST data has to be serialised in Fortran 95 Namelist format, with optional
-deflate or zstd compression.
+link:http://www.zlib.net/[deflate] or link:http://www.zstd.net/[zstd]
+compression.
 
 If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
 and observation sent to the HTTP-RPC service must match the name of the
 authenticated user. For example, to store an observation of a node with the id
-`node-1`, the HTTP Basic Auth user name must equal the node id. If the
+`node-1`, the HTTP Basic Auth user name must be `node-1` as well. If the
 observation is sent by any other user, it will be rejected (HTTP 401).
 
 .Environment variables of _dmapi(1)_
@@ -584,8 +598,8 @@ type set in the HTTP Accept header of the request, either:
 * `text/comma-separated-values` (CSV)
 
 By default, responses are in CSV format. The Namelist format is available only
-for single records. Status messages are returned as key–value pairs, signaled by
-MIME type `text/plain`.
+for single records. Status messages are returned as key–value pairs, indicated
+by content type `text/plain`.
 
 === dmbackup [[dmbackup]]
 
@@ -896,7 +910,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--author _name_`     | `-A`  | –        | Name of feed author or organisation.
 | `--config _file_`     | `-c`  | –        | Path to configuration file.
 | `--database _file_`   | `-d`  | –        | Path to SQLite log database.
-| `--email _address_`   | `-M`  | –        | E-mail address of feed author.
+| `--email _address_`   | `-M`  | –        | E-mail address of feed author (optional).
 | `--entries _count_`   | `-E`  | 50       | Maximum number of entries in feed (max. 500).
 | `--force`             | `-F`  | –        | Force file output even if no new log records are available.
 | `--help`              | `-h`  | –        | Output available command-line arguments and quit.
@@ -1176,13 +1190,15 @@ argument:
 $ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf
 ....
 
-The name argument must match the name of the configuration table.
+The name argument must match the name of the configuration table. A logger
+process of name `dmlogger` must be running to process the generated log
+messages.
 
 === dminfo [[dminfo]]
 
 The *dminfo* utility program prints build, database, and system information to
 standard output. The path to the beat, log, or observation database is passed
-through command-line argument `--database`.
+through command-line argument `--database`. Only one database can be specified.
 
 The output contains compiler version and options; database PRAGMAs, tables, and
 number of rows; as well as system name, version, and host name.
@@ -1221,7 +1237,7 @@ db.table.beats.rows: 0
 The *dmimport* program reads logs, nodes, sensors, targets, and observations
 in CSV format from file and imports them into the database. The database
 inserts are transaction-based. If an error occurs, the transaction is rolled
-back, and no records are written into the database at all.
+back, and no records are written to the database at all.
 
 The database has to be a valid DMPACK database and must contain the tables
 required for the input records. The nodes, sensors, and targets referenced by
@@ -1258,9 +1274,9 @@ $ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
 The *dminit* utility program creates beat, log, and observation databases. No
 action is performed if the specified database already exists. A synchronisation
 table is required for observation and log synchronisation with an <<dmapi>>
-server. The argument can be omitted if this functionality is not used. The
-journal mode Write-Ahead Logging (WAL) should be enabled for databases with
-multiple readers.
+server. The argument can be omitted if this feature is not needed. The journal
+mode Write-Ahead Logging (WAL) should be enabled for databases with multiple
+readers.
 
 ==== Command-Line Options
 
@@ -1300,8 +1316,8 @@ $ dminit --database /var/dmpack/beat.sqlite --type beat --wal
 
 The *dmlog* utility forwards a log message to the message queue of a
 <<dmlogger>> instance. The argument `--message` is mandatory. The default log
-level is INFO. Pass the name of the _dmlogger_ instance through argument
-`--logger`. The program terminates after log transmission.
+level is _info_. Pass the name of the _dmlogger_ instance through command-line
+argument `--logger`. The program terminates after log transmission.
 
 The following log levels are accepted:
 
@@ -1345,8 +1361,8 @@ $ dmlog --level warning --message "low battery" --source dmlog --verbose
 2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....
 
-The `dmlogger` process will receive the log message and store it in the log
-database (if the log level is ≥ the minimum log level):
+The `dmlogger` process will receive the log message in real-time and store it in
+the log database (if the log level is ≥ the configured minimum log level):
 
 ....
 $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
@@ -1356,23 +1372,21 @@ $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
 === dmlogger [[dmlogger]]
 
 The *dmlogger* program collects log messages from a POSIX message queue and
-stores them in a SQLite database. The name of the message queue equals the
+writes them to a SQLite database. The name of the message queue will equal the
 given *dmlogger* name with leading `/`, by default `/dmlogger`.
 
-If a minimum log level is selected, only logs of a level greater equal the
-minimum are stored in the database. Log messages with lower level are printed to
-standard output before being discarded (if verbose mode is enabled).
+If a minimum log level is selected, only logs of a level greater or equal the
+minimum are stored in the database. Log messages with a lower level are printed
+to standard output before being discarded (only if the verbose flag is enabled).
 
-The IPC option allows process synchronisation via POSIX semaphores. The value of
-the semaphore is changed from `0` to `1` whenever a new log was received. The
-name of the semaphore equals the *dmlogger* name with leading `/`. Only a
-single process should wait for the semaphore unless round-robin passing is
-desired.
-
-This feature may be used to automatically synchronise incoming log messages with
-a remote HTTP-RPC API server. <<dmsync>> will wait for new logs before starting
-synchronisation if the *dmlogger* instance name has been passed through
-command-line argument `--wait`.
+The IPC option allows an optional process synchronisation via a named POSIX
+semaphores. The value of the semaphore is changed from `0` to `1` whenever a
+new log was received. The name of the semaphore will equal the *dmlogger* name
+with leading `/`. Only a single process should wait for the semaphore unless
+round-robin passing is desired. This feature may be used to automatically
+synchronise incoming log messages with a remote HTTP-RPC API server. <<dmsync>>
+will wait for new logs before starting synchronisation if the *dmlogger*
+instance name has been passed through command-line argument `--wait`.
 
 The following log levels are accepted:
 
@@ -1459,7 +1473,7 @@ the observation will be discarded.
 
 [cols="2,1,1,6"]
 |===
-| Option               | Short | Default  | Description
+| Option               | Short | Default   | Description
 
 | `--config _file_`    | `-c`  | –         | Path to configuration file (optional).
 | `--debug`            | `-D`  | off       | Forward log messages of level _debug_ via IPC (if logger is set).
@@ -2281,7 +2295,7 @@ image::dmweb.png[dmweb,align="center"]
 
 The following web applications are part of DMPACK:
 
-<<dmapi>>:: HTTP-RPC API for data synchronisation, timeseries access, and
+<<dmapi>>:: HTTP-RPC API for data synchronisation, time series access, and
 heartbeat collection.
 <<dmweb>>:: Web user interface for database configuration, data access, and
 plotting.
@@ -2486,7 +2500,7 @@ $HTTP["url"] =^ "/dmpack/" {
   # Map URL to CGI executable.
   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
 
-  # Enable HTTP Basic Auth.
+  # Enable HTTP Basic Auth for all paths.
   auth.require = ( "" => (
     "method"  => "basic",
     "realm"   => "dmpack",
@@ -2506,7 +2520,7 @@ $HTTP["url"] =^ "/dmpack/" {
 }
 ....
 
-Copy the CSS file `dmpack.min.css` from `/usr/local/share/dmpack`
+Copy the CSS file `dmpack.min.css` from `/usr/local/share/dmpack/`
 (`/usr/share/dmpack/` on Linux) to the WWW root directory, in this case,
 `/var/www/`, or simply create a symlinks:
 
@@ -2686,10 +2700,10 @@ range are mandatory.
 |===
 | Status | Description
 
-| `200`  | Nodes are returned.
+| `200`  | Logs are returned.
 | `400`  | Invalid request.
 | `401`  | Unauthorised.
-| `404`  | No nodes found.
+| `404`  | No logs found.
 | `500`  | Server error.
 | `503`  | Database error.
 |===
@@ -6620,7 +6634,7 @@ The memory type `mem_type` has to be one of the following:
 
 == Third-Party Programs
 
-=== HDFView
+=== HDFView [[hdfview]]
 
 link:[]HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
 files. Application images for Linux, macOS, and Windows are available for
