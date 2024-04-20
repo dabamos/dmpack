@@ -3,15 +3,36 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmweb
-    !! Server-side web application for DMPACK database access. A CGI-
-    !! compatible web server, such as lighttpd, is required to run this
-    !! program. If served locally, access the web interface at
+    !! This program is a server-side web application for DMPACK database access
+    !! that has to be executed by a CGI-compatible web server, such as
+    !! _lighttpd(1)_. If served locally, access the web interface at
     !! `http://127.0.0.1/dmpack/`.
     !!
-    !! Make sure that the URL is redirected to the CGI program in your web
-    !! server configuration.
+    !! Make sure that the path `/dmpack` is redirected to the CGI program. For
+    !! example, in the _lighttpd(1)_ configuration file `lighttpd.conf`, load
+    !! the required modules first and then add an alias:
     !!
-    !! Configure the application through CGI environment variables:
+    !! ```lighttpd
+    !! # Load additional modules.
+    !! server.modules += (
+    !!   "mod_alias",
+    !!   "mod_authn_file",
+    !!   "mod_cgi",
+    !!   "mod_setenv"
+    !! )
+    !!
+    !! $HTTP["url"] =^ "/dmpack/" {
+    !!   # Map URL to CGI executable.
+    !!   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb"
+    !!
+    !!   # Enable CGI.
+    !!   cgi.assign = ( "" => "" )
+    !! }
+    !! ```
+    !!
+    !! In this particular case, the web interface is installed to
+    !! `/usr/local/bin/` Configure the application through CGI environment
+    !! variables:
     !!
     !! | Environment Variable | Description                                  |
     !! |----------------------|----------------------------------------------|
@@ -21,11 +42,23 @@ program dmweb
     !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
     !!
     !! The databases have to exist at start-up. Add the variables to the
-    !! configuration file of your web server.
+    !! configuration file of your web server. In _lighttpd(1)_, for instance:
     !!
-    !! Copy the CSS file `share/dmpack.min.css` and the JavaScript file
-    !! `share/dmpack.js` to the document root path (`/var/www/`), or create a
-    !! symlink. Other classless style sheets may work as well.
+    !! ```lighttpd
+    !!  # Pass the database paths through environment variables.
+    !!  setenv.add-environment = (
+    !!    "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
+    !!    "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
+    !!    "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
+    !!    "DM_READ_ONLY" => "0"
+    !!  )
+    !! ```
+    !!
+    !! The module `sentenv` must be loaded (see above).
+    !!
+    !! Copy the CSS file `share/dmpack.min.css` to the document root path of the
+    !! web server (for example, `/var/www/`), or create a symlink. Other
+    !! classless style sheets may work as well.
     use :: dmpack
     implicit none (type, external)
 
@@ -84,11 +117,10 @@ program dmweb
         type(cgi_env_type) :: env
 
         ! Read environment variables.
-        has_db_beat   = dm_is_ok(dm_env_get('DM_DB_BEAT',   db_beat,   n)) ! Path to beat database.
-        has_db_log    = dm_is_ok(dm_env_get('DM_DB_LOG',    db_log,    n)) ! Path to log database.
-        has_db_observ = dm_is_ok(dm_env_get('DM_DB_OBSERV', db_observ, n)) ! Path to observ database.
-
-        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY) ! Database access mode.
+        rc = dm_env_get('DM_DB_BEAT',   db_beat,   n, exists=has_db_beat)
+        rc = dm_env_get('DM_DB_LOG',    db_log,    n, exists=has_db_log)
+        rc = dm_env_get('DM_DB_OBSERV', db_observ, n, exists=has_db_observ)
+        rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
         ! Set-up router.
         rc = dm_cgi_router_set(router, routes)
@@ -116,7 +148,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * node_id - Node ID (string).
+        !! * `node_id` – Node id (string).
         character(len=*), parameter :: TITLE = 'Beat' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -419,7 +451,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * id - Log ID (UUID4).
+        !! * `id` – Log id (UUID4).
         character(len=*), parameter :: TITLE = 'Log' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -484,14 +516,14 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * node_id     - Node ID (string).
-        !! * sensor_id   - Sensor ID (string).
-        !! * target_id   - Target ID (string).
-        !! * source      - Log source (string).
-        !! * from        - Time range start (ISO 8601).
-        !! * to          - Time range end (ISO 8601).
-        !! * level       - Log level (integer).
-        !! * max_results - Maximum number of logs (integer).
+        !! * `node_id`     – Node id (string).
+        !! * `sensor_id`   – Sensor id (string).
+        !! * `target_id`   – Target id (string).
+        !! * `source`      – Log source (string).
+        !! * `from`        – Time range start (ISO 8601).
+        !! * `to`          – Time range end (ISO 8601).
+        !! * `level`       – Log level (integer).
+        !! * `max_results` – Maximum number of logs (integer).
         character(len=*), parameter :: TITLE = 'Logs' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -652,7 +684,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * id - Node ID (string).
+        !! * `id` – Node id (string).
         character(len=*), parameter :: TITLE = 'Node' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -710,9 +742,9 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * id   - Node ID (string).
-        !! * name - Node name (string).
-        !! * meta - Node meta description (string).
+        !! * `id`   – Node id (string).
+        !! * `name` – Node name (string).
+        !! * `meta` – Node meta description (string).
         character(len=*), parameter :: TITLE = 'Nodes' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -805,7 +837,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * id - Observation ID (UUID4).
+        !! * `id` – Observation id (UUID4).
         character(len=*), parameter :: TITLE = 'Observation' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -892,12 +924,12 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * node_id     - Node ID (string).
-        !! * sensor_id   - Sensor ID (string).
-        !! * target_id   - Target ID (string).
-        !! * from        - Time range start (ISO 8601).
-        !! * to          - Time range end (ISO 8601).
-        !! * max_results - Maximum number of points per plot (integer).
+        !! * `node_id`     – Node id (string).
+        !! * `sensor_id`   – Sensor id (string).
+        !! * `target_id`   – Target id (string).
+        !! * `from`        – Time range start (ISO 8601).
+        !! * `to`          – Time range end (ISO 8601).
+        !! * `max_results` – Maximum number of points per plot (integer).
         character(len=*), parameter :: TITLE = 'Observations' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1029,13 +1061,13 @@ contains
         !! * POST
         !!
         !! ## POST Parameters
-        !! * node_id       - Node ID (string).
-        !! * sensor_id     - Sensor ID (string).
-        !! * target_id     - Target ID (string).
-        !! * response_name - Observation response name (string).
-        !! * from          - Time range start (ISO 8601).
-        !! * to            - Time range end (ISO 8601).
-        !! * max_results   - Maximum number of data points (integer).
+        !! * `node_id`       – Node id (string).
+        !! * `sensor_id`     – Sensor id (string).
+        !! * `target_id`     – Target id (string).
+        !! * `response_name` – Observation response name (string).
+        !! * `from`          – Time range start (ISO 8601).
+        !! * `to`            – Time range end (ISO 8601).
+        !! * `max_results`   – Maximum number of data points (integer).
         character(len=*), parameter :: TITLE       = 'Plots' !! Page title.
         integer,          parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
         integer,          parameter :: PLOT_HEIGHT = 400     !! Default plot height.
@@ -1200,7 +1232,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * id - Sensor ID (string).
+        !! * `id` – Sensor id (string).
         character(len=*), parameter :: TITLE = 'Sensor' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1484,7 +1516,7 @@ contains
         !! * GET
         !!
         !! ## GET Parameters
-        !! * id - Target ID (string).
+        !! * `id` – Target id (string).
         character(len=*), parameter :: TITLE = 'Target' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1540,10 +1572,11 @@ contains
         !! Targets page.
         !!
         !! ## Path
-        !! /dmpack/targets
+        !! * `/dmpack/targets`
         !!
         !! ## Methods
-        !! GET, POST
+        !! * GET
+        !! * POST
         character(len=*), parameter :: TITLE = 'Targets' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1724,16 +1757,16 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // &
-               H_DIV_COL // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('Source', for='source') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='source', name='source', &
                              max_length=LOG_SOURCE_LEN, pattern='[\-0-9A-Z_a-z]+', &
@@ -1742,14 +1775,14 @@ contains
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
                dm_html_label('Log Level', for='level') // &
                dm_html_select(select_level, 'level', 'level', level_) // &
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // &
-               H_DIV_END //  &
+               H_DIV_END // & ! end column 3
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Search') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -1774,8 +1807,8 @@ contains
         html = H_DETAILS // H_SUMMARY // 'Add Node' // H_SUMMARY_END // &
                H_P // 'Add a new sensor node to the database.' // H_P_END // &
                H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // &
-               H_DIV_COL // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('ID', for='id') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='id', name='id', &
                              max_length=NODE_ID_LEN, pattern='[\-0-9A-Z_a-z]+', &
@@ -1787,8 +1820,8 @@ contains
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=NODE_META_LEN, placeholder='Enter node description (optional)') // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter node X or easting (optional)') // &
@@ -1798,8 +1831,8 @@ contains
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter node Z or altitude (optional)') // &
-               H_DIV_END // &
-               H_DIV_END // &
+               H_DIV_END // & ! end column 2
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_nodes
@@ -1877,26 +1910,26 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // &
-               H_DIV_COL // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('From', for='from') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // &
-               H_DIV_END //  &
+               H_DIV_END // & ! end column 3
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled, name='submit', value='Search') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -1986,16 +2019,16 @@ contains
 
         ! Create HTML.
         html = H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // &
-               H_DIV_COL // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
                dm_html_label('Sensor Name', for='sensor_id') // &
                dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
                dm_html_label('Target Name', for='target_id') // &
                dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('Response Name', for='response_name') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, id='response_name', name='response_name', &
                              max_length=RESPONSE_NAME_LEN, pattern='[\-0-9A-Z_a-z]+', &
@@ -2005,12 +2038,12 @@ contains
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
                dm_html_label('To', for='to') // &
                dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
                dm_html_label('Max. Results', for='max_results') // &
                dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
-               H_DIV_END // &
-               H_DIV_END //  &
+               H_DIV_END // & ! end column 3
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled, name='submit', value='Plot') // &
                H_FIELDSET_END // H_FORM_END
 
@@ -2049,8 +2082,8 @@ contains
         html = H_DETAILS // H_SUMMARY // 'Add Sensor' // H_SUMMARY_END // &
                H_P // 'Add a new sensor to the database.' // H_P_END // &
                H_FORM_POST // H_FIELDSET // &
-               H_DIV_ROW // &
-               H_DIV_COL // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
                dm_html_label('Node Name', for='node_id') // &
                dm_html_select(select_node, 'node_id', 'node_id', '', disabled=disabled_) // &
                dm_html_label('ID', for='id') // &
@@ -2061,8 +2094,8 @@ contains
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='name', name='name', &
                              max_length=SENSOR_NAME_LEN, placeholder='Enter sensor name', &
                              required=.true.) // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
                dm_html_label('Type', for='type') // &
                dm_html_select(select_sensor_type, 'type', 'type', dm_itoa(SENSOR_TYPE_NONE), disabled=disabled_) // &
                dm_html_label('Serial Number', for='sn') // &
@@ -2071,8 +2104,8 @@ contains
                dm_html_label('Meta', for='meta') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='meta', name='meta', &
                              max_length=SENSOR_META_LEN, placeholder='Enter sensor description (optional)') // &
-               H_DIV_END // &
-               H_DIV_COL // &
+               H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
                dm_html_label('X', for='x') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='x', name='x', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter sensor X or easting (optional)') // &
@@ -2082,8 +2115,8 @@ contains
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter sensor Z or altitude (optional)') // &
-               H_DIV_END // &
-               H_DIV_END // &
+               H_DIV_END // & ! end column 3
+               H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
 

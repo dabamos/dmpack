@@ -630,10 +630,13 @@ contains
 
         ! Sidebar navigation.
         if (present(nav) .and. present(mask)) then
+            ! Apply mask on navigation anchors.
             html = html // dm_html_nav(nav, mask)
         else if (present(nav)) then
+            ! Use whole navigation anchors array.
             html = html // dm_html_nav(nav)
         else
+            ! No navigation.
             if (has_subtitle) then
                 html = html // dm_html_heading(1, title, subtitle)
             else
@@ -934,7 +937,7 @@ contains
 
         if (node_) html = html // H_TH // 'Node' // H_TH_END
 
-        html = html // H_TH // 'Source' // H_TH_END // &
+        html = html // H_TH // 'Source'  // H_TH_END // &
                        H_TH // 'Level'   // H_TH_END // &
                        H_TH // 'Error'   // H_TH_END // &
                        H_TH // 'Message' // H_TH_END // &

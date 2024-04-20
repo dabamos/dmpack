@@ -16,7 +16,7 @@ module dmpack
     !!     call dm_init()
     !!
     !!     ! Call any DMPACK procedures here.
-    !!     ! ...
+    !!     call dm_version_out()
     !! end program main
     !! ```
     !!
@@ -26,8 +26,7 @@ module dmpack
     !! $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
     !! ```
     !!
-    !! On Linux, change `/usr/local` to `/usr` (or the chosen installation
-    !! prefix).
+    !! You may have to change `/usr/local` the chosen installation prefix.
     use :: dm_ansi
     use :: dm_api
     use :: dm_arg
