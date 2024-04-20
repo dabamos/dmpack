@@ -281,7 +281,6 @@ link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[archive of
 the master branch]. Then, run:
 
 ....
-$ cd dmpack/
 $ export FFLAGS="-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
 $ fpm test --flag "${FFLAGS}"
 $ fpm build --profile release --flag "${FFLAGS}"
@@ -320,7 +319,7 @@ the names of the HDF5 and Lua packages may differ.
 If Intel oneAPI is used instead of GCC to compile DMPACK, it is necessary to
 build HDF5 from source, as the versions in the Linux package repositories have
 been compiled with GNU Fortran and are therefore incompatible. See section
-<<hdfview>> for hints regarding the build process.
+<<hdfview-building-hdf5,HDFView>> for hints regarding the build process.
 ====
 
 ==== Make [[linux-make]]
@@ -387,7 +386,6 @@ To build DMPACK using the Fortran Package Manager, change to the cloned or
 downloaded repository, and run:
 
 ....
-$ cd dmpack/
 $ export FFLAGS="-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
 $ fpm test --flag "${FFLAGS}"
 $ fpm build --profile release --flag "${FFLAGS}"
@@ -492,7 +490,7 @@ the next specified receiver.
 
 <<dmplot>>:: Creates line plots of time series read from database, with output
 to file, terminal, or X11 window. Uses _gnuplot(1)_ internally as plotting
-backend.
+back-end.
 <<dmreport>>:: Creates HTML reports containing plots and optionally log
 messages.
 
@@ -555,7 +553,7 @@ You may want to enable Lua syntax highlighting in your editor (for instance,
 
 *dmapi* is an HTTP-RPC API service for remote DMPACK database access. The web
 application has to be executed through a FastCGI-compatible web server or a
-FastCGI spawner. It is recommended to run _lighttpd(1)_.
+FastCGI spawner. It is recommended to use _lighttpd(1)_.
 
 The *dmapi* service offers endpoints for clients to insert beats, logs, and
 observations into the local SQLite database, and to request data in CSV or JSON
@@ -1639,7 +1637,7 @@ The *dmplot* program is a front-end to _gnuplot(1)_ that creates plots of
 observations read from database. Plots are either written to file or displayed
 in terminal or X11 window.
 
-Depending on the selected terminal backend, you may have to set the environment
+Depending on the selected terminal back-end, you may have to set the environment
 variable `GDFONTPATH` to the local font directory first:
 
 ....
@@ -2223,7 +2221,7 @@ $ echo '3d3eee7ae1fb4259b5df72f854aaa369' | dmuuid --convert
 and server. The web application has to be executed through a CGI-compatible web
 server. It is recommended to run _lighttpd(1)_. Any other server must be able to
 pass environment variables to the CGI application. _gnuplot(1)_ is required for
-the plotting backend (no-X11 flavour is sufficient).
+the plotting back-end (no-X11 flavour is sufficient).
 
 The web application provides the following pages:
 
@@ -2275,7 +2273,7 @@ image::dmweb.png[dmweb,align="center"]
 
 == Web Applications
 
-.Comparision of DMPACK web applications
+.Comparision between DMPACK web applications
 [[web-services-comp]]
 [cols="2,4,4"]
 |===
@@ -2325,7 +2323,7 @@ can run _openssl(1)_ to add credentials to the _htpasswd_ user file:
 ....
 
 Replace `<user>` and `<password>` with real values. Instead of a _htpasswd_
-file, we may select a different authentication backend, for example, LDAP,
+file, we may select a different authentication back-end, for example, LDAP,
 MySQL/MariaDB, PostgreSQL, or SQLite 3. See the _lighttpd(1)_ auth module
 documentation for further instructions.
 
@@ -2401,7 +2399,7 @@ server.modules += (
   "mod_fastcgi"
 )
 
-# Set authentication backend and path of password file.
+# Set authentication back-end and path of password file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
@@ -2491,7 +2489,7 @@ setenv.add-environment = (
   "DM_READ_ONLY" => "0"
 )
 
-# Set authentication backend and path of password file.
+# Set authentication back-end and path of password file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
@@ -5505,7 +5503,7 @@ GeoCOM API names. All functions start with prefix `geocom_`, all named
 parameters with `GEOCOM_`. The names of the requests are set to the name of the
 respective function without prefix.
 
-.Comparison of the DMPACK Lua API and the official GeoCOM API
+.Comparison between the DMPACK Lua API and the official GeoCOM API
 [cols="3,2"]
 |===
 | Lua API                                                                               | GeoCOM API
@@ -5630,34 +5628,34 @@ respective function without prefix.
 
 ==== geocom_abort_download() [[lua-api-geocom-abort-download]]
 
-Returns request of *FTR_AbortDownload* procedure. Creates request to abort or end the
-file download command.
+Returns request for *FTR_AbortDownload* procedure. Creates request to abort or
+end the file download command.
 
 ==== geocom_abort_list() [[lua-api-geocom-abort-list]]
 
-Returns request of *FTR_AbortList* procedure. Creates request to abort or end
+Returns request for *FTR_AbortList* procedure. Creates request to abort or end
 the file list command.
 
 ==== geocom_beep_alarm() [[lua-api-geocom-beep-alarm]]
 
-Returns request of *BMM_BeepAlarm* procedure. Creates request to output an alarm
-signal (triple beep).
+Returns request for *BMM_BeepAlarm* procedure. Creates request to output an
+alarm signal (triple beep).
 
 ==== geocom_beep_normal() [[lua-api-geocom-beep-normal]]
 
-Returns request of *BMM_BeepNormal* procedure. Creates request to output an
+Returns request for *BMM_BeepNormal* procedure. Creates request to output an
 alarm signal (single beep).
 
 ==== geocom_beep_off() [[lua-api-geocom-beep-off]]
 
-Returns request of *IOS_BeepOff* procedure. Creates request to stop an active
+Returns request for *IOS_BeepOff* procedure. Creates request to stop an active
 beep signal.
 
 ==== geocom_beep_on(intensity) [[lua-api-geocom-beep-on]]
 
 * `intensity` (_integer_) – Intensity of the beep signal.
 
-Returns request of *IOS_BeepOn* procedure. Creates request for continuous beep
+Returns request for *IOS_BeepOn* procedure. Creates request for continuous beep
 signal of given `intensity` from 0 to 100. The constant
 `GEOCOM_IOS_BEEP_STDINTENS` sets the intensity to 100.
 
@@ -5666,7 +5664,7 @@ signal of given `intensity` from 0 to 100. The constant
 * `pos_mode` (_integer_) – Position mode (<<geocom-api-aut-posmode,GEOCOM_AUT_POSMODE>>).
 * `atr_mode` (_integer_) – ATR mode (<<geocom-api-aut-atrmode,GEOCOM_AUT_ATRMODE>>).
 
-Returns request of *AUT_ChangeFace* procedure. Creates request for turning the
+Returns request for *AUT_ChangeFace* procedure. Creates request for turning the
 telescope to the other face.
 
 If `pos_mode` is `GEOCOM_AUT_NORMAL`, the instrument uses the current value of
@@ -5687,7 +5685,7 @@ into a target in the destination area. This mode requires activated ATR.
 * `year`        (_integer_) – Year (`YY`).
 * `file_name`   (_string_)  – Name of file to delete.
 
-Returns request of *FTR_Delete* procedure. Creates request for deleting one or
+Returns request for *FTR_Delete* procedure. Creates request for deleting one or
 more files. Wildcards may be used to delete multiple files. If the deletion date
 is valid, only files older than the deletion date are deleted.
 
@@ -5696,7 +5694,7 @@ is valid, only files older than the deletion date are deleted.
 * `tmc_prog` (_integer_) – Measurement program (<<geocom-api-tmc-measure-prg,GEOCOM_TMC_MEASURE_PRG>>).
 * `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_DoMeasure* procedure. Creates request for trying a
+Returns request for *TMC_DoMeasure* procedure. Creates request for trying a
 distance measurement. This command does not return any values. If a distance
 measurement is performed in measurement program `GEOCOM_TMC_DEF_DIST`, the
 distance sensor will work in the set EDM mode.
@@ -5705,7 +5703,7 @@ distance sensor will work in the set EDM mode.
 
 * `block_number` (_integer_) – Block number to download (0 – 65535).
 
-Returns request of *FTR_Download* procedure. Creates request to get a single
+Returns request for *FTR_Download* procedure. Creates request to get a single
 block of data. The <<lua-api-geocom-setup-download,geocom_setup_download()>>
 function has to be called first. The block sequence starts with 1. The download
 process will be aborted if the block number is set to 0. The maximum block
@@ -5717,7 +5715,7 @@ should not be used inside of configuration files.
 * `search_hz` (_number_) – Search range, Hz axis [rad].
 * `search_v`  (_number_) – Search range, V axis [rad].
 
-Returns request of *AUT_FineAdjust* procedure. Creates request for automatic
+Returns request for *AUT_FineAdjust* procedure. Creates request for automatic
 target positioning.
 
 The procedure positions the telescope onto the target prosm and measures the ATR
@@ -5740,7 +5738,7 @@ mode.
 
 * `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetAngle5* procedure. Creates request for returning a
+Returns request for *TMC_GetAngle5* procedure. Creates request for returning a
 simple angle measurement. The function starts an angle measurement and returns
 the results.
 
@@ -5748,43 +5746,43 @@ the results.
 
 * `inc_mode` (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetAngle1* procedure. Creates request for returning a
+Returns request for *TMC_GetAngle1* procedure. Creates request for returning a
 complete angle measurement. The function starts an angle and, depending on the
 configuration, an inclination measurement, and returns the results.
 
 ==== geocom_get_angle_correction() [[lua-api-geocom-get-angle-correction-status]]
 
-Returns request of *TMC_GetAngSwitch* procedure. Creates request for getting the
-angular correction status.
+Returns request for *TMC_GetAngSwitch* procedure. Creates request for getting
+the angular correction status.
 
 ==== geocom_get_atmospheric_correction() [[lua-api-geocom-get-atmospheric-correction]]
 
-Returns request of *TMC_GetAtmCorr* procedure. Creates request for getting the
+Returns request for *TMC_GetAtmCorr* procedure. Creates request for getting the
 atmospheric correction parameters
 
 ==== geocom_get_atmospheric_ppm() [[lua-api-geocom-get-atmospheric-ppm]]
 
-Returns request of *TMC_GetAtmPpm* procedure. Creates request for getting the
+Returns request for *TMC_GetAtmPpm* procedure. Creates request for getting the
 atmospheric ppm correction factor.
 
 ==== geocom_get_atr_error() [[lua-api-geocom-get-atr-error]]
 
-Returns request of *TMC_IfDataAzeCorrError* procedure. Creates request for
+Returns request for *TMC_IfDataAzeCorrError* procedure. Creates request for
 getting the ATR error status.
 
 ==== geocom_get_atr_setting() [[lua-api-geocom_get-atr-setting]]
 
-Returns request of *BAP_GetATRSetting* procedure. Creates request for getting
+Returns request for *BAP_GetATRSetting* procedure. Creates request for getting
 the current ATR low-vis mode.
 
 ==== geocom_get_binary_mode() [[lua-api-geocom_get-binary-mode]]
 
-Returns request of *COM_GetBinaryAvailable* procedure. Creates request for
+Returns request for *COM_GetBinaryAvailable* procedure. Creates request for
 getting the binary attribute of the server.
 
 ==== geocom_get_config() [[lua-api-geocom_get-config]]
 
-Returns request of *SUP_GetConfig* procedure. Creates request for getting the
+Returns request for *SUP_GetConfig* procedure. Creates request for getting the
 power management configuration status. The power timeout specifies the time
 after which the device switches into the mode indicated by response `autopwr`.
 
@@ -5793,7 +5791,7 @@ after which the device switches into the mode indicated by response `autopwr`.
 * `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetCoordinate* procedure. Creates request for getting
+Returns request for *TMC_GetCoordinate* procedure. Creates request for getting
 the coordinates of a measured point.
 
 This function conducts an angle and, in dependence of the selected `inc_mode`,
@@ -5804,44 +5802,44 @@ are supported. The quality of the result is returned in the GeoCOM return code.
 
 ==== geocom_get_date_time() [[lua-api-geocom-get-date-time]]
 
-Returns request of *CSV_GetDateTime* procedure. Creates request for getting the
+Returns request for *CSV_GetDateTime* procedure. Creates request for getting the
 current date and time of the instrument. A possible response may look like
 `%R1P,0,0:0,1996,'07','19','10','13','2f'`.
 
 ==== geocom_get_date_time_centi() [[lua-api-geocom-get-date-time-centi]]
 
-Returns request of *CSV_GetDateTimeCentiSec* procedure. Creates request for
+Returns request for *CSV_GetDateTimeCentiSec* procedure. Creates request for
 getting the current date and time of the instrument, including centiseconds.
 
 ==== geocom_get_device_config() [[lua-api-geocom-get-device-config]]
 
-Returns request of *CSV_GetDeviceConfig* procedure. Creates request for getting
+Returns request for *CSV_GetDeviceConfig* procedure. Creates request for getting
 the instrument configuration.
 
 ==== geocom_get_double_precision() [[lua-api-geocom-get-double-precision]]
 
-Returns request of *COM_GetDoublePrecision* procedure. Creates request for
+Returns request for *COM_GetDoublePrecision* procedure. Creates request for
 getting the double precision setting – the number of digits to the right of the
 decimal point – when double floating-point values are transmitted.
 
 ==== geocom_get_edm_mode() [[lua-api-geocom-get-edm-mode]]
 
-Returns request of *TMC_GetEdmMode* procedure. Creates request for getting the
+Returns request for *TMC_GetEdmMode* procedure. Creates request for getting the
 EDM measurement mode.
 
 ==== geocom_get_egl_intensity() [[lua-api-geocom-get-egl-intensity]]
 
-Returns request of *EDM_GetEglIntensity* procedure. Creates request for getting
+Returns request for *EDM_GetEglIntensity* procedure. Creates request for getting
 the value of the intensity of the electronic guide light (EGL).
 
 ==== geocom_get_face() [[lua-api-geocom-get-face]]
 
-Returns request of *TMC_GetFace* procedure. Creates request for getting the face
+Returns request for *TMC_GetFace* procedure. Creates request for getting the face
 of the current telescope position.
 
 ==== geocom_get_fine_adjust_mode() [[lua-api-geocom-get-fine-adjust-mode]]
 
-Returns request of *AUT_GetFineAdjustMode* procedure. Creates request for
+Returns request for *AUT_GetFineAdjustMode* procedure. Creates request for
 getting the fine adjustment positioning mode.
 
 ==== geocom_get_full_measurement(wait_time, inc_mode) [[lua-api-geocom-get-full-measurement]]
@@ -5849,7 +5847,7 @@ getting the fine adjustment positioning mode.
 * `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetFullMeas* procedure. The GeoCOM function returns
+Returns request for *TMC_GetFullMeas* procedure. The GeoCOM function returns
 angle, inclination, and distance measurement data, including accuracy and
 measurement time. This command does not issue a new distance measurement. A
 distance measurement has to be started in advance. If the distance is valid, the
@@ -5859,24 +5857,24 @@ measurement result is retuned after the waiting time.
 
 ==== geocom_get_geocom_version() [[lua-api-geocom-get-geocom-version]]
 
-Returns request of *COM_GetSWVersion* procedure. Creates request for getting the
+Returns request for *COM_GetSWVersion* procedure. Creates request for getting the
 GeoCOM server software version.
 
 ==== geocom_get_geometric_ppm() [[lua-api-geocom-get-geometric-ppm]]
 
-Returns request of *TMC_GeoPpm* procedure. Creates request for getting the
+Returns request for *TMC_GeoPpm* procedure. Creates request for getting the
 geometric ppm correction factor.
 
 ==== geocom_get_height() [[lua-api-geocom-get-height]]
 
-Returns request of *TMC_GetHeight* procedure. Creates request for getting the
+Returns request for *TMC_GetHeight* procedure. Creates request for getting the
 current reflector height.
 
 ==== geocom_get_image_config(mem_type) [[lua-api-geocom-get-image-config]]
 
 * `mem_type` (_integer_) – Memory device type (<<geocom-api-img-mem-type,GEOCOM_IMG_MEM_TYPE>>).
 
-Returns request of *IMG_GetTccConfig* procedure. Creates request to read
+Returns request for *IMG_GetTccConfig* procedure. Creates request to read
 the current image configuration. The response `subfunc` is a binary
 combination of the following settings:
 
@@ -5887,69 +5885,69 @@ combination of the following settings:
 
 ==== geocom_get_inclination_correction() [[lua-api-geocom-get-inclination-correction]]
 
-Returns request of *TMC_GetInclineSwitch* procedure. Creates request for getting the
+Returns request for *TMC_GetInclineSwitch* procedure. Creates request for getting the
 dual-axis compensator status
 
 ==== geocom_get_inclination_error() [[lua-api-geocom-get-inclination-error]]
 
-Returns request of *TMC_IfDataIncCorrError* procedure. Creates request for
+Returns request for *TMC_IfDataIncCorrError* procedure. Creates request for
 getting the inclination error status.
 
 ==== geocom_get_instrument_name() [[lua-api-geocom-get-instrument-name]]
 
-Returns request of *CSV_GetInstrumentName* procedure. Creates request for
+Returns request for *CSV_GetInstrumentName* procedure. Creates request for
 getting the Leica-specific instrument name.
 
 ==== geocom_get_instrument_number() [[lua-api-geocom-get-instrument-number]]
 
-Returns request of *CSV_GetInstrumentNo* procedure. Creates request for getting
+Returns request for *CSV_GetInstrumentNo* procedure. Creates request for getting
 the factory defined instrument number.
 
 ==== geocom_get_internal_temperature() [[lua-api-geocom-get-internal-temperature]]
 
-Returns request of *CSV_GetIntTemp* procedure. Creates request for getting the
+Returns request for *CSV_GetIntTemp* procedure. Creates request for getting the
 internal temperature of the instrument, measured on the mainboard side.
 
 ==== geocom_get_lock_status() [[lua-api-geocom-get-lock-status]]
 
-Returns request of *MOT_ReadLockStatus* procedure. Creates request for returning
+Returns request for *MOT_ReadLockStatus* procedure. Creates request for returning
 the condition of the Lock-In control.
 
 ==== geocom_get_measurement_program() [[lua-api-geocom-get-measurement-program]]
 
-Returns request of *BAP_GetMeasPrg* procedure. Creates request for getting the
+Returns request for *BAP_GetMeasPrg* procedure. Creates request for getting the
 distance measurement mode of the instrument.
 
 ==== geocom_get_power() [[lua-api-geocom-get-power]]
 
-Returns request of *CSV_CheckPower* procedure. Creates request for checking the
+Returns request for *CSV_CheckPower* procedure. Creates request for checking the
 available power.
 
 ==== geocom_get_prism_constant() [[lua-api-geocom-get-prism-constant]]
 
-Returns request of *TMC_GetPrismCorr* procedure. Creates request for getting the
+Returns request for *TMC_GetPrismCorr* procedure. Creates request for getting the
 prism constant.
 
 ==== geocom_get_prism_definition(prism_type) [[lua-api-geocom-get-prism-definition]]
 
 * `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
 
-Returns request of *BAP_GetPrismDef* procedure. Creates request for getting the
+Returns request for *BAP_GetPrismDef* procedure. Creates request for getting the
 default prism definition.
 
 ==== geocom_get_prism_type() [[lua-api-geocom-get-prism-type]]
 
-Returns request of *TMC_GetPrismType* procedure. Creates request for getting the
+Returns request for *TMC_GetPrismType* procedure. Creates request for getting the
 default prism type.
 
 ==== geocom_get_prism_type_v2() [[lua-api-geocom-get-prism-type-v2]]
 
-Returns request of *TMC_GetPrismType2* procedure. Creates request for getting
+Returns request for *TMC_GetPrismType2* procedure. Creates request for getting
 the default or user prism type.
 
 ==== geocom_get_quick_distance() [[lua-api-geocom-get-quick-distance]]
 
-Returns request of *TMC_QuickDist* procedure. Creates request for returning the
+Returns request for *TMC_QuickDist* procedure. Creates request for returning the
 slope distance and both angles. The function starts an EDM tracking measurement,
 and waits until a distance has been measured. Then, it returns the angles and
 the slope distance, but no coordinates. If no distance could be measured, only
@@ -5958,31 +5956,31 @@ angles and an error code are returned. A measurement may be aborted by calling
 
 ==== geocom_get_reduced_atr_fov() [[lua-api-geocom-get-reduced-atr-fov]]
 
-Returns request of *BAP_GetRedATRFov* procedure. Creates request for getting the
+Returns request for *BAP_GetRedATRFov* procedure. Creates request for getting the
 reduced ATR field of view.
 
 ==== geocom_get_reflectorless_class() [[lua-api-geocom-get-reflectorless-class]]
 
-Returns request of *CSV_GetReflectorlessClass* procedure. Creates request for
+Returns request for *CSV_GetReflectorlessClass* procedure. Creates request for
 getting the RL type. The function returns the class of the reflectorless and
 long-range distance measurement of the instrument.
 
 ==== geocom_get_refraction_mode() [[lua-api-geocom-get-refraction_mode]]
 
-Returns request of *TMC_GetRefractiveMethod* procedure. Creates request for
+Returns request for *TMC_GetRefractiveMethod* procedure. Creates request for
 getting the refraction model. The function is used to get the current
 refraction model. Changing the method is not indicated on the interface of the
 instrument.
 
 ==== geocom_get_search_area() [[lua-api-geocom-get-search-area]]
 
-Returns request of *AUT_GetSearchArea* procedure. Creates request for getting
+Returns request for *AUT_GetSearchArea* procedure. Creates request for getting
 the dimensions of the PowerSearch window. This command is valid for all
 instruments, but has only effects for instruments equipped with PowerSearch.
 
 ==== geocom_get_signal() [[lua-api-geocom-get-signal]]
 
-Returns request of *TMC_GetSignal* procedure. Creates request for getting the
+Returns request for *TMC_GetSignal* procedure. Creates request for getting the
 EDM signal intensity. The function can only perform a measurement if the signal
 measurement mode is activated. Start the signal measurement with
 <<lua-api-geocom-do-measure,geocom_do_measure()>> in mode `GEOCOM_TMC_SIGNAL`.
@@ -5994,7 +5992,7 @@ After the measurement, the EDM must be switched off with mode
 * `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetSimpleCoord* procedure. The API function returns the
+Returns request for *TMC_GetSimpleCoord* procedure. The API function returns the
 cartesian coordinates if a valid distance is set. The argument `wait_time` sets
 the maximum time to wait for a valid distance. Without a valid distance, the
 coordinates are set to 0.0, and an error is returned. The coordinate calculation
@@ -6006,53 +6004,53 @@ measurement mode.
 * `wait_time` (_integer_) – Delay to wait for the distance measurement to finish [msec].
 * `inc_mode`  (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_GetSimpleMea* procedure. The API function returns the
+Returns request for *TMC_GetSimpleMea* procedure. The API function returns the
 angles and distance measurement data. The argument `wait_time` sets the maximum
 time to wait for a valid distance. If a distance is available, the wait time is
 ignored.
 
 ==== geocom_get_slope_distance_correction() [[lua-api-geocom-get-slope-distance-correction]]
 
-Returns request of *TMC_GetSlopeDistCorr* procedure. The function returns the
+Returns request for *TMC_GetSlopeDistCorr* procedure. The function returns the
 total ppm value (atmospheric ppm + geometric ppm) plus the current prism
 constant.
 
 ==== geocom_get_software_version() [[lua-api-geocom-get-software-version]]
 
-Returns request of *CSV_GetSWVersion* procedure. Creates request for getting the
+Returns request for *CSV_GetSWVersion* procedure. Creates request for getting the
 system software version of the instrument.
 
 ==== geocom_get_station() [[lua-api-geocom-get-station]]
 
-Returns request of *TMC_GetStation* procedure. Creates request for getting the
+Returns request for *TMC_GetStation* procedure. Creates request for getting the
 station coordinates of the instrument.
 
 ==== geocom_get_target_type() [[lua-api-geocom-get-target-type]]
 
-Returns request of *BAP_GetTargetType* procedure. Creates request for getting
+Returns request for *BAP_GetTargetType* procedure. Creates request for getting
 the EDM type. The function returns the current EDM type
 (`GEOCOM_BAP_TARGET_TYPE`) for distance measurements: reflector (IR) or
 reflectorless (RL).
 
 ==== geocom_get_timeout() [[lua-api-geocom-get-timeout]]
 
-Returns request of *AUT_ReadTimeout* procedure. Creates request for getting
+Returns request for *AUT_ReadTimeout* procedure. Creates request for getting
 the timeout for positioning. The function returns the maximum time to perform
 positioning.
 
 ==== geocom_get_tolerance() [[lua-api-geocom-get-tolerance]]
 
-Returns request of *AUT_ReadTol* procedure. The function returns the positioning
+Returns request for *AUT_ReadTol* procedure. The function returns the positioning
 tolerances of the Hz and V instrument axis.
 
 ==== geocom_get_user_atr_mode() [[lua-api-geocom-get-user-atr-mode]]
 
-Returns request of *AUS_GetUserAtrState* procedure. Creates request for getting
+Returns request for *AUS_GetUserAtrState* procedure. Creates request for getting
 the status of the ATR mode.
 
 ==== geocom_get_user_lock_mode() [[lua-api-geocom-get-user-lock-mode]]
 
-Returns request of *AUS_GetUserLockState* procedure. Creates request for getting
+Returns request for *AUS_GetUserLockState* procedure. Creates request for getting
 the status of the _lock_ mode.
 
 ==== geocom_get_user_prism_definition(name) [[lua-api-geocom-get-user-prism-definition]]
@@ -6064,19 +6062,19 @@ the user prism definition.
 
 ==== geocom_get_user_spiral() [[lua-api-geocom-get-user-spiral]]
 
-Returns request of *AUT_GetUserSpiral* procedure. The function returns the
+Returns request for *AUT_GetUserSpiral* procedure. The function returns the
 current dimensions of the searching spiral. Requires at least a TCA instrument.
 
 ==== geocom_list(next) [[lua-api-geocom-list]]
 
 * `next` (_bool_) – First or next entry.
 
-Returns request of *FTR_List* procedure. Creates request for listing file
+Returns request for *FTR_List* procedure. Creates request for listing file
 information.
 
 ==== geocom_lock_in() [[lua-api-geocom-lock-in]]
 
-Returns request of *AUT_LockIn* procedure. Creates request for starting the
+Returns request for *AUT_LockIn* procedure. Creates request for starting the
 target tracking. The API function will start the target tracking if the _lock_
 mode has been activated through
 <<lua-api-geocom-set-user-lock-mode,geocom_set_user_lock_mode()>>. The
@@ -6087,7 +6085,7 @@ successfully before executing this function.
 
 * `dist_mode` (_integer_) – Distance measurement program (`GEOCOM_BAP_MEASURE_PRG`).
 
-Returns request of *BAP_MeasDistanceAngle* procedure. Creates request for
+Returns request for *BAP_MeasDistanceAngle* procedure. Creates request for
 measuring Hz, V angles and a single distance. The API function measures angles
 and a single distance depending on the distance measurement mode `dist_mode`.
 It is not suited for continuous measurements (_lock_ mode and TRK mode), and
@@ -6095,14 +6093,14 @@ uses the current automation settings.
 
 ==== geocom_null() [[lua-api-geocom-null]]
 
-Returns request of *COM_NullProc* procedure. Creates request for checking the
+Returns request for *COM_NullProc* procedure. Creates request for checking the
 communication.
 
 ==== geocom_ps_enable_range(enabled) [[lua-api-geocom-ps-enable-range]]
 
 * `enabled` (_bool_) – Enable PowerSearch.
 
-Returns request of *AUT_PS_EnableRange* procedure. The function enabled or
+Returns request for *AUT_PS_EnableRange* procedure. The function enabled or
 disables the predefined PowerSearch window including the PowerSearch range
 limits set by API call <<lua-api-geocom-ps-set-range,geocom_ps_set_range()>>
 (requires GeoCOM robotic licence). If `enabled` is `false`, the default range
@@ -6113,7 +6111,7 @@ is set to ≤ 400 m.
 * `direction` (_integer_) – Searching direction (`GEOCOM_AUT_CLOCKWISE` or `GEOCOM_AUT_ANTICLOCKWISE`).
 * `swing`     (_bool_)    – Searching starts –10 gon to the given direction.
 
-Returns request of *AUT_PS_SearchNext* procedure. The function executes the 360°
+Returns request for *AUT_PS_SearchNext* procedure. The function executes the 360°
 default PowerSearch and searches for the next targets. A previously defined
 PowerSearch window of
 <<lua-api-geocom-set-search-area,geocom_set_search_area()>> is not taken
@@ -6122,7 +6120,7 @@ into account. Use API call
 
 ==== geocom_ps_search_window() [[lua-api-geocom-ps-search-window]]
 
-Returns request of *AUT_PS_SearchWindow* procedure. Creates request for starting
+Returns request for *AUT_PS_SearchWindow* procedure. Creates request for starting
 PowerSearch. The function starts PowerSearch in the window defined by API calls
 <<lua-api-geocom-set-search-area,geocom_set_search_area()>> and
 <<lua-api-geocom-ps-set-range,geocom_ps_set_range()>> (requires GeoCOM robotic
@@ -6133,7 +6131,7 @@ licence).
 * `min_dist` (_integer_) – Min. distance to prism (≥ 0) [m].
 * `max_dist` (_integer_) – Max. distance to prism (≤ 400, ≥ `min_dist` + 10) [m].
 
-Returns request of *AUT_PS_SetRange* procedure. Creates request for setting the
+Returns request for *AUT_PS_SetRange* procedure. Creates request for setting the
 PowerSearch range.
 
 ==== geocom_search(search_hz, search_v) [[lua-api-geocom-search]]
@@ -6141,7 +6139,7 @@ PowerSearch range.
 * `search_hz` (_number_) – Horizontal search region [rad].
 * `search_v`  (_number_) – Vertical search region [rad].
 
-Returns request of *AUT_Search* procedure. The function performs an automatic
+Returns request for *AUT_Search* procedure. The function performs an automatic
 target search within the given search area (requires GeoCOM robotic licence).
 The search is terminated once the prism appears in the field of view of the ATR
 sensor. If no prism is found in the specified area, the instrument turns back
@@ -6153,7 +6151,7 @@ and fine positioning are done in one step.
 
 ==== geocom_search_target() [[lua-api-geocom-search-target]]
 
-Returns request of *BAP_SearchTarget* procedure. Creates request for searching a
+Returns request for *BAP_SearchTarget* procedure. Creates request for searching a
 target. The function searches for a target in the ATR search window.
 
 ==== geocom_set_angle_correction(incline, stand_axis, collimation, tilt_axis) [[lua-api-geocom-set-angle-correction]]
@@ -6163,7 +6161,7 @@ target. The function searches for a target in the ATR search window.
 * `collimation` (_bool_) – Enable collimation correction.
 * `tilt_axis`   (_bool_) – Enable tilt axis correction.
 
-Returns request of *TMC_SetAngSwitch* procedure. Creates request for turning
+Returns request for *TMC_SetAngSwitch* procedure. Creates request for turning
 angle corrections on or off.
 
 ==== geocom_set_atmospheric_correction(lambda, pressure, dry_temp, wet_temp) [[lua-api-geocom-set-atmospheric-correction]]
@@ -6173,7 +6171,7 @@ angle corrections on or off.
 * `dry_temp` (_number_) – Dry temperature [°C].
 * `wet_temp` (_number_) – Wet temperature [°C].
 
-Returns request of *BAP_SetAtmCorr* procedure. Creates request for setting the
+Returns request for *BAP_SetAtmCorr* procedure. Creates request for setting the
 atmospheric correction parameters. The argument `lambda` should be queried with
 API call
 <<lua-api-geocom-get-atmospheric-correction,geocom_get_atmospheric_correction()>>.
@@ -6182,21 +6180,21 @@ API call
 
 * `atm_ppm` (_number_) – Atmospheric ppm correction factor [ppm].
 
-Returns request of *BAP_SetAtmPpm* procedure. Creates request for setting
+Returns request for *BAP_SetAtmPpm* procedure. Creates request for setting
 the atmospheric ppm correction factor.
 
 ==== geocom_set_atr_mode(atr_mode) [[lua-api-geocom-set-atr-mode]]
 
 * `atm_mode` (_integer_) – ATR low-vis mode (<<geocom-api-bap-atrsetting,GEOCOM_BAP_ATRSETTING>>).
 
-Returns request of *BAP_SetATRSetting* procedure. Creates request for
+Returns request for *BAP_SetATRSetting* procedure. Creates request for
 setting the ATR low-vis mode.
 
 ==== geocom_set_binary_mode(enabled) [[lua-api-geocom-set-binary-mode]]
 
 * `enabled` (_bool_) – Enable binary communication.
 
-Returns request of *COM_SetBinaryAvailable* procedure. Creates request for
+Returns request for *COM_SetBinaryAvailable* procedure. Creates request for
 setting the binary attribute of the server. The function sets the ability of the
 GeoCOM server to handle binary communication (not supported by DMPACK).
 
@@ -6205,7 +6203,7 @@ GeoCOM server to handle binary communication (not supported by DMPACK).
 * `auto_power` (_integer_) – Power-off mode (<<geocom-api-sup-auto-power,GEOCOM_SUP_AUTO_POWER>>).
 * `timeout`    (_integer_) – Timeout [msec].
 
-Returns request of *SUP_SetConfig* procedure. Creates request for setting the
+Returns request for *SUP_SetConfig* procedure. Creates request for setting the
 power management configuration. The argument `timeout` sets the duration after
 which the instrument switches into the mode `auto_power` when no user activity
 occured (key press, GeoCOM communication). The value must be between 60,000 m/s
@@ -6220,7 +6218,7 @@ occured (key press, GeoCOM communication). The value must be between 60,000 m/s
 * `minute` (_integer_) – Minute (`mm`).
 * `second` (_integer_) – Second (`ss`).
 
-Returns request of *CSV_SetDateTime* procedure. Creates request for setting the
+Returns request for *CSV_SetDateTime* procedure. Creates request for setting the
 date and time of the instrument.
 
 ==== geocom_set_distance(slope_dist, height_offset, inc_mode) [[lua-api-geocom-set-distance]]
@@ -6229,7 +6227,7 @@ date and time of the instrument.
 * `height_offset` (_number_)  – Height offset [m].
 * `inc_mode`      (_integer_) – Inclination measurement mode (<<geocom-api-tmc-incline-prg,GEOCOM_TMC_INCLINE_PRG>>).
 
-Returns request of *TMC_SetHandDist* procedure. The function is used to set the
+Returns request for *TMC_SetHandDist* procedure. The function is used to set the
 manually measured slope distance and height offset for a following measurement.
 Additionally, an inclination and an angle measurement are started to determine
 the coordinates of the target. The vertical angle is corrected to π/2 or 3π/2,
@@ -6240,7 +6238,7 @@ cleared.
 
 * `ndigits` (_integer_) – Number of digits right to the comma.
 
-Returns request of *COM_SetDoublePrecision* procedure. The function sets the
+Returns request for *COM_SetDoublePrecision* procedure. The function sets the
 precision – the number of digits right of the decimal – when double
 floating-point values are transmitted. The default precision is 15 digits. The
 setting is only valid for the ASCII transmission mode. Trailing zeroes will not
@@ -6251,7 +6249,7 @@ value is 1.99975, the resulting value will be 2.0.
 
 * `edm_mode` (_integer_) – EDM measurement mode (<<geocom-api-edm-mode,GEOCOM_EDM_MODE>>).
 
-Returns request of *TMC_SetEdmMode* procedure. Creates request for setting the
+Returns request for *TMC_SetEdmMode* procedure. Creates request for setting the
 EDM measurement mode. The EDM mode set by this function is used by
 <<lua-api-geocom-do-measure,geocom_do_measure()>> in mode `GEOCOM_TMC_DEF_DIST`.
 
@@ -6259,14 +6257,14 @@ EDM measurement mode. The EDM mode set by this function is used by
 
 * `intensity` (_integer_) – EGL intensity (<<geocom-api-edm-eglintensity-type,GEOCOM_EDM_EGLINTENSITY_TYPE>>).
 
-Returns request of *EDM_SetEglIntensity* procedure. Creates request for setting
+Returns request for *EDM_SetEglIntensity* procedure. Creates request for setting
 the intensity of the electronic guide light.
 
 ==== geocom_set_fine_adjust_mode(adj_mode) [[lua-api-geocom-set-fine-adjust_mode]]
 
 * `adj_mode` (_integer_) – Fine adjust positioning mode (<<geocom-api-aut-adjmode,GEOCOM_AUT_ADJMODE>>).
 
-Returns request of *AUT_SetFineAdjustMode* procedure. The function sets the
+Returns request for *AUT_SetFineAdjustMode* procedure. The function sets the
 positioning tolerances relating to angle accuracy or point accuracy for the fine
 adjust (requires GeoCOM robotic licence). If a target is near or held by hand,
 it is recommended to set the adjust mode to `GEOCOM_AUT_POINT_MODE`. The
@@ -6281,14 +6279,14 @@ argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
 * `height_ppm`     (_number_) – Ppm value due to height above reference.
 * `individual_ppm` (_number_) – Individual ppm value.
 
-Returns request of *TMC_SetGeoPpm* procedure. Creates request for setting the
+Returns request for *TMC_SetGeoPpm* procedure. Creates request for setting the
 geometric ppm correction factor.
 
 ==== geocom_set_height(height) [[lua-api-geocom-set-height]]
 
 * `height` (_number_) – Reflector height [m].
 
-Returns request of *TMC_SetHeight* procedure. Creates request for setting a new
+Returns request for *TMC_SetHeight* procedure. Creates request for setting a new
 reflector height.
 
 ==== geocom_set_image_config(mem_type, image_number, quality, sub_function, prefix) [[lua-api-geocom-set-image-config]]
@@ -6299,9 +6297,9 @@ reflector height.
 * `sub_function` (_integer_) – Additional sub-functions to call.
 * `prefix`       (_string_)  – File name prefix.
 
-Returns request of *IMG_SetTccConfig* procedure. Creates request for setting the
-image configuration. The argument `sub_function` may be a binary combination of
-the following settings:
+Returns request for *IMG_SetTccConfig* procedure. Creates request for setting
+the image configuration. The argument `sub_function` may be a binary combination
+of the following settings:
 
 * `1` – Test image.
 * `2` – Automatic exposure-time selection.
@@ -6312,22 +6310,22 @@ the following settings:
 
 * `enabled` (_bool_) – Enable dual-axis compensator.
 
-Returns request of *TMC_SetInclineSwitch* procedure. Creates request for turning
-the dual-axis compensator on or off.
+Returns request for *TMC_SetInclineSwitch* procedure. Creates request for
+turning the dual-axis compensator on or off.
 
 ==== geocom_set_laser_pointer(enabled) [[lua-api-geocom-set-laser-pointer]]
 
 * `enabled` (_bool_) – Enable laser pointer.
 
-Returns request of *EDM_Laserpointer* procedure. Creates request for turning the
-laser pointer on or off. The function is only available on models which support
-reflectorless distance measurement.
+Returns request for *EDM_Laserpointer* procedure. Creates request for turning
+the laser pointer on or off. The function is only available on models which
+support reflectorless distance measurement.
 
 ==== geocom_set_measurement_program(bap_prog) [[lua-api-geocom-set-measurement-program]]
 
 * `bap_prog` (_integer_) – Measurement program (<<geocom-api-bap-user-measprg,GEOCOM_BAP_USER_MEASPRG>>).
 
-Returns request of *BAP_SetMeasPrg* procedure. The function sets the distance
+Returns request for *BAP_SetMeasPrg* procedure. The function sets the distance
 measurement program, for example, for API call
 <<lua-api-geocom-measure-distance-angle,geocom_measure_distance_angle()>>. The
 RL EDM type programs are not available on all instruments. Changing the
@@ -6337,7 +6335,7 @@ measurement program may change the EDM type as well (IR, RL).
 
 * `hz` (_number_) – Horizontal orientation [rad].
 
-Returns request of *TMC_SetOrientation* procedure. Creates request for
+Returns request for *TMC_SetOrientation* procedure. Creates request for
 orientating the instrument in horizontal direction. The API function is a
 combination of an angle measurement to get the horizontal offset and setting the
 angle offset afterwards, in order to orientate to a target. Before the new
@@ -6352,7 +6350,7 @@ function <<lua-api-geocom-do-measure,geocom_do_measure()>> with argument
 * `pos_mode` (_integer_) – Position mode (<<geocom-api-aut-posmode,GEOCOM_AUT_POSMODE>>).
 * `atr_mode` (_integer_) – ATR mode (<<geocom-api-aut-atrmode,GEOCOM_AUT_ATRMODE>>).
 
-Returns request of *AUT_MakePositioning* procedure. Creates request for turning
+Returns request for *AUT_MakePositioning* procedure. Creates request for turning
 the telescope to a specified position.
 
 If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the compensator.
@@ -6369,7 +6367,7 @@ destination area. This mode requires activated ATR.
 * `time_hz` (_number_) – Timeout in Hz direction [sec].
 * `time_v`  (_number_) – Timeout in V direction [sec].
 
-Returns request of *AUT_SetTimeout* procedure. This function sets the maximum
+Returns request for *AUT_SetTimeout* procedure. This function sets the maximum
 time to perform a positioning. The timeout is reset on 7 seconds after each
 power on. Valid value for `hz` and `v` are between 7 [sec] and 60 [sec].
 
@@ -6377,8 +6375,8 @@ power on. Valid value for `hz` and `v` are between 7 [sec] and 60 [sec].
 
 * `prism_const` (_number_) – Prism constant [mm].
 
-Returns request of *TMC_SetPrismCorr* procedure. Creates request for setting the
-prism constant. The API function
+Returns request for *TMC_SetPrismCorr* procedure. Creates request for setting
+the prism constant. The API function
 <<lua-api-geocom-set-prism-type,geocom_set_prism_type()>> overwrites this
 setting.
 
@@ -6386,8 +6384,8 @@ setting.
 
 * `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
 
-Returns request of *BAP_SetPrismType* procedure. Creates request for setting the
-default prism type. This function sets the prism type for measurement with a
+Returns request for *BAP_SetPrismType* procedure. Creates request for setting
+the default prism type. This function sets the prism type for measurement with a
 reflector (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by API
 call <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant()>>.
 
@@ -6396,7 +6394,7 @@ call <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant()>>.
 * `prism_type` (_integer_) – Prism type (<<geocom-api-bap-prismtype,GEOCOM_BAP_PRISMTYPE>>).
 * `prism_name` (_string_)  – Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
 
-Returns request of *BAP_SetPrismType2* procedure. Creates request for setting
+Returns request for *BAP_SetPrismType2* procedure. Creates request for setting
 the default or user prism type. This function sets the default or the user prism
 type for measurements with a reflector. It overwrites the prism constant set by
 <<lua-api-geocom-set-prism-constant,geocom_set_prism_constant()>>. The user
@@ -6408,15 +6406,15 @@ beforehand.
 
 * `enabled` (_bool_) – Use reduced field of view.
 
-Returns request of *BAP_SetRedATRFov* procedure. Creates request for setting the
-reduced ATR field of view. If `enabled` is `true`, ATR uses reduced field of
+Returns request for *BAP_SetRedATRFov* procedure. Creates request for setting
+the reduced ATR field of view. If `enabled` is `true`, ATR uses reduced field of
 view (about 1/9), full field of view otherwise.
 
 ==== geocom_set_refraction_mode(mode) [[lua-api-geocom-set-refraction-mode]]
 
 * `mode` (_integer_) – Refraction data method (1 or 2).
 
-Returns request of *TMC_SetRefractiveMethod* procedure. Creates request for
+Returns request for *TMC_SetRefractiveMethod* procedure. Creates request for
 setting the refraction model. Mode `1` means method 1 for the rest of the world,
 mode `2` means method for Australia.
 
@@ -6428,9 +6426,9 @@ mode `2` means method for Australia.
 * `range_v`   (_number_) – Search area range V angle [rad].
 * `enabled`   (_bool_)   – Enable search area.
 
-Returns request of *AUT_SetSearchArea* procedure. The function sets the position
-and dimensions of the PowerSearch window, and activates it. The API call is
-valid for all instruments, but has effects only for those equipped with
+Returns request for *AUT_SetSearchArea* procedure. The function sets the
+position and dimensions of the PowerSearch window, and activates it. The API
+call is valid for all instruments, but has effects only for those equipped with
 PowerSearch (requires GeoCOM robotic licence).
 
 ==== geocom_set_station(easting, northing, height, instr_height) [[lua-api-geocom-set-station]]
@@ -6440,14 +6438,14 @@ PowerSearch (requires GeoCOM robotic licence).
 * `height`       (_number_) – H coordinate [m].
 * `instr_height` (_number_) – Instrument height [m].
 
-Returns request of *TMC_SetStation* procedure. Creates request for setting the
+Returns request for *TMC_SetStation* procedure. Creates request for setting the
 station coordinates of the instrument.
 
 ==== geocom_set_target_type(target_type) [[lua-api-geocom-set-target-type]]
 
 * `target_type` (_integer_) – Target type (<<geocom-api-bap-target-type,GEOCOM_BAP_TARGET_TYPE>>).
 
-Returns request of *BAP_SetTargetType* procedure. Creates request for setting
+Returns request for *BAP_SetTargetType* procedure. Creates request for setting
 the EDM type.
 
 The function sets the current EDM type (`GEOCOM_BAP_TARGET_TYPE`) for distance
@@ -6464,7 +6462,7 @@ instruments.
 * `hz` (_number_) – Positioning tolerance in Hz direction [rad].
 * `v`  (_number_) – Positioning tolerance in V direction [rad].
 
-Returns request of *AUT_SetTol* procedure. Creates request for setting the
+Returns request for *AUT_SetTol* procedure. Creates request for setting the
 positioning tolerances.
 
 This function sets the position tolerances of the Hz and V instrument axes
@@ -6479,7 +6477,7 @@ time can increase drastically
 
 * `enabled` (_bool_) – Enable ATR state.
 
-Returns request of *AUS_SetUserAtrState* procedure. Creates request for setting
+Returns request for *AUS_SetUserAtrState* procedure. Creates request for setting
 the status of the ATR state.
 
 The function activates or deactivates the ATR mode (requires GeoCOM robotic
@@ -6492,8 +6490,8 @@ then it stays enabled.
 
 * `enabled` (_bool_) – Enable _lock_ state.
 
-Returns request of *AUS_SetUserLockState* procedure. Creates request for setting
-the status of the _lock_ state.
+Returns request for *AUS_SetUserLockState* procedure. Creates request for
+setting the status of the _lock_ state.
 
 The function activated or deactivates the _lock_ mode (GeoCOM robotic licence
 required). If `enabled` is `true`, _lock_ mode is activated. In order to lock
@@ -6509,15 +6507,15 @@ drive wheel is activated.
 * `refl_type`   (_integer_) – Reflector type (<<geocom-api-bap-refltype,GEOCOM_BAP_REFLTYPE>>).
 * `creator`     (_string_)  – Name of creator.
 
-Returns request of *BAP_SetUserPrismDef* procedure. Creates request for
-setting a user prism definition.
+Returns request for *BAP_SetUserPrismDef* procedure. Creates request for setting
+a user prism definition.
 
 ==== geocom_set_user_spiral(hz, v) [[lua-api-geocom-set-user-spiral]]
 
 * `hz` (_number_) – ATR search window in Hz direction [rad].
 * `v`  (_number_) – ATR search window in V direction [rad].
 
-Returns request of *AUT_SetUserSpiral* procedure. The function sets the
+Returns request for *AUT_SetUserSpiral* procedure. The function sets the
 dimensions of the ATR search window (GeoCOM robotic licence required).
 
 ==== geocom_set_velocity(omega_hz, omega_v) [[lua-api-geocom-set-velocity]]
@@ -6525,7 +6523,7 @@ dimensions of the ATR search window (GeoCOM robotic licence required).
 * `omega_hz` (_number_) – Velocity in Hz direction [rad/sec].
 * `omega_v`  (_number_) – Velocity in V direction [rad/sec].
 
-Returns request of *MOT_SetVelocity* procedure. Creates request for driving the
+Returns request for *MOT_SetVelocity* procedure. Creates request for driving the
 instrument with constant speed.
 
 The function is used to set up the velocity of the motorisation (GeoCOM robotic
@@ -6543,8 +6541,8 @@ velocity is ±3.14 rad/sec for TM30/TS30, and ±0.79 rad/sec for TPS1100/TPS1200
 * `file_name`   (_string_)  – File name with extension.
 * `block_size`  (_integer_) – Block size.
 
-Returns request of *FTR_SetupDownload* procedure. Creates request for setting up
-a file download. The function has to be called before
+Returns request for *FTR_SetupDownload* procedure. Creates request for setting
+up a file download. The function has to be called before
 <<lua-api-geocom-download,geocom_download()>>. If the file type is
 `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
 
@@ -6562,7 +6560,7 @@ for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
 * `file_type`   (_integer_) – File type (<<geocom-api-ftr-filetype,GEOCOM_FTR_FILETYPE>>).
 * `search_path` (_string_)  – Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
 
-Returns request of *FTR_SetupList* procedure. Creates request for setting up
+Returns request for *FTR_SetupList* procedure. Creates request for setting up
 file listing. The function sets up the device type, file type, and search path.
 It has to be called before <<lua-api-geocom-list,geocom_list()>>.
 
@@ -6570,10 +6568,10 @@ It has to be called before <<lua-api-geocom-list,geocom_list()>>.
 
 * `start_mode` (_integer_) – Controller start mode (<<geocom-api-mot-mode,GEOCOM_MOT_MODE>>).
 
-Returns request of *MOT_StartController* procedure. Creates request for starting
-the motor controller. If this function is used in combination with API call
-<<lua-api-geocom-set-velocity,geocom_set_velocity()>>, the controller mode has
-to be `GEOCOM_MOT_OCONST`.
+Returns request for *MOT_StartController* procedure. Creates request for
+starting the motor controller. If this function is used in combination with API
+call <<lua-api-geocom-set-velocity,geocom_set_velocity()>>, the controller mode
+has to be `GEOCOM_MOT_OCONST`.
 
 The argument `start_mode` must be one of the following:
 
@@ -6588,8 +6586,8 @@ The argument `start_mode` must be one of the following:
 
 * `stop_mode` (_integer_) – Controller stop mode (<<geocom-api-mot-stopmode,GEOCOM_MOT_STOPMODE>>).
 
-Returns request of *MOT_StartController* procedure. Creates request for stopping
-the motor controller.
+Returns request for *MOT_StartController* procedure. Creates request for
+stopping the motor controller.
 
 The argument `stop_mode` must be one of the following:
 
@@ -6600,7 +6598,7 @@ The argument `stop_mode` must be one of the following:
 
 * `stop_mode` (_integer_) – Switch-off mode (<<geocom-api-tps-stop-mode,GEOCOM_COM_TPS_STOP_MODE>>).
 
-Returns request of *COM_SwitchOffTPS* procedure. Creates request for turning the
+Returns request for *COM_SwitchOffTPS* procedure. Creates request for turning the
 instrument off.
 
 The argument `stop_mode` has to be one of the following:
@@ -6612,7 +6610,7 @@ The argument `stop_mode` has to be one of the following:
 
 * `start_mode` (_integer_) – Switch-on mode (<<geocom-api-tps-startup-mode,GEOCOM_COM_TPS_STARTUP_MODE>>).
 
-Returns request of *COM_SwitchOnTPS* procedure. Creates request for turning the
+Returns request for *COM_SwitchOnTPS* procedure. Creates request for turning the
 instrument on.
 
 The argument `start_mode` has to be one of the following:
@@ -6624,8 +6622,8 @@ The argument `start_mode` has to be one of the following:
 
 * `mem_type` (_integer_) – Memory type (`GEOCOM_IMG_MEM_TYPE`).
 
-Returns request of *IMG_TakeTccImage* procedure. Creates request for capturing a
-telescope image.
+Returns request for *IMG_TakeTccImage* procedure. Creates request for capturing
+a telescope image.
 
 The memory type `mem_type` has to be one of the following:
 
@@ -6650,8 +6648,11 @@ required:
 * link:https://www.freshports.org/lang/gcc[lang/gcc]
 * link:https://www.freshports.org/[x11-toolkits/swt]
 
-The HDF4 and HDF5 libraries have to be built from source as well. First, clone
-the HDF4 repository and compile with CMake:
+The HDF4 and HDF5 libraries have to be built from source as well.
+
+==== Building HDF4 [[hdfview-building-hdf4]]
+
+Clone the HDF4 repository and compile with CMake:
 
 ....
 $ cd /tmp/
@@ -6669,8 +6670,11 @@ $ cmake --build . --config Release
 ....
 
 Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
-build directory. In the next step, clone the HDF5 repository and build with
-CMake, too:
+build directory.
+
+==== Building HDF5 [[hdfview-building-hdf5]]
+
+In the next step, clone the HDF5 repository and build with CMake, too:
 
 ....
 $ cd /tmp/
@@ -6688,8 +6692,12 @@ $ cmake --build . --config Release
 ....
 
 Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
-to `bin/` in the HDF5 build directory. Finally, clone the HDFView repository,
-set the build properties, and compile with _ant(1)_:
+to `bin/` in the HDF5 build directory.
+
+==== Building HDFView [[hdfview-building-hdfview]]
+
+Finally, clone the HDFView repository, set the build properties, and compile
+with _ant(1)_:
 
 ....
 $ cd /tmp/
