@@ -132,13 +132,15 @@ contains
         rc = E_EMPTY
         if (env%content_length == 0) return
 
-        rc = E_READ
         nc = int(env%content_length, kind=c_size_t)
         sz = c_read(STDIN_FILENO, c_loc(content), nc)
-        if (sz == 0) return
 
         rc = E_EOF
+        if (sz == 0) return
+
+        rc = E_READ
         if (sz /= nc) return
+
         rc = E_NONE
     end function dm_cgi_content
 

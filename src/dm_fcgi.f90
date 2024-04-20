@@ -59,21 +59,23 @@ contains
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
 
         integer          :: stat
-        integer(kind=i8) :: i
+        integer(kind=i8) :: i, n
+
+        n = env%content_length
 
         fcgi_block: block
             rc = E_EMPTY
-            if (env%content_length == 0) exit fcgi_block
+            if (n == 0) exit fcgi_block
 
             rc = E_BOUNDS
-            if (env%content_length < 0) exit fcgi_block
+            if (n < 0) exit fcgi_block
 
             rc = E_ALLOC
-            allocate (character(len=env%content_length) :: content, stat=stat)
+            allocate (character(len=n) :: content, stat=stat)
             if (stat /= 0) exit fcgi_block
 
             rc = E_NONE
-            do i = 1, env%content_length
+            do i = 1, n
                 content(i:i) = achar(fcgi_getchar())
             end do
 

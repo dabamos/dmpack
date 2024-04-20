@@ -87,7 +87,7 @@ program dmapi
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Run event loop.
-    do while (dm_fcgi_accept() /= E_NONE)
+    do while (dm_fcgi_accept() == E_NONE)
         call dm_cgi_env(env)
         call dm_cgi_router_dispatch(router, env, code)
 
@@ -1332,11 +1332,14 @@ contains
 
         ! Check database availability.
         if (.not. dm_file_exists(db_beat)) then
-            rc = E_NOT_FOUND; message = 'beat database not found'
+            rc = E_NOT_FOUND
+            message = 'beat database not found'
         else if (.not. dm_file_exists(db_log)) then
-            rc = E_NOT_FOUND; message = 'log database not found'
+            rc = E_NOT_FOUND
+            message = 'log database not found'
         else if (.not. dm_file_exists(db_observ)) then
-            rc = E_NOT_FOUND; message = 'observation database not found'
+            rc = E_NOT_FOUND
+            message = 'observation database not found'
         else
             message = 'online'
         end if
