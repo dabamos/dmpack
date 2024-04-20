@@ -119,10 +119,9 @@ contains
         !!
         use :: unix
 
-        type(cgi_env_type),            intent(inout) :: env     !! CGI environment type.
-        character(len=:), allocatable, intent(out)   :: content !! Returned request body.
+        type(cgi_env_type),                    intent(inout) :: env     !! CGI environment type.
+        character(len=:), allocatable, target, intent(out)   :: content !! Returned request body.
 
-        character, target      :: buf
         integer                :: stat
         integer(kind=c_size_t) :: nc, sz
 
@@ -135,7 +134,7 @@ contains
 
         rc = E_READ
         nc = int(env%content_length, kind=c_size_t)
-        sz = c_read(STDIN_FILENO, c_loc(buf), nc)
+        sz = c_read(STDIN_FILENO, c_loc(content), nc)
         if (sz == 0) return
 
         rc = E_EOF
