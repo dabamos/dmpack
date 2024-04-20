@@ -10,7 +10,8 @@ module dm_person
     integer, parameter, public :: PERSON_PHONE_LEN = 80 !! Max. phone number length
 
     type, public :: person_type
-        !! Person type to store name and contact details.
+        !! Sequential person type to store name and contact details.
+        sequence
         character(len=PERSON_NAME_LEN)  :: name  = ' ' !! Person name.
         character(len=PERSON_MAIL_LEN)  :: mail  = ' ' !! Person e-mail address.
         character(len=PERSON_PHONE_LEN) :: phone = ' ' !! Person phone number.
@@ -33,8 +34,8 @@ contains
         type(person_type), intent(in) :: person2 !! Second person.
 
         equals = .false.
-        if (person1%name /= person2%name) return
-        if (person1%mail /= person2%mail) return
+        if (person1%name  /= person2%name)  return
+        if (person1%mail  /= person2%mail)  return
         if (person1%phone /= person2%phone) return
         equals = .true.
     end function dm_person_equals
@@ -43,17 +44,13 @@ contains
         !! Returns `.true.` if the person has a e-mail address.
         type(person_type), intent(in) :: person !! Person type.
 
-        has = .false.
-        if (len_trim(person%mail) == 0) return
-        has = .true.
+        has = (len_trim(person%mail) > 0)
     end function dm_person_has_mail
 
     pure elemental logical function dm_person_has_name(person) result(has)
         !! Returns `.true.` if the person has a name.
         type(person_type), intent(in) :: person !! Person type.
 
-        has = .false.
-        if (len_trim(person%mail) == 0) return
-        has = .true.
+        has = (len_trim(person%name) > 0)
     end function dm_person_has_name
 end module dm_person

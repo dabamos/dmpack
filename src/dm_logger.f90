@@ -5,7 +5,7 @@ module dm_logger
     !! via POSIX message queue.
     !!
     !! Only a single receiver is allowed (but multiple senders). Otherwise,
-    !! the logs messages are passed in round-robin fashion to the receivers.
+    !! the log messages are passed in round-robin fashion to the receivers.
     !!
     !! Get a pointer to the logger before configuration and invocation:
     !!

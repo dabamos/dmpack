@@ -53,6 +53,7 @@ contains
         !!
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_BOUNDS` if content length is negative.
+        !! * `E_EMPTY` if content length is zero.
         !!
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment.
         character(len=:), allocatable, intent(out)   :: content !! Returned request body.
@@ -61,6 +62,9 @@ contains
         integer(kind=i8) :: i
 
         fcgi_block: block
+            rc = E_EMPTY
+            if (env%content_length == 0) exit fcgi_block
+
             rc = E_BOUNDS
             if (env%content_length < 0) exit fcgi_block
 

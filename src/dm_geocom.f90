@@ -742,11 +742,11 @@ contains
         integer,             intent(in), optional :: grc     !! GeoCOM return code.
         character(len=:), allocatable             :: message !! Message associated with last GeoCOM return code.
 
-        if (present(grc)) then
-            message = dm_geocom_error_message(grc)
-        else
-            message = dm_geocom_error_message(this%grc)
-        end if
+        integer :: grc_
+
+        grc_ = this%grc
+        if (present(grc)) grc_ = grc
+        message = dm_geocom_error_message(grc_)
     end function geocom_message
 
     subroutine geocom_open(this, path, baud_rate, retries, verbose, error)
@@ -769,7 +769,7 @@ contains
         !!
         !! The procedure returns the following error codes:
         !!
-        !! * `E_EXIST` if the TTY is already connected.
+        !! * `E_EXIST` if TTY is already connected.
         !! * `E_INVALID` if baud rate is invalid.
         !! * `E_IO` if opening the TTY failed.
         !! * `E_NOT_FOUND` if TTY at path does no exist.
@@ -905,8 +905,8 @@ contains
             rc = dm_regex_request(request)
 
             if (dm_is_error(rc)) then
-                call this%output(rc, 'regular expression pattern of request ' // &
-                                     trim(request%name) // ' does not match')
+                call this%output(rc, 'regular expression pattern of request ' // trim(request%name) // &
+                                     ' does not match response')
                 exit tty_block
             end if
 

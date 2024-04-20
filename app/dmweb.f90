@@ -14,12 +14,7 @@ program dmweb
     !!
     !! ```lighttpd
     !! # Load additional modules.
-    !! server.modules += (
-    !!   "mod_alias",
-    !!   "mod_authn_file",
-    !!   "mod_cgi",
-    !!   "mod_setenv"
-    !! )
+    !! server.modules += ( "mod_alias", "mod_cgi", "mod_setenv" )
     !!
     !! $HTTP["url"] =^ "/dmpack/" {
     !!   # Map URL to CGI executable.
@@ -31,7 +26,7 @@ program dmweb
     !! ```
     !!
     !! In this particular case, the web interface is installed to
-    !! `/usr/local/bin/` Configure the application through CGI environment
+    !! `/usr/local/bin/`. Configure the application through CGI environment
     !! variables:
     !!
     !! | Environment Variable | Description                                  |
@@ -54,7 +49,7 @@ program dmweb
     !!  )
     !! ```
     !!
-    !! The module `sentenv` must be loaded (see above).
+    !! The module `mod_sentenv` must be loaded (see above).
     !!
     !! Copy the CSS file `share/dmpack.min.css` to the document root path of the
     !! web server (for example, `/var/www/`), or create a symlink. Other
@@ -65,7 +60,7 @@ program dmweb
     ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 3
+    integer, parameter :: APP_PATCH = 4
 
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
@@ -142,13 +137,17 @@ contains
         !! Beat page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/beat`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `node_id` – Node id (string).
+        !!
         character(len=*), parameter :: TITLE = 'Beat' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -203,10 +202,13 @@ contains
         !! Beats page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/beats`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         character(len=*), parameter :: TITLE = 'Beats' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -258,14 +260,15 @@ contains
         !! Dashboard page, shows last observations, logs, and heartbeats.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
 
-        ! To avoid some unnecessary function calls, the number of database
-        ! records has to be manually altered in the page headings.
         integer(kind=i8), parameter :: NBEATS   = 10 !! Max. number of beats to show.
         integer(kind=i8), parameter :: NLOGS    = 10 !! Max. number of logs to show.
         integer(kind=i8), parameter :: NOBSERVS = 10 !! Max. number of observations to show.
@@ -301,7 +304,7 @@ contains
         ! ------------------------------------------------------------------
         beat_if: &
         if (has_db_beat) then
-            call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last 10 Beats'))
+            call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last ' // dm_itoa(NBEATS) // ' Beats'))
             rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
@@ -333,7 +336,7 @@ contains
         ! ------------------------------------------------------------------
         log_if: &
         if (has_db_log) then
-            call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last 10 Logs'))
+            call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last ' // dm_itoa(NLOGS) // ' Logs'))
             rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
@@ -358,7 +361,7 @@ contains
         ! ------------------------------------------------------------------
         observ_if: &
         if (has_db_observ) then
-            call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last 10 Observations'))
+            call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last ' // dm_itoa(NOBSERVS) // ' Observations'))
             rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
@@ -388,10 +391,13 @@ contains
         !! (not linked in the navigation), and only implemented for testing.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/env`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         character(len=*), parameter :: TITLE = 'CGI Environment Variables' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -409,10 +415,13 @@ contains
         !! Licence page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/licence`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         character(len=*), parameter :: TITLE = 'Licence' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -425,17 +434,17 @@ contains
         call dm_cgi_out(H_BLOCKQUOTE)
         call dm_cgi_out(dm_html_p(DM_COPYRIGHT, encode=.true.))
         call dm_cgi_out(H_P // 'Permission to use, copy, modify, and/or distribute this ' // &
-                        'software for any purpose with or without fee is hereby ' // &
-                        'granted, provided that the above copyright notice and this ' // &
+                        'software for any purpose with or without fee is hereby '         // &
+                        'granted, provided that the above copyright notice and this '     // &
                         'permission notice appear in all copies.' // H_P_END)
         call dm_cgi_out(H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
-                        'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ' // &
-                        'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO ' // &
-                        'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, ' // &
-                        'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER ' // &
-                        'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ' // &
-                        'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ' // &
-                        'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE ' // &
+                        'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING '  // &
+                        'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO '     // &
+                        'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, '        // &
+                        'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER '     // &
+                        'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN '       // &
+                        'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, '         // &
+                        'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE '      // &
                         'OF THIS SOFTWARE.' // H_P_END)
         call dm_cgi_out(H_BLOCKQUOTE_END)
         call html_footer()
@@ -445,13 +454,17 @@ contains
         !! Log page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/log`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `id` – Log id (UUID4).
+        !!
         character(len=*), parameter :: TITLE = 'Log' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -509,13 +522,16 @@ contains
         !! Logs page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/logs`
         !!
         !! ## Methods
+        !!
         !! * GET
         !! * POST
         !!
         !! ## POST Parameters
+        !!
         !! * `node_id`     – Node id (string).
         !! * `sensor_id`   – Sensor id (string).
         !! * `target_id`   – Target id (string).
@@ -524,6 +540,7 @@ contains
         !! * `to`          – Time range end (ISO 8601).
         !! * `level`       – Log level (integer).
         !! * `max_results` – Maximum number of logs (integer).
+        !!
         character(len=*), parameter :: TITLE = 'Logs' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -678,13 +695,17 @@ contains
         !! Node page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/node?id=<id>`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `id` – Node id (string).
+        !!
         character(len=*), parameter :: TITLE = 'Node' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -735,16 +756,20 @@ contains
         !! Nodes page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/nodes`
         !!
         !! ## Methods
+        !!
         !! * GET
         !! * POST
         !!
         !! ## POST Parameters
+        !!
         !! * `id`   – Node id (string).
         !! * `name` – Node name (string).
         !! * `meta` – Node meta description (string).
+        !!
         character(len=*), parameter :: TITLE = 'Nodes' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -831,13 +856,17 @@ contains
         !! Observation page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/observ`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `id` – Observation id (UUID4).
+        !!
         character(len=*), parameter :: TITLE = 'Observation' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -917,19 +946,23 @@ contains
         !! Observations page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/observs`
         !!
         !! ## Methods
+        !!
         !! * GET
         !! * POST
         !!
         !! ## POST Parameters
+        !!
         !! * `node_id`     – Node id (string).
         !! * `sensor_id`   – Sensor id (string).
         !! * `target_id`   – Target id (string).
         !! * `from`        – Time range start (ISO 8601).
         !! * `to`          – Time range end (ISO 8601).
         !! * `max_results` – Maximum number of points per plot (integer).
+        !!
         character(len=*), parameter :: TITLE = 'Observations' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1054,13 +1087,16 @@ contains
         !! Plotting page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/plots`
         !!
         !! ## Methods
+        !!
         !! * GET
         !! * POST
         !!
         !! ## POST Parameters
+        !!
         !! * `node_id`       – Node id (string).
         !! * `sensor_id`     – Sensor id (string).
         !! * `target_id`     – Target id (string).
@@ -1068,6 +1104,7 @@ contains
         !! * `from`          – Time range start (ISO 8601).
         !! * `to`            – Time range end (ISO 8601).
         !! * `max_results`   – Maximum number of data points (integer).
+        !!
         character(len=*), parameter :: TITLE       = 'Plots' !! Page title.
         integer,          parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
         integer,          parameter :: PLOT_HEIGHT = 400     !! Default plot height.
@@ -1226,13 +1263,17 @@ contains
         !! Sensor page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/sensor`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `id` – Sensor id (string).
+        !!
         character(len=*), parameter :: TITLE = 'Sensor' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1288,10 +1329,13 @@ contains
         !! Sensors page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/sensors`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         character(len=*), parameter :: TITLE = 'Sensors' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1391,14 +1435,16 @@ contains
         !! mode.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/status`
         !!
         !! ## Methods
+        !!
         !! * GET
+        !!
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
 
-        character(len=*), parameter :: TITLE = 'Status'   !! Page title.
-        integer(kind=i8), parameter :: FSIZE = 1024_i8**2 !! Bytes to MiB factor.
+        character(len=*), parameter :: TITLE = 'Status' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1409,7 +1455,7 @@ contains
         call dm_cgi_out(dm_html_heading(1, TITLE))
 
         ! System information.
-        block
+        system_block: block
             character(len=:), allocatable :: content
             character(len=FILE_PATH_LEN)  :: path
             integer(kind=i8)              :: seconds
@@ -1454,54 +1500,70 @@ contains
 
             call dm_cgi_out(dm_html_heading(2, 'System Status'))
             call dm_cgi_out(content)
-        end block
+        end block system_block
 
         ! Database information.
-        block
+        db_block: block
+            integer(kind=i8), parameter :: FSIZE = 1024_i8**2 !! Bytes to MiB factor.
+
             character(len=:), allocatable :: content
-            character(len=3)              :: mode
-            integer(kind=i8)              :: db_beat_sz, db_log_sz, db_observ_sz
+            character(len=:), allocatable :: mode
+            integer(kind=i8)              :: sz
+            logical                       :: db_beat_exists, db_log_exists, db_observ_exists
 
-            if (read_only) then
-                mode = 'yes'
-            else
-                mode = 'no'
-            end if
+            db_beat_exists   = dm_file_exists(db_beat)
+            db_log_exists    = dm_file_exists(db_log)
+            db_observ_exists = dm_file_exists(db_observ)
 
-            db_beat_sz   = 0_i8
-            db_log_sz    = 0_i8
-            db_observ_sz = 0_i8
+            if (.not. db_beat_exists .and. .not. db_log_exists .and. db_observ_exists) exit db_block
 
-            ! The sizes will be at least 1 MiB, even if a file is actually smaller.
-            ! This way, it is easier to distinguish between non-existing and small
-            ! databases, as non-existing ones will always be of size zero.
-            if (dm_file_exists(db_beat))   db_beat_sz   = max(1_i8, dm_file_size(db_beat)   / FSIZE)
-            if (dm_file_exists(db_log))    db_log_sz    = max(1_i8, dm_file_size(db_log)    / FSIZE)
-            if (dm_file_exists(db_observ)) db_observ_sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
+            mode = dm_btoa(read_only, 'yes', 'no')
 
             content = H_TABLE // H_THEAD // &
                       H_TR // H_TH // 'Type'      // H_TH_END // &
                               H_TH // 'Path'      // H_TH_END // &
                               H_TH // 'Size'      // H_TH_END // &
                               H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
-                      H_THEAD_END // H_TBODY // &
-                      H_TR // H_TD // 'Beat'                           // H_TD_END // &
-                              H_TD // dm_html_encode(db_beat)          // H_TD_END // &
-                              H_TD // dm_itoa(db_beat_sz) // ' MiB'    // H_TD_END // &
-                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
-                      H_TR // H_TD // 'Log'                            // H_TD_END // &
-                              H_TD // dm_html_encode(db_log)           // H_TD_END // &
-                              H_TD // dm_itoa(db_log_sz) // ' MiB'     // H_TD_END // &
-                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
-                      H_TR // H_TD // 'Observation'                    // H_TD_END // &
-                              H_TD // dm_html_encode(db_observ)        // H_TD_END // &
-                              H_TD // dm_itoa(db_observ_sz) // ' MiB'  // H_TD_END // &
-                              H_TD // dm_html_mark(mode, class='info') // H_TD_END // H_TR_END // &
-                      H_TBODY_END // H_TABLE_END
+                      H_THEAD_END // H_TBODY
+
+            ! The sizes will be at least 1 MiB, even if a file is actually smaller.
+            ! This way, it is easier to distinguish between non-existing and small
+            ! databases, as non-existing ones will always be of size zero.
+            if (db_beat_exists) then
+                sz = max(1_i8, dm_file_size(db_beat) / FSIZE)
+                content = content // H_TR // &
+                                     H_TD // 'Beat'                           // H_TD_END // &
+                                     H_TD // dm_html_encode(db_beat)          // H_TD_END // &
+                                     H_TD // dm_itoa(sz) // ' MiB'            // H_TD_END // &
+                                     H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
+                                     H_TR_END
+            end if
+
+            if (db_log_exists) then
+                sz = max(1_i8, dm_file_size(db_log) / FSIZE)
+                content = content // H_TR // &
+                                     H_TD // 'Log'                            // H_TD_END // &
+                                     H_TD // dm_html_encode(db_log)           // H_TD_END // &
+                                     H_TD // dm_itoa(sz) // ' MiB'            // H_TD_END // &
+                                     H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
+                                     H_TR_END
+            end if
+
+            if (db_observ_exists) then
+                sz = max(1_i8, dm_file_size(db_observ) / FSIZE)
+                content = content // H_TR // &
+                                     H_TD // 'Observation'                    // H_TD_END // &
+                                     H_TD // dm_html_encode(db_observ)        // H_TD_END // &
+                                     H_TD // dm_itoa(sz) // ' MiB'            // H_TD_END // &
+                                     H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
+                                     H_TR_END
+            end if
+
+            content = content // H_TBODY_END // H_TABLE_END
 
             call dm_cgi_out(dm_html_heading(2, 'Database Status'))
             call dm_cgi_out(content)
-        end block
+        end block db_block
 
         call html_footer()
     end subroutine route_status
@@ -1510,13 +1572,17 @@ contains
         !! Target page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/target`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `id` – Target id (string).
+        !!
         character(len=*), parameter :: TITLE = 'Target' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -1572,11 +1638,14 @@ contains
         !! Targets page.
         !!
         !! ## Path
+        !!
         !! * `/dmpack/targets`
         !!
         !! ## Methods
+        !!
         !! * GET
         !! * POST
+        !!
         character(len=*), parameter :: TITLE = 'Targets' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.

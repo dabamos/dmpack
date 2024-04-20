@@ -95,9 +95,7 @@ contains
         !! type `SYNC_TYPE_NONE` is invalid.
         integer, intent(in) :: type !! Sync type enum.
 
-        valid = .false.
-        if (type <= SYNC_TYPE_NONE .or. type > SYNC_TYPE_LAST) return
-        valid = .true.
+        valid = (type > SYNC_TYPE_NONE .and. type <= SYNC_TYPE_LAST)
     end function dm_sync_type_valid
 
     pure elemental logical function dm_sync_valid(sync) result(valid)
@@ -114,7 +112,8 @@ contains
         !! Returns name of synchronisation type.
         integer, intent(in)           :: type !! Sync type enum.
         character(len=:), allocatable :: name !! Name of sync type.
-        integer                       :: type_
+
+        integer :: type_
 
         type_ = SYNC_TYPE_NONE
         if (type >= SYNC_TYPE_NONE .and. type <= SYNC_TYPE_LAST) type_ = type

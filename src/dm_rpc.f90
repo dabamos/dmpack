@@ -236,7 +236,7 @@ contains
                 rc = E_INVALID
 
             case (CURLM_OUT_OF_MEMORY)
-                rc = E_LIMIT
+                rc = E_MEMORY
 
             case default
                 rc = E_RPC
@@ -726,7 +726,7 @@ contains
                 ! Get HTTP response code.
                 stat = curl_easy_getinfo(requests(i)%curl_ptr, CURLINFO_RESPONSE_CODE, responses(i)%code)
 
-                ! Get connection info.
+                ! Get content type of response.
                 stat = curl_easy_getinfo(requests(i)%curl_ptr, CURLINFO_CONTENT_TYPE, responses(i)%content_type)
 
                 ! Get transmission time.

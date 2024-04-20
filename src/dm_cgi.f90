@@ -18,8 +18,9 @@ module dm_cgi
     integer, parameter, public :: CGI_PARAM_LEN  = 512 !! Maximum length of CGI parameter key, value.
 
     type, public :: cgi_env_type
-        !! CGI environment variables type. Changes to this type have to be
-        !! regarded in subroutine `dm_html_cgi_env()`.
+        !! Sequential CGI environment variables type. Changes to this type have
+        !! to be regarded in subroutine `dm_html_cgi_env()`.
+        sequence
         character(len=16)  :: auth_type             = ' '  !! AUTH_TYPE
         integer(kind=i8)   :: content_length        = 0_i8 !! CONTENT_LENGTH
         character(len=128) :: content_type          = ' '  !! CONTENT_TYPE
@@ -48,8 +49,9 @@ module dm_cgi
     end type cgi_env_type
 
     type, public :: cgi_param_type
-        !! Opaque CGI parameter type. Stores GET and POST parameters as
-        !! key-value pairs.
+        !! Sequential and opaque CGI parameter type. Stores GET and POST
+        !! parameters as key-value pairs.
+        sequence
         private
         character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '  !! Array of keys.
         character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '  !! Array of values.
@@ -105,7 +107,16 @@ contains
 
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on _read(2)_
-        !! as Fortran cannot read unformatted content from standard input.
+        !! as Fortran cannot read unformatted content from standard input. On
+        !! error, the string `content` is allocated but empty.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_EMPTY` if no content is available.
+        !! * `E_EOF` if end of file is reached.
+        !! * `E_READ` if system call failed.
+        !!
         use :: unix
 
         type(cgi_env_type),            intent(inout) :: env     !! CGI environment type.
@@ -113,23 +124,23 @@ contains
 
         character, target      :: buf
         integer                :: stat
-        integer(kind=c_size_t) :: sz
-        integer(kind=i8)       :: i
-
-        rc = E_NONE
-        if (env%content_length <= 0) return
+        integer(kind=c_size_t) :: nc, sz
 
         rc = E_ALLOC
         allocate (character(len=env%content_length) :: content, stat=stat)
         if (stat /= 0) return
 
-        do i = 1, env%content_length
-            rc = E_READ
-            sz = c_read(STDIN_FILENO, c_loc(buf), 1_c_size_t)
-            if (sz < 1) exit
-            content(i:i) = buf
-            rc = E_NONE
-        end do
+        rc = E_EMPTY
+        if (env%content_length == 0) return
+
+        rc = E_READ
+        nc = int(env%content_length, kind=c_size_t)
+        sz = c_read(STDIN_FILENO, c_loc(buf), nc)
+        if (sz == 0) return
+
+        rc = E_EOF
+        if (sz /= nc) return
+        rc = E_NONE
     end function dm_cgi_content
 
     integer function dm_cgi_decode(input, output) result(rc)
@@ -301,9 +312,9 @@ contains
         character(len=:), allocatable :: content
 
         if (env%content_type /= MIME_FORM) return
+        if (env%content_length == 0) return
         if (dm_cgi_content(env, content) /= E_NONE) return
         call dm_cgi_parse(content, param)
-        if (allocated(content)) deallocate (content)
     end subroutine dm_cgi_form
 
     subroutine dm_cgi_header(content_type, http_status, location)

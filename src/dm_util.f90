@@ -62,6 +62,7 @@ module dm_util
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
+    public :: dm_btoa
     public :: dm_btoi
     public :: dm_ftoa
     public :: dm_itoa
@@ -78,8 +79,9 @@ module dm_util
     public :: dm_rad_to_deg
     public :: dm_rad_to_gon
 
-    public :: dm_to_real64
     public :: dm_from_real64
+    public :: dm_to_real64
+
     public :: dm_int32_to_real64
     public :: dm_int64_to_real64
     public :: dm_logical_to_real64
@@ -91,6 +93,7 @@ module dm_util
 
     public :: dm_to_signed
     public :: dm_to_unsigned
+
     public :: dm_int32_to_uint16
     public :: dm_int64_to_uint32
     public :: dm_uint16_to_int32
@@ -99,10 +102,8 @@ module dm_util
     ! Private procedures.
     private :: array_has_int32
     private :: array_has_int64
-
     private :: equals_real32
     private :: equals_real64
-
     private :: int32_to_string
     private :: int64_to_string
     private :: real32_to_string
@@ -132,6 +133,21 @@ contains
         i = 0
         read (str, *, iostat=stat) i
     end function dm_atoi
+
+    pure function dm_btoa(l, true, false) result(str)
+        !! Returns either argument `true` or `false` as allocatable character,
+        !! depending on the value of logical value `l`. The result is trimmed.
+        logical,          intent(in)  :: l     !! Logical value.
+        character(len=*), intent(in)  :: true  !! Return value on `.true.`.
+        character(len=*), intent(in)  :: false !! Return value on `.false.`.
+        character(len=:), allocatable :: str   !! Returned string.
+
+        if (l) then
+            str = trim(true)
+        else
+            str = trim(false)
+        end if
+    end function dm_btoa
 
     pure elemental function dm_btoi(l) result(i)
         !! Converts logical (boolean) to 4-byte integer.

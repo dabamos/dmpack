@@ -33,14 +33,15 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 2
+    integer, parameter :: APP_PATCH = 3
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_MAX_NLOGS    = 10000              !! Maximum number of logs per request.
     integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Maximum number of observations per request.
+    integer, parameter :: APP_NROUTES      = 15                 !! Total number of pages.
     logical, parameter :: APP_CSV_HEADER   = .false.            !! Add CSV header by default.
-    logical, parameter :: APP_READ_ONLY    = .false.            !! Read-only mode.
+    logical, parameter :: APP_READ_ONLY    = .false.            !! Default database access mode.
 
     ! Global settings.
     character(len=FILE_PATH_LEN) :: db_beat   = ' '           ! Path to beat database.
@@ -51,7 +52,7 @@ program dmapi
     integer               :: code
     integer               :: n, rc
     type(cgi_env_type)    :: env
-    type(cgi_route_type)  :: routes(15)
+    type(cgi_route_type)  :: routes(APP_NROUTES)
     type(cgi_router_type) :: router
 
     ! Initialise DMPACK.
@@ -83,10 +84,10 @@ program dmapi
 
     ! Set API routes.
     rc = dm_cgi_router_set(router, routes)
-    if (dm_is_error(rc)) call dm_stop(1)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Run event loop.
-    do while (dm_is_ok(dm_fcgi_accept()))
+    do while (dm_fcgi_accept() /= E_NONE)
         call dm_cgi_env(env)
         call dm_cgi_router_dispatch(router, env, code)
 
@@ -106,28 +107,36 @@ contains
         !! a given node id in CSV, JSON or Namelist format to GET requests.
         !!
         !! ## Path
-        !! * /api/v1/beat
+        !!
+        !! * `/api/v1/beat`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `node_id` - Node id.
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Heartbeat is returned.
         !! * `400` - Invalid request.
         !! * `404` - Heartbeat was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Heartbeat was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -274,18 +283,23 @@ contains
         !! format.
         !!
         !! ## Path
-        !! * /api/v1/beats
+        !!
+        !! * `/api/v1/beats`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Beats are returned.
         !! * `404` - No beats found.
         !! * `503` - Database error.
@@ -348,28 +362,36 @@ contains
         !! passed log id in CSV, JSON, or Namelist format to GET requests.
         !!
         !! ## Path
-        !! * /api/v1/log
+        !!
+        !! * `/api/v1/log`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `id` - Log id (UUID4).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Log is returned.
         !! * `400` - Invalid request.
         !! * `404` - Log was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Log was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -519,21 +541,26 @@ contains
         !! from database.
         !!
         !! ## Path
-        !! * /api/v1/logs
+        !!
+        !! * `/api/v1/logs`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `node_id` - Node id.
         !! * `from`    - Start timestamp (ISO 8601).
         !! * `to`      - End timestamp (ISO 8601).
         !! * `header`  - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Logs are returned.
         !! * `400` - Invalid request.
         !! * `404` - No logs found.
@@ -668,28 +695,36 @@ contains
         !! database. On POST, adds node to database.
         !!
         !! ## Path
-        !! * /api/v1/node
+        !!
+        !! * `/api/v1/node`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `id` - Node id.
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Node is returned.
         !! * `400` - Invalid request.
         !! * `404` - Node was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Node was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -838,18 +873,23 @@ contains
         !! Returns all nodes in CSV, JSON, JSON Lines format from database.
         !!
         !! ## Path
-        !! * /api/v1/nodes
+        !!
+        !! * `/api/v1/nodes`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `header`  - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Nodes are returned.
         !! * `404` - No nodes found.
         !! * `503` - Database error.
@@ -912,28 +952,36 @@ contains
         !! from database. On POST, adds observation to database.
         !!
         !! ## Path
-        !! * /api/v1/observ
+        !!
+        !! * `/api/v1/observ`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `id` - Observation id (UUID4).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Observation is returned.
         !! * `400` - Invalid request.
         !! * `404` - Observation was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Observation was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -1083,12 +1131,15 @@ contains
         !! in CSV, JSON, or JSON Lines format from database.
         !!
         !! ## Path
-        !! * /api/v1/observs
+        !!
+        !! * `/api/v1/observs`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `node_id`   - Node id.
         !! * `sensor_id` - Sensor id.
         !! * `target_id` - Target id.
@@ -1098,9 +1149,11 @@ contains
         !! * `header`    - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Observations are returned.
         !! * `400` - Invalid request.
         !! * `404` - No observations found.
@@ -1258,12 +1311,15 @@ contains
         !! Returns service status in API status format.
         !!
         !! ## Path
-        !! * /api/v1/
+        !!
+        !! * `/api/v1/`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Always.
         !!
         type(cgi_env_type), intent(inout) :: env
@@ -1302,28 +1358,36 @@ contains
         !! from database. On POST, adds node to database.
         !!
         !! ## Path
-        !! * /api/v1/sensor
+        !!
+        !! * `/api/v1/sensor`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `id` - Sensor id.
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Sensor is returned.
         !! * `400` - Invalid request.
         !! * `404` - Sensor was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Sensor was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -1472,18 +1536,23 @@ contains
         !! Returns all sensor in database in CSV, JSON, or JSON Lines format.
         !!
         !! ## Path
-        !! * /api/v1/sensors
+        !!
+        !! * `/api/v1/sensors`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Sensors are returned.
         !! * `400` - Invalid request.
         !! * `404` - No sensors found.
@@ -1547,28 +1616,36 @@ contains
         !! from database. On POST, adds target to database.
         !!
         !! ## Path
-        !! * /api/v1/target
+        !!
+        !! * `/api/v1/target`
         !!
         !! ## Methods
-        !! * GET, POST
+        !!
+        !! * GET
+        !! * POST
         !!
         !! ## GET Parameters
+        !!
         !! * `id` - Target id.
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## POST Headers
+        !!
         !! * `Content-Encoding` - `deflate`, `zstd` (optional)
         !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Target is returned.
         !! * `400` - Invalid request.
         !! * `404` - Target was not found.
         !! * `503` - Database error.
         !!
         !! ## POST Responses
+        !!
         !! * `201` - Target was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
@@ -1709,18 +1786,23 @@ contains
         !! Returns all targets in CSV, JSON, or JSON Lines format from database.
         !!
         !! ## Path
-        !! * /api/v1/targets
+        !!
+        !! * `/api/v1/targets`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Targets are returned.
         !! * `404` - No targets found.
         !! * `503` - Database error.
@@ -1783,12 +1865,15 @@ contains
         !! records) in CSV format from database.
         !!
         !! ## Path
-        !! * /api/v1/timeseries
+        !!
+        !! * `/api/v1/timeseries`
         !!
         !! ## Methods
+        !!
         !! * GET
         !!
         !! ## GET Parameters
+        !!
         !! * `node_id`   - Node id.
         !! * `sensor_id` - Sensor id.
         !! * `target_id` - Target id.
@@ -1800,9 +1885,11 @@ contains
         !! * `view`      - Returns observation views (0 or 1).
         !!
         !! ## GET Headers
+        !!
         !! * `Accept` - `text/comma-separated-values`
         !!
         !! ## GET Responses
+        !!
         !! * `200` - Observations are returned.
         !! * `400` - Invalid request.
         !! * `404` - No observations found.

@@ -31,7 +31,7 @@ module dm_pipe
 contains
     logical function dm_pipe_connected(pipe) result(connected)
         !! Returns `.true.` if pipe is connected.
-        type(pipe_type),  intent(inout) :: pipe !! Pipe type.
+        type(pipe_type), intent(inout) :: pipe !! Pipe type.
 
         connected = c_associated(pipe%ptr)
     end function dm_pipe_connected
@@ -75,9 +75,9 @@ contains
     integer function dm_pipe_open2(stdin, stdout, stderr, command) result(rc)
         !! Creates three anonymous pipes for bidirectional IPC (`stdin`,
         !! `stdout`, `stderr`). The function return `E_SYSTEM` on error.
-        type(pipe_type),  intent(out) :: stdin   !! Standard input descriptor.
-        type(pipe_type),  intent(out) :: stdout  !! Standard output descriptor.
-        type(pipe_type),  intent(out) :: stderr  !! Standard error descriptor.
+        type(pipe_type),  intent(out) :: stdin   !! Standard input handle.
+        type(pipe_type),  intent(out) :: stdout  !! Standard output handle.
+        type(pipe_type),  intent(out) :: stderr  !! Standard error handle.
         character(len=*), intent(in)  :: command !! Program to invoke.
 
         integer :: p1(2), p2(2), p3(2), pid, stat

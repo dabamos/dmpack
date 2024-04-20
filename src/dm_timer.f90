@@ -8,7 +8,8 @@ module dm_timer
     private
 
     type, public :: timer_type
-        !! Timer type that holds CPU clock counts and rate.
+        !! Sequential timer type that holds CPU clock counts and rate.
+        sequence
         integer(kind=i8) :: t(2) = 0_i8 !! CPU clock counts t1, t2.
         integer(kind=i8) :: rate = 0_i8 !! CPU clock rate.
     end type timer_type

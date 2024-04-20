@@ -136,16 +136,16 @@ contains
         integer,               intent(in)    :: loc        !! Hash value index.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
 
-        rc = E_BOUNDS
         value => null()
 
+        rc = E_BOUNDS
         if (loc < 1 .or. loc > size(hash_table%values)) return
 
         rc = E_INVALID
         if (.not. associated(hash_table%values(loc)%ptr)) return
 
-        value => hash_table%values(loc)%ptr
         rc = E_NONE
+        value => hash_table%values(loc)%ptr
     end function hash_table_get_index
 
     integer function hash_table_get_key(hash_table, key, value) result(rc)
@@ -160,9 +160,9 @@ contains
         integer          :: loc
         integer(kind=i8) :: hash
 
-        rc = E_EMPTY
         value => null()
 
+        rc = E_EMPTY
         hash = hash_table_hash(key)
         loc  = findloc(hash_table%hashes, hash, dim=1)
         if (loc == 0) return
@@ -170,8 +170,8 @@ contains
         rc = E_INVALID
         if (.not. associated(hash_table%values(loc)%ptr)) return
 
-        value => hash_table%values(loc)%ptr
         rc = E_NONE
+        value => hash_table%values(loc)%ptr
     end function hash_table_get_key
 
     pure elemental integer(kind=i8) function hash_table_hash(key) result(hash)

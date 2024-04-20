@@ -11,7 +11,8 @@ module dm_system
     integer, parameter :: UNAME_LEN = 256
 
     type, public :: uname_type
-        !! Operating system information.
+        !! Sequential operating system information type.
+        sequence
         character(len=UNAME_LEN) :: system_name = ' ' !! OS name.
         character(len=UNAME_LEN) :: node_name   = ' ' !! Host name.
         character(len=UNAME_LEN) :: release     = ' ' !! OS release.
