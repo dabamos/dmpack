@@ -79,8 +79,8 @@ contains
     end function test03
 
     logical function test04() result(stat)
-        character(len=*), parameter :: ASSERT_HUMAN = '1970-01-01 00:00:00 +00:00'
-        character(len=*), parameter :: ASSERT_HTML  = &
+        character(len=*), parameter :: EXP_HUMAN = '1970-01-01 00:00:00 +00:00'
+        character(len=*), parameter :: EXP_HTML  = &
             '<time datetime="1970-01-01T00:00:00+00:00">1970-01-01 00:00:00 +00:00</time>'
 
         character(len=:), allocatable :: html
@@ -97,8 +97,8 @@ contains
         print *, 'Human: ', human
         print *, 'HTML.: ', html
 
-        if (human /= ASSERT_HUMAN) return
-        if (html /= ASSERT_HTML) return
+        if (human /= EXP_HUMAN) return
+        if (html  /= EXP_HTML)  return
 
         stat = TEST_PASSED
     end function test04
