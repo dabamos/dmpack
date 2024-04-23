@@ -272,7 +272,7 @@ contains
         if (i == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
+            n = nint(log10(real(abs(i))) + 1)
             if (i < 0) n = n + 1
         end if
 
@@ -294,7 +294,7 @@ contains
         if (i == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
+            n = nint(log10(real(abs(i))) + 1)
             if (i < 0) n = n + 1
         end if
 

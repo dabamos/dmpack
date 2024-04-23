@@ -54,7 +54,8 @@ module dm_arg
     integer, parameter, public :: ARG_VALUE_LEN = FILE_PATH_LEN !! Maximum length of argument value.
 
     type, public :: arg_type
-        !! Argument description type.
+        !! Sequential argument description type.
+        sequence
         character(len=ARG_NAME_LEN)  :: name     = ' '              !! Identifier of the argument (without leading --).
         character                    :: short    = ASCII_NUL        !! Short argument character.
         character(len=ARG_VALUE_LEN) :: value    = ' '              !! Default and passed value (if any).

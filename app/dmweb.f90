@@ -1498,7 +1498,7 @@ contains
                               H_TD // dm_html_encode(compiler_options()) // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'System Status'))
+            call dm_cgi_out(dm_html_heading(2, 'System'))
             call dm_cgi_out(content)
         end block system_block
 
@@ -1561,7 +1561,7 @@ contains
 
             content = content // H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'Database Status'))
+            call dm_cgi_out(dm_html_heading(2, 'Databases'))
             call dm_cgi_out(content)
         end block db_block
 

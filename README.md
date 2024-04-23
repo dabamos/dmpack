@@ -50,8 +50,6 @@ semaphores.
 
 DMPACK includes modules for:
 
-* command-line argument parsing
-* configuration file evaluation
 * sensor control (RS-232/422/485, 1-Wire, file system, sub-process)
 * regular expression matching
 * message passing via POSIX message queues
@@ -71,6 +69,8 @@ DMPACK includes modules for:
 * HTML5 reports
 * Atom XML web feeds
 * e-mail
+* configuration file evaluation
+* command-line argument parsing
 
 ## Requirements
 

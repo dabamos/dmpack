@@ -6,7 +6,7 @@ module dm_rts
     !!
     !! The EDM distance correction functions use the default mean refraction
     !! coefficient 0.13, unless argument `k` is passed. The earth radius is
-    !! assumed to be 6.389 * 10^6 m.
+    !! assumed to be 6.389 * 10e6 m.
     !!
     !! The following code calculates scale correction values for the measured
     !! slope distance `slope_dist` from air temperature `temperature` [°C], air
