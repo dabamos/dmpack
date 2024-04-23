@@ -38,7 +38,7 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
   Path to SQLite observation database.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

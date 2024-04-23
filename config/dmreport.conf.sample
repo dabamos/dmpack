@@ -4,12 +4,12 @@
 -- The options `minlevel` and `maxlevel` may be set to one of the following
 -- named constants:
 --
---      LVL_NONE     - 0
---      LVL_DEBUG    - 1
---      LVL_INFO     - 2
---      LVL_WARNING  - 3
---      LVL_ERROR    - 4
---      LVL_CRITICAL - 5
+--      LL_NONE     - 0
+--      LL_DEBUG    - 1
+--      LL_INFO     - 2
+--      LL_WARNING  - 3
+--      LL_ERROR    - 4
+--      LL_CRITICAL - 5
 --
 -- Rename table "dmreport" to the instance name (parameter `--name`).
 --
@@ -60,8 +60,8 @@ dmreport = {
     logs = {
         disabled = false,                       -- Disable logs.
         database = "/var/dmpack/log.sqlite",    -- Path to log database.
-        minlevel = LVL_WARNING,                 -- Minimum log level (default: LVL_WARNING).
-        maxlevel = LVL_CRITICAL,                -- Maximum log level (default: LVL_CRITICAL).
+        minlevel = LL_WARNING,                  -- Minimum log level (default: LL_WARNING).
+        maxlevel = LL_CRITICAL,                 -- Maximum log level (default: LL_CRITICAL).
         title = "Logs",                         -- Overwrite default heading.
         meta = "Logs example.",                 -- Optional description.
     }

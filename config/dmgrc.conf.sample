@@ -18,7 +18,7 @@ dmgrc = {
     logger = "dmlogger",
     node = "dummy-node",
     response = "grc",
-    level = LVL_WARNING,
+    level = LL_WARNING,
     levels = {
         debug = {
             GRC_ABORT,

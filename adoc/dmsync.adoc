@@ -64,7 +64,7 @@ for testing.
   Path to SQLite log or observation database.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

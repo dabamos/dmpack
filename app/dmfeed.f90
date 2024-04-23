@@ -17,16 +17,16 @@ program dmfeed
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name      = APP_NAME     !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN) :: config    = ' '          !! Path to config file.
-        character(len=FILE_PATH_LEN) :: database  = ' '          !! Path to log database.
-        character(len=FILE_PATH_LEN) :: output    = ' '          !! Output path of Atom file (stdout if empty).
-        character(len=NODE_ID_LEN)   :: node      = ' '          !! Optional node id.
-        integer                      :: entries   = 50           !! Max. number of entries in feed.
-        integer                      :: min_level = LVL_DEBUG    !! Minimum log level
-        integer                      :: max_level = LVL_CRITICAL !! Maximum log level.
-        logical                      :: force     = .false.      !! Force writing of output file.
-        type(atom_type)              :: atom                     !! Atom type.
+        character(len=ID_LEN)        :: name      = APP_NAME    !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN) :: config    = ' '         !! Path to config file.
+        character(len=FILE_PATH_LEN) :: database  = ' '         !! Path to log database.
+        character(len=FILE_PATH_LEN) :: output    = ' '         !! Output path of Atom file (stdout if empty).
+        character(len=NODE_ID_LEN)   :: node      = ' '         !! Optional node id.
+        integer                      :: entries   = 50          !! Max. number of entries in feed.
+        integer                      :: min_level = LL_DEBUG    !! Minimum log level
+        integer                      :: max_level = LL_CRITICAL !! Maximum log level.
+        logical                      :: force     = .false.     !! Force writing of output file.
+        type(atom_type)              :: atom                    !! Atom type.
     end type app_type
 
     integer        :: rc  ! Return code.

@@ -37,13 +37,13 @@ Otherwise, the default log level is used instead.
   File path to the optional configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
 *--level*, *-L* _level_::
-  Default log level of return codes other than `GRC_OK` (`LVL_WARNING` by
+  Default log level of return codes other than `GRC_OK` (`LL_WARNING` by
   default). The argument may be an integer or name string.
 
 *--logger*, *-l* _name_::
@@ -78,7 +78,7 @@ Otherwise, the default log level is used instead.
 
 A configuration file is not required, but allows to specifiy the log level of
 certain GeoCOM return codes. In the following example configuration, the default
-log level for all return codes other than `GRC_OK` is set to `LVL_WARNING`. The
+log level for all return codes other than `GRC_OK` is set to `LL_WARNING`. The
 level is further refined for specific GeoCOM codes:
 
 [source,lua]
@@ -88,7 +88,7 @@ dmgrc = {
   logger = "dmlogger",
   node = "dummy-node",
   response = "grc",
-  level = LVL_WARNING,
+  level = LL_WARNING,
   levels = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },

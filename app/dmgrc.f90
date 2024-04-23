@@ -22,15 +22,15 @@ program dmgrc
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)            :: name      = APP_NAME    !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)     :: config    = ' '         !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)   :: logger    = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)       :: node      = ' '         !! Node id (required).
-        character(len=RESPONSE_NAME_LEN) :: response  = 'grc'       !! Response name of GeoCOM return code.
-        integer                          :: level     = LVL_WARNING !! Default log level for return codes other than `GRC_OK`.
-        logical                          :: debug     = .false.     !! Forward debug messages via IPC.
-        logical                          :: verbose   = .false.     !! Print debug messages to stderr.
-        type(grc_level_type)             :: levels(LVL_LAST)        !! Custom log levels of GeoCOM return codes.
+        character(len=ID_LEN)            :: name      = APP_NAME   !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)     :: config    = ' '        !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN)   :: logger    = ' '        !! Name of logger.
+        character(len=NODE_ID_LEN)       :: node      = ' '        !! Node id (required).
+        character(len=RESPONSE_NAME_LEN) :: response  = 'grc'      !! Response name of GeoCOM return code.
+        integer                          :: level     = LL_WARNING !! Default log level for return codes other than `GRC_OK`.
+        logical                          :: debug     = .false.    !! Forward debug messages via IPC.
+        logical                          :: verbose   = .false.    !! Print debug messages to stderr.
+        type(grc_level_type)             :: levels(LL_LAST)        !! Custom log levels of GeoCOM return codes.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -90,7 +90,7 @@ contains
             arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
             arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <id>
-            arg_type('level',    short='L', type=ARG_TYPE_LEVEL),   & ! -L, --level <n>
+            arg_type('level',    short='L', type=ARG_TYPE_LEVEL),   & ! -L, --level <level>
             arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
             arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
@@ -171,11 +171,11 @@ contains
             rc = dm_config_get(config, 'levels')
 
             if (dm_is_ok(rc)) then
-                rc = dm_config_get(config, 'debug',    app%levels(LVL_DEBUG   )%codes)
-                rc = dm_config_get(config, 'info',     app%levels(LVL_INFO    )%codes)
-                rc = dm_config_get(config, 'warning',  app%levels(LVL_WARNING )%codes)
-                rc = dm_config_get(config, 'error',    app%levels(LVL_ERROR   )%codes)
-                rc = dm_config_get(config, 'critical', app%levels(LVL_CRITICAL)%codes)
+                rc = dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
+                rc = dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
+                rc = dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
+                rc = dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
+                rc = dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
 
                 call dm_config_remove(config)
             end if

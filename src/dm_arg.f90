@@ -350,7 +350,7 @@ contains
         !! Validates given argument. Arguments of type `ARG_TYPE_LEVEL` are
         !! additionally converted to integer if the passed argument value is a
         !! valid log level name. For example, the argument value `warning` is
-        !! converted to integer `3`, to match log level `LVL_WARNING`.
+        !! converted to integer `3`, to match log level `LL_WARNING`.
         use :: dm_id
         use :: dm_log
         use :: dm_string
@@ -409,7 +409,7 @@ contains
 
                 ! On error, try to read level from level name, and convert the
                 ! result back to string. An invalid log level name is turned
-                ! into `LVL_NONE`.
+                ! into `LL_NONE`.
                 if (dm_is_error(error)) then
                     level     = dm_log_level_from_name(arg%value)
                     arg%value = dm_itoa(level)

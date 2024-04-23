@@ -56,7 +56,7 @@ GeoCOM API functions.
   File path to the configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--dtr*, *-Q*::
   Enable Data Terminal Ready (DTR).

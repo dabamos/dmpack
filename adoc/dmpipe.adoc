@@ -43,7 +43,7 @@ node, sensor, and target of all observations configured.
   File path to the configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--format*, *-f* [csv|jsonl]::
   Output format of observations if `--output` is set. Either CSV or JSON Lines.

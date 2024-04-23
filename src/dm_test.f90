@@ -115,7 +115,7 @@ contains
         call random_number(r)
 
         log = log_type(id        = dm_uuid4(), &
-                       level     = 1 + int(LVL_ERROR * r(1)), &
+                       level     = 1 + int(LL_ERROR * r(1)), &
                        error     = int(E_READ_ONLY * r(2)), &
                        timestamp = dm_time_now(), &
                        node_id   = 'dummy-node', &

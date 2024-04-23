@@ -29,7 +29,7 @@ contains
         character(len=*), parameter :: LOGGER_NAME  = 'dmtestlogger'
         character(len=*), parameter :: TEST_MESSAGE = 'test message'
         integer,          parameter :: TEST_ERROR   = E_DUMMY
-        integer,          parameter :: TEST_LEVEL   = LVL_INFO
+        integer,          parameter :: TEST_LEVEL   = LL_INFO
 
         character(len=:), allocatable :: buffer
         class(logger_class), pointer  :: logger
@@ -48,7 +48,7 @@ contains
         observ%target_id = 'test-target'
 
         log1%id        = 'f5ec2dd3870a47b5be3ae397552706fe'
-        log1%level     = LVL_ERROR
+        log1%level     = LL_ERROR
         log1%message   = TEST_MESSAGE
         log1%node_id   = observ%node_id
         log1%sensor_id = observ%sensor_id

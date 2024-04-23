@@ -47,12 +47,12 @@ module dm_report
     type, public :: report_log_type
         !! Section logs of report.
         sequence
-        logical                         :: disabled  = .false.      !! Generate plots.
-        integer                         :: min_level = LVL_WARNING  !! Minimum log level.
-        integer                         :: max_level = LVL_CRITICAL !! Maximum log level.
-        character(len=FILE_PATH_LEN)    :: database  = ' '          !! Path to observation database (required).
-        character(len=REPORT_META_LEN)  :: meta      = ' '          !! Description text.
-        character(len=REPORT_TITLE_LEN) :: title     = 'Logs'       !! Section title.
+        logical                         :: disabled  = .false.     !! Generate plots.
+        integer                         :: min_level = LL_WARNING  !! Minimum log level.
+        integer                         :: max_level = LL_CRITICAL !! Maximum log level.
+        character(len=FILE_PATH_LEN)    :: database  = ' '         !! Path to observation database (required).
+        character(len=REPORT_META_LEN)  :: meta      = ' '         !! Description text.
+        character(len=REPORT_TITLE_LEN) :: title     = 'Logs'      !! Section title.
     end type report_log_type
 
     type, public :: report_type

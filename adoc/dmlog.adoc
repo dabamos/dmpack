@@ -39,8 +39,8 @@ The program terminates after log transmission.
   Output available command-line arguments and quit.
 
 *--level*, *-L* _level_::
-  Log level, from 1 (`LVL_DEBUG`) to 5 (`LVL_CRITICAL`). The default level is
-  2 (`LVL_INFO`). The argument may be an integer or name string.
+  Log level, from 1 (`LL_DEBUG`) to 5 (`LL_CRITICAL`). The default level is
+  2 (`LL_INFO`). The argument may be an integer or name string.
 
 *--logger*, *-l* _name_::
   Name of logger instance and POSIX message queue (default is `dmlogger`).

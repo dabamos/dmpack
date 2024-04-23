@@ -35,7 +35,7 @@ module dm_logger
     character(len=*), parameter         :: LOGGER_NAME     = 'dmlogger' !! Default name of logger process.
 
     ! ANSI colours of log level.
-    integer, parameter :: LOGGER_COLORS(LVL_NONE:LVL_LAST) = [ &
+    integer, parameter :: LOGGER_COLORS(LL_NONE:LL_LAST) = [ &
         COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED &
     ] !! Colours associated with log level.
 
@@ -45,7 +45,7 @@ module dm_logger
         character(len=LOGGER_NAME_LEN) :: name      = LOGGER_NAME !! Logger and message queue name.
         character(len=NODE_ID_LEN)     :: node_id   = ' '         !! Optional node id.
         character(len=LOG_SOURCE_LEN)  :: source    = ' '         !! Default source of each log message.
-        integer                        :: min_level = LVL_INFO    !! Minimum level of logs to be forwarded via message queue.
+        integer                        :: min_level = LL_INFO     !! Minimum level of logs to be forwarded via message queue.
         logical                        :: blocking  = .true.      !! Blocking message queue access.
         logical                        :: ipc       = .false.     !! Send logs to POSIX message queue.
         logical                        :: no_color  = .false.     !! Disable ANSI colour output.
@@ -117,9 +117,9 @@ contains
         !! `source` shall be the name of the log source, usually the name of
         !! the calling program.
         !!
-        !! If `debug` is passed and `.true.`, log messages of level `LVL_DEBUG`
+        !! If `debug` is passed and `.true.`, log messages of level `LL_DEBUG`
         !! are forwarded via message queue. Otherwise, the minimum level for
-        !! logs to be transmitted is `LVL_INFO`. If `ipc` is passed and
+        !! logs to be transmitted is `LL_INFO`. If `ipc` is passed and
         !! `.true.`, logs are sent to the POSIX message queue of logger `name`.
         !! The name of the message queue is therefore `/<name>`. Writing to
         !! the message queue is blocking, unless `blocking` is passed and
@@ -144,7 +144,7 @@ contains
 
         if (present(node_id))  this%node_id   = node_id
         if (present(source))   this%source    = source
-        if (present(debug))    this%min_level = LVL_DEBUG
+        if (present(debug))    this%min_level = LL_DEBUG
         if (present(ipc))      this%ipc       = ipc
         if (present(blocking)) this%blocking  = blocking
         if (present(no_color)) this%no_color  = no_color
@@ -166,7 +166,7 @@ contains
         type(log_type) :: log
 
         log = log_type(timestamp = dm_time_now(), &
-                       level     = LVL_ERROR, &
+                       level     = LL_ERROR, &
                        message   = message, &
                        source    = this%source)
 
@@ -178,7 +178,7 @@ contains
 
     subroutine logger_log_args(this, level, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a log message to the message queue (fire & forget). Only the
-        !! log level is validated. An invalid level is set to `LVL_ERROR`.
+        !! log level is validated. An invalid level is set to `LL_ERROR`.
         !!
         !! If `error` is passed and `E_NONE`, no log is created, unless
         !! `verbose` is set to `.true.`. The passed log message is not
@@ -210,15 +210,15 @@ contains
         if (present(verbose)) verbose_ = verbose
 
         ! Ignore debugging messages if forwarding and output are both disabled.
-        if (level == LVL_DEBUG .and. this%min_level > LVL_DEBUG .and. .not. this%verbose) return
+        if (level == LL_DEBUG .and. this%min_level > LL_DEBUG .and. .not. this%verbose) return
 
         ! Ignore error code `E_NONE` if not verbose.
         if (present(error)) then
             if (dm_is_ok(error) .and. .not. verbose_) return
         end if
 
-        ! Replace invalid log level with `LVL_ERROR`.
-        log%level = LVL_ERROR
+        ! Replace invalid log level with `LL_ERROR`.
+        log%level = LL_ERROR
         if (dm_log_valid(level)) log%level = level
 
         ! Create log id.
@@ -270,7 +270,7 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LVL_CRITICAL, message, source, observ, timestamp, error, escape, verbose)
+        call this%log(LL_CRITICAL, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_critical
 
     subroutine logger_log_debug(this, message, source, observ, timestamp, error, escape, verbose)
@@ -284,7 +284,7 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LVL_DEBUG, message, source, observ, timestamp, error, escape, verbose)
+        call this%log(LL_DEBUG, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_debug
 
     subroutine logger_log_error(this, message, source, observ, timestamp, error, escape, verbose)
@@ -298,7 +298,7 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LVL_ERROR, message, source, observ, timestamp, error, escape, verbose)
+        call this%log(LL_ERROR, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_error
 
     subroutine logger_log_info(this, message, source, observ, timestamp, error, escape, verbose)
@@ -312,7 +312,7 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LVL_INFO, message, source, observ, timestamp, error, escape, verbose)
+        call this%log(LL_INFO, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_info
 
     subroutine logger_log_type(this, log)
@@ -338,7 +338,7 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LVL_WARNING, message, source, observ, timestamp, error, escape, verbose)
+        call this%log(LL_WARNING, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_warning
 
     subroutine logger_out(this, log, unit)
@@ -352,7 +352,7 @@ contains
 
         integer :: level, unit_
 
-        level = LVL_ERROR
+        level = LL_ERROR
         if (dm_log_valid(log%level)) level = log%level
 
         unit_ = stderr
@@ -389,7 +389,7 @@ contains
         type(mqueue_type) :: mqueue
 
         if (.not. this%ipc) return
-        if (this%min_level > LVL_DEBUG .and. log%level <= LVL_DEBUG) return
+        if (this%min_level > LL_DEBUG .and. log%level <= LL_DEBUG) return
 
         ! Open message queue for writing.
         rc = dm_mqueue_open(mqueue   = mqueue, &

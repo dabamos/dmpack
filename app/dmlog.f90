@@ -69,7 +69,7 @@ contains
 
         rc = dm_arg_get(args( 1), app%logger)
         rc = dm_arg_get(args( 2), app%verbose)
-        rc = dm_arg_get(args( 3), log%level, LVL_INFO)
+        rc = dm_arg_get(args( 3), log%level, LL_INFO)
         rc = dm_arg_get(args( 4), log%error)
         rc = dm_arg_get(args( 5), log%node_id)
         rc = dm_arg_get(args( 6), log%sensor_id)

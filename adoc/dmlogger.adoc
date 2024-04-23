@@ -57,8 +57,8 @@ trigged by incoming logs.
   this semaphore.
 
 *--minlevel*, *-L* _level_::
-  Minimum level for a log to be stored in the database, from 1 (`LVL_DEBUG`) to
-  5 (`LVL_CRITICAL`). The argument may be an integer or name string.
+  Minimum level for a log to be stored in the database, from 1 (`LL_DEBUG`) to
+  5 (`LL_CRITICAL`). The argument may be an integer or name string.
 
 *--name*, *-n* _name_::
   Name of logger instance, configuration, POSIX message queue, and POSIX

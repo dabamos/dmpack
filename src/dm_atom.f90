@@ -192,7 +192,7 @@ contains
 
         integer :: level
 
-        level = max(LVL_NONE, min(LVL_LAST, log%level))
+        level = max(LL_NONE, min(LL_LAST, log%level))
 
         ! Atom entry.
         xml = A_ENTRY // &

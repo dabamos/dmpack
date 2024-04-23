@@ -844,7 +844,7 @@ contains
         integer           :: level
         type(anchor_type) :: anchor
 
-        level = max(LVL_NONE, min(LVL_LAST, log%level))
+        level = max(LL_NONE, min(LL_LAST, log%level))
 
         ! Node id.
         if (present(prefix_node) .and. len_trim(log%node_id) > 0) then
@@ -957,7 +957,7 @@ contains
 
             if (node_) html = html // H_TD // dm_html_encode(logs(i)%node_id) // H_TD_END
 
-            level = max(LVL_NONE, min(LVL_LAST, logs(i)%level))
+            level = max(LL_NONE, min(LL_LAST, logs(i)%level))
 
             min_len  = len_trim(logs(i)%message)
             max_len_ = min_len

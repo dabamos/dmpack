@@ -25,21 +25,21 @@ contains
 
         print *, 'Testing utility functions ...'
 
-        if (dm_log_level_from_name('abc')      /= LVL_NONE)     return
-        if (dm_log_level_from_name('NONE    ') /= LVL_NONE)     return
-        if (dm_log_level_from_name('DEBUG   ') /= LVL_DEBUG)    return
-        if (dm_log_level_from_name('INFO    ') /= LVL_INFO)     return
-        if (dm_log_level_from_name('WARNING ') /= LVL_WARNING)  return
-        if (dm_log_level_from_name('ERROR   ') /= LVL_ERROR)    return
-        if (dm_log_level_from_name('CRITICAL') /= LVL_CRITICAL) return
+        if (dm_log_level_from_name('abc')      /= LL_NONE)     return
+        if (dm_log_level_from_name('NONE    ') /= LL_NONE)     return
+        if (dm_log_level_from_name('DEBUG   ') /= LL_DEBUG)    return
+        if (dm_log_level_from_name('INFO    ') /= LL_INFO)     return
+        if (dm_log_level_from_name('WARNING ') /= LL_WARNING)  return
+        if (dm_log_level_from_name('ERROR   ') /= LL_ERROR)    return
+        if (dm_log_level_from_name('CRITICAL') /= LL_CRITICAL) return
 
-        if (dm_log_valid(LVL_NONE)) return
+        if (dm_log_valid(LL_NONE)) return
 
-        if (.not. dm_log_valid(LVL_DEBUG))    return
-        if (.not. dm_log_valid(LVL_INFO))     return
-        if (.not. dm_log_valid(LVL_WARNING))  return
-        if (.not. dm_log_valid(LVL_ERROR))    return
-        if (.not. dm_log_valid(LVL_CRITICAL)) return
+        if (.not. dm_log_valid(LL_DEBUG))    return
+        if (.not. dm_log_valid(LL_INFO))     return
+        if (.not. dm_log_valid(LL_WARNING))  return
+        if (.not. dm_log_valid(LL_ERROR))    return
+        if (.not. dm_log_valid(LL_CRITICAL)) return
 
         stat = TEST_PASSED
     end function test01

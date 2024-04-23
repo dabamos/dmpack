@@ -40,7 +40,7 @@ configuration file. The arguments overwrite settings from file.
   Path to configuration file.
 
 *--debug*, *-D*::
-  Forward logs messages of level `LVL_DEBUG` via IPC (if logger is set).
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--format*, *-f* [csv|nml]::
   Input format, either CSV or Fortran 95 Namelist.

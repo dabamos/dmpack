@@ -15,13 +15,13 @@ module dm_log
     private
 
     ! Log level.
-    integer, parameter, public :: LVL_NONE     = 0 !! Invalid log level, not used by DMPACK.
-    integer, parameter, public :: LVL_DEBUG    = 1 !! For debugging purposes.
-    integer, parameter, public :: LVL_INFO     = 2 !! For information regarding normal system behaviour.
-    integer, parameter, public :: LVL_WARNING  = 3 !! For events requiring the attention of the system operator.
-    integer, parameter, public :: LVL_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
-    integer, parameter, public :: LVL_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
-    integer, parameter, public :: LVL_LAST     = 5 !! Never use this.
+    integer, parameter, public :: LL_NONE     = 0 !! Invalid log level, not used by DMPACK.
+    integer, parameter, public :: LL_DEBUG    = 1 !! For debugging purposes.
+    integer, parameter, public :: LL_INFO     = 2 !! For information regarding normal system behaviour.
+    integer, parameter, public :: LL_WARNING  = 3 !! For events requiring the attention of the system operator.
+    integer, parameter, public :: LL_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
+    integer, parameter, public :: LL_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
+    integer, parameter, public :: LL_LAST     = 5 !! Never use this.
 
     ! Log parameters.
     integer, parameter, public :: LOG_NLEVEL      = 6        !! Number of log level.
@@ -31,18 +31,18 @@ module dm_log
 
     integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LVL_LAST) = [ &
+    character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
         character(len=LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' &
     ] !! Log level strings.
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LVL_LAST) = [ &
+    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
         character(len=LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' &
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
         !! Log message type.
         character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
-        integer                        :: level     = LVL_WARNING  !! Log level (mandatory).
+        integer                        :: level     = LL_WARNING  !! Log level (mandatory).
         integer                        :: error     = E_NONE       !! Error code (optional).
         character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
         character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node ID (optional).
@@ -104,7 +104,7 @@ contains
         !! Returns log level from string argument `name`. The string is
         !! converted to lower-case before. If `name` neither matches `none`,
         !! `debug`, `warning`, `error`, nor `critical`, this function returns
-        !! `LVL_NONE`.
+        !! `LL_NONE`.
         use :: dm_string, only: dm_lower
 
         character(len=*), intent(in) :: name !! Log level name.
@@ -115,20 +115,20 @@ contains
         name_ = dm_lower(name)
 
         select case (name_)
-            case (LOG_LEVEL_NAMES_LOWER(LVL_NONE))
-                level = LVL_NONE
-            case (LOG_LEVEL_NAMES_LOWER(LVL_DEBUG))
-                level = LVL_DEBUG
-            case (LOG_LEVEL_NAMES_LOWER(LVL_INFO))
-                level = LVL_INFO
-            case (LOG_LEVEL_NAMES_LOWER(LVL_WARNING))
-                level = LVL_WARNING
-            case (LOG_LEVEL_NAMES_LOWER(LVL_ERROR))
-                level = LVL_ERROR
-            case (LOG_LEVEL_NAMES_LOWER(LVL_CRITICAL))
-                level = LVL_CRITICAL
+            case (LOG_LEVEL_NAMES_LOWER(LL_NONE))
+                level = LL_NONE
+            case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG))
+                level = LL_DEBUG
+            case (LOG_LEVEL_NAMES_LOWER(LL_INFO))
+                level = LL_INFO
+            case (LOG_LEVEL_NAMES_LOWER(LL_WARNING))
+                level = LL_WARNING
+            case (LOG_LEVEL_NAMES_LOWER(LL_ERROR))
+                level = LL_ERROR
+            case (LOG_LEVEL_NAMES_LOWER(LL_CRITICAL))
+                level = LL_CRITICAL
             case default
-                level = LVL_NONE
+                level = LL_NONE
         end select
     end function dm_log_level_from_name
 
@@ -159,13 +159,13 @@ contains
     ! ******************************************************************
     pure elemental logical function dm_log_valid_level(level) result(valid)
         !! Returns `.true.` if given log level is valid, i.e., either
-        !! `LVL_DEBUG`, `LVL_WARNING`, `LVL_ERROR`, or `LVL_CRITICAL`.
+        !! `LL_DEBUG`, `LL_WARNING`, `LL_ERROR`, or `LL_CRITICAL`.
         !!
-        !! The level `LVL_NONE` is invalid.
+        !! The level `LL_NONE` is invalid.
         integer, intent(in) :: level !! Log level.
 
         valid = .false.
-        if (level <= LVL_NONE .or. level > LVL_LAST) return
+        if (level <= LL_NONE .or. level > LL_LAST) return
         valid = .true.
     end function dm_log_valid_level
 
