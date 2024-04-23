@@ -44,7 +44,7 @@
 #   man   - Make man pages (requires AsciiDoctor).
 #   html  - Convert man pages to HTML (requires mandoc).
 #   pdf   - Convert man pages to PDF (requires ps2pdf).
-#   guide - Make User's Guide (requires AsciiDoctor).
+#   guide - Make User Guide (requires AsciiDoctor).
 #   doc   - Make source code documentation (requires FORD).
 #
 # ******************************************************************************
@@ -823,7 +823,7 @@ html:
 pdf:
 	cd $(ADOCDIR) && $(MAKE) pdf
 
-# User's Guide to HTML format.
+# User Guide to HTML format.
 guide:
 	cd $(GUIDDIR) && $(MAKE)
 
@@ -1096,7 +1096,7 @@ help:
 	@echo "    freebsd         - Build FreeBSD release version."
 	@echo "    freebsd_debug   - Build FreeBSD debug version."
 	@echo "    freebsd_release - Build FreeBSD release version."
-	@echo "    guide           - Convert User's Guide to HTML (requires AsciiDoctor)."
+	@echo "    guide           - Convert User Guide to HTML (requires AsciiDoctor)."
 	@echo "    help            - Show this help."
 	@echo "    html            - Convert man pages to HTML (requires mandoc)."
 	@echo "    install         - Install DMPACK to PREFIX."

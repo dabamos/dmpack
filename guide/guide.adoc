@@ -1,4 +1,4 @@
-:description: DMPACK User’s Guide
+:description: DMPACK User Guide
 :author: Philipp Engel
 :copyright: CC BY 4.0
 :orgname: DABAMOS
@@ -17,7 +17,7 @@
 :xrefstyle: short
 :table-caption!:
 
-= DMPACK User’s Guide
+= DMPACK User Guide
 
 == Project Description
 
@@ -52,8 +52,9 @@ transmitted to a server. The software package may be used to monitor objects
 like:
 
 * bridges, tunnels, dams
-* landslides, cliffs, glaciers
+* motorways, railways
 * construction sites, mining areas
+* landslides, cliffs, glaciers
 * churches, monasteries, and other heritage buildings
 
 DMPACK is built around the relational SQLite database for time series and log
@@ -64,7 +65,7 @@ message passing is based on POSIX message queues and POSIX semaphores.
 Currently, only 64-bit Linux and FreeBSD are supported as operating systems.
 
 * link:https://www.dabamos.de/[Project Website]
-* link:https://www.dabamos.de/dmpack/guide/[User’s Guide]
+* link:https://www.dabamos.de/dmpack/guide/[User Guide]
 * link:https://www.dabamos.de/dmpack/doc/[Source Code Documentation]
 * link:https://github.com/dabamos/dmpack[Source Code Repository]
 
@@ -136,22 +137,22 @@ DMPACK has the following requirements:
 Additional dependencies have to be present to build and run the software of this
 package:
 
-* FastCGI
-* Gnuplot
-* HDF5
-* LAPACK
-* libcurl (≥ 8.5)
-* Lua 5.4
-* PCRE2
-* SQLite 3 (≥ 3.39.0)
-* zlib
-* zstd (≥ 1.5.5)
+* link:https://fastcgi-archives.github.io/[FastCGI]
+* link:https://gnuplot.sourceforge.net/[Gnuplot]
+* link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
+* link:https://www.netlib.org/lapack/[LAPACK]
+* link:https://curl.se/libcurl/[libcurl] (≥ 8.5)
+* link:https://www.lua.org/[Lua 5.4]
+* link:https://www.pcre.org/[PCRE2]
+* link:https://www.sqlite.org/[SQLite 3] (≥ 3.39.0)
+* link:https://www.zlib.net/[zlib]
+* link:https://facebook.github.io/zstd/[zstd] (≥ 1.5.5)
 
-Additionally, the web applications require a compatible web server:
+The <<web-applications,web applications>> require a compatible web server:
 
-* lighttpd
+* link:https://www.lighttpd.net/[lighttpd]
 
-To generate the man pages, the User’s Guide, and the source code documentation,
+To generate the man pages, the User Guide, and the source code documentation,
 you will also need:
 
 * link:https://asciidoctor.org/[AsciiDoctor],
@@ -242,7 +243,7 @@ $ doas pkg install www/lighttpd
 ....
 
 Optionally, install Pygments and AsciiDoctor to generate the man pages and the
-User’s Guide:
+User Guide:
 
 ....
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
@@ -1157,7 +1158,7 @@ Otherwise, the default log level is used instead.
 
 A configuration file is not required, but allows to specifiy the log level of
 certain GeoCOM return codes. In the following example configuration, the default
-log level for all return codes other than `GRC_OK` is set to `LVL_WARNING`. The
+log level for all return codes other than `GRC_OK` is set to `LL_WARNING`. The
 level is further refined for specific GeoCOM codes:
 
 [source,lua]
@@ -1167,7 +1168,7 @@ dmgrc = {
   logger = "dmlogger",
   node = "dummy-node",
   response = "grc",
-  level = LVL_WARNING,
+  level = LL_WARNING,
   levels = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
@@ -1928,8 +1929,8 @@ dmreport = {
   logs = {
     disabled = false,            -- Disable logs.
     database = "log.sqlite",     -- Path to log database.
-    minlevel = LVL_WARNING,      -- Minimum log level (default: LVL_WARNING).
-    maxlevel = LVL_CRITICAL,     -- Maximum log level (default: LVL_CRITICAL).
+    minlevel = LL_WARNING,       -- Minimum log level (default: LL_WARNING).
+    maxlevel = LL_CRITICAL,      -- Maximum log level (default: LL_CRITICAL).
     title = "Logs",              -- Overwrite default heading.
     meta = "",                   -- Optional description.
   }
@@ -2271,7 +2272,7 @@ security and authentication have to be provided by the web server. See section
 [#img-dmweb]
 image::dmweb.png[dmweb,align="center"]
 
-== Web Applications
+== Web Applications [[web-applications]]
 
 .Comparision between DMPACK web applications
 [[web-services-comp]]
@@ -2306,10 +2307,13 @@ them in _lighttpd(1)_. On FreeBSD, install the package with:
 ....
 
 The web server is configured through `/usr/local/etc/lighttpd/lighttpd.conf`.
+See the link:https://redmine.lighttpd.net/projects/lighttpd/wiki[lighttpd wiki]
+on how to configure the web server.
 
 In the listed examples, the DMPACK executables are assumend to be in
 `/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
-other directory. Set appropriate owner and access rights.
+other directory. Set an appropriate owner, such as the one the server is running
+as.
 
 === Authentication [[web-auth]]
 
@@ -3977,15 +3981,15 @@ NODE%Z=0.0,
 .Response value types [[data-response-types]]
 [cols="1,6,14"]
 |===
-| # | Name                    | Description
+| Value | Name                    | Description
 
-| 0 | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.
-| 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.
-| 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer.
-| 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer.
-| 4 | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.
-| 5 | `RESPONSE_TYPE_BYTE`    | Byte.
-| 6 | `RESPONSE_TYPE_STRING`  | Byte string.
+| 0     | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.
+| 1     | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.
+| 2     | `RESPONSE_TYPE_INT64`   | 8-byte signed integer.
+| 3     | `RESPONSE_TYPE_INT32`   | 4-byte signed integer.
+| 4     | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.
+| 5     | `RESPONSE_TYPE_BYTE`    | Byte.
+| 6     | `RESPONSE_TYPE_STRING`  | Byte string.
 |===
 
 .CSV [[data-observ-csv]]
@@ -4229,17 +4233,17 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 [[data-sensor-types]]
 [cols="1,1,8"]
 |===
-| # | Name      | Description
+| Value | Name      | Description
 
-| 0 | `none`    | Unknown sensor type.
-| 1 | `virtual` | Virtual sensor.
-| 2 | `fs`      | File system.
-| 3 | `process` | Process or service.
-| 4 | `meteo`   | Meteorological sensor.
-| 5 | `rts`     | Robotic total station.
-| 6 | `gnss`    | GNSS receiver.
-| 7 | `level`   | Level sensor.
-| 8 | `mems`    | MEMS sensor.
+| 0     | `none`    | Unknown sensor type.
+| 1     | `virtual` | Virtual sensor.
+| 2     | `fs`      | File system.
+| 3     | `process` | Process or service.
+| 4     | `meteo`   | Meteorological sensor.
+| 5     | `rts`     | Robotic total station.
+| 6     | `gnss`    | GNSS receiver.
+| 7     | `level`   | Level sensor.
+| 8     | `mems`    | MEMS sensor.
 |===
 
 .CSV [[data-sensor-csv]]
@@ -4352,15 +4356,15 @@ SENSOR%Z=0.0,
 [[data-target-states]]
 [cols="1,3,16"]
 |===
-| # | Name       | Description
+| Value | Name       | Description
 
-| 0 | `none`     | No special target state.
-| 1 | `removed`  | Target has been removed.
-| 2 | `missing`  | Target is missing.
-| 3 | `invalid`  | Target is invalid.
-| 4 | `ignore`   | Target should be ignored.
-| 5 | `obsolete` | Target is obsolete.
-| 6 | `user`     | User-defined target state.
+| 0     | `none`     | No special target state.
+| 1     | `removed`  | Target has been removed.
+| 2     | `missing`  | Target is missing.
+| 3     | `invalid`  | Target is invalid.
+| 4     | `ignore`   | Target should be ignored.
+| 5     | `obsolete` | Target is obsolete.
+| 6     | `user`     | User-defined target state.
 |===
 
 .CSV [[data-target-csv]]
@@ -5446,14 +5450,14 @@ performed observations are forwarded to <<dmdb>>.
 .Named log level parameters
 [cols="1,4,8"]
 |===
-| # | Name           | Level
+| # | Name          | Level
 
-| 0 | `LVL_NONE`     | invalid level
-| 1 | `LVL_DEBUG`    | debug level
-| 2 | `LVL_INFO`     | info level
-| 3 | `LVL_WARNING`  | warning level
-| 4 | `LVL_ERROR`    | error level
-| 5 | `LVL_CRITICAL` | critical level
+| 0 | `LL_NONE`     | invalid level
+| 1 | `LL_DEBUG`    | debug level
+| 2 | `LL_INFO`     | info level
+| 3 | `LL_WARNING`  | warning level
+| 4 | `LL_ERROR`    | error level
+| 5 | `LL_CRITICAL` | critical level
 |===
 
 .Named response value type parameters
