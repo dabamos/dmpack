@@ -135,14 +135,14 @@ contains
             mail%bcc = bcc
         end if
 
+        if (.not. allocated(mail%cc))  allocate (mail%cc(0))
+        if (.not. allocated(mail%bcc)) allocate (mail%bcc(0))
+
         mail%from      = from
         mail%to        = to
         mail%subject   = trim(subject)
         mail%message   = trim(message)
         mail%allocated = .true.
-
-        if (.not. allocated(mail%cc))  allocate (mail%cc(0))
-        if (.not. allocated(mail%bcc)) allocate (mail%bcc(0))
 
         rc = E_NONE
     end function dm_mail_create_mail

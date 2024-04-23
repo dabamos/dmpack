@@ -96,17 +96,14 @@ contains
             url = dm_mail_url('local', port=0, tls=.false.)
             print *, url
             if (url /= 'smtp://local/') return
-            deallocate (url)
 
             url = dm_mail_url('local', port=999, tls=.true.)
             print *, url
             if (url /= 'smtps://local:999/') return
-            deallocate (url)
 
             url = dm_mail_url('local', port=587, tls=.false.)
             print *, url
             if (url /= 'smtp://local:587/') return
-            deallocate (url)
 
             print *, 'Creating server ...'
             rc = dm_mail_create(server, 'example.com', 'user', 'secret')
