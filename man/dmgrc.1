@@ -2,12 +2,12 @@
 .\"     Title: dmgrc
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.22
-.\"      Date: 2024-04-06
+.\"      Date: 2024-04-23
 .\"    Manual: User Commands
 .\"    Source: DMGRC
 .\"  Language: English
 .\"
-.TH "DMGRC" "1" "2024-04-06" "DMGRC" "User Commands"
+.TH "DMGRC" "1" "2024-04-23" "DMGRC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -58,7 +58,7 @@ File path to the optional configuration file.
 .sp
 \fB\-\-debug\fP, \fB\-D\fP
 .RS 4
-Forward logs messages of level \f(CRLVL_DEBUG\fP via IPC (if logger is set).
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP
@@ -68,7 +68,7 @@ Output available command\-line arguments and quit.
 .sp
 \fB\-\-level\fP, \fB\-L\fP \fIlevel\fP
 .RS 4
-Default log level of return codes other than \f(CRGRC_OK\fP (\f(CRLVL_WARNING\fP by
+Default log level of return codes other than \f(CRGRC_OK\fP (\f(CRLL_WARNING\fP by
 default). The argument may be an integer or name string.
 .RE
 .sp
@@ -118,7 +118,7 @@ Process failed.
 .sp
 A configuration file is not required, but allows to specifiy the log level of
 certain GeoCOM return codes. In the following example configuration, the default
-log level for all return codes other than \f(CRGRC_OK\fP is set to \f(CRLVL_WARNING\fP. The
+log level for all return codes other than \f(CRGRC_OK\fP is set to \f(CRLL_WARNING\fP. The
 level is further refined for specific GeoCOM codes:
 .sp
 .if n .RS 4
@@ -129,7 +129,7 @@ dmgrc = {
   logger = "dmlogger",
   node = "dummy\-node",
   response = "grc",
-  level = LVL_WARNING,
+  level = LL_WARNING,
   levels = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
