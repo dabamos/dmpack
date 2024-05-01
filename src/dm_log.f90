@@ -42,7 +42,7 @@ module dm_log
     type, public :: log_type
         !! Log message type.
         character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
-        integer                        :: level     = LL_WARNING  !! Log level (mandatory).
+        integer                        :: level     = LL_WARNING   !! Log level (mandatory).
         integer                        :: error     = E_NONE       !! Error code (optional).
         character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
         character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node ID (optional).
@@ -159,9 +159,8 @@ contains
     ! ******************************************************************
     pure elemental logical function dm_log_valid_level(level) result(valid)
         !! Returns `.true.` if given log level is valid, i.e., either
-        !! `LL_DEBUG`, `LL_WARNING`, `LL_ERROR`, or `LL_CRITICAL`.
-        !!
-        !! The level `LL_NONE` is invalid.
+        !! `LL_DEBUG`, `LL_WARNING`, `LL_ERROR`, or `LL_CRITICAL`. The level
+        !! `LL_NONE` is invalid.
         integer, intent(in) :: level !! Log level.
 
         valid = .false.
@@ -177,6 +176,7 @@ contains
         !! * The log id is a valid UUID and not the default UUID.
         !! * The time stamp is in ISO 8601 format.
         !! * All ASCII characters of the log message are printable.
+        !!
         use :: dm_string, only: dm_string_is_printable
 
         type(log_type), intent(in) :: log !! Log to validate.
