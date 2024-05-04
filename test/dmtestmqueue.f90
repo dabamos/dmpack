@@ -23,7 +23,7 @@ program dmtestmqueue
     integer,          parameter :: NTESTS    = 2
 
     character(len=*), parameter :: MQ_NAME    = 'dmtest'     !! Message queue name (without leading `/`).
-    integer,          parameter :: MQ_MAX_MSG = 32           !! Maximum number of messages in queue.
+    integer,          parameter :: MQ_MAX_MSG = 10           !! Maximum number of messages in queue.
     integer,          parameter :: MQ_MODE    = int(o'0644') !! Access permissions (octal).
 
     logical         :: stats(NTESTS)

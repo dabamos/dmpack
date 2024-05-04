@@ -15,7 +15,7 @@ module dm_mqueue
 
     integer, parameter, public :: MQUEUE_MODE     = int(o'0644') !! Default permissions (octal).
     integer, parameter, public :: MQUEUE_NAME_LEN = ID_LEN + 1   !! Maximum message queue identifier length.
-    integer, parameter, public :: MQUEUE_MAX_MSG  = 16           !! Maximum number of messages in queue.
+    integer, parameter, public :: MQUEUE_MAX_MSG  = 10           !! Maximum number of messages in queue.
 
     integer, parameter, public :: MQUEUE_RDONLY = 0 !! Read-only access.
     integer, parameter, public :: MQUEUE_WRONLY = 1 !! Write-only access.
