@@ -2119,7 +2119,7 @@ contains
     logical function dm_db_log_exists(db, log_id) result(exists)
         !! Returns `.true.` if log id exists.
         type(db_type),     intent(inout) :: db     !! Database type.
-        character(len=*),  intent(in)    :: log_id !! Log id (UUID4).
+        character(len=*),  intent(in)    :: log_id !! Log id (UUID).
 
         exists = db_exists(db, SQL_TABLE_LOGS, log_id)
     end function dm_db_log_exists
@@ -2135,7 +2135,7 @@ contains
     logical function dm_db_observ_exists(db, observ_id) result(exists)
         !! Returns `.true.` if observation id exists.
         type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
+        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
 
         exists = db_exists(db, SQL_TABLE_OBSERVS, observ_id)
     end function dm_db_observ_exists
@@ -2621,7 +2621,7 @@ contains
 
         type(db_type),     intent(inout) :: db        !! Database type.
         type(observ_type), intent(out)   :: observ    !! Selected observation.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID4).
+        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
 
         integer     :: i, n
         type(c_ptr) :: stmt
@@ -4276,7 +4276,7 @@ contains
 
             rc = E_DB_TYPE
             if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
-            n = sqlite3_column_int(stmt, 0)
+            n = sqlite3_column_int64(stmt, 0)
 
             rc = E_NONE
         end block sql_block
