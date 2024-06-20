@@ -52,7 +52,7 @@ The program terminates after log transmission.
   Node id.
 
 *--observ*, *-O* _id_::
-  Observation id (UUID4).
+  Observation id (UUID).
 
 *--sensor*, *-S* _id_::
   Sensor id.

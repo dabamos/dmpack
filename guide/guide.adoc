@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.5
 :lang: en
-:docdate: 2024-04-17
+:docdate: 2024-06-19
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -141,7 +141,7 @@ package:
 * link:https://gnuplot.sourceforge.net/[Gnuplot]
 * link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
 * link:https://www.netlib.org/lapack/[LAPACK]
-* link:https://curl.se/libcurl/[libcurl] (≥ 8.5)
+* link:https://curl.se/libcurl/[libcurl] (≥ 8.5.0)
 * link:https://www.lua.org/[Lua 5.4]
 * link:https://www.pcre.org/[PCRE2]
 * link:https://www.sqlite.org/[SQLite 3] (≥ 3.39.0)
@@ -420,9 +420,9 @@ description, and optional position.
 location) with id, name, description, and optional position. Multiple nodes and
 sensors may share a single target.
 <<data-observ,Observation>>:: A single measurement identified by name and unique
-UUID4 that contains requests to and responses from a sensor, referencing a
-_node_, a _sensor_, and a _target_. An observation can contain up to 8 requests
-which will be sent to the sensor in sequential order.
+UUID identifier that contains requests to and responses from a sensor,
+referencing a _node_, a _sensor_, and a _target_. An observation can contain up
+to 8 requests which will be sent to the sensor in sequential order.
 <<data-request,Request>>:: Command to send to the sensor, referencing an
 _observation_ and ordered by index. A request can contain up to 16 _responses_.
 <<data-response,Response>>:: Floating-point values in the raw response of a
@@ -526,8 +526,8 @@ observations via POSIX message queue.
 
 <<dminfo>>:: Prints system and database information as key–value pairs to
 standard output.
-<<dmuuid>>:: A command-line tool to generate UUID4 identifiers (by default in
-hex format without hyphens).
+<<dmuuid>>:: A command-line tool to generate unique UUID identifiers (by default
+in hexadecimal format without hyphens).
 
 === Web
 
@@ -886,8 +886,8 @@ Format. The log messages are read from database and written as XML to standard
 output or file.
 
 The feed id has to be a 36 characters long UUID with hyphens. News aggregators
-use the id to identify the feed. Therefore, the id should not be reused among
-different feeds. Run <<dmuuid>> to generate a valid UUID4.
+will use the id to identify the feed. Therefore, the id should not be reused
+among different feeds. Run <<dmuuid>> to generate a valid UUID.
 
 The time stamp of the feed in element _updated_ is set to the date and time of
 the last log message. If no logs have been added to the database since the last
@@ -2172,11 +2172,11 @@ $ dmsync --database log.sqlite --type log --host 192.168.1.100
 
 === dmuuid [[dmuuid]]
 
-The *dmuuid* program is a command-line tool to generate pseudo-random UUID4s. By
-default, DMPACK uses 32 characters long UUID4s in hexadecimal format (without
-hyphens). Hyphens can be added by a command-line flag. The option `--convert`
-expects UUID4s to be passed via standard input. Invalid UUID4s will be replaced
-with the default UUID4.
+The *dmuuid* program is a command-line tool to generate pseudo-random UUIDs. By
+default, DMPACK uses 32 characters long UUIDv4 identifiers in hexadecimal format
+(without hyphens). Hyphens can be added by a command-line flag. The option
+`--convert` expects UUIDs to be passed via standard input. Invalid identifiers
+will be replaced with the default UUID.
 
 ==== Command-Line Options
 
@@ -2202,14 +2202,14 @@ ad488d0b8edd4c6c94582e702a810ada
 3d3eee7ae1fb4259b5df72f854aaa369
 ....
 
-Create a UUID4 with hyphens:
+Create a UUIDv4 with hyphens:
 
 ....
 $ dmuuid --hyphens
 d498f067-d14a-4f98-a9d8-777a3a131d12
 ....
 
-Add hyphens to a hexadecimal UUID4:
+Add hyphens to a hexadecimal UUID:
 
 ....
 $ echo '3d3eee7ae1fb4259b5df72f854aaa369' | dmuuid --convert
@@ -3141,7 +3141,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | GET Parameter | Type   | Description
 
-| `id`          | string | Log id (UUID4).
+| `id`          | string | Log id (UUID).
 |===
 
 ==== Request Headers
@@ -3320,7 +3320,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 |===
 | GET Parameter | Type   | Description
 
-| `id`          | string | Observation id (UUID4).
+| `id`          | string | Observation id (UUID).
 |===
 
 ==== Request Headers
@@ -3724,7 +3724,7 @@ BEAT%UPTIME=0,
 |===
 | Attribute   | Type    | Size | Description
 
-| `id`        | string  | 32   | Log id (UUID4).
+| `id`        | string  | 32   | Log id (UUID).
 | `level`     | integer | 4    | <<data-log-level,Log level>>.
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 | `timestamp` | string  | 32   | Date and time (ISO 8601).
@@ -3928,7 +3928,7 @@ NODE%Z=0.0,
 |===
 | Attribute   | Type    | Size | Description
 
-| `id`        | string  | 32   | Observation id (UUID4).
+| `id`        | string  | 32   | Observation id (UUID).
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).
 | `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).

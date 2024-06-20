@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmuuid - generates pseudo-random UUID4s
+dmuuid - generates pseudo-random UUIDs
 
 == SYNOPSIS
 
@@ -21,11 +21,11 @@ dmuuid - generates pseudo-random UUID4s
 
 == DESCRIPTION
 
-The *dmuuid* program generates pseudo-random UUID4s. By default, DMPACK uses 32
-characters long identifers in hexadecimal format (without hyphens). If
+The *dmuuid* program generates pseudo-random UUIDs. By default, DMPACK uses 32
+characters long UUIDv4 identifers in hexadecimal format (without hyphens). If
 command-line flag `--hyphens` is set, 36 characters long identifiers with
-hyphens are returned. The option `--convert` expects UUID4s to be passed via
-standard input. Invalid identifiers will be replaced with the default UUID4.
+hyphens are returned. The option `--convert` expects UUIDs to be passed via
+standard input. Invalid identifiers will be replaced with the default UUIDv4.
 
 == OPTIONS
 
@@ -65,7 +65,7 @@ ad488d0b8edd4c6c94582e702a810ada
 3d3eee7ae1fb4259b5df72f854aaa369
 ....
 
-Add hyphens to a hexadecimal UUID:
+Add hyphens to a hexadecimal UUIDv4:
 
 ....
 $ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid --convert
