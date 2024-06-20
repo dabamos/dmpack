@@ -11,9 +11,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-22.04 ]
+        os: [ ubuntu-24.04 ]
     env:
-      GCC_V: 13
+      GCC_V: 14
       NO_COLOR: 1
 
     steps:
@@ -35,34 +35,10 @@ jobs:
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
         sudo apt-get install -y --no-install-recommends libblas-dev liblapack-dev \
-          curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot-nox \
-          libhdf5-103-1 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
-          libpcre2-dev zlib1g zlib1g-dev
-        sudo apt-get remove -y sqlite3 libsqlite3-dev
-
-    - name: Build and Install SQLite 3
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        cd /tmp/
-        git config --global url.https://github.com/.insteadOf git://github.com/
-        git clone --depth 1 https://github.com/sqlite/sqlite.git
-        cd sqlite/
-        ./configure
-        sudo make install
-        /usr/local/bin/sqlite3 --version
-
-    - name: Build and Install Zstandard
-      if: contains(matrix.os, 'ubuntu')
-      run: |
-        cd /tmp/
-        git config --global url.https://github.com/.insteadOf git://github.com/
-        git clone --depth 1 https://github.com/facebook/zstd.git
-        cd zstd/build/cmake/
-        mkdir build && cd build/
-        cmake ..
-        cmake --build . --config Release
-        sudo cmake --install . --prefix /usr/local
-        /usr/local/bin/zstd --version
+          curl libcurl4t64 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot-nox \
+          libhdf5-103-1t64 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
+          libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev zlib1g zlib1g-dev \
+          libzstd1 libzstd-dev
 
     - name: Configure System
       if: contains(matrix.os, 'ubuntu')
@@ -79,7 +55,6 @@ jobs:
         gfortran --version
         which gcc
         gcc --version
-        make all OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1" \
-          LIBSQLITE3="-Wl,-rpath,/usr/local/lib -lsqlite3" \
-          LIBZSTD="-Wl,-rpath,/usr/local/lib -lzstd"
+        sqlite3 --version
+        make all OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1"
         sh runtests.sh
