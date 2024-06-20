@@ -1,13 +1,13 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_uuid
-    !! Provides a UUID4 generator. DMPACK uses 32 characters long UUID4
+    !! Provides a UUIDv4 generator. DMPACK uses 32 characters long UUIDv4
     !! identifiers in hexadecimal format, without hyphens.
     implicit none (type, external)
     private
 
-    integer,          parameter, public :: UUID_LEN      = 32 !! Hex UUID4 length.
-    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUID4 length (with hypens).
+    integer,          parameter, public :: UUID_LEN      = 32 !! Hex UUIDv4 length.
+    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUIDv4 length (with hypens).
     character(len=*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
 
     character(len=*), parameter :: UUID_SET = '0123456789abcdef'
@@ -18,7 +18,7 @@ module dm_uuid
     public :: dm_uuid4_valid
 contains
     impure elemental function dm_uuid4() result(uuid)
-        !! Generates random UUID4 (RFC 4122) in hexadecimal format, i.e.,
+        !! Generates random UUIDv4 (RFC 4122) in hexadecimal format, i.e.,
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
         character(len=UUID_LEN) :: uuid
@@ -39,7 +39,7 @@ contains
     end function dm_uuid4
 
     impure elemental function dm_uuid4_hyphens() result(uuid)
-        !! Returns UUID4 with hyphens (36 characters long). The PRNG has to be
+        !! Returns UUIDv4 with hyphens (36 characters long). The PRNG has to be
         !! seeded before the first invocation by calling `dm_init()` once.
         character(len=UUID_FULL_LEN) :: uuid
 
@@ -81,9 +81,9 @@ contains
     end function dm_uuid4_hyphenize
 
     pure elemental logical function dm_uuid4_valid(uuid) result(valid)
-        !! Returns `.true.` if given UUID in hex format is a valid UUID4. Only
+        !! Returns `.true.` if given UUID in hex format is a valid UUIDv4. Only
         !! lower-case letters are valid.
-        character(len=*), intent(in) :: uuid !! UUID to validate.
+        character(len=*), intent(in) :: uuid !! UUIDv4 to validate.
 
         character :: a
         integer   :: i

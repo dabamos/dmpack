@@ -10,7 +10,7 @@ module dm_sync
     implicit none (type, external)
     private
 
-    integer, parameter, public :: SYNC_ID_LEN = UUID_LEN !! Synchronisation id length (must equal UUID4 length).
+    integer, parameter, public :: SYNC_ID_LEN = UUID_LEN !! Synchronisation id length (must equal UUID length).
 
     ! Synchronisation types.
     integer, parameter, public :: SYNC_TYPE_NONE   = 0 !! No type (invalid).

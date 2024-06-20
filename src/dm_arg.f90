@@ -43,7 +43,7 @@ module dm_arg
     integer, parameter, public :: ARG_TYPE_CHAR    =  4 !! Single character value.
     integer, parameter, public :: ARG_TYPE_STRING  =  5 !! Character string value.
     integer, parameter, public :: ARG_TYPE_ID      =  6 !! Valid ID value.
-    integer, parameter, public :: ARG_TYPE_UUID    =  7 !! Valid UUID4 value.
+    integer, parameter, public :: ARG_TYPE_UUID    =  7 !! Valid UUIDv4 value.
     integer, parameter, public :: ARG_TYPE_TIME    =  8 !! Valid ISO 8601 value.
     integer, parameter, public :: ARG_TYPE_LEVEL   =  9 !! Log level (name string or integer value).
     integer, parameter, public :: ARG_TYPE_FILE    = 10 !! Path to file on file system (must exist).
@@ -320,7 +320,7 @@ contains
                         case (ARG_TYPE_ID)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid id')
                         case (ARG_TYPE_UUID)
-                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid UUID4')
+                            call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid UUID')
                         case (ARG_TYPE_TIME)
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not in ISO 8601 format')
                         case (ARG_TYPE_LEVEL)
