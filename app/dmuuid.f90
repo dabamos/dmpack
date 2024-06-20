@@ -3,12 +3,12 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmuuid
-    !! Generates pseudo-random UUID4s. By default, DMPACK uses UUID4s in
+    !! Generates pseudo-random UUIDs. By default, DMPACK uses UUIDv4 in
     !! hexadecimal format, i.e., without hyphens. By using the command-line
     !! argument `--hyphens`, these are added.
     !!
-    !! The command-line flag `--convert` expects UUID4s to be passed via
-    !! standard input. Invalid UUID4s will be replaced with the default UUID4.
+    !! The command-line flag `--convert` expects UUIDs to be passed via
+    !! standard input. Invalid UUIDs will be replaced with the default UUIDv4.
     use :: dmpack
     implicit none (type, external)
 
@@ -19,9 +19,9 @@ program dmuuid
 
     type :: app_type
         !! Command-line arguments.
-        integer :: count   = 1       !! Number of UUID4s to generate (>= 1).
-        logical :: convert = .false. !! Add hyphens to 32 characters long UUID4.
-        logical :: hyphens = .false. !! Add hyphens to generated UUID4s.
+        integer :: count   = 1       !! Number of UUIDs to generate (>= 1).
+        logical :: convert = .false. !! Add hyphens to 32 characters long UUIDv4.
+        logical :: hyphens = .false. !! Add hyphens to generated UUIDs.
     end type app_type
 
     integer        :: i, rc
@@ -34,7 +34,7 @@ program dmuuid
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    ! Read UUID4s from stdin and add hyphens.
+    ! Read UUIDv4s from stdin and add hyphens.
     if (app%convert) then
         call convert()
         call dm_stop(STOP_SUCCESS)
@@ -91,7 +91,7 @@ contains
     end function read_args
 
     subroutine convert()
-        !! Reads UUID4s from standard input, adds hyphens, and prints the result
+        !! Reads UUIDs from standard input, adds hyphens, and prints the result
         !! to standard output.
         character(len=UUID_LEN) :: uuid
         integer                 :: stat

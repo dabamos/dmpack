@@ -372,7 +372,7 @@ contains
         !!
         !! ## GET Parameters
         !!
-        !! * `id` - Log id (UUID4).
+        !! * `id` - Log id (UUID).
         !!
         !! ## GET Headers
         !!
@@ -962,7 +962,7 @@ contains
         !!
         !! ## GET Parameters
         !!
-        !! * `id` - Observation id (UUID4).
+        !! * `id` - Observation id (UUID).
         !!
         !! ## GET Headers
         !!
