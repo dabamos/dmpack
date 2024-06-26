@@ -30,8 +30,9 @@
 #   freebsd_debug   - FreeBSD debug.
 #   freebsd_release - FreeBSD release.
 #   linux           - Alias for target `linux_release`.
+#   linux_aarch64   - Linux release (aarch64)
 #   linux_debug     - Linux debug.
-#   linux_release   - Linux release.
+#   linux_release   - Linux release (x86-64).
 #   test            - Build test programs.
 #
 # Targets for system-wide installation:
@@ -388,8 +389,8 @@ OBJ = dm_ansi.o \
 
 # Named build targets.
 .PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
-        help html install linux linux_debug linux_release man options pdf purge \
-        setup test
+        help html install linux linux_aarch64 linux_debug linux_release man \
+        options pdf purge setup test
 
 # Library target.
 all: $(TARGET) $(SHARED) test app
@@ -441,6 +442,10 @@ freebsd:
 # Linux target.
 #
 # ******************************************************************************
+
+linux_aarch64:
+	$(MAKE) all OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__"
+	$(STRIP) -s $(DISTDIR)/dm*
 
 linux_debug:
 	$(MAKE) all OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
@@ -1100,9 +1105,10 @@ help:
 	@echo "    help            - Show this help."
 	@echo "    html            - Convert man pages to HTML (requires mandoc)."
 	@echo "    install         - Install DMPACK to PREFIX."
-	@echo "    linux           - Build Linux release version."
-	@echo "    linux_debug     - Build Linux debug version."
-	@echo "    linux_release   - Build Linux release version."
+	@echo "    linux           - Build Linux release version (x86-64)."
+	@echo "    linux_aarch64   - Build Linux release version (aarch64)."
+	@echo "    linux_debug     - Build Linux debug version (x86-64)."
+	@echo "    linux_release   - Build Linux release version (x86-64)."
 	@echo "    man             - Convert man pages (requires AsciiDoctor)."
 	@echo "    options         - Show build flags and options."
 	@echo "    pdf             - Convert man pages to PDF (requires ps2pdf)."
