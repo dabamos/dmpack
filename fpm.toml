@@ -312,7 +312,7 @@ link = [ "z", "zstd" ]
 
 [[test]]
 name = "dmtestzlib"
-main = "dmtestzib.f90"
+main = "dmtestzlib.f90"
 link = [ "z" ]
 
 [[test]]

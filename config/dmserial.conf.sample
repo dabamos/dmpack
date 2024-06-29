@@ -69,8 +69,8 @@ observ_start = {
 
 observ_stop = {
     --
-    -- Stop "Meter Mode". The sensor response is not read if the delimiter is
-    -- empty (as the DKRF400 does not always return a response to command `s\r`).
+    -- Stop "Meter Mode". The sensor response will be ignored if no delimiter
+    -- is set (as the DKRF400 does not always return a response to the command).
     --
     name = "stop",
     target_id = target_id,

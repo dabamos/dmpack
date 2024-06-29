@@ -388,12 +388,25 @@ OBJ = dm_ansi.o \
 # ******************************************************************************
 
 # Named build targets.
-.PHONY: all app clean deinstall doc freebsd freebsd_debug freebsd_release guide \
-        help html install linux linux_aarch64 linux_debug linux_release man \
-        options pdf purge setup test
+.PHONY: all app build clean deinstall doc freebsd freebsd_debug freebsd_release \
+        guide help html install linux linux_aarch64 linux_debug linux_release \
+        man options pdf purge setup test
 
 # Library target.
-all: $(TARGET) $(SHARED) test app
+all:
+	@echo "Select one of the following build targets:"
+	@echo
+	@echo "    freebsd         - FreeBSD release build."
+	@echo "    freebsd_debug   - FreeBSD debug build."
+	@echo "    freebsd_release - FreeBSD release build."
+	@echo "    linux           - Linux release build (x86-64)."
+	@echo "    linux_aarch64   - Linux release build (aarch64)."
+	@echo "    linux_debug     - Linux debug build (x86-64)."
+	@echo "    linux_release   - Linux release build (x86-64)."
+	@echo
+
+
+build: $(TARGET) $(SHARED) test app
 
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
@@ -423,15 +436,15 @@ setup:
 
 # ******************************************************************************
 #
-# FreeBSD target.
+# FreeBSD targets.
 #
 # ******************************************************************************
 
 freebsd_debug:
-	$(MAKE) all OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 freebsd_release:
-	$(MAKE) all OS=FreeBSD PREFIX=/usr/local
+	$(MAKE) build OS=FreeBSD PREFIX=/usr/local
 	$(STRIP) -s $(DISTDIR)/dm*
 
 freebsd:
@@ -439,19 +452,19 @@ freebsd:
 
 # ******************************************************************************
 #
-# Linux target.
+# Linux targets.
 #
 # ******************************************************************************
 
 linux_aarch64:
-	$(MAKE) all OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__"
+	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 linux_debug:
-	$(MAKE) all OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
+	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
 
 linux_release:
-	$(MAKE) all OS=linux PREFIX=/usr
+	$(MAKE) build OS=linux PREFIX=/usr
 	$(STRIP) -s $(DISTDIR)/dm*
 
 linux:
@@ -814,7 +827,7 @@ $(DMWEB): app/dmweb.f90 $(TARGET)
 
 # Documentation from source code.
 doc:
-	$(FORD) ford.md
+	$(FORD) ford.yml
 
 # AsciiDoc to man pages.
 man:
@@ -1093,8 +1106,8 @@ options:
 help:
 	@echo "The following build targets are available:"
 	@echo
-	@echo "    all             - Build DMPACK libraries, tests, and programs."
 	@echo "    app             - Build DMPACK programs."
+	@echo "    build           - Build DMPACK libraries, tests, and programs."
 	@echo "    clean           - Clean DMPACK build environment."
 	@echo "    deinstall       - Deinstall DMPACK from PREFIX."
 	@echo "    doc             - Create source code documentation (requires FORD)."

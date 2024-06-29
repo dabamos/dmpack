@@ -45,7 +45,7 @@ semaphores.
 
 ## System Architecture
 
-![Schema](guide/resources/images/schema.png)
+![Schema](https://www.dabamos.de/images/dmpack_schema.png)
 
 ## Features
 
@@ -142,93 +142,17 @@ the provided Makefile, or by using the
 [User Guide](https://www.dabamos.de/dmpack/guide/#_installation) for complete
 installation instructions.
 
-### FreeBSD
-
-First, install the build and run-time dependencies:
-
-```
-$ doas pkg install archivers/zstd databases/sqlite3 devel/git devel/pcre2 devel/pkgconf \
-  ftp/curl lang/gcc lang/lua54 math/gnuplot math/lapack science/hdf5 www/fcgi
-```
-
-Instead of `math/gnuplot`, you may want to install `math/gnuplot-lite` which
-does not depend on X11 (but lacks raster graphic terminals).
-
-Optionally, install Pygments and AsciiDoctor to generate the man pages and the
-User Guide from source:
-
-```
-$ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
-```
-
-The Git repository has to be cloned recursively. Otherwise, you will need to
-download the sub-modules manually by executing `fetchvendor.sh`. Then, run the
-Makefile:
+Clone the DMPACK repository recursively and execute the Makefile with build
+target `freebsd`, `linux`, or `linux_aarch64`:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
-$ cd dmpack/
-$ make freebsd
+$ make [freebsd|linux|linux_aarch64]
+$ make install PREFIX=/opt
 ```
 
-You can change the installation prefix with argument `PREFIX` (by default,
-`/usr/local`). To install the library and all programs system-wide, run:
-
-```
-$ doas make install PREFIX=/opt
-```
-
-### Linux
-
-On Debian, install GCC, GNU Fortran, and the build environment:
-
-```
-$ sudo apt install gcc gfortran git make pkg-config
-```
-
-The third-party dependencies have to be installed with development headers:
-
-```
-$ sudo apt install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot \
-  libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 libpcre2-dev \
-  sqlite3 libsqlite3-dev zlib1g zlib1g-dev libzstd1 libzstd-dev
-```
-
-Instead of package `gnuplot`, you can install the no-X11 flavour `gnuplot-nox`
-alternatively, if raster image formats are not desired (SVG output only).
-
-Clone the DMPACK repository recursively, or download the master branch and run
-`fetchvendor.sh`, then execute the Makefile:
-
-```
-$ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
-$ cd dmpack/
-$ make linux
-```
-
-Install the library and all programs system-wide to `/usr/local`:
-
-```
-$ sudo make install
-```
-
-To install to a custom directory, run:
-
-```
-$ sudo make install PREFIX=/opt
-```
-
-### Updates
-
-Update the cloned source code repository and its submodules with Git:
-
-```
-$ git pull
-$ git submodule update --remote
-$ make purge
-$ make [freebsd|linux]
-```
+On 64-bit Raspberry Pi single-board computers, target `linux_aarch64` must be
+chosen.
 
 ## Library
 
