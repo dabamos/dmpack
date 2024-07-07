@@ -17,8 +17,9 @@ module dm_hdf5
     !! integer                        :: rc
     !! type(hdf5_file_type)           :: file
     !! type(hdf5_group_type)          :: group
-    !! type(observ_type)              :: output(NOBSERVS)
-    !! type(observ_type), allocatable :: input(:)
+    !! type(observ_type), allocatable :: input(:) output(:)
+    !!
+    !! allocate (output(N))
     !!
     !! ! Initialise HDF5, create file and group.
     !! rc = dm_hdf5_init()
@@ -37,7 +38,7 @@ module dm_hdf5
     !!
     !! ## References
     !!
-    !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/develop/_r_m.html)
+    !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/v1_14/_r_m.html)
     !! * [HDF5 Fortran Examples](https://github.com/HDFGroup/hdf5/tree/develop/fortran/examples)
     !!
     use :: hdf5
@@ -515,11 +516,11 @@ contains
         call h5tinsert_f(type_id, 'source', offset, tid, stat);           if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation path.
-        dims(1) = int(OBSERV_PATH_LEN, kind=hsize_t)
-        offset  = h5offsetof(c_loc(observ), c_loc(observ%path))
+        ! Observation device.
+        dims(1) = int(OBSERV_DEVICE_LEN, kind=hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%device))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-        call h5tinsert_f(type_id, 'path', offset, tid, stat);             if (stat < 0) return
+        call h5tinsert_f(type_id, 'device', offset, tid, stat);           if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation priority.

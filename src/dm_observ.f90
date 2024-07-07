@@ -23,7 +23,7 @@ module dm_observ
     integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
     integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Max. observation name length.
     integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Max. observation source length.
-    integer, parameter, public :: OBSERV_PATH_LEN       = 32       !! Max. observation path length.
+    integer, parameter, public :: OBSERV_DEVICE_LEN     = 32       !! Max. observation device length.
     integer, parameter, public :: OBSERV_RECEIVER_LEN   = ID_LEN   !! Max. observation receiver length.
     integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16       !! Max. number of receivers.
     integer, parameter, public :: OBSERV_MAX_NREQUESTS  = 8        !! Max. number of requests.
@@ -39,7 +39,7 @@ module dm_observ
         character(len=OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name (`-0-9A-Z_a-z`).
         character(len=TIME_LEN)            :: timestamp  = ' '          !! ISO 8601 timestamp.
         character(len=OBSERV_SOURCE_LEN)   :: source     = ' '          !! Observation source (`-0-9A-Z_a-z`).
-        character(len=OBSERV_PATH_LEN)     :: path       = ' '          !! TTY/PTY path.
+        character(len=OBSERV_DEVICE_LEN)   :: device     = ' '          !! Physical device (TTY/PTY).
         integer                            :: priority   = 0            !! Message queue priority (>= 0).
         integer                            :: error      = E_NONE       !! Error code.
         integer                            :: next       = 0            !! Next receiver index.
@@ -155,7 +155,7 @@ contains
         if (observ1%name       /= observ2%name)       return
         if (observ1%timestamp  /= observ2%timestamp)  return
         if (observ1%source     /= observ2%source)     return
-        if (observ1%path       /= observ2%path)       return
+        if (observ1%device     /= observ2%device)     return
         if (observ1%priority   /= observ2%priority)   return
         if (observ1%error      /= observ2%error)      return
         if (observ1%next       /= observ2%next)       return
@@ -324,7 +324,7 @@ contains
         write (unit_, '("observ.name: ", a)')        trim(observ%name)
         write (unit_, '("observ.timestamp: ", a)')   observ%timestamp
         write (unit_, '("observ.source: ", a)')      trim(observ%source)
-        write (unit_, '("observ.path: ", a)')        trim(observ%path)
+        write (unit_, '("observ.device: ", a)')      trim(observ%device)
         write (unit_, '("observ.priority: ", i0)')   observ%priority
         write (unit_, '("observ.error: ", i0)')      observ%error
         write (unit_, '("observ.next: ", i0)')       observ%next
@@ -381,7 +381,7 @@ contains
 !       write (unit, '("observ%target_id=", a, /)')   trim(observ%target_id)
 !       write (unit, '("observ%name=", a, /)')        trim(observ%name)
 !       write (unit, '("observ%timestamp=", a, /)')   observ%timestamp
-!       write (unit, '("observ%path=", a, /)')        trim(observ%path)
+!       write (unit, '("observ%device=", a, /)')      trim(observ%device)
 !       write (unit, '("observ%priority=", i0, /)')   observ%priority
 !       write (unit, '("observ%error=", i0, /)')      observ%error
 !       write (unit, '("observ%next=", i0, /)')       observ%next

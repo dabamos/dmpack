@@ -119,48 +119,11 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (value)
-            case (0)
-                baud_rate = TTY_B0
-            case (50)
-                baud_rate = TTY_B50
-            case (75)
-                baud_rate = TTY_B75
-            case (110)
-                baud_rate = TTY_B110
-            case (134)
-                baud_rate = TTY_B134
-            case (150)
-                baud_rate = TTY_B150
-            case (200)
-                baud_rate = TTY_B200
-            case (300)
-                baud_rate = TTY_B300
-            case (600)
-                baud_rate = TTY_B600
-            case (1200)
-                baud_rate = TTY_B1200
-            case (1800)
-                baud_rate = TTY_B1800
-            case (2400)
-                baud_rate = TTY_B2400
-            case (4800)
-                baud_rate = TTY_B4800
-            case (9600)
-                baud_rate = TTY_B9600
-            case (19200)
-                baud_rate = TTY_B19200
-            case (38400)
-                baud_rate = TTY_B38400
-            case (57600)
-                baud_rate = TTY_B57600
-            case (115200)
-                baud_rate = TTY_B115200
-            case (230400)
-                baud_rate = TTY_B230400
-            case (460800)
-                baud_rate = TTY_B460800
-            case (921600)
-                baud_rate = TTY_B921600
+            case (TTY_B0, TTY_B50, TTY_B75, TTY_B110, TTY_B134, TTY_B150, TTY_B200, &
+                  TTY_B300, TTY_B600, TTY_B1200, TTY_B1800, TTY_B2400, TTY_B4800,   &
+                  TTY_B9600, TTY_B19200, TTY_B38400, TTY_B57600, TTY_B115200,       &
+                  TTY_B230400, TTY_B460800, TTY_B921600)
+                baud_rate = value
             case default
                 return
         end select

@@ -29,19 +29,19 @@ contains
         !!
         !! If `name` is passed and equals the next receiver, the receiver will
         !! be skipped, unless `allow_self` is `.true.`. This behaviour prevents
-        !! the observation to be forwarded back to the sender if the sender is
-        !! the next receiver in the list.
+        !! the observation from being forwarded back to the sender if the sender
+        !! is the next receiver in the list.
         use :: dm_id
         use :: dm_log
         use :: dm_logger
         use :: dm_observ
         use :: dm_system, only: dm_system_error_message
 
-        type(observ_type),            intent(inout)        :: observ     !! Observation to forward.
-        character(len=*),             intent(in), optional :: name       !! App name.
-        logical,                      intent(in), optional :: blocking   !! Blocking message queue access.
-        logical,                      intent(in), optional :: allow_self !! Allow forwarding to `name`.
-        logical,                      intent(in), optional :: verbose    !! Create log messages (enabled by default).
+        type(observ_type), intent(inout)        :: observ     !! Observation to forward.
+        character(len=*),  intent(in), optional :: name       !! App name.
+        logical,           intent(in), optional :: blocking   !! Blocking message queue access.
+        logical,           intent(in), optional :: allow_self !! Allow forwarding to `name`.
+        logical,           intent(in), optional :: verbose    !! Create log messages (enabled by default).
 
         class(logger_class), pointer :: logger
 

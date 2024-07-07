@@ -166,7 +166,7 @@ contains
         character(len=*), parameter :: JSON = &
             '{"id":"9273ab62f9a349b6a4da6dd274ee83e7","node_id":"dummy-node","sensor_id":"dummy-sensor",' // &
             '"target_id":"dummy-target","name":"dummy-observ","timestamp":"1970-01-01T00:00:00.000000+00:00",' // &
-            '"source":"dmdummy","path":"/dev/null","priority":0,"error":0,"next":0,"nreceivers":3,' // &
+            '"source":"dmdummy","device":"/dev/null","priority":0,"error":0,"next":0,"nreceivers":3,' // &
             '"nrequests":2,"receivers":["dummy-receiver1","dummy-receiver2","dummy-receiver3"],' // &
             '"requests":[{"name":"dummy-1","timestamp":"1970-01-01T00:00:00.000000+00:00","request":"A",' // &
             '"response":"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,' // &
@@ -195,7 +195,7 @@ contains
         observ%name      = 'dummy-observ'
         observ%timestamp = TIME_DEFAULT
         observ%source    = 'dmdummy'
-        observ%path      = '/dev/null'
+        observ%device    = '/dev/null'
 
         print *, 'Adding receivers ...'
         rc = dm_observ_add_receiver(observ, 'dummy-receiver1')

@@ -40,7 +40,7 @@ contains
         observ1%name      = 'dummy-observ'
         observ1%timestamp = TIME_DEFAULT
         observ1%source    = 'dmtestobserv'
-        observ1%path      = '/dev/null'
+        observ1%device    = '/dev/null'
 
         print *, 'Adding receivers ...'
         rc = dm_observ_add_receiver(observ1, 'dummy-receiver1')

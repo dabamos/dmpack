@@ -173,7 +173,7 @@ contains
         observ%name      = 'dummy-observ'
         observ%timestamp = dm_time_now()
         observ%source    = 'dmdummy'
-        observ%path      = '/dev/null'
+        observ%device    = '/dev/null'
 
         if (present(id))        observ%id        = id
         if (present(node_id))   observ%node_id   = node_id
@@ -384,7 +384,7 @@ contains
         print '("Total execution time: ", f8.4, " sec")', total_time
 
         call dm_ansi_color(COLOR_GREEN, no_color_)
-        call test_title('TEST SESSION FINISHED', TEST_LINE_LEN)
+        call test_title('TEST SESSION FINISHED', TEST_LINE_LEN, '-')
         call dm_ansi_reset(no_color_)
 
         print *

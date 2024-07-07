@@ -1151,8 +1151,8 @@ contains
                        H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
                        H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Path' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%path) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Device' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%device) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
                        H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &

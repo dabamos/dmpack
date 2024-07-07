@@ -260,6 +260,11 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
+            if (request%state == REQUEST_STATE_DISABLED) then
+                if (debug_) call logger%debug(request_name_string(request%name, i, n, observ%name) // ' is disabled', observ=observ)
+                cycle
+            end if
+
             if (debug_) call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Initialise request.
@@ -305,9 +310,8 @@ contains
                 do j = 1, request%nresponses
                     response => request%responses(j)
                     if (dm_is_ok(response%error)) cycle
-                    call logger%warning('failed to extract response ' // trim(response%name) // &
-                                        ' of ' // request_name_string(request%name, i), &
-                                        observ=observ, error=response%error)
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // &
+                                        request_name_string(request%name, i), observ=observ, error=response%error)
                 end do
 
                 ! Re-read on error.
@@ -389,8 +393,8 @@ contains
         integer :: rc
         logical :: debug
 
-        type(job_type),    target  :: job    ! Next job to run.
         type(pipe_type)            :: pipe   ! Pipe to process.
+        type(job_type),    target  :: job    ! Next job to run.
         type(observ_type), pointer :: observ ! Next observation to perform.
 
         debug = (app%debug .or. app%verbose)

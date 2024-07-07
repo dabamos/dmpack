@@ -268,38 +268,38 @@ contains
     pure elemental function dm_int32_to_uint16(s) result(u)
         !! Converts signed 4-byte integer to unsigned 2-byte integer.
         integer(kind=i4), intent(in) :: s !! Signed integer.
-        integer(kind=i2)             :: u !! Unsigned integer.
+        integer(kind=u2)             :: u !! Unsigned integer.
 
         integer(kind=i4) :: i
 
         i = modulo(s, 65536_i4)
 
         if (i < 32768_i4) then
-            u = int(i, kind=i2)
+            u = int(i, kind=u2)
         else
-            u = int(i - 65536_i4, kind=i2)
+            u = int(i - 65536_i4, kind=u2)
         end if
     end function dm_int32_to_uint16
 
     pure elemental function dm_int64_to_uint32(s) result(u)
         !! Converts signed 8-byte integer to unsigned 4-byte integer.
         integer(kind=i8), intent(in) :: s !! Signed integer.
-        integer(kind=i4)             :: u !! Unsigned integer.
+        integer(kind=u4)             :: u !! Unsigned integer.
 
         integer(kind=i8) :: i
 
         i = modulo(s, 4294967296_i8)
 
         if (i < 2147483648_i8) then
-            u = int(i, kind=i4)
+            u = int(i, kind=u4)
         else
-            u = int(i - 4294967296_i8, kind=i4)
+            u = int(i - 4294967296_i8, kind=u4)
         end if
     end function dm_int64_to_uint32
 
     pure elemental function dm_uint16_to_int32(u) result(s)
         !! Converts unsigned 2-byte integer to signed 4-byte integer.
-        integer(kind=i2), intent(in) :: u !! Unsigned integer.
+        integer(kind=u2), intent(in) :: u !! Unsigned integer.
         integer(kind=i4)             :: s !! Signed integer.
 
         if (u > 0) then
@@ -311,7 +311,7 @@ contains
 
     pure elemental function dm_uint32_to_int64(u) result(s)
         !! Converts unsigned 4-byte integer to signed 8-byte integer.
-        integer(kind=i4), intent(in) :: u !! Unsigned integer.
+        integer(kind=u4), intent(in) :: u !! Unsigned integer.
         integer(kind=i8)             :: s !! Signed integer.
 
         if (u > 0) then

@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_geocom_type
-    !! GeoCOM API types enumerators. All GeoCOM named parameters start with
+    !! GeoCOM API types and enumerators. The GeoCOM named parameters start with
     !! prefix `GEOCOM_`.
     use :: dm_error
     implicit none (type, external)
@@ -42,38 +42,38 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_TYPE_LAST             = 31 !! Never use this.
 
     character(len=*), parameter, public :: geocom_type_names(1:GEOCOM_TYPE_LAST) = [ &
-        character(len=28) :: &
-        'GEOCOM_AUT_ADJMODE', &
-        'GEOCOM_AUT_ATRMODE', &
-        'GEOCOM_AUT_POSMODE', &
-        'GEOCOM_BAP_ATRSETTING', &
-        'GEOCOM_BAP_MEASURE_PRG', &
-        'GEOCOM_BAP_PRISMDEF', &
-        'GEOCOM_BAP_PRISMTYPE', &
-        'GEOCOM_BAP_REFLTYPE', &
-        'GEOCOM_BAP_TARGET_TYPE', &
-        'GEOCOM_BAP_USER_MEASPRG', &
-        'GEOCOM_COM_BAUD_RATE', &
-        'GEOCOM_COM_FORMAT', &
-        'GEOCOM_COM_TPS_STARTUP_MODE', &
-        'GEOCOM_COM_TPS_STOP_MODE', &
-        'GEOCOM_CSV_POWER_PATH', &
+        character(len=28) ::            &
+        'GEOCOM_AUT_ADJMODE',           &
+        'GEOCOM_AUT_ATRMODE',           &
+        'GEOCOM_AUT_POSMODE',           &
+        'GEOCOM_BAP_ATRSETTING',        &
+        'GEOCOM_BAP_MEASURE_PRG',       &
+        'GEOCOM_BAP_PRISMDEF',          &
+        'GEOCOM_BAP_PRISMTYPE',         &
+        'GEOCOM_BAP_REFLTYPE',          &
+        'GEOCOM_BAP_TARGET_TYPE',       &
+        'GEOCOM_BAP_USER_MEASPRG',      &
+        'GEOCOM_COM_BAUD_RATE',         &
+        'GEOCOM_COM_FORMAT',            &
+        'GEOCOM_COM_TPS_STARTUP_MODE',  &
+        'GEOCOM_COM_TPS_STOP_MODE',     &
+        'GEOCOM_CSV_POWER_PATH',        &
         'GEOCOM_EDM_EGLINTENSITY_TYPE', &
-        'GEOCOM_EDM_MODE', &
-        'GEOCOM_FTR_DEVICETYPE', &
-        'GEOCOM_FTR_FILETYPE', &
-        'GEOCOM_IMG_MEM_TYPE', &
-        'GEOCOM_MOT_LOCK_STATUS', &
-        'GEOCOM_MOT_MODE', &
-        'GEOCOM_MOT_STOPMODE', &
-        'GEOCOM_SUP_AUTO_POWER', &
-        'GEOCOM_TMC_FACE', &
-        'GEOCOM_TMC_FACE_DEF', &
-        'GEOCOM_TMC_INCLINE_PRG', &
-        'GEOCOM_TMC_MEASURE_PRG', &
-        'GEOCOM_TPS_DEVICE_CLASS', &
-        'GEOCOM_TPS_DEVICE_TYPE', &
-        'GEOCOM_TPS_REFLESS_CLASS' &
+        'GEOCOM_EDM_MODE',              &
+        'GEOCOM_FTR_DEVICETYPE',        &
+        'GEOCOM_FTR_FILETYPE',          &
+        'GEOCOM_IMG_MEM_TYPE',          &
+        'GEOCOM_MOT_LOCK_STATUS',       &
+        'GEOCOM_MOT_MODE',              &
+        'GEOCOM_MOT_STOPMODE',          &
+        'GEOCOM_SUP_AUTO_POWER',        &
+        'GEOCOM_TMC_FACE',              &
+        'GEOCOM_TMC_FACE_DEF',          &
+        'GEOCOM_TMC_INCLINE_PRG',       &
+        'GEOCOM_TMC_MEASURE_PRG',       &
+        'GEOCOM_TPS_DEVICE_CLASS',      &
+        'GEOCOM_TPS_DEVICE_TYPE',       &
+        'GEOCOM_TPS_REFLESS_CLASS'      &
     ] !! GeoCOM type names.
 
     ! **************************************************************************
@@ -86,14 +86,14 @@ module dm_geocom_type
 
     ! GEOCOM_AUT_ATRMODE
     integer, parameter, public :: GEOCOM_AUT_POSITION = 0               !! Positioning to Hz and V angle.
-    integer, parameter, public :: GEOCOM_AUT_TARGET   = 1               !! Positioning to a target in the env. of the Hz and V angle.
+    integer, parameter, public :: GEOCOM_AUT_TARGET   = 1               !! Positioning to a target in the environment of the Hz and V angle.
 
     ! GEOCOM_AUT_POSMODE
     integer, parameter, public :: GEOCOM_AUT_NORMAL  = 0                !! Fast positioning mode.
     integer, parameter, public :: GEOCOM_AUT_PRECISE = 1                !! Exact positioning mode.
     integer, parameter, public :: GEOCOM_AUT_FAST    = 2                !! For TM30/TS30.
 
-    integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1          !! Direction close-wise.
+    integer, parameter, public :: GEOCOM_AUT_CLOCKWISE     = 1          !! Direction clock-wise.
     integer, parameter, public :: GEOCOM_AUT_ANTICLOCKWISE = -1         !! Direction counter clock-wise.
 
     ! **************************************************************************
@@ -101,14 +101,14 @@ module dm_geocom_type
     ! **************************************************************************
     ! GEOCOM_BAP_ATRSETTING
     integer, parameter, public :: GEOCOM_BAP_ATRSET_NORMAL     = 0      !! ATR is using no special flags or modes.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_ON  = 1      !! ATR low vis mode on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_AON = 2      !! ATR low vis mode always on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_ON  = 3      !! ATR high reflectivity mode on.
-    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_AON = 4      !! ATR high reflectivity mode always on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_ON  = 1      !! ATR low-vis mode on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_LOWVIS_AON = 2      !! ATR low-vis mode always on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_ON  = 3      !! ATR high-reflectivity mode on.
+    integer, parameter, public :: GEOCOM_BAP_ATRSET_SRANGE_AON = 4      !! ATR high-reflectivity mode always on.
 
     ! GEOCOM_BAP_MEASURE_PRG
     integer, parameter, public :: GEOCOM_BAP_NO_MEAS    = 0             !! No measurements, take last one.
-    integer, parameter, public :: GEOCOM_BAP_NO_DIST    = 1             !! No dist. measurement, angles only.
+    integer, parameter, public :: GEOCOM_BAP_NO_DIST    = 1             !! No distance measurement, angles only.
     integer, parameter, public :: GEOCOM_BAP_DEF_DIST   = 2             !! Default distance measurements.
     integer, parameter, public :: GEOCOM_BAP_CLEAR_DIST = 5             !! Clear distances.
     integer, parameter, public :: GEOCOM_BAP_STOP_TRK   = 6             !! Stop tracking.
@@ -163,13 +163,13 @@ module dm_geocom_type
     ! COM - COMMUNICATION SETTINGS.
     ! **************************************************************************
     ! GEOCOM_COM_BAUD_RATE
-    integer, parameter, public :: GEOCOM_COM_BAUD_38400  = 0
-    integer, parameter, public :: GEOCOM_COM_BAUD_19200  = 1    !! Default baud rate.
-    integer, parameter, public :: GEOCOM_COM_BAUD_9600   = 2
-    integer, parameter, public :: GEOCOM_COM_BAUD_4800   = 3
-    integer, parameter, public :: GEOCOM_COM_BAUD_2400   = 4
-    integer, parameter, public :: GEOCOM_COM_BAUD_115200 = 5
-    integer, parameter, public :: GEOCOM_COM_BAUD_57600  = 6
+    integer, parameter, public :: GEOCOM_COM_BAUD_38400  = 0    !! 38400 baud.
+    integer, parameter, public :: GEOCOM_COM_BAUD_19200  = 1    !! 19200 baud (default).
+    integer, parameter, public :: GEOCOM_COM_BAUD_9600   = 2    !! 9600 baud.
+    integer, parameter, public :: GEOCOM_COM_BAUD_4800   = 3    !! 4800 baud.
+    integer, parameter, public :: GEOCOM_COM_BAUD_2400   = 4    !! 2400 baud.
+    integer, parameter, public :: GEOCOM_COM_BAUD_115200 = 5    !! 115200 baud.
+    integer, parameter, public :: GEOCOM_COM_BAUD_57600  = 6    !! 57600 baud.
 
     ! GEOCOM_COM_FORMAT
     integer, parameter, public :: GEOCOM_COM_ASCII  = 0         !! ASCII protocol.

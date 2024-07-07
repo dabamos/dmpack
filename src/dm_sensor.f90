@@ -14,22 +14,25 @@ module dm_sensor
     integer, parameter, public :: SENSOR_META_LEN = 32     !! Max. sensor meta description length.
 
     ! Sensor types.
-    integer, parameter, public :: SENSOR_TYPE_NONE    = 0 !! Unknown sensor type.
-    integer, parameter, public :: SENSOR_TYPE_VIRTUAL = 1 !! Virtual sensor.
-    integer, parameter, public :: SENSOR_TYPE_FS      = 2 !! File system.
-    integer, parameter, public :: SENSOR_TYPE_PROCESS = 3 !! Process or service.
-    integer, parameter, public :: SENSOR_TYPE_METEO   = 4 !! Meteorological sensor.
-    integer, parameter, public :: SENSOR_TYPE_RTS     = 5 !! Robotic total station.
-    integer, parameter, public :: SENSOR_TYPE_GNSS    = 6 !! GNSS sensor.
-    integer, parameter, public :: SENSOR_TYPE_LEVEL   = 7 !! Level sensor.
-    integer, parameter, public :: SENSOR_TYPE_MEMS    = 8 !! MEMS sensor.
-    integer, parameter, public :: SENSOR_TYPE_LAST    = 8 !! Never use this.
+    integer, parameter, public :: SENSOR_TYPE_NONE    = 0  !! Unknown sensor type.
+    integer, parameter, public :: SENSOR_TYPE_VIRTUAL = 1  !! Virtual sensor.
+    integer, parameter, public :: SENSOR_TYPE_SYSTEM  = 2  !! Operating system.
+    integer, parameter, public :: SENSOR_TYPE_FS      = 3  !! File system.
+    integer, parameter, public :: SENSOR_TYPE_PROCESS = 4  !! Process or service.
+    integer, parameter, public :: SENSOR_TYPE_NETWORK = 5  !! Network-based sensor (Ethernet, HTTP).
+    integer, parameter, public :: SENSOR_TYPE_MULTI   = 6  !! Multi-sensor system.
+    integer, parameter, public :: SENSOR_TYPE_METEO   = 7  !! Meteorological sensor.
+    integer, parameter, public :: SENSOR_TYPE_RTS     = 8  !! Robotic total station.
+    integer, parameter, public :: SENSOR_TYPE_GNSS    = 9  !! GNSS sensor.
+    integer, parameter, public :: SENSOR_TYPE_LEVEL   = 10 !! Level sensor.
+    integer, parameter, public :: SENSOR_TYPE_MEMS    = 11 !! MEMS sensor.
+    integer, parameter, public :: SENSOR_TYPE_LAST    = 11 !! Never use this.
 
     integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7 !! Max. length of sensor type name.
 
     character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
-        character(len=SENSOR_TYPE_NAME_LEN) :: &
-        'none', 'virtual', 'fs', 'process', 'meteo', 'rts', 'gnss', 'level', 'mems' &
+        character(len=SENSOR_TYPE_NAME_LEN) :: 'none', 'virtual', 'system', 'fs', 'process', 'network', &
+                                               'multi', 'meteo', 'rts', 'gnss', 'level', 'mems' &
     ] !! Array of sensor type names.
 
     type, public :: sensor_type
@@ -98,10 +101,16 @@ contains
         select case (name_)
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_VIRTUAL))
                 type = SENSOR_TYPE_VIRTUAL
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_SYSTEM))
+                type = SENSOR_TYPE_SYSTEM
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_FS))
                 type = SENSOR_TYPE_FS
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_PROCESS))
                 type = SENSOR_TYPE_PROCESS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_NETWORK))
+                type = SENSOR_TYPE_NETWORK
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MULTI))
+                type = SENSOR_TYPE_MULTI
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_METEO))
                 type = SENSOR_TYPE_METEO
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_GNSS))

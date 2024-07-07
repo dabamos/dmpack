@@ -342,7 +342,7 @@ contains
                '"name":"'      // trim(observ%name)          // '",' // &
                '"timestamp":"' // trim(observ%timestamp)     // '",' // &
                '"source":"'    // trim(observ%source)        // '",' // &
-               '"path":"'      // json_escape(observ%path)   // '",' // &
+               '"device":"'    // json_escape(observ%device) // '",' // &
                '"priority":'   // dm_itoa(observ%priority)   // ','  // &
                '"error":'      // dm_itoa(observ%error)      // ','  // &
                '"next":'       // dm_itoa(observ%next)       // ','  // &

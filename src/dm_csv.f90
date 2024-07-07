@@ -229,9 +229,9 @@ contains
                  'sensor_id'  // s // &
                  'target_id'  // s // &
                  'name'       // s // &
-                 'source'     // s // &
                  'timestamp'  // s // &
-                 'tty'        // s // &
+                 'source'     // s // &
+                 'device'     // s // &
                  'priority'   // s // &
                  'error'      // s // &
                  'next'       // s // &
@@ -568,7 +568,7 @@ contains
               trim(observ%name)          // s // &
               trim(observ%timestamp)     // s // &
               trim(observ%source)        // s // &
-              trim(observ%path)          // s // &
+              trim(observ%device)        // s // &
               dm_itoa(observ%priority)   // s // &
               dm_itoa(observ%error)      // s // &
               dm_itoa(observ%next)       // s // &
@@ -1109,7 +1109,7 @@ contains
         rc = csv_next(buffer, observ%name,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%timestamp,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%source,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%path,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%device,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%error,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%next,       s, n, p, q); if (rc /= E_NONE) return
@@ -1581,7 +1581,7 @@ contains
               trim(observ%name),      s, &
               trim(observ%timestamp), s, &
               trim(observ%source),    s, &
-              trim(observ%path),      s, &
+              trim(observ%device),    s, &
               observ%priority,        s, &
               observ%error,           s, &
               observ%next,            s, &

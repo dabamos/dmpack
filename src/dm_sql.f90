@@ -127,7 +127,7 @@ module dm_sql
         'name        TEXT    NOT NULL,' // NL // &
         'timestamp   TEXT    NOT NULL DEFAULT (strftime(''%FT%R:%f000+00:00'')),' // NL // &
         'source      TEXT,' // NL // &
-        'path        TEXT,' // NL // &
+        'device      TEXT,' // NL // &
         'priority    INTEGER NOT NULL DEFAULT 0,' // NL // &
         'error       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'next        INTEGER NOT NULL DEFAULT 0,' // NL // &
@@ -398,11 +398,11 @@ module dm_sql
 
     ! Query to insert observation.
     ! Arguments: nodes.id, sensors.id, targets.id, observs.id, observs.name,
-    !            observs.timestamp, observs.source, observs.path, observs.priority,
+    !            observs.timestamp, observs.source, observs.device, observs.priority,
     !            observs.error, observs.next, observs.nreceivers, observs.nrequests
     character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
         'INSERT OR FAIL INTO observs ' // &
-        '(id, node_id, sensor_id, target_id, name, timestamp, source, path, ' // &
+        '(id, node_id, sensor_id, target_id, name, timestamp, source, device, ' // &
         'priority, error, next, nreceivers, nrequests) ' // &
         'VALUES (' // &
         '?, ' // &
@@ -673,7 +673,7 @@ module dm_sql
         'observs.name, ' // &
         'observs.timestamp, ' // &
         'observs.source, ' // &
-        'observs.path, ' // &
+        'observs.device, ' // &
         'observs.priority, ' // &
         'observs.error, ' // &
         'observs.next, ' // &
@@ -704,7 +704,7 @@ module dm_sql
         'observs.name, ' // &
         'observs.timestamp, ' // &
         'observs.source, ' // &
-        'observs.path, ' // &
+        'observs.device, ' // &
         'observs.priority, ' // &
         'observs.error, ' // &
         'observs.next, ' // &

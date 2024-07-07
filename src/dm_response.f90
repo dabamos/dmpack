@@ -22,17 +22,19 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_STRING  = 6 !! Byte string.
     integer, parameter, public :: RESPONSE_TYPE_LAST    = 6 !! Never use this.
 
+    integer, parameter, public :: RESPONSE_TYPE_DEFAULT = RESPONSE_TYPE_REAL64 !! Default response type.
+
     character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
         character(len=7) :: 'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' ] !! Response value type names.
 
     type, public :: response_type
         !! Response of a sensor.
         sequence
-        character(len=RESPONSE_NAME_LEN) :: name  = ' '                  !! Response name (`-0-9A-Z_a-z`).
-        character(len=RESPONSE_UNIT_LEN) :: unit  = ' '                  !! Response unit.
-        integer                          :: type  = RESPONSE_TYPE_REAL64 !! Response value type.
-        integer                          :: error = E_NONE               !! Response error.
-        real(kind=r8)                    :: value = 0.0_r8               !! Response value.
+        character(len=RESPONSE_NAME_LEN) :: name  = ' '                   !! Response name (`-0-9A-Z_a-z`).
+        character(len=RESPONSE_UNIT_LEN) :: unit  = ' '                   !! Response unit.
+        integer                          :: type  = RESPONSE_TYPE_DEFAULT !! Response value type.
+        integer                          :: error = E_NONE                !! Response error.
+        real(kind=r8)                    :: value = 0.0_r8                !! Response value.
     end type response_type
 
     integer, parameter, public :: RESPONSE_SIZE = storage_size(response_type()) / 8 !! Size of `response_type` in bytes.
@@ -116,7 +118,7 @@ contains
 
         write (unit_, '("response.name: ", a)')        trim(response%name)
         write (unit_, '("response.unit: ", a)')        trim(response%unit)
-        write (unit_, '("response.type: ", i0)')       response%type
+        write (unit_, '("response.type: ", i0)')       dm_response_type_name(response%type)
         write (unit_, '("response.error: ", i0)')      response%error
         write (unit_, '("response.value: ", 1pg0.12)') response%value
     end subroutine dm_response_out

@@ -14,9 +14,9 @@ program dmrecv
     !!   awk '{ print $2 | "trend - 60" }'
     !! ```
     !!
-    !! Another process has to send observations to message queue "/dmrecv".
-    !! Only responses of name "tz0" will be converted to ASCII block format and
-    !! printed to standard output.
+    !! Another DMPACK process has to send observations to message queue
+    !! "/dmrecv".  Only responses of name "tz0" will be converted to ASCII block
+    !! format and printed to standard output.
     use :: dmpack
     implicit none (type, external)
 

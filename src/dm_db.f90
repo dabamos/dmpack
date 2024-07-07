@@ -29,7 +29,7 @@ module dm_db
     !! do while (dm_is_ok(rc))
     !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
     !!     if (rc == E_DB_NO_ROWS) exit
-    !!     print *, trim(observ%name)
+    !!     if (dm_is_ok(rc)) print '(a)', trim(observ%name)
     !! end do
     !!
     !! rc = dm_db_finalize(db_stmt)
@@ -1753,7 +1753,7 @@ contains
             if (sqlite3_bind_text(stmt,  5, trim(observ%name))      /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  6, trim(observ%timestamp)) /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text(stmt,  7, trim(observ%source))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text(stmt,  8, trim(observ%path))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt,  8, trim(observ%device))    /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt,  9, observ%priority)        /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt, 10, observ%error)           /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_int (stmt, 11, observ%next)            /= SQLITE_OK) exit sql_block
@@ -4886,7 +4886,7 @@ contains
         observ%name       = sqlite3_column_text(stmt,  4)
         observ%timestamp  = sqlite3_column_text(stmt,  5)
         observ%source     = sqlite3_column_text(stmt,  6)
-        observ%path       = sqlite3_column_text(stmt,  7)
+        observ%device     = sqlite3_column_text(stmt,  7)
         observ%priority   = sqlite3_column_int (stmt,  8)
         observ%error      = sqlite3_column_int (stmt,  9)
         observ%next       = sqlite3_column_int (stmt, 10)

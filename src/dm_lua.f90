@@ -1235,7 +1235,7 @@ contains
             rc = dm_lua_field(lua, 'name',       observ%name)
             rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
             rc = dm_lua_field(lua, 'source',     observ%source)
-            rc = dm_lua_field(lua, 'path',       observ%path, unescape=.true.)
+            rc = dm_lua_field(lua, 'device',     observ%device, unescape=.true.)
             rc = dm_lua_field(lua, 'priority',   observ%priority)
             rc = dm_lua_field(lua, 'error',      observ%error)
             rc = dm_lua_field(lua, 'next',       observ%next)
@@ -1509,8 +1509,8 @@ contains
         ptr = lua_pushstring(lua%ptr, trim(observ%source))
         call lua_setfield(lua%ptr, -2, 'source')
 
-        ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%path))
-        call lua_setfield(lua%ptr, -2, 'path')
+        ptr = lua_pushstring(lua%ptr, dm_lua_escape(observ%device))
+        call lua_setfield(lua%ptr, -2, 'device')
 
         call lua_pushinteger(lua%ptr, int(observ%priority, kind=lua_integer))
         call lua_setfield(lua%ptr, -2, 'priority')

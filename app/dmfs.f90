@@ -260,6 +260,11 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
+            if (request%state == REQUEST_STATE_DISABLED) then
+                if (debug_) call logger%debug(request_name_string(request%name, i, n, observ%name) // ' is disabled', observ=observ)
+                cycle
+            end if
+
             if (debug_) call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Initialise request.

@@ -362,7 +362,7 @@ contains
         observ%sensor_id = sensor_id
         observ%source    = source
         observ%timestamp = dm_time_now()
-        observ%path      = trim(tty%path)
+        observ%device    = trim(tty%path)
 
         n = observ%nrequests
 
@@ -376,9 +376,12 @@ contains
         req_loop: do i = 1, n
             request => observ%requests(i)
 
-            if (debug_) then
-                call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+            if (request%state == REQUEST_STATE_DISABLED) then
+                if (debug_) call logger%debug(request_name_string(request%name, i, n, observ%name) // ' is disabled', observ=observ)
+                cycle
             end if
+
+            if (debug_) call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Prepare request.
             rc = dm_request_set_response_error(request, E_INCOMPLETE)
