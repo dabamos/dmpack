@@ -4,6 +4,9 @@
 [submodule "vendor/fortran-lua54"]
 	path = vendor/fortran-lua54
 	url = https://github.com/interkosmos/fortran-lua54
+[submodule "vendor/fortran-modbus"]
+	path = vendor/fortran-modbus
+	url = https://github.com/interkosmos/fortran-modbus
 [submodule "vendor/fortran-pcre2"]
 	path = vendor/fortran-pcre2
 	url = https://github.com/interkosmos/fortran-pcre2
