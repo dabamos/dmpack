@@ -5,11 +5,13 @@ module dm_kind
     !!
     !! This module provides the following integer and real kinds:
     !!
-    !! * 2-byte integer: `i2` (⇒ `int16`)
-    !! * 4-byte integer: `i4` (⇒ `int32`)
-    !! * 8-byte integer: `i8` (⇒ `int64`)
-    !! * 4-byte real:    `r4` (⇒ `real32`)
-    !! * 8-byte real:    `r8` (⇒ `real64`)
+    !! * 2-byte signed integer:   `i2` (⇒ `int16`)
+    !! * 4-byte signed integer:   `i4` (⇒ `int32`)
+    !! * 8-byte signed integer:   `i8` (⇒ `int64`)
+    !! * 2-byte unsigned integer: `u2` (⇒ `int16`)
+    !! * 4-byte unsigned integer: `u4` (⇒ `int32`)
+    !! * 4-byte real:             `r4` (⇒ `real32`)
+    !! * 8-byte real:             `r8` (⇒ `real64`)
     !!
     !! As well as the following input/output units:
     !!
@@ -22,6 +24,8 @@ module dm_kind
                                              i8     => int64, &
                                              r4     => real32, &
                                              r8     => real64, &
+                                             u2     => int16, &
+                                             u4     => int32, &
                                              stderr => error_unit, &
                                              stdin  => input_unit, &
                                              stdout => output_unit
@@ -33,6 +37,8 @@ module dm_kind
     public :: i8
     public :: r4
     public :: r8
+    public :: u2
+    public :: u4
     public :: stderr
     public :: stdin
     public :: stdout

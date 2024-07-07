@@ -9,9 +9,14 @@
 #   $ make freebsd
 #   $ make install PREFIX=/usr/local
 #
-# On Linux, instead:
+# On Linux (x86-64), run:
 #
 #   $ make linux
+#   $ make install PREFIX=/usr
+#
+# On Linux (AArch64), instead:
+#
+#   $ make linux_aarch64
 #   $ make install PREFIX=/usr
 #
 # Display the build options:
@@ -27,11 +32,11 @@
 # DMPACK build targets:
 #
 #   freebsd         - Alias for target `freebsd_release`.
-#   freebsd_debug   - FreeBSD debug.
-#   freebsd_release - FreeBSD release.
+#   freebsd_debug   - FreeBSD debug (x86-64, AArch64).
+#   freebsd_release - FreeBSD release (x86-64, AArch64).
 #   linux           - Alias for target `linux_release`.
 #   linux_aarch64   - Linux release (aarch64)
-#   linux_debug     - Linux debug.
+#   linux_debug     - Linux debug (x86-64).
 #   linux_release   - Linux release (x86-64).
 #   test            - Build test programs.
 #
@@ -154,11 +159,12 @@ LDLIBS  =
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Shared libraries to link.
-LIBCURL    = `curl-config --libs`
+LIBCURL    = `pkg-config --libs-only-l libcurl`
 LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
+LIBMODBUS  = `pkg-config --libs-only-l libmodbus`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
@@ -169,17 +175,18 @@ LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED  = $(LIBCURL) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
-             $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ)
+             $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBZ)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
 LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
+LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZLIB) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -252,6 +259,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_lua_lib.f90 \
       $(SRCDIR)/dm_mail.f90 \
       $(SRCDIR)/dm_mime.f90 \
+      $(SRCDIR)/dm_modbus.f90 \
       $(SRCDIR)/dm_mqtt.f90 \
       $(SRCDIR)/dm_mqueue.f90 \
       $(SRCDIR)/dm_mqueue_util.f90 \
@@ -339,6 +347,7 @@ OBJ = dm_ansi.o \
       dm_lua_lib.o \
       dm_mail.o \
       dm_mime.o \
+      dm_modbus.o \
       dm_mqtt.o \
       dm_mqueue.o \
       dm_mqueue_util.o \
@@ -396,15 +405,15 @@ OBJ = dm_ansi.o \
 all:
 	@echo "Select one of the following build targets:"
 	@echo
-	@echo "    freebsd         - FreeBSD release build."
-	@echo "    freebsd_debug   - FreeBSD debug build."
-	@echo "    freebsd_release - FreeBSD release build."
+	@echo "    freebsd         - FreeBSD release build (x86-64, aarch64)."
+	@echo "    freebsd_debug   - FreeBSD debug build (x86-64, aarch64)."
+	@echo "    freebsd_release - FreeBSD release build (x86-64, aarch64)."
 	@echo "    linux           - Linux release build (x86-64)."
 	@echo "    linux_aarch64   - Linux release build (aarch64)."
 	@echo "    linux_debug     - Linux debug build (x86-64)."
 	@echo "    linux_release   - Linux release build (x86-64)."
 	@echo
-
+	@echo "For an overview of all available targets, select target <help>."
 
 build: $(TARGET) $(SHARED) test app
 
@@ -418,10 +427,10 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
       dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml \
       dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
-      dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath dmtestpipe \
-      dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
-      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestz dmtestzlib \
-      dmtestzstd
+      dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
+      dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring \
+      dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid \
+      dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -483,6 +492,10 @@ $(LIBFCURL): setup
 $(LIBFLUA54): setup
 	cd vendor/fortran-lua54/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
 	cp ./vendor/fortran-lua54/*.mod $(INCDIR)/
+
+$(LIBFMODBUS): setup
+	cd vendor/fortran-modbus/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
+	cp ./vendor/fortran-modbus/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
@@ -598,6 +611,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -681,6 +695,9 @@ dmtestjson: test/dmtestjson.f90 $(TARGET)
 dmtestmail: test/dmtestmail.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmail test/dmtestmail.f90 $(TARGET) $(LIBCURL) $(LDLIBS)
 
+dmtestmodbus: test/dmtestmodbus.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmodbus test/dmtestmodbus.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
+
 dmtestmqtt: test/dmtestmqtt.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmqtt test/dmtestmqtt.f90 $(TARGET) $(LIBCURL) $(LDLIBS)
 
@@ -731,6 +748,9 @@ dmtestutil: test/dmtestutil.f90 $(TARGET)
 
 dmtestuuid: test/dmtestuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid test/dmtestuuid.f90 $(TARGET) $(LDLIBS)
+
+dmtestversion: test/dmtestversion.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestversion test/dmtestversion.f90 $(TARGET) $(LDLIBS)
 
 dmtestz: test/dmtestz.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestz test/dmtestz.f90 $(TARGET) $(LIBZ) $(LDLIBS)
@@ -1021,6 +1041,9 @@ purge: clean
 	@echo "--- Cleaning fortran-lua54 ..."
 	cd vendor/fortran-lua54/ && make clean TARGET="../../$(LIBFLUA54)"
 	@echo
+	@echo "--- Cleaning fortran-modbus ..."
+	cd vendor/fortran-modbus/ && make clean TARGET="../../$(LIBFMODBUS)"
+	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
 	cd vendor/fortran-pcre2/ && make clean TARGET="../../$(LIBFPCRE2)"
 	@echo
@@ -1111,9 +1134,9 @@ help:
 	@echo "    clean           - Clean DMPACK build environment."
 	@echo "    deinstall       - Deinstall DMPACK from PREFIX."
 	@echo "    doc             - Create source code documentation (requires FORD)."
-	@echo "    freebsd         - Build FreeBSD release version."
-	@echo "    freebsd_debug   - Build FreeBSD debug version."
-	@echo "    freebsd_release - Build FreeBSD release version."
+	@echo "    freebsd         - Build FreeBSD release version (x86-64, aarch64)."
+	@echo "    freebsd_debug   - Build FreeBSD debug version (x86-64, aarch64)."
+	@echo "    freebsd_release - Build FreeBSD release version (x86-64, aarch64)."
 	@echo "    guide           - Convert User Guide to HTML (requires AsciiDoctor)."
 	@echo "    help            - Show this help."
 	@echo "    html            - Convert man pages to HTML (requires mandoc)."

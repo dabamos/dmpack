@@ -188,6 +188,7 @@ contains
             rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ZSTD = '           // dm_itoa(E_ZSTD));           if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_MODBUS = '         // dm_itoa(E_MODBUS));         if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.

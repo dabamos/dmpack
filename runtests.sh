@@ -36,10 +36,10 @@
 #
 TESTS="dmtestapi dmtestascii dmtestbase64 dmtestcgi dmtestconfig dmtestcsv \
 dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
-dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmqueue \
-dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
+dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus \
+dmtestmqueue dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \
 dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread dmtesttime dmtesttty \
-dmtestunit dmtestutil dmtestuuid dmtestz dmtestzlib dmtestzstd"
+dmtestunit dmtestutil dmtestuuid dmtestversion dmtestz dmtestzlib dmtestzstd"
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0
 

@@ -71,6 +71,7 @@ module dmpack
     use :: dm_lua_lib
     use :: dm_mail
     use :: dm_mime
+    use :: dm_modbus
     use :: dm_mqtt
     use :: dm_mqueue
     use :: dm_mqueue_util

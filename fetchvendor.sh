@@ -6,6 +6,7 @@
 #
 # * fortran-curl
 # * fortran-lua54
+# * fortran-modbus
 # * fortran-pcre2
 # * fortran-sqlite3
 # * fortran-unix
@@ -19,7 +20,7 @@ set -e
 VENDOR=${1-"./vendor"}
 CURL=curl
 UNZIP=unzip
-LIBS="curl lua54 pcre2 sqlite3 unix zlib zstd"
+LIBS="curl lua54 modbus pcre2 sqlite3 unix zlib zstd"
 
 echo "Creating ${VENDOR} ..."
 mkdir -p ${VENDOR}

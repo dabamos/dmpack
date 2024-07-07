@@ -2,7 +2,7 @@
 
 ![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-![Version](https://img.shields.io/badge/version-0.9.5-blue)
+![Version](https://img.shields.io/badge/version-0.9.6-blue)
 
 DMPACK is a free and open-source software package for IoT-based automatic
 deformation monitoring and distributed control measurements in engineering
@@ -51,7 +51,7 @@ semaphores.
 
 DMPACK includes modules for:
 
-* sensor control (RS-232/422/485, 1-Wire, file system, sub-process)
+* sensor control (RS-232/422/485, 1-Wire, Modbus RTU/TCP, file system, sub-process)
 * SQLite database access
 * message passing via POSIX message queues
 * inter-process communication via POSIX semaphores
@@ -71,7 +71,6 @@ DMPACK includes modules for:
 * compression (deflate, zstd)
 * regular expression matching
 * configuration file evaluation
-* command-line argument parsing
 
 ## Requirements
 
@@ -79,7 +78,7 @@ DMPACK has the following requirements:
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler (GCC, Intel oneAPI)
+* Fortran 2018 and ANSI C compiler (GNU, Intel)
 
 Third-party dependencies have to be present to build and run the software of
 this package:
@@ -89,6 +88,7 @@ this package:
 * HDF5
 * LAPACK
 * libcurl
+* libmodbus
 * Lua 5.4
 * PCRE2
 * SQLite 3
@@ -183,6 +183,7 @@ containing the DMPACK module files is passed through argument `-I`.
 | `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`              |
 | `dm_lua_geocom` | Lua 5.4             | `pkg-config --libs lua-5.4`              |
 | `dm_mail`       | libcurl             | `pkg-config --libs libcurl`              |
+| `dm_modbus`     | libmodbus           | `pkg-config --libs libmodbus`            |
 | `dm_mqtt`       | libcurl             | `pkg-config --libs libcurl`              |
 | `dm_mqueue`     | POSIX               | `-lrt`                                   |
 | `dm_mutex`      | POSIX               | `-lpthread`                              |

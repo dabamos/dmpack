@@ -30,15 +30,15 @@ jobs:
     - name: Install Packages
       if: contains(matrix.os, 'ubuntu')
       run: |
-        sudo apt update
+        sudo apt-get update
         sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} make pkg-config
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
         sudo apt-get install -y --no-install-recommends libblas-dev liblapack-dev \
           curl libcurl4t64 libcurl4-openssl-dev libfcgi-bin libfcgi-dev gnuplot-nox \
-          libhdf5-103-1t64 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libpcre2-8-0 \
-          libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev zlib1g zlib1g-dev \
-          libzstd1 libzstd-dev
+          libhdf5-103-1t64 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev libmodbus5 \
+          libmodbus-dev libpcre2-8-0 libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev \
+          zlib1g zlib1g-dev libzstd1 libzstd-dev
 
     - name: Configure System
       if: contains(matrix.os, 'ubuntu')

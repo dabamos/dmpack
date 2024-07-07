@@ -1,5 +1,5 @@
 name        = "dmpack"
-version     = "0.9.5"
+version     = "0.9.6"
 license     = "ISC"
 author      = "Philipp Engel"
 maintainer  = "@interkosmos"
@@ -15,6 +15,7 @@ library = true
 
 [dependencies]
 fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
+fortran-modbus  = { git = "https://github.com/interkosmos/fortran-modbus.git" }
 fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
 fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
@@ -233,6 +234,11 @@ main = "dmtestmail.f90"
 link = [ "curl" ]
 
 [[test]]
+name = "dmtestmodbus"
+main = "dmtestmodbus.f90"
+link = [ "modbus" ]
+
+[[test]]
 name = "dmtestmqtt"
 main = "dmtestmqtt.f90"
 link = [ "curl" ]
@@ -304,6 +310,10 @@ main = "dmtestutil.f90"
 [[test]]
 name = "dmtestuuid"
 main = "dmtestuuid.f90"
+
+[[test]]
+name = "dmtestversion"
+main = "dmtestversion.f90"
 
 [[test]]
 name = "dmtestz"
