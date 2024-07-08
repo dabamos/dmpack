@@ -225,6 +225,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_block.f90 \
       $(SRCDIR)/dm_cgi.f90 \
       $(SRCDIR)/dm_cgi_router.f90 \
+      $(SRCDIR)/dm_compat.f90 \
       $(SRCDIR)/dm_config.f90 \
       $(SRCDIR)/dm_const.f90 \
       $(SRCDIR)/dm_csv.f90 \
@@ -313,6 +314,7 @@ OBJ = dm_ansi.o \
       dm_block.o \
       dm_cgi.o \
       dm_cgi_router.o \
+      dm_compat.o \
       dm_config.o \
       dm_const.o \
       dm_csv.o \
@@ -424,13 +426,13 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestconfig \
-      dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml \
-      dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
-      dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv dmtestpath \
-      dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring \
-      dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid \
-      dmtestversion dmtestz dmtestzlib dmtestzstd
+test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestcompat \
+      dmtestconfig dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
+      dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson \
+      dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
+      dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
+      dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
+      dmtestuuid dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -530,6 +532,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_version.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_kind.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_compat.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
@@ -649,6 +652,9 @@ dmtestbase64: test/dmtestbase64.f90 $(TARGET)
 
 dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcgi test/dmtestcgi.f90 $(TARGET) $(LDLIBS)
+
+dmtestcompat: test/dmtestcompat.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcompat test/dmtestcompat.f90 $(TARGET) $(LDLIBS)
 
 dmtestconfig: test/dmtestconfig.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LIBLUA54) $(LDLIBS)

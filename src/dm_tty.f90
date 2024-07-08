@@ -224,7 +224,7 @@ contains
 
         type(tty_type),   intent(inout)        :: tty       !! TTY type.
         character(len=*), intent(in), optional :: path      !! Device path.
-        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B_*`).
+        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B*`).
         integer,          intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
         integer,          intent(in), optional :: parity    !! Parity enumerator (`TTY_PARITY_*`).
         integer,          intent(in), optional :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
@@ -298,10 +298,10 @@ contains
         select case (dm_lower(name))
             case ('none')
                 parity = TTY_PARITY_NONE
-            case ('even')
-                parity = TTY_PARITY_EVEN
             case ('odd')
                 parity = TTY_PARITY_ODD
+            case ('even')
+                parity = TTY_PARITY_EVEN
             case default
                 return
         end select
@@ -402,7 +402,7 @@ contains
         !! * `E_SYSTEM` if system calls failed.
         !!
         use :: unix
-        use :: dm_util
+        use :: dm_compat
 
         type(tty_type), intent(inout) :: tty !! TTY type.
 
@@ -444,10 +444,10 @@ contains
         select case (tty%parity)
             case (TTY_PARITY_NONE)
                 parity = 0
-            case (TTY_PARITY_EVEN)
-                parity = PARENB
             case (TTY_PARITY_ODD)
                 parity = ior(PARENB, PARODD)
+            case (TTY_PARITY_EVEN)
+                parity = PARENB
             case default
                 return
         end select

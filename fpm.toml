@@ -169,6 +169,10 @@ name = "dmtestcgi"
 main = "dmtestcgi.f90"
 
 [[test]]
+name = "dmtestcompat"
+main = "dmtestcompat.f90"
+
+[[test]]
 name = "dmtestconfig"
 main = "dmtestconfig.f90"
 

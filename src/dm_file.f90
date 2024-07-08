@@ -101,7 +101,7 @@ contains
         !! Returns status of file at given path in `status`. The function
         !! returns `E_SYSTEM` on error.
         use :: unix
-        use :: dm_util, only: dm_to_signed
+        use :: dm_compat, only: dm_to_signed
 
         character(len=*),       intent(in)  :: path   !! File path.
         type(file_status_type), intent(out) :: status !! File status type.
