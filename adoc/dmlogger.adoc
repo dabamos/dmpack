@@ -30,14 +30,14 @@ If a minimum log level is selected, only logs of a level greater equal the
 minimum are stored in the database. Log messages with lower level are
 discarded.
 
-The IPC option enabled process synchronisation via POSIX semaphores. The
-semaphore value is incremented from 0 to 1 whenever a new log was received. The
-name of the semaphore equals the *dmlogger* name with leading `/`. Only a
-single process shall wait for the semaphore unless round-robin IPC is desired.
-This option may be used to synchronise incoming log messages automatically with
-a remote RPC API server. For example, pass the *dmlogger* name through
-command-line argument `--wait` to _dmsync(1)_. The log synchronisation is be
-trigged by incoming logs.
+The option `--ipc` enables process synchronisation via POSIX semaphores. The
+semaphore value is incremented from 0 to 1 whenever a new log has been
+delivered. The name of the semaphore equals the *dmlogger* name with leading
+`/`. Only a single process shall wait for the semaphore unless round-robin IPC
+is desired. This option may be used to synchronise incoming log messages
+automatically with a remote RPC API server. For example, pass the *dmlogger*
+name to _dmsync(1)_ through command-line argument `--wait`. The semaphore will
+then trigger the log synchronisation.
 
 == OPTIONS
 

@@ -402,12 +402,16 @@ contains
         integer, intent(out), optional :: error   !! Error code.
 
         integer :: rc, value_
+        logical :: verbose_
 
         rc = E_INVALID
         n  = 0
 
         value_ = -1
         if (present(value)) value_ = value
+
+        verbose_ = .false.
+        if (present(verbose)) verbose_ = verbose
 
         select case (type)
             case (GEOCOM_AUT_ADJMODE)
@@ -688,7 +692,7 @@ contains
         if (dm_is_error(rc) .and. present(default)) n = default
         if (present(error)) error = rc
 
-        if (.not. present(verbose)) return
+        if (.not. verbose_) return
         if (.not. dm_is_error(rc)) return
 
         if (type >= 1 .and. type <= GEOCOM_TYPE_LAST) then
