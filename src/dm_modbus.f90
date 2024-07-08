@@ -3,11 +3,8 @@
 module dm_modbus
     !! Abstraction layer over _libmodbus_, for Modbus RTU/TCP communication.
     !!
-    !! You may want to use functions available in module _dm_util_ to convert
-    !! unsigned and signed integers:
-    !!
-    !! * `dm_uint16_to_int32()`
-    !! * `dm_int32_to_uint16()`
+    !! You may want to use function `dm_to_signed()` available in module
+    !! `dm_compat` to convert unsigned to signed integers.
     !!
     !! Use Modbus function code `0x03` to read holding registers from a Modbus
     !! RTU connection:
@@ -20,23 +17,23 @@ module dm_modbus
     !! ! Create Modbus RTU context and connect to device 10.
     !! rc = dm_modbus_create(modbus    = modbus, &
     !!                       path      = '/dev/ttyUSB0', &
-    !!                       baud_rate = TTY_B115200, &
+    !!                       baud_rate = TTY_B19200, &
     !!                       byte_size = TTY_BYTE_SIZE8, &
-    !!                       parity    = TTY_PARITY_NONE, &
-    !!                       stop_bits = TTY_STOP_BITS2)
+    !!                       parity    = TTY_PARITY_EVEN, &
+    !!                       stop_bits = TTY_STOP_BITS1)
     !! rc = dm_modbus_connect(modbus)
     !! rc = dm_modbus_set_slave(modbus, slave=10)
     !!
     !! ! Read and output two registers.
-    !! rc = dm_modbus_read_registers(modbus, address=0, registers=regs)
+    !! rc = dm_modbus_read_registers(modbus, address=50, registers=regs)
     !!
     !! do i = 1, size(registers)
-    !!     s = dm_uint16_to_int32(regs(i))
+    !!     s = dm_to_signed(regs(i))
     !!     print '("regs(", i0, ") = ", i0, " (0x", z0, ")")', i, s, s
     !! end do
     !!
-    !! ! Print the two registers as float.
-    !! print '(f12.8)', dm_modbus_get_float(regs)
+    !! ! Print the two registers as real in ABCD byte order.
+    !! print '(f12.8)', dm_modbus_get_real_abcd(regs)
     !!
     !! ! Disconnect and clean-up.
     !! call dm_modbus_close(modbus)
@@ -53,6 +50,7 @@ module dm_modbus
     use :: modbus
     use :: modbus_rtu
     use :: modbus_tcp
+    use :: dm_compat
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
@@ -63,14 +61,22 @@ module dm_modbus
     integer, parameter, public :: MODBUS_MODE_RTU  = 1 !! Modbus RTU (Remote Terminal Unit).
     integer, parameter, public :: MODBUS_MODE_TCP  = 2 !! Modbus TCP (Transmission Control Protocol).
 
-    integer, parameter :: FALSE = 1
-    integer, parameter :: TRUE  = 1
+    ! Byte orders of 32-bit real values.
+    integer, parameter, public :: MODBUS_REAL_ABCD = 0 !! ABCD byte order.
+    integer, parameter, public :: MODBUS_REAL_BADC = 1 !! BADC byte order.
+    integer, parameter, public :: MODBUS_REAL_CDAB = 2 !! CDBA byte order.
+    integer, parameter, public :: MODBUS_REAL_DCBA = 3 !! DCBA byte order.
 
-    interface dm_modbus_create
-        !! Generic function to create Modbus RTU or TCP context.
-        module procedure :: dm_modbus_create_rtu
-        module procedure :: dm_modbus_create_tcp
-    end interface
+    character, parameter :: PARITY_NONE = 'N'
+    character, parameter :: PARITY_EVEN = 'E'
+    character, parameter :: PARITY_ODD  = 'O'
+
+    ! From module `modbus_rtu`.
+    public :: MODBUS_RTU_RS232
+    public :: MODBUS_RTU_RS485
+    public :: MODBUS_RTU_RTS_NONE
+    public :: MODBUS_RTU_RTS_UP
+    public :: MODBUS_RTU_RTS_DOWN
 
     type, public :: modbus_type
         !! Opaque Modbus RTU/TCP context type.
@@ -79,18 +85,22 @@ module dm_modbus
         type(c_ptr) :: ctx  = c_null_ptr       !! C-pointer to Modbus context.
     end type modbus_type
 
-    public :: MODBUS_RTU_RS232
-    public :: MODBUS_RTU_RS485
-    public :: MODBUS_RTU_RTS_NONE
-    public :: MODBUS_RTU_RTS_UP
-    public :: MODBUS_RTU_RTS_DOWN
+    interface dm_modbus_create
+        !! Generic function to create Modbus RTU or TCP context.
+        module procedure :: dm_modbus_create_rtu
+        module procedure :: dm_modbus_create_tcp
+    end interface
 
     public :: dm_modbus_close
     public :: dm_modbus_connect
     public :: dm_modbus_destroy
     public :: dm_modbus_error_message
     public :: dm_modbus_flush
-    public :: dm_modbus_get_float
+    public :: dm_modbus_get_real
+    public :: dm_modbus_get_real_abcd
+    public :: dm_modbus_get_real_badc
+    public :: dm_modbus_get_real_cdab
+    public :: dm_modbus_get_real_dcba
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
     public :: dm_modbus_mode
@@ -134,7 +144,7 @@ contains
 
         type(modbus_type), intent(out) :: modbus    !! Modbus type.
         character(len=*),  intent(in)  :: path      !! Device path.
-        integer,           intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B_*`).
+        integer,           intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B*`).
         integer,           intent(in)  :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
         integer,           intent(in)  :: parity    !! Parity enumerator (`TTY_PARITY_*`).
         integer,           intent(in)  :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
@@ -148,7 +158,7 @@ contains
         if (.not. dm_tty_valid_parity(parity))       return
         if (.not. dm_tty_valid_stop_bits(stop_bits)) return
 
-        ! Byte size (start bits).
+        ! Byte size: 5, 6, 7, 8 (start bits).
         select case (byte_size)
             case (TTY_BYTE_SIZE5)
                 byte_size_ = 5
@@ -160,22 +170,22 @@ contains
                 byte_size_ = 8
         end select
 
-        ! Stop bits.
+        ! Parity: none, odd, even.
+        select case (parity)
+            case (TTY_PARITY_NONE)
+                parity_ = PARITY_NONE
+            case (TTY_PARITY_ODD)
+                parity_ = PARITY_ODD
+            case (TTY_PARITY_EVEN)
+                parity_ = PARITY_EVEN
+        end select
+
+        ! Stop bits: 1, 2.
         select case (stop_bits)
             case (TTY_STOP_BITS1)
                 stop_bits_ = 1
             case (TTY_STOP_BITS2)
                 stop_bits_ = 2
-        end select
-
-        ! Parity.
-        select case (parity)
-            case (TTY_PARITY_NONE)
-                parity_ = 'N'
-            case (TTY_PARITY_EVEN)
-                parity_ = 'E'
-            case (TTY_PARITY_ODD)
-                parity_ = 'O'
         end select
 
         rc = E_MODBUS
@@ -237,12 +247,63 @@ contains
         rc = E_NONE
     end function dm_modbus_flush
 
-    real function dm_modbus_get_float(registers) result(value)
+    integer function dm_modbus_get_real(registers, byte_order, value) result(rc)
+        !! Returns real value from two registers of given byte order in argument
+        !! `value`. The argument byte order must be one of the following:
+        !!
+        !! * `MODBUS_REAL_ABCD`
+        !! * `MODBUS_REAL_BADC`
+        !! * `MODBUS_REAL_CDAB`
+        !! * `MODBUS_REAL_DCBA`
+        !!
+        !! The function returns `E_INVALID` on any other value.
+        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+        integer,          intent(in)    :: byte_order   !! Byte order.
+        real,             intent(out)   :: value        !! Returned real value.
+
+        rc = E_NONE
+
+        select case (byte_order)
+            case (MODBUS_REAL_ABCD)
+                value = modbus_get_float_abcd(registers)
+            case (MODBUS_REAL_BADC)
+                value = modbus_get_float_badc(registers)
+            case (MODBUS_REAL_CDAB)
+                value = modbus_get_float_cdab(registers)
+            case (MODBUS_REAL_DCBA)
+                value = modbus_get_float_dcba(registers)
+            case default
+                rc = E_INVALID
+        end select
+    end function dm_modbus_get_real
+
+    real function dm_modbus_get_real_abcd(registers) result(value)
+        !! Returns real value from two registers in ABCD byte order.
+        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+
+        value = modbus_get_float_abcd(registers)
+    end function dm_modbus_get_real_abcd
+
+    real function dm_modbus_get_real_badc(registers) result(value)
+        !! Returns real value from two registers in BADC byte order.
+        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+
+        value = modbus_get_float_badc(registers)
+    end function dm_modbus_get_real_badc
+
+    real function dm_modbus_get_real_cdab(registers) result(value)
+        !! Returns real value from two registers in CDAB byte order.
+        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+
+        value = modbus_get_float_cdab(registers)
+    end function dm_modbus_get_real_cdab
+
+    real function dm_modbus_get_real_dcba(registers) result(value)
         !! Returns real value from two registers in DCBA byte order.
         integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
 
         value = modbus_get_float_dcba(registers)
-    end function dm_modbus_get_float
+    end function dm_modbus_get_real_dcba
 
     integer function dm_modbus_get_serial_mode(modbus, mode) result(rc)
         !! Gets the current Modbus RTU serial mode (RS-232 or RS-485).
@@ -341,13 +402,12 @@ contains
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         logical,           intent(in)    :: debug  !! Enable debug mode.
 
-        integer :: d
+        integer :: debug_
 
-        d = FALSE
-        if (debug) d = TRUE
+        debug_ = dm_f_c_logical(debug)
 
         rc = E_MODBUS
-        if (modbus_set_debug(modbus%ctx, d) == -1) return
+        if (modbus_set_debug(modbus%ctx, debug_) == -1) return
 
         rc = E_NONE
     end function dm_modbus_set_debug

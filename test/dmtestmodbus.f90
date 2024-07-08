@@ -59,8 +59,8 @@ contains
         stat = TEST_FAILED
         regs = 0_u2
 
-        print *, 'Converting registers to float ...'
-        r = dm_modbus_get_float(regs)
+        print *, 'Converting registers to real ...'
+        r = dm_modbus_get_real_abcd(regs)
         print '(" Value: ", f5.3)', r
         if (.not. dm_equals(r, 0.0)) return
 
