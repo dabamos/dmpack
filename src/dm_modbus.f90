@@ -4,7 +4,7 @@ module dm_modbus
     !! Abstraction layer over _libmodbus_, for Modbus RTU/TCP communication.
     !!
     !! You may want to use function `dm_to_signed()` available in module
-    !! `dm_compat` to convert unsigned to signed integers.
+    !! `dm_c` to convert unsigned to signed integers.
     !!
     !! Use Modbus function code `0x03` to read holding registers from a Modbus
     !! RTU connection:
@@ -50,7 +50,7 @@ module dm_modbus
     use :: modbus
     use :: modbus_rtu
     use :: modbus_tcp
-    use :: dm_compat
+    use :: dm_c
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)

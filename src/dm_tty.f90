@@ -402,7 +402,7 @@ contains
         !! * `E_SYSTEM` if system calls failed.
         !!
         use :: unix
-        use :: dm_compat
+        use :: dm_c
 
         type(tty_type), intent(inout) :: tty !! TTY type.
 

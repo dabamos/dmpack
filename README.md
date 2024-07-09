@@ -51,10 +51,10 @@ semaphores.
 
 DMPACK includes modules for:
 
-* sensor control (RS-232/422/485, 1-Wire, Modbus RTU/TCP, file system, sub-process)
+* sensor control (RS-232/422/485, Modbus RTU/TCP, 1-Wire, sub-process, file system)
 * SQLite database access
 * message passing via POSIX message queues
-* inter-process communication via POSIX semaphores
+* process synchronisation via POSIX semaphores
 * data serialisation (ASCII, CSV, JSON, JSON Lines, HDF5, Fortran 95 Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-RPC API for remote procedure calls

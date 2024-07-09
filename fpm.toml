@@ -165,12 +165,12 @@ name = "dmtestbase64"
 main = "dmtestbase64.f90"
 
 [[test]]
-name = "dmtestcgi"
-main = "dmtestcgi.f90"
+name = "dmtestc"
+main = "dmtestc.f90"
 
 [[test]]
-name = "dmtestcompat"
-main = "dmtestcompat.f90"
+name = "dmtestcgi"
+main = "dmtestcgi.f90"
 
 [[test]]
 name = "dmtestconfig"

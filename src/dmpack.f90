@@ -35,9 +35,9 @@ module dmpack
     use :: dm_base64
     use :: dm_beat
     use :: dm_block
+    use :: dm_c
     use :: dm_cgi
     use :: dm_cgi_router
-    use :: dm_compat
     use :: dm_config
     use :: dm_const
     use :: dm_csv

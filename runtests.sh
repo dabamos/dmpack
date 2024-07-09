@@ -34,7 +34,7 @@
 #
 #   export DM_PIPE_SKIP=1
 #
-TESTS="dmtestapi dmtestascii dmtestbase64 dmtestcgi dmtestcompat dmtestconfig \
+TESTS="dmtestapi dmtestascii dmtestbase64 dmtestc dmtestcgi dmtestconfig \
 dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 dmtesthtml dmtestid \
 dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus \
 dmtestmqueue dmtestmqtt dmtestnml dmtestobserv dmtestpath dmtestpipe dmtestplot \

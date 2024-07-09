@@ -2,12 +2,12 @@
 .\"     Title: dmserial
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-04-23
+.\"      Date: 2024-07-08
 .\"    Manual: User Commands
 .\"    Source: DMSERIAL
 .\"  Language: English
 .\"
-.TH "DMSERIAL" "1" "2024-04-23" "DMSERIAL" "User Commands"
+.TH "DMSERIAL" "1" "2024-07-08" "DMSERIAL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmserial \- reads observations from TTY/PTY
 \fBdmserial\fP \-\-version
 .sp
 \fBdmserial\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBtty\fP \fIpath\fP] [\-\-\fBbaudrate\fP \fIn\fP] [\-\-\fBbytesize\fP \fIn\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBpath\fP \fIpath\fP] [\-\-\fBbaudrate\fP \fIn\fP] [\-\-\fBbytesize\fP \fIn\fP]
 [\-\-\fBstopbits\fP \fIn\fP] [\-\-\fBparity\fP \fIname\fP] [\-\-\fBtimeout\fP \fIn\fP] [\-\-\fBformat\fP \fIname\fP]
 [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBdtr\fP] [\-\-\fBrts\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
@@ -144,9 +144,9 @@ Number of stop bits (1, 2).
 Connection timeout in seconds.
 .RE
 .sp
-\fB\-\-tty\fP, \fB\-Y\fP \fIpath\fP
+\fB\-\-path\fP, \fB\-p\fP \fIpath\fP
 .RS 4
-Path to TTY/PTY device (for example, \f(CR/dev/ttyU0\fP).
+Path to TTY/PTY device (for example, \f(CR/dev/ttyUSB0\fP).
 .RE
 .sp
 \fB\-\-verbose\fP, \fB\-V\fP

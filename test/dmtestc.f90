@@ -1,13 +1,13 @@
-! dmtestcompat.f90
+! dmtestc.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestcompat
+program dmtestc
     !! Test program for C interoperability.
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestcompat'
+    character(len=*), parameter :: TEST_NAME = 'dmtestc'
     integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
@@ -31,4 +31,4 @@ contains
 
         stat = TEST_PASSED
     end function test01
-end program dmtestcompat
+end program dmtestc

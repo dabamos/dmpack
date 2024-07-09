@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_compat
+module dm_c
     !! Utility procedures for C interoperability.
     use, intrinsic :: iso_c_binding
     use :: dm_kind
@@ -101,4 +101,4 @@ contains
             s = 4294967296_i8 + int(u, kind=i8)
         end if
     end function dm_uint32_to_int64
-end module dm_compat
+end module dm_c

@@ -30,7 +30,7 @@ program dmserial
         integer                            :: output_type = OUTPUT_NONE !! Output type.
         character(len=FORMAT_NAME_LEN)     :: format_name = ' '         !! Output format name.
         integer                            :: format      = FORMAT_NONE !! Output format.
-        character(len=FILE_PATH_LEN)       :: tty         = ' '         !! Path of TTY/PTY device (required).
+        character(len=FILE_PATH_LEN)       :: path        = ' '         !! Path of TTY/PTY device (required).
         integer                            :: baud_rate   = 9600        !! Baud rate (required).
         integer                            :: byte_size   = 8           !! Byte size (required).
         character(len=TTY_PARITY_NAME_LEN) :: parity      = 'none'      !! Parity name (required).
@@ -58,7 +58,7 @@ program dmserial
 
     ! Create TTY type.
     rc = create_tty(tty       = tty, &
-                    path      = app%tty, &
+                    path      = app%path, &
                     baud_rate = app%baud_rate, &
                     byte_size = app%byte_size, &
                     parity    = app%parity, &
@@ -176,9 +176,9 @@ contains
             arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
             arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
-            arg_type('tty',      short='Y', type=ARG_TYPE_STRING),  & ! -T, --tty <string>
             arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <string>
             arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
             arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER), & ! -B, --baudrate <n>
             arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER), & ! -Z, --bytesize <n>
             arg_type('parity',   short='P', type=ARG_TYPE_STRING),  & ! -P, --parity <string>
@@ -207,7 +207,7 @@ contains
         rc = dm_arg_get(args( 5), app%sensor)
         rc = dm_arg_get(args( 6), app%output)
         rc = dm_arg_get(args( 7), app%format_name)
-        rc = dm_arg_get(args( 8), app%tty)
+        rc = dm_arg_get(args( 8), app%path)
         rc = dm_arg_get(args( 9), app%baud_rate)
         rc = dm_arg_get(args(10), app%byte_size)
         rc = dm_arg_get(args(11), app%parity)
@@ -259,8 +259,8 @@ contains
         ! TTY options.
         rc = E_NOT_FOUND
 
-        if (.not. dm_file_exists(app%tty)) then
-            call dm_error_out(rc, 'TTY ' // trim(app%tty) // ' does not exist')
+        if (.not. dm_file_exists(app%path)) then
+            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
             return
         end if
 
@@ -314,19 +314,19 @@ contains
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'baudrate', app%baud_rate)
-            rc = dm_config_get(config, 'bytesize', app%byte_size)
-            rc = dm_config_get(config, 'dtr',      app%dtr)
-            rc = dm_config_get(config, 'format',   app%format_name)
             rc = dm_config_get(config, 'logger',   app%logger)
             rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'output',   app%output)
-            rc = dm_config_get(config, 'parity',   app%parity)
-            rc = dm_config_get(config, 'rts',      app%rts)
             rc = dm_config_get(config, 'sensor',   app%sensor)
+            rc = dm_config_get(config, 'path',     app%path)
+            rc = dm_config_get(config, 'baudrate', app%baud_rate)
+            rc = dm_config_get(config, 'bytesize', app%byte_size)
+            rc = dm_config_get(config, 'parity',   app%parity)
             rc = dm_config_get(config, 'stopbits', app%stop_bits)
             rc = dm_config_get(config, 'timeout',  app%timeout)
-            rc = dm_config_get(config, 'tty',      app%tty)
+            rc = dm_config_get(config, 'dtr',      app%dtr)
+            rc = dm_config_get(config, 'rts',      app%rts)
+            rc = dm_config_get(config, 'output',   app%output)
+            rc = dm_config_get(config, 'format',   app%format_name)
             rc = dm_config_get(config, 'debug',    app%debug)
             rc = dm_config_get(config, 'verbose',  app%verbose)
 
@@ -394,7 +394,7 @@ contains
             if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
 
             if (debug_) then
-                call logger%debug('sending request to TTY ' // trim(app%tty) // ': ' // request%request, &
+                call logger%debug('sending request to TTY ' // trim(app%path) // ': ' // request%request, &
                                   observ=observ, escape=.false.)
             end if
 
@@ -404,7 +404,7 @@ contains
             if (dm_is_error(rc)) then
                 request%error = rc
                 call logger%error('failed to write ' // request_name_string(request%name, i) // ' to TTY ' // &
-                                  app%tty, observ=observ, error=rc)
+                                  app%path, observ=observ, error=rc)
                 cycle req_loop
             end if
 
@@ -420,12 +420,12 @@ contains
             if (dm_is_error(rc)) then
                 request%error = rc
                 call logger%error('failed to read response of ' // request_name_string(request%name, i) // &
-                                  ' from TTY ' // app%tty, observ=observ, error=rc)
+                                  ' from TTY ' // app%path, observ=observ, error=rc)
                 cycle req_loop
             end if
 
             if (debug_) then
-                call logger%debug('received response from TTY ' // trim(app%tty) // ': ' // &
+                call logger%debug('received response from TTY ' // trim(app%path) // ': ' // &
                                   request%response, observ=observ, escape=.false.)
             end if
 
@@ -507,14 +507,14 @@ contains
         call logger%info('started ' // app%name)
 
         ! Try to open TTY/PTY.
-        call logger%debug('opening TTY '  // trim(app%tty) // ' to sensor ' // trim(app%sensor) // &
+        call logger%debug('opening TTY '  // trim(app%path) // ' to sensor ' // trim(app%sensor) // &
                           ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
                           dm_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
-            call logger%error('failed to open TTY ' // trim(app%tty) // ', next attempt in 5 sec', error=rc)
+            call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 5 sec', error=rc)
             call dm_sleep(5) ! Wait grace period.
         end do
 
@@ -572,7 +572,7 @@ contains
         end do job_loop
 
         if (dm_tty_connected(tty)) then
-            call logger%debug('closing TTY ' // app%tty)
+            call logger%debug('closing TTY ' // app%path)
             call dm_tty_close(tty)
         end if
 

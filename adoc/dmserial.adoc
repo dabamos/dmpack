@@ -16,7 +16,7 @@ dmserial - reads observations from TTY/PTY
 *dmserial* --version
 
 *dmserial* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*tty* _path_] [--*baudrate* _n_] [--*bytesize* _n_]
+[--*logger* _name_] [--*path* _path_] [--*baudrate* _n_] [--*bytesize* _n_]
 [--*stopbits* _n_] [--*parity* _name_] [--*timeout* _n_] [--*format* _name_]
 [--*output* _file_] [--*dtr*] [--*rts*] [--*debug*] [--*verbose*]
 
@@ -94,8 +94,8 @@ GeoCOM API functions.
 *--timeout*, *-T* _n_::
   Connection timeout in seconds.
 
-*--tty*, *-Y* _path_::
-  Path to TTY/PTY device (for example, `/dev/ttyU0`).
+*--path*, *-p* _path_::
+  Path to TTY/PTY device (for example, `/dev/ttyUSB0`).
 
 *--verbose*, *-V*::
   Print log messages to _stderr_.

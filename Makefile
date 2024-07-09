@@ -223,9 +223,9 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_base64.f90 \
       $(SRCDIR)/dm_beat.f90 \
       $(SRCDIR)/dm_block.f90 \
+      $(SRCDIR)/dm_c.f90 \
       $(SRCDIR)/dm_cgi.f90 \
       $(SRCDIR)/dm_cgi_router.f90 \
-      $(SRCDIR)/dm_compat.f90 \
       $(SRCDIR)/dm_config.f90 \
       $(SRCDIR)/dm_const.f90 \
       $(SRCDIR)/dm_csv.f90 \
@@ -312,9 +312,9 @@ OBJ = dm_ansi.o \
       dm_base64.o \
       dm_beat.o \
       dm_block.o \
+      dm_c.o \
       dm_cgi.o \
       dm_cgi_router.o \
-      dm_compat.o \
       dm_config.o \
       dm_const.o \
       dm_csv.o \
@@ -409,11 +409,9 @@ all:
 	@echo
 	@echo "    freebsd         - FreeBSD release build (x86-64, aarch64)."
 	@echo "    freebsd_debug   - FreeBSD debug build (x86-64, aarch64)."
-	@echo "    freebsd_release - FreeBSD release build (x86-64, aarch64)."
 	@echo "    linux           - Linux release build (x86-64)."
 	@echo "    linux_aarch64   - Linux release build (aarch64)."
 	@echo "    linux_debug     - Linux debug build (x86-64)."
-	@echo "    linux_release   - Linux release build (x86-64)."
 	@echo
 	@echo "For an overview of all available targets, select target <help>."
 
@@ -426,7 +424,7 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMUUID) $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestcgi dmtestcompat \
+test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
       dmtestconfig dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
       dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson \
       dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
@@ -532,7 +530,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_version.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_kind.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_compat.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_c.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
@@ -650,11 +648,11 @@ dmtestatom: test/dmtestatom.f90 $(TARGET)
 dmtestbase64: test/dmtestbase64.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestbase64 test/dmtestbase64.f90 $(TARGET) $(LDLIBS)
 
+dmtestc: test/dmtestc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestc test/dmtestc.f90 $(TARGET) $(LDLIBS)
+
 dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcgi test/dmtestcgi.f90 $(TARGET) $(LDLIBS)
-
-dmtestcompat: test/dmtestcompat.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcompat test/dmtestcompat.f90 $(TARGET) $(LDLIBS)
 
 dmtestconfig: test/dmtestconfig.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LIBLUA54) $(LDLIBS)
