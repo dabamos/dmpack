@@ -67,7 +67,7 @@ for testing.
   RPC API password. Be aware that passing the credentials via command-line
   arguments is insecure and only recommended for testing.
 
-*--port*, *-p* _port_::
+*--port*, *-q* _port_::
   Port of RPC API server. The default is 0 (automatic selection depending on
   protocol).
 

@@ -84,7 +84,7 @@ contains
             arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
             arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',     short='p', type=ARG_TYPE_INTEGER), & ! -p, --port <n>
+            arg_type('port',     short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
             arg_type('tls',      short='X', type=ARG_TYPE_LOGICAL), & ! -X, --tls
             arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
             arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>

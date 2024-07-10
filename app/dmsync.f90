@@ -131,7 +131,7 @@ contains
             arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
             arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type log|observ
             arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',     short='p', type=ARG_TYPE_INTEGER), & ! -p, --port <n>
+            arg_type('port',     short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
             arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
             arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
