@@ -62,6 +62,7 @@ module dm_error
     integer, parameter, public :: E_DB_BACKUP      =  44 !! Backup error.
     integer, parameter, public :: E_DB_ATTACH      =  45 !! Attach failed.
     integer, parameter, public :: E_DB_DETACH      =  46 !! Detach error.
+    integer, parameter, public :: E_DB_VERSION     =  47 !! Incompatible version.
 
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
@@ -236,6 +237,8 @@ contains
                 message = 'database attach failed'
             case (E_DB_DETACH)
                 message = 'database detach failed'
+            case (E_DB_VERSION)
+                message = 'database version incompatible'
 
             ! Options.
             case (E_ARG)

@@ -70,6 +70,7 @@ module dm_db
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
+    integer, parameter, public :: DB_USER_VERSION    = 1              !! Database schema version, increased on updates.
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     ! Private parameters.
@@ -2163,6 +2164,7 @@ contains
         !! * `E_DB_ID` if the database has a wrong application id.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_DB_VERSION` if the user version is incompatible.
         !! * `E_INVALID` if database is already opened.
         !! * `E_NOT_FOUND` if database has not been found.
         !!
@@ -2242,6 +2244,10 @@ contains
             rc = dm_db_set_application_id(db, DB_APPLICATION_ID)
             if (dm_is_error(rc)) return
 
+            ! Set database version.
+            rc = dm_db_set_user_version(db, DB_USER_VERSION)
+            if (dm_is_error(rc)) return
+
             ! Enable WAL mode.
             if (wal_) then
                 rc = dm_db_set_journal_mode(db, DB_JOURNAL_WAL)
@@ -2255,7 +2261,7 @@ contains
             if (dm_is_error(rc)) return
         end if
 
-        ! Validate the application id of the database.
+        ! Validate the application id and the user version of the database.
         if (validate_) then
             rc = dm_db_valid(db)
             if (dm_is_error(rc)) return
@@ -4158,9 +4164,9 @@ contains
     end function dm_db_vacuum
 
     integer function dm_db_valid(db) result(rc)
-        !! Returns error code `E_NONE` if the application id of the database
-        !! matches the constant `DB_APPLICATION_ID`, else `E_DB_ID` or any
-        !! database error that has occured.
+        !! Validates an opened DMPACK database. The application id must match
+        !! the constant `DB_APPLICATION_ID`, and the user version must be equal
+        !! to `DB_USER_VERSION`.
         !!
         !! The function returns the following error codes:
         !!
@@ -4168,15 +4174,24 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
+        !! * `E_DB_VERSION` if the user version is incompatible.
         !!
         type(db_type), intent(inout) :: db !! Database type.
 
-        integer :: id
+        integer :: id, user_version
 
         rc = dm_db_get_application_id(db, id)
         if (dm_is_error(rc)) return
+
         rc = E_DB_ID
         if (id /= DB_APPLICATION_ID) return
+
+        rc = dm_db_get_user_version(db, user_version)
+        if (dm_is_error(rc)) return
+
+        rc = E_DB_VERSION
+        if (user_version /= DB_USER_VERSION) return
+
         rc = E_NONE
     end function dm_db_valid
 

@@ -140,6 +140,7 @@ contains
             rc = dm_lua_eval(lua, 'E_DB_BACKUP = '      // dm_itoa(E_DB_BACKUP));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_ATTACH = '      // dm_itoa(E_DB_ATTACH));      if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_DB_DETACH = '      // dm_itoa(E_DB_DETACH));      if (dm_is_error(rc)) return
+            rc = dm_lua_eval(lua, 'E_DB_VERSION = '     // dm_itoa(E_DB_VERSION));     if (dm_is_error(rc)) return
 
             rc = dm_lua_eval(lua, 'E_ARG = '            // dm_itoa(E_ARG));            if (dm_is_error(rc)) return
             rc = dm_lua_eval(lua, 'E_ARG_NOT_FOUND = '  // dm_itoa(E_ARG_NOT_FOUND));  if (dm_is_error(rc)) return
