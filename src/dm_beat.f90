@@ -15,14 +15,14 @@ module dm_beat
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
-        character(len=NODE_ID_LEN)      :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
-        character(len=BEAT_ADDR_LEN)    :: address   = ' '          !! Client IP address (IPv4, IPv6).
-        character(len=BEAT_CLIENT_LEN)  :: client    = ' '          !! Client software name and version.
-        character(len=TIME_LEN)         :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
-        character(len=TIME_LEN)         :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
-        integer                         :: error     = E_NONE       !! Last client error.
-        integer                         :: interval  = 0            !! Transmission interval in seconds.
-        integer                         :: uptime    = 0            !! System uptime in seconds.
+        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
+        character(len=BEAT_ADDR_LEN)   :: address   = ' '          !! Client IP address (IPv4, IPv6).
+        character(len=BEAT_CLIENT_LEN) :: client    = ' '          !! Client software name and version.
+        character(len=TIME_LEN)        :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
+        character(len=TIME_LEN)        :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
+        integer                        :: error     = E_NONE       !! Last client error.
+        integer                        :: interval  = 0            !! Transmission interval in seconds.
+        integer                        :: uptime    = 0            !! System uptime in seconds.
     end type beat_type
 
     integer, parameter, public :: BEAT_SIZE = storage_size(beat_type()) / 8 !! Size of `beat_type` in bytes.

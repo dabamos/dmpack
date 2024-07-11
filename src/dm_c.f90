@@ -34,16 +34,18 @@ contains
         !! Converts C logical value to Fortran representation.
         integer(kind=c_int), intent(in) :: c
 
-        f = .false.
-        if (c /= 0) f = .true.
+        f = (c /= 0)
     end function dm_c_f_logical
 
     pure elemental integer(kind=c_int) function dm_f_c_logical(f) result(c)
         !! Converts Fortran logical value to C representation.
         logical, intent(in) :: f
 
-        c = 0
-        if (f) c = 1
+        if (f) then
+            c = 1
+        else
+            c = 0
+        end if
     end function dm_f_c_logical
 
     pure elemental function dm_int32_to_uint16(s) result(u)
