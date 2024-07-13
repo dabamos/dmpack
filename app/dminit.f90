@@ -4,23 +4,25 @@
 ! Licence: ISC
 program dminit
     !! Utility program that creates a beat, log, or observation database. No
-    !! action is performed if the specified database already exists. WAL mode
-    !! should be enabled for databases with multiple readers. A synchronisation
-    !! table is required for observation and log synchronisation with an DMPACK
-    !! server, and can be omitted otherwise. The program also sets the database
-    !! application id.
+    !! action is performed if the specified database already exists, unless
+    !! command-line argument `--force` is passed. WAL mode should be enabled
+    !! for databases with multiple readers. A synchronisation table is required
+    !! for observation and log synchronisation with an DMPACK server, and can
+    !! be omitted otherwise. The program also sets the database application id
+    !! and user version.
     use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dminit'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 2
 
     type :: app_type
         !! Command-line arguments.
         character(len=FILE_PATH_LEN) :: database = ' '       !! Path to database.
         integer                      :: type     = TYPE_NONE !! Type of database.
+        logical                      :: force    = .false.   !! Force creation.
         logical                      :: sync     = .false.   !! Sync flag.
         logical                      :: wal      = .false.   !! WAL flag.
     end type app_type
@@ -87,26 +89,28 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(len=TYPE_NAME_LEN) :: type
-        type(arg_type)               :: args(4)
+        type(arg_type)               :: args(5)
 
         rc = E_NONE
 
         args = [ &
             arg_type('type',     short='t', type=ARG_TYPE_STRING, required=.true.), & ! -t, --type [beat|log|observ]
             arg_type('database', short='d', type=ARG_TYPE_STRING, required=.true.), & ! -d, --database <path>
+            arg_type('force',    short='F', type=ARG_TYPE_LOGICAL),                 & ! -F, --force
             arg_type('sync',     short='Y', type=ARG_TYPE_LOGICAL),                 & ! -Y, --sync
             arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL)                  & ! -W, --wal
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
         ! Database type (observ, log, beat).
         rc = dm_arg_get(args(1), type)
         rc = dm_arg_get(args(2), app%database)
-        rc = dm_arg_get(args(3), app%sync)
-        rc = dm_arg_get(args(4), app%wal)
+        rc = dm_arg_get(args(3), app%force)
+        rc = dm_arg_get(args(4), app%sync)
+        rc = dm_arg_get(args(5), app%wal)
 
         ! Validate options.
         app%type = dm_type_from_name(type)
@@ -121,7 +125,7 @@ contains
         end select
 
         rc = E_EXIST
-        if (dm_file_exists(app%database)) then
+        if (.not. app%force .and. dm_file_exists(app%database)) then
             call dm_error_out(rc, 'database ' // trim(app%database) // ' exists')
             return
         end if

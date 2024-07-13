@@ -10,7 +10,7 @@ program dminfo
     character(len=*), parameter :: APP_NAME  = 'dminfo'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     type :: app_type
         !! Command-line arguments.
@@ -39,7 +39,7 @@ contains
             arg_type(name='database', short='d', type=ARG_TYPE_DB) & ! -d, --database <path>
         ]
 
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         rc = dm_arg_get(args(1), app%database)
         rc = E_NONE
     end function read_args

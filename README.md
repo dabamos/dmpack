@@ -4,13 +4,13 @@
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
 ![Version](https://img.shields.io/badge/version-0.9.6-blue)
 
-DMPACK is a free and open-source software package for IoT-based automatic
+**DMPACK** is a free and open-source software package for IoT-based automatic
 deformation monitoring and distributed control measurements in engineering
 geodesy and geotechnics. The project is the successor of
 [OpenADMS](https://www.dabamos.de/openadms.html), and in active development.
 
 The library and the accompanying programs are written in Fortran 2018, with
-some smaller parts in Lua. At the moment, DMPACK runs on 64-bit Linux and
+some smaller parts in Lua. At the moment, **DMPACK** runs on 64-bit Linux and
 FreeBSD only.
 
 * [Project Website](https://www.dabamos.de/)
@@ -22,7 +22,7 @@ Breaking API changes have to be expected until version 1.0.0.
 
 ## Description
 
-DMPACK is a scientific monitoring system developed for automated control
+**DMPACK** is a scientific monitoring system developed for automated control
 measurements of buildings, infrastructure, terrain, geodetic nets, and other
 objects. The software runs on sensor nodes, usually IoT gateways, industrial
 embedded systems, or single-board computers, and obtains observation data from
@@ -37,11 +37,11 @@ to monitor objects like:
 * landslides, cliffs, glaciers
 * churches, monasteries, and other heritage buildings
 
-DMPACK is built around the relational SQLite database for time series and log
-storage on client and server. The server component is optional. It is possible
-to run DMPACK on clients only, without data distribution. The client-side
-inter-process communication is based on POSIX message queues and POSIX
-semaphores.
+**DMPACK** is built around the relational SQLite database for time series and
+log storage on client and server. The server component is optional. It is
+possible to run **DMPACK** on clients only, without data distribution. The
+client-side inter-process communication is based on POSIX message queues and
+POSIX semaphores.
 
 ## System Architecture
 
@@ -49,7 +49,7 @@ semaphores.
 
 ## Features
 
-DMPACK includes modules for:
+**DMPACK** includes modules for:
 
 * sensor control (RS-232/422/485, Modbus RTU/TCP, 1-Wire, sub-process, file system)
 * SQLite database access
@@ -74,7 +74,7 @@ DMPACK includes modules for:
 
 ## Requirements
 
-DMPACK has the following requirements:
+**DMPAC**K has the following requirements:
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
@@ -105,7 +105,7 @@ and the source code documentation, you will need furthermore:
 
 ## Program Overview
 
-The following programs are based on the DMPACK library.
+The following programs are based on the **DMPACK** library.
 
 | Name                           | Description                                                         |
 |--------------------------------|---------------------------------------------------------------------|
@@ -136,13 +136,13 @@ The following programs are based on the DMPACK library.
 
 ## Installation
 
-The DMPACK library and programs have to be built from source by either executing
-the provided Makefile, or by using the
+The **DMPACK** library and programs have to be built from source by either
+executing the provided Makefile, or by using the
 [Fortran Package Manager](https://fpm.fortran-lang.org/). See the
 [User Guide](https://www.dabamos.de/dmpack/guide/#_installation) for complete
 installation instructions.
 
-Clone the DMPACK repository recursively and execute the Makefile with build
+Clone the **DMPACK** repository recursively and execute the Makefile with build
 target `freebsd`, `linux`, or `linux_aarch64`:
 
 ```
@@ -168,9 +168,9 @@ Either link your programs against static library `libdmpack.a`, or `-ldmpack` if
 $ gfortran -I/usr/local/include/dmpack -o example example.f90 /usr/local/lib/libdmpack.a
 ```
 
-Depending on which parts of the DMPACK library are used by third-party
+Depending on which parts of the **DMPACK** library are used by third-party
 applications, additional shared libraries have to be linked. The directory
-containing the DMPACK module files is passed through argument `-I`.
+containing the **DMPACK** module files is passed through argument `-I`.
 
 | Module          | Libraries           | Linker Libraries                         |
 |-----------------|---------------------|------------------------------------------|
@@ -216,7 +216,7 @@ containing the DMPACK module files is passed through argument `-I`.
 
 ## Manual Pages
 
-To create all DMPACK man pages from source, run:
+To create all **DMPACK** man pages from source, run:
 
 ```
 $ make man
@@ -236,7 +236,7 @@ The result is written to `guide/guide.html`.
 
 ## Source Code Documentation
 
-The source code documentation of the DMPACK library has to be created with
+The source code documentation of the **DMPACK** library has to be created with
 [FORD](https://github.com/Fortran-FOSS-Programmers/ford). Install the Python
 package with:
 
@@ -244,7 +244,7 @@ package with:
 $ python3 -m pip install -U ford
 ```
 
-In the DMPACK repository, run:
+In the **DMPACK** repository, run:
 
 ```
 $ make doc

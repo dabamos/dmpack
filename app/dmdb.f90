@@ -11,7 +11,7 @@ program dmdb
     character(len=*), parameter :: APP_NAME  = 'dmdb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -95,7 +95,9 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(8)
+
+        character(len=:), allocatable :: version
+        type(arg_type)                :: args(8)
 
         rc = E_NONE
 
@@ -112,7 +114,8 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        version = dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)

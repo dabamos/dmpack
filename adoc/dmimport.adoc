@@ -35,7 +35,7 @@ sensors must exist as well.
 *--database*, *-d* _file_::
   Path of the SQLite database (required, unless in dry mode).
 
-*--dry*, *-y*::
+*--dry*, *-D*::
   Enable dry mode. Read records from file and validate them without actual
   database import.
 

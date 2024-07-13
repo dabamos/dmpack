@@ -22,13 +22,12 @@ program dmtestmodbus
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        integer           :: major, minor, patch, rc
+        integer           :: rc
         type(modbus_type) :: modbus
 
         stat = TEST_FAILED
 
-        call dm_modbus_version(major, minor, patch)
-        print '(" libmodbus: ", i0, 2(".", i0))', major, minor, patch
+        print '(" libmodbus: ", a)', dm_modbus_version()
 
         mb_block: block
             print *, 'Creating Modbus TCP context ...'

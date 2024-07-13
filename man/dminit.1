@@ -2,12 +2,12 @@
 .\"     Title: dminit
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-02-16
+.\"      Date: 2024-07-12
 .\"    Manual: User Commands
 .\"    Source: DMINIT
 .\"  Language: English
 .\"
-.TH "DMINIT" "1" "2024-02-16" "DMINIT" "User Commands"
+.TH "DMINIT" "1" "2024-07-12" "DMINIT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,11 +35,12 @@ dminit \- initialises DMPACK databases
 .sp
 \fBdminit\fP \-\-version
 .sp
-\fBdminit\fP \-\-\fBtype\fP \fItype\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBsync\fP] [\-\-\fBwal\fP]
+\fBdminit\fP \-\-\fBtype\fP \fItype\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBforce\fP] [\-\-\fBsync\fP] [\-\-\fBwal\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdminit\fP utility program creates beat, log, and observation databases. No
-action is performed if the specified database already exists.
+action is performed if the specified database already exists, unless
+command\-line argument \f(CR\-\-force\fP is passed.
 .sp
 A synchronisation table is required for observation and log synchronisation with
 an RPC server. The argument may be omitted if this functionality is not used.
@@ -51,6 +52,11 @@ readers.
 \fB\-\-database\fP, \fB\-d\fP \fIfile\fP
 .RS 4
 File path of the new SQLite database.
+.RE
+.sp
+\fB\-\-force\fP, \fB\-F\fP
+.RS 4
+Force creation of tables even if the database already exists.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

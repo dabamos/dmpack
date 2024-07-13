@@ -3,8 +3,9 @@
 module dm_modbus
     !! Abstraction layer over _libmodbus_, for Modbus RTU/TCP communication.
     !!
-    !! You may want to use function `dm_to_signed()` available in module
-    !! `dm_c` to convert unsigned to signed integers.
+    !! You may want to use the functions `dm_to_signed()` and
+    !! `dm_to_unsigned()` available in module `dm_c` to convert unsigned to
+    !! signed integers and vice versa.
     !!
     !! Use Modbus function code `0x03` to read holding registers from a Modbus
     !! RTU connection:
@@ -91,6 +92,7 @@ module dm_modbus
         module procedure :: dm_modbus_create_tcp
     end interface
 
+    public :: dm_modbus_byte_order_from_name
     public :: dm_modbus_close
     public :: dm_modbus_connect
     public :: dm_modbus_destroy
@@ -109,10 +111,52 @@ module dm_modbus
     public :: dm_modbus_create_rtu
     public :: dm_modbus_create_tcp
     public :: dm_modbus_set_debug
+    public :: dm_modbus_set_real
+    public :: dm_modbus_set_real_abcd
+    public :: dm_modbus_set_real_badc
+    public :: dm_modbus_set_real_cdab
+    public :: dm_modbus_set_real_dcba
     public :: dm_modbus_set_serial_mode
     public :: dm_modbus_set_slave
     public :: dm_modbus_version
+    public :: dm_modbus_write_register
+    public :: dm_modbus_write_registers
 contains
+    ! ******************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! ******************************************************************
+    integer function dm_modbus_byte_order_from_name(string, byte_order) result(rc)
+        !! Returns byte order named parameter associated with given string.
+        !! Sets argument `byte_order` to `MODBUS_REAL_ACBD` if `string` is
+        !! `abcd` or `ABCD`. Returns `E_INVALID` and sets `byte_order` to
+        !! `MODBUS_REAL_ABCD` if the string is invalid.
+        use :: dm_string, only: dm_string_upper
+
+        character(len=*), intent(in)  :: string     !! Input string.
+        integer,          intent(out) :: byte_order !! Byte order of real values.
+
+        character(len=4) :: string_
+
+        rc = E_NONE
+
+        ! Normalise string.
+        string_ = dm_string_upper(string)
+
+        select case (string_)
+            case ('ABCD')
+                byte_order = MODBUS_REAL_ABCD
+            case ('BADC')
+                byte_order = MODBUS_REAL_BADC
+            case ('CDAB')
+                byte_order = MODBUS_REAL_CDAB
+            case ('DCBA')
+                byte_order = MODBUS_REAL_DCBA
+            case default
+                byte_order = MODBUS_REAL_ABCD
+                rc = E_INVALID
+        end select
+    end function dm_modbus_byte_order_from_name
+
     integer function dm_modbus_connect(modbus) result(rc)
         !! Connects to Modbus RTU/TCP device.
         !!
@@ -247,7 +291,7 @@ contains
         rc = E_NONE
     end function dm_modbus_flush
 
-    integer function dm_modbus_get_real(registers, byte_order, value) result(rc)
+    real function dm_modbus_get_real(registers, byte_order, error) result(value)
         !! Returns real value from two registers of given byte order in argument
         !! `value`. The argument byte order must be one of the following:
         !!
@@ -256,12 +300,12 @@ contains
         !! * `MODBUS_REAL_CDAB`
         !! * `MODBUS_REAL_DCBA`
         !!
-        !! The function returns `E_INVALID` on any other value.
-        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
-        integer,          intent(in)    :: byte_order   !! Byte order.
-        real,             intent(out)   :: value        !! Returned real value.
+        !! The function sets argument `error' to `E_INVALID` on any other value.
+        integer(kind=u2), intent(inout)         :: registers(2) !! Registers to convert.
+        integer,          intent(in)            :: byte_order   !! Byte order.
+        integer,          intent(out), optional :: error        !! Error code.
 
-        rc = E_NONE
+        if (present(error)) error = E_NONE
 
         select case (byte_order)
             case (MODBUS_REAL_ABCD)
@@ -273,7 +317,8 @@ contains
             case (MODBUS_REAL_DCBA)
                 value = modbus_get_float_dcba(registers)
             case default
-                rc = E_INVALID
+                value = 0.0
+                if (present(error)) error = E_INVALID
         end select
     end function dm_modbus_get_real
 
@@ -373,7 +418,7 @@ contains
         !!
         type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
         integer,           intent(in)              :: address      !! Address to read from.
-        integer(kind=u2),  intent(inout)           :: registers(:) !! Register values (signed).
+        integer(kind=u2),  intent(inout)           :: registers(:) !! Register values (unsigned).
         integer,           intent(inout), optional :: n            !! Number of registers to read on input, number of registers read on output.
 
         integer :: nregisters, stat
@@ -456,6 +501,90 @@ contains
         rc = E_NONE
     end function dm_modbus_set_slave
 
+    function dm_modbus_version(name) result(version)
+        !! Returns libmodbus version as allocatable string.
+        logical, intent(in), optional :: name !! Add `libmodbus/` as prefix.
+        character(len=:), allocatable :: version
+
+        character(len=8) :: v
+        logical          :: name_
+
+        name_ = .false.
+        if (present(name)) name_ = name
+
+        write (v, '(2(i0, "."), i0)') LIBMODBUS_VERSION_MAJOR, LIBMODBUS_VERSION_MINOR, LIBMODBUS_VERSION_MICRO
+
+        if (name_) then
+            version = 'libmodbus/' // trim(v)
+        else
+            version = trim(v)
+        end if
+    end function dm_modbus_version
+
+    integer function dm_modbus_write_register(modbus, address, register) result(rc)
+        !! Writes register to `address`. The function uses the Modbus function
+        !! code `0x06` (preset single register).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if the Modbus context is not associated.
+        !! * `E_MODBUS` if writing the registers failed.
+        !!
+        type(modbus_type), intent(inout) :: modbus   !! Modbus type.
+        integer,           intent(in)    :: address  !! Address to write to.
+        integer(kind=u2),  intent(in)    :: register !! Register value (unsigned).
+
+        integer :: stat
+
+        rc = E_INVALID
+        if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_MODBUS
+        stat = modbus_write_register(modbus%ctx, address, register)
+        if (stat == -1) return
+
+        rc = E_NONE
+    end function dm_modbus_write_register
+
+    integer function dm_modbus_write_registers(modbus, address, registers, n) result(rc)
+        !! Writes many registers to `address`. The size of argument `registers`
+        !! determines the number of registers to write, unless optional
+        !! argument `n` is passed. The function uses the Modbus function code
+        !! `0x10` (preset multiple registers).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if argument `registers` is invalid or if the Modbus
+        !!    context is not associated.
+        !! * `E_MODBUS` if writing the registers failed.
+        !!
+        type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
+        integer,           intent(in)              :: address      !! Address to write to.
+        integer(kind=u2),  intent(inout)           :: registers(:) !! Register values (unsigned).
+        integer,           intent(inout), optional :: n            !! Number of registers to write on input, number of registers written on output.
+
+        integer :: nregisters, stat
+
+        nregisters = size(registers)
+        if (present(n)) nregisters = n
+        if (nregisters > size(registers)) nregisters = size(registers)
+        if (present(n)) n = 0
+
+        rc = E_INVALID
+        if (size(registers) == 0 .or. nregisters <= 0) return
+        if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_MODBUS
+        stat = modbus_write_registers(modbus%ctx, address, nregisters, registers)
+        if (stat == -1) return
+        if (present(n)) n = stat
+
+        rc = E_NONE
+    end function dm_modbus_write_registers
+
+    ! ******************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! ******************************************************************
     subroutine dm_modbus_close(modbus)
         !! Closes the Modbus connection.
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
@@ -472,14 +601,67 @@ contains
         call modbus_free(modbus%ctx)
     end subroutine dm_modbus_destroy
 
-    subroutine dm_modbus_version(major, minor, patch)
-        !! Returns version numbers of libmodbus.
-        integer, intent(out) :: major !! Major version.
-        integer, intent(out) :: minor !! Minor version.
-        integer, intent(out) :: patch !! Micro version.
+    subroutine dm_modbus_set_real(value, registers, byte_order, error)
+        !! Sets real value to registers of given byte order. The argument
+        !! byte order must be one of the following:
+        !!
+        !! * `MODBUS_REAL_ABCD`
+        !! * `MODBUS_REAL_BADC`
+        !! * `MODBUS_REAL_CDAB`
+        !! * `MODBUS_REAL_DCBA`
+        !!
+        !! The routine sets argument `error' to `E_INVALID` on any other value.
+        real,             intent(in)            :: value        !! Real value to set.
+        integer(kind=u2), intent(out)           :: registers(2) !! Registers to write to.
+        integer,          intent(in)            :: byte_order   !! Byte order.
+        integer,          intent(out), optional :: error        !! Error code.
 
-        major = LIBMODBUS_VERSION_MAJOR
-        minor = LIBMODBUS_VERSION_MINOR
-        patch = LIBMODBUS_VERSION_MICRO
-    end subroutine dm_modbus_version
+        if (present(error)) error = E_NONE
+
+        select case (byte_order)
+            case (MODBUS_REAL_ABCD)
+                call modbus_set_float_abcd(value, registers)
+            case (MODBUS_REAL_BADC)
+                call modbus_set_float_badc(value, registers)
+            case (MODBUS_REAL_CDAB)
+                call modbus_set_float_cdab(value, registers)
+            case (MODBUS_REAL_DCBA)
+                call modbus_set_float_dcba(value, registers)
+            case default
+                registers = 0
+                if (present(error)) error = E_INVALID
+        end select
+    end subroutine dm_modbus_set_real
+
+    subroutine dm_modbus_set_real_abcd(value, registers)
+        !! Returns real value to registers in ABCD byte order.
+        real,             intent(in)  :: value        !! Real value to set.
+        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+
+        call modbus_set_float_abcd(value, registers)
+    end subroutine dm_modbus_set_real_abcd
+
+    subroutine dm_modbus_set_real_badc(value, registers)
+        !! Returns real value to registers in BADC byte order.
+        real,             intent(in)  :: value        !! Real value to set.
+        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+
+        call modbus_set_float_badc(value, registers)
+    end subroutine dm_modbus_set_real_badc
+
+    subroutine dm_modbus_set_real_cdab(value, registers)
+        !! Sets real value to registers in CDAB byte order.
+        real,             intent(in)  :: value        !! Real value to set.
+        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+
+        call modbus_set_float_cdab(value, registers)
+    end subroutine dm_modbus_set_real_cdab
+
+    subroutine dm_modbus_set_real_dcba(value, registers)
+        !! Sets real value to registers in DCBA byte order.
+        real,             intent(in)  :: value        !! Real value to set.
+        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+
+        call modbus_set_float_dcba(value, registers)
+    end subroutine dm_modbus_set_real_dcba
 end module dm_modbus

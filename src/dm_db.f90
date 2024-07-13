@@ -28,7 +28,6 @@ module dm_db
     !!
     !! do while (dm_is_ok(rc))
     !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
-    !!     if (rc == E_DB_NO_ROWS) exit
     !!     if (dm_is_ok(rc)) print '(a)', trim(observ%name)
     !! end do
     !!
@@ -366,6 +365,7 @@ module dm_db
     public :: dm_db_update_target
     public :: dm_db_vacuum
     public :: dm_db_valid
+    public :: dm_db_version
 
     ! Private procedures.
     private :: db_begin
@@ -2181,10 +2181,7 @@ contains
         logical,          intent(in), optional :: wal          !! WAL journal mode flag (off by default).
 
         integer :: flag, timeout_
-        logical :: create_, foreign_keys_, threaded_, validate_, wal_
-
-        rc = E_INVALID
-        if (dm_db_connected(db)) return
+        logical :: create_, exists, foreign_keys_, threaded_, validate_, wal_
 
         ! Create database.
         create_ = .false.
@@ -2213,9 +2210,16 @@ contains
         wal_ = .false.
         if (present(wal)) wal_ = wal
 
-        rc = E_NOT_FOUND
-        if (.not. create_ .and. .not. dm_file_exists(path)) return
+        ! Validate options.
+        exists = dm_file_exists(path)
 
+        rc = E_INVALID
+        if (dm_db_connected(db)) return
+
+        rc = E_NOT_FOUND
+        if (.not. create_ .and. .not. exists) return
+
+        ! Set database flags.
         rc = E_DB
         flag = SQLITE_OPEN_PRIVATECACHE
 
@@ -2225,8 +2229,13 @@ contains
             flag = ior(flag, SQLITE_OPEN_READWRITE)
         end if
 
-        if (create_)   flag = ior(flag, SQLITE_OPEN_CREATE)
-        if (threaded_) flag = ior(flag, SQLITE_OPEN_FULLMUTEX)
+        if (create_ .and. .not. exists) then
+            flag = ior(flag, SQLITE_OPEN_CREATE)
+        end if
+
+        if (threaded_) then
+            flag = ior(flag, SQLITE_OPEN_FULLMUTEX)
+        end if
 
         ! Open database.
         if (sqlite3_initialize() /= SQLITE_OK) return
@@ -2240,13 +2249,15 @@ contains
 
         ! Prepare database on create.
         if (create_) then
-            ! Set application id.
-            rc = dm_db_set_application_id(db, DB_APPLICATION_ID)
-            if (dm_is_error(rc)) return
+            if (.not. exists) then
+                ! Set application id.
+                rc = dm_db_set_application_id(db, DB_APPLICATION_ID)
+                if (dm_is_error(rc)) return
 
-            ! Set database version.
-            rc = dm_db_set_user_version(db, DB_USER_VERSION)
-            if (dm_is_error(rc)) return
+                ! Set database version.
+                rc = dm_db_set_user_version(db, DB_USER_VERSION)
+                if (dm_is_error(rc)) return
+            end if
 
             ! Enable WAL mode.
             if (wal_) then
@@ -4194,6 +4205,23 @@ contains
 
         rc = E_NONE
     end function dm_db_valid
+
+    function dm_db_version(name) result(version)
+        !! Returns SQLite 3 library version as allocatable string.
+        logical, intent(in), optional :: name !! Add string `libsqlite/' as prefix.
+        character(len=:), allocatable :: version
+
+        logical :: name_
+
+        name_ = .false.
+        if (present(name)) name_ = name
+
+        if (name_) then
+            version = 'libsqlite/' // sqlite3_libversion()
+        else
+            version = sqlite3_libversion()
+        end if
+    end function dm_db_version
 
     ! ******************************************************************
     ! PUBLIC SUBROUTINES.

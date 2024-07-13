@@ -11,7 +11,7 @@ program dmimport
     character(len=*), parameter :: APP_NAME  = 'dmimport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     type :: app_type
         !! Command-line arguments.
@@ -288,12 +288,12 @@ contains
             arg_type('input',     short='i', type=ARG_TYPE_STRING, required=.true.), & ! -i, --input <path>
             arg_type('quote',     short='q', type=ARG_TYPE_CHAR),                    & ! -q, --quote <char>
             arg_type('separator', short='s', type=ARG_TYPE_CHAR),                    & ! -s, --separator <char>
-            arg_type('dry',       short='y', type=ARG_TYPE_LOGICAL),                 & ! -y, --dry
+            arg_type('dry',       short='D', type=ARG_TYPE_LOGICAL),                 & ! -D, --dry
             arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), type_name)

@@ -15,12 +15,13 @@ dminit - initialises DMPACK databases
 
 *dminit* --version
 
-*dminit* --*type* _type_ --*database* _file_ [--*sync*] [--*wal*]
+*dminit* --*type* _type_ --*database* _file_ [--*force*] [--*sync*] [--*wal*]
 
 == DESCRIPTION
 
 The *dminit* utility program creates beat, log, and observation databases. No
-action is performed if the specified database already exists.
+action is performed if the specified database already exists, unless
+command-line argument `--force` is passed.
 
 A synchronisation table is required for observation and log synchronisation with
 an RPC server. The argument may be omitted if this functionality is not used.
@@ -32,6 +33,9 @@ readers.
 
 *--database*, *-d* _file_::
   File path of the new SQLite database.
+
+*--force*, *-F*::
+  Force creation of tables even if the database already exists.
 
 *--help*, *-h*::
   Output available command-line arguments and quit.

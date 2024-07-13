@@ -81,6 +81,7 @@ module dm_arg
     public :: dm_arg_help
     public :: dm_arg_parse
     public :: dm_arg_read
+    public :: dm_arg_type_valid
     public :: dm_arg_validate
 
     private :: arg_get_int32
@@ -168,7 +169,7 @@ contains
                 ! Argument has been passed already.
                 if (args(j)%passed) then
                     rc = E_ARG_INVALID
-                    if (verbose_) call dm_error_out(rc, 'option ' // trim(a) // ' already set')
+                    if (verbose_) call dm_error_out(rc, 'option ' // trim(a) // ' is already set')
                     return
                 end if
 
@@ -209,7 +210,7 @@ contains
             if (.not. exists .and. .not. ignore_unknown_) then
                 ! Argument starts with `-` but is unknown or unexpected.
                 rc = E_ARG_UNKNOWN
-                if (verbose_) call dm_error_out(rc, 'argument ' // trim(a) // ' not allowed')
+                if (verbose_) call dm_error_out(rc, 'argument ' // trim(a) // ' is not supported')
                 return
             end if
 
@@ -219,7 +220,7 @@ contains
         rc = E_NONE
     end function dm_arg_parse
 
-    integer function dm_arg_read(args, app, major, minor, patch) result(rc)
+    integer function dm_arg_read(args, app, major, minor, patch, version) result(rc)
         !! Reads all arguments from command-line and prints error message if one
         !! is missing. Returns the error code of the first invalid argument.
         !!
@@ -245,9 +246,11 @@ contains
         integer,          intent(in), optional :: major   !! Major version number (for `-v`).
         integer,          intent(in), optional :: minor   !! Minor version number (for `-v`).
         integer,          intent(in), optional :: patch   !! Patch level (for `-v`).
+        character(len=*), intent(in), optional :: version !! Additional version string.
 
         integer :: i, n
         integer :: major_, minor_, patch_
+        integer :: max_len, min_len
 
         rc = E_NONE
 
@@ -265,6 +268,10 @@ contains
                 call dm_version_out(app, major_, minor_, patch_)
             else
                 write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
+            end if
+
+            if (present(version)) then
+                write (stdout, '(a)') trim(version)
             end if
 
             call dm_stop(STOP_SUCCESS)
@@ -289,6 +296,11 @@ contains
         rc = E_EMPTY
 
         validate_loop: do i = 1, size(args)
+            if (.not. dm_arg_type_valid(args(i)%type)) then
+                call dm_error_out(E_TYPE, 'argument --' // trim(args(i)%name) // ' has no valid type')
+                cycle
+            end if
+
             rc = dm_arg_validate(args(i))
 
             select case (rc)
@@ -330,21 +342,34 @@ contains
                         case (ARG_TYPE_DB)
                             call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' not found')
                     end select
+
                     exit validate_loop
 
                 case (E_ARG_LENGTH)
+                    max_len = args(i)%max_len
+                    min_len = args(i)%min_len
+
                     n = len_trim(args(i)%value)
-                    if (n > args(i)%max_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is too long, must be <= ' // &
-                                          dm_itoa(args(i)%max_len))
-                    else if (n < args(i)%min_len) then
-                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is too short, must be >= ' // &
-                                          dm_itoa(args(i)%min_len))
+
+                    if (max_len == min_len .and. n /= max_len) then
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' must be ' // dm_itoa(max_len) // ' characters long')
+                    else if (n > max_len) then
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' must be <= ' // dm_itoa(max_len))
+                    else if (n < min_len) then
+                        call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' must be >= ' // dm_itoa(min_len))
                     end if
+
                     exit validate_loop
             end select
         end do validate_loop
     end function dm_arg_read
+
+    pure elemental logical function dm_arg_type_valid(type) result(valid)
+        !! Returns `.true.` if passed type is a valid argument type.
+        integer, intent(in) :: type !! Argument type (`ARG_TYPE_*`).
+
+        valid = (type >= ARG_TYPE_NONE .and. type <= ARG_TYPE_LAST)
+    end function dm_arg_type_valid
 
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument. Arguments of type `ARG_TYPE_LEVEL` are
@@ -361,7 +386,7 @@ contains
 
         integer       :: error
         integer       :: i, level
-        real(kind=r8) :: f
+        real(kind=r8) :: r
 
         rc = E_ARG
         if (len_trim(arg%name) == 0) return
@@ -376,32 +401,39 @@ contains
 
         ! Validate the type.
         rc = E_ARG_TYPE
-        if (arg%type <= ARG_TYPE_NONE .or. arg%type > ARG_TYPE_LAST) return
+        if (.not. dm_arg_type_valid(arg%type)) return
 
         select case (arg%type)
             case (ARG_TYPE_INTEGER)
+                ! 4-byte integer.
                 if (arg%length == 0) return
                 call dm_string_to(arg%value, i, error)
                 if (dm_is_error(error)) return
 
             case (ARG_TYPE_REAL)
+                ! 8-byte real.
                 if (arg%length == 0) return
-                call dm_string_to(arg%value, f, error)
+                call dm_string_to(arg%value, r, error)
                 if (dm_is_error(error)) return
 
             case (ARG_TYPE_CHAR)
+                ! Character string.
                 if (arg%length > 1) return
 
             case (ARG_TYPE_ID)
+                ! DMPACK identifier.
                 if (.not. dm_id_valid(arg%value)) return
 
             case (ARG_TYPE_UUID)
+                ! UUIDv4.
                 if (.not. dm_uuid4_valid(arg%value)) return
 
             case (ARG_TYPE_TIME)
+                ! ISO 8601.
                 if (.not. dm_time_valid(arg%value)) return
 
             case (ARG_TYPE_LEVEL)
+                ! Log level.
                 if (arg%length == 0) return
 
                 ! Convert string to integer.
@@ -418,6 +450,7 @@ contains
                 if (.not. dm_log_valid(level)) return
 
             case (ARG_TYPE_FILE, ARG_TYPE_DB)
+                ! File or database.
                 if (arg%length == 0) return
                 if (arg%required .and. .not. dm_file_exists(arg%value)) return
         end select
@@ -429,7 +462,8 @@ contains
         !! Prints command-line arguments to standard output if `--help` or `-h`
         !! is passed.
         type(arg_type), intent(inout) :: args(:) !! Arguments array.
-        integer                       :: i
+
+        integer :: i
 
         write (stdout, '("Available command-line options:", /)')
 
@@ -441,7 +475,7 @@ contains
                 case (ARG_TYPE_INTEGER)
                     write (stdout, '("<integer>")')
                 case (ARG_TYPE_REAL)
-                    write (stdout, '("<float>")')
+                    write (stdout, '("<real>")')
                 case (ARG_TYPE_CHAR)
                     write (stdout, '("<char>")')
                 case (ARG_TYPE_STRING)
@@ -451,7 +485,7 @@ contains
                 case (ARG_TYPE_UUID)
                     write (stdout, '("<uuid>")')
                 case (ARG_TYPE_TIME)
-                    write (stdout, '("<timestamp>")')
+                    write (stdout, '("<iso8601>")')
                 case (ARG_TYPE_LEVEL)
                     write (stdout, '("<level>")')
                 case (ARG_TYPE_FILE)

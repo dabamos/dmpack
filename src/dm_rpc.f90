@@ -139,6 +139,7 @@ module dm_rpc
     public :: dm_rpc_send_type
     public :: dm_rpc_send_types
     public :: dm_rpc_url
+    public :: dm_rpc_version
 
     public :: dm_rpc_write_callback
 
@@ -150,6 +151,14 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    function dm_rpc_version() result(version)
+        !! Returns version number of libcurl an linked libreries as allocatable
+        !! string.
+        character(len=:), allocatable :: version
+
+        version = curl_version()
+    end function dm_rpc_version
+
     integer function dm_rpc_error(curl_error) result(rc)
         !! Converts cURL easy stack error code to DMPACK error code.
         integer, intent(in) :: curl_error !! cURL easy error code.

@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 4
+    integer,          parameter :: APP_PATCH = 5
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
@@ -74,7 +74,9 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
-        type(arg_type)              :: args(13)
+
+        character(len=:), allocatable :: version
+        type(arg_type)                :: args(13)
 
         rc = E_NONE
 
@@ -95,7 +97,8 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        version = dm_rpc_version() // ' ' // dm_lua_version(.true.)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)

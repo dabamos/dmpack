@@ -372,8 +372,8 @@ contains
         !! message for the given error instead of the code. If `quit` is
         !! `.true.`, the routine terminates with exit code `0` on code
         !! `E_NONE`, or with exit code `1` on error.
-        character(len=*), parameter :: FMT_ERROR = '("Error: ", a, " (E", i0.3, ")")'
-        character(len=*), parameter :: FMT_EXTRA = '("Error: ", a, " (", a, ")")'
+        character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
+        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
 
         integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
@@ -399,16 +399,16 @@ contains
 
         if (present(message)) then
             if (extra_) then
-                write (stderr, FMT_EXTRA) dm_ascii_escape(message), dm_error_message(error)
+                write (stderr, FMT_EXTRA) error, dm_ascii_escape(message), dm_error_message(error)
             else
-                write (stderr, FMT_ERROR) dm_ascii_escape(message), error
+                write (stderr, FMT_ERROR) error, dm_ascii_escape(message)
             end if
 
             if (.not. quit_) return
             call dm_stop(stat)
         end if
 
-        write (stderr, FMT_ERROR) dm_error_message(error), error
+        write (stderr, FMT_ERROR) error, dm_error_message(error)
         if (quit_) call dm_stop(stat)
     end subroutine dm_error_out
 

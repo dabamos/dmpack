@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -408,7 +408,7 @@ contains
         ]
 
         ! Read command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
         ! CRUD operation.

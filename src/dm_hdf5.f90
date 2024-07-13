@@ -17,7 +17,7 @@ module dm_hdf5
     !! integer                        :: rc
     !! type(hdf5_file_type)           :: file
     !! type(hdf5_group_type)          :: group
-    !! type(observ_type), allocatable :: input(:) output(:)
+    !! type(observ_type), allocatable :: input(:), output(:)
     !!
     !! allocate (output(N))
     !!

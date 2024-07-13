@@ -164,6 +164,8 @@ module dm_lua
     private :: lua_to_observs
     private :: lua_to_report
     private :: lua_to_request
+
+    private :: lua_version_number
 contains
     ! ******************************************************************
     ! PUBLIC FUNCTIONS.
@@ -429,11 +431,35 @@ contains
         end do
     end function dm_lua_unescape
 
-    real function dm_lua_version(lua) result(v)
-        !! Returns Lua version number as 4-byte real.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
+    function dm_lua_version(name) result(version)
+        !! Returns Lua version as allocatable string of the form `5.4` or
+        !! `liblua/5.4` if argument `name` is `.true.`.
+        logical, intent(in), optional :: name
+        character(len=:), allocatable :: version
 
-        v = real(lua_version(lua%ptr))
+        character(len=3)     :: v
+        integer              :: major, minor, rc
+        logical              :: name_
+        type(lua_state_type) :: lua
+
+        name_ = .false.
+        if (present(name)) name_ = name
+
+        v  = '0.0'
+        rc = dm_lua_init(lua)
+
+        if (dm_is_ok(rc)) then
+            call lua_version_number(lua, major, minor)
+            write (v, '(i1, ".", i1)') major, minor
+        end if
+
+        call dm_lua_destroy(lua)
+
+        if (name_) then
+            version = 'liblua/' // v
+        else
+            version = v
+        end if
     end function dm_lua_version
 
     ! ******************************************************************
@@ -1628,4 +1654,17 @@ contains
 
         call lua_setfield(lua%ptr, -2, 'responses')
     end subroutine lua_from_request
+
+    subroutine lua_version_number(lua, major, minor)
+        !! Returns Lua version number.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        integer,              intent(out)   :: major !! Major version number.
+        integer,              intent(out)   :: minor !! Minor version number.
+
+        real :: version
+
+        version = real(lua_version(lua%ptr))
+        major   = floor(version / 100)
+        minor   = floor(version - (major * 100))
+    end subroutine lua_version_number
 end module dm_lua

@@ -76,6 +76,7 @@ module dm_plot
     public :: dm_plot_read
     public :: dm_plot_term_from_name
     public :: dm_plot_term_valid
+    public :: dm_plot_version
 
     private :: plot_output
     private :: plot_set_graph
@@ -221,6 +222,26 @@ contains
         valid = (term > PLOT_TERM_NONE .and. term <= PLOT_TERM_LAST)
     end function dm_plot_term_valid
 
+    function dm_plot_version() result(version)
+        !! Returns Gnuplot version as allocatable string.
+        character(len=:), allocatable :: version
+
+        character(len=32) :: buffer
+        integer           :: rc
+        integer(kind=i8)  :: sz
+        type(pipe_type)   :: pipe
+
+        rc = dm_pipe_open(pipe, PLOT_GNUPLOT // ' --version', PIPE_RDONLY)
+
+        if (dm_is_ok(rc)) then
+            sz = dm_pipe_read(pipe, buffer)
+            if (sz > 10) version = 'gnuplot/' // buffer(9:11)
+        end if
+
+        call dm_pipe_close(pipe)
+        if (.not. allocated(version)) version = 'gnuplot/0.0'
+    end function dm_plot_version
+
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
@@ -325,7 +346,7 @@ contains
 
         select case (plot%term)
             case (PLOT_TERM_ANSI)
-                ! Dumb terminal with ANSI colours..
+                ! Dumb terminal with ANSI colours.
                 rc = plot_write(plot, 'set term dumb ansi ' // trim(args))
                 if (dm_is_error(rc)) return
 

@@ -420,8 +420,8 @@ build: $(TARGET) $(SHARED) test app
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-     $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) $(DMSYNC) \
-     $(DMUUID) $(DMWEB)
+     $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
+     $(DMSYNC) $(DMUUID) $(DMWEB)
 
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \

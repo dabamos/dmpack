@@ -11,7 +11,7 @@ program dmexport
     character(len=*), parameter :: APP_NAME  = 'dmexport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     type :: app_type
         !! Command-line arguments.
@@ -187,9 +187,9 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(12)
 
         character(len=6) :: format_name, type_name
+        type(arg_type)   :: args(12)
 
         rc = E_NONE
 
@@ -209,7 +209,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args( 1), app%database)

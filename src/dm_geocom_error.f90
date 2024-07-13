@@ -11,7 +11,7 @@ module dm_geocom_error
     !! * Leica TM30/TS30
     !! * Leica Viva TS16 (FlexLine)
     !!
-    !! Some obvious spelling errors in the return code descriptions have been
+    !! Obvious spelling errors in the return code descriptions have been
     !! corrected. However, some descriptions are rather silly (Heerbrugg
     !! English?).
     implicit none (type, external)

@@ -10,7 +10,7 @@ program dmplot
     character(len=*), parameter :: APP_NAME  = 'dmplot'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 2
 
     type :: app_type
         !! Application settings.
@@ -135,6 +135,7 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(len=PLOT_TERM_NAME_LEN) :: terminal
+        character(len=:), allocatable     :: version
         type(arg_type)                    :: args(17)
 
         rc = E_NONE
@@ -160,7 +161,8 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        version = dm_plot_version() // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)

@@ -11,7 +11,7 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 
@@ -76,7 +76,9 @@ contains
         !! Reads command-line arguments and configuration
         !! from file (if `--config` is passed).
         type(app_type), intent(out) :: app !! App type.
-        type(arg_type)              :: args(16)
+
+        character(len=:), allocatable :: version
+        type(arg_type)                :: args(16)
 
         rc = E_NONE
 
@@ -100,7 +102,8 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        version = dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
         rc = dm_arg_get(args(1), app%name)
