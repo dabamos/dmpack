@@ -65,6 +65,7 @@ contains
 
         stat = TEST_FAILED
 
+        print '(" Libraries: ", a)', dm_rpc_version()
         print *, 'Validating URLs ...'
         url = dm_rpc_url('example.com', 8080, '/api/v1')
         print *, url

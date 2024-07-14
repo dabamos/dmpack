@@ -12,7 +12,7 @@ module dm_node
     integer, parameter, public :: NODE_META_LEN = 32     !! Max. node meta description length.
 
     type, public :: node_type
-        !! Node type.
+        !! Sensor node type.
         character(len=NODE_ID_LEN)   :: id   = ' '    !! Node id (`-0-9A-Z_a-z`).
         character(len=NODE_NAME_LEN) :: name = ' '    !! Node name.
         character(len=NODE_META_LEN) :: meta = ' '    !! Additional description text (optional).

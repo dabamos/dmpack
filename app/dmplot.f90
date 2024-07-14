@@ -161,7 +161,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_plot_version() // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
+        version = dm_plot_version(.true.) // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 

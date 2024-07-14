@@ -125,24 +125,24 @@ contains
     ! ******************************************************************
     ! PUBLIC FUNCTIONS.
     ! ******************************************************************
-    integer function dm_modbus_byte_order_from_name(string, byte_order) result(rc)
+    integer function dm_modbus_byte_order_from_name(name, byte_order) result(rc)
         !! Returns byte order named parameter associated with given string.
         !! Sets argument `byte_order` to `MODBUS_REAL_ACBD` if `string` is
-        !! `abcd` or `ABCD`. Returns `E_INVALID` and sets `byte_order` to
-        !! `MODBUS_REAL_ABCD` if the string is invalid.
+        !! `ABCD` (case insensitive). Returns `E_INVALID` and sets `byte_order`
+        !! to `MODBUS_REAL_ABCD` if the string is invalid.
         use :: dm_string, only: dm_string_upper
 
-        character(len=*), intent(in)  :: string     !! Input string.
+        character(len=*), intent(in)  :: name       !! Input string.
         integer,          intent(out) :: byte_order !! Byte order of real values.
 
-        character(len=4) :: string_
+        character(len=4) :: name_
 
         rc = E_NONE
 
-        ! Normalise string.
-        string_ = dm_string_upper(string)
+        ! Normalise name.
+        name_ = dm_string_upper(name)
 
-        select case (string_)
+        select case (name_)
             case ('ABCD')
                 byte_order = MODBUS_REAL_ABCD
             case ('BADC')
@@ -447,13 +447,8 @@ contains
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         logical,           intent(in)    :: debug  !! Enable debug mode.
 
-        integer :: debug_
-
-        debug_ = dm_f_c_logical(debug)
-
         rc = E_MODBUS
-        if (modbus_set_debug(modbus%ctx, debug_) == -1) return
-
+        if (modbus_set_debug(modbus%ctx, dm_f_c_logical(debug)) == -1) return
         rc = E_NONE
     end function dm_modbus_set_debug
 
@@ -503,7 +498,7 @@ contains
 
     function dm_modbus_version(name) result(version)
         !! Returns libmodbus version as allocatable string.
-        logical, intent(in), optional :: name !! Add `libmodbus/` as prefix.
+        logical, intent(in), optional :: name !! Add prefix `libmodbus/`.
         character(len=:), allocatable :: version
 
         character(len=8) :: v
@@ -512,7 +507,9 @@ contains
         name_ = .false.
         if (present(name)) name_ = name
 
-        write (v, '(2(i0, "."), i0)') LIBMODBUS_VERSION_MAJOR, LIBMODBUS_VERSION_MINOR, LIBMODBUS_VERSION_MICRO
+        write (v, '(2(i0, "."), i0)') LIBMODBUS_VERSION_MAJOR, &
+                                      LIBMODBUS_VERSION_MINOR, &
+                                      LIBMODBUS_VERSION_MICRO
 
         if (name_) then
             version = 'libmodbus/' // trim(v)

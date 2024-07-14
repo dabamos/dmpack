@@ -43,13 +43,14 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Reading HDF5 library version ...'
-        rc = dm_hdf5_version(major, minor, release)
+        rc = dm_hdf5_version_number(major, minor, release)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print '(" Major..: ", i0)', major
         print '(" Minor..: ", i0)', minor
         print '(" Release: ", i0)', release
+        print '(" Library: ", a)',  dm_hdf5_version(.true.)
 
         print *, 'Clean-up ...'
         rc = dm_hdf5_destroy()

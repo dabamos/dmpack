@@ -9,7 +9,7 @@ program dmtestlua
 
     character(len=*), parameter :: TEST_NAME = 'dmtestlua'
     character(len=*), parameter :: LUA_FILE  = 'test/test.lua'
-    integer,          parameter :: NTESTS    = 11
+    integer,          parameter :: NTESTS    = 12
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -25,7 +25,8 @@ program dmtestlua
         test_type('test08', test08), &
         test_type('test09', test09), &
         test_type('test10', test10), &
-        test_type('test11', test11)  &
+        test_type('test11', test11), &
+        test_type('test12', test12)  &
     ]
 
     call dm_init()
@@ -44,6 +45,7 @@ contains
 
         stat = TEST_FAILED
 
+        print '(" Library: ", a)', dm_lua_version(.true.)
         print *, 'Creating new Lua state ...'
         rc = dm_lua_init(lua)
         if (dm_is_error(rc)) return
@@ -576,4 +578,43 @@ contains
 
         stat = TEST_PASSED
     end function test11
+
+    logical function test12() result(stat)
+        !! Writes and reads variable.
+        integer              :: rc
+        integer              :: v1, v2
+        type(lua_state_type) :: lua
+
+        stat = TEST_FAILED
+
+        print *, 'Creating new Lua state ...'
+        rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            v1 = 12345
+
+            print *, 'Writing int ...'
+            rc = dm_lua_set(lua, 'foo', v1)
+            if (dm_is_error(rc)) exit test_block
+            print *, 'Value: ', v1
+
+            print *, 'Reading int ...'
+            rc = dm_lua_read(lua, 'foo', v2)
+            if (dm_is_error(rc)) exit test_block
+            print *, 'Value: ', v2
+
+            print *, 'Validating values ...'
+            if (v1 /= v2) exit test_block
+        end block test_block
+
+        call dm_lua_destroy(lua)
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc, dm_lua_last_error(lua))
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test12
 end program dmtestlua

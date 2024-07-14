@@ -34,6 +34,7 @@ module dm_zstd
     public :: dm_zstd_level_max
     public :: dm_zstd_level_min
     public :: dm_zstd_uncompress
+    public :: dm_zstd_version
 
     private :: zstd_compress_multi
     private :: zstd_compress_single
@@ -77,6 +78,23 @@ contains
         !! Returns minimum zstd compression level.
         level = zstd_min_c_level()
     end function dm_zstd_level_min
+
+    function dm_zstd_version(name) result(version)
+        !! Returns zstd library version as allocatable string.
+        logical, intent(in), optional :: name !! Add prefix `libzstd/`.
+        character(len=:), allocatable :: version
+
+        logical :: name_
+
+        name_ = .false.
+        if (present(name)) name_ = name
+
+        if (name_) then
+            version = 'libzstd/' // zstd_version_string()
+        else
+            version = zstd_version_string()
+        end if
+    end function dm_zstd_version
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

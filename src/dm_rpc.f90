@@ -379,7 +379,7 @@ contains
         rc = E_INVALID
         if (.not. dm_z_valid(request%compression)) return
 
-        rc = dm_z_compress_type(type, request%payload, request%compression)
+        rc = dm_z_compress_type(type, request%compression, request%payload)
         if (dm_is_error(rc)) return
 
         rc = rpc_request(request, response)
@@ -466,9 +466,9 @@ contains
             ! Serialise and compress payload.
             if (z == Z_TYPE_ZSTD) then
                 ! Use Zstandard compression context.
-                rc = dm_z_compress_type(types(i), requests(i)%payload, z, context=context)
+                rc = dm_z_compress_type(types(i), z, requests(i)%payload, context=context)
             else
-                rc = dm_z_compress_type(types(i), requests(i)%payload, z)
+                rc = dm_z_compress_type(types(i), z, requests(i)%payload)
             end if
 
             if (dm_is_error(rc)) exit

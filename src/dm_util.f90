@@ -19,6 +19,12 @@ module dm_util
         module procedure :: equals_real64
     end interface
 
+    interface dm_inc
+        !! Returns increased integer value.
+        module procedure :: inc_int32
+        module procedure :: inc_int64
+    end interface dm_inc
+
     interface dm_itoa
         !! Generic integer to string converter.
         module procedure :: int32_to_string
@@ -57,6 +63,7 @@ module dm_util
 
     public :: dm_array_has
     public :: dm_equals
+    public :: dm_inc
     public :: dm_sleep
     public :: dm_usleep
 
@@ -84,6 +91,8 @@ module dm_util
     private :: array_has_int64
     private :: equals_real32
     private :: equals_real64
+    private :: inc_int32
+    private :: inc_int64
     private :: int32_to_string
     private :: int64_to_string
     private :: real32_to_string
@@ -320,6 +329,30 @@ contains
 
         equals = (abs(a - b) <= epsilon(a))
     end function equals_real64
+
+    pure elemental integer(kind=i4) function inc_int32(a, b) result(c)
+        !! Increases argument `a` by 1 or `b`.
+        integer(kind=i4), intent(in)           :: a !! Value to increase.
+        integer(kind=i4), intent(in), optional :: b !! Summand to use.
+
+        if (present(b)) then
+            c = a + b
+        else
+            c = a + 1
+        end if
+    end function inc_int32
+
+    pure elemental integer(kind=i8) function inc_int64(a, b) result(c)
+        !! Increases argument `a` by 1 or `b`.
+        integer(kind=i8), intent(in)           :: a !! Value to increase.
+        integer(kind=i8), intent(in), optional :: b !! Summand to use.
+
+        if (present(b)) then
+            c = a + b
+        else
+            c = a + 1
+        end if
+    end function inc_int64
 
     ! ******************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS.

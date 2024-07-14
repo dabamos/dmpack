@@ -275,7 +275,7 @@ contains
             end if
 
             ! Increase optimise step counter.
-            steps = modulo(steps + 1, APP_DB_NSTEPS)
+            steps = modulo(dm_inc(steps), APP_DB_NSTEPS)
         end do ipc_loop
     end subroutine run
 

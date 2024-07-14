@@ -66,8 +66,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type beat (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (beat1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, beat2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (beat1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, beat2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -79,8 +79,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type log (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (log1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, log2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (log1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, log2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -92,8 +92,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type node (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (node1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, node2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (node1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, node2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -105,8 +105,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type observation (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (observ1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, observ2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (observ1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, observ2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -118,8 +118,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type sensor (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (sensor1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, sensor2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (sensor1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, sensor2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -131,8 +131,8 @@ contains
             do z = Z_TYPE_NONE, Z_TYPE_LAST
                 print *, 'Type target (' // trim(Z_TYPE_NAMES(z)) // ') ...'
                 call dm_timer_start(timer)
-                rc = dm_z_compress  (target1, str, z); if (dm_is_error(rc)) exit test_block
-                rc = dm_z_uncompress(str, target2, z); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_compress  (target1, z, str); if (dm_is_error(rc)) exit test_block
+                rc = dm_z_uncompress(str, z, target2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
                 print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
                 rc = E_CORRUPT
@@ -168,7 +168,7 @@ contains
         print *, 'Compressing without zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_compress(observs(i), str, Z_TYPE_ZSTD)
+            rc = dm_z_compress(observs(i), Z_TYPE_ZSTD, str)
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
@@ -177,7 +177,7 @@ contains
         print *, 'Uncompressing without zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_uncompress(str, observs(i), Z_TYPE_ZSTD)
+            rc = dm_z_uncompress(str, Z_TYPE_ZSTD, observs(i))
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
@@ -190,7 +190,7 @@ contains
         print *, 'Compressing with zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_compress(observs(i), str, Z_TYPE_ZSTD, context=context)
+            rc = dm_z_compress(observs(i), Z_TYPE_ZSTD, str, context=context)
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
@@ -199,7 +199,7 @@ contains
         print *, 'Uncompressing with zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_uncompress(str, observs(i), Z_TYPE_ZSTD, context=context)
+            rc = dm_z_uncompress(str, Z_TYPE_ZSTD, observs(i), context=context)
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
@@ -214,7 +214,7 @@ contains
         print *, 'Compressing type with zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_compress_type(observs(i), str, Z_TYPE_ZSTD, context=context)
+            rc = dm_z_compress_type(observs(i), Z_TYPE_ZSTD, str, context=context)
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
@@ -228,7 +228,7 @@ contains
         ! Types context.
         print *, 'Compressing types with zstd context ...'
         call dm_timer_start(timer)
-        rc = dm_z_compress_types(observs, strings, Z_TYPE_ZSTD)
+        rc = dm_z_compress_types(observs, Z_TYPE_ZSTD, strings)
         call dm_timer_stop(timer, t)
         print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
 

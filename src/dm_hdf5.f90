@@ -119,6 +119,7 @@ module dm_hdf5
     public :: dm_hdf5_open
     public :: dm_hdf5_read
     public :: dm_hdf5_version
+    public :: dm_hdf5_version_number
     public :: dm_hdf5_write
 
     ! Private procedures.
@@ -321,7 +322,30 @@ contains
         rc = E_NONE
     end function dm_hdf5_init
 
-    integer function dm_hdf5_version(major, minor, release) result(rc)
+    function dm_hdf5_version(name) result(version)
+        !! Returns HDF5 library version as allocatable string.
+        logical, intent(in), optional :: name !! Add prefix `libhdf5/`.
+        character(len=:), allocatable :: version
+
+        character(len=8) :: v
+        integer          :: major, minor, release
+        integer          :: rc
+        logical          :: name_
+
+        name_ = .false.
+        if (present(name)) name_ = name
+
+        rc = dm_hdf5_version_number(major, minor, release)
+        write (v, '(2(i0, "."), i0)') major, minor, release
+
+        if (name_) then
+            version = 'libhdf5/' // trim(v)
+        else
+            version = trim(v)
+        end if
+    end function dm_hdf5_version
+
+    integer function dm_hdf5_version_number(major, minor, release) result(rc)
         !! Returns version numbers of HDF5 library. The function returns
         !! `E_HDF5` on error.
         use :: h5lib, only: h5get_libversion_f
@@ -342,7 +366,7 @@ contains
 
         if (stat < 0) return
         rc = E_NONE
-    end function dm_hdf5_version
+    end function dm_hdf5_version_number
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.

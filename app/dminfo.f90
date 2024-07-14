@@ -10,7 +10,7 @@ program dminfo
     character(len=*), parameter :: APP_NAME  = 'dminfo'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     type :: app_type
         !! Command-line arguments.
@@ -52,9 +52,9 @@ contains
         type(app_type), intent(inout) :: app
 
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, mode
+        integer                       :: app_id, mode, user_version
         integer(kind=i8)              :: n, sz
-        logical                       :: exists, has_db
+        logical                       :: exists, foreign_keys, has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
@@ -78,85 +78,67 @@ contains
         ! Database information.
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
-            print '("db.application_id: ", z0)', app_id
-
-            rc = dm_db_get_foreign_keys(db, exists)
-            print '("db.foreign_keys: ", l)', exists
-
+            rc = dm_db_get_user_version(db, user_version)
+            rc = dm_db_get_foreign_keys(db, foreign_keys)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
-            print '("db.journal_mode: ", a)', mode_name
 
-            print '("db.path: ", a)', trim(app%database)
-            print '("db.size: ", i0)', sz
+            print '("db.application_id: ", z0)', app_id
+            print '("db.foreign_keys: ", l1)',   foreign_keys
+            print '("db.journal_mode: ", a)',    mode_name
+            print '("db.library: ", a)',         dm_db_version(.true.)
+            print '("db.path: ", a)',            trim(app%database)
+            print '("db.schema.version: ", i0)', user_version
+            print '("db.size: ", i0)',           sz
 
             rc = dm_db_table_exists(db, SQL_TABLE_BEATS, exists)
-            rc = dm_db_count_beats(db, n)
-            print '("db.table.beats: ", l)', exists
-            print '("db.table.beats.rows: ", i0)', n
+            if (exists) rc = dm_db_count_beats(db, n)
+            if (exists) print '("db.table.beats.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
-            rc = dm_db_count_logs(db, n)
-            print '("db.table.logs: ", l)', exists
-            print '("db.table.logs.rows: ", i0)', n
+            if (exists) rc = dm_db_count_logs(db, n)
+            if (exists) print '("db.table.logs.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_NODES, exists)
-            rc = dm_db_count_nodes(db, n)
-            print '("db.table.nodes: ", l)', exists
-            print '("db.table.nodes.rows: ", i0)', n
+            if (exists) rc = dm_db_count_nodes(db, n)
+            if (exists) print '("db.table.nodes.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_OBSERVS, exists)
-            rc = dm_db_count_observs(db, n)
-            print '("db.table.observs: ", l)', exists
-            print '("db.table.observs.rows: ", i0)', n
+            if (exists) rc = dm_db_count_observs(db, n)
+            if (exists) print '("db.table.observs.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_RECEIVERS, exists)
-            rc = dm_db_count_receivers(db, n)
-            print '("db.table.receivers: ", l)', exists
-            print '("db.table.receivers.rows: ", i0)', n
+            if (exists) rc = dm_db_count_receivers(db, n)
+            if (exists) print '("db.table.receivers.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_REQUESTS, exists)
-            rc = dm_db_count_requests(db, n)
-            print '("db.table.requests: ", l)', exists
-            print '("db.table.requests.rows: ", i0)', n
+            if (exists) rc = dm_db_count_requests(db, n)
+            if (exists) print '("db.table.requests.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_RESPONSES, exists)
-            rc = dm_db_count_responses(db, n)
-            print '("db.table.responses: ", l)', exists
-            print '("db.table.responses.rows: ", i0)', n
+            if (exists) rc = dm_db_count_responses(db, n)
+            if (exists) print '("db.table.responses.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_SENSORS, exists)
-            rc = dm_db_count_sensors(db, n)
-            print '("db.table.sensors: ", l)', exists
-            print '("db.table.sensors.rows: ", i0)', n
+            if (exists) rc = dm_db_count_sensors(db, n)
+            if (exists) print '("db.table.sensors.rows: ", i0)', n
 
             rc = dm_db_table_exists(db, SQL_TABLE_TARGETS, exists)
-            rc = dm_db_count_targets(db, n)
-            print '("db.table.targets: ", l)', exists
-            print '("db.table.targets.rows: ", i0)', n
+            if (exists) rc = dm_db_count_targets(db, n)
+            if (exists) print '("db.table.targets.rows: ", i0)', n
 
             rc = dm_db_close(db)
         end if
 
-        ! DMPACK information.
-        print '("dmpack.version: ", a)', DM_VERSION_STRING
-
-        ! System information.
-        write (*, '("system.byte_order: ")', advance='no')
-
-        if (LITTLE_ENDIAN) then
-            print '("little-endian")'
-        else
-            print '("big-endian")'
-        end if
-
         call dm_system_uname(uname)
 
-        print '("system.host: ", a)',      trim(uname%node_name)
-        print '("system.machine: ", a)',   trim(uname%machine)
-        print '("system.name: ", a)',      trim(uname%system_name)
-        print '("system.release: ", a)',   trim(uname%release)
-        print '("system.time.now: ", a)',  dm_time_now()
-        print '("system.time.zone: ", a)', dm_time_zone()
-        print '("system.version: ", a)',   trim(uname%version)
+        print '("dmpack.version: ", a)',    DM_VERSION_STRING
+        print '("system.byte_order: ", a)', dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
+        print '("system.host: ", a)',       trim(uname%node_name)
+        print '("system.name: ", a)',       trim(uname%system_name)
+        print '("system.platform: ", a)',   trim(uname%machine)
+        print '("system.release: ", a)',    trim(uname%release)
+        print '("system.time.now: ", a)',   dm_time_now()
+        print '("system.time.zone: ", a)',  dm_time_zone()
+        print '("system.version: ", a)',    trim(uname%version)
     end function output_info
 end program dminfo

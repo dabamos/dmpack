@@ -48,7 +48,7 @@ for TEST in ${TESTS}; do
     if [ $? -ne 0 ]; then
         NFAIL=`expr ${NFAIL} + 1`
         printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-        printf "TEST ${TEST} FAILED!\n"
+        printf "TEST %s FAILED!\n" ${TEST}
         printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
     fi
 done

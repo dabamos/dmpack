@@ -1492,6 +1492,8 @@ contains
                               H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'DMPACK Version' // H_TH_END // &
                               H_TD // DM_VERSION_STRING // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'SQLite Version' // H_TH_END // &
+                              H_TD // dm_db_version() // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Compiler' // H_TH_END // &
                               H_TD // dm_html_encode(compiler_version()) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Compiler Options' // H_TH_END // &

@@ -95,122 +95,122 @@ contains
 
         ! Add error codes.
         if (errors_) then
-            rc = dm_lua_eval(lua, 'E_NONE = '           // dm_itoa(E_NONE));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ERROR = '          // dm_itoa(E_ERROR));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DUMMY = '          // dm_itoa(E_DUMMY));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_INVALID = '        // dm_itoa(E_INVALID));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_INCOMPLETE = '     // dm_itoa(E_INCOMPLETE));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_TYPE = '           // dm_itoa(E_TYPE));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_IO = '             // dm_itoa(E_IO));             if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_READ = '           // dm_itoa(E_READ));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_WRITE = '          // dm_itoa(E_WRITE));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_EOF = '            // dm_itoa(E_EOF));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_EOR = '            // dm_itoa(E_EOR));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ALLOC = '          // dm_itoa(E_ALLOC));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_BOUNDS = '         // dm_itoa(E_BOUNDS));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_EXIST = '          // dm_itoa(E_EXIST));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_SYSTEM = '         // dm_itoa(E_SYSTEM));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MEMORY = '         // dm_itoa(E_MEMORY));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_FULL = '           // dm_itoa(E_FULL));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_EMPTY = '          // dm_itoa(E_EMPTY));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LIMIT = '          // dm_itoa(E_LIMIT));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_TIMEOUT = '        // dm_itoa(E_TIMEOUT));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_FORMAT = '         // dm_itoa(E_FORMAT));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_NOT_FOUND = '      // dm_itoa(E_NOT_FOUND));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_PERM = '           // dm_itoa(E_PERM));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_READ_ONLY = '      // dm_itoa(E_READ_ONLY));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_CORRUPT = '        // dm_itoa(E_CORRUPT));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_CONFIG = '         // dm_itoa(E_CONFIG));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_GEOCOM = '         // dm_itoa(E_GEOCOM));         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NONE',           E_NONE);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ERROR',          E_ERROR);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DUMMY',          E_DUMMY);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_INVALID',        E_INVALID);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_INCOMPLETE',     E_INCOMPLETE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_TYPE',           E_TYPE);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IO',             E_IO);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_READ',           E_READ);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_WRITE',          E_WRITE);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EOF',            E_EOF);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EOR',            E_EOR);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ALLOC',          E_ALLOC);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_BOUNDS',         E_BOUNDS);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EXIST',          E_EXIST);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_SYSTEM',         E_SYSTEM);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MEMORY',         E_MEMORY);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FULL',           E_FULL);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EMPTY',          E_EMPTY);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LIMIT',          E_LIMIT);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_TIMEOUT',        E_TIMEOUT);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_FOUND',      E_NOT_FOUND);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_PERM',           E_PERM);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CONFIG',         E_CONFIG);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_GEOCOM',         E_GEOCOM);         if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_DB = '             // dm_itoa(E_DB));             if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_ID = '          // dm_itoa(E_DB_ID));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_BUSY = '        // dm_itoa(E_DB_BUSY));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_LOCKED = '      // dm_itoa(E_DB_LOCKED));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_EXEC = '        // dm_itoa(E_DB_EXEC));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_CONSTRAINT = '  // dm_itoa(E_DB_CONSTRAINT));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_TRANSACTION = ' // dm_itoa(E_DB_TRANSACTION)); if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_ROLLBACK = '    // dm_itoa(E_DB_ROLLBACK));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_PREPARE = '     // dm_itoa(E_DB_PREPARE));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_FINALIZE = '    // dm_itoa(E_DB_FINALIZE));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_BIND = '        // dm_itoa(E_DB_BIND));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_TYPE = '        // dm_itoa(E_DB_TYPE));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_STEP = '        // dm_itoa(E_DB_STEP));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_NO_ROWS = '     // dm_itoa(E_DB_NO_ROWS));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_BACKUP = '      // dm_itoa(E_DB_BACKUP));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_ATTACH = '      // dm_itoa(E_DB_ATTACH));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_DETACH = '      // dm_itoa(E_DB_DETACH));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_DB_VERSION = '     // dm_itoa(E_DB_VERSION));     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BUSY',        E_DB_BUSY);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_LOCKED',      E_DB_LOCKED);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_EXEC',        E_DB_EXEC);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_CONSTRAINT',  E_DB_CONSTRAINT);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TRANSACTION', E_DB_TRANSACTION); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROLLBACK',    E_DB_ROLLBACK);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_PREPARE',     E_DB_PREPARE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_FINALIZE',    E_DB_FINALIZE);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BIND',        E_DB_BIND);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TYPE',        E_DB_TYPE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_STEP',        E_DB_STEP);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_NO_ROWS',     E_DB_NO_ROWS);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BACKUP',      E_DB_BACKUP);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ATTACH',      E_DB_ATTACH);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DETACH',      E_DB_DETACH);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_VERSION',     E_DB_VERSION);     if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_ARG = '            // dm_itoa(E_ARG));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_NOT_FOUND = '  // dm_itoa(E_ARG_NOT_FOUND));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_INVALID = '    // dm_itoa(E_ARG_INVALID));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_NO_VALUE = '   // dm_itoa(E_ARG_NO_VALUE));   if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_TYPE = '       // dm_itoa(E_ARG_TYPE));       if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_LENGTH = '     // dm_itoa(E_ARG_LENGTH));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ARG_UNKNOWN = '    // dm_itoa(E_ARG_UNKNOWN));    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_INVALID',    E_ARG_INVALID);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_NO_VALUE',   E_ARG_NO_VALUE);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_TYPE',       E_ARG_TYPE);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_LENGTH',     E_ARG_LENGTH);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_UNKNOWN',    E_ARG_UNKNOWN);    if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_MQUEUE = '         // dm_itoa(E_MQUEUE));         if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MQUEUE_EMPTY = '   // dm_itoa(E_MQUEUE_EMPTY));   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQUEUE',         E_MQUEUE);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQUEUE_EMPTY',   E_MQUEUE_EMPTY);   if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_REGEX = '          // dm_itoa(E_REGEX));          if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_REGEX_COMPILE = '  // dm_itoa(E_REGEX_COMPILE));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_REGEX_EXCEEDED = ' // dm_itoa(E_REGEX_EXCEEDED)); if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_REGEX_NO_MATCH = ' // dm_itoa(E_REGEX_NO_MATCH)); if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_REGEX_NO_GROUP = ' // dm_itoa(E_REGEX_NO_GROUP)); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX',          E_REGEX);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_COMPILE',  E_REGEX_COMPILE);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_EXCEEDED', E_REGEX_EXCEEDED); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_NO_MATCH', E_REGEX_NO_MATCH); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_NO_GROUP', E_REGEX_NO_GROUP); if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_SENSOR = '         // dm_itoa(E_SENSOR));         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_SENSOR',         E_SENSOR);         if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_RPC = '            // dm_itoa(E_RPC));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_CONNECT = '    // dm_itoa(E_RPC_CONNECT));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_SSL = '        // dm_itoa(E_RPC_SSL));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_API = '        // dm_itoa(E_RPC_API));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_AUTH = '       // dm_itoa(E_RPC_AUTH));       if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_CONFLICT = '   // dm_itoa(E_RPC_CONFLICT));   if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_RPC_SERVER = '     // dm_itoa(E_RPC_SERVER));     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC',            E_RPC);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_CONNECT',    E_RPC_CONNECT);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_SSL',        E_RPC_SSL);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_API',        E_RPC_API);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_AUTH',       E_RPC_AUTH);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_CONFLICT',   E_RPC_CONFLICT);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_SERVER',     E_RPC_SERVER);     if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_MAIL = '           // dm_itoa(E_MAIL));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MAIL_CONNECT = '   // dm_itoa(E_MAIL_CONNECT));   if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MAIL_SSL = '       // dm_itoa(E_MAIL_SSL));       if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MAIL_AUTH = '      // dm_itoa(E_MAIL_AUTH));      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL',           E_MAIL);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_CONNECT',   E_MAIL_CONNECT);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_SSL',       E_MAIL_SSL);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_AUTH',      E_MAIL_AUTH);      if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_MQTT = '           // dm_itoa(E_MQTT));           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQTT',           E_MQTT);           if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_LUA = '            // dm_itoa(E_LUA));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_YIELD = '      // dm_itoa(E_LUA_YIELD));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_RUNTIME = '    // dm_itoa(E_LUA_RUNTIME));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_SYNTAX = '     // dm_itoa(E_LUA_SYNTAX));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_MEM = '        // dm_itoa(E_LUA_MEM));        if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_ERROR = '      // dm_itoa(E_LUA_ERROR));      if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_LUA_FILE = '       // dm_itoa(E_LUA_FILE));       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA',            E_LUA);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_YIELD',      E_LUA_YIELD);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_RUNTIME',    E_LUA_RUNTIME);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_SYNTAX',     E_LUA_SYNTAX);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_MEM',        E_LUA_MEM);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_ERROR',      E_LUA_ERROR);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_FILE',       E_LUA_FILE);       if (dm_is_error(rc)) return
 
-            rc = dm_lua_eval(lua, 'E_LIB = '            // dm_itoa(E_LIB));            if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_FCGI = '           // dm_itoa(E_FCGI));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_HDF5 = '           // dm_itoa(E_HDF5));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ZLIB = '           // dm_itoa(E_ZLIB));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_ZSTD = '           // dm_itoa(E_ZSTD));           if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'E_MODBUS = '         // dm_itoa(E_MODBUS));         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LIB',            E_LIB);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FCGI',           E_FCGI);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_HDF5',           E_HDF5);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MODBUS',         E_MODBUS);         if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.
         if (log_levels_) then
-            rc = dm_lua_eval(lua, 'LL_NONE = '     // dm_itoa(LL_NONE));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LL_DEBUG = '    // dm_itoa(LL_DEBUG));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LL_INFO = '     // dm_itoa(LL_INFO));     if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LL_WARNING = '  // dm_itoa(LL_WARNING));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LL_ERROR = '    // dm_itoa(LL_ERROR));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'LL_CRITICAL = ' // dm_itoa(LL_CRITICAL)); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_NONE',     LL_NONE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_DEBUG',    LL_DEBUG);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_INFO',     LL_INFO);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_WARNING',  LL_WARNING);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_ERROR',    LL_ERROR);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_CRITICAL', LL_CRITICAL); if (dm_is_error(rc)) return
         end if
 
         ! Register response type parameters.
         if (response_types_) then
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL64 = '  // dm_itoa(RESPONSE_TYPE_REAL64));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_REAL32 = '  // dm_itoa(RESPONSE_TYPE_REAL32));  if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_INT64 = '   // dm_itoa(RESPONSE_TYPE_INT64));   if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_INT32 = '   // dm_itoa(RESPONSE_TYPE_INT32));   if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_LOGICAL = ' // dm_itoa(RESPONSE_TYPE_LOGICAL)); if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_BYTE = '    // dm_itoa(RESPONSE_TYPE_BYTE));    if (dm_is_error(rc)) return
-            rc = dm_lua_eval(lua, 'RESPONSE_TYPE_STRING = '  // dm_itoa(RESPONSE_TYPE_STRING));  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_REAL64',  RESPONSE_TYPE_REAL64);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_REAL32',  RESPONSE_TYPE_REAL32);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_INT64',   RESPONSE_TYPE_INT64);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_INT32',   RESPONSE_TYPE_INT32);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_LOGICAL', RESPONSE_TYPE_LOGICAL); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_BYTE',    RESPONSE_TYPE_BYTE);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_STRING',  RESPONSE_TYPE_STRING);  if (dm_is_error(rc)) return
         end if
 
         ! Register procedures.

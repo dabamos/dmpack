@@ -27,11 +27,6 @@ module dm_lua
     implicit none (type, external)
     private
 
-    type, public :: lua_state_type
-        !! Lua state type that stores the Lua pointer.
-        type(c_ptr) :: ptr = c_null_ptr !! C pointer to Lua interpreter.
-    end type lua_state_type
-
     abstract interface
         ! int *lua_CFunction(lua_State *L)
         function dm_lua_callback(ptr) bind(c)
@@ -53,7 +48,7 @@ module dm_lua
         module procedure :: lua_field_real64
         module procedure :: lua_field_stack
         module procedure :: lua_field_string
-    end interface
+    end interface dm_lua_field
 
     interface dm_lua_get
         !! Pushes table index on stack and optionally returns value.
@@ -63,13 +58,13 @@ module dm_lua
         module procedure :: lua_get_real64
         module procedure :: lua_get_stack
         module procedure :: lua_get_string
-    end interface
+    end interface dm_lua_get
 
     interface dm_lua_from
         !! Converts derived types to Lua table on stack.
         module procedure :: lua_from_observ
         module procedure :: lua_from_request
-    end interface
+    end interface dm_lua_from
 
     interface dm_lua_read
         !! Pushes global variable on stack and optionally returns value.
@@ -81,7 +76,11 @@ module dm_lua
         module procedure :: lua_read_real64
         module procedure :: lua_read_stack
         module procedure :: lua_read_string
-    end interface
+    end interface dm_lua_read
+
+    interface dm_lua_set
+        module procedure :: lua_set_int32
+    end interface dm_lua_set
 
     interface dm_lua_to
         !! Converts Lua table to Fortran derived type.
@@ -93,6 +92,11 @@ module dm_lua
         module procedure :: lua_to_report
         module procedure :: lua_to_request
     end interface dm_lua_to
+
+    type, public :: lua_state_type
+        !! Lua state type that stores the Lua pointer.
+        type(c_ptr) :: ptr = c_null_ptr !! C pointer to Lua interpreter.
+    end type lua_state_type
 
     ! Public procedures.
     public :: dm_lua_call
@@ -116,6 +120,7 @@ module dm_lua
     public :: dm_lua_open
     public :: dm_lua_pop
     public :: dm_lua_register
+    public :: dm_lua_set
     public :: dm_lua_table
     public :: dm_lua_table_size
     public :: dm_lua_to
@@ -127,6 +132,7 @@ module dm_lua
     public :: dm_lua_to_string
     public :: dm_lua_unescape
     public :: dm_lua_version
+    public :: dm_lua_version_number
 
     ! Private procedures.
     private :: lua_field_array_int32
@@ -157,6 +163,8 @@ module dm_lua
     private :: lua_read_stack
     private :: lua_read_string
 
+    private :: lua_set_int32
+
     private :: lua_to_job
     private :: lua_to_job_list
     private :: lua_to_jobs
@@ -164,8 +172,6 @@ module dm_lua
     private :: lua_to_observs
     private :: lua_to_report
     private :: lua_to_request
-
-    private :: lua_version_number
 contains
     ! ******************************************************************
     ! PUBLIC FUNCTIONS.
@@ -434,7 +440,7 @@ contains
     function dm_lua_version(name) result(version)
         !! Returns Lua version as allocatable string of the form `5.4` or
         !! `liblua/5.4` if argument `name` is `.true.`.
-        logical, intent(in), optional :: name
+        logical, intent(in), optional :: name !! Add prefix `liblua/`.
         character(len=:), allocatable :: version
 
         character(len=3)     :: v
@@ -449,7 +455,7 @@ contains
         rc = dm_lua_init(lua)
 
         if (dm_is_ok(rc)) then
-            call lua_version_number(lua, major, minor)
+            call dm_lua_version_number(lua, major, minor)
             write (v, '(i1, ".", i1)') major, minor
         end if
 
@@ -494,7 +500,7 @@ contains
                 case (LUA_TNIL)
                     write (unit_, '("nil")')
                 case (LUA_TBOOLEAN)
-                    write (unit_, '(l)')    lua_toboolean(lua%ptr, i)
+                    write (unit_, '(l1)')   lua_toboolean(lua%ptr, i)
                 case (LUA_TNUMBER)
                     write (unit_, '(f0.1)') lua_tonumber(lua%ptr, i)
                 case (LUA_TSTRING)
@@ -526,6 +532,19 @@ contains
 
         call lua_register(lua%ptr, trim(name), c_funloc(proc))
     end subroutine dm_lua_register
+
+    subroutine dm_lua_version_number(lua, major, minor)
+        !! Returns Lua version number.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        integer,              intent(out)   :: major !! Major version number.
+        integer,              intent(out)   :: minor !! Minor version number.
+
+        real :: version
+
+        version = real(lua_version(lua%ptr))
+        major   = floor(version / 100)
+        minor   = floor(version - (major * 100))
+    end subroutine dm_lua_version_number
 
     ! ******************************************************************
     ! PRIVATE FUNCTIONS.
@@ -1137,6 +1156,15 @@ contains
         call lua_pop(lua%ptr, 1)
     end function lua_read_string
 
+    integer function lua_set_int32(lua, name, value) result(rc)
+        !! Sets 4-byte integer variable of given name.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Name of variable
+        integer(kind=i4),     intent(in)    :: value !! Value of variable.
+
+        rc = dm_lua_eval(lua, name // ' = ' // dm_itoa(value))
+    end function lua_set_int32
+
     integer function lua_to_job(lua, job) result(rc)
         !! Reads Lua table into Fortran job type. The table has to be on top of
         !! the stack and will be removed once finished.
@@ -1654,17 +1682,4 @@ contains
 
         call lua_setfield(lua%ptr, -2, 'responses')
     end subroutine lua_from_request
-
-    subroutine lua_version_number(lua, major, minor)
-        !! Returns Lua version number.
-        type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        integer,              intent(out)   :: major !! Major version number.
-        integer,              intent(out)   :: minor !! Minor version number.
-
-        real :: version
-
-        version = real(lua_version(lua%ptr))
-        major   = floor(version / 100)
-        minor   = floor(version - (major * 100))
-    end subroutine lua_version_number
 end module dm_lua

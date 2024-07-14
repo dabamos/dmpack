@@ -230,6 +230,9 @@ contains
         !! arguments. If one of these arguments is passed, `dm_stop(0)` is
         !! called afterwards.
         !!
+        !! Optional argument `version` may be a string of third-party library
+        !! names and version numbers.
+        !!
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if array of arguments is empty.

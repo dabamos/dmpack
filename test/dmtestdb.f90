@@ -57,6 +57,7 @@ contains
 
         stat = TEST_FAILED
 
+        print '(" Library: ", a)', dm_db_version(.true.)
         print *, 'Checking for stale database "' // DB_OBSERV // '" ...'
 
         if (dm_file_exists(DB_OBSERV)) then

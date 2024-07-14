@@ -189,7 +189,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, beat, encoding)
+                rc = dm_z_uncompress(content, encoding, beat)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -445,7 +445,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, log, encoding)
+                rc = dm_z_uncompress(content, encoding, log)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -778,7 +778,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, node, encoding)
+                rc = dm_z_uncompress(content, encoding, node)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1035,7 +1035,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, observ, encoding)
+                rc = dm_z_uncompress(content, encoding, observ)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1444,7 +1444,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, sensor, encoding)
+                rc = dm_z_uncompress(content, encoding, sensor)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1702,7 +1702,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, target, encoding)
+                rc = dm_z_uncompress(content, encoding, target)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)

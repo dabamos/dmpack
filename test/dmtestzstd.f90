@@ -30,15 +30,17 @@ contains
 
         stat = TEST_FAILED
 
+        print '(" Library: ", a)', dm_zstd_version(.true.)
+
         call dm_test_dummy(observ1)
         rc = dm_nml_from(observ1, input)
 
         zstd_block: block
-            print *, 'compressing ...'
+            print *, 'Compressing ...'
             rc = dm_zstd_compress(input, output1, output_len=output_len)
             if (dm_is_error(rc)) exit zstd_block
 
-            print *, 'uncompressing ...'
+            print *, 'Uncompressing ...'
             rc = dm_zstd_uncompress(output1, output2, input_len=output_len)
             if (dm_is_error(rc)) exit zstd_block
         end block zstd_block
@@ -46,7 +48,7 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'matching ...'
+        print *, 'Matching ...'
         rc = dm_nml_to(output2, observ2)
         if (.not. (observ2 == observ1)) return
 
@@ -67,22 +69,22 @@ contains
         rc = dm_nml_from(observ1, input)
 
         zstd_block: block
-            print *, 'compressing with context ...'
+            print *, 'Compressing with context ...'
             rc = dm_zstd_compress(context, input, output1, output_len=output_len)
             if (dm_is_error(rc)) exit zstd_block
 
-            print *, 'uncompressing with context ...'
+            print *, 'Uncompressing with context ...'
             rc = dm_zstd_uncompress(context, output1, output2, input_len=output_len)
             if (dm_is_error(rc)) exit zstd_block
         end block zstd_block
 
-        print *, 'destroying ...'
+        print *, 'Destroying ...'
         if (dm_is_error(dm_zstd_destroy(context))) return
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'matching ...'
+        print *, 'Matching ...'
         rc = dm_nml_to(output2, observ2)
         if (.not. (observ2 == observ1)) return
 

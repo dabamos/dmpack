@@ -4208,7 +4208,7 @@ contains
 
     function dm_db_version(name) result(version)
         !! Returns SQLite 3 library version as allocatable string.
-        logical, intent(in), optional :: name !! Add string `libsqlite/' as prefix.
+        logical, intent(in), optional :: name !! Add prefix `libsqlite/'.
         character(len=:), allocatable :: version
 
         logical :: name_
@@ -4217,7 +4217,7 @@ contains
         if (present(name)) name_ = name
 
         if (name_) then
-            version = 'libsqlite/' // sqlite3_libversion()
+            version = 'libsqlite3/' // sqlite3_libversion()
         else
             version = sqlite3_libversion()
         end if

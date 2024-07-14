@@ -151,8 +151,7 @@ $ make [freebsd|linux|linux_aarch64]
 $ make install PREFIX=/opt
 ```
 
-On 64-bit Raspberry Pi single-board computers, target `linux_aarch64` must be
-chosen.
+On 64-bit Raspberry Pi single-board computers, select target `linux_aarch64`.
 
 ## Library
 

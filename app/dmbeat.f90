@@ -97,7 +97,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_rpc_version() // ' ' // dm_lua_version(.true.)
+        version = dm_rpc_version() // ' ' // dm_lua_version(.true.) // ' ' // dm_zstd_version(.true.)
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
@@ -294,7 +294,7 @@ contains
             last_error = rc
 
             if (app%count > 0) then
-                niter = niter + 1
+                niter = dm_inc(niter)
                 if (niter >= app%count) exit emit_loop
             end if
 

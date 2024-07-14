@@ -60,6 +60,7 @@ contains
         dps(2) = dp_type('1970-01-01T00:01:00.000+00:00', 223.123_8)
         dps(3) = dp_type('1970-01-01T00:02:00.000+00:00',  23.123_8)
 
+        print '(" Library: ", a)', dm_plot_version(.true.)
         print *, 'Writing to stdin ...'
         rc = dm_plot_lines(plot, dps)
         call dm_error_out(rc)

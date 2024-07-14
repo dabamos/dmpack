@@ -222,24 +222,36 @@ contains
         valid = (term > PLOT_TERM_NONE .and. term <= PLOT_TERM_LAST)
     end function dm_plot_term_valid
 
-    function dm_plot_version() result(version)
+    function dm_plot_version(name) result(version)
         !! Returns Gnuplot version as allocatable string.
+        logical, intent(in), optional :: name !! Add prefix `gnuplot/`.
         character(len=:), allocatable :: version
 
+        character(len=3)  :: v
         character(len=32) :: buffer
         integer           :: rc
         integer(kind=i8)  :: sz
+        logical           :: name_
         type(pipe_type)   :: pipe
 
+        name_ = .false.
+        if (present(name)) name_ = name
+
         rc = dm_pipe_open(pipe, PLOT_GNUPLOT // ' --version', PIPE_RDONLY)
+        v  = '0.0'
 
         if (dm_is_ok(rc)) then
             sz = dm_pipe_read(pipe, buffer)
-            if (sz > 10) version = 'gnuplot/' // buffer(9:11)
+            if (sz > 11) v = buffer(9:11)
         end if
 
         call dm_pipe_close(pipe)
-        if (.not. allocated(version)) version = 'gnuplot/0.0'
+
+        if (name_) then
+            version = 'gnuplot/' // v
+        else
+            version = v
+        end if
     end function dm_plot_version
 
     ! ******************************************************************

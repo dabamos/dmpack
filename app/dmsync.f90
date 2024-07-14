@@ -144,7 +144,8 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_rpc_version() // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
+        version = dm_rpc_version()      // ' ' // dm_lua_version(.true.) // ' ' // &
+                  dm_db_version(.true.) // ' ' // dm_zstd_version(.true.)
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
@@ -510,9 +511,9 @@ contains
                     last_error = max(last_error, rc)
 
                     ! Update sync data.
-                    syncs(i)%timestamp = dm_time_now()         ! Time of sync attempt.
-                    syncs(i)%code      = responses(i)%code     ! Server status code.
-                    syncs(i)%attempts  = syncs(i)%attempts + 1 ! Number of sync attempts.
+                    syncs(i)%timestamp = dm_time_now()             ! Time of sync attempt.
+                    syncs(i)%code      = responses(i)%code         ! Server status code.
+                    syncs(i)%attempts  = dm_inc(syncs(i)%attempts) ! Number of sync attempts.
 
                     ! Insert or replace the sync data in database. If the database
                     ! is busy, try up to `APP_DB_NATTEMPTS` times, then abort.

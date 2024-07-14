@@ -27,7 +27,7 @@ contains
 
         stat = TEST_FAILED
 
-        print '(" libmodbus: ", a)', dm_modbus_version()
+        print '(" Library: ", a)', dm_modbus_version(.true.)
 
         mb_block: block
             print *, 'Creating Modbus TCP context ...'
