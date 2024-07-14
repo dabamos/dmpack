@@ -105,6 +105,11 @@ main = "dmlua.f90"
 link = [ "lua-5.4", "rt" ]
 
 [[executable]]
+name = "dmmbctl"
+main = "dmmbctl.f90"
+link = [ "modbus" ]
+
+[[executable]]
 name = "dmpipe"
 main = "dmpipe.f90"
 link = [ "lua-5.4", "pcre2-8", "rt" ]

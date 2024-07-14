@@ -144,7 +144,7 @@ TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
-DEBUG   = -g -O0 -Wall -Wpedantic -fcheck=all -fmax-errors=1
+DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
 RELEASE = -mtune=native -O2
 
 # Common build options.
@@ -204,6 +204,7 @@ DMINIT   = $(DISTDIR)/dminit
 DMLOG    = $(DISTDIR)/dmlog
 DMLOGGER = $(DISTDIR)/dmlogger
 DMLUA    = $(DISTDIR)/dmlua
+DMMBCTL  = $(DISTDIR)/dmmbctl
 DMPIPE   = $(DISTDIR)/dmpipe
 DMPLOT   = $(DISTDIR)/dmplot
 DMRECV   = $(DISTDIR)/dmrecv
@@ -420,7 +421,7 @@ build: $(TARGET) $(SHARED) test app
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-     $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
+     $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
      $(DMSYNC) $(DMUUID) $(DMWEB)
 
 # Tests target.
@@ -816,6 +817,9 @@ $(DMLOGGER): app/dmlogger.f90 $(TARGET)
 $(DMLUA): app/dmlua.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
+$(DMMBCTL): app/dmmbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMMBCTL) app/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
+
 $(DMPIPE): app/dmpipe.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
@@ -898,6 +902,7 @@ install:
 	install -m 755 $(DMLOG)    $(IBINDIR)/
 	install -m 755 $(DMLOGGER) $(IBINDIR)/
 	install -m 755 $(DMLUA)    $(IBINDIR)/
+	install -m 755 $(DMMBCTL)  $(IBINDIR)/
 	install -m 755 $(DMPIPE)   $(IBINDIR)/
 	install -m 755 $(DMPLOT)   $(IBINDIR)/
 	install -m 755 $(DMRECV)   $(IBINDIR)/
