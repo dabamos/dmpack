@@ -123,7 +123,7 @@ contains
         integer           :: n, stat
         integer(kind=i8)  :: i
 
-        rc    = E_EMPTY
+        rc = E_EMPTY
         value = 0
 
         if (present(default)) value  = default
@@ -136,7 +136,7 @@ contains
         if (rc /= E_NONE) return
 
         value = i
-        rc    = E_NONE
+        rc = E_NONE
     end function env_get_int64
 
     integer function env_get_logical(name, value, default, exists) result(rc)
@@ -160,7 +160,7 @@ contains
         if (present(exists)) exists = .true.
 
         value = (i > 0)
-        rc    = E_NONE
+        rc = E_NONE
     end function env_get_logical
 
     integer function env_get_real32(name, value, default, exists) result(rc)
@@ -175,7 +175,7 @@ contains
         integer           :: n, stat
         real(kind=r4)     :: f
 
-        rc    = E_EMPTY
+        rc = E_EMPTY
         value = 0
 
         if (present(default)) value  = default
@@ -188,7 +188,7 @@ contains
         if (rc /= E_NONE) return
 
         value = f
-        rc    = E_NONE
+        rc = E_NONE
     end function env_get_real32
 
     integer function env_get_real64(name, value, default, exists) result(rc)
@@ -203,7 +203,7 @@ contains
         integer           :: n, stat
         real(kind=r8)     :: f
 
-        rc    = E_EMPTY
+        rc = E_EMPTY
         value = 0
 
         if (present(default)) value  = default
@@ -216,7 +216,7 @@ contains
         if (rc /= E_NONE) return
 
         value = f
-        rc    = E_NONE
+        rc = E_NONE
     end function env_get_real64
 
     integer function env_get_string(name, value, n, exists) result(rc)
@@ -229,7 +229,7 @@ contains
 
         integer :: stat
 
-        rc    = E_EMPTY
+        rc = E_EMPTY
         value = ' '
         if (present(exists)) exists = .false.
 

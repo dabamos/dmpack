@@ -58,6 +58,7 @@ contains
     function jsonl_from_beats(beats) result(jsonl)
         !! Returns array of beats in JSON Lines format.
         use :: dm_beat
+
         type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
         character(len=:), allocatable  :: jsonl    !! Allocatable JSON Lines string.
 
@@ -82,6 +83,7 @@ contains
     function jsonl_from_data_points(data_points) result(jsonl)
         !! Returns array of data points in JSON Lines format.
         use :: dm_dp
+
         type(dp_type), intent(inout)  :: data_points(:) !! Data points array.
         character(len=:), allocatable :: jsonl          !! Allocatable JSON Lines string.
 
@@ -106,6 +108,7 @@ contains
     function jsonl_from_logs(logs) result(jsonl)
         !! Returns array of logs in JSON Lines format.
         use :: dm_log
+
         type(log_type), intent(inout) :: logs(:) !! Array of log types.
         character(len=:), allocatable :: jsonl   !! Allocatable JSON Lines string.
 
@@ -130,6 +133,7 @@ contains
     function jsonl_from_nodes(nodes) result(jsonl)
         !! Returns array of nodes in JSON Lines format.
         use :: dm_node
+
         type(node_type), intent(inout) :: nodes(:) !! Array of node types.
         character(len=:), allocatable  :: jsonl    !! Allocatable JSON Lines string.
 
@@ -154,6 +158,7 @@ contains
     function jsonl_from_observs(observs) result(jsonl)
         !! Returns array of observations in JSON Lines format.
         use :: dm_observ
+
         type(observ_type), intent(inout) :: observs(:) !! Array of observations.
         character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
 
@@ -178,6 +183,7 @@ contains
     function jsonl_from_sensors(sensors) result(jsonl)
         !! Returns array of sensors in JSON Lines format.
         use :: dm_sensor
+
         type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
         character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
 
@@ -202,6 +208,7 @@ contains
     function jsonl_from_targets(targets) result(jsonl)
         !! Returns array of targets in JSON Lines format.
         use :: dm_target
+
         type(target_type), intent(inout) :: targets(:) !! Array of targets.
         character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
 
@@ -226,6 +233,7 @@ contains
     integer function jsonl_write_beats(beats, unit) result(rc)
         !! Writes beats to file or standard output.
         use :: dm_beat
+
         type(beat_type), intent(inout)        :: beats(:) !! Beat array.
         integer,         intent(in), optional :: unit     !! File unit.
 
@@ -252,6 +260,7 @@ contains
     integer function jsonl_write_data_points(data_points, unit) result(rc)
         !! Writes data_points to file or standard output.
         use :: dm_dp
+
         type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
         integer,       intent(in), optional :: unit           !! File unit.
 
@@ -278,6 +287,7 @@ contains
     integer function jsonl_write_logs(logs, unit) result(rc)
         !! Writes logs to file or standard output.
         use :: dm_log
+
         type(log_type), intent(inout)        :: logs(:) !! Log array.
         integer,        intent(in), optional :: unit    !! File unit.
 
@@ -304,6 +314,7 @@ contains
     integer function jsonl_write_nodes(nodes, unit) result(rc)
         !! Writes nodes to file or standard output.
         use :: dm_node
+
         type(node_type), intent(inout)        :: nodes(:) !! Node array.
         integer,         intent(in), optional :: unit     !! File unit.
 
@@ -330,6 +341,7 @@ contains
     integer function jsonl_write_observs(observs, unit) result(rc)
         !! Writes observations to file or standard output.
         use :: dm_observ
+
         type(observ_type), intent(inout)        :: observs(:) !! Observation array.
         integer,           intent(in), optional :: unit       !! File unit.
 
@@ -356,6 +368,7 @@ contains
     integer function jsonl_write_sensors(sensors, unit) result(rc)
         !! Writes sensors to file or standard output.
         use :: dm_sensor
+
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensor array.
         integer,           intent(in), optional :: unit       !! File unit.
 
@@ -382,6 +395,7 @@ contains
     integer function jsonl_write_targets(targets, unit) result(rc)
         !! Writes targets to file or standard output.
         use :: dm_target
+
         type(target_type), intent(inout)        :: targets(:) !! Target array.
         integer,           intent(in), optional :: unit       !! File unit.
 

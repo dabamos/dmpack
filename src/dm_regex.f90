@@ -9,7 +9,7 @@ module dm_regex
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REGEX_OVEC_SIZE = 150 !! PCRE2 O-vector size (must be multiple of 3).
+    integer, parameter :: REGEX_VECTOR_SIZE = 150 !! PCRE2 O-vector size (must be multiple of 3).
 
     type, public :: regex_type
         !! Opaque regular expression type.
@@ -38,7 +38,7 @@ contains
 
         rc = E_REGEX_COMPILE
         regex%ptr = pcre2_compile(pattern     = pattern, &
-                                  length      = len(pattern, kind=PCRE2_SIZE), &
+                                  length      = len(pattern, kind=pcre2_size), &
                                   options     = 0, &
                                   errorcode   = code, &
                                   erroroffset = offset, &
@@ -47,7 +47,7 @@ contains
         if (.not. c_associated(regex%ptr)) then
             if (present(error_message)) then
                 buffer = ' '
-                stat   = pcre2_get_error_message(code, buffer, len(buffer, kind=PCRE2_SIZE))
+                stat   = pcre2_get_error_message(code, buffer, len(buffer, kind=pcre2_size))
 
                 error_message = trim(buffer)
             end if
@@ -77,19 +77,19 @@ contains
         character(len=:), allocatable, intent(out)   :: value   !! Group value.
 
         integer                  :: match
-        integer(kind=PCRE2_SIZE) :: n
+        integer(kind=pcre2_size) :: n
         type(c_ptr)              :: match_data
 
         rc = E_INVALID
         if (.not. c_associated(regex%ptr)) return
 
         pcre_block: block
-            match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+            match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = subject, &
-                                length      = len(subject, kind=PCRE2_SIZE), &
-                                startoffset = int(0, kind=PCRE2_SIZE), &
+                                length      = len(subject, kind=pcre2_size), &
+                                startoffset = int(0, kind=pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)
@@ -132,12 +132,12 @@ contains
         rc = E_INVALID
         if (.not. c_associated(regex%ptr)) return
 
-        match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+        match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
         match = pcre2_match(code        = regex%ptr, &
                             subject     = subject, &
-                            length      = len(subject, kind=PCRE2_SIZE), &
-                            startoffset = int(0, kind=PCRE2_SIZE), &
+                            length      = len(subject, kind=pcre2_size), &
+                            startoffset = int(0, kind=pcre2_size), &
                             options     = 0, &
                             match_data  = match_data, &
                             mcontext    = c_null_ptr)
@@ -185,7 +185,7 @@ contains
 
         character(len=:), allocatable :: buffer
         integer                       :: i, ibyte, match, stat
-        integer(kind=PCRE2_SIZE)      :: n
+        integer(kind=pcre2_size)      :: n
         type(c_ptr)                   :: match_data
         type(regex_type)              :: regex
 
@@ -206,12 +206,12 @@ contains
             if (dm_is_error(rc)) exit pcre_block
 
             ! Match regular expression.
-            match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+            match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = request%response, &
-                                length      = len_trim(request%response, kind=PCRE2_SIZE), &
-                                startoffset = int(0, kind=PCRE2_SIZE), &
+                                length      = len_trim(request%response, kind=pcre2_size), &
+                                startoffset = int(0, kind=pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)
@@ -305,7 +305,7 @@ contains
         character(len=*),              intent(in), optional :: pattern !! Pattern to use instead of the request pattern.
 
         integer                  :: match, stat
-        integer(kind=PCRE2_SIZE) :: n
+        integer(kind=pcre2_size) :: n
         type(c_ptr)              :: match_data
         type(regex_type)         :: regex
 
@@ -327,12 +327,12 @@ contains
             if (dm_is_error(rc)) exit pcre_block
 
             ! Match regular expression.
-            match_data = pcre2_match_data_create(REGEX_OVEC_SIZE, c_null_ptr)
+            match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
             match = pcre2_match(code        = regex%ptr, &
                                 subject     = request%response, &
-                                length      = len_trim(request%response, kind=PCRE2_SIZE), &
-                                startoffset = int(0, kind=PCRE2_SIZE), &
+                                length      = len_trim(request%response, kind=pcre2_size), &
+                                startoffset = int(0, kind=pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)

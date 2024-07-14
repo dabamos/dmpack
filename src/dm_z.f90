@@ -21,7 +21,8 @@ module dm_z
     integer, parameter, public :: Z_TYPE_NAME_LEN = 4 !! Max. type enumerator name length.
 
     character(len=*), parameter, public :: Z_TYPE_NAMES(0:Z_TYPE_LAST) = [ &
-        character(len=4) :: 'none', 'zlib', 'zstd' ] !! Compression type enumerator names.
+        character(len=4) :: 'none', 'zlib', 'zstd' &
+    ] !! Compression type enumerator names.
 
     interface dm_z_compress
         !! Generic serialisation and compression function.

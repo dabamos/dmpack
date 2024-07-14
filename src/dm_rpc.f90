@@ -129,6 +129,7 @@ module dm_rpc
     public :: dm_rpc_callback
     public :: dm_rpc_destroy
     public :: dm_rpc_error
+    public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
     public :: dm_rpc_init
     public :: dm_rpc_request
@@ -159,11 +160,11 @@ contains
         version = curl_version()
     end function dm_rpc_version
 
-    integer function dm_rpc_error(curl_error) result(rc)
+    integer function dm_rpc_error(error_curl) result(rc)
         !! Converts cURL easy stack error code to DMPACK error code.
-        integer, intent(in) :: curl_error !! cURL easy error code.
+        integer, intent(in) :: error_curl !! cURL easy error code.
 
-        select case (curl_error)
+        select case (error_curl)
             case (CURLE_OK)
                 rc = E_NONE
 
@@ -229,6 +230,15 @@ contains
                 rc = E_RPC
         end select
     end function dm_rpc_error
+
+    function dm_rpc_error_message(error_curl) result(message)
+        !! Return message associated with given cURL error code as allocatable
+        !! character string.
+        integer, intent(in)           :: error_curl !! cURL error code.
+        character(len=:), allocatable :: message    !! Error message.
+
+        message = curl_easy_strerror(error_curl)
+    end function dm_rpc_error_message
 
     integer function dm_rpc_error_multi(multi_error) result(rc)
         !! Converts cURL multi stack error code to DMPACK error code.
@@ -616,7 +626,7 @@ contains
         if (.not. c_associated(data)) return
 
         call c_f_pointer(data, response)
-        if (.not. allocated(response%payload)) response%payload = ''
+        if (.not. allocated(response%payload)) allocate (character(len=0) :: response%payload)
         call c_f_str_ptr(ptr, chunk, nmemb)
         response%payload = response%payload // chunk
 
@@ -734,17 +744,15 @@ contains
             do i = 1, n
                 ! Get HTTP response code.
                 stat = curl_easy_getinfo(requests(i)%curl_ptr, CURLINFO_RESPONSE_CODE, responses(i)%code)
-
                 ! Get content type of response.
                 stat = curl_easy_getinfo(requests(i)%curl_ptr, CURLINFO_CONTENT_TYPE, responses(i)%content_type)
-
                 ! Get transmission time.
                 stat = curl_easy_getinfo(requests(i)%curl_ptr, CURLINFO_TOTAL_TIME, responses(i)%total_time)
 
                 ! Set error code and message.
                 if (responses(i)%error_curl /= CURLE_OK) then
                     responses(i)%error         = dm_rpc_error(responses(i)%error_curl)
-                    responses(i)%error_message = curl_easy_strerror(responses(i)%error_curl)
+                    responses(i)%error_message = dm_rpc_error_message(responses(i)%error_curl)
                 else
                     responses(i)%error         = E_NONE
                     responses(i)%error_message = ''
@@ -801,7 +809,7 @@ contains
         if (stat /= CURLE_OK) return
 
         ! Set HTTP accept header.
-        if (allocated(request%accept)) then
+        if (.not. dm_string_is_empty(request%accept)) then
             request%list_ptr = curl_slist_append(request%list_ptr, 'Accept: ' // request%accept)
         end if
 
@@ -812,13 +820,13 @@ contains
             if (stat /= CURLE_OK) return
 
             ! Set user name.
-            if (allocated(request%username)) then
+            if (.not. dm_string_is_empty(request%username)) then
                 stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERNAME, request%username)
                 if (stat /= CURLE_OK) return
             end if
 
             ! Set password.
-            if (allocated(request%password)) then
+            if (.not. dm_string_is_empty(request%password)) then
                 stat = curl_easy_setopt(request%curl_ptr, CURLOPT_PASSWORD, request%password)
                 if (stat /= CURLE_OK) return
             end if
@@ -937,31 +945,25 @@ contains
         curl_block: block
             rc = rpc_request_prepare(request, response)
             if (dm_is_error(rc)) exit curl_block
-
-            rc = E_RPC
             error = curl_easy_perform(request%curl_ptr)
-            if (error /= CURLE_OK) exit curl_block
-
-            rc = E_NONE
+            rc = dm_rpc_error(error)
         end block curl_block
 
         ! Get response info.
         if (dm_is_ok(rc)) then
             ! Get HTTP response code.
             stat = curl_easy_getinfo(request%curl_ptr, CURLINFO_RESPONSE_CODE, response%code)
-
             ! Get connection info.
             stat = curl_easy_getinfo(request%curl_ptr, CURLINFO_CONTENT_TYPE, response%content_type)
-
             ! Get transmission time.
             stat = curl_easy_getinfo(request%curl_ptr, CURLINFO_TOTAL_TIME, response%total_time)
         end if
 
         ! Set error code and message.
-        if (error /= CURLE_OK) then
+        if (dm_is_error(rc)) then
             response%error         = dm_rpc_error(error)
             response%error_curl    = error
-            response%error_message = curl_easy_strerror(error)
+            response%error_message = dm_rpc_error_message(error)
         else
             response%error         = rc
             response%error_message = ''

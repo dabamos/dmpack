@@ -150,7 +150,7 @@ contains
         !! Returns the time difference between `time1` and `time2` as 8-byte
         !! integer `seconds` [sec]. The function does not validate the time
         !! stamps. Make sure to only pass valid values. On error, the result
-        !! `seconds` is 0.
+        !! `seconds` is `huge(0_i8)`.
         !!
         !! The function returns the following error codes:
         !!
@@ -164,7 +164,7 @@ contains
         integer          :: u1, u2 ! Microseconds.
         integer(kind=i8) :: t1, t2 ! Seconds.
 
-        seconds = 0_i8
+        seconds = huge(0_i8)
 
         rc = dm_time_to_unix(time1, t1, u1); if (dm_is_error(rc)) return
         rc = dm_time_to_unix(time2, t2, u2); if (dm_is_error(rc)) return
@@ -368,19 +368,14 @@ contains
             select case (i)
                 case (1:4, 6:7, 9:10, 12:13, 15:16, 18:19, 21:26, 28:29, 31:32)
                     if (.not. dm_ascii_is_digit(a)) return
-
                 case (5, 8)
                     if (a /= '-') return
-
                 case (11)
                     if (a /= 'T') return
-
                 case (14, 17, 30)
                     if (a /= ':') return
-
                 case (20)
                     if (a /= '.') return
-
                 case (27)
                     if (a /= '+' .and. a /= '-') return
             end select
@@ -509,10 +504,10 @@ contains
         end if
 
         write (time, FMT_ISO) tm%tm_year + 1900, &
-                              tm%tm_mon + 1, &
-                              tm%tm_mday, &
-                              tm%tm_hour, &
-                              tm%tm_min, &
+                              tm%tm_mon + 1,     &
+                              tm%tm_mday,        &
+                              tm%tm_hour,        &
+                              tm%tm_min,         &
                               tm%tm_sec
         rc = E_NONE
     end function time_from_unix_string

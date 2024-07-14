@@ -37,8 +37,8 @@ program dmapi
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer, parameter :: APP_MAX_NLOGS    = 10000              !! Maximum number of logs per request.
-    integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Maximum number of observations per request.
+    integer, parameter :: APP_MAX_NLOGS    = 10000              !! Max. number of logs per request.
+    integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Max. number of observations per request.
     integer, parameter :: APP_NROUTES      = 15                 !! Total number of pages.
     logical, parameter :: APP_CSV_HEADER   = .false.            !! Add CSV header by default.
     logical, parameter :: APP_READ_ONLY    = .false.            !! Default database access mode.
@@ -76,10 +76,9 @@ program dmapi
                cgi_route_type('/timeseries', route_timeseries) ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
-    rc = dm_env_get('DM_DB_LOG',    db_log,    n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
-    rc = dm_env_get('DM_DB_OBSERV', db_observ, n); if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
-
+    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n)
+    rc = dm_env_get('DM_DB_LOG',    db_log,    n)
+    rc = dm_env_get('DM_DB_OBSERV', db_observ, n)
     rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
     ! Set API routes.
@@ -203,7 +202,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth(env)) then
+                if (dm_cgi_auth_basic(env)) then
                     if (env%remote_user /= beat%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -459,7 +458,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth(env)) then
+                if (dm_cgi_auth_basic(env)) then
                     if (env%remote_user /= log%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -792,7 +791,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth(env)) then
+                if (dm_cgi_auth_basic(env)) then
                     if (env%remote_user /= node%id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -929,7 +928,6 @@ contains
                     ! Optional GET parameters.
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(nodes, header=header))
@@ -1049,7 +1047,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth(env)) then
+                if (dm_cgi_auth_basic(env)) then
                     if (env%remote_user /= observ%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1458,7 +1456,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth(env)) then
+                if (dm_cgi_auth_basic(env)) then
                     if (env%remote_user /= sensor%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1596,7 +1594,6 @@ contains
                     ! Optional GET parameters.
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(sensors, header=header))
@@ -1845,7 +1842,6 @@ contains
                     ! Optional GET parameters.
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
                     call dm_fcgi_out(dm_csv_from(targets, header=header))

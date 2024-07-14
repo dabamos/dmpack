@@ -450,7 +450,7 @@ contains
             call dm_lua_register(lua, 'geocom_fine_adjust',                   lua_geocom_fine_adjust)
             call dm_lua_register(lua, 'geocom_get_angle',                     lua_geocom_get_angle)
             call dm_lua_register(lua, 'geocom_get_angle_complete',            lua_geocom_get_angle_complete)
-            call dm_lua_register(lua, 'geocom_get_angle_correction', lua_geocom_get_angle_correction)
+            call dm_lua_register(lua, 'geocom_get_angle_correction',          lua_geocom_get_angle_correction)
             call dm_lua_register(lua, 'geocom_get_atmospheric_correction',    lua_geocom_get_atmospheric_correction)
             call dm_lua_register(lua, 'geocom_get_atmospheric_ppm',           lua_geocom_get_atmospheric_ppm)
             call dm_lua_register(lua, 'geocom_get_atr_error',                 lua_geocom_get_atr_error)

@@ -68,7 +68,7 @@ module dm_cgi
     end interface dm_cgi_get
 
     ! Public procedures.
-    public :: dm_cgi_auth
+    public :: dm_cgi_auth_basic
     public :: dm_cgi_content
     public :: dm_cgi_decode
     public :: dm_cgi_env
@@ -96,12 +96,13 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    logical function dm_cgi_auth(env) result(auth)
-        !! Returns `.true.` if CGI environment variable `AUTH` is set.
+    logical function dm_cgi_auth_basic(env) result(auth)
+        !! Returns `.true.` if CGI environment variable `AUTH` is set to
+        !! `Basic`.
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        auth = (len_trim(env%auth_type) > 0)
-    end function dm_cgi_auth
+        auth = (env%auth_type == 'Basic')
+    end function dm_cgi_auth_basic
 
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on _read(2)_
@@ -121,7 +122,7 @@ contains
         character(len=:), allocatable, target, intent(out)   :: content !! Returned request body.
 
         integer                :: stat
-        integer(kind=c_size_t) :: nc, sz
+        integer(kind=c_size_t) :: nn, sz
 
         rc = E_ALLOC
         allocate (character(len=env%content_length) :: content, stat=stat)
@@ -130,14 +131,14 @@ contains
         rc = E_EMPTY
         if (env%content_length == 0) return
 
-        nc = int(env%content_length, kind=c_size_t)
-        sz = c_read(STDIN_FILENO, c_loc(content), nc)
+        nn = int(env%content_length, kind=c_size_t)
+        sz = c_read(STDIN_FILENO, c_loc(content), nn)
 
         rc = E_EOF
         if (sz == 0) return
 
         rc = E_READ
-        if (sz /= nc) return
+        if (sz /= nn) return
 
         rc = E_NONE
     end function dm_cgi_content
@@ -147,26 +148,26 @@ contains
         character(len=*),          intent(in)  :: input  !! Encoded input string.
         character(len=len(input)), intent(out) :: output !! Decoded output string.
 
-        integer :: i, j, k, n, m
+        integer :: i, ii, j, jj, k
         integer :: stat
 
-        n = len_trim(input)
-        m = len(output)
+        ii = len_trim(input)
+        jj = len(output)
         output = ' '
 
         rc = E_BOUNDS
-        if (m < n) return
+        if (jj < ii) return
 
         i = 1
         j = 1
 
         do
-            if (i > n) exit
-            if (j > m) return
+            if (i > ii) exit
+            if (j > jj) return
 
             select case (input(i:i))
                 case ('%')
-                    if (i + 2 > n) exit
+                    if (i + 2 > ii) exit
                     read (input(i + 1:i + 2), '(z2)', iostat=stat) k
 
                     if (stat == 0) then
@@ -234,7 +235,7 @@ contains
         character(len=:), allocatable       :: str   !! Key or empty.
 
         if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
-            str = ''
+            allocate (character(len=0) :: str)
             return
         end if
 
@@ -257,7 +258,7 @@ contains
         character(len=:), allocatable       :: str   !! Value or empty.
 
         if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
-            str = ''
+            allocate (character(len=0) :: str)
             return
         end if
 
@@ -471,7 +472,7 @@ contains
         rc = E_TYPE
         call dm_string_to(param%values(loc), i, stat)
         if (stat /= E_NONE) return
-        value = .not. (i == 0)
+        value = (i /= 0)
         rc = E_NONE
     end function cgi_get_logical
 
