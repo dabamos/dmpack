@@ -81,13 +81,19 @@ module dm_mail
         !! Generic function that returns formatted addresses.
         module procedure :: mail_address_person
         module procedure :: mail_address_persons
-    end interface
+    end interface dm_mail_address
 
     interface dm_mail_create
         !! Generic function to create mail or server data type.
         module procedure :: dm_mail_create_mail
         module procedure :: dm_mail_create_server
-    end interface
+    end interface dm_mail_create
+
+    interface dm_mail_out
+        !! Generic routine to print mail and server type.
+        module procedure :: mail_out_mail
+        module procedure :: mail_out_server
+    end interface dm_mail_out
 
     public :: dm_mail_address
     public :: dm_mail_create
@@ -96,6 +102,7 @@ module dm_mail
     public :: dm_mail_destroy
     public :: dm_mail_error
     public :: dm_mail_init
+    public :: dm_mail_out
     public :: dm_mail_send
     public :: dm_mail_url
     public :: dm_mail_write
@@ -104,6 +111,8 @@ module dm_mail
 
     private :: mail_address_person
     private :: mail_address_persons
+    private :: mail_out_mail
+    private :: mail_out_server
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -149,7 +158,14 @@ contains
 
     integer function dm_mail_create_server(server, host, username, password, port, tls, &
                                            timeout, connect_timeout, verify_ssl) result(rc)
-        !! Returns SMTP server type. The function returns `E_INVALID` on error.
+        !! Returns SMTP server type. Argument `tls` may be one of the following:
+        !!
+        !! * `MAIL_PLAIN` – No transport-layer security.
+        !! * `MAIL_SSL` – Explicit SSL.
+        !! * `MAIL_TLS` – Implicit TLS (StartTLS).
+        !!
+        !! Parameter `MAIL_PLAIN` is used by default. The function returns
+        !! `E_INVALID` on error.
         type(mail_server_type), intent(out)          :: server          !! Mail server type.
         character(len=*),       intent(in)           :: host            !! SMTP server host.
         character(len=*),       intent(in)           :: username        !! SMTP user name.
@@ -177,6 +193,8 @@ contains
         if (present(timeout))         server%timeout         = timeout
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
         if (present(verify_ssl))      server%verify_ssl      = verify_ssl
+
+        if (server%connect_timeout < 0) return
 
         server%url       = dm_mail_url(host, port=port_, tls=tls_)
         server%username  = trim(username)
@@ -471,7 +489,6 @@ contains
 
     subroutine dm_mail_destroy()
         !! Cleans-up SMTP backend.
-
         call curl_global_cleanup()
     end subroutine dm_mail_destroy
 
@@ -555,4 +572,58 @@ contains
             str = str // ', ' // dm_mail_address(persons(i))
         end do
     end function mail_address_persons
+
+    subroutine mail_out_mail(mail, unit)
+        !! Prints mail type to standard output or given file unit.
+        type(mail_type), intent(inout)        :: mail !! Mail type.
+        integer,         intent(in), optional :: unit !! File unit.
+
+        integer :: i, unit_
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        write (unit_, '("mail.from: ", a)') dm_mail_address(mail%from)
+
+        if (allocated(mail%to)) then
+            do i = 1, size(mail%to)
+                write (unit_, '("mail.to(", i0, "): ", a)') i, dm_mail_address(mail%to(i))
+            end do
+        end if
+
+        if (allocated(mail%cc)) then
+            do i = 1, size(mail%cc)
+                write (unit_, '("mail.cc(", i0, "): ", a)') i, dm_mail_address(mail%cc(i))
+            end do
+        end if
+
+        if (allocated(mail%bcc)) then
+            do i = 1, size(mail%bcc)
+                write (unit_, '("mail.bcc(", i0, "): ", a)') i, dm_mail_address(mail%bcc(i))
+            end do
+        end if
+
+        if (allocated(mail%subject)) write (unit_, '("mail.subject: ", a)') trim(mail%subject)
+        if (allocated(mail%message)) write (unit_, '("mail.message: ", a)') trim(mail%message)
+    end subroutine mail_out_mail
+
+    subroutine mail_out_server(server, unit)
+        !! Prints mail server type to standard output or given file unit.
+        type(mail_server_type), intent(inout)        :: server !! Mail server type.
+        integer,                intent(in), optional :: unit   !! File unit.
+
+        integer :: unit_
+
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+
+        if (allocated(server%url))      write (unit_, '("mail_server.url: ", a)')      trim(server%url)
+        if (allocated(server%username)) write (unit_, '("mail_server.username: ", a)') trim(server%username)
+        if (allocated(server%password)) write (unit_, '("mail_server.password: ", a)') trim(server%password)
+
+        write (unit_, '("mail_server.connect_timeout: ", i0)') server%connect_timeout
+        write (unit_, '("mail_server.timeout: ", i0)')         server%timeout
+        write (unit_, '("mail_server.tls: ", i0)')             server%tls
+        write (unit_, '("mail_server.verify_ssl: ", l1)')      server%verify_ssl
+    end subroutine mail_out_server
 end module dm_mail

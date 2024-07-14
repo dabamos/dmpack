@@ -109,9 +109,19 @@ contains
             rc = dm_mail_create(server, 'example.com', 'user', 'secret')
             if (dm_is_error(rc)) exit mail_block
 
+            print *, 'Printing mail server ...'
+            print '(72("."))'
+            call dm_mail_out(server)
+            print '(72("."))'
+
             print *, 'Creating mail ...'
             rc = dm_mail_create_mail(mail, person, persons, 'subject', 'message')
             if (dm_is_error(rc)) exit mail_block
+
+            print *, 'Printing mail ...'
+            print '(72("."))'
+            call dm_mail_out(mail)
+            print '(72("."))'
         end block mail_block
 
         call dm_error_out(rc)
