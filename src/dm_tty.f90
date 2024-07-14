@@ -534,10 +534,10 @@ contains
             c_cflag = iand(c_cflag, not(int(CSIZE,           kind=i8))) ! Unset byte size.
             c_cflag = iand(c_cflag, not(int(CSTOPB,          kind=i8))) ! Unset stop bits.
             c_cflag = iand(c_cflag, not(int(PARENB + PARODD, kind=i8))) ! Unset parity.
-            c_cflag = ior (c_cflag, int(byte_size,           kind=i8))  ! Set byte size.
-            c_cflag = ior (c_cflag, int(stop_bits,           kind=i8))  ! Set stop bits.
-            c_cflag = ior (c_cflag, int(parity,              kind=i8))  ! Set parity.
-            c_cflag = ior (c_cflag, int(CLOCAL + CREAD,      kind=i8))  ! Ignore modem controls, enable reading.
+            c_cflag = ior (c_cflag,     int(byte_size,       kind=i8))  ! Set byte size.
+            c_cflag = ior (c_cflag,     int(stop_bits,       kind=i8))  ! Set stop bits.
+            c_cflag = ior (c_cflag,     int(parity,          kind=i8))  ! Set parity.
+            c_cflag = ior (c_cflag,     int(CLOCAL + CREAD,  kind=i8))  ! Ignore modem controls, enable reading.
 
             ! Local modes.
             c_lflag = iand(c_lflag, not(int(ECHO + ECHOE + ECHONL, kind=i8))) ! No echo.

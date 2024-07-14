@@ -38,8 +38,8 @@ module dm_plot
     integer, parameter, public :: PLOT_TERM_NAME_LEN  = 8 !! Max. terminal name length.
 
     character(len=*), parameter, public :: PLOT_TERM_NAMES(PLOT_TERM_NONE:PLOT_TERM_LAST) = [ &
-        character(len=PLOT_TERM_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'png', &
-        'pngcairo', 'sixelgd', 'svg', 'x11' ] !! Gnuplot terminal names.
+        character(len=PLOT_TERM_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'svg', 'x11' &
+    ] !! Gnuplot terminal names.
 
     character(len=*), parameter, public :: PLOT_GNUPLOT     = 'gnuplot'           !! Gnuplot binary.
     character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
@@ -382,9 +382,7 @@ contains
                 if (n > 0) args = 'font "' // plot%font(1:n) // '" ' // trim(args)
 
                 ! Set terminal type with additional arguments.
-                rc = plot_write(plot, 'set term ' // &
-                                      trim(PLOT_TERM_NAMES(plot%term)) // ' ' // &
-                                      trim(args))
+                rc = plot_write(plot, 'set term ' // trim(PLOT_TERM_NAMES(plot%term)) // ' ' // trim(args))
                 if (dm_is_error(rc)) return
 
                 ! Set output file path (if present).
@@ -405,9 +403,7 @@ contains
                 if (plot%persist) args = 'persist ' // trim(args)
 
                 ! Set term type with additional arguments.
-                rc = plot_write(plot, 'set term ' // &
-                                      trim(PLOT_TERM_NAMES(plot%term)) // ' ' // &
-                                      trim(args))
+                rc = plot_write(plot, 'set term ' // trim(PLOT_TERM_NAMES(plot%term)) // ' ' // trim(args))
 
             case default
                 return

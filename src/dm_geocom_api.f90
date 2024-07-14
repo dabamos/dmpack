@@ -510,13 +510,13 @@ contains
         character(len=*), parameter :: REQUEST_PATTERN = GRC_PATTERN // ',(?<nfiles>\d+)'
         integer,          parameter :: REQUEST_CODE    = 23309
 
-        type(request_type),     intent(out) :: request     !! Prepared request.
-        integer,                intent(in)  :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
-        integer,                intent(in)  :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
-        integer,                intent(in)  :: day         !! Day (`DD`).
-        integer,                intent(in)  :: month       !! Month (`MM`).
-        integer,                intent(in)  :: year        !! Year (`YY`).
-        character(len=*),       intent(in)  :: file_name   !! Name of file to delete.
+        type(request_type), intent(out) :: request     !! Prepared request.
+        integer,            intent(in)  :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
+        integer,            intent(in)  :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
+        integer,            intent(in)  :: day         !! Day (`DD`).
+        integer,            intent(in)  :: month       !! Month (`MM`).
+        integer,            intent(in)  :: year        !! Year (`YY`).
+        character(len=*),   intent(in)  :: file_name   !! Name of file to delete.
 
         character(len=80)   :: args
         type(response_type) :: responses(2)
@@ -619,7 +619,7 @@ contains
 
         responses = [ &
             response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('blockval', type=RESPONSE_TYPE_BYTE), &
+            response_type('blockval', type=RESPONSE_TYPE_BYTE),  &
             response_type('blocklen', type=RESPONSE_TYPE_INT32)  &
         ]
 
@@ -2129,7 +2129,7 @@ contains
         responses = [ &
             response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  &
             response_type('sigint',  unit='%',  type=RESPONSE_TYPE_REAL64), &
-            response_type('sigtime', unit='ms', type=RESPONSE_TYPE_INT32) &
+            response_type('sigtime', unit='ms', type=RESPONSE_TYPE_INT32)   &
         ]
 
         call dm_geocom_api_request(request, REQUEST_NAME, REQUEST_CODE, pattern=REQUEST_PATTERN, responses=responses)
