@@ -365,23 +365,22 @@ contains
     end function dm_is_ok
 
     subroutine dm_error_out(error, message, verbose, extra, quit)
-        !! Prints error description to `stderr`. If `verbose` is true, the
+        !! Prints error description to `stderr`. If `verbose` is `.true.`, the
         !! routine outputs even if no error occured (`E_NONE`).
         !!
         !! If `extra` is `.true.`, the routine outputs the default error
-        !! message for the given error instead of the code. If `quit` is
-        !! `.true.`, the routine terminates with exit code `0` on code
-        !! `E_NONE`, or with exit code `1` on error.
+        !! message for the given error code additionally to the message. If
+        !! `quit` is `.true.`, the routine terminates with exit code `1` on
+        !! error only.
         character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
         character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
 
         integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
-        logical,          intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE`.
-        logical,          intent(in), optional :: extra   !! If `.true.`, print default message instead of code.
-        logical,          intent(in), optional :: quit    !! If `.true.`, stop program.
+        logical,          intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE` too.
+        logical,          intent(in), optional :: extra   !! If `.true.`, print additional error code message.
+        logical,          intent(in), optional :: quit    !! If `.true.`, stop program on error.
 
-        integer :: stat
         logical :: extra_, verbose_, quit_
 
         extra_   = .false.
@@ -394,22 +393,18 @@ contains
 
         if (error == E_NONE .and. .not. verbose_) return
 
-        stat = STOP_SUCCESS
-        if (error /= E_NONE) stat = STOP_FAILURE
-
         if (present(message)) then
             if (extra_) then
                 write (stderr, FMT_EXTRA) error, dm_ascii_escape(message), dm_error_message(error)
             else
                 write (stderr, FMT_ERROR) error, dm_ascii_escape(message)
             end if
-
-            if (.not. quit_) return
-            call dm_stop(stat)
+        else
+            write (stderr, FMT_ERROR) error, dm_error_message(error)
         end if
 
-        write (stderr, FMT_ERROR) error, dm_error_message(error)
-        if (quit_) call dm_stop(stat)
+        if (error == E_NONE) return
+        if (quit_) call dm_stop(STOP_FAILURE)
     end subroutine dm_error_out
 
     subroutine dm_stop(stat)

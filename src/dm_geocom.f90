@@ -22,7 +22,7 @@ module dm_geocom
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
     !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, verbose=.true., error=rc)
-    !! if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    !! dm_error_out(rc, quit=.true.)
     !!
     !! call geocom%null()
     !! print '(i0, ": ", a)', geocom%code(), geocom%message()
