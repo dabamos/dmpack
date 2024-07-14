@@ -60,9 +60,9 @@ module dm_rpc
     integer, parameter, public :: RPC_METHOD_POST = 1 !! HTTP POST method.
 
     ! TCP Keep-Alive.
-    integer, parameter, public :: RPC_KEEP_ALIVE          = 1   !! Enable TCP keep-alive.
-    integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120 !! TCP keep-alive idle time in seconds.
-    integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60  !! Interval time between TCP keep-alive probes in seconds.
+    logical, parameter, public :: RPC_KEEP_ALIVE          = .true. !! Enable TCP keep-alive.
+    integer, parameter, public :: RPC_KEEP_ALIVE_IDLE     = 120    !! TCP keep-alive idle time in seconds.
+    integer, parameter, public :: RPC_KEEP_ALIVE_INTERVAL = 60     !! Interval time between TCP keep-alive probes in seconds.
 
     abstract interface
         function dm_rpc_callback(ptr, size, nmemb, data) bind(c)
@@ -774,6 +774,9 @@ contains
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_RPC` if request preparation failed.
         !!
+        use :: dm_c,      only: dm_f_c_logical
+        use :: dm_string, only: dm_string_is_empty
+
         type(rpc_request_type),  target, intent(inout) :: request  !! Request type.
         type(rpc_response_type), target, intent(inout) :: response !! Response type.
 
@@ -789,8 +792,7 @@ contains
         end if
 
         ! Validate URL.
-        if (.not. allocated(request%url)) return
-        if (len_trim(request%url) == 0) return
+        if (dm_string_is_empty(request%url)) return
 
         rc = E_RPC
 
@@ -855,7 +857,7 @@ contains
             end if
 
             ! Set content type.
-            if (allocated(request%content_type)) then
+            if (.not. dm_string_is_empty(request%content_type)) then
                 request%list_ptr = curl_slist_append(request%list_ptr, 'Content-Type: ' // request%content_type)
             end if
         end if post_if
@@ -883,7 +885,7 @@ contains
         if (stat /= CURLE_OK) return
 
         ! Enable TCP keep-alive.
-        stat = curl_easy_setopt(request%curl_ptr, CURLOPT_TCP_KEEPALIVE, RPC_KEEP_ALIVE)
+        stat = curl_easy_setopt(request%curl_ptr, CURLOPT_TCP_KEEPALIVE, dm_f_c_logical(RPC_KEEP_ALIVE))
         if (stat /= CURLE_OK) return
 
         ! Set TCP keep-alive idle time in seconds.
@@ -900,17 +902,13 @@ contains
             if (stat /= CURLE_OK) return
         end if
 
-        ! Set User Agent.
-        ua_block: block
-            if (allocated(request%user_agent)) then
-                if (len_trim(request%user_agent) > 0) then
-                    stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, request%user_agent)
-                    exit ua_block
-                end if
-            end if
+        if (dm_string_is_empty(request%user_agent)) then
             ! Set default User Agent.
             stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, RPC_USER_AGENT)
-        end block ua_block
+        else
+            ! Set custom User Agent.
+            stat = curl_easy_setopt(request%curl_ptr, CURLOPT_USERAGENT, trim(request%user_agent))
+        end if
 
         if (stat /= CURLE_OK) return
         rc = E_NONE

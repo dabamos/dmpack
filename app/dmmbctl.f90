@@ -12,8 +12,6 @@ program dmmbctl
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: IP_ADDR_LEN = 15 !! IPv4 address length.
-
     integer, parameter :: ACTION_READ  = 0 !! Read values.
     integer, parameter :: ACTION_WRITE = 1 !! Write values.
 
@@ -28,8 +26,8 @@ program dmmbctl
 
     type :: tcp_type
         !! Modbus TCP settings.
-        character(len=IP_ADDR_LEN) :: address = ' ' !! IPv4 address.
-        integer                    :: port    = 0   !! Port.
+        character(len=INET_IPV4_LEN) :: address = ' ' !! IPv4 address.
+        integer                      :: port    = 0   !! Port.
     end type tcp_type
 
     type :: app_type
@@ -78,7 +76,7 @@ contains
             arg_type('bytesize',  short='Z', type=ARG_TYPE_INTEGER),                      & ! -Z, --bytesize <n>
             arg_type('parity',    short='P', type=ARG_TYPE_STRING),                       & ! -P, --parity <string>
             arg_type('stopbits',  short='O', type=ARG_TYPE_INTEGER),                      & ! -O, --stopbits <n>
-            arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=IP_ADDR_LEN), & ! -a, --address <string>
+            arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=INET_IPV4_LEN), & ! -a, --address <string>
             arg_type('port',      short='q', type=ARG_TYPE_INTEGER),                      & ! -q, --port <n>
             arg_type('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.),     & ! -s, --slave <n>
             arg_type('registers', short='n', type=ARG_TYPE_INTEGER),                      & ! -n, --registers <n>

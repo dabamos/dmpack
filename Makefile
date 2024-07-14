@@ -248,6 +248,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_html.f90 \
       $(SRCDIR)/dm_http.f90 \
       $(SRCDIR)/dm_id.f90 \
+      $(SRCDIR)/dm_inet.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
@@ -337,6 +338,7 @@ OBJ = dm_ansi.o \
       dm_html.o \
       dm_http.o \
       dm_id.o \
+      dm_inet.o \
       dm_job.o \
       dm_json.o \
       dm_jsonl.o \
@@ -550,6 +552,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_hash_table.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_unit.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_id.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_inet.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_uuid.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_signal.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_system.f90

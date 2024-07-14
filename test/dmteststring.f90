@@ -7,14 +7,15 @@ program dmteststring
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmteststring'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -85,4 +86,27 @@ contains
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(len=:), allocatable :: a, b, c, d
+
+        stat = TEST_FAILED
+
+        allocate (character(len=0) :: b)
+        allocate (character(len=1) :: c)
+        allocate (character(len=1) :: d)
+
+        c = ' '
+        d = 'X'
+
+        print *, 'Testing for emptiness ...'
+
+        if (.not. dm_string_is_empty())  return
+        if (.not. dm_string_is_empty(a)) return
+        if (.not. dm_string_is_empty(b)) return
+        if (.not. dm_string_is_empty(c)) return
+        if (dm_string_is_empty(d))       return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmteststring

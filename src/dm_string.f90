@@ -60,6 +60,7 @@ module dm_string
     public :: dm_string_count_char
     public :: dm_string_count_lines
     public :: dm_string_count_substring
+    public :: dm_string_is_empty
     public :: dm_string_is_printable
     public :: dm_string_lower
     public :: dm_string_split
@@ -81,7 +82,7 @@ module dm_string
     private :: string_to_real64
 contains
     ! ******************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC FUNCTIONS.
     ! ******************************************************************
     pure elemental integer function dm_string_count_char(str, a, quote) result(n)
         !! Counts occurences of character `a` in `str`, with optional quoting
@@ -135,7 +136,19 @@ contains
         end do
     end function dm_string_count_substring
 
-    pure logical function dm_string_is_printable(str) result(is_printable)
+    logical function dm_string_is_empty(str) result(empty)
+        !! Returns `.false.` if given allocatable string is not passed, not
+        !! allocated, or empty.
+        character(len=:), allocatable, intent(inout), optional :: str !! Input string.
+
+        empty = .true.
+        if (.not. present(str))   return
+        if (.not. allocated(str)) return
+        if (len_trim(str) == 0)   return
+        empty = .false.
+    end function dm_string_is_empty
+
+    pure logical function dm_string_is_printable(str) result(printable)
         !! Returns `.true.` if all characters is given string are printable
         !! ASCII characters.
         use :: dm_ascii, only: dm_ascii_is_printable
@@ -143,13 +156,13 @@ contains
         character(len=*), intent(in) :: str !! String to validate.
         integer                      :: i
 
-        is_printable = .false.
+        printable = .false.
 
         do i = 1, len_trim(str)
             if (.not. dm_ascii_is_printable(str(i:i))) return
         end do
 
-        is_printable = .true.
+        printable = .true.
     end function dm_string_is_printable
 
     pure elemental function dm_string_lower(str) result(lower)
@@ -182,6 +195,9 @@ contains
         end do
     end function dm_string_upper
 
+    ! ******************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! ******************************************************************
     pure elemental subroutine dm_string_allocate(string, n)
         !! Allocates string type to empty character of length 0 or `n`, if not
         !! allocated already.
