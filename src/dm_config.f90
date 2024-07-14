@@ -28,7 +28,7 @@ module dm_config
         module procedure :: config_get_report
         module procedure :: config_get_stack
         module procedure :: config_get_string
-    end interface
+    end interface dm_config_get
 
     public :: dm_config_close
     public :: dm_config_get

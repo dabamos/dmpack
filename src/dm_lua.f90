@@ -27,6 +27,11 @@ module dm_lua
     implicit none (type, external)
     private
 
+    type, public :: lua_state_type
+        !! Lua state type that stores the Lua pointer.
+        type(c_ptr) :: ptr = c_null_ptr !! C pointer to Lua interpreter.
+    end type lua_state_type
+
     abstract interface
         ! int *lua_CFunction(lua_State *L)
         function dm_lua_callback(ptr) bind(c)
@@ -92,11 +97,6 @@ module dm_lua
         module procedure :: lua_to_report
         module procedure :: lua_to_request
     end interface dm_lua_to
-
-    type, public :: lua_state_type
-        !! Lua state type that stores the Lua pointer.
-        type(c_ptr) :: ptr = c_null_ptr !! C pointer to Lua interpreter.
-    end type lua_state_type
 
     ! Public procedures.
     public :: dm_lua_call

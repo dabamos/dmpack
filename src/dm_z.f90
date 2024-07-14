@@ -32,7 +32,7 @@ module dm_z
         module procedure :: z_compress_observ
         module procedure :: z_compress_sensor
         module procedure :: z_compress_target
-    end interface
+    end interface dm_z_compress
 
     interface dm_z_uncompress
         !! Generic deserialisation and decompression function.
@@ -43,12 +43,12 @@ module dm_z
         module procedure :: z_uncompress_observ
         module procedure :: z_uncompress_sensor
         module procedure :: z_uncompress_target
-    end interface
+    end interface dm_z_uncompress
 
     interface dm_z_valid
         !! Generic validation function.
         module procedure :: dm_z_valid_type
-    end interface
+    end interface dm_z_valid
 
     ! Public procedures.
     public :: dm_z_compress

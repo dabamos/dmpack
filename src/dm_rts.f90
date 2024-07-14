@@ -56,7 +56,7 @@ module dm_rts
         !! Generic interface to standard deviation functions.
         module procedure :: dm_rts_distance_std_dev_array
         module procedure :: dm_rts_distance_std_dev_mean
-    end interface
+    end interface dm_rts_distance_std_dev
 
     public :: dm_rts_correction_atmospheric
     public :: dm_rts_correction_distance

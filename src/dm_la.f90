@@ -63,13 +63,13 @@ module dm_la
         !! Generic LAPACK `gels()` subroutine for `dgels()` and `dgels1()`.
         module procedure :: dm_la_dgels
         module procedure :: dm_la_dgels1
-    end interface
+    end interface dm_la_gels
 
     interface dm_la_gelsd
         !! Generic LAPACK `gelsd()` subroutine for `dgelsd()` and `dgelsd1()`.
         module procedure :: dm_la_dgelsd
         module procedure :: dm_la_dgelsd1
-    end interface
+    end interface dm_la_gelsd
 
     public :: dm_la_gels
     public :: dm_la_gelsd

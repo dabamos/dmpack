@@ -15,22 +15,22 @@ module dm_string
     interface dm_lower
         !! Alias for procedure.
         module procedure :: dm_string_lower
-    end interface
+    end interface dm_lower
 
     interface dm_upper
         !! Alias for procedure.
         module procedure :: dm_string_upper
-    end interface
+    end interface dm_upper
 
     interface dm_to_lower
         !! Alias for procedure.
         module procedure :: dm_string_to_lower
-    end interface
+    end interface dm_to_lower
 
     interface dm_to_upper
         !! Alias for procedure.
         module procedure :: dm_string_to_upper
-    end interface
+    end interface dm_to_upper
 
     interface dm_string_to
         !! Generic string to number converter.
@@ -38,7 +38,7 @@ module dm_string
         module procedure :: string_to_int64
         module procedure :: string_to_real32
         module procedure :: string_to_real64
-    end interface
+    end interface dm_string_to
 
     interface dm_string_from
         !! Generic number to string converter.
@@ -46,7 +46,7 @@ module dm_string
         module procedure :: string_from_int64
         module procedure :: string_from_real32
         module procedure :: string_from_real64
-    end interface
+    end interface dm_string_from
 
     ! Public procedures.
     public :: dm_lower

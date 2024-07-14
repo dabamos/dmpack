@@ -19,7 +19,7 @@ module dm_env
         module procedure :: env_get_real32
         module procedure :: env_get_real64
         module procedure :: env_get_string
-    end interface
+    end interface dm_env_get
 
     public :: dm_env_get
     public :: dm_env_has

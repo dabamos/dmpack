@@ -59,7 +59,7 @@ module dm_log
         !! Generic log validation function.
         module procedure :: dm_log_valid_level
         module procedure :: dm_log_valid_log
-    end interface
+    end interface dm_log_valid
 
     interface operator (==)
         !! Returns whether logs are equal.

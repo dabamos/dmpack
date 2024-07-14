@@ -112,19 +112,19 @@ module dm_rpc
         !! Generic RPC request function.
         module procedure :: rpc_request_multi
         module procedure :: rpc_request_single
-    end interface
+    end interface rpc_request
 
     interface dm_rpc_request
         !! Generic RPC request function.
         module procedure :: dm_rpc_request_multi
         module procedure :: dm_rpc_request_single
-    end interface
+    end interface dm_rpc_request
 
     interface dm_rpc_send
         !! Generic RPC send function.
         module procedure :: dm_rpc_send_type
         module procedure :: dm_rpc_send_types
-    end interface
+    end interface dm_rpc_send
 
     public :: dm_rpc_callback
     public :: dm_rpc_destroy

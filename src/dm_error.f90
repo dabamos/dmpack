@@ -130,7 +130,7 @@ module dm_error
     interface dm_perror
         !! Alias for `dm_error_out()`, do not use.
         module procedure :: dm_error_out
-    end interface
+    end interface dm_perror
 
     public :: dm_error_message
     public :: dm_error_out

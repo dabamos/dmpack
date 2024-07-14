@@ -83,13 +83,13 @@ module dm_hdf5
         !! Generic HDF5 close function.
         module procedure :: hdf5_close_file
         module procedure :: hdf5_close_group
-    end interface
+    end interface dm_hdf5_close
 
     interface dm_hdf5_open
         !! Generic HDF5 open function.
         module procedure :: hdf5_open_file
         module procedure :: hdf5_open_group
-    end interface
+    end interface dm_hdf5_open
 
     interface dm_hdf5_read
         !! Generic HDF5 read function.
@@ -97,7 +97,7 @@ module dm_hdf5
         module procedure :: hdf5_read_observs
         module procedure :: hdf5_read_sensors
         module procedure :: hdf5_read_targets
-    end interface
+    end interface dm_hdf5_read
 
     interface dm_hdf5_write
         !! Generic HDF5 write function.
@@ -105,7 +105,7 @@ module dm_hdf5
         module procedure :: hdf5_write_observs
         module procedure :: hdf5_write_targets
         module procedure :: hdf5_write_sensors
-    end interface
+    end interface dm_hdf5_write
 
     ! Public procedures.
     public :: dm_hdf5_close

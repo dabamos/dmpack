@@ -19,14 +19,14 @@ module dm_version
         !! Generic DMPACK version output routine.
         module procedure :: dm_version_out_app
         module procedure :: dm_version_out_lib
-    end interface
+    end interface dm_version_out
 
     interface dm_version_to_string
         !! Generic DMPACK version formatters.
         module procedure :: dm_version_to_string_app
         module procedure :: dm_version_to_string_long
         module procedure :: dm_version_to_string_short
-    end interface
+    end interface dm_version_to_string
 
     ! Public procedures.
     public :: dm_version_out

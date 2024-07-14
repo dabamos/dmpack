@@ -143,7 +143,7 @@ module dm_db
         module procedure :: db_next_row_string
         module procedure :: db_next_row_sync
         module procedure :: db_next_row_target
-    end interface
+    end interface db_next_row
 
     interface dm_db_insert
         !! Generic database insert function.
@@ -155,7 +155,7 @@ module dm_db
         module procedure :: dm_db_insert_observs
         module procedure :: dm_db_insert_sensor
         module procedure :: dm_db_insert_target
-    end interface
+    end interface dm_db_insert
 
     interface dm_db_select
         !! Generic database select function.
@@ -165,55 +165,55 @@ module dm_db
         module procedure :: dm_db_select_observ
         module procedure :: dm_db_select_sensor
         module procedure :: dm_db_select_target
-    end interface
+    end interface dm_db_select
 
     interface dm_db_select_beats
         !! Generic beats select function.
         module procedure :: db_select_beats_array
         module procedure :: db_select_beats_iter
-    end interface
+    end interface dm_db_select_beats
 
     interface dm_db_select_data_points
         !! Generic data points select function.
         module procedure :: db_select_data_points_array
         module procedure :: db_select_data_points_iter
-    end interface
+    end interface dm_db_select_data_points
 
     interface dm_db_select_json_beats
         !! Generic JSON logs select function.
         module procedure :: db_select_json_beats_array
         module procedure :: db_select_json_beats_iter
-    end interface
+    end interface dm_db_select_json_beats
 
     interface dm_db_select_json_logs
         !! Generic JSON logs select function.
         module procedure :: db_select_json_logs_array
         module procedure :: db_select_json_logs_iter
-    end interface
+    end interface dm_db_select_json_logs
 
     interface dm_db_select_json_nodes
         !! Generic JSON nodes select function.
         module procedure :: db_select_json_nodes_array
         module procedure :: db_select_json_nodes_iter
-    end interface
+    end interface dm_db_select_json_nodes
 
     interface dm_db_select_logs
         !! Generic logs select function.
         module procedure :: db_select_logs_array
         module procedure :: db_select_logs_iter
-    end interface
+    end interface dm_db_select_logs
 
     interface dm_db_select_nodes
         !! Generic nodes select function.
         module procedure :: db_select_nodes_array
         module procedure :: db_select_nodes_iter
-    end interface
+    end interface dm_db_select_nodes
 
     interface dm_db_select_observs
         !! Generic observations select function.
         module procedure :: db_select_observs_array
         module procedure :: db_select_observs_iter
-    end interface
+    end interface dm_db_select_observs
 
     interface dm_db_select_sensors
         !! Generic sensors select function.
@@ -221,20 +221,20 @@ module dm_db
         module procedure :: db_select_sensors_iter
         module procedure :: db_select_sensors_by_node_array
         module procedure :: db_select_sensors_by_node_iter
-    end interface
+    end interface dm_db_select_sensors
 
     interface dm_db_select_targets
         !! Generic targets select function.
         module procedure :: db_select_targets_array
         module procedure :: db_select_targets_iter
-    end interface
+    end interface dm_db_select_targets
 
     interface dm_db_update
         !! Generic database update function.
         module procedure :: dm_db_update_node
         module procedure :: dm_db_update_sensor
         module procedure :: dm_db_update_target
-    end interface
+    end interface dm_db_update
 
     ! Abstract interfaces.
     public :: dm_db_backup_handler

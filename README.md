@@ -131,7 +131,7 @@ The following programs are based on the **DMPACK** library.
 | [dmsend](adoc/dmsend.adoc)     | Sends observations and logs to message queue.                       |
 | [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
-| [dmuuid](adoc/dmuuid.adoc)     | Generates UUID4s.                                                   |
+| [dmuuid](adoc/dmuuid.adoc)     | Generates UUIDv4 identifiers.                                       |
 | [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |
 
 ## Installation

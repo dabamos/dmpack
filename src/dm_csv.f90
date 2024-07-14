@@ -31,7 +31,7 @@ module dm_csv
         module procedure :: csv_from_sensors
         module procedure :: csv_from_target
         module procedure :: csv_from_targets
-    end interface
+    end interface dm_csv_from
 
     interface dm_csv_read
         !! Generic derived type from CSV reader.
@@ -40,7 +40,7 @@ module dm_csv
         module procedure :: csv_read_observ
         module procedure :: csv_read_sensor
         module procedure :: csv_read_target
-    end interface
+    end interface dm_csv_read
 
     interface dm_csv_write
         !! Generic derived type to CSV writer.
@@ -58,7 +58,7 @@ module dm_csv
         module procedure :: csv_write_sensors
         module procedure :: csv_write_target
         module procedure :: csv_write_targets
-    end interface
+    end interface dm_csv_write
 
     interface csv_next
         !! Generic CSV record reader.
@@ -67,7 +67,7 @@ module dm_csv
         module procedure :: csv_next_real32
         module procedure :: csv_next_real64
         module procedure :: csv_next_string
-    end interface
+    end interface csv_next
 
     ! Public procedures.
     public :: dm_csv_from

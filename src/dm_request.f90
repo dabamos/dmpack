@@ -62,7 +62,7 @@ module dm_request
         module procedure :: request_get_real32
         module procedure :: request_get_real64
         module procedure :: request_get_type
-    end interface
+    end interface dm_request_get
 
     interface dm_request_set
         !! Generic function to set value, unit, type, and error of a response.
@@ -71,7 +71,7 @@ module dm_request
         module procedure :: request_set_logical
         module procedure :: request_set_real32
         module procedure :: request_set_real64
-    end interface
+    end interface dm_request_set
 
     public :: operator (==)
 

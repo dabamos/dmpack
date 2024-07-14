@@ -75,13 +75,13 @@ module dm_tty
         !! Generic TTY read function.
         module procedure :: dm_tty_read_bytes
         module procedure :: dm_tty_read_request
-    end interface
+    end interface dm_tty_read
 
     interface dm_tty_write
         !! Generic TTY write function.
         module procedure :: dm_tty_write_bytes
         module procedure :: dm_tty_write_request
-    end interface
+    end interface dm_tty_write
 
     ! Public procedures.
     public :: dm_tty_baud_rate_from_value

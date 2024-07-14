@@ -20,13 +20,13 @@ module dm_zstd
         !! Generic Zstandard compression function.
         module procedure :: zstd_compress_multi
         module procedure :: zstd_compress_single
-    end interface
+    end interface dm_zstd_compress
 
     interface dm_zstd_uncompress
         !! Generic Zstandard decompression function.
         module procedure :: zstd_uncompress_multi
         module procedure :: zstd_uncompress_single
-    end interface
+    end interface dm_zstd_uncompress
 
     public :: dm_zstd_compress
     public :: dm_zstd_destroy

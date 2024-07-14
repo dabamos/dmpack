@@ -32,7 +32,7 @@ module dm_nml
         module procedure :: nml_from_observ_alloc
         module procedure :: nml_from_sensor_alloc
         module procedure :: nml_from_target_alloc
-    end interface
+    end interface dm_nml_from
 
     interface dm_nml_to
         !! Converts namelist string to type.
@@ -42,19 +42,19 @@ module dm_nml
         module procedure :: nml_to_observ
         module procedure :: nml_to_sensor
         module procedure :: nml_to_target
-    end interface
+    end interface dm_nml_to
 
     interface dm_nml_read
         !! Reads namelist from file or standard input.
         module procedure :: nml_read_log
         module procedure :: nml_read_observ
-    end interface
+    end interface dm_nml_read
 
     interface dm_nml_write
         !! Writes namelist to file or standard output.
         module procedure :: nml_write_log
         module procedure :: nml_write_observ
-    end interface
+    end interface dm_nml_write
 
     ! Public procedures.
     public :: dm_nml_from

@@ -13,13 +13,13 @@ module dm_block
     interface dm_block_from
         !! Generic derived type to block converter.
         module procedure :: block_from_data_point
-    end interface
+    end interface dm_block_from
 
     interface dm_block_write
         !! Generic derived type to block writer.
         module procedure :: block_write_data_point
         module procedure :: block_write_data_points
-    end interface
+    end interface dm_block_write
 
     public :: dm_block_from
     public :: dm_block_write

@@ -25,8 +25,8 @@ module dm_target
     integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Max. target state name length.
 
     character(len=*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
-        character(len=TARGET_STATE_NAME_LEN) :: &
-        'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' ] !! Target state names.
+        character(len=TARGET_STATE_NAME_LEN) :: 'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' &
+    ] !! Target state names.
 
     type, public :: target_type
         !! Target description.

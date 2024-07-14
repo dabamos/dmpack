@@ -12,7 +12,7 @@ module dm_mqueue_util
     interface dm_mqueue_forward
         !! Generic function to forward derived types via message queue.
         module procedure :: mqueue_forward_observ
-    end interface
+    end interface dm_mqueue_forward
 
     ! Public procedures.
     public :: dm_mqueue_forward

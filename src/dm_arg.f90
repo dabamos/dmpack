@@ -74,7 +74,7 @@ module dm_arg
         module procedure :: arg_get_logical
         module procedure :: arg_get_real64
         module procedure :: arg_get_string
-    end interface
+    end interface dm_arg_get
 
     public :: dm_arg_get
     public :: dm_arg_has

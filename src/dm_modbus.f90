@@ -90,7 +90,7 @@ module dm_modbus
         !! Generic function to create Modbus RTU or TCP context.
         module procedure :: dm_modbus_create_rtu
         module procedure :: dm_modbus_create_tcp
-    end interface
+    end interface dm_modbus_create
 
     public :: dm_modbus_byte_order_from_name
     public :: dm_modbus_close

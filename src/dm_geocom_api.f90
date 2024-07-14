@@ -151,8 +151,7 @@ module dm_geocom_api
     ! **************************************************************************
     ! PRIVATE GEOCOM API CONSTANTS.
     ! **************************************************************************
-    character(len=*), parameter :: GEOCOM_DELIMITER = '\r\n' !! Default GeoCOM delimiter.
-
+    character(len=*),    parameter :: GEOCOM_DELIMITER = '\r\n'        !! Default GeoCOM delimiter.
     character(len=*),    parameter :: GRC_PATTERN      = '(?<grc>\d+)' !! Default response pattern (GRC only).
     type(response_type), parameter :: GRC_RESPONSES(1) = [ response_type('grc', type=RESPONSE_TYPE_INT32) ] !! Default responses (GRC only).
 

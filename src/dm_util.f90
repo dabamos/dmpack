@@ -11,13 +11,13 @@ module dm_util
         !! Returns whether array contains an integer value.
         module procedure :: array_has_int32
         module procedure :: array_has_int64
-    end interface
+    end interface dm_array_has
 
     interface dm_equals
         !! Returns whether two real numbers are approximately the same.
         module procedure :: equals_real32
         module procedure :: equals_real64
-    end interface
+    end interface dm_equals
 
     interface dm_inc
         !! Returns increased integer value.
@@ -29,13 +29,13 @@ module dm_util
         !! Generic integer to string converter.
         module procedure :: int32_to_string
         module procedure :: int64_to_string
-    end interface
+    end interface dm_itoa
 
     interface dm_ftoa
         !! Generic real to string converter.
         module procedure :: real32_to_string
         module procedure :: real64_to_string
-    end interface
+    end interface dm_ftoa
 
     interface dm_from_real64
         !! Converts 8-byte real to type (for response values).
@@ -43,7 +43,7 @@ module dm_util
         module procedure :: dm_real64_to_int64
         module procedure :: dm_real64_to_logical
         module procedure :: dm_real64_to_real32
-    end interface
+    end interface dm_from_real64
 
     interface dm_to_real64
         !! Converts type to 8-byte real (for response values).
@@ -51,7 +51,7 @@ module dm_util
         module procedure :: dm_int64_to_real64
         module procedure :: dm_logical_to_real64
         module procedure :: dm_real32_to_real64
-    end interface
+    end interface dm_to_real64
 
     ! Public procedures.
     public :: dm_atof

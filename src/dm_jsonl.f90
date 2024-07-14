@@ -21,7 +21,7 @@ module dm_jsonl
         module procedure :: jsonl_from_observs
         module procedure :: jsonl_from_sensors
         module procedure :: jsonl_from_targets
-    end interface
+    end interface dm_jsonl_from
 
     interface dm_jsonl_write
         !! Generic derived type to JSON Lines writer.
@@ -32,7 +32,7 @@ module dm_jsonl
         module procedure :: jsonl_write_observs
         module procedure :: jsonl_write_sensors
         module procedure :: jsonl_write_targets
-    end interface
+    end interface dm_jsonl_write
 
     public :: dm_jsonl_from
     public :: dm_jsonl_write

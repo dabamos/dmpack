@@ -25,7 +25,7 @@ module dm_json
         module procedure :: json_from_sensors
         module procedure :: json_from_target
         module procedure :: json_from_targets
-    end interface
+    end interface dm_json_from
 
     interface dm_json_write
         !! Generic derived type to JSON writer.
@@ -43,7 +43,7 @@ module dm_json
         module procedure :: json_write_sensors
         module procedure :: json_write_target
         module procedure :: json_write_targets
-    end interface
+    end interface dm_json_write
 
     public :: dm_json_from
     public :: dm_json_write

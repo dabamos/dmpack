@@ -16,7 +16,8 @@ module dm_format
     integer, parameter, public :: FORMAT_NAME_LEN = 5 !! Max. length of format name.
 
     character(len=*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
-        character(len=FORMAT_NAME_LEN) :: 'none', 'block', 'csv', 'json', 'jsonl', 'nml' ] !! Format names array.
+        character(len=FORMAT_NAME_LEN) :: 'none', 'block', 'csv', 'json', 'jsonl', 'nml' &
+    ] !! Format names array.
 
     public :: dm_format_from_name
     public :: dm_format_valid

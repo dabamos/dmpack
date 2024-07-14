@@ -65,7 +65,7 @@ module dm_atom
     interface atom_entry
         !! Generic XML entry generator.
         module procedure :: atom_entry_log
-    end interface
+    end interface atom_entry
 
     public :: dm_atom_from_logs
 

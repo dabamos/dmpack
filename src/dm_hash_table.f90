@@ -26,7 +26,7 @@ module dm_hash_table
         !! Generic interface to hash table get functions.
         module procedure :: hash_table_get_index
         module procedure :: hash_table_get_key
-    end interface
+    end interface dm_hash_table_get
 
     public :: dm_hash_table_allocated
     public :: dm_hash_table_create

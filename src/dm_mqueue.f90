@@ -32,21 +32,21 @@ module dm_mqueue
         !! Generic message queue open function.
         procedure :: mqueue_open_raw
         procedure :: mqueue_open_type
-    end interface
+    end interface dm_mqueue_open
 
     interface dm_mqueue_read
         !! Generic message queue read function.
         procedure :: mqueue_read_log
         procedure :: mqueue_read_observ
         procedure :: mqueue_read_raw
-    end interface
+    end interface dm_mqueue_read
 
     interface dm_mqueue_write
         !! Generic message queue write function.
         procedure :: mqueue_write_log
         procedure :: mqueue_write_observ
         procedure :: mqueue_write_raw
-    end interface
+    end interface dm_mqueue_write
 
     ! Public procedures.
     public :: dm_mqueue_attributes

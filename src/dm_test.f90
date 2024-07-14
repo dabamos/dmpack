@@ -50,7 +50,7 @@ module dm_test
         module procedure :: dm_test_dummy_request
         module procedure :: dm_test_dummy_sensor
         module procedure :: dm_test_dummy_target
-    end interface
+    end interface dm_test_dummy
 
     public :: dm_test_callback
     public :: dm_test_dummy

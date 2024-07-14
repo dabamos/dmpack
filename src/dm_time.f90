@@ -34,7 +34,7 @@ module dm_time
         !! Converts Unix epoch to integer or string representation.
         module procedure :: time_from_unix_integer
         module procedure :: time_from_unix_string
-    end interface
+    end interface dm_time_from_unix
 
     public :: dm_time_create
     public :: dm_time_delta_from_seconds

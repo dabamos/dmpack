@@ -67,7 +67,7 @@ module dm_cgi
         module procedure :: cgi_get_real32
         module procedure :: cgi_get_real64
         module procedure :: cgi_get_string
-    end interface
+    end interface dm_cgi_get
 
     ! Public procedures.
     public :: dm_cgi_auth

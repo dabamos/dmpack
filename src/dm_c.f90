@@ -11,13 +11,13 @@ module dm_c
         !! Converts unsigned integer to signed integer.
         module procedure :: dm_uint16_to_int32
         module procedure :: dm_uint32_to_int64
-    end interface
+    end interface dm_to_signed
 
     interface dm_to_unsigned
         !! Converts signed integer to unsigned integer.
         module procedure :: dm_int32_to_uint16
         module procedure :: dm_int64_to_uint32
-    end interface
+    end interface dm_to_unsigned
 
     public :: dm_c_f_logical
     public :: dm_f_c_logical

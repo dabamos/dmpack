@@ -24,7 +24,8 @@ module dm_sync
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6 !! Max. type name length.
 
     character(len=*), parameter, public :: SYNC_TYPE_NAMES(SYNC_TYPE_NONE:SYNC_TYPE_LAST) = [ &
-        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log' ] !! Array of sync type names.
+        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log' &
+    ] !! Array of sync type names.
 
     type, public :: sync_type
         !! Log, observation, node, sensor and target synchronisation type.
