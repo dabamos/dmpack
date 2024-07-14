@@ -24,7 +24,6 @@ module dm_file
         !! status. The file mode is usually an unsigned type (`uint32_t` on
         !! Linux, `uint16_t` on FreeBSD), and is therefore converted to signed
         !! integer after the syscall.
-        sequence
         integer          :: type   = FILE_TYPE_NONE !! File type.
         integer(kind=i8) :: mode   = 0              !! File mode as signed integer.
         integer(kind=i8) :: size   = 0_i8           !! File size in bytes.

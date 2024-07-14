@@ -22,8 +22,7 @@ module dm_time
     character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
     type, public :: time_delta_type
-        !! Sequential time delta type to store elapsed time.
-        sequence
+        !! Time delta type to store elapsed time.
         integer :: days    = 0 !! Bygone days.
         integer :: hours   = 0 !! Bygone hours.
         integer :: minutes = 0 !! Bygone minutes.

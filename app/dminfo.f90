@@ -87,7 +87,7 @@ contains
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)
-            print '("db.schema.version: ", i0)', user_version
+            print '("db.schema_version: ", i0)', user_version
             print '("db.size: ", i0)',           sz
 
             rc = dm_db_table_exists(db, SQL_TABLE_BEATS, exists)

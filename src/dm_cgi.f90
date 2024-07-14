@@ -18,9 +18,8 @@ module dm_cgi
     integer, parameter, public :: CGI_PARAM_LEN  = 512 !! Maximum length of CGI parameter key, value.
 
     type, public :: cgi_env_type
-        !! Sequential CGI environment variables type. Changes to this type have
-        !! to be regarded in subroutine `dm_html_cgi_env()`.
-        sequence
+        !! CGI environment variables type. Changes to this type have to be
+        !! regarded in subroutine `dm_html_cgi_env()`.
         character(len=16)  :: auth_type             = ' '  !! AUTH_TYPE
         integer(kind=i8)   :: content_length        = 0_i8 !! CONTENT_LENGTH
         character(len=128) :: content_type          = ' '  !! CONTENT_TYPE
@@ -49,9 +48,8 @@ module dm_cgi
     end type cgi_env_type
 
     type, public :: cgi_param_type
-        !! Sequential and opaque CGI parameter type. Stores GET and POST
-        !! parameters as key-value pairs.
-        sequence
+        !! Opaque CGI parameter type. Stores GET and POST parameters as
+        !! key-value pairs.
         private
         character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '  !! Array of keys.
         character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '  !! Array of values.

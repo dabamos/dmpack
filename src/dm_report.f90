@@ -20,7 +20,6 @@ module dm_report
 
     type, public :: report_observ_type
         !! Single plot of observations.
-        sequence
         character(len=REPORT_FORMAT_LEN) :: format   = 'svg' !! Plot format.
         character(len=SENSOR_ID_LEN)     :: sensor   = ' '   !! Sensor id.
         character(len=TARGET_ID_LEN)     :: target   = ' '   !! Target id.
@@ -36,7 +35,6 @@ module dm_report
 
     type, public :: report_plot_type
         !! Section plots of report.
-        sequence
         logical                               :: disabled = .false. !! Generate plots.
         character(len=FILE_PATH_LEN)          :: database = ' '     !! Path to observation database (required).
         character(len=REPORT_META_LEN)        :: meta     = ' '     !! Description text.
@@ -46,7 +44,6 @@ module dm_report
 
     type, public :: report_log_type
         !! Section logs of report.
-        sequence
         logical                         :: disabled  = .false.     !! Generate plots.
         integer                         :: min_level = LL_WARNING  !! Minimum log level.
         integer                         :: max_level = LL_CRITICAL !! Maximum log level.
@@ -57,7 +54,6 @@ module dm_report
 
     type, public :: report_type
         !! Report type with plot and log settings.
-        sequence
         character(len=NODE_ID_LEN)      :: node     = ' '      !! Node id.
         character(len=TIME_LEN)         :: from     = ' '      !! Timestamp (ISO 8601).
         character(len=TIME_LEN)         :: to       = ' '      !! Timestamp (ISO 8601).

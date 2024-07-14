@@ -10,8 +10,7 @@ module dm_person
     integer, parameter, public :: PERSON_PHONE_LEN = 80 !! Max. phone number length
 
     type, public :: person_type
-        !! Sequential person type to store name and contact details.
-        sequence
+        !! Person type to store name and contact details.
         character(len=PERSON_NAME_LEN)  :: name  = ' ' !! Person name.
         character(len=PERSON_MAIL_LEN)  :: mail  = ' ' !! Person e-mail address.
         character(len=PERSON_PHONE_LEN) :: phone = ' ' !! Person phone number.

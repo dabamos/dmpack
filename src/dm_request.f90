@@ -29,7 +29,6 @@ module dm_request
 
     type, public :: request_type
         !! Request to send to a sensor.
-        sequence
         character(len=REQUEST_NAME_LEN)      :: name       = ' '                  !! Request name (`-0-9A-Z_a-z`).
         character(len=TIME_LEN)              :: timestamp  = ' '                  !! ISO 8601 time stamp.
         character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Raw request command (printable).
