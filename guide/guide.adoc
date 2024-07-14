@@ -91,6 +91,36 @@ information:
 [#img-schema]
 image::schema.png[schema,align="center"]
 
+The DMPACK library is based on a modular architecture that loosely follows the
+Unix philosophy, i.&nbsp;e., distinct programs cover well-defined tasks. The
+scheduling, process management and synchronisation, as well as the inter-process
+communication between programs are handled by the operating system, using POSIX
+system calls.
+
+The DMPACK programs can be deployed either on a single sensor node with no or
+only limited network access, or within a sensor network of one or more nodes
+connected to a central monitoring server:
+
+Data Logger:: In the most basic use case, the DMPACK programs <<dmserial>>,
+<<dmfs>>, and <<dmpipe>> act as data loggers without any database connectivity,
+by writing the observations to flat files in CSV or JSON Lines format. Any
+further data processing or analytics is subject to third-party programs.
+Local Monitoring:: The majority of the DMPACK programs depend on inter-process
+communication and database access. For instance, a <<dmserial>> process
+controlling an attached sensor may transmit observations and logs in real-time
+to the message queues of <<dmdb>> and <<dmlogger>> to be stored in the local
+databases. The database records could then be exported periodically to flat
+files. Synchronisation with a remote server is optional.
+Distributed Monitoring:: Sensor nodes connected to a central monitoring server
+can run <<dmsync>> to send observations and log messages automatically to the
+HTTP-RPC interface of <<dmapi>> to be stored in the server databases.
+Additionally, the server may collect status messages to monitor the condition of
+the sensor nodes.
+
+The programs are conceived to run headless on embedded devices and servers. Some
+of them, such as <<dmapi>>, <<dmreport>>, or <<dmweb>>, can be deployed on
+sensor nodes and monitoring servers alike.
+
 == Similar Software
 
 There are similar open source projects that provide middleware for autonomous
@@ -2333,7 +2363,7 @@ hashed password (SHA-512) to the _htpasswd_ file, in this case
 ....
 # read AUTH_USR
 # read AUTH_PWD
-# printf "%s:%s\n" $AUTH_USR `openssl passwd -6 '$AUTH_PWD'` \
+# printf "%s:%s\n" $AUTH_USR `openssl passwd -6 "$AUTH_PWD"` \
   >> /usr/local/etc/lighttpd/htpasswd
 ....
 
@@ -4571,7 +4601,7 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 269   | `GRC_ANG_HZ_MOVED`               | Hz moved during incline measurement.
 | 270   | `GRC_ANG_OS_ERROR`               | Troubles with operation system.
 | 271   | `GRC_ANG_DATA_ERROR`             | Overflow at parameter values.
-| 272   | `GRC_ANG_PEAK_CNT_UFL`           | Too less peaks.
+| 272   | `GRC_ANG_PEAK_CNT_UFL`           | Not enough peaks.
 | 273   | `GRC_ANG_TIME_OUT`               | Reading timeout.
 | 274   | `GRC_ANG_TOO_MANY_EXPOS`         | Too many exposures wanted.
 | 275   | `GRC_ANG_PIX_CTRL_ERR`           | Picture height out of range.
@@ -4581,15 +4611,15 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 279   | `GRC_ANG_UNDER_EXPOSURE`         | Picture under-exposured.
 | 280   | `GRC_ANG_OVER_EXPOSURE`          | Picture over-exposured.
 | 300   | `GRC_ANG_TMANY_PEAKS`            | Too many peaks detected.
-| 301   | `GRC_ANG_TLESS_PEAKS`            | Too less peaks detected.
+| 301   | `GRC_ANG_TLESS_PEAKS`            | Not enough peaks detected.
 | 302   | `GRC_ANG_PEAK_TOO_SLIM`          | Peak too slim.
 | 303   | `GRC_ANG_PEAK_TOO_WIDE`          | Peak to wide.
 | 304   | `GRC_ANG_BAD_PEAKDIFF`           | Bad peak difference.
-| 305   | `GRC_ANG_UNDER_EXP_PICT`         | Too less peak amplitude.
+| 305   | `GRC_ANG_UNDER_EXP_PICT`         | Too low peak amplitude.
 | 306   | `GRC_ANG_PEAKS_INHOMOGEN`        | Inhomogeneous peak amplitudes.
 | 307   | `GRC_ANG_NO_DECOD_POSS`          | No peak decoding possible.
 | 308   | `GRC_ANG_UNSTABLE_DECOD`         | Peak decoding not stable.
-| 309   | `GRC_ANG_TLESS_FPEAKS`           | Too less valid fine-peaks.
+| 309   | `GRC_ANG_TLESS_FPEAKS`           | Not enough valid fine-peaks.
 | 316   | `GRC_ANG_INCL_OLD_PLANE`         | Inclination plane out of time range.
 | 317   | `GRC_ANG_INCL_NO_PLANE`          | Inclination no plane available.
 | 326   | `GRC_ANG_FAST_ANG_ERR`           | Errors in 5 kHz and or 2.5 kHz angle.
@@ -4628,7 +4658,7 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 769   | `GRC_EDM_SYSTEM_ERR`             | Fatal EDM sensor error.
 | 770   | `GRC_EDM_INVALID_COMMAND`        | Invalid command or unknown command.
 | 771   | `GRC_EDM_BOOM_ERR`               | Boomerang error.
-| 772   | `GRC_EDM_SIGN_LOW_ERR`           | Received signal to low, prism to far away, or natural barrier, bad environment, etc.
+| 772   | `GRC_EDM_SIGN_LOW_ERR`           | Received signal too low, prism to far away, or natural barrier, bad environment, etc.
 | 773   | `GRC_EDM_DIL_ERR`                | Obsolete.
 | 774   | `GRC_EDM_SIGN_HIGH_ERR`          | Received signal to strong, prism to near, strange light effect.
 | 775   | `GRC_EDM_TIMEOUT`                | Timeout, measuring time exceeded (signal too weak, beam interrupted).
@@ -4646,7 +4676,7 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 787   | `GRC_EDM_NO_MEASACTIVITY`        | No measurement activity started.
 | 788   | `GRC_EDM_CHKSUM_ERR`             | Calculated checksum, resp. received data wrong.
 | 789   | `GRC_EDM_INIT_OR_STOP_ERR`       | During start up or shut down phase an error occured.
-| 790   | `GRC_EDM_SRL_NOT_AVAILABLE`      | Red laser not available on this sensor HW.
+| 790   | `GRC_EDM_SRL_NOT_AVAILABLE`      | Red laser not available on this sensor hardware.
 | 791   | `GRC_EDM_MEAS_ABORTED`           | Measurement will be aborted (will be used for the laser security).
 | 798   | `GRC_EDM_SLDR_TRANSFER_PENDING`  | Multiple OpenTransfer calls.
 | 799   | `GRC_EDM_SLDR_TRANSFER_ILLEGAL`  | No open transfer happened.
@@ -4654,15 +4684,15 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 801   | `GRC_EDM_SLDR_CHK_SUM_ERROR`     | Checksum error in transmitted data.
 | 802   | `GRC_EDM_SLDR_ADDR_ERROR`        | Address out of valid range.
 | 803   | `GRC_EDM_SLDR_INV_LOADFILE`      | Firmware file has invalid format.
-| 804   | `GRC_EDM_SLDR_UNSUPPORTED`       | Current (loaded) firmware doesn't support upload.
+| 804   | `GRC_EDM_SLDR_UNSUPPORTED`       | Current (loaded) firmware doesn’t support upload.
 | 808   | `GRC_EDM_UNKNOW_ERR`             | Undocumented error from the EDM sensor, should not occur.
 | 818   | `GRC_EDM_DISTRANGE_ERR`          | Out of distance range (too small or large).
 | 819   | `GRC_EDM_SIGNTONOISE_ERR`        | Signal to noise ratio too small.
-| 820   | `GRC_EDM_NOISEHIGH_ERR`          | Noise to high.
+| 820   | `GRC_EDM_NOISEHIGH_ERR`          | Noise too high.
 | 821   | `GRC_EDM_PWD_NOTSET`             | Password is not set.
 | 822   | `GRC_EDM_ACTION_NO_MORE_VALID`   | Elapsed time between prepare and start fast measurement for ATR too long.
 | 823   | `GRC_EDM_MULTRG_ERR`             | Possibly more than one target (also a sensor error).
-| 824   | `GRC_EDM_MISSING_EE_CONSTS`      | EEPROM consts are missing.
+| 824   | `GRC_EDM_MISSING_EE_CONSTS`      | EEPROM constants are missing.
 | 825   | `GRC_EDM_NOPRECISE`              | No precise measurement possible.
 | 826   | `GRC_EDM_MEAS_DIST_NOT_ALLOWED`  | Measured distance is too big (not allowed).
 | 1024  | `GRC_GMF`                        | GMF error.
@@ -4773,9 +4803,9 @@ All GeoCOM return codes start with prefix `GRC_`.
 | 8714  | `GRC_AUT_NOT_ENABLED`            | Target acquisition not enabled.
 | 8715  | `GRC_AUT_CALACC`                 | ATR calibration failed.
 | 8716  | `GRC_AUT_ACCURACY`               | Target position not exactly reached.
-| 8717  | `GRC_AUT_DIST_STARTED`           | Dist. measurement has been started.
+| 8717  | `GRC_AUT_DIST_STARTED`           | Distance measurement has been started.
 | 8718  | `GRC_AUT_SUPPLY_TOO_HIGH`        | External supply voltage is too high.
-| 8719  | `GRC_AUT_SUPPLY_TOO_LOW`         | Int. or ext. supply voltage is too low.
+| 8719  | `GRC_AUT_SUPPLY_TOO_LOW`         | Internal or external supply voltage is too low.
 | 8720  | `GRC_AUT_NO_WORKING_AREA`        | Working area not set.
 | 8721  | `GRC_AUT_ARRAY_FULL`             | Power search data array is filled.
 | 8722  | `GRC_AUT_NO_DATA`                | No data available.

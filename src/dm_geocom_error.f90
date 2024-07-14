@@ -61,7 +61,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_ANG_HZ_MOVED               = 269   !! Hz moved during incline measurement.
     integer, parameter, public :: GRC_ANG_OS_ERROR               = 270   !! Troubles with operation system.
     integer, parameter, public :: GRC_ANG_DATA_ERROR             = 271   !! Overflow at parameter values.
-    integer, parameter, public :: GRC_ANG_PEAK_CNT_UFL           = 272   !! Too less peaks.
+    integer, parameter, public :: GRC_ANG_PEAK_CNT_UFL           = 272   !! Not enough peaks.
     integer, parameter, public :: GRC_ANG_TIME_OUT               = 273   !! Reading timeout.
     integer, parameter, public :: GRC_ANG_TOO_MANY_EXPOS         = 274   !! Too many exposures wanted.
     integer, parameter, public :: GRC_ANG_PIX_CTRL_ERR           = 275   !! Picture height out of range.
@@ -71,15 +71,15 @@ module dm_geocom_error
     integer, parameter, public :: GRC_ANG_UNDER_EXPOSURE         = 279   !! Picture under-exposured.
     integer, parameter, public :: GRC_ANG_OVER_EXPOSURE          = 280   !! Picture over-exposured.
     integer, parameter, public :: GRC_ANG_TMANY_PEAKS            = 300   !! Too many peaks detected.
-    integer, parameter, public :: GRC_ANG_TLESS_PEAKS            = 301   !! Too less peaks detected.
+    integer, parameter, public :: GRC_ANG_TLESS_PEAKS            = 301   !! Not enough peaks detected.
     integer, parameter, public :: GRC_ANG_PEAK_TOO_SLIM          = 302   !! Peak too slim.
     integer, parameter, public :: GRC_ANG_PEAK_TOO_WIDE          = 303   !! Peak to wide.
     integer, parameter, public :: GRC_ANG_BAD_PEAKDIFF           = 304   !! Bad peak difference.
-    integer, parameter, public :: GRC_ANG_UNDER_EXP_PICT         = 305   !! Too less peak amplitude.
+    integer, parameter, public :: GRC_ANG_UNDER_EXP_PICT         = 305   !! Too low peak amplitude.
     integer, parameter, public :: GRC_ANG_PEAKS_INHOMOGEN        = 306   !! Inhomogeneous peak amplitudes.
     integer, parameter, public :: GRC_ANG_NO_DECOD_POSS          = 307   !! No peak decoding possible.
     integer, parameter, public :: GRC_ANG_UNSTABLE_DECOD         = 308   !! Peak decoding not stable.
-    integer, parameter, public :: GRC_ANG_TLESS_FPEAKS           = 309   !! Too less valid fine-peaks.
+    integer, parameter, public :: GRC_ANG_TLESS_FPEAKS           = 309   !! Not enough valid fine-peaks.
     integer, parameter, public :: GRC_ANG_INCL_OLD_PLANE         = 316   !! Inclination plane out of time range.
     integer, parameter, public :: GRC_ANG_INCL_NO_PLANE          = 317   !! Inclination no plane available.
     integer, parameter, public :: GRC_ANG_FAST_ANG_ERR           = 326   !! Errors in 5 kHz and or 2.5 kHz angle.
@@ -120,7 +120,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_EDM_SYSTEM_ERR             = 769   !! Fatal EDM sensor error.
     integer, parameter, public :: GRC_EDM_INVALID_COMMAND        = 770   !! Invalid command or unknown command.
     integer, parameter, public :: GRC_EDM_BOOM_ERR               = 771   !! Boomerang error.
-    integer, parameter, public :: GRC_EDM_SIGN_LOW_ERR           = 772   !! Received signal to low, prism to far away, or natural barrier, bad environment, etc.
+    integer, parameter, public :: GRC_EDM_SIGN_LOW_ERR           = 772   !! Received signal too low, prism too far away, or natural barrier, bad environment, etc.
     integer, parameter, public :: GRC_EDM_DIL_ERR                = 773   !! Obsolete.
     integer, parameter, public :: GRC_EDM_SIGN_HIGH_ERR          = 774   !! Received signal to strong, prism to near, strange light effect.
     integer, parameter, public :: GRC_EDM_TIMEOUT                = 775   !! Timeout, measuring time exceeded (signal too weak, beam interrupted).
@@ -150,11 +150,11 @@ module dm_geocom_error
     integer, parameter, public :: GRC_EDM_UNKNOW_ERR             = 808   !! Undocumented error from the EDM sensor, should not occur.
     integer, parameter, public :: GRC_EDM_DISTRANGE_ERR          = 818   !! Out of distance range (too small or large).
     integer, parameter, public :: GRC_EDM_SIGNTONOISE_ERR        = 819   !! Signal to noise ratio too small.
-    integer, parameter, public :: GRC_EDM_NOISEHIGH_ERR          = 820   !! Noise to high.
+    integer, parameter, public :: GRC_EDM_NOISEHIGH_ERR          = 820   !! Noise too high.
     integer, parameter, public :: GRC_EDM_PWD_NOTSET             = 821   !! Password is not set.
     integer, parameter, public :: GRC_EDM_ACTION_NO_MORE_VALID   = 822   !! Elapsed time between prepare and start fast measurement for ATR too long.
     integer, parameter, public :: GRC_EDM_MULTRG_ERR             = 823   !! Possibly more than one target (also a sensor error).
-    integer, parameter, public :: GRC_EDM_MISSING_EE_CONSTS      = 824   !! EEPROM consts are missing.
+    integer, parameter, public :: GRC_EDM_MISSING_EE_CONSTS      = 824   !! EEPROM constantss are missing.
     integer, parameter, public :: GRC_EDM_NOPRECISE              = 825   !! No precise measurement possible.
     integer, parameter, public :: GRC_EDM_MEAS_DIST_NOT_ALLOWED  = 826   !! Measured distance is too big (not allowed).
 
@@ -271,9 +271,9 @@ module dm_geocom_error
     integer, parameter, public :: GRC_AUT_NOT_ENABLED            = 8714  !! Target acquisition not enabled.
     integer, parameter, public :: GRC_AUT_CALACC                 = 8715  !! ATR calibration failed.
     integer, parameter, public :: GRC_AUT_ACCURACY               = 8716  !! Target position not exactly reached.
-    integer, parameter, public :: GRC_AUT_DIST_STARTED           = 8717  !! Dist. measurement has been started.
+    integer, parameter, public :: GRC_AUT_DIST_STARTED           = 8717  !! Distance measurement has been started.
     integer, parameter, public :: GRC_AUT_SUPPLY_TOO_HIGH        = 8718  !! External supply voltage is too high.
-    integer, parameter, public :: GRC_AUT_SUPPLY_TOO_LOW         = 8719  !! Int. or ext. supply voltage is too low.
+    integer, parameter, public :: GRC_AUT_SUPPLY_TOO_LOW         = 8719  !! Internal or external supply voltage is too low.
     integer, parameter, public :: GRC_AUT_NO_WORKING_AREA        = 8720  !! Working area not set.
     integer, parameter, public :: GRC_AUT_ARRAY_FULL             = 8721  !! Power search data array is filled.
     integer, parameter, public :: GRC_AUT_NO_DATA                = 8722  !! No data available.
@@ -414,7 +414,7 @@ contains
             case (GRC_ANG_BAD_PEAKDIFF)
                 message = 'bad peak difference'
             case (GRC_ANG_UNDER_EXP_PICT)
-                message = 'peak amplitude to low'
+                message = 'peak amplitude too low'
             case (GRC_ANG_PEAKS_INHOMOGEN)
                 message = 'inhomogeneous peak amplitudes'
             case (GRC_ANG_NO_DECOD_POSS)
@@ -564,7 +564,7 @@ contains
             case (GRC_EDM_SIGNTONOISE_ERR)
                 message = 'signal to noise ratio too small'
             case (GRC_EDM_NOISEHIGH_ERR)
-                message = 'noise to high'
+                message = 'noise too high'
             case (GRC_EDM_PWD_NOTSET)
                 message = 'password is not set'
             case (GRC_EDM_ACTION_NO_MORE_VALID)
@@ -572,7 +572,7 @@ contains
             case (GRC_EDM_MULTRG_ERR)
                 message = 'possibly more than one target (also a sensor error)'
             case (GRC_EDM_MISSING_EE_CONSTS)
-                message = 'EEPROM consts are missing'
+                message = 'EEPROM constants are missing'
             case (GRC_EDM_NOPRECISE)
                 message = 'no precise measurement possible'
             case (GRC_EDM_MEAS_DIST_NOT_ALLOWED)
@@ -768,7 +768,7 @@ contains
             case (GRC_COM_NO_PARTNER)
                 message = 'unable to find TPS'
             case (GRC_COM_ERO_NOT_STARTED)
-                message = 'Extended Runtime Operation could not be started'
+                message = 'Extended Runtime Operation (ERO) could not be started'
             case (GRC_COM_CONS_REQ)
                 message = 'att to send cons reqs'
             case (GRC_COM_SRVR_IS_SLEEPING)

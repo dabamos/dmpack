@@ -137,7 +137,7 @@ contains
     end function dm_string_count_substring
 
     logical function dm_string_is_empty(str) result(empty)
-        !! Returns `.false.` if given allocatable string is not passed, not
+        !! Returns `.true.` if given allocatable string is not passed, not
         !! allocated, or empty.
         character(len=:), allocatable, intent(inout), optional :: str !! Input string.
 
