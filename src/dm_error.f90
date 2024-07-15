@@ -364,14 +364,15 @@ contains
         is_ok = (error == E_NONE)
     end function dm_is_ok
 
-    subroutine dm_error_out(error, message, verbose, extra, quit)
+    subroutine dm_error_out(error, message, verbose, extra, fatal)
         !! Prints error description to `stderr`. If `verbose` is `.true.`, the
         !! routine outputs even if no error occured (`E_NONE`).
         !!
         !! If `extra` is `.true.`, the routine outputs the default error
-        !! message for the given error code additionally to the message. If
-        !! `quit` is `.true.`, the routine terminates with exit code `1` on
-        !! error only.
+        !! message for the given error code additionally to the message.
+        !!
+        !! If `fatal` is `.true.`, the routine terminates with exit code `1` on
+        !! error.
         character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
         character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
 
@@ -379,17 +380,17 @@ contains
         character(len=*), intent(in), optional :: message !! Optional error message.
         logical,          intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE` too.
         logical,          intent(in), optional :: extra   !! If `.true.`, print additional error code message.
-        logical,          intent(in), optional :: quit    !! If `.true.`, stop program on error.
+        logical,          intent(in), optional :: fatal   !! If `.true.`, stop program on error.
 
-        logical :: extra_, verbose_, quit_
+        logical :: extra_, fatal_, verbose_
 
-        extra_   = .false.
         verbose_ = .false.
-        quit_    = .false.
+        extra_   = .false.
+        fatal_   = .false.
 
-        if (present(extra))   extra_   = extra
         if (present(verbose)) verbose_ = verbose
-        if (present(quit))    quit_    = quit
+        if (present(extra))   extra_   = extra
+        if (present(fatal))   fatal_   = fatal
 
         if (error == E_NONE .and. .not. verbose_) return
 
@@ -404,7 +405,7 @@ contains
         end if
 
         if (error == E_NONE) return
-        if (quit_) call dm_stop(STOP_FAILURE)
+        if (fatal_) call dm_stop(STOP_FAILURE)
     end subroutine dm_error_out
 
     subroutine dm_stop(stat)

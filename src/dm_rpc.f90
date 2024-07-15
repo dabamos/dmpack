@@ -14,7 +14,7 @@ module dm_rpc
     !! type(rpc_response_type)       :: response
     !!
     !! rc = dm_rpc_init()
-    !! call dm_error_out(rc, quit=.true.)
+    !! call dm_error_out(rc, fatal=.true.)
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
     !! rc  = dm_rpc_send(request, response, observ, url)
