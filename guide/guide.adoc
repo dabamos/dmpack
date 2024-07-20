@@ -4837,10 +4837,12 @@ jobs = {
     onetime = true,
     delay = 5 * 1000,
     observation = {
+      -- Initialise RTS and send responses to dmdb.
       name = "init_tps",
       target_id = "p99",
       receivers = { "dmdb" },
       requests = {
+        -- Up to 8 requests are allowed per observation.
         geocom_beep_normal(),
         geocom_set_refraction_mode(1),
         geocom_set_inclination_correction(true),
@@ -4856,6 +4858,7 @@ jobs = {
     onetime = false,
     delay = 10 * 1000,
     observation = {
+      -- Set position and start measurement, send responses to dmdb.
       name = "get_p01",
       target_id = "p01",
       receivers = { "dmdb" },
