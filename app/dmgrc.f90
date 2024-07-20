@@ -227,10 +227,11 @@ contains
         integer           :: rc
         type(observ_type) :: observ
 
-        call logger%info('started ' // app%name)
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
+            call logger%debug('waiting for observ on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then

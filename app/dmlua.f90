@@ -12,21 +12,21 @@ program dmlua
     character(len=*), parameter :: APP_NAME  = 'dmlua'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     integer, parameter :: APP_PROC_LEN    = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_type
         !! Global application settings.
-        character(len=ID_LEN)          :: name      = APP_NAME  !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)   :: config    = ' '       !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN) :: logger    = ' '       !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node      = ' '       !! Node id (required).
-        character(len=APP_PROC_LEN)    :: proc      = 'process' !! Name of Lua function (required).
-        character(len=FILE_PATH_LEN)   :: script    = ' '       !! Path to Lua script file (required).
-        logical                        :: debug     = .false.   !! Forward debug messages via IPC.
-        logical                        :: verbose   = .false.   !! Print debug messages to stderr.
+        character(len=ID_LEN)          :: name    = APP_NAME  !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)   :: config  = ' '       !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN) :: logger  = ' '       !! Name of logger.
+        character(len=NODE_ID_LEN)     :: node    = ' '       !! Node id (required).
+        character(len=APP_PROC_LEN)    :: proc    = 'process' !! Name of Lua function (required).
+        character(len=FILE_PATH_LEN)   :: script  = ' '       !! Path to Lua script file (required).
+        logical                        :: debug   = .false.   !! Forward debug messages via IPC.
+        logical                        :: verbose = .false.   !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -66,6 +66,14 @@ program dmlua
 
         if (dm_is_error(rc)) then
             call logger%error('failed to register Lua API', error=rc)
+            exit init_block
+        end if
+
+        ! Register GeoCOM API for Lua.
+        rc = dm_lua_geocom_register(lua, procedures=.false., errors=.true.)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to register GeoCOM API', error=rc)
             exit init_block
         end if
 
@@ -223,10 +231,11 @@ contains
         integer           :: rc
         type(observ_type) :: observ_in, observ_out
 
-        call logger%info('started ' // app%name)
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
+            call logger%debug('waiting for observ on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
@@ -245,7 +254,7 @@ contains
             call logger%debug('passing observ ' // trim(observ_in%name) // &
                               ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
 
-            ! Pass the observation to the Lua function in read the returned
+            ! Pass the observation to the Lua function and read the returned
             ! observation.
             lua_block: block
                 ! Load Lua function.

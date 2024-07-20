@@ -399,7 +399,7 @@ contains
 
         debug = (app%debug .or. app%verbose)
 
-        call logger%info('started ' // app%name)
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
 
         ! Run until no jobs are left.
         job_loop: do

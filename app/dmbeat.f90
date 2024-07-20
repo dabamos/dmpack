@@ -202,7 +202,6 @@ contains
         type(timer_type)        :: timer
 
         if (present(error)) error = E_NONE
-        call logger%info('started ' // app%name)
 
         ! Client and library version.
         client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
@@ -217,6 +216,8 @@ contains
 
         last_error = E_NONE
         niter = 0
+
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
 
         emit_loop: do
             call dm_timer_start(timer)

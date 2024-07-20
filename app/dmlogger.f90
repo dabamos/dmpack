@@ -211,9 +211,10 @@ contains
         type(log_type) :: log
 
         steps = 0
-        call logger%info('started ' // app%name)
-        call logger%debug('minimum log level is set to ' // LOG_LEVEL_NAMES(app%minlevel))
 
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+        call logger%debug('waiting for log on mqueue /' // trim(app%name) // ' (minimum log level is ' // &
+                          trim(LOG_LEVEL_NAMES(app%minlevel)) // ')')
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)

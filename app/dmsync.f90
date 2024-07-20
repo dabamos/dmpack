@@ -278,10 +278,10 @@ contains
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
 
-        call logger%info('started ' // app%name)
-
         name  = dm_sync_name(app%type)
         limit = APP_SYNC_LIMIT
+
+        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
 
         ! Allocate type array, and generate URL of HTTP-RPC API endpoint.
         select case (app%type)
@@ -565,7 +565,7 @@ contains
             end if
         end do sync_loop
 
-        call logger%debug('exiting ...')
+        call logger%debug('finished transmission')
     end function run
 
     subroutine halt(error)
