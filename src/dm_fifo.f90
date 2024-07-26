@@ -28,7 +28,7 @@ contains
     integer(kind=i8) function dm_fifo_read(fifo, bytes, error) result(nbytes)
         !! Reads from named pipe and returns number of bytes read. The read
         !! string is returned in `bytes`. Argument `error` is set to
-        !! `E_INVALID` if `fifo` is not connected.
+        !! `E_NULL` if `fifo` is not connected.
         type(fifo_type),               intent(inout)         :: fifo  !! FIFO type.
         character(len=:), allocatable, intent(out)           :: bytes !! Bytes read from FIFO.
         integer,                       intent(out), optional :: error !! Error code.
@@ -39,7 +39,7 @@ contains
         bytes  = ''
 
         fifo_block: block
-            rc = E_INVALID
+            rc = E_NULL
             if (.not. c_associated(fifo%stream)) exit fifo_block
 
             rc = E_NONE

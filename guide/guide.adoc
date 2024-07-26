@@ -7124,15 +7124,16 @@ TARGET%Z=0.0,
 | 15   | `E_MEMORY`          | No memory.
 | 16   | `E_FULL`            | Disk full.
 | 17   | `E_EMPTY`           | No data.
-| 18   | `E_LIMIT`           | Limit reached.
-| 19   | `E_TIMEOUT`         | Timeout occured.
-| 20   | `E_FORMAT`          | Format error.
-| 21   | `E_NOT_FOUND`       | Resource not found.
-| 22   | `E_PERM`            | No permission.
-| 23   | `E_READ_ONLY`       | Read-only access.
-| 24   | `E_CORRUPT`         | Data corrupted.
-| 25   | `E_CONFIG`          | Invalid configuration.
-| 26   | `E_GEOCOM`          | GeoCOM error.
+| 18   | `E_NULL`            | Pointer not associated.
+| 19   | `E_LIMIT`           | Limit reached.
+| 20   | `E_TIMEOUT`         | Timeout occured.
+| 21   | `E_FORMAT`          | Format error.
+| 22   | `E_NOT_FOUND`       | Resource not found.
+| 23   | `E_PERM`            | No permission.
+| 24   | `E_READ_ONLY`       | Read-only access.
+| 25   | `E_CORRUPT`         | Data corrupted.
+| 26   | `E_CONFIG`          | Invalid configuration.
+| 27   | `E_GEOCOM`          | GeoCOM error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_BUSY`         | Database is busy.

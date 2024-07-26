@@ -790,7 +790,7 @@ contains
 
         integer :: stat
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(request%curl_ptr)) return
 
         ! Reset HTTP header list.
@@ -800,11 +800,11 @@ contains
         end if
 
         ! Validate URL.
+        rc = E_INVALID
         if (dm_string_is_empty(request%url)) return
 
-        rc = E_RPC
-
         ! Set URL.
+        rc = E_RPC
         stat = curl_easy_setopt(request%curl_ptr, CURLOPT_URL, request%url)
         if (stat /= CURLE_OK) return
 

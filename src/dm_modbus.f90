@@ -62,7 +62,7 @@ module dm_modbus
     integer, parameter, public :: MODBUS_MODE_RTU  = 1 !! Modbus RTU (Remote Terminal Unit).
     integer, parameter, public :: MODBUS_MODE_TCP  = 2 !! Modbus TCP (Transmission Control Protocol).
 
-    ! Byte orders of 32-bit real values.
+    ! Byte orders of 4-byte real values.
     integer, parameter, public :: MODBUS_REAL_ABCD = 0 !! ABCD byte order.
     integer, parameter, public :: MODBUS_REAL_BADC = 1 !! BADC byte order.
     integer, parameter, public :: MODBUS_REAL_CDAB = 2 !! CDBA byte order.
@@ -83,7 +83,7 @@ module dm_modbus
         !! Opaque Modbus RTU/TCP context type.
         private
         integer     :: mode = MODBUS_MODE_NONE !! RTU or TCP.
-        type(c_ptr) :: ctx  = c_null_ptr       !! C-pointer to Modbus context.
+        type(c_ptr) :: ctx  = c_null_ptr       !! C pointer to Modbus context.
     end type modbus_type
 
     interface dm_modbus_create
@@ -162,12 +162,12 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the modbus context is not associated.
         !! * `E_IO` if no connection could be established.
+        !! * `E_NULL` if the modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_IO
@@ -277,12 +277,12 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not associated.
         !! * `E_MODBUS` if flushing failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
@@ -355,16 +355,19 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not RTU or not associated.
+        !! * `E_INVALID` if the Modbus mode is not RTU.
         !! * `E_MODBUS` if getting the serial mode failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         integer,           intent(out)   :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         mode = -1
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_INVALID
         if (modbus%mode /= MODBUS_MODE_RTU) return
 
         rc = E_MODBUS
@@ -378,15 +381,15 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not associated.
         !! * `E_MODBUS` if getting the slave failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         integer,           intent(out)   :: slave  !! Device id.
 
         slave = -1
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
@@ -412,9 +415,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if argument `registers` is invalid or if the Modbus
-        !!    context is not associated.
+        !! * `E_INVALID` if argument `registers` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
         integer,           intent(in)              :: address      !! Address to read from.
@@ -430,9 +433,11 @@ contains
         if (nregisters > size(registers)) nregisters = size(registers)
         if (present(n)) n = 0
 
+        rc = E_NULL
+        if (.not. c_associated(modbus%ctx)) return
+
         rc = E_INVALID
         if (size(registers) == 0 .or. nregisters <= 0) return
-        if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
         stat = modbus_read_registers(modbus%ctx, address, nregisters, registers)
@@ -458,15 +463,17 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not associated or if the mode
-        !!    is invalid.
+        !! * `E_INVALID` if the mode is invalid.
         !! * `E_MODBUS` if setting the serial mode failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         integer,           intent(in)    :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_INVALID
         if (modbus%mode /= MODBUS_MODE_RTU) return
         if (mode /= MODBUS_RTU_RS232 .or. mode /= MODBUS_RTU_RS485) return
 
@@ -481,13 +488,13 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not associated.
         !! * `E_MODBUS` if setting the slave failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus !! Modbus type.
         integer,           intent(in)    :: slave  !! Device id.
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
@@ -524,8 +531,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus context is not associated.
         !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout) :: modbus   !! Modbus type.
         integer,           intent(in)    :: address  !! Address to write to.
@@ -533,7 +540,7 @@ contains
 
         integer :: stat
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
@@ -551,9 +558,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if argument `registers` is invalid or if the Modbus
-        !!    context is not associated.
+        !! * `E_INVALID` if argument `registers` is invalid.
         !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
         !!
         type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
         integer,           intent(in)              :: address      !! Address to write to.
@@ -567,9 +574,11 @@ contains
         if (nregisters > size(registers)) nregisters = size(registers)
         if (present(n)) n = 0
 
+        rc = E_NULL
+        if (.not. c_associated(modbus%ctx)) return
+
         rc = E_INVALID
         if (size(registers) == 0 .or. nregisters <= 0) return
-        if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
         stat = modbus_write_registers(modbus%ctx, address, nregisters, registers)

@@ -117,18 +117,18 @@ FORD    = ford
 GZIP    = gzip
 
 # Workspace directories.
-CONFDIR = ./config
-DISTDIR = ./dist
+CONFDIR = config
+DISTDIR = dist
 
-INCDIR  = ./include
-LIBDIR  = ./lib
-SHRDIR  = ./share
-SRCDIR  = ./src
+INCDIR  = include
+LIBDIR  = lib
+SHRDIR  = share
+SRCDIR  = src
 
-ADOCDIR = ./adoc
-DOCDIR  = ./doc
-MANDIR  = ./man
-GUIDDIR = ./guide
+ADOCDIR = adoc
+DOCDIR  = doc
+MANDIR  = man
+GUIDDIR = guide
 
 # Installation directories.
 IBINDIR = $(PREFIX)/bin
@@ -490,38 +490,38 @@ linux:
 
 $(LIBFCURL): setup
 	cd vendor/fortran-curl/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
-	cp ./vendor/fortran-curl/*.mod $(INCDIR)/
+	cp vendor/fortran-curl/*.mod $(INCDIR)/
 
 $(LIBFLUA54): setup
 	cd vendor/fortran-lua54/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
-	cp ./vendor/fortran-lua54/*.mod $(INCDIR)/
+	cp vendor/fortran-lua54/*.mod $(INCDIR)/
 
 $(LIBFMODBUS): setup
 	cd vendor/fortran-modbus/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
-	cp ./vendor/fortran-modbus/*.mod $(INCDIR)/
+	cp vendor/fortran-modbus/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
-	cp ./vendor/fortran-pcre2/*.mod $(INCDIR)/
+	cp vendor/fortran-pcre2/*.mod $(INCDIR)/
 
 $(LIBFSQLITE3): setup
 	cd vendor/fortran-sqlite3/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
-	cp ./vendor/fortran-sqlite3/*.mod $(INCDIR)/
+	cp vendor/fortran-sqlite3/*.mod $(INCDIR)/
 
 $(LIBFUNIX): setup
 	@echo "---"
 	@echo "--- Building for $(OS) ..."
 	@echo "---"
 	cd vendor/fortran-unix/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
-	cp ./vendor/fortran-unix/*.mod $(INCDIR)/
+	cp vendor/fortran-unix/*.mod $(INCDIR)/
 
 $(LIBFZLIB): setup
 	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
-	cp ./vendor/fortran-zlib/*.mod $(INCDIR)/
+	cp vendor/fortran-zlib/*.mod $(INCDIR)/
 
 $(LIBFZSTD): setup
 	cd vendor/fortran-zstd/ && make FC=$(FC) FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZSTD)"
-	cp ./vendor/fortran-zstd/*.mod $(INCDIR)/
+	cp vendor/fortran-zstd/*.mod $(INCDIR)/
 
 # ******************************************************************************
 #

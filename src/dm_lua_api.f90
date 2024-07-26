@@ -113,6 +113,7 @@ contains
             rc = dm_lua_set(lua, 'E_MEMORY',         E_MEMORY);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_FULL',           E_FULL);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_EMPTY',          E_EMPTY);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NULL',           E_NULL);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_LIMIT',          E_LIMIT);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_TIMEOUT',        E_TIMEOUT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return

@@ -30,12 +30,12 @@ contains
         !! Closes named semaphore. The function returns the following error
         !! codes:
         !!
-        !! * `E_INVALID` if semaphore pointer is not associated.
+        !! * `E_NULL` if semaphore pointer is not associated.
         !! * `E_SYSTEM` if system call to close semaphore failed.
         !!
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(sem%ptr)) return
 
         rc = E_SYSTEM
@@ -75,9 +75,10 @@ contains
         if (create_) flag = ior(flag, O_CREAT)
 
         rc = E_INVALID
-        if (value_ < 0) return
+        if (value_ < 0)          return
         if (len_trim(name) == 0) return
-        if (name(1:1) == '/') return
+        if (name(1:1) == '/')    return
+
         sem%name = '/' // name
 
         rc = E_SYSTEM
@@ -86,6 +87,7 @@ contains
                              mode  = int(mode_, kind=c_mode_t), &
                              value = value_)
         if (.not. c_associated(sem%ptr)) return
+
         rc = E_NONE
     end function dm_sem_open
 

@@ -65,7 +65,7 @@ contains
         !!
         !! The functions returns the following error codes:
         !!
-        !! * `E_INVALID` if `regex` is invalid.
+        !! * `E_NULL` if regular expression context is not associated.
         !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_GROUP` if no group matches.
@@ -80,7 +80,7 @@ contains
         integer(kind=pcre2_size) :: n
         type(c_ptr)              :: match_data
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(regex%ptr)) return
 
         pcre_block: block
@@ -118,7 +118,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if `regex` is invalid.
+        !! * `E_NULL` if regular expression context is not associated.
         !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_EXCEEDED` if the number of matches exceeds the O vector size.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
@@ -129,7 +129,7 @@ contains
         type(c_ptr) :: match_data
         integer     :: match
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(regex%ptr)) return
 
         match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)

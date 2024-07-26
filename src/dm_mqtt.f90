@@ -80,7 +80,7 @@ contains
         integer     :: stat
         type(c_ptr) :: curl_ptr
 
-        rc = E_IO
+        rc = E_MQTT
 
         if (present(error_message)) error_message = ''
         if (present(error_curl))    error_curl    = CURLE_OK

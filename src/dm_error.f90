@@ -9,10 +9,8 @@ module dm_error
 
     ! ************************************************************************
     !                                ATTENTION
-    !
-    ! Any additional error code must be exported in function
-    ! `dm_lua_api_register()` from module `dm_lua_api`.
-    !
+    ! Any additional error code must be exported in `dm_lua_api_register()`
+    ! of module `dm_lua_api`.
     ! ************************************************************************
 
     ! Generic errors.
@@ -34,15 +32,16 @@ module dm_error
     integer, parameter, public :: E_MEMORY         =  15 !! No memory.
     integer, parameter, public :: E_FULL           =  16 !! Disk full.
     integer, parameter, public :: E_EMPTY          =  17 !! No data.
-    integer, parameter, public :: E_LIMIT          =  18 !! Memory limit reached.
-    integer, parameter, public :: E_TIMEOUT        =  19 !! Timeout occured.
-    integer, parameter, public :: E_FORMAT         =  20 !! Format error.
-    integer, parameter, public :: E_NOT_FOUND      =  21 !! Resource not found.
-    integer, parameter, public :: E_PERM           =  22 !! No permission.
-    integer, parameter, public :: E_READ_ONLY      =  23 !! Read-only access.
-    integer, parameter, public :: E_CORRUPT        =  24 !! Data corrupted.
-    integer, parameter, public :: E_CONFIG         =  25 !! Invalid configuration error.
-    integer, parameter, public :: E_GEOCOM         =  26 !! GeoCOM error.
+    integer, parameter, public :: E_NULL           =  18 !! Pointer not associated.
+    integer, parameter, public :: E_LIMIT          =  19 !! Memory limit reached.
+    integer, parameter, public :: E_TIMEOUT        =  20 !! Timeout occured.
+    integer, parameter, public :: E_FORMAT         =  21 !! Format error.
+    integer, parameter, public :: E_NOT_FOUND      =  22 !! Resource not found.
+    integer, parameter, public :: E_PERM           =  23 !! No permission.
+    integer, parameter, public :: E_READ_ONLY      =  24 !! Read-only access.
+    integer, parameter, public :: E_CORRUPT        =  25 !! Data corrupted.
+    integer, parameter, public :: E_CONFIG         =  26 !! Invalid configuration error.
+    integer, parameter, public :: E_GEOCOM         =  27 !! GeoCOM error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -183,6 +182,8 @@ contains
                 message = 'disk full'
             case (E_EMPTY)
                 message = 'no data'
+            case (E_NULL)
+                message = 'null pointer'
             case (E_LIMIT)
                 message = 'limit reached'
             case (E_TIMEOUT)

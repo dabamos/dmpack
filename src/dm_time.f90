@@ -463,8 +463,8 @@ contains
         type(c_tm)  :: tm
 
         rc = E_SYSTEM
-
         ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
+
         if (.not. c_associated(ptr)) return
 
         if (present(year))   year   = tm%tm_year + 1900

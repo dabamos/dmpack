@@ -26,7 +26,7 @@ module dmpack
     !! $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
     !! ```
     !!
-    !! You may have to change `/usr/local` the chosen installation prefix.
+    !! Change `/usr/local` to the installation prefix.
     use :: dm_ansi
     use :: dm_api
     use :: dm_arg
