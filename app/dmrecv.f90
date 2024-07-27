@@ -3,20 +3,21 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmrecv
-    !! Receives logs or observations from POSIX message queue and writes them to
-    !! standard output or file, either in CSV, JSON Lines, or Namelist format.
+    !! Receives logs or observations from POSIX message queue and writes them
+    !! to standard output or file, either in CSV, JSON Lines, or Namelist
+    !! format.
     !!
-    !! The output can be piped to a graph tool like trend(1), to show a real-time
-    !! plot:
+    !! The output can be piped to a graph tool like _trend(1)_, to show a
+    !! real-time plot:
     !!
     !! ```
-    !! $ dmrecv --name dmrecv --type observ --format block --response tz0 | \
-    !!   awk '{ print $2 | "trend - 60" }'
+    !! $ dmrecv --name dmrecv --type observ --format block --response tz0 \
+    !!   | awk '{ print $2 | "trend - 60" }'
     !! ```
     !!
     !! Another DMPACK process has to send observations to message queue
-    !! "/dmrecv".  Only responses of name "tz0" will be converted to ASCII block
-    !! format and printed to standard output.
+    !! "/dmrecv".  Only responses of name `tz0` will be converted to ASCII
+    !! block format and printed to standard output.
     use :: dmpack
     implicit none (type, external)
 
@@ -90,7 +91,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(12)
+
+        type(arg_type) :: args(12)
 
         rc = E_NONE
 
@@ -185,7 +187,7 @@ contains
             end if
 
             if (.not. dm_id_valid(app%response)) then
-                call dm_error_out(rc, 'missing response name')
+                call dm_error_out(rc, 'invalid or missing response name')
                 return
             end if
         end if
@@ -196,7 +198,8 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file if path is not emty.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_type) :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return

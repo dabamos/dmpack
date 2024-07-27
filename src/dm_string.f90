@@ -7,6 +7,9 @@ module dm_string
     implicit none (type, external)
     private
 
+    character(len=*), parameter :: FMT_INTEGER = '(i0)'
+    character(len=*), parameter :: FMT_REAL    = '(f0.12)'
+
     type, public :: string_type
         !! Derived type of allocatable character to be stored in an array.
         character(len=:), allocatable :: data
@@ -61,6 +64,7 @@ module dm_string
     public :: dm_string_count_lines
     public :: dm_string_count_substring
     public :: dm_string_is_empty
+    public :: dm_string_is_present
     public :: dm_string_is_printable
     public :: dm_string_lower
     public :: dm_string_split
@@ -136,19 +140,29 @@ contains
         end do
     end function dm_string_count_substring
 
-    logical function dm_string_is_empty(str) result(empty)
+    logical function dm_string_is_empty(str) result(is)
         !! Returns `.true.` if given allocatable string is not passed, not
-        !! allocated, or empty.
+        !! allocated, or contains only white spaces.
         character(len=:), allocatable, intent(inout), optional :: str !! Input string.
 
-        empty = .true.
+        is = .true.
         if (.not. present(str))   return
         if (.not. allocated(str)) return
         if (len_trim(str) == 0)   return
-        empty = .false.
+        is = .false.
     end function dm_string_is_empty
 
-    pure logical function dm_string_is_printable(str) result(printable)
+    pure logical function dm_string_is_present(str) result(is)
+        !! Returns `.true.` if given string is present and not empty.
+        character(len=*), intent(in), optional :: str !! Input string.
+
+        is = .false.
+        if (.not. present(str)) return
+        if (len_trim(str) == 0) return
+        is = .true.
+    end function dm_string_is_present
+
+    pure logical function dm_string_is_printable(str) result(is)
         !! Returns `.true.` if all characters is given string are printable
         !! ASCII characters.
         use :: dm_ascii, only: dm_ascii_is_printable
@@ -156,13 +170,13 @@ contains
         character(len=*), intent(in) :: str !! String to validate.
         integer                      :: i
 
-        printable = .false.
+        is = .false.
 
         do i = 1, len_trim(str)
             if (.not. dm_ascii_is_printable(str(i:i))) return
         end do
 
-        printable = .true.
+        is = .true.
     end function dm_string_is_printable
 
     pure elemental function dm_string_lower(str) result(lower)
@@ -208,6 +222,7 @@ contains
 
         n_ = 0
         if (present(n)) n_ = max(0, n)
+
         if (.not. allocated(string%data)) allocate (character(len=n_) :: string%data)
     end subroutine dm_string_allocate
 
@@ -294,7 +309,7 @@ contains
 
         if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: str)
-        write (str, '(i0)', iostat=stat) i
+        write (str, FMT_INTEGER, iostat=stat) i
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_from_int32
@@ -316,7 +331,7 @@ contains
 
         if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: str)
-        write (str, '(i0)', iostat=stat) i
+        write (str, FMT_INTEGER, iostat=stat) i
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_from_int64
@@ -331,7 +346,7 @@ contains
         character(len=20) :: buf
 
         if (present(error)) error = E_FORMAT
-        write (buf, '(f0.12)', iostat=stat) f
+        write (buf, FMT_REAL, iostat=stat) f
         if (stat /= 0) then
             str = ''
             return
@@ -350,7 +365,7 @@ contains
         character(len=20) :: buf
 
         if (present(error)) error = E_FORMAT
-        write (buf, '(f0.12)', iostat=stat) f
+        write (buf, FMT_REAL, iostat=stat) f
         if (stat /= 0) then
             str = ''
             return

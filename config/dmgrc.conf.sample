@@ -20,25 +20,12 @@ dmgrc = {
     response = "grc",
     level = LL_WARNING,
     levels = {
-        debug = {
-            GRC_ABORT,
-            GRC_SHUT_DOWN,
-            GRC_NO_EVENT
-        },
-        info = {
-            GRC_SLEEP_NODE,
-            GRC_NA,
-            GRC_STOPPED
-        },
-        warning = {
-            GRC_TMC_ACCURACY_GUARANTEE,
-            GRC_AUT_NO_TARGET,
-            GRC_AUT_ACCURACY
-        },
-        error = {
-            GRC_FATAL
-        },
-        critical = {}
+        debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
+        info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
+        warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET, GRC_AUT_ACCURACY },
+        error = { GRC_FATAL },
+        critical = {},
+        user = {},
     },
     debug = false,
     verbose = true

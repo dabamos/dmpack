@@ -21,6 +21,8 @@ program dmtestlogger
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
+        !! Sends and receives log message through POSIX message queue.
+        !! Validates serialisation to JSON.
         character(len=*), parameter :: JSON = &
             '{"id":"f5ec2dd3870a47b5be3ae397552706fe","level":4,"error":2,"timestamp":' // &
             '"1970-01-01T00:00:00.000000+00:00","node_id":"test-node","sensor_id":"test-sensor",' // &

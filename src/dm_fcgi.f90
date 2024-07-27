@@ -38,11 +38,28 @@ module dm_fcgi
     public :: dm_fcgi_header
     public :: dm_fcgi_out
 contains
-    integer function dm_fcgi_accept() result(rc)
+    logical function dm_fcgi_accept() result(accept)
         !! Accepts new FastCGI connection (blocking). The function returns
-        !! `E_FCGI` on error.
-        rc = E_FCGI
-        if (fcgi_accept() >= 0) rc = E_NONE
+        !! `.false.` on error.
+        !!
+        !! The function accepts a new request from the HTTP server and creates a
+        !! CGI-compatible execution environment for the request.
+        !!
+        !! If the application was invoked as a CGI program, the first call to
+        !! `dm_fcgi_accept()` is essentially a no-op and the second call returns
+        !! `.false.`. This causes a correctly coded FastCGI Responder
+        !! application to run a single request and exit, giving CGI behaviour.
+        !!
+        !! If the application was invoked as a FastCGI server, the first call to
+        !! the function indicates that the application has completed its
+        !! initialisation and is ready to accept its first request. Subsequent
+        !! calls indicate that the application has completed processing its
+        !! current request and is ready to accept a new request.
+        !!
+        !! In completing the current request, the called FastCGI function may
+        !! detect errors, e.g. a broken pipe to a client who has disconnected
+        !! early. The API function ignores such errors.
+        accept = (fcgi_accept() == 0)
     end function dm_fcgi_accept
 
     integer function dm_fcgi_content(env, content) result(rc)
@@ -107,7 +124,8 @@ contains
     end subroutine dm_fcgi_header
 
     subroutine dm_fcgi_out(content)
-        !! Writes given content as response.
+        !! Writes given content as response. The argument will be
+        !! null-terminated.
         character(len=*), intent(in) :: content !! Response content.
 
         integer :: stat

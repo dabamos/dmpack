@@ -179,8 +179,11 @@ contains
                     return
             end select
 
-            app%output_type = OUTPUT_FILE
-            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
+            if (trim(app%output) == '-') then
+                app%output_type = OUTPUT_STDOUT
+            else
+                app%output_type = OUTPUT_FILE
+            end if
         end if
 
         rc = E_EMPTY
@@ -231,7 +234,7 @@ contains
         type(response_type), pointer        :: response ! Single response in request.
 
         integer :: delay
-        integer :: fu, stat
+        integer :: stat, unit
         integer :: i, j, n
         logical :: debug_
 
@@ -278,7 +281,7 @@ contains
             end if
 
             ! Try to open file for reading.
-            open (action='read', file=trim(request%request), iostat=stat, newunit=fu)
+            open (action='read', file=trim(request%request), iostat=stat, newunit=unit)
             if (stat == 0) request%error = E_NONE
 
             if (dm_is_error(request%error)) then
@@ -289,7 +292,7 @@ contains
             ! Read until the request pattern matches or end is reached.
             read_loop: do
                 rc = E_EOF
-                read (fu, '(a)', iostat=stat) raw
+                read (unit, '(a)', iostat=stat) raw
                 if (is_iostat_end(stat)) exit read_loop
                 if (stat /= 0) cycle read_loop
 
@@ -328,7 +331,7 @@ contains
             end do read_loop
 
             ! Close file.
-            close (fu)
+            close (unit)
 
             request%error = rc
 
@@ -352,7 +355,7 @@ contains
                 call logger%debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             end if
 
-            call dm_usleep(delay * 1000) ! [msec] to [us].
+            call dm_msleep(delay)
         end do req_loop
     end function read_observ
 
@@ -454,7 +457,7 @@ contains
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
-            call dm_usleep(delay * 1000)
+            call dm_msleep(delay)
         end do job_loop
     end subroutine run
 

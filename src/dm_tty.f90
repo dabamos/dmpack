@@ -39,11 +39,11 @@ module dm_tty
     integer, parameter, public :: TTY_B921600 = 921600
 
     ! Parity.
+    integer, parameter, public :: TTY_PARITY_NAME_LEN = 4 !! Parity string length.
+
     integer, parameter, public :: TTY_PARITY_NONE = 1 !! No parity.
     integer, parameter, public :: TTY_PARITY_EVEN = 2 !! Even parity.
     integer, parameter, public :: TTY_PARITY_ODD  = 3 !! Odd parity.
-
-    integer, parameter, public :: TTY_PARITY_NAME_LEN = 4 !! Parity string length.
 
     ! Byte size.
     integer, parameter, public :: TTY_BYTE_SIZE5  = 1 !! 5 bits.

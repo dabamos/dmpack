@@ -10,7 +10,7 @@ program dmbackup
     character(len=*), parameter :: APP_NAME  = 'dmbackup'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 2
 
     integer, parameter :: APP_NSTEPS     = 500 !! Step size for backup API.
     integer, parameter :: APP_SLEEP_TIME = 25  !! Sleep time between steps in msec.
@@ -19,7 +19,7 @@ program dmbackup
         !! Command-line arguments.
         character(len=FILE_PATH_LEN) :: database = ' '     !! Path to database.
         character(len=FILE_PATH_LEN) :: backup   = ' '     !! Path to backup.
-        logical                      :: vacuum   = .false. !! VACUUM flag.
+        logical                      :: vacuum   = .false. !! Vacuum flag.
         logical                      :: wal      = .false. !! WAL flag.
         logical                      :: verbose  = .false. !! Verbose flag.
     end type app_type
@@ -41,11 +41,16 @@ contains
     integer function backup(app) result(rc)
         !! Creates database backup.
         type(app_type), intent(inout) :: app
-        type(db_type)                 :: db
+
+        type(db_type) :: db
 
         ! Open database.
         rc = dm_db_open(db, app%database)
-        if (dm_is_error(rc)) return
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc, 'failed to open database')
+            return
+        end if
 
         backup_block: block
             ! Use VACUUM INTO.
@@ -57,29 +62,25 @@ contains
             ! Use SQLite backup API.
             if (app%verbose) then
                 ! Using callback.
-                rc = dm_db_backup(db         = db, &
-                                  path       = app%backup, &
-                                  wal        = app%wal, &
-                                  callback   = backup_handler, &
-                                  nsteps     = APP_NSTEPS, &
-                                  sleep_time = APP_SLEEP_TIME)
+                rc = dm_db_backup(db=db, path=app%backup, wal=app%wal, callback=backup_handler, &
+                                  nsteps=APP_NSTEPS, sleep_time=APP_SLEEP_TIME)
+                print *
             else
                 ! No callback.
-                rc = dm_db_backup(db         = db, &
-                                  path       = app%backup, &
-                                  wal        = app%wal, &
-                                  nsteps     = APP_NSTEPS, &
-                                  sleep_time = APP_SLEEP_TIME)
+                rc = dm_db_backup(db=db, path=app%backup, wal=app%wal, nsteps=APP_NSTEPS, &
+                                  sleep_time=APP_SLEEP_TIME)
             end if
         end block backup_block
 
-        if (dm_is_error(dm_db_close(db))) rc = E_DB
+        call dm_error_out(rc, 'backup failed')
+        rc = dm_db_close(db)
     end function backup
 
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(5)
+
+        type(arg_type) :: args(5)
 
         rc = E_NONE
 
@@ -118,9 +119,12 @@ contains
 
     subroutine backup_handler(remaining, page_count)
         !! Prints progess to standard output of SQLite backup API is selected.
+        !! The cursor is reset to the first column of the line on each
+        !! invokation.
         integer, intent(in) :: remaining  !! Pages remaining.
         integer, intent(in) :: page_count !! Total count of pages.
 
-        print '("Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
+        write (*, '(a1, "[0GProgress: ", f5.1, " %")', advance='no') &
+            ASCII_ESC, 100.0 * (page_count - remaining) / page_count
     end subroutine backup_handler
 end program dmbackup

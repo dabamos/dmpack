@@ -1,18 +1,25 @@
 --
 -- Example configuration file for dmfeed.
 --
--- Each Atom feed should have a distinct id. Run `dmuuid --hyphens` to
--- generate a valid feed id.
+-- Each Atom feed should have a distinct id. Run dmuuid(1) to generate a valid
+-- feed id:
+--
+--      $ dmuuid --hyphens
+--      30667c40-6ec4-4c98-9e03-15da86631cbc
 --
 -- The options `minlevel` and `maxlevel` may be set to one of the following
 -- named constants:
 --
---      LL_NONE     - 0
 --      LL_DEBUG    - 1
 --      LL_INFO     - 2
 --      LL_WARNING  - 3
 --      LL_ERROR    - 4
 --      LL_CRITICAL - 5
+--      LL_USER     - 6
+--
+-- Option `xsl` sets the local path of the XSLT style sheet on the web server.
+-- If the value is set to `feed.xsl`, the style sheet file must be located in
+-- the same directory as the Atom feed `feed.xml`.
 --
 -- Rename table "dmfeed" to the instance name (parameter `--name`).
 --
@@ -24,8 +31,8 @@
 --      entries  - Maximum number of entries is feed (default 50, optional).
 --      force    - Force writing of output file even if no new logs are available.
 --      id       - 36 characters long UUID (with hyphens) of the Atom feed.
---      maxlevel - Maximum log level (0 to 5, optional).
---      minlevel - Minimum log level (0 to 5, optional).
+--      maxlevel - Maximum log level (1 to 6, optional).
+--      minlevel - Minimum log level (1 to 6, optional).
 --      node     - Sensor node id, selects only related logs (optional).
 --      output   - Path to output file (if empty, feed is printed to standard output).
 --      subtitle - Subtitle of the feed (optional).

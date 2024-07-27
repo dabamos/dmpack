@@ -4,12 +4,12 @@
 -- The option `minlevel` may be set to one of the following
 -- named constants:
 --
---      LL_NONE     - 0
 --      LL_DEBUG    - 1
 --      LL_INFO     - 2
 --      LL_WARNING  - 3
 --      LL_ERROR    - 4
 --      LL_CRITICAL - 5
+--      LL_USER     - 6
 --
 -- Rename table "dmlogger" to the instance name (parameter `--name`).
 --
@@ -17,7 +17,7 @@
 --
 --      database - Path to DMPACK log database.
 --      ipc      - Use POSIX semaphore for process synchronisation.
---      minlevel - Minimum level for a log to be stored in the database (0 to 5).
+--      minlevel - Minimum level for a log to be stored in the database (1 to 6).
 --      node     - Name of the sensor node.
 --      verbose  - Print received logs to standard error.
 --

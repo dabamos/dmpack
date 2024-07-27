@@ -368,7 +368,8 @@ contains
         integer,           intent(out), optional :: error  !! Error code.
 
         character(len=:), allocatable :: path, style
-        integer                       :: format, fu, i, n, rc, stat
+        integer                       :: i, n, rc
+        integer                       :: format, stat, unit
         logical                       :: is_file
 
         type(dp_type),  allocatable :: data_points(:)
@@ -376,8 +377,8 @@ contains
         type(node_type)             :: node
 
         ! By default, print generated HTML to standard output.
-        fu = stdout
-        is_file = (len_trim(report%output) > 0)
+        unit = stdout
+        is_file = (len_trim(report%output) > 0 .and. report%output /= '-')
 
         report_block: block
             ! Open output file for writing.
@@ -385,7 +386,7 @@ contains
                 rc   = E_WRITE
                 path = dm_path_parsed(report%output)
 
-                open (action='write', file=path, iostat=stat, newunit=fu, status='replace')
+                open (action='write', file=path, iostat=stat, newunit=unit, status='replace')
 
                 if (stat /= 0) then
                     call dm_error_out(rc, 'failed to open output file ' // path)
@@ -405,33 +406,33 @@ contains
 
             ! Add HTML header with optional inline CSS.
             if (len_trim(style) > 0) then
-                write (fu, '(a)') dm_html_header(report%title, report%subtitle, internal_style=style)
+                write (unit, '(a)') dm_html_header(report%title, report%subtitle, internal_style=style)
             else
-                write (fu, '(a)') dm_html_header(report%title, report%subtitle)
+                write (unit, '(a)') dm_html_header(report%title, report%subtitle)
             end if
 
             ! Add report overview table.
             rc = read_node(node, report%node, report%plot%database)
 
             if (dm_is_error(rc)) then
-                write (fu, '(a)') dm_html_error(rc)
+                write (unit, '(a)') dm_html_error(rc)
             else
-                write (fu, '(a)') html_report_table(node, report%from, report%to)
+                write (unit, '(a)') html_report_table(node, report%from, report%to)
             end if
 
             ! Add optional report description.
             if (len_trim(report%meta) > 0) then
-                write (fu, '(a)') dm_html_p(dm_html_encode(report%meta))
+                write (unit, '(a)') dm_html_p(dm_html_encode(report%meta))
             end if
 
             ! Add plots to HTML document if enabled.
             plot_if: if (.not. report%plot%disabled) then
                 ! Add plot section heading.
-                write (fu, '(a)') dm_html_heading(2, report%plot%title)
+                write (unit, '(a)') dm_html_heading(2, report%plot%title)
 
                 ! Add meta description.
                 if (len_trim(report%plot%meta) > 0) then
-                    write (fu, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
+                    write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
                 end if
 
                 if (.not. allocated(report%plot%observs)) exit plot_if
@@ -440,7 +441,7 @@ contains
                 ! Plot loop.
                 do i = 1, n
                     ! Add plot heading.
-                    write (fu, '(a)') dm_html_heading(3, report%plot%observs(i)%title, &
+                    write (unit, '(a)') dm_html_heading(3, report%plot%observs(i)%title, &
                                                       report%plot%observs(i)%subtitle)
 
                     plot_block: block
@@ -456,12 +457,12 @@ contains
 
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
-                            write (fu, '(a)') dm_html_p('No observations found in database.')
+                            write (unit, '(a)') dm_html_p('No observations found in database.')
                             exit plot_block
                         end if
 
                         if (dm_is_error(rc)) then
-                            write (fu, '(a)') dm_html_error(rc)
+                            write (unit, '(a)') dm_html_error(rc)
                             exit plot_block
                         end if
 
@@ -471,12 +472,12 @@ contains
                         if (format /= PLOT_TERM_GIF       .and. format /= PLOT_TERM_PNG .and. &
                             format /= PLOT_TERM_PNG_CAIRO .and. format /= PLOT_TERM_SVG) then
                             ! Fail safe: should never occur.
-                            write (fu, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
+                            write (unit, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
                             exit plot_block
                         end if
 
                         ! Add HTML plot figure.
-                        write (fu, '(a)') html_plot(data_points, &
+                        write (unit, '(a)') html_plot(data_points, &
                                                     response = report%plot%observs(i)%response, &
                                                     unit     = report%plot%observs(i)%unit, &
                                                     format   = format, &
@@ -492,11 +493,11 @@ contains
             ! Add table of logs to HTML document if enabled.
             log_if: if (.not. report%log%disabled) then
                 ! Add section heading.
-                write (fu, '(a)') dm_html_heading(2, report%log%title)
+                write (unit, '(a)') dm_html_heading(2, report%log%title)
 
                 ! Add meta description.
                 if (len_trim(report%log%meta) > 0) then
-                    write (fu, '(a)') dm_html_p(dm_html_encode(report%log%meta))
+                    write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
                 end if
 
                 ! Read logs from database.
@@ -510,26 +511,26 @@ contains
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
-                    write (fu, '(a)') dm_html_p('No logs found in database.')
+                    write (unit, '(a)') dm_html_p('No logs found in database.')
                     exit log_if
                 end if
 
                 if (dm_is_error(rc)) then
-                    write (fu, '(a)') dm_html_error(rc)
+                    write (unit, '(a)') dm_html_error(rc)
                     exit log_if
                 end if
 
                 ! Add logs table.
-                write (fu, '(a)') dm_html_logs(logs, node=.false.)
+                write (unit, '(a)') dm_html_logs(logs, node=.false.)
             end if log_if
 
             ! Add HTML footer.
-            write (fu, '(a)') html_footer()
+            write (unit, '(a)') html_footer()
 
             rc = E_NONE
         end block report_block
 
-        if (is_file) close (fu)
+        if (is_file) close (unit)
         if (present(error)) error = rc
     end subroutine create_report
 end program dmreport

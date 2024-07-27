@@ -115,12 +115,11 @@ module dm_error
 
     ! Additional errors.
     integer, parameter, public :: E_LIB            = 130 !! Generic library error.
-    integer, parameter, public :: E_FCGI           = 131 !! FastCGI error.
+    integer, parameter, public :: E_MODBUS         = 131 !! Modbus error.
     integer, parameter, public :: E_HDF5           = 132 !! HDF5 error.
     integer, parameter, public :: E_ZLIB           = 133 !! zlib error.
     integer, parameter, public :: E_ZSTD           = 134 !! Zstandard error.
-    integer, parameter, public :: E_MODBUS         = 135 !! Modbus error.
-    integer, parameter, public :: E_LAST           = 135 !! Never use this.
+    integer, parameter, public :: E_LAST           = 134 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
@@ -328,16 +327,14 @@ contains
             ! Libraries.
             case (E_LIB)
                 message = 'library error'
-            case (E_FCGI)
-                message = 'FastCGI error'
+            case (E_MODBUS)
+                message = 'Modbus error'
             case (E_HDF5)
                 message = 'HDF5 error'
             case (E_ZLIB)
                 message = 'zlib error'
             case (E_ZSTD)
                 message = 'zstd error'
-            case (E_MODBUS)
-                message = 'Modbus error'
 
             case default
                 message = 'unknown error'

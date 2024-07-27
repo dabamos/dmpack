@@ -20,7 +20,7 @@ module dmpack
     !! end program main
     !! ```
     !!
-    !! Link the program against `libdmpack.a`:
+    !! Link the program against static library `libdmpack.a`:
     !!
     !! ```
     !! $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
@@ -59,7 +59,6 @@ module dmpack
     use :: dm_html
     use :: dm_http
     use :: dm_id
-    use :: dm_inet
     use :: dm_job
     use :: dm_json
     use :: dm_jsonl
@@ -78,6 +77,7 @@ module dmpack
     use :: dm_mqueue
     use :: dm_mqueue_util
     use :: dm_mutex
+    use :: dm_net
     use :: dm_nml
     use :: dm_node
     use :: dm_observ

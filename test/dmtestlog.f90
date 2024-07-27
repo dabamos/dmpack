@@ -26,12 +26,13 @@ contains
         print *, 'Testing utility functions ...'
 
         if (dm_log_level_from_name('abc')      /= LL_NONE)     return
-        if (dm_log_level_from_name('NONE    ') /= LL_NONE)     return
-        if (dm_log_level_from_name('DEBUG   ') /= LL_DEBUG)    return
-        if (dm_log_level_from_name('INFO    ') /= LL_INFO)     return
+        if (dm_log_level_from_name('NONE')     /= LL_NONE)     return
+        if (dm_log_level_from_name('DEBUG')    /= LL_DEBUG)    return
+        if (dm_log_level_from_name('INFO')     /= LL_INFO)     return
         if (dm_log_level_from_name('WARNING ') /= LL_WARNING)  return
-        if (dm_log_level_from_name('ERROR   ') /= LL_ERROR)    return
+        if (dm_log_level_from_name('ERROR')    /= LL_ERROR)    return
         if (dm_log_level_from_name('CRITICAL') /= LL_CRITICAL) return
+        if (dm_log_level_from_name('USER')     /= LL_USER)     return
 
         if (dm_log_valid(LL_NONE)) return
 
@@ -40,6 +41,7 @@ contains
         if (.not. dm_log_valid(LL_WARNING))  return
         if (.not. dm_log_valid(LL_ERROR))    return
         if (.not. dm_log_valid(LL_CRITICAL)) return
+        if (.not. dm_log_valid(LL_USER))     return
 
         stat = TEST_PASSED
     end function test01

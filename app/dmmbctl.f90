@@ -17,23 +17,21 @@ program dmmbctl
 
     type :: rtu_type
         !! Modbus RTU settings.
-        character(len=FILE_PATH_LEN) :: path        = ' '             !! Path (required).
-        integer                      :: baud_rate   = TTY_B19200      !! Baud rate (required).
-        integer                      :: byte_size   = TTY_BYTE_SIZE8  !! Byte size (required).
-        integer                      :: parity      = TTY_PARITY_EVEN !! Parity name (required).
-        integer                      :: stop_bits   = TTY_STOP_BITS1  !! Stop bits (required).
+        character(len=FILE_PATH_LEN) :: path      = ' '             !! Path (required).
+        integer                      :: baud_rate = TTY_B19200      !! Baud rate (required).
+        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size (required).
+        integer                      :: parity    = TTY_PARITY_EVEN !! Parity name (required).
+        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits (required).
     end type rtu_type
 
     type :: tcp_type
         !! Modbus TCP settings.
-        character(len=INET_IPV4_LEN) :: address = ' ' !! IPv4 address.
-        integer                      :: port    = 0   !! Port.
+        character(len=NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
+        integer                     :: port    = 0   !! Port.
     end type tcp_type
 
     type :: app_type
         !! Application settings.
-        type(rtu_type) :: rtu                           !! Modbus RTU settings.
-        type(tcp_type) :: tcp                           !! Modbus TCP settings.
         integer        :: action     = ACTION_READ      !! Modbus read or write operation.
         integer        :: address    = 0                !! Modbus address.
         integer        :: mode       = MODBUS_MODE_NONE !! Modbus mode (RTU, TCP).
@@ -42,6 +40,8 @@ program dmmbctl
         integer        :: slave      = 1                !! Modbus slave id.
         logical        :: float      = .false.          !! Read or write float value.
         logical        :: verbose    = .false.          !! Print debug messages to stderr.
+        type(rtu_type) :: rtu                           !! Modbus RTU settings.
+        type(tcp_type) :: tcp                           !! Modbus TCP settings.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -64,7 +64,7 @@ contains
         integer          :: stat
         integer          :: read_address, write_address
         logical          :: has_baud_rate, has_byte_size, has_path, has_parity, has_stop_bits
-        logical          :: has_address, has_port
+        logical          :: has_address, has_port, has_registers
         logical          :: has_read, has_write
         type(arg_type)   :: args(13)
 
@@ -76,7 +76,7 @@ contains
             arg_type('bytesize',  short='Z', type=ARG_TYPE_INTEGER),                      & ! -Z, --bytesize <n>
             arg_type('parity',    short='P', type=ARG_TYPE_STRING),                       & ! -P, --parity <string>
             arg_type('stopbits',  short='O', type=ARG_TYPE_INTEGER),                      & ! -O, --stopbits <n>
-            arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=INET_IPV4_LEN), & ! -a, --address <string>
+            arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=NET_IPV4_LEN), & ! -a, --address <string>
             arg_type('port',      short='q', type=ARG_TYPE_INTEGER),                      & ! -q, --port <n>
             arg_type('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.),     & ! -s, --slave <n>
             arg_type('registers', short='n', type=ARG_TYPE_INTEGER),                      & ! -n, --registers <n>
@@ -98,27 +98,29 @@ contains
         rc = dm_arg_get(args( 6), app%tcp%address,   passed=has_address)
         rc = dm_arg_get(args( 7), app%tcp%port,      passed=has_port)
         rc = dm_arg_get(args( 8), app%slave)
-        rc = dm_arg_get(args( 9), app%registers)
+        rc = dm_arg_get(args( 9), app%registers,     passed=has_registers)
         rc = dm_arg_get(args(10), read_address,      passed=has_read)
         rc = dm_arg_get(args(11), write_address,     passed=has_write)
         rc = dm_arg_get(args(12), byte_order,        passed=app%float)
         rc = dm_arg_get(args(13), app%verbose)
 
         ! Modbus RTU or TCP mode.
-        if (has_path) then
-            app%mode = MODBUS_MODE_RTU
-        else if (has_address) then
-            app%mode = MODBUS_MODE_TCP
-        end if
-
         rc = E_INVALID
 
         if (.not. has_path .and. .not. has_address) then
             call dm_error_out(rc, 'argument --path or --address required')
             return
-        else if (has_path .and. has_address) then
+        end if
+
+        if (has_path .and. has_address) then
             call dm_error_out(rc, 'argument --path conflicts with --address')
             return
+        end if
+
+        if (has_path) then
+            app%mode = MODBUS_MODE_RTU
+        else if (has_address) then
+            app%mode = MODBUS_MODE_TCP
         end if
 
         select case (app%mode)
@@ -225,13 +227,13 @@ contains
 
         ! Slave id.
         if (app%slave < 1) then
-            call dm_error_out(rc, 'argument --slave must be >= 1')
+            call dm_error_out(rc, 'argument --slave must be > 0')
             return
         end if
 
         ! Number of registers to read or write.
         if (app%registers < 1) then
-            call dm_error_out(rc, 'argument --registers must be >= 1')
+            call dm_error_out(rc, 'argument --registers must be > 0')
             return
         end if
 
@@ -272,7 +274,7 @@ contains
                 return
             end if
 
-            if (app%registers > 2) then
+            if (has_registers .and. app%registers /= 2) then
                 call dm_error_out(rc, 'argument --registers must be 2')
                 return
             end if

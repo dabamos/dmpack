@@ -19,7 +19,7 @@
 
 dmsend = {
     logger = "",
-    node = "",
+    node = "dummy-node",
     type = "observ",
     format = "nml",
     input = "observ.nml",

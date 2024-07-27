@@ -7,6 +7,10 @@ module dm_util
     implicit none (type, external)
     private
 
+
+    character(len=*), parameter :: FMT_INTEGER = '(i0)'
+    character(len=*), parameter :: FMT_REAL    = '(1pg0.12)'
+
     interface dm_array_has
         !! Returns whether array contains an integer value.
         module procedure :: array_has_int32
@@ -64,6 +68,7 @@ module dm_util
     public :: dm_array_has
     public :: dm_equals
     public :: dm_inc
+    public :: dm_msleep
     public :: dm_sleep
     public :: dm_usleep
 
@@ -231,12 +236,24 @@ contains
         end if
     end function dm_logical_to_real64
 
+    subroutine dm_msleep(sec)
+        !! Pauses program execution for given time in mseconds.
+        use :: unix, only: c_useconds_t, c_usleep
+
+        integer, intent(in) :: sec !! Delay in seconds [msec].
+
+        integer :: rc
+
+        rc = c_usleep(int(sec * 1000, kind=c_useconds_t))
+    end subroutine dm_msleep
+
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
         use :: unix, only: c_useconds_t, c_usleep
 
-        integer, intent(in) :: sec !! Delay in seconds [s].
-        integer             :: rc
+        integer, intent(in) :: sec !! Delay in seconds [sec].
+
+        integer :: rc
 
         rc = c_usleep(int(sec * 10**6, kind=c_useconds_t))
     end subroutine dm_sleep
@@ -245,8 +262,9 @@ contains
         !! Pauses program execution for given time in useconds.
         use :: unix, only: c_useconds_t, c_usleep
 
-        integer, intent(in) :: usec !! Delay in useconds [us].
-        integer             :: rc
+        integer, intent(in) :: usec !! Delay in useconds [usec].
+
+        integer :: rc
 
         rc = c_usleep(int(usec, kind=c_useconds_t))
     end subroutine dm_usleep
@@ -372,7 +390,7 @@ contains
         end if
 
         allocate (character(len=n) :: str)
-        write (str, '(i0)', iostat=stat) i
+        write (str, FMT_INTEGER, iostat=stat) i
     end function int32_to_string
 
     pure function int64_to_string(i) result(str)
@@ -390,7 +408,7 @@ contains
         end if
 
         allocate (character(len=n) :: str)
-        write (str, '(i0)', iostat=stat) i
+        write (str, FMT_INTEGER, iostat=stat) i
     end function int64_to_string
 
     pure function real32_to_string(f) result(str)
@@ -402,7 +420,7 @@ contains
         integer           :: stat
 
         str = ''
-        write (buf, '(1pg0.12)', iostat=stat) f
+        write (buf, FMT_REAL, iostat=stat) f
         if (stat /= 0) return
         str = trim(buf)
     end function real32_to_string
@@ -416,7 +434,7 @@ contains
         integer           :: stat
 
         str = ''
-        write (buf, '(1pg0.12)', iostat=stat) f
+        write (buf, FMT_REAL, iostat=stat) f
         if (stat /= 0) return
         str = trim(buf)
     end function real64_to_string

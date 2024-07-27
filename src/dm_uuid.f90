@@ -7,7 +7,7 @@ module dm_uuid
     private
 
     integer,          parameter, public :: UUID_LEN      = 32 !! Hex UUIDv4 length.
-    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUIDv4 length (with hypens).
+    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUIDv4 length (with hyphens).
     character(len=*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
 
     character(len=*), parameter :: UUID_SET = '0123456789abcdef'

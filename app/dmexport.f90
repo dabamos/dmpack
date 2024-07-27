@@ -105,11 +105,7 @@ contains
         ! Open file.
         if (is_file) then
             rc = E_IO
-            open (action  = 'write', &
-                  file    = trim(app%output), &
-                  iostat  = stat, &
-                  newunit = unit, &
-                  status = 'replace')
+            open (action='write', file=trim(app%output), iostat=stat, newunit=unit, status='replace')
             if (stat /= 0) return
         end if
 

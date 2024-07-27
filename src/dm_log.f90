@@ -2,6 +2,22 @@
 ! Licence: ISC
 module dm_log
     !! Log type and log level declaration.
+    !!
+    !! The following log levels are supported:
+    !!
+    !! | Level | String     | Description                                  |
+    !! |-------|------------|----------------------------------------------|
+    !! | 0     | `none`     | Invalid log level (unused).                  |
+    !! | 1     | `debug`    | Debug messages.                              |
+    !! | 2     | `info`     | Hint message.                                |
+    !! | 3     | `warning`  | Warning message.                             |
+    !! | 5     | `error`    | Non-critical error message.                  |
+    !! | 4     | `critical` | Critical error message (not used by DMPACK). |
+    !! | 5     | `user`     | User-defined level (not used by DMPACK).     |
+    !!
+    !! Log level _critical_ is reserved for monitoring events and not used by
+    !! DMPACK internally. Level _user_ is reserved for user-defined events and
+    !! also not used.
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -21,22 +37,23 @@ module dm_log
     integer, parameter, public :: LL_WARNING  = 3 !! For events requiring the attention of the system operator.
     integer, parameter, public :: LL_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
     integer, parameter, public :: LL_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
-    integer, parameter, public :: LL_LAST     = 5 !! Never use this.
+    integer, parameter, public :: LL_USER     = 6 !! User-defined level, not used by DMPACK.
+    integer, parameter, public :: LL_LAST     = 6 !! Never use this.
 
     ! Log parameters.
-    integer, parameter, public :: LOG_NLEVEL      = 6        !! Number of log level.
-    integer, parameter, public :: LOG_ID_LEN      = UUID_LEN !! Max. log id length.
-    integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN   !! Max. log source length.
-    integer, parameter, public :: LOG_MESSAGE_LEN = 512      !! Max. log message length.
+    integer, parameter, public :: LOG_NLEVEL      = LL_LAST + 1 !! Number of log level.
+    integer, parameter, public :: LOG_ID_LEN      = UUID_LEN    !! Max. log id length.
+    integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN      !! Max. log source length.
+    integer, parameter, public :: LOG_MESSAGE_LEN = 512         !! Max. log message length.
 
     integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8
 
     character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
-        character(len=LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' &
+        character(len=LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER' &
     ] !! Log level strings.
 
     character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
-        character(len=LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical' &
+        character(len=LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical', 'user' &
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
@@ -103,8 +120,8 @@ contains
     pure elemental integer function dm_log_level_from_name(name) result(level)
         !! Returns log level from string argument `name`. The string is
         !! converted to lower-case before. If `name` neither matches `none`,
-        !! `debug`, `warning`, `error`, nor `critical`, this function returns
-        !! `LL_NONE`.
+        !! `debug`, `warning`, `error`, `critical`, nor `user` this function
+        !! returns `LL_NONE`.
         use :: dm_string, only: dm_lower
 
         character(len=*), intent(in) :: name !! Log level name.
@@ -115,8 +132,6 @@ contains
         name_ = dm_lower(name)
 
         select case (name_)
-            case (LOG_LEVEL_NAMES_LOWER(LL_NONE))
-                level = LL_NONE
             case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG))
                 level = LL_DEBUG
             case (LOG_LEVEL_NAMES_LOWER(LL_INFO))
@@ -127,6 +142,8 @@ contains
                 level = LL_ERROR
             case (LOG_LEVEL_NAMES_LOWER(LL_CRITICAL))
                 level = LL_CRITICAL
+            case (LOG_LEVEL_NAMES_LOWER(LL_USER))
+                level = LL_USER
             case default
                 level = LL_NONE
         end select
@@ -158,14 +175,19 @@ contains
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     pure elemental logical function dm_log_valid_level(level) result(valid)
-        !! Returns `.true.` if given log level is valid, i.e., either
-        !! `LL_DEBUG`, `LL_WARNING`, `LL_ERROR`, or `LL_CRITICAL`. The level
-        !! `LL_NONE` is invalid.
+        !! Returns `.true.` if given log level is valid. The following level
+        !! are valid:
+        !!
+        !! * `LL_DEBUG`
+        !! * `LL_WARNING`
+        !! * `LL_ERROR`
+        !! * `LL_CRITICAL`
+        !! * `LL_USER`
+        !!
+        !! The level `LL_NONE` is invalid.
         integer, intent(in) :: level !! Log level.
 
-        valid = .false.
-        if (level <= LL_NONE .or. level > LL_LAST) return
-        valid = .true.
+        valid = (level > LL_NONE .and. level <= LL_LAST)
     end function dm_log_valid_level
 
     pure elemental logical function dm_log_valid_log(log) result(valid)
@@ -183,11 +205,11 @@ contains
 
         valid = .false.
 
-        if (.not. dm_log_valid(log%level)) return
-        if (.not. dm_error_valid(log%error)) return
-        if (log%id == UUID_DEFAULT) return
-        if (.not. dm_uuid4_valid(log%id)) return
-        if (.not. dm_time_valid(log%timestamp)) return
+        if (.not. dm_log_valid(log%level))             return
+        if (.not. dm_error_valid(log%error))           return
+        if (log%id == UUID_DEFAULT)                    return
+        if (.not. dm_uuid4_valid(log%id))              return
+        if (.not. dm_time_valid(log%timestamp))        return
         if (.not. dm_string_is_printable(log%message)) return
 
         valid = .true.

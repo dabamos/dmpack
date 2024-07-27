@@ -198,7 +198,7 @@ package:
 The <<web-applications,web applications>> require a compatible web server, like:
 
 * link:https://www.lighttpd.net/[lighttpd]
-* link:https://httpd.apache.org/[Apache HTTP Server]
+* link:https://httpd.apache.org/[Apache httpd]
 
 DMPACK depends on additional interface libraries. If the repository is cloned
 recursively with Git, or if the project is built using FPM, the submodules will
@@ -503,8 +503,8 @@ They contain name, type, value, unit, and an optional error code.
 === Log Entities
 
 <<data-log,Log>>:: Log message of a sensor node, either of level _debug_,
-_info_, _warning_, _error_, or _critical_, and optionally related to a _sensor_,
-a _target_, and an _observation_.
+_info_, _warning_, _error_, _critical_, or _user_, and optionally related to a
+_sensor_, a _target_, and an _observation_.
 
 === Beat Entities
 
@@ -613,32 +613,37 @@ client and server. Requires a web server and _gnuplot(1)_.
 
 This section contains descriptions of all DMPACK programs with their
 respective command-line arguments. Some programs read settings from an optional
-or mandatory configuration file. Examples are provided in directory
-`/usr/local/etc/dmpack/` to be used as templates. The files are ordinary Lua
-scripts, i.e., you can add Lua control structures for complex configurations or
-access the <<lua-api>> of DMPACK. Set the language in your editor to Lua to
-enable syntax highlighting (for instance, `set syntax=lua` in Vim), or use file
-ending `.lua` instead of `.conf`. The set-up of the <<web-applications,web
-applications>> is outlined in the next section.
+or mandatory configuration file. Example configuration files are provided in
+directory `/usr/local/etc/dmpack/`.
+
+The files are ordinary Lua scripts, i.e., you can add Lua control structures
+for complex tables or access the <<lua-api>> of DMPACK. In your editor, set the
+language to Lua to enable syntax highlighting (for instance, `set syntax=lua`
+in Vim), or use file ending `.lua` instead of `.conf`. The set-up of the
+<<web-applications,web applications>> is outlined in the next section.
 
 === dmapi [[dmapi]]
 
 *dmapi* is an HTTP-RPC API service for remote DMPACK database access. The web
-application has to be executed through a FastCGI-compatible web server or a
-FastCGI spawner. It is recommended to use _lighttpd(1)_.
+application has to be executed through a FastCGI-compatible web server. It is
+recommended to use _lighttpd(1)_. The service is configured through environment
+variables. The web server or FastCGI spawner must be able to pass environment
+variables to *dmapi*.
 
 The *dmapi* service offers endpoints for clients to insert beats, logs, and
 observations into the local SQLite database, and to request data in CSV or JSON
-format. Authentication and encryption are independent from *dmapi* and have to
-be provided by the web server. All POST data has to be serialised in Fortran 95
-Namelist format, with optional link:http://www.zlib.net/[deflate] or
-link:http://www.zstd.net/[zstd] compression.
+format. Only HTTP GET and POST requests are accepted. All POST data has to be
+serialised in Fortran 95 Namelist format, with optional
+link:http://www.zlib.net/[deflate] or link:http://www.zstd.net/[zstd]
+compression. Section <<rpc-api>> gives an overview of the available endpoints.
 
-If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
-and observation sent to the HTTP-RPC service must match the name of the
-authenticated user. For example, to store an observation of a node with the id
-`node-1`, the HTTP Basic Auth user name of the client must be `node-1` as well.
-If the observation is sent by any other user, it will be rejected (HTTP 401).
+Authentication and encryption are independent from *dmapi* and have to be
+provided by the web server. If HTTP Basic Auth is enabled, the sensor id of
+each beat, log, node, sensor, and observation sent to the HTTP-RPC service must
+match the name of the authenticated user. For example, to store an observation
+of a node with the id `node-1`, the user name of the client must be `node-1` as
+well. If the observation is sent by any other user, it will be rejected (HTTP
+401).
 
 .Environment variables of _dmapi(1)_
 [[dmapi-env]]
@@ -652,22 +657,20 @@ If the observation is sent by any other user, it will be rejected (HTTP 401).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-The web application is configured through environment variables. The web server
-or FastCGI spawner must be able to pass environment variables to *dmapi*. See
-section <<web-rpc-server>> for a basic _lighttpd(1)_ configuration.
-
-The service accepts HTTP GET and POST requests. Section <<rpc-api>> gives an
-overview of the available endpoints. The response format depends on the MIME
-type set in the HTTP Accept header of the request, either:
+The response format depends on the MIME type set in the HTTP Accept header of
+the request, either:
 
 * `application/json` (JSON)
 * `application/jsonl` (JSON Lines)
 * `application/namelist` (Fortran 95 Namelist)
 * `text/comma-separated-values` (CSV)
+* `text/plain` (plain text)
 
 By default, responses are in CSV format. The Namelist format is available only
 for single records. Status messages are returned as key–value pairs, indicated
 by content type `text/plain`.
+
+See section <<web-rpc-server>> for a basic _lighttpd(1)_ configuration.
 
 === dmbackup [[dmbackup]]
 
@@ -1002,8 +1005,8 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--force`             | `-F`  | –          | Force file output even if no new log records are available.
 | `--help`              | `-h`  | –          | Output available command-line arguments and quit.
 | `--id _uuid_`         | `-I`  | –          | UUID of the feed, 36 characters long with hyphens.
-| `--maxlevel _level_`  | `-K`  | `critical` | Select log messages of the given maximum <<data-log-level,log level>> (between `debug` or 1 and `critical` or 5). Must be greater or equal the minimum level.
-| `--minlevel _level_`  | `-L`  | `debug`    | Select log messages of the given minimum <<data-log-level,log level>> (between `debug` or 1 and `critical` or 5).
+| `--maxlevel _level_`  | `-K`  | `critical` | Select log messages of the given maximum <<data-log-level,log level>> (between `debug` or 1 and `user` or 6). Must be greater or equal the minimum level.
+| `--minlevel _level_`  | `-L`  | `debug`    | Select log messages of the given minimum <<data-log-level,log level>> (between `debug` or 1 and `user` or 6).
 | `--name _name_`       | `-n`  | `dmfeed`   | Name of instance and table in configuration.
 | `--node _id_`         | `-N`  | –          | Select log messages of the given node id.
 | `--output _file_`     | `-o`  | _stdout_   | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
@@ -1146,7 +1149,8 @@ dmgrc = {
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
     warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
     error = { GRC_FATAL },
-    critical = {}
+    critical = {},
+    user = {}
   },
   debug = false,
   verbose = true
@@ -1305,13 +1309,14 @@ The log level may be one of the following:
 
 [cols="1,2,5"]
 |===
-| Level | Parameter String | Name
+| Level | Parameter String | Description
 
-| 1     | `debug`          | Debug
-| 2     | `info`           | Info
-| 3     | `warning`        | Warning
-| 4     | `error`          | Error
-| 5     | `critical`       | Critical
+| 1     | `debug`          | Debug message.
+| 2     | `info`           | Hint or info message.
+| 3     | `warning`        | Warning message.
+| 4     | `error`          | Non-critical error message.
+| 5     | `critical`       | Critical error message.
+| 6     | `user`           | User-defined log level.
 |===
 
 Both, parameter strings and literal log level values, are accepted as
@@ -1327,7 +1332,7 @@ command-line arguments. For level _warning_, set argument `--level` to `3` or
 
 | `--error _n_`        | `-e`  | 0          | DMPACK <<error-codes,error code>> (optional).
 | `--help`             | `-h`  | –          | Output available command-line arguments and quit.
-| `--level _level_`    | `-L`  | `info`     | <<data-log-level,Log level>>, from `debug` or 1 to `critical` or 5.
+| `--level _level_`    | `-L`  | `info`     | <<data-log-level,Log level>>, from `debug` or 1 to `user` or 6.
 | `--logger _name_`    | `-l`  | `dmlogger` | Name of logger instance and POSIX message queue.
 | `--message _string_` | `-m`  | –          | Log message (max. 512 characters).
 | `--node _id_`        | `-N`  | –          | Node id (optional).
@@ -1380,15 +1385,16 @@ through command-line argument `--wait`.
 
 The following log levels are accepted:
 
-[cols="1,3,3"]
+[cols="1,2,5"]
 |===
-| Level | Parameter String | Name
+| Level | Parameter String | Description
 
-| 1     | `debug`          | Debug
-| 2     | `info`           | Info
-| 3     | `warning`        | Warning
-| 4     | `error`          | Error
-| 5     | `critical`       | Critical
+| 1     | `debug`          | Debug message.
+| 2     | `info`           | Hint or info message.
+| 3     | `warning`        | Warning message.
+| 4     | `error`          | Non-critical error message.
+| 5     | `critical`       | Critical error message.
+| 6     | `user`           | User-defined log level.
 |===
 
 [discrete]
@@ -1413,7 +1419,7 @@ this semaphore.
 | `--minlevel _level_`
 | `-L`
 | `info`
-| Minimum level for a log to be stored in the database, from `debug` or 1 to `critical` or 5.
+| Minimum level for a log to be stored in the database, from `debug` or 1 to `user` or 6.
 
 | `--name _name_`
 | `-n`
@@ -1517,11 +1523,11 @@ $ dmlua --name dmlua --node dummy-node --script script.lua --verbose
 
 === dmpipe [[dmpipe]]
 
-The *dmpipe* program reads responses from processes connected via pipe.
-
-All requests of an observation have to contain the process in attribute
-`request`. Response values are extracted by group from the raw response using
-the given regular expression pattern.
+The *dmpipe* program reads responses from processes connected through a pipe to
+read sensor data from a third-party program. Requests of an observation have to
+contain the process to call in attribute `request`. Response values are
+extracted by group from the raw response using the given regular expression
+pattern.
 
 If any receivers are specified, observations are forwarded to the next receiver
 via POSIX message queue. The program can act as a sole data logger if output and
@@ -1530,8 +1536,8 @@ _stdout_.
 
 A configuration file is mandatory to configure the jobs to perform. Each
 observation must have a valid target id. Node id, sensor id, and observation id
-are added by *dmpipe*. Node, sensor, and target have to be present in the
-database for the observation to be stored.
+are added by *dmpipe*. If the observation will be stored in a database, the
+node, sensor and target ids have to exist in the database.
 
 [discrete]
 ==== Command-Line Options
@@ -1593,7 +1599,7 @@ dmpipe = {
         requests = {                -- Pipes to open.
           {
             request = "sysctl hw.acpi.battery.life", -- Command to execute.
-            pattern = "hw\\.acpi\\.battery\\.life: (?<battery>[0-9]+)", -- RegEx.
+            pattern = "[.a-z]+: (?<battery>[0-9]+)", -- RegEx pattern.
             delay = 0,              -- Delay in mseconds.
             responses = {
               {
@@ -1717,9 +1723,9 @@ Create a plot of observations selected from database `observ.sqlite` in PNG
 format, and write the file to `/tmp/plot.png`:
 
 ....
-$ dmplot --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --response dummy --from 2020 --to 2024 --database observ.sqlite \
-  --terminal pngcairo --output /tmp/plot.png
+$ dmplot --database /var/dmpack/observ.sqlite --terminal pngcairo --output /tmp/plot.png \
+  --node dummy-node --sensor dummy-sensor --target dummy-target --response dummy \
+  --from 2024 --to 2025
 ....
 
 Output the plot directly to terminal, using the configuration in `dmplot.conf`:
@@ -3708,7 +3714,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | GET Parameter | Type   | Description
 
-| `id`          | string | Log id (UUID).
+| `id`          | string | Log id (UUIDv4).
 |===
 
 [discrete]
@@ -3900,7 +3906,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 |===
 | GET Parameter | Type   | Description
 
-| `id`          | string | Observation id (UUID).
+| `id`          | string | Observation id (UUIDv4).
 |===
 
 [discrete]
@@ -4889,6 +4895,7 @@ performed observations are forwarded to <<dmdb>>.
 | 3 | `LL_WARNING`  | warning level
 | 4 | `LL_ERROR`    | error level
 | 5 | `LL_CRITICAL` | critical level
+| 6 | `LL_USER`     | user-defined level
 |===
 
 .Named response value type parameters
@@ -6200,7 +6207,7 @@ JSON objects or JSON arrays.
 JSON Lines:: Export of beat, log, node, observation, sensor, and target data in
 link:https://jsonlines.org/[JSON Lines]/link:http://ndjson.org/[Newline Delimited JSON]
 format.
-Lua:: Converting observations from and to Lua tables. Import of observations
+Lua:: Converting observations from and to Lua tables: import of observations
 from Lua file or stack-based data exchange between Fortran and Lua.
 Namelist:: Import from and export to Fortran 95 Namelist (NML) format of single
 beat, log, node, observation, sensor, and target types. The syntax is
@@ -6210,7 +6217,9 @@ Text:: Status messages of the HTTP-RPC API are returned as key–value pairs in
 plain text format
 
 The JSON Lines format equals the JSON format, except that multiple records are
-separated by new line.
+separated by new line. All string attributes of the derived types are 8 bit
+only and limited to the ASCII character set, UUIDv4 identifiers and date-time
+strings in ISO 8601 format are always 32 characters long.
 
 === API Status [[data-api]]
 
@@ -6225,7 +6234,7 @@ separated by new line.
 | `host`      | string  | 32   | Server host name.
 | `server`    | string  | 32   | Server software (web server).
 | `timestamp` | string  | 32   | Server date and time in ISO 8601.
-| `message`   | string  | 32   | Server status message (optional).
+| `message`   | string  | 32   | Server status message.
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 |===
 
@@ -6286,8 +6295,8 @@ error=0
   "time_sent": "1970-01-01T00:00:00.000000+00:00",
   "time_recv": "1970-01-01T00:00:00.000000+00:00",
   "error": 0,
-  "interval": 0,
-  "uptime": 0
+  "interval": 60,
+  "uptime": 3600
 }
 ....
 
@@ -6302,8 +6311,8 @@ BEAT%CLIENT="dmbeat 1.0.0 (DMPACK 1.0.0)",
 BEAT%TIME_SENT="1970-01-01T00:00:00.000000+00:00",
 BEAT%TIME_RECV="1970-01-01T00:00:00.000000+00:00",
 BEAT%ERROR=0,
-BEAT%INTERVAL=0,
-BEAT%UPTIME=0,
+BEAT%INTERVAL=60,
+BEAT%UPTIME=3600,
 /
 ....
 
@@ -6348,15 +6357,16 @@ BEAT%UPTIME=0,
 === Log [[data-log]]
 
 .Log level [[data-log-level]]
-[cols="1,2,2,2"]
+[cols="1,2,2,5"]
 |===
-| Level | Parameter     | Parameter String | Name
+| Level | Parameter     | Parameter String | Description
 
-| 1     | `LL_DEBUG`    | `debug`          | Debug
-| 2     | `LL_INFO`     | `info`           | Info
-| 3     | `LL_WARNING`  | `warning`        | Warning
-| 4     | `LL_ERROR`    | `error`          | Error
-| 5     | `LL_CRITICAL` | `critical`       | Critical
+| 1     | `LL_DEBUG`    | `debug`          | Debug message.
+| 2     | `LL_INFO`     | `info`           | Hint or info message.
+| 3     | `LL_WARNING`  | `warning`        | Warning message.
+| 4     | `LL_ERROR`    | `error`          | Non-critical error message.
+| 5     | `LL_CRITICAL` | `critical`       | Critical error message.
+| 6     | `LL_USER`     | `user`           | User-defined log level.
 |===
 
 ==== Derived Type
@@ -6365,7 +6375,7 @@ BEAT%UPTIME=0,
 |===
 | Attribute   | Type    | Size | Description
 
-| `id`        | string  | 32   | Log id (UUID).
+| `id`        | string  | 32   | Log id (UUIDv4).
 | `level`     | integer | 4    | <<data-log-level,Log level>>.
 | `error`     | integer | 4    | <<error-codes,Error code>>.
 | `timestamp` | string  | 32   | Date and time (ISO 8601).
@@ -6582,7 +6592,7 @@ NODE%Z=0.0,
 |===
 | Attribute   | Type    | Size | Description
 
-| `id`        | string  | 32   | Observation id (UUID).
+| `id`        | string  | 32   | Observation id (UUIDv4).
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).
 | `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).
@@ -7187,9 +7197,8 @@ TARGET%Z=0.0,
 | 125  | `E_LUA_ERROR`       | Lua message handling error.
 | 126  | `E_LUA_FILE`        | Lua file I/O error.
 | 130  | `E_LIB`             | Generic library error.
-| 131  | `E_FCGI`            | FastCGI library error.
+| 131  | `E_MODBUS`          | Modbus library error.
 | 132  | `E_HDF5`            | HDF5 library error.
 | 133  | `E_ZLIB`            | Zlib library error.
 | 134  | `E_ZSTD`            | Zstandard library error.
-| 135  | `E_MODBUS`          | Modbus library error.
 |===

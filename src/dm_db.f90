@@ -43,6 +43,7 @@ module dm_db
     use :: dm_id
     use :: dm_kind
     use :: dm_sql
+    use :: dm_string
     use :: dm_time
     use :: dm_uuid
     use :: dm_util
@@ -130,7 +131,7 @@ module dm_db
     end interface
 
     interface db_next_row
-        !! Generic table row access function.
+        !! Private generic table row access function.
         module procedure :: db_next_row_allocatable
         module procedure :: db_next_row_character
         module procedure :: db_next_row_beat
@@ -144,6 +145,19 @@ module dm_db
         module procedure :: db_next_row_sync
         module procedure :: db_next_row_target
     end interface db_next_row
+
+    interface dm_db_begin
+        !! Starts a transaction. Public alias for `db_begin()`.
+        !!
+        !! Optional argument `mode` may be one of:
+        !!
+        !! * `DB_TRANS_DEFERRED`
+        !! * `DB_TRANS_IMMEDIATE`
+        !! * `DB_TRANS_EXCLUSIVE`
+        !!
+        !! The default mode is `DB_TRANS_DEFERRED`.
+        module procedure :: db_begin
+    end interface dm_db_begin
 
     interface dm_db_insert
         !! Generic database insert function.
@@ -537,26 +551,6 @@ contains
 
         if (dm_is_error(dm_db_close(backup))) rc = E_DB
     end function dm_db_backup
-
-    integer function dm_db_begin(db, mode) result(rc)
-        !! Starts a transaction. Public wrapper for `db_begin()`.
-        !!
-        !! Optional argument `mode` may be one of:
-        !!
-        !! * `DB_TRANS_DEFERRED`
-        !! * `DB_TRANS_IMMEDIATE`
-        !! * `DB_TRANS_EXCLUSIVE`
-        !!
-        !! The default mode is `DB_TRANS_DEFERRED`.
-        type(db_type), intent(inout)        :: db   !! Database type.
-        integer,       intent(in), optional :: mode !! Transaction mode.
-
-        if (present(mode)) then
-            rc = db_begin(db, mode)
-        else
-            rc = db_begin(db)
-        end if
-    end function dm_db_begin
 
     integer function dm_db_close(db, optimize) result(rc)
         !! Closes connection to SQLite database. Optimises the database if
@@ -2732,39 +2726,29 @@ contains
         has_target_id = .false.; has_from    = .false.; has_to        = .false.
         has_limit     = .false.; desc_order  = .false.
 
-        if (present(node_id)) then
-            if (len_trim(node_id) > 0) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
+        if (dm_string_is_present(node_id)) then
+            has_param = .true.
+            has_node_id = .true.
         end if
 
-        if (present(sensor_id)) then
-            if (len_trim(sensor_id) > 0) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
+        if (dm_string_is_present(sensor_id)) then
+            has_param = .true.
+            has_sensor_id = .true.
         end if
 
-        if (present(target_id)) then
-            if (len_trim(target_id) > 0) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
+        if (dm_string_is_present(target_id)) then
+            has_param = .true.
+            has_target_id = .true.
         end if
 
-        if (present(from)) then
-            if (len_trim(from) > 0) then
-                has_param = .true.
-                has_from = .true.
-            end if
+        if (dm_string_is_present(from)) then
+            has_param = .true.
+            has_from = .true.
         end if
 
-        if (present(to)) then
-            if (len_trim(to) > 0) then
-                has_param = .true.
-                has_to = .true.
-            end if
+        if (dm_string_is_present(to)) then
+            has_param = .true.
+            has_to = .true.
         end if
 
         if (present(limit)) has_limit  = .true.
@@ -3263,12 +3247,7 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
         integer(kind=i8)                                    :: n
 
-        if (present(limit)) then
-            rc = db_select_syncs(db, SYNC_TYPE_LOG, SQL_SELECT_NSYNC_LOGS, SQL_SELECT_SYNC_LOGS, syncs, n, limit)
-        else
-            rc = db_select_syncs(db, SYNC_TYPE_LOG, SQL_SELECT_NSYNC_LOGS, SQL_SELECT_SYNC_LOGS, syncs, n)
-        end if
-
+        rc = db_select_syncs(db, SYNC_TYPE_LOG, SQL_SELECT_NSYNC_LOGS, SQL_SELECT_SYNC_LOGS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_logs
 
@@ -3307,12 +3286,7 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
         integer(kind=i8)                                    :: n
 
-        if (present(limit)) then
-            rc = db_select_syncs(db, SYNC_TYPE_NODE, SQL_SELECT_NSYNC_NODES, SQL_SELECT_SYNC_NODES, syncs, n, limit)
-        else
-            rc = db_select_syncs(db, SYNC_TYPE_NODE, SQL_SELECT_NSYNC_NODES, SQL_SELECT_SYNC_NODES, syncs, n)
-        end if
-
+        rc = db_select_syncs(db, SYNC_TYPE_NODE, SQL_SELECT_NSYNC_NODES, SQL_SELECT_SYNC_NODES, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_nodes
 
@@ -3352,12 +3326,7 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
         integer(kind=i8)                                    :: n
 
-        if (present(limit)) then
-            rc = db_select_syncs(db, SYNC_TYPE_OBSERV, SQL_SELECT_NSYNC_OBSERVS, SQL_SELECT_SYNC_OBSERVS, syncs, n, limit)
-        else
-            rc = db_select_syncs(db, SYNC_TYPE_OBSERV, SQL_SELECT_NSYNC_OBSERVS, SQL_SELECT_SYNC_OBSERVS, syncs, n)
-        end if
-
+        rc = db_select_syncs(db, SYNC_TYPE_OBSERV, SQL_SELECT_NSYNC_OBSERVS, SQL_SELECT_SYNC_OBSERVS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_observs
 
@@ -3396,12 +3365,7 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
         integer(kind=i8)                                    :: n
 
-        if (present(limit)) then
-            rc = db_select_syncs(db, SYNC_TYPE_SENSOR, SQL_SELECT_NSYNC_SENSORS, SQL_SELECT_SYNC_SENSORS, syncs, n, limit)
-        else
-            rc = db_select_syncs(db, SYNC_TYPE_SENSOR, SQL_SELECT_NSYNC_SENSORS, SQL_SELECT_SYNC_SENSORS, syncs, n)
-        end if
-
+        rc = db_select_syncs(db, SYNC_TYPE_SENSOR, SQL_SELECT_NSYNC_SENSORS, SQL_SELECT_SYNC_SENSORS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_sensors
 
@@ -3440,12 +3404,7 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
         integer(kind=i8)                                    :: n
 
-        if (present(limit)) then
-            rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n, limit)
-        else
-            rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n)
-        end if
-
+        rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_targets
 
@@ -4434,11 +4393,7 @@ contains
         integer :: stat
 
         rc = E_DB_EXEC
-        if (present(err_msg)) then
-            stat = sqlite3_exec(db%ptr, query, c_null_funptr, c_null_ptr, err_msg)
-        else
-            stat = sqlite3_exec(db%ptr, query, c_null_funptr, c_null_ptr)
-        end if
+        stat = sqlite3_exec(db%ptr, query, c_null_funptr, c_null_ptr, err_msg)
 
         if (stat /= SQLITE_OK) return
         rc = E_NONE
@@ -5578,46 +5533,34 @@ contains
         has_to        = .false.; has_min_level = .false.; has_max_level = .false.
         has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
-        if (present(node_id)) then
-            if (len_trim(node_id) > 0) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
+        if (dm_string_is_present(node_id)) then
+            has_param = .true.
+            has_node_id = .true.
         end if
 
-        if (present(sensor_id)) then
-            if (len_trim(sensor_id) > 0) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
+        if (dm_string_is_present(sensor_id)) then
+            has_param = .true.
+            has_sensor_id = .true.
         end if
 
-        if (present(target_id)) then
-            if (len_trim(target_id) > 0) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
+        if (dm_string_is_present(target_id)) then
+            has_param = .true.
+            has_target_id = .true.
         end if
 
-        if (present(source)) then
-            if (len_trim(source) > 0) then
-                has_param = .true.
-                has_source = .true.
-            end if
+        if (dm_string_is_present(source)) then
+            has_param = .true.
+            has_source = .true.
         end if
 
-        if (present(from)) then
-            if (len_trim(from) > 0) then
-                has_param = .true.
-                has_from = .true.
-            end if
+        if (dm_string_is_present(from)) then
+            has_param = .true.
+            has_from = .true.
         end if
 
-        if (present(to)) then
-            if (len_trim(to) > 0) then
-                has_param = .true.
-                has_to = .true.
-            end if
+        if (dm_string_is_present(to)) then
+            has_param = .true.
+            has_to = .true.
         end if
 
         if (present(min_level)) then
@@ -5820,46 +5763,34 @@ contains
             has_to        = .false.; has_min_level = .false.; has_max_level = .false.
             has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
-            if (present(node_id)) then
-                if (len_trim(node_id) > 0) then
-                    has_param = .true.
-                    has_node_id = .true.
-                end if
+            if (dm_string_is_present(node_id)) then
+                has_param = .true.
+                has_node_id = .true.
             end if
 
-            if (present(sensor_id)) then
-                if (len_trim(sensor_id) > 0) then
-                    has_param = .true.
-                    has_sensor_id = .true.
-                end if
+            if (dm_string_is_present(sensor_id)) then
+                has_param = .true.
+                has_sensor_id = .true.
             end if
 
-            if (present(target_id)) then
-                if (len_trim(target_id) > 0) then
-                    has_param = .true.
-                    has_target_id = .true.
-                end if
+            if (dm_string_is_present(target_id)) then
+                has_param = .true.
+                has_target_id = .true.
             end if
 
-            if (present(source)) then
-                if (len_trim(source) > 0) then
-                    has_param = .true.
-                    has_source = .true.
-                end if
+            if (dm_string_is_present(source)) then
+                has_param = .true.
+                has_source = .true.
             end if
 
-            if (present(from)) then
-                if (len_trim(from) > 0) then
-                    has_param = .true.
-                    has_from = .true.
-                end if
+            if (dm_string_is_present(from)) then
+                has_param = .true.
+                has_from = .true.
             end if
 
-            if (present(to)) then
-                if (len_trim(to) > 0) then
-                    has_param = .true.
-                    has_to = .true.
-                end if
+            if (dm_string_is_present(to)) then
+                has_param = .true.
+                has_to = .true.
             end if
 
             if (present(min_level)) then
@@ -6138,46 +6069,34 @@ contains
         has_to        = .false.; has_min_level = .false.; has_max_level = .false.
         has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
-        if (present(node_id)) then
-            if (len_trim(node_id) > 0) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
+        if (dm_string_is_present(node_id)) then
+            has_param = .true.
+            has_node_id = .true.
         end if
 
-        if (present(sensor_id)) then
-            if (len_trim(sensor_id) > 0) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
+        if (dm_string_is_present(sensor_id)) then
+            has_param = .true.
+            has_sensor_id = .true.
         end if
 
-        if (present(target_id)) then
-            if (len_trim(target_id) > 0) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
+        if (dm_string_is_present(target_id)) then
+            has_param = .true.
+            has_target_id = .true.
         end if
 
-        if (present(source)) then
-            if (len_trim(source) > 0) then
-                has_param = .true.
-                has_source = .true.
-            end if
+        if (dm_string_is_present(source)) then
+            has_param = .true.
+            has_source = .true.
         end if
 
-        if (present(from)) then
-            if (len_trim(from) > 0) then
-                has_param = .true.
-                has_from = .true.
-            end if
+        if (dm_string_is_present(from)) then
+            has_param = .true.
+            has_from = .true.
         end if
 
-        if (present(to)) then
-            if (len_trim(to) > 0) then
-                has_param = .true.
-                has_to = .true.
-            end if
+        if (dm_string_is_present(to)) then
+            has_param = .true.
+            has_to = .true.
         end if
 
         if (present(min_level)) then
@@ -6374,46 +6293,34 @@ contains
             has_to        = .false.; has_min_level = .false.; has_max_level = .false.
             has_error     = .false.; has_limit     = .false.; desc_order    = .false.
 
-            if (present(node_id)) then
-                if (len_trim(node_id) > 0) then
-                    has_param = .true.
-                    has_node_id = .true.
-                end if
+            if (dm_string_is_present(node_id)) then
+                has_param = .true.
+                has_node_id = .true.
             end if
 
-            if (present(sensor_id)) then
-                if (len_trim(sensor_id) > 0) then
-                    has_param = .true.
-                    has_sensor_id = .true.
-                end if
+            if (dm_string_is_present(sensor_id)) then
+                has_param = .true.
+                has_sensor_id = .true.
             end if
 
-            if (present(target_id)) then
-                if (len_trim(target_id) > 0) then
-                    has_param = .true.
-                    has_target_id = .true.
-                end if
+            if (dm_string_is_present(target_id)) then
+                has_param = .true.
+                has_target_id = .true.
             end if
 
-            if (present(source)) then
-                if (len_trim(source) > 0) then
-                    has_param = .true.
-                    has_source = .true.
-                end if
+            if (dm_string_is_present(source)) then
+                has_param = .true.
+                has_source = .true.
             end if
 
-            if (present(from)) then
-                if (len_trim(from) > 0) then
-                    has_param = .true.
-                    has_from = .true.
-                end if
+            if (dm_string_is_present(from)) then
+                has_param = .true.
+                has_from = .true.
             end if
 
-            if (present(to)) then
-                if (len_trim(to) > 0) then
-                    has_param = .true.
-                    has_to = .true.
-                end if
+            if (dm_string_is_present(to)) then
+                has_param = .true.
+                has_to = .true.
             end if
 
             if (present(min_level)) then
@@ -6703,39 +6610,29 @@ contains
         has_target_id = .false.; has_from    = .false.; has_to        = .false.
         has_limit     = .false.; desc_order  = .false.; stub_view     = .false.
 
-        if (present(node_id)) then
-            if (len_trim(node_id) > 0) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
+        if (dm_string_is_present(node_id)) then
+            has_param = .true.
+            has_node_id = .true.
         end if
 
-        if (present(sensor_id)) then
-            if (len_trim(sensor_id) > 0) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
+        if (dm_string_is_present(sensor_id)) then
+            has_param = .true.
+            has_sensor_id = .true.
         end if
 
-        if (present(target_id)) then
-            if (len_trim(target_id) > 0) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
+        if (dm_string_is_present(target_id)) then
+            has_param = .true.
+            has_target_id = .true.
         end if
 
-        if (present(from)) then
-            if (len_trim(from) > 0) then
-                has_param = .true.
-                has_from = .true.
-            end if
+        if (dm_string_is_present(from)) then
+            has_param = .true.
+            has_from = .true.
         end if
 
-        if (present(to)) then
-            if (len_trim(to) > 0) then
-                has_param = .true.
-                has_to = .true.
-            end if
+        if (dm_string_is_present(to)) then
+            has_param = .true.
+            has_to = .true.
         end if
 
         if (present(limit)) has_limit  = .true.
@@ -6899,39 +6796,29 @@ contains
             has_target_id = .false.; has_from    = .false.; has_to        = .false.
             has_limit     = .false.; desc_order  = .false.; stub_view     = .false.
 
-            if (present(node_id)) then
-                if (len_trim(node_id) > 0) then
-                    has_param = .true.
-                    has_node_id = .true.
-                end if
+            if (dm_string_is_present(node_id)) then
+                has_param = .true.
+                has_node_id = .true.
             end if
 
-            if (present(sensor_id)) then
-                if (len_trim(sensor_id) > 0) then
-                    has_param = .true.
-                    has_sensor_id = .true.
-                end if
+            if (dm_string_is_present(sensor_id)) then
+                has_param = .true.
+                has_sensor_id = .true.
             end if
 
-            if (present(target_id)) then
-                if (len_trim(target_id) > 0) then
-                    has_param = .true.
-                    has_target_id = .true.
-                end if
+            if (dm_string_is_present(target_id)) then
+                has_param = .true.
+                has_target_id = .true.
             end if
 
-            if (present(from)) then
-                if (len_trim(from) > 0) then
-                    has_param = .true.
-                    has_from = .true.
-                end if
+            if (dm_string_is_present(from)) then
+                has_param = .true.
+                has_from = .true.
             end if
 
-            if (present(to)) then
-                if (len_trim(to) > 0) then
-                    has_param = .true.
-                    has_to = .true.
-                end if
+            if (dm_string_is_present(to)) then
+                has_param = .true.
+                has_to = .true.
             end if
 
             if (present(limit)) has_limit  = .true.

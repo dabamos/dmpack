@@ -34,12 +34,13 @@ observ = {
         {
             name = "get-cpu-temp",
             request = "sysctl hw.acpi.thermal.tz0.temperature",
-            pattern = "hw\\.acpi\\.thermal\\.tz0\\.temperature: (?<tz0>[-+0-9\\.,]+)C",
+            pattern = "[.a-z]+: (?<tz0>[-+0-9\\.,]+)C",
             delay = 0,
             responses = {
                 {
                     name = "tz0",
-                    unit = "degC"
+                    unit = "degC",
+                    type = RESPONSE_TYPE_REAL64
                 }
             }
         },
@@ -49,12 +50,13 @@ observ = {
         {
             name = "get-battery",
             request = "sysctl hw.acpi.battery.life",
-            pattern = "hw\\.acpi\\.battery\\.life: (?<battery>[0-9]+)",
+            pattern = "[.a-z]+: (?<battery>[0-9]+)",
             delay = 0,
             responses = {
                 {
                     name = "battery",
-                    unit = "%"
+                    unit = "%",
+                    type = RESPONSE_TYPE_REAL64
                 }
             }
         }

@@ -19,7 +19,6 @@ program dmtestdb
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
 
-
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
@@ -61,7 +60,7 @@ contains
         print *, 'Checking for stale database "' // DB_OBSERV // '" ...'
 
         if (dm_file_exists(DB_OBSERV)) then
-            print *, 'Deleting old database ...'
+            print *, 'Deleting stale database ...'
             call dm_file_delete(DB_OBSERV)
         end if
 
@@ -111,9 +110,11 @@ contains
         allocate (in(3))
 
         ! Sensor nodes.
-        in = [ node_type('a', 'Test Node A', 'A test node.'), &
-               node_type('b', 'Test Node B', 'A test node.'), &
-               node_type('z', 'Test Node Z', 'A test node.') ]
+        in = [ &
+            node_type('a', 'Test Node A', 'Description of test node.'), &
+            node_type('b', 'Test Node B', 'Description of test node.'), &
+            node_type('z', 'Test Node Z', 'Description of test node.')  &
+        ]
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
         rc = dm_db_open(db, DB_OBSERV)
@@ -575,7 +576,7 @@ contains
 
         if (dm_file_exists(DB_LOG)) then
             call dm_file_delete(DB_LOG)
-            print *, 'Deleted old database'
+            print *, 'Deleted stale database'
         end if
 
         print *, 'Creating database "' // DB_LOG // '" ...'
@@ -730,7 +731,7 @@ contains
 
         if (dm_file_exists(DB_OBSERV_BACKUP)) then
             call dm_file_delete(DB_OBSERV_BACKUP)
-            print *, 'Deleted old database'
+            print *, 'Deleted stale database'
         end if
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
@@ -763,7 +764,7 @@ contains
 
         if (dm_file_exists(DB_OBSERV_VACUUM)) then
             call dm_file_delete(DB_OBSERV_VACUUM)
-            print *, 'Deleted old database'
+            print *, 'Deleted stale database'
         end if
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
@@ -793,7 +794,7 @@ contains
 
         if (dm_file_exists(DB_BEAT)) then
             call dm_file_delete(DB_BEAT)
-            print *, 'Deleted old database'
+            print *, 'Deleted stale database'
         end if
 
         print *, 'Creating database "' // DB_BEAT // '" ...'
@@ -1063,7 +1064,7 @@ contains
         integer, intent(in) :: remaining
         integer, intent(in) :: page_count
 
-        print '("Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
+        print '(" *** Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
     end subroutine backup_handler
 
     subroutine log_handler(client_data, err_code, err_msg_ptr) bind(c)

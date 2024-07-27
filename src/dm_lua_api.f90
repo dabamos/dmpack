@@ -42,6 +42,7 @@ contains
         !! * `LL_WARNING`
         !! * `LL_ERROR`
         !! * `LL_CRITICAL`
+        !! * `LL_USER`
         !!
         !! The following Lua procedures are registered if `procedures` is not
         !! `.false.`:
@@ -186,11 +187,10 @@ contains
             rc = dm_lua_set(lua, 'E_LUA_FILE',       E_LUA_FILE);       if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_LIB',            E_LIB);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FCGI',           E_FCGI);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MODBUS',         E_MODBUS);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_HDF5',           E_HDF5);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MODBUS',         E_MODBUS);         if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.
@@ -201,6 +201,7 @@ contains
             rc = dm_lua_set(lua, 'LL_WARNING',  LL_WARNING);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_ERROR',    LL_ERROR);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_CRITICAL', LL_CRITICAL); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_USER',     LL_USER);     if (dm_is_error(rc)) return
         end if
 
         ! Register response type parameters.

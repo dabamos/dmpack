@@ -86,13 +86,11 @@ program dmapi
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Run event loop.
-    do while (dm_fcgi_accept() == E_NONE)
+    do while (dm_fcgi_accept())
         call dm_cgi_env(env)
         call dm_cgi_router_dispatch(router, env, code)
-
-        if (code /= HTTP_OK) then
-            call api_error(code, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
-        end if
+        if (code == HTTP_OK) cycle
+        call api_error(code, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
     end do
 
     ! Clean up.

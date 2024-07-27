@@ -23,7 +23,7 @@
 --
 -- OWFS path of the temperature sensor.
 --
-path = "/mnt/1wire/10.DCA98C020800/temperature"
+owfs_path = "/mnt/1wire/10.DCA98C020800/temperature"
 
 --
 -- Table of observations to be used in jobs list. The attribute `receivers`
@@ -37,13 +37,14 @@ observs = {
         requests = {
             {
                 name = "get-temp"
-                request = path,
+                request = owfs_path,
                 pattern = "(?<temp>[-+0-9\\.]+)",
                 delay = 500,
                 responses = {
                     {
                         name = "temp",
-                        unit = "degC"
+                        unit = "degC",
+                        type = RESPONSE_TYPE_REAL64
                     }
                 }
             }

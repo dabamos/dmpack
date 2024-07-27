@@ -344,7 +344,7 @@ contains
                 call logger%debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
             end if
 
-            call dm_usleep(delay * 1000) ! [msec] to [us].
+            call dm_msleep(delay)
         end do req_loop
     end function read_observ
 
@@ -441,7 +441,7 @@ contains
             delay = max(0, job%delay)
             if (delay <= 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
-            call dm_usleep(delay * 1000)
+            call dm_msleep(delay)
         end do job_loop
     end subroutine run
 

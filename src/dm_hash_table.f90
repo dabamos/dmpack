@@ -53,7 +53,8 @@ contains
         !! Create a new hash table with maximum number of entries.
         type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
         integer,               intent(in)    :: max_entries !! Maximum number of entries.
-        integer                              :: stat
+
+        integer :: stat
 
         rc = E_INVALID
         if (max_entries < 1) return
@@ -65,8 +66,8 @@ contains
         allocate (hash_table%values(max_entries), stat=stat)
         if (stat /= 0) return
 
-        hash_table%hashes(:) = 0_i8
         rc = E_NONE
+        hash_table%hashes(:) = 0_i8
     end function dm_hash_table_create
 
     integer function dm_hash_table_set(hash_table, key, value) result(rc)
@@ -98,7 +99,8 @@ contains
         !! Finalises hash table. If the hash table items contain allocatable
         !! data types, you have to deallocate them manually beforehand.
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
-        integer                              :: i
+
+        integer :: i
 
         if (allocated(hash_table%values)) then
             do i = 1, size(hash_table%values)
@@ -132,6 +134,12 @@ contains
     integer function hash_table_get_index(hash_table, loc, value) result(rc)
         !! Returns pointer to element in hash table by index `i`. On error,
         !! `value` will point to null.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if the location in outside the array bounds.
+        !! * `E_NULL` if the hash table value pointer is not associated.
+        !!
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
         integer,               intent(in)    :: loc        !! Hash value index.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
@@ -141,7 +149,7 @@ contains
         rc = E_BOUNDS
         if (loc < 1 .or. loc > size(hash_table%values)) return
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. associated(hash_table%values(loc)%ptr)) return
 
         rc = E_NONE
@@ -153,6 +161,12 @@ contains
         !! will point to null. The intrinsic `findloc()` should be sufficient for
         !! a small number of elements. For larger hash tables, buckets have to be
         !! added.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_NOT_FOUND` if the key was not found.
+        !! * `E_NULL` if the hash table value pointer is not associated.
+        !!
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
         character(len=*),      intent(in)    :: key        !! Hash table key.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
@@ -162,12 +176,12 @@ contains
 
         value => null()
 
-        rc = E_EMPTY
+        rc = E_NOT_FOUND
         hash = hash_table_hash(key)
         loc  = findloc(hash_table%hashes, hash, dim=1)
         if (loc == 0) return
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. associated(hash_table%values(loc)%ptr)) return
 
         rc = E_NONE

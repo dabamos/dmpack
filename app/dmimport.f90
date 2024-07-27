@@ -43,7 +43,7 @@ contains
 
         type(app_type), intent(inout) :: app
 
-        integer          :: er, stat, unit
+        integer          :: error, stat, unit
         integer(kind=i8) :: nrecs, nrows
         logical          :: exists, valid
         real(kind=r8)    :: dt
@@ -155,13 +155,14 @@ contains
                     exit read_loop
                 end if
 
+                ! Any other error.
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to read record in row ' // dm_itoa(nrows))
                     exit read_loop
                 end if
 
+                ! Validate record but skip database insert on dry run.
                 if (app%dry) then
-                    ! Validate record.
                     select case (app%type)
                         case (TYPE_NODE)
                             valid = dm_node_valid(node)
@@ -181,7 +182,6 @@ contains
                         exit read_loop
                     end if
 
-                    ! Skip database insert on dry run.
                     cycle read_loop
                 end if
 
@@ -222,10 +222,10 @@ contains
             if (.not. app%dry) then
                 ! Rollback transaction on error.
                 if (dm_is_error(rc)) then
-                    er = dm_db_rollback(db)
+                    error = dm_db_rollback(db)
 
-                    if (dm_is_error(er)) then
-                        call dm_error_out(er, 'failed to roll back database transaction')
+                    if (dm_is_error(error)) then
+                        call dm_error_out(error, 'failed to roll back database transaction')
                         exit import_block
                     end if
 
@@ -239,10 +239,10 @@ contains
                 ! Rollback transaction on error.
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to commit database transaction')
-                    er = dm_db_rollback(db)
+                    error = dm_db_rollback(db)
 
-                    if (dm_is_error(er)) then
-                        call dm_error_out(er, 'failed to roll back database transaction')
+                    if (dm_is_error(error)) then
+                        call dm_error_out(error, 'failed to roll back database transaction')
                         exit import_block
                     end if
 

@@ -21,12 +21,15 @@ module dm_geocom
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
+    !! ! Open connection to instrument, quit on error.
     !! call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, verbose=.true., error=rc)
-    !! dm_error_out(rc, fatal=.true.)
+    !! call dm_error_out(rc, fatal=.true.)
     !!
+    !! ! Call remote procedure COM_NullProc and output result.
     !! call geocom%null()
     !! print '(i0, ": ", a)', geocom%code(), geocom%message()
     !!
+    !! ! Close connection.
     !! call geocom%close()
     !! ```
     !!
@@ -390,9 +393,9 @@ module dm_geocom
     !!
     !! ### GEOCOM_TMC_INCLINE_PRG
     !!
-    !! * `GEOCOM_TMC_MEA_INC`      – Use sensor (a priori sigma).
-    !! * `GEOCOM_TMC_AUTO_INC`     – Automatic mode (sensor/plane).
-    !! * `GEOCOM_TMC_PLANE_INC`    – Use plane (a priori sigma).
+    !! * `GEOCOM_TMC_MEA_INC`   – Use sensor (a priori sigma).
+    !! * `GEOCOM_TMC_AUTO_INC`  – Automatic mode (sensor/plane).
+    !! * `GEOCOM_TMC_PLANE_INC` – Use plane (a priori sigma).
     !!
     !! ### GEOCOM_TMC_MEASURE_PRG
     !!

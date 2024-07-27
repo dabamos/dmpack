@@ -176,6 +176,7 @@ contains
                 rc = dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
                 rc = dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
                 rc = dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
+                rc = dm_config_get(config, 'user',     app%levels(LL_USER)    %codes)
 
                 call dm_config_remove(config)
             end if
