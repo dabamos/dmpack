@@ -6,7 +6,7 @@
  * @param {number} lon - The longitude coordinate.
  * @param {number} lat - The latitude coordinate.
  * @param {number} zoom - The Leaflet zoom level.
- * @param {array} features - The GeoJSON features.
+ * @param {array} features - Array of GeoJSON features.
  */
 function createMap(id, url, lon, lat, zoom, features)
 {
@@ -23,7 +23,7 @@ function createMap(id, url, lon, lat, zoom, features)
 }
 
 /**
- * GeoJSON callback function.
+ * Leaflet callback function.
  */
 function onEachFeature(feature, layer)
 {
@@ -38,7 +38,7 @@ function onEachFeature(feature, layer)
 }
 
 /**
- * GeoJSON callback function.
+ * Leaflet callback function.
  */
 function pointToLayer(feature, latlng)
 {

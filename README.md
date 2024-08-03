@@ -55,7 +55,7 @@ POSIX semaphores.
 * SQLite database access
 * message passing via POSIX message queues
 * process synchronisation via POSIX semaphores
-* data serialisation (ASCII, CSV, Fortran 95 Namelist, HDF5, GeoJSON, JSON, JSON Lines)
+* data serialisation (ASCII, CSV, GeoJSON, JSON, JSON Lines, HDF5, Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-RPC API for remote procedure calls
 * concurrent data synchronisation between client and server

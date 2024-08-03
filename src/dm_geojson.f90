@@ -81,11 +81,11 @@ contains
             '"id":"'       // id                   // '",' // &
             '"name":"'     // name                 // '",' // &
             '"meta":"'     // dm_json_escape(meta) // '",' // &
-            '"x":'         // dm_ftoa(x)           // '",' // &
-            '"y":'         // dm_ftoa(y)           // '",' // &
-            '"z":'         // dm_ftoa(z)           // '",' // &
-            '"longitude":' // dm_ftoa(longitude)   // '",' // &
-            '"latitude":'  // dm_ftoa(latitude)    // '",' // &
+            '"x":'         // dm_ftoa(x)           // ',' // &
+            '"y":'         // dm_ftoa(y)           // ',' // &
+            '"z":'         // dm_ftoa(z)           // ',' // &
+            '"longitude":' // dm_ftoa(longitude)   // ',' // &
+            '"latitude":'  // dm_ftoa(latitude)    // ',' // &
             '"altitude":'  // dm_ftoa(altitude)    // &
             '},"geometry":{"type":"Point",' // '"coordinates":[' // &
             dm_ftoa(longitude) // ',' // &
