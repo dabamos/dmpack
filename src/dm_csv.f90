@@ -201,12 +201,15 @@ contains
         s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
-        header = '#id'  // s // &
-                 'name' // s // &
-                 'meta' // s // &
-                 'x'    // s // &
-                 'y'    // s // &
-                 'z'
+        header = '#id'       // s // &
+                 'name'      // s // &
+                 'meta'      // s // &
+                 'x'         // s // &
+                 'y'         // s // &
+                 'z'         // s // &
+                 'longitude' // s // &
+                 'latitude'  // s // &
+                 'altitude'
     end function dm_csv_header_node
 
     function dm_csv_header_observ(separator) result(header)
@@ -512,7 +515,10 @@ contains
               '"' // trim(node%meta) // '"' // s // &
               dm_ftoa(node%x)               // s // &
               dm_ftoa(node%y)               // s // &
-              dm_ftoa(node%z)
+              dm_ftoa(node%z)               // s // &
+              dm_ftoa(node%longitude)       // s // &
+              dm_ftoa(node%latitude)        // s // &
+              dm_ftoa(node%altitude)
     end function csv_from_node
 
     function csv_from_nodes(nodes, header, separator) result(csv)
@@ -1049,12 +1055,15 @@ contains
 
         p = 0 ! Cursor in buffer string.
 
-        rc = csv_next(buffer, node%id,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%name, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%meta, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%x,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%y,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%z,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%id,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%name,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%meta,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%x,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%y,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%z,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%longitude, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%latitude,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%altitude,  s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_node
@@ -1499,13 +1508,16 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(7a, 3(a, 1pg0.12))', iostat=stat) &
+        write (unit_, '(7a, 6(a, 1pg0.12))', iostat=stat) &
             trim(node%id),             s, &
             trim(node%name),           s, &
             '"', trim(node%meta), '"', s, &
             node%x,                    s, &
             node%y,                    s, &
-            node%z
+            node%z,                    s, &
+            node%longitude,            s, &
+            node%latitude,             s, &
+            node%altitude
         if (stat /= 0) return
 
         rc = E_NONE

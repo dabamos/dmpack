@@ -462,6 +462,21 @@ contains
         call h5tinsert_f(type_id, 'z', offset, h5kind_to_type(kind(node%z), H5_REAL_KIND), stat)
         if (stat < 0) return
 
+        ! Node longitude.
+        offset = h5offsetof(c_loc(node), c_loc(node%longitude))
+        call h5tinsert_f(type_id, 'longitude', offset, h5kind_to_type(kind(node%longitude), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Node latitude.
+        offset = h5offsetof(c_loc(node), c_loc(node%latitude))
+        call h5tinsert_f(type_id, 'latitude', offset, h5kind_to_type(kind(node%latitude), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
+        ! Node altitude.
+        offset = h5offsetof(c_loc(node), c_loc(node%altitude))
+        call h5tinsert_f(type_id, 'altitude', offset, h5kind_to_type(kind(node%altitude), H5_REAL_KIND), stat)
+        if (stat < 0) return
+
         rc = E_NONE
     end function hdf5_create_node
 

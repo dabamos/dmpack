@@ -67,12 +67,20 @@ contains
     end function test02
 
     logical function test03() result(stat)
+        type(string_type) :: styles(2)
+
         stat = TEST_FAILED
+
+        styles = [ &
+            string_type('style.min.css'), &
+            string_type('extra.css')      &
+        ]
 
         print *, 'Basic HTML page ...'
         print '(72("."))'
-        print '(a)', dm_html_header('Title', 'Sub-Title', 'style.css', brand='Brand')
-        print '(a)', dm_html_footer('Footer' // ASCII_LF, 'script.js')
+        print '(a)', dm_html_header('Title', 'Sub-Title', brand='Brand', styles=styles)
+        print '(a)', dm_html_script('dmpack.js')
+        print '(a)', dm_html_footer('Footer' // ASCII_LF)
         print '(72("."))'
 
         stat = TEST_PASSED

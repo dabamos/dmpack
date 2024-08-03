@@ -5,18 +5,19 @@ module dm_format
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FORMAT_NONE  = 0 !! Invalid format.
-    integer, parameter, public :: FORMAT_BLOCK = 1 !! ASCII block.
-    integer, parameter, public :: FORMAT_CSV   = 2 !! CSV.
-    integer, parameter, public :: FORMAT_JSON  = 3 !! JSON.
-    integer, parameter, public :: FORMAT_JSONL = 4 !! JSON Lines, NDJSON.
-    integer, parameter, public :: FORMAT_NML   = 5 !! Fortran 95 Namelist.
-    integer, parameter, public :: FORMAT_LAST  = 5 !! Never use this.
+    integer, parameter, public :: FORMAT_NONE     = 0 !! Invalid format.
+    integer, parameter, public :: FORMAT_BLOCK    = 1 !! ASCII block.
+    integer, parameter, public :: FORMAT_CSV      = 2 !! CSV.
+    integer, parameter, public :: FORMAT_GEOJSON  = 3 !! GeoJSON.
+    integer, parameter, public :: FORMAT_JSON     = 4 !! JSON.
+    integer, parameter, public :: FORMAT_JSONL    = 5 !! JSON Lines, NDJSON.
+    integer, parameter, public :: FORMAT_NML      = 6 !! Fortran 95 Namelist.
+    integer, parameter, public :: FORMAT_LAST     = 6 !! Never use this.
 
-    integer, parameter, public :: FORMAT_NAME_LEN = 5 !! Max. length of format name.
+    integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 
     character(len=*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
-        character(len=FORMAT_NAME_LEN) :: 'none', 'block', 'csv', 'json', 'jsonl', 'nml' &
+        character(len=FORMAT_NAME_LEN) :: 'none', 'block', 'csv', 'geojson', 'json', 'jsonl', 'nml' &
     ] !! Format names array.
 
     public :: dm_format_from_name
@@ -38,6 +39,8 @@ contains
                 format = FORMAT_BLOCK
             case (FORMAT_NAMES(FORMAT_CSV))
                 format = FORMAT_CSV
+            case (FORMAT_NAMES(FORMAT_GEOJSON))
+                format = FORMAT_GEOJSON
             case (FORMAT_NAMES(FORMAT_JSON))
                 format = FORMAT_JSON
             case (FORMAT_NAMES(FORMAT_JSONL))

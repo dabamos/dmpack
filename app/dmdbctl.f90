@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -31,7 +31,10 @@ program dmdbctl
     integer, parameter :: ATTR_X     = 7
     integer, parameter :: ATTR_Y     = 8
     integer, parameter :: ATTR_Z     = 9
-    integer, parameter :: ATTR_LAST  = 9
+    integer, parameter :: ATTR_LNG   = 10
+    integer, parameter :: ATTR_LAT   = 11
+    integer, parameter :: ATTR_ALT   = 12
+    integer, parameter :: ATTR_LAST  = 12
 
     type :: app_type
         !! Command-line arguments.
@@ -297,11 +300,14 @@ contains
                 if (dm_is_error(rc)) exit db_select
 
                 ! Overwrite if not passed.
-                if (.not. app%mask(ATTR_NAME)) app%node%name = old_node%name
-                if (.not. app%mask(ATTR_META)) app%node%meta = old_node%meta
-                if (.not. app%mask(ATTR_X))    app%node%x    = old_node%x
-                if (.not. app%mask(ATTR_Y))    app%node%y    = old_node%y
-                if (.not. app%mask(ATTR_Z))    app%node%z    = old_node%z
+                if (.not. app%mask(ATTR_NAME)) app%node%name      = old_node%name
+                if (.not. app%mask(ATTR_META)) app%node%meta      = old_node%meta
+                if (.not. app%mask(ATTR_X))    app%node%x         = old_node%x
+                if (.not. app%mask(ATTR_Y))    app%node%y         = old_node%y
+                if (.not. app%mask(ATTR_Z))    app%node%z         = old_node%z
+                if (.not. app%mask(ATTR_LNG))  app%node%longitude = old_node%longitude
+                if (.not. app%mask(ATTR_LAT))  app%node%latitude  = old_node%latitude
+                if (.not. app%mask(ATTR_ALT))  app%node%altitude  = old_node%altitude
 
                 rc = dm_db_update(db, app%node)
 
@@ -383,28 +389,31 @@ contains
 
         integer        :: i, n
         logical        :: mask(OP_LAST) ! CRUD operation mask.
-        type(arg_type) :: args(16)
+        type(arg_type) :: args(19)
 
         rc = E_NONE
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('create',   short='C', type=ARG_TYPE_STRING), &                               ! -C, --create <type>
-            arg_type('read',     short='R', type=ARG_TYPE_STRING), &                               ! -R, --read <type>
-            arg_type('update',   short='U', type=ARG_TYPE_STRING), &                               ! -U, --update <type>
-            arg_type('delete',   short='D', type=ARG_TYPE_STRING), &                               ! -D, --delete <type>
-            arg_type('database', short='d', type=ARG_TYPE_DB, required=.true.), &                  ! -d, --database <path>
-            arg_type('id',       short='I', type=ARG_TYPE_ID, required=.true.), &                  ! -I, --id <id>
-            arg_type('name',     short='n', type=ARG_TYPE_STRING, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
-            arg_type('meta',     short='M', type=ARG_TYPE_STRING, max_len=NODE_META_LEN), &        ! -M, --meta <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID), &                                   ! -N, --node <id>
-            arg_type('sn',       short='Q', type=ARG_TYPE_STRING, max_len=SENSOR_SN_LEN), &        ! -Q, --sn <string>
-            arg_type('type',     short='t', type=ARG_TYPE_STRING, max_len=SENSOR_TYPE_NAME_LEN), & ! -t, --type <type>
-            arg_type('state',    short='S', type=ARG_TYPE_INTEGER), &                              ! -S, --state <state>
-            arg_type('easting',  short='X', type=ARG_TYPE_REAL), &                                 ! -X, --easting <x>
-            arg_type('northing', short='Y', type=ARG_TYPE_REAL), &                                 ! -Y, --northing <y>
-            arg_type('altitude', short='Z', type=ARG_TYPE_REAL), &                                 ! -Z, --altitude <z>
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL) &                               ! -V, --verbose
+            arg_type('create',    short='C', type=ARG_TYPE_STRING), &                               ! -C, --create <type>
+            arg_type('read',      short='R', type=ARG_TYPE_STRING), &                               ! -R, --read <type>
+            arg_type('update',    short='U', type=ARG_TYPE_STRING), &                               ! -U, --update <type>
+            arg_type('delete',    short='D', type=ARG_TYPE_STRING), &                               ! -D, --delete <type>
+            arg_type('database',  short='d', type=ARG_TYPE_DB, required=.true.), &                  ! -d, --database <path>
+            arg_type('id',        short='I', type=ARG_TYPE_ID, required=.true.), &                  ! -I, --id <id>
+            arg_type('name',      short='n', type=ARG_TYPE_STRING, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
+            arg_type('meta',      short='M', type=ARG_TYPE_STRING, max_len=NODE_META_LEN), &        ! -M, --meta <string>
+            arg_type('node',      short='N', type=ARG_TYPE_ID), &                                   ! -N, --node <id>
+            arg_type('sn',        short='Q', type=ARG_TYPE_STRING, max_len=SENSOR_SN_LEN), &        ! -Q, --sn <string>
+            arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=SENSOR_TYPE_NAME_LEN), & ! -t, --type <type>
+            arg_type('state',     short='S', type=ARG_TYPE_INTEGER), &                              ! -S, --state <state>
+            arg_type('X',         short='x', type=ARG_TYPE_REAL), &                                 ! -X, --x <x>
+            arg_type('Y',         short='y', type=ARG_TYPE_REAL), &                                 ! -Y, --y <y>
+            arg_type('Z',         short='z', type=ARG_TYPE_REAL), &                                 ! -Z, --z <z>
+            arg_type('longitude', short='G', type=ARG_TYPE_REAL), &                                 ! -G, --longitude <lng>
+            arg_type('latitude',  short='L', type=ARG_TYPE_REAL), &                                 ! -L, --latitude <lat>
+            arg_type('altitude',  short='A', type=ARG_TYPE_REAL), &                                 ! -A, --altitude <alt>
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL) &                               ! -V, --verbose
         ]
 
         ! Read command-line arguments.
@@ -436,11 +445,14 @@ contains
             case (TYPE_NODE)
                 ! Get node attributes.
                 rc = dm_arg_get(args( 6), app%node%id)
-                rc = dm_arg_get(args( 7), app%node%name, passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args( 8), app%node%meta, passed=app%mask(ATTR_META))
-                rc = dm_arg_get(args(13), app%node%x,    passed=app%mask(ATTR_X))
-                rc = dm_arg_get(args(14), app%node%y,    passed=app%mask(ATTR_Y))
-                rc = dm_arg_get(args(15), app%node%z,    passed=app%mask(ATTR_Z))
+                rc = dm_arg_get(args( 7), app%node%name,      passed=app%mask(ATTR_NAME))
+                rc = dm_arg_get(args( 8), app%node%meta,      passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args(13), app%node%x,         passed=app%mask(ATTR_X))
+                rc = dm_arg_get(args(14), app%node%y,         passed=app%mask(ATTR_Y))
+                rc = dm_arg_get(args(15), app%node%z,         passed=app%mask(ATTR_Z))
+                rc = dm_arg_get(args(16), app%node%longitude, passed=app%mask(ATTR_LNG))
+                rc = dm_arg_get(args(17), app%node%latitude,  passed=app%mask(ATTR_LAT))
+                rc = dm_arg_get(args(18), app%node%altitude,  passed=app%mask(ATTR_ALT))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
@@ -449,7 +461,7 @@ contains
                 rc = dm_arg_get(args( 8), app%sensor%meta,    passed=app%mask(ATTR_META))
                 rc = dm_arg_get(args( 9), app%sensor%node_id, passed=app%mask(ATTR_NODE))
                 rc = dm_arg_get(args(10), app%sensor%sn,      passed=app%mask(ATTR_SN))
-                rc = dm_arg_get(args(11), sensor, passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                rc = dm_arg_get(args(11), sensor,             passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
                 rc = dm_arg_get(args(13), app%sensor%x,       passed=app%mask(ATTR_X))
                 rc = dm_arg_get(args(14), app%sensor%y,       passed=app%mask(ATTR_Y))
                 rc = dm_arg_get(args(15), app%sensor%z,       passed=app%mask(ATTR_Z))
@@ -498,9 +510,10 @@ contains
                     case (TYPE_NODE)
                         if (.not. app%mask(ATTR_NAME) .and. .not. app%mask(ATTR_META) .and. &
                             .not. app%mask(ATTR_X)    .and. .not. app%mask(ATTR_Y)    .and. &
-                            .not. app%mask(ATTR_Z)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, --easting, ' // &
-                                                  '--northing, or --altitude required')
+                            .not. app%mask(ATTR_Z)    .and. .not. app%mask(ATTR_LNG)  .and. &
+                            .not. app%mask(ATTR_LAT)  .and. .not. app%mask(ATTR_ALT)) then
+                            call dm_error_out(rc, 'command-line option --name, --meta, -x, -y, -z, ' // &
+                                                  '--longitude, --latitude, or --altitude required')
                             return
                         end if
 
@@ -508,8 +521,8 @@ contains
                         if (.not. app%mask(ATTR_NAME)  .and. .not. app%mask(ATTR_META) .and. &
                             .not. app%mask(ATTR_STATE) .and. .not. app%mask(ATTR_X)    .and. &
                             .not. app%mask(ATTR_Y)     .and. .not. app%mask(ATTR_Z)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, --state, ' // &
-                                                  '--easting, --northing, or --altitude required')
+                            call dm_error_out(rc, 'command-line option --name, --meta, --state, -x, -y, -z, ' // &
+                                                  '--longitude, --latitude, or --altitude required')
                             return
                         end if
 
@@ -527,6 +540,5 @@ contains
                 end select
         end select
 
-        rc = E_NONE
     end function read_args
 end program dmdbctl

@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-03-02
+.\"      Date: 2024-08-03
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2024-03-02" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2024-08-03" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,9 +36,10 @@ dmdbctl \- command\-line interface to DMPACK observation databases
 \fBdmdbctl\fP \-\-version
 .sp
 \fBdmdbctl\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP
-[\-\-\fBcreate\fP|\-\-\fBread\fP|\-\-\fBupdate\fP|\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBmeta\fP
-\fImeta\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP] [\-\-\fBstate\fP \fIn\fP]
-[\-\-\fBeasting\fP \fIx\fP] [\-\-\fBnorthing\fP \fIy\fP] [\-\-\fBaltitude\fP \fIz\fP] [\-\-\fBverbose\fP]
+[\-\-\fBcreate\fP|\-\-\fBread\fP|\-\-\fBupdate\fP|\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP]
+[\-\-\fBmeta\fP \fImeta\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP]
+[\-\-\fBstate\fP \fIn\fP]  [\-\-\fBx\fP \fIx\fP] [\-\-\fBy\fP \fIy\fP] [\-\-\fBz\fP \fIz\fP] [\-\-\fBlongitude\fP \fIlng\fP]
+[\-\-\fBlatitude\fP \fIlat\fP] [\-\-\fBaltitude\fP \fIalt\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmdbctl\fP utility program performs create, read, update, or delete
@@ -69,10 +70,9 @@ Only nodes, sensors, and targets are supported. All data attributes are passed
 through command\-line arguments.
 .SH "OPTIONS"
 .sp
-\fB\-\-altitude\fP, \fB\-Z\fP \fIz\fP
+\fB\-\-altitude\fP, \fB\-A\fP \fIalt\fP
 .RS 4
-Node, sensor, or target z, usually in metres. May be in local or global
-coordinate system.
+Node, sensor, or target altitude in metres.
 .RE
 .sp
 \fB\-\-create\fP, \fB\-C\fP [node|sensor|target]
@@ -90,12 +90,6 @@ Path to SQLite observation database.
 Delete database record (node, sensor, or target).
 .RE
 .sp
-\fB\-\-easting\fP, \fB\-X\fP \fIx\fP
-.RS 4
-Node, sensor, or target x, usually in metres. May be in local or global
-coordinate system.
-.RE
-.sp
 \fB\-\-help\fP, \fB\-h\fP
 .RS 4
 Output available command\-line arguments and quit.
@@ -104,6 +98,16 @@ Output available command\-line arguments and quit.
 \fB\-\-id\fP, \fB\-I\fP \fIid\fP
 .RS 4
 ID of node, sensor, or target.
+.RE
+.sp
+\fB\-\-latitude\fP, \fB\-L\fP \fIlat\fP
+.RS 4
+Node, sensor, or target latitude in degrees (decimal).
+.RE
+.sp
+\fB\-\-longitude\fP, \fB\-G\fP \fIlng\fP
+.RS 4
+Node, sensor, or target longitude in degrees (decimal).
 .RE
 .sp
 \fB\-\-meta\fP, \fB\-M\fP \fImeta\fP
@@ -119,12 +123,6 @@ Name of node, sensor, or target.
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP
 .RS 4
 ID of the node the sensor is attached to.
-.RE
-.sp
-\fB\-\-northing\fP, \fB\-Y\fP \fIy\fP
-.RS 4
-Node, sensor, or target y, usually in metres. May be in local or global
-coordinate system.
 .RE
 .sp
 \fB\-\-read\fP, \fB\-R\fP [node|sensor|target]
@@ -160,6 +158,24 @@ Print additional log messages to \fIstderr\fP.
 \fB\-\-version\fP, \fB\-v\fP
 .RS 4
 Output version information and quit.
+.RE
+.sp
+\fB\-\-X\fP, \fB\-x\fP \fIx\fP
+.RS 4
+Node, sensor, or target x, usually in metres. May be in local or global
+coordinate system.
+.RE
+.sp
+\fB\-\-Y\fP, \fB\-y\fP \fIz\fP
+.RS 4
+Node, sensor, or target z, usually in metres. May be in local or global
+coordinate system.
+.RE
+.sp
+\fB\-\-Z\fP, \fB\-z\fP \fIz\fP
+.RS 4
+Node, sensor, or target z, usually in metres. May be in local or global
+coordinate system.
 .RE
 .SH "EXIT STATUS"
 .sp

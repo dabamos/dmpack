@@ -1672,6 +1672,9 @@ contains
             if (sqlite3_bind_double(stmt, 4, node%x)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 5, node%y)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 6, node%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, node%longitude)  /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, node%latitude)   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 9, node%altitude)   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -3902,7 +3905,10 @@ contains
             if (sqlite3_bind_double(stmt, 3, node%x)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 4, node%y)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 5, node%z)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 6, trim(node%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, node%longitude)  /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, node%latitude)   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, node%altitude)   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 9, trim(node%id))   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4834,14 +4840,20 @@ contains
             if (sqlite3_column_type(stmt, 3) /= SQLITE_FLOAT) return
             if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT) return
             if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT) return
+            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT) return
+            if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT) return
+            if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT) return
         end if
 
-        node%id   = sqlite3_column_text  (stmt, 0)
-        node%name = sqlite3_column_text  (stmt, 1)
-        node%meta = sqlite3_column_text  (stmt, 2)
-        node%x    = sqlite3_column_double(stmt, 3)
-        node%y    = sqlite3_column_double(stmt, 4)
-        node%z    = sqlite3_column_double(stmt, 5)
+        node%id        = sqlite3_column_text  (stmt, 0)
+        node%name      = sqlite3_column_text  (stmt, 1)
+        node%meta      = sqlite3_column_text  (stmt, 2)
+        node%x         = sqlite3_column_double(stmt, 3)
+        node%y         = sqlite3_column_double(stmt, 4)
+        node%z         = sqlite3_column_double(stmt, 5)
+        node%longitude = sqlite3_column_double(stmt, 6)
+        node%latitude  = sqlite3_column_double(stmt, 7)
+        node%altitude  = sqlite3_column_double(stmt, 8)
 
         rc = E_NONE
     end function db_next_row_node

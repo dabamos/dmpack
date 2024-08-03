@@ -6,6 +6,7 @@ module dm_html
     use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_error
     use :: dm_kind
+    use :: dm_string
     use :: dm_util
     use :: dm_version
     implicit none (type, external)
@@ -104,6 +105,8 @@ module dm_html
     character(len=*), parameter, public :: H_P_END          = '</p>' // NL
     character(len=*), parameter, public :: H_PRE            = '<pre>'
     character(len=*), parameter, public :: H_PRE_END        = '</pre>'
+    character(len=*), parameter, public :: H_SCRIPT         = '<script>'
+    character(len=*), parameter, public :: H_SCRIPT_END     = '</script>'
     character(len=*), parameter, public :: H_SECTION        = '<section>' // NL
     character(len=*), parameter, public :: H_SECTION_END    = '</section>' // NL
     character(len=*), parameter, public :: H_SMALL          = '<small>'
@@ -567,59 +570,55 @@ contains
         html = html // H_FIGURE_END
     end function dm_html_figure
 
-    pure function dm_html_footer(content, script) result(html)
-        !! Returns HTML footer. The content and the script URL will not be HTML
-        !! encoded. The script element will be placed before the `</body>` tag.
+    pure function dm_html_footer(content) result(html)
+        !! Returns HTML footer. The content will not be HTML encoded.
         character(len=*), intent(in), optional :: content !! Optional footer content.
-        character(len=*), intent(in), optional :: script  !! Optional URL to JS script.
         character(len=:), allocatable          :: html    !! Generated HTML.
 
-        character(len=:), allocatable :: content_, script_
-
-        content_ = ''
-        script_  = ''
-
-        if (present(content)) content_ = H_FOOTER // trim(content) // H_FOOTER_END
-        if (present(script))  script_  = dm_html_script(script)
-
-        html = H_MAIN_END // content_ // H_DIV_END // script_ // H_BODY_END // H_HTML_END
+        if (present(content)) then
+            html = H_MAIN_END // H_FOOTER // trim(content) // H_FOOTER_END // H_DIV_END // H_BODY_END // H_HTML_END
+        else
+            html = H_MAIN_END // H_DIV_END // H_BODY_END // H_HTML_END
+        end if
     end function dm_html_footer
 
-    function dm_html_header(title, subtitle, style, internal_style, brand, nav, mask) result(html)
-        !! Returns HTML header with DOCTYPE and optional CSS. A link to the
-        !! style sheet file and internal CSS can be added.
+    function dm_html_header(title, subtitle, brand, inline_style, styles, nav, nav_mask) result(html)
+        !! Returns HTML header with DOCTYPE and optional CSS. Links to the
+        !! style sheet files and internal CSS can be added.
         !!
         !! The first heading will be set to the page title. The heading is
         !! shown only if no navigation array is passed. The brand title `brand`
         !! will be placed in a level 3 heading.
         !!
         !! The given title and sub-title are encoded by this function.
-        character(len=*),  intent(in)              :: title          !! HTML page title and first heading.
-        character(len=*),  intent(in),    optional :: subtitle       !! Subtitle.
-        character(len=*),  intent(in),    optional :: style          !! Path to CSS file.
-        character(len=*),  intent(in),    optional :: internal_style !! Additional CSS (inline).
-        character(len=*),  intent(in),    optional :: brand          !! Brand title.
-        type(anchor_type), intent(inout), optional :: nav(:)         !! Navigation anchors.
-        logical,           intent(inout), optional :: mask(:)        !! Navigation anchors mask.
-        character(len=:), allocatable              :: html           !! Generated HTML.
+        character(len=*),  intent(in)              :: title        !! HTML page title and first heading.
+        character(len=*),  intent(in),    optional :: subtitle     !! Subtitle.
+        character(len=*),  intent(in),    optional :: brand        !! Brand title.
+        character(len=*),  intent(in),    optional :: inline_style !! Inline CSS.
+        type(string_type), intent(inout), optional :: styles(:)    !! Array of CSS file paths.
+        type(anchor_type), intent(inout), optional :: nav(:)       !! Navigation anchors.
+        logical,           intent(inout), optional :: nav_mask(:)  !! Navigation anchors mask.
+        character(len=:), allocatable              :: html         !! Generated HTML.
 
-        logical :: has_internal, has_style, has_subtitle
+        integer :: i
 
-        has_subtitle = .false.
-        if (present(subtitle)) has_subtitle = (len_trim(subtitle) > 0)
-
-        has_style = .false.
-        if (present(style)) has_style = (len_trim(style) > 0)
-
-        has_internal = .false.
-        if (present(internal_style)) has_internal = (len_trim(internal_style) > 0)
-
+        ! HTML document header.
         html = H_DOCTYPE // H_HTML // H_HEAD // &
                H_TITLE // dm_html_encode(title) // H_TITLE_END // &
                H_META_CHARSET // H_META_GENERATOR // H_META_VIEWPORT
 
-        if (has_style)    html = html // dm_html_link('stylesheet', style) // NL
-        if (has_internal) html = html // H_STYLE // internal_style // H_STYLE_END
+        ! Links to CSS files.
+        if (present(styles)) then
+            do i = 1, size(styles)
+                if (.not. allocated(styles(i)%data)) cycle
+                html = html // dm_html_link('stylesheet', styles(i)%data) // NL
+            end do
+        end if
+
+        ! Inline CSS.
+        if (dm_string_is_present(inline_style)) then
+            html = html // H_STYLE // inline_style // H_STYLE_END
+        end if
 
         html = html // H_HEAD_END // H_BODY // H_HEADER
 
@@ -629,15 +628,15 @@ contains
         end if
 
         ! Sidebar navigation.
-        if (present(nav) .and. present(mask)) then
+        if (present(nav) .and. present(nav_mask)) then
             ! Apply mask on navigation anchors.
-            html = html // dm_html_nav(nav, mask)
+            html = html // dm_html_nav(nav, nav_mask)
         else if (present(nav)) then
             ! Use whole navigation anchors array.
             html = html // dm_html_nav(nav)
         else
             ! No navigation.
-            if (has_subtitle) then
+            if (dm_string_is_present(subtitle)) then
                 html = html // dm_html_heading(1, title, subtitle)
             else
                 html = html // dm_html_heading(1, title)
@@ -1039,6 +1038,12 @@ contains
                        H_TD // dm_ftoa(node%y) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Z' // H_TH_END // &
                        H_TD // dm_ftoa(node%z) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Longitude' // H_TH_END // &
+                       H_TD // dm_ftoa(node%longitude) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Latitude' // H_TH_END // &
+                       H_TD // dm_ftoa(node%latitude) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Altitude' // H_TH_END // &
+                       H_TD // dm_ftoa(node%altitude) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
@@ -1063,6 +1068,9 @@ contains
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
                H_TH // 'Meta' // H_TH_END // &
+               H_TH // 'Lat.' // H_TH_END // &
+               H_TH // 'Lng.' // H_TH_END // &
+               H_TH // 'Z'    // H_TH_END // &
                H_TH // 'X'    // H_TH_END // &
                H_TH // 'Y'    // H_TH_END // &
                H_TH // 'Z'    // H_TH_END // &
@@ -1085,6 +1093,9 @@ contains
                            H_TD // dm_ftoa(nodes(i)%x)           // H_TD_END // &
                            H_TD // dm_ftoa(nodes(i)%y)           // H_TD_END // &
                            H_TD // dm_ftoa(nodes(i)%z)           // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%longitude)   // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%latitude)    // H_TD_END // &
+                           H_TD // dm_ftoa(nodes(i)%altitude)    // H_TD_END // &
                            H_TR_END
         end do
 
@@ -1394,7 +1405,7 @@ contains
         character(len=*), intent(in)  :: source !! URL to JS script.
         character(len=:), allocatable :: html   !! Generated HTML.
 
-        html = '<script src="' // dm_html_encode(source) // '"></script>' // NL
+        html = '<script src="' // dm_html_encode(source) // '"></script>'
     end function dm_html_script
 
     function dm_html_select(select, id, name, selected, disabled) result(html)

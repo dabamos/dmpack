@@ -132,12 +132,12 @@ contains
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     integer function hash_table_get_index(hash_table, loc, value) result(rc)
-        !! Returns pointer to element in hash table by index `i`. On error,
+        !! Returns pointer to element in hash table by index `loc`. On error,
         !! `value` will point to null.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_BOUNDS` if the location in outside the array bounds.
+        !! * `E_BOUNDS` if the index is outside the array bounds.
         !! * `E_NULL` if the hash table value pointer is not associated.
         !!
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.

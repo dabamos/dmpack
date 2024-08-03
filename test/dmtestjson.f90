@@ -278,19 +278,23 @@ contains
     logical function test08() result(stat)
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-node","name":"Dummy Node","meta":"",' // &
-            '"x":1000.00000000,"y":2000.00000000,"z":10.0000000000}'
+            '"x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
+            '"longitude":1.00000000000,"latitude":2.00000000000,"altitude":3.00000000000}'
 
         character(len=:), allocatable :: buf
         type(node_type)               :: node
 
         stat = TEST_FAILED
 
-        node = node_type(id    = 'dummy-node', &
-                         name  = 'Dummy Node', &
-                         meta  = '', &
-                         x     = 1000.0_r8, &
-                         y     = 2000.0_r8, &
-                         z     = 10.0_r8)
+        node = node_type(id        = 'dummy-node', &
+                         name      = 'Dummy Node', &
+                         meta      = '', &
+                         x         = 1000.0_r8, &
+                         y         = 2000.0_r8, &
+                         z         = 10.0_r8, &
+                         longitude = 1.0_r8, &
+                         latitude  = 2.0_r8, &
+                         altitude  = 3.0_r8)
 
         buf = dm_json_from(node)
 

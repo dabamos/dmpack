@@ -16,9 +16,10 @@ dmdbctl - command-line interface to DMPACK observation databases
 *dmdbctl* --version
 
 *dmdbctl* --*database* _file_ --*id* _id_
-[--*create*|--*read*|--*update*|--*delete* _type_] [--*name* _name_] [--*meta*
-_meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_] [--*state* _n_]
-[--*easting* _x_] [--*northing* _y_] [--*altitude* _z_] [--*verbose*]
+[--*create*|--*read*|--*update*|--*delete* _type_] [--*name* _name_]
+[--*meta* _meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_]
+[--*state* _n_]  [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*longitude* _lng_]
+[--*latitude* _lat_] [--*altitude* _alt_] [--*verbose*]
 
 == DESCRIPTION
 
@@ -43,9 +44,8 @@ through command-line arguments.
 
 == OPTIONS
 
-*--altitude*, *-Z* _z_::
-  Node, sensor, or target z, usually in metres. May be in local or global
-  coordinate system.
+*--altitude*, *-A* _alt_::
+  Node, sensor, or target altitude in metres.
 
 *--create*, *-C* [node|sensor|target]::
   Create database record (node, sensor, or target).
@@ -56,15 +56,17 @@ through command-line arguments.
 *--delete*, *-D* [node|sensor|target]::
   Delete database record (node, sensor, or target).
 
-*--easting*, *-X* _x_::
-  Node, sensor, or target x, usually in metres. May be in local or global
-  coordinate system.
-
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
 *--id*, *-I* _id_::
   ID of node, sensor, or target.
+
+*--latitude*, *-L* _lat_::
+  Node, sensor, or target latitude in degrees (decimal).
+
+*--longitude*, *-G* _lng_::
+  Node, sensor, or target longitude in degrees (decimal).
 
 *--meta*, *-M* _meta_::
   Meta description of node, sensor, or target.
@@ -74,10 +76,6 @@ through command-line arguments.
 
 *--node*, *-N* _id_::
   ID of the node the sensor is attached to.
-
-*--northing*, *-Y* _y_::
-  Node, sensor, or target y, usually in metres. May be in local or global
-  coordinate system.
 
 *--read*, *-R* [node|sensor|target]::
   Read database record (node, sensor, or target).
@@ -99,6 +97,18 @@ through command-line arguments.
 
 *--version*, *-v*::
   Output version information and quit.
+
+*--X*, *-x* _x_::
+  Node, sensor, or target x, usually in metres. May be in local or global
+  coordinate system.
+
+*--Y*, *-y* _z_::
+  Node, sensor, or target z, usually in metres. May be in local or global
+  coordinate system.
+
+*--Z*, *-z* _z_::
+  Node, sensor, or target z, usually in metres. May be in local or global
+  coordinate system.
 
 == EXIT STATUS
 

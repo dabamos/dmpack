@@ -87,7 +87,10 @@ module dm_sql
         'meta        TEXT,' // NL // &
         'x           REAL NOT NULL DEFAULT 0.0,' // NL // &
         'y           REAL NOT NULL DEFAULT 0.0,' // NL // &
-        'z           REAL NOT NULL DEFAULT 0.0) STRICT'
+        'z           REAL NOT NULL DEFAULT 0.0,' // NL // &
+        'longitude   REAL NOT NULL DEFAULT 0.0,' // NL // &
+        'latitude    REAL NOT NULL DEFAULT 0.0,' // NL // &
+        'altitude    REAL NOT NULL DEFAULT 0.0) STRICT'
 
     ! Sensors schema.
     character(len=*), parameter, public :: SQL_CREATE_SENSORS = &
@@ -102,6 +105,9 @@ module dm_sql
         'x           REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'y           REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'z           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'longitude   REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'latitude    REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'altitude    REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'FOREIGN KEY (node_id) REFERENCES nodes(node_id)) STRICT'
 
     ! Targets schema.
@@ -114,7 +120,10 @@ module dm_sql
         'state       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'x           REAL    NOT NULL DEFAULT 0.0,' // NL // &
         'y           REAL    NOT NULL DEFAULT 0.0,' // NL // &
-        'z           REAL    NOT NULL DEFAULT 0.0) STRICT'
+        'z           REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'longitude   REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'latitude    REAL    NOT NULL DEFAULT 0.0,' // NL // &
+        'altitude    REAL    NOT NULL DEFAULT 0.0) STRICT'
 
     ! Observations schema.
     character(len=*), parameter, public :: SQL_CREATE_OBSERVS = &
@@ -381,7 +390,7 @@ module dm_sql
     ! Query to insert node.
     ! Arguments: nodes.id, nodes.name, nodes.meta
     character(len=*), parameter, public :: SQL_INSERT_NODE = &
-        'INSERT OR FAIL INTO nodes(id, name, meta, x, y, z) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT OR FAIL INTO nodes(id, name, meta, x, y, z, longitude, latitude, altitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
@@ -443,7 +452,7 @@ module dm_sql
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.id
     character(len=*), parameter, public :: SQL_UPDATE_NODE = &
-        'UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ? WHERE id = ?'
+        'UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, altitude = ? WHERE id = ?'
 
     ! Query to update sensor.
     ! Arguments: nodes.id, sensors.type, sensors.id, sensors.name, sensors.sn,
@@ -588,7 +597,10 @@ module dm_sql
         'nodes.meta, ' // &
         'nodes.x, ' // &
         'nodes.y, ' // &
-        'nodes.z ' // &
+        'nodes.z, ' // &
+        'nodes.longitude, ' // &
+        'nodes.latitude, ' // &
+        'nodes.altitude ' // &
         'FROM nodes WHERE nodes.id = ?'
 
     ! Query to select all nodes.
@@ -599,7 +611,10 @@ module dm_sql
         'nodes.meta, ' // &
         'nodes.x, ' // &
         'nodes.y, ' // &
-        'nodes.z ' // &
+        'nodes.z, ' // &
+        'nodes.longitude, ' // &
+        'nodes.latitude, ' // &
+        'nodes.altitude ' // &
         'FROM nodes ORDER BY nodes.id ASC'
 
     ! Query to select number of time series by time range.
@@ -1091,7 +1106,8 @@ module dm_sql
     ! Query to select all nodes in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         'SELECT ' // &
-        'json_object(''id'', id, ''name'', name, ''meta'', meta, ''x'', x, ''y'', y, ''z'', z) ' // &
+        'json_object(''id'', id, ''name'', name, ''meta'', meta, ''x'', x, ''y'', y, ''z'', z, ' // &
+        '''longitude'', longitude, ''latitude'', latitude, ''altitude'', altitude) ' // &
         'FROM nodes'
 
     ! Query to select all sensors in JSON format.

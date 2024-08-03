@@ -55,7 +55,7 @@ POSIX semaphores.
 * SQLite database access
 * message passing via POSIX message queues
 * process synchronisation via POSIX semaphores
-* data serialisation (ASCII, CSV, JSON, JSON Lines, HDF5, Fortran 95 Namelist)
+* data serialisation (ASCII, CSV, Fortran 95 Namelist, HDF5, GeoJSON, JSON, JSON Lines)
 * server-side web applications (CGI, FastCGI)
 * HTTP-RPC API for remote procedure calls
 * concurrent data synchronisation between client and server
@@ -164,7 +164,7 @@ Either link your programs against static library `libdmpack.a`, or `-ldmpack` if
 `libdmpack.so` is in your library search path, for example:
 
 ```
-$ gfortran -I/usr/local/include/dmpack -o example example.f90 /usr/local/lib/libdmpack.a
+$ gfortran -I/opt/include/dmpack -o example example.f90 /opt/lib/libdmpack.a
 ```
 
 Depending on which parts of the **DMPACK** library are used by third-party

@@ -8,6 +8,7 @@ module dm_mime
     character(len=*), parameter, public :: MIME_ATOM      = 'application/atom+xml'
     character(len=*), parameter, public :: MIME_CSS       = 'text/css'
     character(len=*), parameter, public :: MIME_CSV       = 'text/comma-separated-values'
+    character(len=*), parameter, public :: MIME_GEOJSON   = 'application/geo+json'
     character(len=*), parameter, public :: MIME_FORM      = 'application/x-www-form-urlencoded'
     character(len=*), parameter, public :: MIME_FORM_DATA = 'multipart/form-data'
     character(len=*), parameter, public :: MIME_GIF       = 'image/gif'

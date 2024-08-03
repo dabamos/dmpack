@@ -406,7 +406,7 @@ contains
 
             ! Add HTML header with optional inline CSS.
             if (len_trim(style) > 0) then
-                write (unit, '(a)') dm_html_header(report%title, report%subtitle, internal_style=style)
+                write (unit, '(a)') dm_html_header(report%title, report%subtitle, inline_style=style)
             else
                 write (unit, '(a)') dm_html_header(report%title, report%subtitle)
             end if
