@@ -893,6 +893,11 @@ install:
 	install -d $(ILIBDIR)
 	install -d $(IMANDIR)
 	install -d $(ISHRDIR)
+	install -d $(ISHRDIR)/dmfeed
+	install -d $(ISHRDIR)/dmlua
+	install -d $(ISHRDIR)/dmpipe
+	install -d $(ISHRDIR)/dmreport
+	install -d $(ISHRDIR)/dmweb
 	install -m 755 $(DMAPI)    $(IBINDIR)/
 	install -m 755 $(DMBACKUP) $(IBINDIR)/
 	install -m 755 $(DMBEAT)   $(IBINDIR)/
@@ -922,14 +927,17 @@ install:
 	install -m 644 $(TARGET) $(ILIBDIR)/
 	install -m 644 $(SHARED) $(ILIBDIR)/
 	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
-	install -m 644 $(SHRDIR)/dmpack.css       $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmpack.min.css   $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmreport.css     $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmreport.min.css $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/dmlua.lua        $(ISHRDIR)/
-	install -m 644 $(SHRDIR)/feed.xsl         $(ISHRDIR)/
-	install -m 755 $(SHRDIR)/diskfree.sh      $(ISHRDIR)/
-	install -m 755 $(SHRDIR)/mkreport.sh      $(ISHRDIR)/
+	install -m 644 $(SHRDIR)/dmfeed/feed.xsl           $(ISHRDIR)/dmfeed/
+	install -m 644 $(SHRDIR)/dmlua/dmlua.lua           $(ISHRDIR)/dmlua/
+	install -m 755 $(SHRDIR)/dmpipe/diskfree.sh        $(ISHRDIR)/dmpipe/
+	install -m 644 $(SHRDIR)/dmreport/dmreport.css     $(ISHRDIR)/dmreport/
+	install -m 644 $(SHRDIR)/dmreport/dmreport.min.css $(ISHRDIR)/dmreport/
+	install -m 755 $(SHRDIR)/dmreport/mkreport.sh      $(ISHRDIR)/dmreport/
+	install -m 644 $(SHRDIR)/dmweb/dmpack.css          $(ISHRDIR)/dmweb/
+	install -m 644 $(SHRDIR)/dmweb/dmpack.min.css      $(ISHRDIR)/dmweb/
+	install -m 644 $(SHRDIR)/dmweb/leaflet.min.css     $(ISHRDIR)/dmweb/
+	install -m 644 $(SHRDIR)/dmweb/dmpack.js           $(ISHRDIR)/dmweb/
+	install -m 644 $(SHRDIR)/dmweb/leaflet.js          $(ISHRDIR)/dmweb/
 	$(GZIP) -9 < $(MANDIR)/dmapi.1    > $(IMANDIR)/dmapi.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
