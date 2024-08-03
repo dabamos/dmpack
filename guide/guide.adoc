@@ -478,7 +478,8 @@ The data structures of DMPACK are based on the following entities. The
 date and time format used internally is a 32-characters long ISO 8601 time stamp
 in microsecond resolution, with time separator `T` and mandatory GMT offset, for
 example, `1970-01-01T00:00:00.000000+00:00`. The human-readable output format
-`1970-01-01 00:00:00 +00:00` is used where reasonable.
+`1970-01-01 00:00:00 +00:00` is used where reasonable. Global coordinates are in
+longitude/latitude order (east-west/north-south order).
 
 === Observation Entities
 
@@ -849,17 +850,17 @@ through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
-| `--altitude _z_`    | `-Z`  | –       | Node, sensor, or target altitude (optional).
+| `--altitude _alt_`  | `-A`  | –       | Node, sensor, or target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
-| `--easting _x_`     | `-X`  | –       | Node, sensor, or target easting (optional).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
+| `--latitude _lat_`  | `-L`  | –       | Node, sensor, or target latitude (optional).
+| `--longitude _lon_` | `-G`  | –       | Node, sensor, or target longitude (optional).
 | `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
-| `--northing _y_`    | `-Y`  | –       | Node, sensor, or target northing (optional).
 | `--read _type_`     | `-R`  | –       | Read record of given type (`node`, `sensor`, or `target`).
 | `--sn _sn_`         | `-Q`  | –       | Serial number of sensor (optional).
 | `--state _n_`       | `-S`  | –       | Target state (optional).
@@ -867,6 +868,9 @@ through command-line arguments.
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
 | `--version`         | `-v`  | –       | Output version information and quit.
+| `--x _x_`           | `-X`  | –       | Local node, sensor, or target x (optional).
+| `--y _y_`           | `-Y`  | –       | Local node, sensor, or target y (optional).
+| `--z _z_`           | `-Z`  | –       | Local node, sensor, or target z (optional).
 |===
 
 [discrete]
@@ -1849,8 +1853,8 @@ calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
 base64-encoded data URI. Any style sheet file with classless CSS can be
 included to alter the presentation of the report. A basic style sheet
 `dmreport.css` and its minified version `dmreport.min.css` are provided in
-`/usr/local/share/dmpack/`. The output of *dmreport* is a single HTML file with
-inlined CSS. Use a command-line tool like
+`/usr/local/share/dmpack/dmreport/`. The output of *dmreport* is a single HTML
+file with inlined CSS. Use a command-line tool like
 link:https://wkhtmltopdf.org/[wkhtmltopdf] to convert the HTML report to PDF
 format.
 
@@ -1921,7 +1925,7 @@ dmreport = {
   from = "1970-01-01T00:00:00.000000+00:00",
   to = "2070-01-01T00:00:00.000000+00:00",
   output = "%Y-%M-%D_dummy-report.html",
-  style = "/usr/local/share/dmpack/dmreport.min.css",
+  style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
   title = "Monitoring Report",
   subtitle = "Project",
   meta = "",
@@ -1968,10 +1972,10 @@ $ dmreport --name dmreport --config dmreport.conf --output report.html
 ....
 
 In order to update reports periodically, we can customise the shell script
-`mkreport.sh` in `/usr/local/share/dmpack/`. The script determines the
+`mkreport.sh` in `/usr/local/share/dmpack/dmreport/`. The script determines the
 timestamps of the last and the current month (to allow observations to arrived
-late), which will then be passed to *dmreport* to create monthly reports. Modify
-the script according to your set-up:
+late), which will then be passed to *dmreport* to create monthly reports.
+Modify the script according to your set-up:
 
 [source,sh]
 ....
@@ -1984,7 +1988,7 @@ output="/var/www/reports/"
 The shell script writes two reports to `/var/www/reports/`.
 
 ....
-$ sh /usr/local/share/dmpack/mkreport.sh
+$ sh /usr/local/share/dmpack/dmreport/mkreport.sh
 --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
 --- Writing report of 2023-09 to file /var/www/reports/2023-09_report.html ...
 ....
@@ -2303,10 +2307,10 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
-Copy the style sheet `dmpack.min.css` manually to the WWW root directory, or
-create a symlink. Environment variables are used to configure *dmweb*. Transport
-security and authentication have to be managed by the web server. See section
-<<web-web-ui>> for an example configuration.
+Copy the directory `/usr/local/share/dmpack/dmweb` manually to the WWW root
+directory, or create a symlink. Environment variables are used to configure
+*dmweb*. Transport security and authentication have to be managed by the web
+server. See section <<web-web-ui>> for an example configuration.
 
 .Plotting of time series through the *dmweb* user interface
 [#img-dmweb]
@@ -2558,6 +2562,7 @@ setenv.add-environment = (
   "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
   "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
   "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
+  "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   "DM_READ_ONLY" => "0"
 )
 
@@ -2590,13 +2595,13 @@ $HTTP["url"] =^ "/dmpack/" {
 }
 ....
 
-Copy the CSS file `dmpack.min.css` from `/usr/local/share/dmpack/`
-(`/usr/share/dmpack/` on Linux) to the WWW root directory, in this case,
-`/var/www/`, or simply create a symlinks:
+Copy the directory `dmweb` from `/usr/local/share/dmpack/` (or
+`/usr/share/dmpack/` on Linux) to the WWW root directory, in this case,
+`/var/www/`, or simply create a symlink:
 
 ....
 # cd /var/www/
-# ln -s /usr/local/share/dmpack/dmpack.min.css dmpack.min.css
+# ln -s /usr/local/share/dmpack/dmweb dmweb
 ....
 
 If the files have to be served from a path other than the root path, add a
@@ -2884,7 +2889,7 @@ using utility script `mkreport.sh`:
 SHELL=/bin/sh
 MAILTO=/dev/null
 # Create reports every hour, suppress logging.
-@hourly -q /usr/local/share/dmpack/mkreport.sh
+@hourly -q /usr/local/share/dmpack/dmreport/mkreport.sh
 ....
 
 Status mails and logging are disabled. The shell script `mkreport.sh` must have
@@ -6489,17 +6494,17 @@ LOG%MESSAGE="dummy log message",
 
 [cols="3,2,2,14"]
 |===
-| Attribute | Type    | Size | Description
+| Attribute   | Type    | Size | Description
 
-| `id`      | string  | 32   | Node id (`-0-9A-Z_a-z`).
-| `name`    | string  | 32   | Node name.
-| `meta`    | string  | 32   | Node description (optional).
-| `lng`     | double  | 8    | Node longitude (optional).
-| `lat`     | double  | 8    | Node latitude (optional).
-| `elev`    | double  | 8    | Node elevation (optional).
-| `x`       | double  | 8    | Node x or easting (optional).
-| `y`       | double  | 8    | Node y or northing (optional).
-| `z`       | double  | 8    | Node z or altitude (optional).
+| `id`        | string  | 32   | Node id (`-0-9A-Z_a-z`).
+| `name`      | string  | 32   | Node name.
+| `meta`      | string  | 32   | Node description (optional).
+| `x`         | double  | 8    | Node local x (optional).
+| `y`         | double  | 8    | Node local y (optional).
+| `z`         | double  | 8    | Node local z (optional).
+| `longitude` | double  | 8    | Node longitude (optional).
+| `latitude`  | double  | 8    | Node latitude (optional).
+| `altitude`  | double  | 8    | Node altitude (optional).
 |===
 
 ==== CSV [[data-node-csv]]
@@ -6508,15 +6513,15 @@ LOG%MESSAGE="dummy log message",
 |===
 | Column | Attribute | Description
 
-| 1      | `id`      | Node id.
-| 2      | `name`    | Node name.
-| 3      | `meta`    | Node description.
-| 4      | `lng`     | Node longitude.
-| 5      | `lat`     | Node latitude.
-| 6      | `elev`    | Node elevation.
-| 7      | `x`       | Node x or easting.
-| 8      | `y`       | Node y or northing.
-| 9      | `z`       | Node z or altitude.
+| 1      | `id`        | Node id.
+| 2      | `name`      | Node name.
+| 3      | `meta`      | Node description.
+| 7      | `x`         | Node local x.
+| 8      | `y`         | Node local y.
+| 9      | `z`         | Node local z.
+| 4      | `longitude` | Node longitude.
+| 5      | `latitude`  | Node latitude.
+| 6      | `altitude`  | Node altitude.
 |===
 
 ==== GeoJSON [[data-node-geojson]]
@@ -6528,13 +6533,13 @@ LOG%MESSAGE="dummy log message",
   "properties": {
     "id": "dummy-node",
     "name": "Dummy Node",
-    "meta": "Description"
-    "lng": 0.0,
-    "lat": 0.0,
-    "elev": 0.0,
+    "meta": "Description",
     "x": 0.0,
     "y": 0.0,
-    "z": 0.0
+    "z": 0.0,
+    "longitude": 0.0,
+    "latitude": 0.0,
+    "altitude": 0.0
   },
   "geometry": {
     "type": "Point",
@@ -6566,12 +6571,12 @@ DATASET "node_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "meta";
-    H5T_IEEE_F64LE "lng";
-    H5T_IEEE_F64LE "lat";
-    H5T_IEEE_F64LE "elev";
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
+    H5T_IEEE_F64LE "longitude";
+    H5T_IEEE_F64LE "latitude";
+    H5T_IEEE_F64LE "altitude";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -6585,12 +6590,12 @@ DATASET "node_type" {
   "id": "dummy-node",
   "name": "Dummy Node",
   "meta": "Description",
-  "lng": 0.0,
-  "lat": 0.0,
-  "elev": 0.0,
   "x": 0.0,
   "y": 0.0,
-  "z": 0.0
+  "z": 0.0,
+  "longitude": 0.0,
+  "latitude": 0.0,
+  "altitude": 0.0
 }
 ....
 
@@ -6601,12 +6606,12 @@ DATASET "node_type" {
 NODE%ID="dummy-node",
 NODE%NAME="Dummy Node",
 NODE%META="Description",
-NODE%LNG=0.0,
-NODE%LAT=0.0,
-NODE%ELEV=0.0,
 NODE%X=0.0,
 NODE%Y=0.0,
 NODE%Z=0.0,
+NODE%LONGITUDE=0.0,
+NODE%LATITUDE=0.0,
+NODE%ALTITUDE=0.0
 /
 ....
 

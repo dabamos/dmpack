@@ -16,7 +16,7 @@
 dmlua = {
     logger = "dmlogger",
     node = "dummy-node",
-    script = "/usr/local/share/dmpack/dmlua.lua",
+    script = "/usr/local/share/dmpack/dmlua/dmlua.lua",
     procedure = "process",
     debug = false,
     verbose = true

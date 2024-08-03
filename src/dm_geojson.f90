@@ -38,8 +38,8 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    subroutine dm_geojson_feature_point(geojson, id, name, meta, longitude, latitude, altitude)
-        !! Returns the following GeoJSON string:
+    subroutine dm_geojson_feature_point(geojson, id, name, meta, x, y, z, longitude, latitude, altitude)
+        !! Returns a GeoJSON string of the following form:
         !!
         !! ```json
         !! {
@@ -48,13 +48,19 @@ contains
         !!     "id": "dummy-node",
         !!     "name": "Dummy Node",
         !!     "meta": "dummy description"
+        !!     "x": 0.0,
+        !!     "y": 0.0,
+        !!     "z": 0.0,
+        !!     "longitude": 10.4541194000,
+        !!     "latitude": 51.1642292000,
+        !!     "altitude": 10.0000000000
         !!   },
         !!   "geometry": {
         !!     "type": "Point",
         !!     "coordinates": [
         !!       10.4541194000,
         !!       51.1642292000,
-        !!       100.000000000
+        !!       10.0000000000
         !!     ]
         !!   }
         !! }
@@ -63,13 +69,29 @@ contains
         character(len=*),              intent(in)  :: id        !! Point id.
         character(len=*),              intent(in)  :: name      !! Point name.
         character(len=*),              intent(in)  :: meta      !! Point meta data.
+        real(kind=r8),                 intent(in)  :: x         !! Point x.
+        real(kind=r8),                 intent(in)  :: y         !! Point y.
+        real(kind=r8),                 intent(in)  :: z         !! Point z.
         real(kind=r8),                 intent(in)  :: longitude !! Point longitude.
         real(kind=r8),                 intent(in)  :: latitude  !! Point latitude.
         real(kind=r8),                 intent(in)  :: altitude  !! Point altitude.
 
-        geojson = '{"type":"Feature","properties":{' // '"id":"' // id // '",' // '"name":"' // name // '",' // &
-                  '"meta":"' // dm_json_escape(meta) // '"' // '},"geometry":{"type":"Point",' // &
-                  '"coordinates":[' // dm_ftoa(longitude) // ',' // dm_ftoa(latitude) // ',' // dm_ftoa(altitude) // ']}}'
+        geojson = &
+            '{"type":"Feature","properties":{' // &
+            '"id":"'       // id                   // '",' // &
+            '"name":"'     // name                 // '",' // &
+            '"meta":"'     // dm_json_escape(meta) // '",' // &
+            '"x":'         // dm_ftoa(x)           // '",' // &
+            '"y":'         // dm_ftoa(y)           // '",' // &
+            '"z":'         // dm_ftoa(z)           // '",' // &
+            '"longitude":' // dm_ftoa(longitude)   // '",' // &
+            '"latitude":'  // dm_ftoa(latitude)    // '",' // &
+            '"altitude":'  // dm_ftoa(altitude)    // &
+            '},"geometry":{"type":"Point",' // '"coordinates":[' // &
+            dm_ftoa(longitude) // ',' // &
+            dm_ftoa(latitude)  // ',' // &
+            dm_ftoa(altitude)  // &
+            ']}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
@@ -86,6 +108,9 @@ contains
                                       id        = trim(node%id), &
                                       name      = trim(node%name), &
                                       meta      = trim(node%meta), &
+                                      x         = node%x, &
+                                      y         = node%y, &
+                                      z         = node%z, &
                                       longitude = node%longitude, &
                                       latitude  = node%latitude, &
                                       altitude  = node%altitude)
@@ -102,6 +127,9 @@ contains
                                       id        = trim(sensor%id), &
                                       name      = trim(sensor%name), &
                                       meta      = trim(sensor%meta), &
+                                      x         = sensor%x, &
+                                      y         = sensor%y, &
+                                      z         = sensor%z, &
                                       longitude = sensor%x, &
                                       latitude  = sensor%y, &
                                       altitude  = sensor%z)
@@ -118,6 +146,9 @@ contains
                                       id        = trim(target%id), &
                                       name      = trim(target%name), &
                                       meta      = trim(target%meta), &
+                                      x         = target%x, &
+                                      y         = target%y, &
+                                      z         = target%z, &
                                       longitude = target%x, &
                                       latitude  = target%y, &
                                       altitude  = target%z)
@@ -141,7 +172,7 @@ contains
     end function geojson_write_node
 
     integer function geojson_write_nodes(nodes, unit) result(rc)
-        !! Writes nodes to file or standard output.
+        !! Writes nodes array to file or standard output.
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout)        :: nodes(:) !! Node array.

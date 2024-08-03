@@ -98,15 +98,15 @@ through command-line arguments.
 *--version*, *-v*::
   Output version information and quit.
 
-*--X*, *-x* _x_::
+*--x*, *-X* _x_::
   Node, sensor, or target x, usually in metres. May be in local or global
   coordinate system.
 
-*--Y*, *-y* _z_::
+*--y*, *-Y* _z_::
   Node, sensor, or target z, usually in metres. May be in local or global
   coordinate system.
 
-*--Z*, *-z* _z_::
+*--z*, *-Z* _z_::
   Node, sensor, or target z, usually in metres. May be in local or global
   coordinate system.
 
