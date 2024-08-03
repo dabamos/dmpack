@@ -7,6 +7,7 @@ module dm_geojson
     use :: dm_error
     use :: dm_json
     use :: dm_kind
+    use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private
@@ -38,13 +39,22 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    subroutine dm_geojson_feature_point(geojson, id, name, meta, x, y, z, longitude, latitude, altitude)
+    subroutine dm_geojson_feature_point(geojson, type, id, name, meta, x, y, z, longitude, latitude, altitude)
         !! Returns a GeoJSON string of the following form:
         !!
         !! ```json
         !! {
         !!   "type": "Feature",
+        !!   "geometry": {
+        !!     "type": "Point",
+        !!     "coordinates": [
+        !!       10.4541194000,
+        !!       51.1642292000,
+        !!       10.0000000000
+        !!     ]
+        !!   },
         !!   "properties": {
+        !!     "type": "node",
         !!     "id": "dummy-node",
         !!     "name": "Dummy Node",
         !!     "meta": "dummy description"
@@ -54,18 +64,11 @@ contains
         !!     "longitude": 10.4541194000,
         !!     "latitude": 51.1642292000,
         !!     "altitude": 10.0000000000
-        !!   },
-        !!   "geometry": {
-        !!     "type": "Point",
-        !!     "coordinates": [
-        !!       10.4541194000,
-        !!       51.1642292000,
-        !!       10.0000000000
-        !!     ]
         !!   }
         !! }
         !! ```
         character(len=:), allocatable, intent(out) :: geojson   !! Output GeoJSON string.
+        integer,                       intent(in)  :: type      !! Point type.
         character(len=*),              intent(in)  :: id        !! Point id.
         character(len=*),              intent(in)  :: name      !! Point name.
         character(len=*),              intent(in)  :: meta      !! Point meta data.
@@ -76,22 +79,28 @@ contains
         real(kind=r8),                 intent(in)  :: latitude  !! Point latitude.
         real(kind=r8),                 intent(in)  :: altitude  !! Point altitude.
 
+        integer :: type_
+
+        type_ = TYPE_NONE
+        if (dm_type_valid(type)) type_ = type
+
         geojson = &
-            '{"type":"Feature","properties":{' // &
-            '"id":"'       // id                   // '",' // &
-            '"name":"'     // name                 // '",' // &
-            '"meta":"'     // dm_json_escape(meta) // '",' // &
-            '"x":'         // dm_ftoa(x)           // ',' // &
-            '"y":'         // dm_ftoa(y)           // ',' // &
-            '"z":'         // dm_ftoa(z)           // ',' // &
-            '"longitude":' // dm_ftoa(longitude)   // ',' // &
-            '"latitude":'  // dm_ftoa(latitude)    // ',' // &
-            '"altitude":'  // dm_ftoa(altitude)    // &
-            '},"geometry":{"type":"Point",' // '"coordinates":[' // &
-            dm_ftoa(longitude) // ',' // &
-            dm_ftoa(latitude)  // ',' // &
-            dm_ftoa(altitude)  // &
-            ']}}'
+            '{"type":"Feature",' // &
+            '"geometry":{"type":"Point",' // '"coordinates":[' // &
+            dm_ftoa(longitude) // ','   // &
+            dm_ftoa(latitude)  // ','   // &
+            dm_ftoa(altitude)  // ']},' // &
+            '"properties":{' // &
+            '"type":"'     // trim(TYPE_NAMES(type_)) // '",' // &
+            '"id":"'       // id                      // '",' // &
+            '"name":"'     // name                    // '",' // &
+            '"meta":"'     // dm_json_escape(meta)    // '",' // &
+            '"x":'         // dm_ftoa(x)              // ','  // &
+            '"y":'         // dm_ftoa(y)              // ','  // &
+            '"z":'         // dm_ftoa(z)              // ','  // &
+            '"longitude":' // dm_ftoa(longitude)      // ','  // &
+            '"latitude":'  // dm_ftoa(latitude)       // ','  // &
+            '"altitude":'  // dm_ftoa(altitude)       // '}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
@@ -105,6 +114,7 @@ contains
         character(len=:), allocatable  :: geojson !! Alloctable GeoJSON string.
 
         call dm_geojson_feature_point(geojson   = geojson, &
+                                      type      = TYPE_NODE, &
                                       id        = trim(node%id), &
                                       name      = trim(node%name), &
                                       meta      = trim(node%meta), &
@@ -124,6 +134,7 @@ contains
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
         call dm_geojson_feature_point(geojson   = geojson, &
+                                      type      = TYPE_SENSOR, &
                                       id        = trim(sensor%id), &
                                       name      = trim(sensor%name), &
                                       meta      = trim(sensor%meta), &
@@ -143,6 +154,7 @@ contains
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
         call dm_geojson_feature_point(geojson   = geojson, &
+                                      type      = TYPE_TARGET, &
                                       id        = trim(target%id), &
                                       name      = trim(target%name), &
                                       meta      = trim(target%meta), &

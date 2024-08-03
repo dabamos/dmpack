@@ -2274,6 +2274,7 @@ Beats:: Lists received heartbeat messages, sorted by node id. The beat view
 shows the time the heartbeat was sent and received, as well as the time passed
 since then, additionally in
 link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time].
+Map:: Displays nodes, sensors, and targets inside an interactive map.
 
 The style sheet of *dmweb* is based on https://missing.style/[missing.css].
 It can be replaced with any other classless CSS theme. For best experience, the
@@ -2304,8 +2305,14 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 | `DM_DB_BEAT`         | Path to heartbeat database (server).
 | `DM_DB_LOG`          | Path to log database (client, server).
 | `DM_DB_OBSERV`       | Path to observation database (client, server).
+| `DM_TILE_URL`        | URL of link:https://leafletjs.com/reference.html#tilelayer-url-template[tile server].
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
+
+The map view requires a URL to the tile server in environment variable
+`DM_TILE_URL`. For example, set the variable to
+`https://tile.openstreetmap.org/{z}/{x}/{y}.png` to use OpenStreetMap as
+the backend.
 
 Copy the directory `/usr/local/share/dmpack/dmweb` manually to the WWW root
 directory, or create a symlink. Environment variables are used to configure
@@ -6530,7 +6537,12 @@ LOG%MESSAGE="dummy log message",
 ....
 {
   "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [ 0.0, 0.0, 0.0 ]
+  },
   "properties": {
+    "type": "node",
     "id": "dummy-node",
     "name": "Dummy Node",
     "meta": "Description",
@@ -6540,10 +6552,6 @@ LOG%MESSAGE="dummy log message",
     "longitude": 0.0,
     "latitude": 0.0,
     "altitude": 0.0
-  },
-  "geometry": {
-    "type": "Point",
-    "coordinates": [ 0.0, 0.0, 0.0 ]
   }
 }
 ....
