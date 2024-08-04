@@ -783,10 +783,10 @@ contains
 
         ! Output inline script to create Leaflet map.
         call dm_cgi_out(H_SCRIPT)
-        call dm_cgi_out('const id = '''  // MAP_ID          // ''';')
-        call dm_cgi_out('const url = ''' // trim(tile_url)  // ''';')
-        call dm_cgi_out('const lon = '   // dm_ftoa(lon)    // ';')
-        call dm_cgi_out('const lat = '   // dm_ftoa(lat)    // ';')
+        call dm_cgi_out('const id = "'  // MAP_ID          // '";')
+        call dm_cgi_out('const url = "' // trim(tile_url)  // '";')
+        call dm_cgi_out('const lon = '  // dm_ftoa(lon)    // ';')
+        call dm_cgi_out('const lat = '  // dm_ftoa(lat)    // ';')
         call dm_cgi_out('const zoom = 5;')
         call dm_cgi_out('const features = [')
 

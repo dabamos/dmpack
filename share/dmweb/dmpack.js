@@ -14,7 +14,7 @@ function createMap(id, url, lon, lat, zoom, features)
 {
     const options = { attributionControl: false };
     const view    = { lat: lat, lng: lon };
-    const maxZoom = 19;
+    const maxZoom = 22;
     const map     = L.map(id, options).setView(view, zoom);
 
     L.tileLayer(url, { maxZoom: maxZoom }).addTo(map);
@@ -34,11 +34,11 @@ function onEachFeature(feature, layer)
 {
     let content = '';
 
-    if (feature.properties && feature.properties.data)
+    if (feature.properties && features.properties.type && feature.properties.data)
     {
         if (feature.properties.data.name)
         {
-            content += `<strong>${feature.properties.data.name}</strong><br>`;
+            content += `<strong>${feature.properties.data.name}</strong> (${feature.properties.type})<br>`;
         }
 
         if (feature.properties.data.meta)
@@ -73,7 +73,7 @@ function pointToLayer(feature, latlng)
             options.fillColor = "crimson";
             break;
         case 'target':
-            options.fillColor = "seagreen";
+            options.fillColor = "chartreuse";
             break;
     }
 
