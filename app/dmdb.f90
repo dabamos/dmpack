@@ -219,10 +219,10 @@ contains
 
         steps = 0
         call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
-        call logger%debug('waiting for observ on mqueue /' // app%name)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
+            call logger%debug('waiting for observ on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
@@ -230,6 +230,8 @@ contains
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
+
+            call logger%debug('received observ ' // observ%name)
 
             if (.not. dm_observ_valid(observ)) then
                 call logger%error('invalid observ ' // trim(observ%name), error=E_INVALID)
