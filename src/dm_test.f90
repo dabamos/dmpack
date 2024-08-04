@@ -136,15 +136,15 @@ contains
         character(len=*), intent(in), optional :: id   !! Node id.
         character(len=*), intent(in), optional :: name !! Node name.
 
-        node%id        = 'dummy-node'
-        node%name      = 'Dummy Node'
-        node%meta      = 'dummy description'
-        node%x         = 100.0_r8
-        node%y         = 200.0_r8
-        node%z         = 10.0_r8
-        node%longitude = 10.4541194_r8
-        node%latitude  = 51.1642292_r8
-        node%altitude  = 100.0_r8
+        node%id   = 'dummy-node'
+        node%name = 'Dummy Node'
+        node%meta = 'dummy description'
+        node%x    = 100.0_r8
+        node%y    = 200.0_r8
+        node%z    = 10.0_r8
+        node%lon  = 10.4541194_r8
+        node%lat  = 51.1642292_r8
+        node%alt  = 100.0_r8
 
         if (present(id))   node%id   = id
         if (present(name)) node%name = name

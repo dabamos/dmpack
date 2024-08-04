@@ -37,6 +37,9 @@ module dm_target
         real(kind=r8)                  :: x     = 0.0_r8            !! Target x or easting (optional).
         real(kind=r8)                  :: y     = 0.0_r8            !! Target y or northing (optional).
         real(kind=r8)                  :: z     = 0.0_r8            !! Target z or altitude (optional).
+        real(kind=r8)                  :: lon   = 0.0_r8           !! Longitude in degrees (optional).
+        real(kind=r8)                  :: lat   = 0.0_r8           !! Latitude in degrees (optional).
+        real(kind=r8)                  :: alt   = 0.0_r8           !! Altitude or elevation in metres (optional).
     end type target_type
 
     integer, parameter, public :: TARGET_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -60,13 +63,20 @@ contains
         type(target_type), intent(in) :: target2 !! The second target.
 
         equals = .false.
-        if (target1%id    /= target2%id)           return
-        if (target1%name  /= target2%name)         return
-        if (target1%meta  /= target2%meta)         return
-        if (target1%state /= target2%state)        return
+
+        if (target1%id    /= target2%id)    return
+        if (target1%name  /= target2%name)  return
+        if (target1%meta  /= target2%meta)  return
+        if (target1%state /= target2%state) return
+
         if (.not. dm_equals(target1%x, target2%x)) return
         if (.not. dm_equals(target1%y, target2%y)) return
         if (.not. dm_equals(target1%z, target2%z)) return
+
+        if (.not. dm_equals(target1%lon, target2%lon)) return
+        if (.not. dm_equals(target1%lat, target2%lat)) return
+        if (.not. dm_equals(target1%alt, target2%alt)) return
+
         equals= .true.
     end function dm_target_equals
 
@@ -113,12 +123,15 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("target.id: ", a)')      trim(target%id)
-        write (unit_, '("target.name: ", a)')    trim(target%name)
-        write (unit_, '("target.meta: ", a)')    trim(target%meta)
-        write (unit_, '("target.state: ", i0)')  target%state
-        write (unit_, '("target.x: ", 1pg0.12)') target%x
-        write (unit_, '("target.y: ", 1pg0.12)') target%y
-        write (unit_, '("target.z: ", 1pg0.12)') target%z
+        write (unit_, '("target.id: ", a)')        trim(target%id)
+        write (unit_, '("target.name: ", a)')      trim(target%name)
+        write (unit_, '("target.meta: ", a)')      trim(target%meta)
+        write (unit_, '("target.state: ", i0)')    target%state
+        write (unit_, '("target.x: ", 1pg0.12)')   target%x
+        write (unit_, '("target.y: ", 1pg0.12)')   target%y
+        write (unit_, '("target.z: ", 1pg0.12)')   target%z
+        write (unit_, '("target.lon: ", 1pg0.12)') target%lon
+        write (unit_, '("target.lat: ", 1pg0.12)') target%lat
+        write (unit_, '("target.alt: ", 1pg0.12)') target%alt
     end subroutine dm_target_out
 end module dm_target

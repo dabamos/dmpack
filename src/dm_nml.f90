@@ -14,8 +14,8 @@ module dm_nml
     integer, parameter, public :: NML_LOG_LEN    = 960       !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   = 384       !! Max. size of `node_type` namelist in bytes.
     integer, parameter, public :: NML_OBSERV_LEN = 46 * 1024 !! Max. size of `observ_type` namelist in bytes.
-    integer, parameter, public :: NML_SENSOR_LEN = 400       !! Max. size of `sensor_type` namelist in bytes.
-    integer, parameter, public :: NML_TARGET_LEN = 296       !! Max. size of `target_type` namelist in bytes.
+    integer, parameter, public :: NML_SENSOR_LEN = 512       !! Max. size of `sensor_type` namelist in bytes.
+    integer, parameter, public :: NML_TARGET_LEN = 416       !! Max. size of `target_type` namelist in bytes.
 
     interface dm_nml_from
         !! Converts type to static or allocatable namelist string.

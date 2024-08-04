@@ -13,6 +13,8 @@ module dm_csv
     character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV field separator.
     integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
+    character(len=*), parameter :: FMT_REAL = '1pg0.12'
+
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.
         module procedure :: csv_from_beat
@@ -201,15 +203,15 @@ contains
         s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
-        header = '#id'       // s // &
-                 'name'      // s // &
-                 'meta'      // s // &
-                 'x'         // s // &
-                 'y'         // s // &
-                 'z'         // s // &
-                 'longitude' // s // &
-                 'latitude'  // s // &
-                 'altitude'
+        header = '#id'  // s // &
+                 'name' // s // &
+                 'meta' // s // &
+                 'x'    // s // &
+                 'y'    // s // &
+                 'z'    // s // &
+                 'lon'  // s // &
+                 'lat'  // s // &
+                 'alt'
     end function dm_csv_header_node
 
     function dm_csv_header_observ(separator) result(header)
@@ -318,7 +320,10 @@ contains
                  'meta'    // s // &
                  'x'       // s // &
                  'y'       // s // &
-                 'z'
+                 'z'       // s // &
+                 'lon'     // s // &
+                 'lat'     // s // &
+                 'alt'
     end function dm_csv_header_sensor
 
     function dm_csv_header_target(separator) result(header)
@@ -338,7 +343,10 @@ contains
                  'state' // s // &
                  'x'     // s // &
                  'y'     // s // &
-                 'z'
+                 'z'     // s // &
+                 'lon'   // s // &
+                 'lat'   // s // &
+                 'alt'
     end function dm_csv_header_target
 
     ! ******************************************************************
@@ -516,9 +524,9 @@ contains
               dm_ftoa(node%x)               // s // &
               dm_ftoa(node%y)               // s // &
               dm_ftoa(node%z)               // s // &
-              dm_ftoa(node%longitude)       // s // &
-              dm_ftoa(node%latitude)        // s // &
-              dm_ftoa(node%altitude)
+              dm_ftoa(node%lon)             // s // &
+              dm_ftoa(node%lat)             // s // &
+              dm_ftoa(node%alt)
     end function csv_from_node
 
     function csv_from_nodes(nodes, header, separator) result(csv)
@@ -732,7 +740,10 @@ contains
               '"' // trim(sensor%meta) // '"' // s // &
               dm_ftoa(sensor%x)               // s // &
               dm_ftoa(sensor%y)               // s // &
-              dm_ftoa(sensor%z)
+              dm_ftoa(sensor%z)               // s // &
+              dm_ftoa(sensor%lon)             // s // &
+              dm_ftoa(sensor%lat)             // s // &
+              dm_ftoa(sensor%alt)
     end function csv_from_sensor
 
     function csv_from_sensors(sensors, header, separator) result(csv)
@@ -784,7 +795,10 @@ contains
               dm_itoa(target%state)           // s // &
               dm_ftoa(target%x)               // s // &
               dm_ftoa(target%y)               // s // &
-              dm_ftoa(target%z)
+              dm_ftoa(target%z)               // s // &
+              dm_ftoa(target%lon)             // s // &
+              dm_ftoa(target%lat)             // s // &
+              dm_ftoa(target%alt)
     end function csv_from_target
 
     function csv_from_targets(targets, header, separator) result(csv)
@@ -1055,15 +1069,15 @@ contains
 
         p = 0 ! Cursor in buffer string.
 
-        rc = csv_next(buffer, node%id,        s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%name,      s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%meta,      s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%x,         s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%y,         s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%z,         s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%longitude, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%latitude,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%altitude,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%id,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%name, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%meta, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%x,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%y,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%z,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%lon,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%lat,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%alt,  s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_node
@@ -1207,6 +1221,9 @@ contains
         rc = csv_next(buffer, sensor%x,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%y,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%z,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%lon,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%lat,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%alt,     s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_sensor
@@ -1259,6 +1276,9 @@ contains
         rc = csv_next(buffer, target%x,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%y,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%z,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%lon,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%lat,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%alt,   s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_target
@@ -1366,7 +1386,7 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(a29, a1, 1pg0.12)', iostat=stat) data_point%x, s, data_point%y
+        write (unit_, '(a29, a1, ' // FMT_REAL // ')', iostat=stat) data_point%x, s, data_point%y
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1508,16 +1528,16 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(7a, 6(a, 1pg0.12))', iostat=stat) &
+        write (unit_, '(7a, 6(a, ' // FMT_REAL // '))', iostat=stat) &
             trim(node%id),             s, &
             trim(node%name),           s, &
             '"', trim(node%meta), '"', s, &
             node%x,                    s, &
             node%y,                    s, &
             node%z,                    s, &
-            node%longitude,            s, &
-            node%latitude,             s, &
-            node%altitude
+            node%lon,                  s, &
+            node%lat,                  s, &
+            node%alt
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1643,7 +1663,7 @@ contains
                 write (unit_, '(a)', advance='no', iostat=stat) s
                 if (stat /= 0) return
 
-                write (unit_, '(4a, 2(i0, a), 1pg0.12)', advance='no', iostat=stat) &
+                write (unit_, '(4a, 2(i0, a), ' // FMT_REAL // ')', advance='no', iostat=stat) &
                     trim(observ%requests(i)%responses(j)%name), s, &
                     trim(observ%requests(i)%responses(j)%unit), s, &
                     observ%requests(i)%responses(j)%type,       s, &
@@ -1718,7 +1738,7 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(4a, i0, 8a, 3(a, 1pg0.12))', iostat=stat) &
+        write (unit_, '(4a, i0, 8a, 6(a, ' // FMT_REAL // '))', iostat=stat) &
             trim(sensor%id),             s, &
             trim(sensor%node_id),        s, &
             sensor%type,                 s, &
@@ -1727,7 +1747,10 @@ contains
             '"', trim(sensor%meta), '"', s, &
             sensor%x,                    s, &
             sensor%y,                    s, &
-            sensor%z
+            sensor%z,                    s, &
+            sensor%lon,                  s, &
+            sensor%lat,                  s, &
+            sensor%alt
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1788,14 +1811,17 @@ contains
         s = CSV_SEPARATOR
         if (present(separator)) s = separator
 
-        write (unit_, '(8a, i0, 3(a, 1pg0.12))', iostat=stat) &
+        write (unit_, '(8a, i0, 6(a, ' // FMT_REAL // '))', iostat=stat) &
             trim(target%id),             s, &
             trim(target%name),           s, &
             '"', trim(target%meta), '"', s, &
             target%state,                s, &
             target%x,                    s, &
             target%y,                    s, &
-            target%z
+            target%z,                    s, &
+            target%lon,                  s, &
+            target%lat,                  s, &
+            target%alt
         if (stat /= 0) return
 
         rc = E_NONE

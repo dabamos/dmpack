@@ -7,7 +7,6 @@ module dm_util
     implicit none (type, external)
     private
 
-
     character(len=*), parameter :: FMT_INTEGER = '(i0)'
     character(len=*), parameter :: FMT_REAL    = '(1pg0.12)'
 

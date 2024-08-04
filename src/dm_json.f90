@@ -241,15 +241,15 @@ contains
         type(node_type), intent(inout) :: node !! Node type.
         character(len=:), allocatable  :: json !! Alloctable JSON string.
 
-        json = '{"id":"'      // trim(node%id)             // '",' // &
-               '"name":"'     // trim(node%name)           // '",' // &
-               '"meta":"'     // dm_json_escape(node%meta) // '",' // &
-               '"x":'         // dm_ftoa(node%x)           // ','  // &
-               '"y":'         // dm_ftoa(node%y)           // ','  // &
-               '"z":'         // dm_ftoa(node%z)           // ','  // &
-               '"longitude":' // dm_ftoa(node%longitude)   // ','  // &
-               '"latitude":'  // dm_ftoa(node%latitude)    // ','  // &
-               '"altitude":'  // dm_ftoa(node%altitude)    // '}'
+        json = '{"id":"'  // trim(node%id)             // '",' // &
+               '"name":"' // trim(node%name)           // '",' // &
+               '"meta":"' // dm_json_escape(node%meta) // '",' // &
+               '"x":'     // dm_ftoa(node%x)           // ','  // &
+               '"y":'     // dm_ftoa(node%y)           // ','  // &
+               '"z":'     // dm_ftoa(node%z)           // ','  // &
+               '"lon":'   // dm_ftoa(node%lon)         // ','  // &
+               '"lat":'   // dm_ftoa(node%lat)         // ','  // &
+               '"alt":'   // dm_ftoa(node%alt)         // '}'
     end function json_from_node
 
     function json_from_nodes(nodes) result(json)
@@ -401,7 +401,10 @@ contains
                '"meta":"'    // dm_json_escape(sensor%meta) // '",' // &
                '"x":'        // dm_ftoa(sensor%x)           // ','  // &
                '"y":'        // dm_ftoa(sensor%y)           // ','  // &
-               '"z":'        // dm_ftoa(sensor%z)           // '}'
+               '"z":'        // dm_ftoa(sensor%z)           // ','  // &
+               '"lon":'      // dm_ftoa(sensor%lon)         // ','  // &
+               '"lat":'      // dm_ftoa(sensor%lat)         // ','  // &
+               '"alt":'      // dm_ftoa(sensor%alt)         // '}'
     end function json_from_sensor
 
     function json_from_sensors(sensors) result(json)
@@ -446,7 +449,10 @@ contains
                '"state":' // dm_itoa(target%state)       // ','  // &
                '"x":'     // dm_ftoa(target%x)           // ','  // &
                '"y":'     // dm_ftoa(target%y)           // ','  // &
-               '"z":'     // dm_ftoa(target%z)           // '}'
+               '"z":'     // dm_ftoa(target%z)           // ','  // &
+               '"lon":'   // dm_ftoa(target%lon)         // ','  // &
+               '"lat":'   // dm_ftoa(target%lat)         // ','  // &
+               '"alt":'   // dm_ftoa(target%alt)         // '}'
     end function json_from_target
 
     function json_from_targets(targets) result(json)

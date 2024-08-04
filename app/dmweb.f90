@@ -716,7 +716,7 @@ contains
         character(len=*), parameter :: JS_DMPACK  = APP_JS_PATH  // '/dmpack.js'       !! DMPACK JS.
         character(len=*), parameter :: JS_LEAFLET = APP_JS_PATH  // '/leaflet.js'      !! Leaflet JS.
         character(len=*), parameter :: STYLE      = APP_CSS_PATH // '/leaflet.min.css' !! Additional CSS file.
-        character(len=*), parameter :: INLINE     = '#map { height: 600px; }'          !! Inline CSS.
+        character(len=*), parameter :: INLINE     = '#map { height: 600px; }' // CR_LF !! Inline CSS.
         character(len=*), parameter :: MAP_ID     = 'map'                              !! HTML element id of map.
         character(len=*), parameter :: TITLE      = 'Map'                              !! Page title.
 
@@ -734,7 +734,7 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         if (len_trim(tile_url) == 0) then
-            call html_error('No tile map URL provided.', error=E_NOT_FOUND)
+            call html_error('No tile map URL provided in environment variable DM_TILE_URL.', error=E_EMPTY)
             return
         end if
 
@@ -754,17 +754,19 @@ contains
         lon = 0.0_r8
         lat = 0.0_r8
 
+        ! Select view point.
         if (size(nodes) > 0) then
-            lon = nodes(1)%longitude
-            lat = nodes(1)%latitude
+            lon = nodes(1)%lon
+            lat = nodes(1)%lat
         else if (size(sensors) > 0) then
-            lon = sensors(1)%x
-            lat = sensors(1)%y
+            lon = sensors(1)%lon
+            lat = sensors(1)%lat
         else if (size(targets) > 0) then
-            lon = targets(1)%x
-            lat = targets(1)%y
+            lon = targets(1)%lon
+            lat = targets(1)%lat
         end if
 
+        ! Use default coordinates for view point.
         if (dm_equals(lon, 0.0_r8) .and. dm_equals(lat, 0.0_r8)) then
             lon = APP_MAP_LON
             lat = APP_MAP_LAT
@@ -931,13 +933,13 @@ contains
                 end if
 
                 ! Optional parameters.
-                rc = dm_cgi_get(param, 'meta',      node%meta)
-                rc = dm_cgi_get(param, 'x',         node%x)
-                rc = dm_cgi_get(param, 'y',         node%y)
-                rc = dm_cgi_get(param, 'z',         node%z)
-                rc = dm_cgi_get(param, 'longitude', node%longitude)
-                rc = dm_cgi_get(param, 'latitude',  node%latitude)
-                rc = dm_cgi_get(param, 'altitude',  node%altitude)
+                rc = dm_cgi_get(param, 'meta', node%meta)
+                rc = dm_cgi_get(param, 'x',    node%x)
+                rc = dm_cgi_get(param, 'y',    node%y)
+                rc = dm_cgi_get(param, 'z',    node%z)
+                rc = dm_cgi_get(param, 'lon',  node%lon)
+                rc = dm_cgi_get(param, 'lat',  node%lat)
+                rc = dm_cgi_get(param, 'alt',  node%alt)
 
                 ! Validate node data.
                 if (.not. dm_node_valid(node)) then
@@ -1508,6 +1510,9 @@ contains
                 rc = dm_cgi_get(param, 'x',    sensor%x)
                 rc = dm_cgi_get(param, 'y',    sensor%y)
                 rc = dm_cgi_get(param, 'z',    sensor%z)
+                rc = dm_cgi_get(param, 'lon',  sensor%lon)
+                rc = dm_cgi_get(param, 'lat',  sensor%lat)
+                rc = dm_cgi_get(param, 'alt',  sensor%alt)
 
                 ! Validate sensor data.
                 if (.not. dm_sensor_valid(sensor)) then
@@ -1818,6 +1823,9 @@ contains
                 rc = dm_cgi_get(param, 'x',     target%x)
                 rc = dm_cgi_get(param, 'y',     target%y)
                 rc = dm_cgi_get(param, 'z',     target%z)
+                rc = dm_cgi_get(param, 'lon',   target%lon)
+                rc = dm_cgi_get(param, 'lat',   target%lat)
+                rc = dm_cgi_get(param, 'alt',   target%alt)
 
                 ! Validate target data.
                 if (.not. dm_target_valid(target)) then
@@ -2029,14 +2037,14 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 2
                H_DIV_COL // & ! column 3
-               dm_html_label('Longitude', for='longitude') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='longitude', name='longitude', &
+               dm_html_label('Longitude', for='lon') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
-               dm_html_label('Latitude', for='latitude') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='latitude', name='latitude', &
+               dm_html_label('Latitude', for='lat') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Altitude', for='altitude') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='altitude', name='altitude', &
+               dm_html_label('Altitude', for='alt') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1
@@ -2321,8 +2329,19 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or alt (optional)') // &
                H_DIV_END // & ! end column 3
+               H_DIV_COL // & ! column 4
+               dm_html_label('Longitude', for='lon') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
+               dm_html_label('Latitude', for='lat') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
+               dm_html_label('Altitude', for='alt') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+               H_DIV_END // & ! end column 4
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
@@ -2378,8 +2397,19 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or altitude (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or alt (optional)') // &
                H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
+               dm_html_label('Longitude', for='lon') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
+               dm_html_label('Latitude', for='lat') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
+               dm_html_label('Altitude', for='alt') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+               H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END

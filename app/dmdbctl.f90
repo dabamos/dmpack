@@ -303,14 +303,14 @@ contains
                 if (dm_is_error(rc)) exit db_select
 
                 ! Overwrite if not passed.
-                if (.not. app%mask(ATTR_NAME)) app%node%name      = old_node%name
-                if (.not. app%mask(ATTR_META)) app%node%meta      = old_node%meta
-                if (.not. app%mask(ATTR_X))    app%node%x         = old_node%x
-                if (.not. app%mask(ATTR_Y))    app%node%y         = old_node%y
-                if (.not. app%mask(ATTR_Z))    app%node%z         = old_node%z
-                if (.not. app%mask(ATTR_LON))  app%node%longitude = old_node%longitude
-                if (.not. app%mask(ATTR_LAT))  app%node%latitude  = old_node%latitude
-                if (.not. app%mask(ATTR_ALT))  app%node%altitude  = old_node%altitude
+                if (.not. app%mask(ATTR_NAME)) app%node%name = old_node%name
+                if (.not. app%mask(ATTR_META)) app%node%meta = old_node%meta
+                if (.not. app%mask(ATTR_X))    app%node%x    = old_node%x
+                if (.not. app%mask(ATTR_Y))    app%node%y    = old_node%y
+                if (.not. app%mask(ATTR_Z))    app%node%z    = old_node%z
+                if (.not. app%mask(ATTR_LON))  app%node%lon  = old_node%lon
+                if (.not. app%mask(ATTR_LAT))  app%node%lat  = old_node%lat
+                if (.not. app%mask(ATTR_ALT))  app%node%alt  = old_node%alt
 
                 rc = dm_db_update(db, app%node)
 
@@ -336,6 +336,9 @@ contains
                 if (.not. app%mask(ATTR_X))    app%sensor%x       = old_sensor%x
                 if (.not. app%mask(ATTR_Y))    app%sensor%y       = old_sensor%y
                 if (.not. app%mask(ATTR_Z))    app%sensor%z       = old_sensor%z
+                if (.not. app%mask(ATTR_LON))  app%sensor%lon     = old_sensor%lon
+                if (.not. app%mask(ATTR_LAT))  app%sensor%lat     = old_sensor%lat
+                if (.not. app%mask(ATTR_ALT))  app%sensor%alt     = old_sensor%alt
 
                 if (len_trim(app%sensor%node_id) == 0) then
                     rc = E_INVALID
@@ -371,6 +374,9 @@ contains
                 if (.not. app%mask(ATTR_X))     app%target%x     = old_target%x
                 if (.not. app%mask(ATTR_Y))     app%target%y     = old_target%y
                 if (.not. app%mask(ATTR_Z))     app%target%z     = old_target%z
+                if (.not. app%mask(ATTR_LON))   app%target%lon   = old_target%lon
+                if (.not. app%mask(ATTR_LAT))   app%target%lat   = old_target%lat
+                if (.not. app%mask(ATTR_ALT))   app%target%alt   = old_target%alt
 
                 rc = dm_db_update(db, app%target)
         end select db_select
@@ -413,9 +419,9 @@ contains
             arg_type('x',         short='X', type=ARG_TYPE_REAL), &                                 ! -X, --x <x>
             arg_type('y',         short='Y', type=ARG_TYPE_REAL), &                                 ! -Y, --y <y>
             arg_type('z',         short='Z', type=ARG_TYPE_REAL), &                                 ! -Z, --z <z>
-            arg_type('longitude', short='G', type=ARG_TYPE_REAL), &                                 ! -G, --longitude <lng>
-            arg_type('latitude',  short='L', type=ARG_TYPE_REAL), &                                 ! -L, --latitude <lat>
-            arg_type('altitude',  short='A', type=ARG_TYPE_REAL), &                                 ! -A, --altitude <alt>
+            arg_type('lon',       short='G', type=ARG_TYPE_REAL), &                                 ! -G, --lon <lng>
+            arg_type('lat',       short='L', type=ARG_TYPE_REAL), &                                 ! -L, --lat <lat>
+            arg_type('alt',       short='A', type=ARG_TYPE_REAL), &                                 ! -A, --alt <alt>
             arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL) &                               ! -V, --verbose
         ]
 
@@ -448,14 +454,14 @@ contains
             case (TYPE_NODE)
                 ! Get node attributes.
                 rc = dm_arg_get(args( 6), app%node%id)
-                rc = dm_arg_get(args( 7), app%node%name,      passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args( 8), app%node%meta,      passed=app%mask(ATTR_META))
-                rc = dm_arg_get(args(13), app%node%x,         passed=app%mask(ATTR_X))
-                rc = dm_arg_get(args(14), app%node%y,         passed=app%mask(ATTR_Y))
-                rc = dm_arg_get(args(15), app%node%z,         passed=app%mask(ATTR_Z))
-                rc = dm_arg_get(args(16), app%node%longitude, passed=app%mask(ATTR_LON))
-                rc = dm_arg_get(args(17), app%node%latitude,  passed=app%mask(ATTR_LAT))
-                rc = dm_arg_get(args(18), app%node%altitude,  passed=app%mask(ATTR_ALT))
+                rc = dm_arg_get(args( 7), app%node%name, passed=app%mask(ATTR_NAME))
+                rc = dm_arg_get(args( 8), app%node%meta, passed=app%mask(ATTR_META))
+                rc = dm_arg_get(args(13), app%node%x,    passed=app%mask(ATTR_X))
+                rc = dm_arg_get(args(14), app%node%y,    passed=app%mask(ATTR_Y))
+                rc = dm_arg_get(args(15), app%node%z,    passed=app%mask(ATTR_Z))
+                rc = dm_arg_get(args(16), app%node%lon,  passed=app%mask(ATTR_LON))
+                rc = dm_arg_get(args(17), app%node%lat,  passed=app%mask(ATTR_LAT))
+                rc = dm_arg_get(args(18), app%node%alt,  passed=app%mask(ATTR_ALT))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
@@ -468,6 +474,9 @@ contains
                 rc = dm_arg_get(args(13), app%sensor%x,       passed=app%mask(ATTR_X))
                 rc = dm_arg_get(args(14), app%sensor%y,       passed=app%mask(ATTR_Y))
                 rc = dm_arg_get(args(15), app%sensor%z,       passed=app%mask(ATTR_Z))
+                rc = dm_arg_get(args(16), app%sensor%lon,     passed=app%mask(ATTR_LON))
+                rc = dm_arg_get(args(17), app%sensor%lat,     passed=app%mask(ATTR_LAT))
+                rc = dm_arg_get(args(18), app%sensor%alt,     passed=app%mask(ATTR_ALT))
 
                 app%sensor%type = dm_sensor_type_from_name(sensor)
 
@@ -480,6 +489,9 @@ contains
                 rc = dm_arg_get(args(13), app%target%x,     passed=app%mask(ATTR_X))
                 rc = dm_arg_get(args(14), app%target%y,     passed=app%mask(ATTR_Y))
                 rc = dm_arg_get(args(15), app%target%z,     passed=app%mask(ATTR_Z))
+                rc = dm_arg_get(args(16), app%target%lon,   passed=app%mask(ATTR_LON))
+                rc = dm_arg_get(args(17), app%target%lat,   passed=app%mask(ATTR_LAT))
+                rc = dm_arg_get(args(18), app%target%alt,   passed=app%mask(ATTR_ALT))
 
             case default
                 rc = E_INVALID
@@ -515,17 +527,19 @@ contains
                             .not. app%mask(ATTR_X)    .and. .not. app%mask(ATTR_Y)    .and. &
                             .not. app%mask(ATTR_Z)    .and. .not. app%mask(ATTR_LON)  .and. &
                             .not. app%mask(ATTR_LAT)  .and. .not. app%mask(ATTR_ALT)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, -x, -y, -z, ' // &
-                                                  '--longitude, --latitude, or --altitude required')
+                            call dm_error_out(rc, 'command-line option --name, --meta, --x, --y, --z, ' // &
+                                                  '--lon, --lat, or --alt required')
                             return
                         end if
 
                     case (TYPE_TARGET)
                         if (.not. app%mask(ATTR_NAME)  .and. .not. app%mask(ATTR_META) .and. &
                             .not. app%mask(ATTR_STATE) .and. .not. app%mask(ATTR_X)    .and. &
-                            .not. app%mask(ATTR_Y)     .and. .not. app%mask(ATTR_Z)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, --state, -x, -y, -z, ' // &
-                                                  '--longitude, --latitude, or --altitude required')
+                            .not. app%mask(ATTR_Y)     .and. .not. app%mask(ATTR_Z)    .and. &
+                            .not. app%mask(ATTR_LON)   .and. .not. app%mask(ATTR_LAT)  .and. &
+                            .not. app%mask(ATTR_ALT)) then
+                            call dm_error_out(rc, 'command-line option --name, --meta, --state, --x, --y, --z, ' // &
+                                                  '--lon, --lat, or --alt required')
                             return
                         end if
 
@@ -537,12 +551,13 @@ contains
 
                         if (.not. any(app%mask)) then
                             call dm_error_out(rc, 'command-line option --node, --type, --name, --sn, ' // &
-                                                  '--meta, --easting, --northing, or --altitude required')
+                                                  '--meta, --x, --y, --z, --lon, --lat, or --alt required')
                             return
                         end if
                 end select
         end select
 
+        ! Validation passed.
         rc = E_NONE
     end function read_args
 end program dmdbctl

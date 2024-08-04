@@ -39,7 +39,7 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    subroutine dm_geojson_feature_point(geojson, type, id, name, meta, x, y, z, longitude, latitude, altitude)
+    subroutine dm_geojson_feature_point(geojson, type, id, name, meta, x, y, z, lon, lat, alt)
         !! Returns a GeoJSON string of the following form:
         !!
         !! ```json
@@ -61,23 +61,23 @@ contains
         !!     "x": 0.0,
         !!     "y": 0.0,
         !!     "z": 0.0,
-        !!     "longitude": 10.4541194000,
-        !!     "latitude": 51.1642292000,
-        !!     "altitude": 10.0000000000
+        !!     "lon": 10.4541194000,
+        !!     "lat": 51.1642292000,
+        !!     "alt": 10.0000000000
         !!   }
         !! }
         !! ```
-        character(len=:), allocatable, intent(out) :: geojson   !! Output GeoJSON string.
-        integer,                       intent(in)  :: type      !! Point type.
-        character(len=*),              intent(in)  :: id        !! Point id.
-        character(len=*),              intent(in)  :: name      !! Point name.
-        character(len=*),              intent(in)  :: meta      !! Point meta data.
-        real(kind=r8),                 intent(in)  :: x         !! Point x.
-        real(kind=r8),                 intent(in)  :: y         !! Point y.
-        real(kind=r8),                 intent(in)  :: z         !! Point z.
-        real(kind=r8),                 intent(in)  :: longitude !! Point longitude.
-        real(kind=r8),                 intent(in)  :: latitude  !! Point latitude.
-        real(kind=r8),                 intent(in)  :: altitude  !! Point altitude.
+        character(len=:), allocatable, intent(out) :: geojson !! Output GeoJSON string.
+        integer,                       intent(in)  :: type    !! Point type.
+        character(len=*),              intent(in)  :: id      !! Point id.
+        character(len=*),              intent(in)  :: name    !! Point name.
+        character(len=*),              intent(in)  :: meta    !! Point meta data.
+        real(kind=r8),                 intent(in)  :: x       !! Point x.
+        real(kind=r8),                 intent(in)  :: y       !! Point y.
+        real(kind=r8),                 intent(in)  :: z       !! Point z.
+        real(kind=r8),                 intent(in)  :: lon     !! Point longitude.
+        real(kind=r8),                 intent(in)  :: lat     !! Point latitude.
+        real(kind=r8),                 intent(in)  :: alt     !! Point altitude.
 
         integer :: type_
 
@@ -87,20 +87,18 @@ contains
         geojson = &
             '{"type":"Feature",' // &
             '"geometry":{"type":"Point",' // '"coordinates":[' // &
-            dm_ftoa(longitude) // ','   // &
-            dm_ftoa(latitude)  // ','   // &
-            dm_ftoa(altitude)  // ']},' // &
-            '"properties":{' // &
-            '"type":"'     // trim(TYPE_NAMES(type_)) // '",' // &
-            '"id":"'       // id                      // '",' // &
-            '"name":"'     // name                    // '",' // &
-            '"meta":"'     // dm_json_escape(meta)    // '",' // &
-            '"x":'         // dm_ftoa(x)              // ','  // &
-            '"y":'         // dm_ftoa(y)              // ','  // &
-            '"z":'         // dm_ftoa(z)              // ','  // &
-            '"longitude":' // dm_ftoa(longitude)      // ','  // &
-            '"latitude":'  // dm_ftoa(latitude)       // ','  // &
-            '"altitude":'  // dm_ftoa(altitude)       // '}}'
+            dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
+            '"]},properties":{' // &
+            '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
+            '"id":"'   // id                      // '",' // &
+            '"name":"' // name                    // '",' // &
+            '"meta":"' // dm_json_escape(meta)    // '",' // &
+            '"x":'     // dm_ftoa(x)              // ','  // &
+            '"y":'     // dm_ftoa(y)              // ','  // &
+            '"z":'     // dm_ftoa(z)              // ','  // &
+            '"lon":'   // dm_ftoa(lon)            // ','  // &
+            '"lat":'   // dm_ftoa(lat)            // ','  // &
+            '"alt":'   // dm_ftoa(alt)            // '}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
@@ -113,17 +111,17 @@ contains
         type(node_type), intent(inout) :: node    !! Node type.
         character(len=:), allocatable  :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson   = geojson, &
-                                      type      = TYPE_NODE, &
-                                      id        = trim(node%id), &
-                                      name      = trim(node%name), &
-                                      meta      = trim(node%meta), &
-                                      x         = node%x, &
-                                      y         = node%y, &
-                                      z         = node%z, &
-                                      longitude = node%longitude, &
-                                      latitude  = node%latitude, &
-                                      altitude  = node%altitude)
+        call dm_geojson_feature_point(geojson = geojson, &
+                                      type    = TYPE_NODE, &
+                                      id      = trim(node%id), &
+                                      name    = trim(node%name), &
+                                      meta    = trim(node%meta), &
+                                      x       = node%x, &
+                                      y       = node%y, &
+                                      z       = node%z, &
+                                      lon     = node%lon, &
+                                      lat     = node%lat, &
+                                      alt     = node%alt)
     end function geojson_from_node
 
     function geojson_from_sensor(sensor) result(geojson)
@@ -133,17 +131,17 @@ contains
         type(sensor_type), intent(inout) :: sensor  !! Sensor type.
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson   = geojson, &
-                                      type      = TYPE_SENSOR, &
-                                      id        = trim(sensor%id), &
-                                      name      = trim(sensor%name), &
-                                      meta      = trim(sensor%meta), &
-                                      x         = sensor%x, &
-                                      y         = sensor%y, &
-                                      z         = sensor%z, &
-                                      longitude = sensor%x, &
-                                      latitude  = sensor%y, &
-                                      altitude  = sensor%z)
+        call dm_geojson_feature_point(geojson = geojson, &
+                                      type    = TYPE_SENSOR, &
+                                      id      = trim(sensor%id), &
+                                      name    = trim(sensor%name), &
+                                      meta    = trim(sensor%meta), &
+                                      x       = sensor%x, &
+                                      y       = sensor%y, &
+                                      z       = sensor%z, &
+                                      lon     = sensor%lon, &
+                                      lat     = sensor%lat, &
+                                      alt     = sensor%alt)
     end function geojson_from_sensor
 
     function geojson_from_target(target) result(geojson)
@@ -153,17 +151,17 @@ contains
         type(target_type), intent(inout) :: target  !! Target type.
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson   = geojson, &
-                                      type      = TYPE_TARGET, &
-                                      id        = trim(target%id), &
-                                      name      = trim(target%name), &
-                                      meta      = trim(target%meta), &
-                                      x         = target%x, &
-                                      y         = target%y, &
-                                      z         = target%z, &
-                                      longitude = target%x, &
-                                      latitude  = target%y, &
-                                      altitude  = target%z)
+        call dm_geojson_feature_point(geojson = geojson, &
+                                      type    = TYPE_TARGET, &
+                                      id      = trim(target%id), &
+                                      name    = trim(target%name), &
+                                      meta    = trim(target%meta), &
+                                      x       = target%x, &
+                                      y       = target%y, &
+                                      z       = target%z, &
+                                      lon     = target%lon, &
+                                      lat     = target%lat, &
+                                      alt     = target%alt)
     end function geojson_from_target
 
     integer function geojson_write_node(node, unit) result(rc)

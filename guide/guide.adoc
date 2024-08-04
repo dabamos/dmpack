@@ -850,14 +850,14 @@ through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
-| `--altitude _alt_`  | `-A`  | –       | Node, sensor, or target altitude (optional).
+| `--alt _alt_`       | `-A`  | –       | Node, sensor, or target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
-| `--latitude _lat_`  | `-L`  | –       | Node, sensor, or target latitude (optional).
-| `--longitude _lon_` | `-G`  | –       | Node, sensor, or target longitude (optional).
+| `--lat _lat_`       | `-L`  | –       | Node, sensor, or target latitude (optional).
+| `--lon _lon_`       | `-G`  | –       | Node, sensor, or target longitude (optional).
 | `--meta _meta_`     | `-M`  | –       | Node, sensor, or target meta description (optional).
 | `--name _name_`     | `-n`  | –       | Node, sensor, or target name.
 | `--node _id_`       | `-N`  | –       | Id of node the sensor is associated with.
@@ -903,6 +903,9 @@ sensor.meta: dummy sensor
 sensor.x: 0.000000000000
 sensor.y: 0.000000000000
 sensor.z: 0.000000000000
+sensor.lon: 0.000000000000
+sensor.lat: 0.000000000000
+sensor.alt: 0.000000000000
 ....
 
 === dmexport [[dmexport]]
@@ -6501,17 +6504,17 @@ LOG%MESSAGE="dummy log message",
 
 [cols="3,2,2,14"]
 |===
-| Attribute   | Type    | Size | Description
+| Attribute | Type    | Size | Description
 
-| `id`        | string  | 32   | Node id (`-0-9A-Z_a-z`).
-| `name`      | string  | 32   | Node name.
-| `meta`      | string  | 32   | Node description (optional).
-| `x`         | double  | 8    | Node local x (optional).
-| `y`         | double  | 8    | Node local y (optional).
-| `z`         | double  | 8    | Node local z (optional).
-| `longitude` | double  | 8    | Node longitude (optional).
-| `latitude`  | double  | 8    | Node latitude (optional).
-| `altitude`  | double  | 8    | Node altitude (optional).
+| `id`      | string  | 32   | Node id (`-0-9A-Z_a-z`).
+| `name`    | string  | 32   | Node name.
+| `meta`    | string  | 32   | Node description (optional).
+| `x`       | double  | 8    | Node local x (optional).
+| `y`       | double  | 8    | Node local y (optional).
+| `z`       | double  | 8    | Node local z (optional).
+| `lon`     | double  | 8    | Node longitude (optional).
+| `lat`     | double  | 8    | Node latitude (optional).
+| `alt`     | double  | 8    | Node altitude (optional).
 |===
 
 ==== CSV [[data-node-csv]]
@@ -6520,15 +6523,15 @@ LOG%MESSAGE="dummy log message",
 |===
 | Column | Attribute | Description
 
-| 1      | `id`        | Node id.
-| 2      | `name`      | Node name.
-| 3      | `meta`      | Node description.
-| 7      | `x`         | Node local x.
-| 8      | `y`         | Node local y.
-| 9      | `z`         | Node local z.
-| 4      | `longitude` | Node longitude.
-| 5      | `latitude`  | Node latitude.
-| 6      | `altitude`  | Node altitude.
+| 1      | `id`      | Node id.
+| 2      | `name`    | Node name.
+| 3      | `meta`    | Node description.
+| 7      | `x`       | Node local x.
+| 8      | `y`       | Node local y.
+| 9      | `z`       | Node local z.
+| 4      | `lon`     | Node longitude.
+| 5      | `lat`     | Node latitude.
+| 6      | `alt`     | Node altitude.
 |===
 
 ==== GeoJSON [[data-node-geojson]]
@@ -6549,9 +6552,9 @@ LOG%MESSAGE="dummy log message",
     "x": 0.0,
     "y": 0.0,
     "z": 0.0,
-    "longitude": 0.0,
-    "latitude": 0.0,
-    "altitude": 0.0
+    "lon": 0.0,
+    "lat": 0.0,
+    "alt": 0.0
   }
 }
 ....
@@ -6582,9 +6585,9 @@ DATASET "node_type" {
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
-    H5T_IEEE_F64LE "longitude";
-    H5T_IEEE_F64LE "latitude";
-    H5T_IEEE_F64LE "altitude";
+    H5T_IEEE_F64LE "lon";
+    H5T_IEEE_F64LE "lat";
+    H5T_IEEE_F64LE "alt";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -6601,9 +6604,9 @@ DATASET "node_type" {
   "x": 0.0,
   "y": 0.0,
   "z": 0.0,
-  "longitude": 0.0,
-  "latitude": 0.0,
-  "altitude": 0.0
+  "lon": 0.0,
+  "lat": 0.0,
+  "alt": 0.0
 }
 ....
 
@@ -6617,9 +6620,9 @@ NODE%META="Description",
 NODE%X=0.0,
 NODE%Y=0.0,
 NODE%Z=0.0,
-NODE%LONGITUDE=0.0,
-NODE%LATITUDE=0.0,
-NODE%ALTITUDE=0.0
+NODE%LON=0.0,
+NODE%LAT=0.0,
+NODE%ALT=0.0
 /
 ....
 
@@ -6962,6 +6965,9 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | `x`       | double  | 8    | Sensor x or easting (optional).
 | `y`       | double  | 8    | Sensor y or northing (optional).
 | `z`       | double  | 8    | Sensor z or altitude (optional).
+| `lon`     | double  | 8    | Sensor longitude (optional).
+| `lat`     | double  | 8    | Sensor latitude (optional).
+| `alt`     | double  | 8    | Sensor altitude (optional).
 |===
 
 ==== CSV [[data-sensor-csv]]
@@ -6979,6 +6985,9 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 7      | `x`       | Sensor x or easting.
 | 8      | `y`       | Sensor y or northing.
 | 9      | `z`       | Sensor z or altitude.
+| 10     | `lon`     | Sensor longitude.
+| 11     | `lat`     | Sensor latitude.
+| 12     | `alt`     | Sensor altitude.
 |===
 
 ==== GeoJSON [[data-sensor-geojson]]
@@ -6987,13 +6996,21 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 ....
 {
   "type": "Feature",
-  "properties": {
-    "name": "Dummy Sensor",
-    "popupContent": "Description"
-  },
   "geometry": {
     "type": "Point",
     "coordinates": [ 0.0, 0.0, 0.0 ]
+  },
+  "properties": {
+    "type": "sensor",
+    "id": "dummy-sensor",
+    "name": "Dummy Sensor",
+    "meta": "Description",
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0,
+    "lon": 0.0,
+    "lat": 0.0,
+    "alt": 0.0
   }
 }
 ....
@@ -7037,6 +7054,9 @@ DATASET "sensor_type" {
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
+    H5T_IEEE_F64LE "lon";
+    H5T_IEEE_F64LE "lat";
+    H5T_IEEE_F64LE "alt";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -7055,7 +7075,10 @@ DATASET "sensor_type" {
   "meta": "Description",
   "x": 0.0,
   "y": 0.0,
-  "z": 0.0
+  "z": 0.0,
+  "lon": 0.0,
+  "lat": 0.0,
+  "alt": 0.0
 }
 ....
 
@@ -7072,6 +7095,9 @@ SENSOR%META="Description",
 SENSOR%X=0.0,
 SENSOR%Y=0.0,
 SENSOR%Z=0.0,
+SENSOR%LON=0.0,
+SENSOR%LAT=0.0,
+SENSOR%ALT=0.0
 /
 ....
 
@@ -7104,6 +7130,9 @@ SENSOR%Z=0.0,
 | `x`       | double  | 8    | Target x or easting (optional).
 | `y`       | double  | 8    | Target y or northing (optional).
 | `z`       | double  | 8    | Target z or altitude (optional).
+| `lon`     | double  | 8    | Target longitude (optional).
+| `lat`     | double  | 8    | Target latitude (optional).
+| `alt`     | double  | 8    | Target altitude (optional).
 |===
 
 ==== CSV [[data-target-csv]]
@@ -7119,6 +7148,9 @@ SENSOR%Z=0.0,
 | 5      | `x`       | Target x or easting.
 | 6      | `y`       | Target y or northing.
 | 7      | `z`       | Target z or altitude.
+| 8      | `lon`     | Target longitude.
+| 9      | `lat`     | Target latitude.
+| 10     | `alt`     | Target altitude.
 |===
 
 ==== GeoJSON [[data-target-geojson]]
@@ -7127,13 +7159,21 @@ SENSOR%Z=0.0,
 ....
 {
   "type": "Feature",
-  "properties": {
-    "name": "Dummy Target",
-    "popupContent": "Description"
-  },
   "geometry": {
     "type": "Point",
     "coordinates": [ 0.0, 0.0, 0.0 ]
+  },
+  "properties": {
+    "type": "target",
+    "id": "dummy-target",
+    "name": "Dummy Target",
+    "meta": "Description",
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0,
+    "lon": 0.0,
+    "lat": 0.0,
+    "alt": 0.0
   }
 }
 ....
@@ -7165,6 +7205,9 @@ DATASET "target_type" {
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
+    H5T_IEEE_F64LE "lon";
+    H5T_IEEE_F64LE "lat";
+    H5T_IEEE_F64LE "alt";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -7181,7 +7224,10 @@ DATASET "target_type" {
   "state": 0,
   "x": 0.0,
   "y": 0.0,
-  "z": 0.0
+  "z": 0.0,
+  "lon": 0.0,
+  "lat": 0.0,
+  "alt": 0.0
 }
 ....
 
@@ -7195,6 +7241,9 @@ TARGET%STATE=0,
 TARGET%X=0.0,
 TARGET%Y=0.0,
 TARGET%Z=0.0,
+TARGET%LON=0.0,
+TARGET%LAT=0.0,
+TARGET%ALT=0.0
 /
 ....
 

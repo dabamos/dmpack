@@ -1672,9 +1672,9 @@ contains
             if (sqlite3_bind_double(stmt, 4, node%x)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 5, node%y)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 6, node%z)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, node%longitude)  /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 8, node%latitude)   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 9, node%altitude)   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, node%lon)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, node%lat)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 9, node%alt)        /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -1902,15 +1902,18 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text  (stmt, 1, trim(sensor%id))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 2, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int   (stmt, 3, sensor%type)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 4, trim(sensor%name))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 5, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 6, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, sensor%x)             /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 8, sensor%y)             /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 9, sensor%z)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  1, trim(sensor%id))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  2, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt,  3, sensor%type)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  4, trim(sensor%name))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  5, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  6, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  7, sensor%x)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  8, sensor%y)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  9, sensor%z)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 10, sensor%lon)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 11, sensor%lat)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 12, sensor%alt)           /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -2097,13 +2100,16 @@ contains
             if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text  (stmt, 1, trim(target%id))   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 2, trim(target%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 3, trim(target%meta)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int   (stmt, 4, target%state)      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 5, target%x)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 6, target%y)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, target%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  1, trim(target%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  2, trim(target%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  3, trim(target%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt,  4, target%state)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  5, target%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  6, target%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  7, target%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  8, target%lon)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  9, target%lat)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 10, target%alt)        /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -3905,9 +3911,9 @@ contains
             if (sqlite3_bind_double(stmt, 3, node%x)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 4, node%y)          /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_double(stmt, 5, node%z)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 6, node%longitude)  /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, node%latitude)   /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 8, node%altitude)   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 6, node%lon)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 7, node%lat)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 8, node%alt)        /= SQLITE_OK) exit sql_block
             if (sqlite3_bind_text  (stmt, 9, trim(node%id))   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
@@ -3959,15 +3965,18 @@ contains
 
             rc = E_DB_BIND
             ! Sensor id must be last argument!
-            if (sqlite3_bind_text  (stmt, 1, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int   (stmt, 2, sensor%type)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 3, trim(sensor%name))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 4, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 5, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 6, sensor%x)             /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 7, sensor%y)             /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 8, sensor%z)             /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 9, trim(sensor%id))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  1, trim(sensor%node_id)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt,  2, sensor%type)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  3, trim(sensor%name))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  4, trim(sensor%sn))      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  5, trim(sensor%meta))    /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  6, sensor%x)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  7, sensor%y)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  8, sensor%z)             /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  9, sensor%lon)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 10, sensor%lat)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt, 11, sensor%alt)           /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 12, trim(sensor%id))      /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4018,13 +4027,16 @@ contains
 
             rc = E_DB_BIND
             ! Target id must be last argument!
-            if (sqlite3_bind_text  (stmt, 1, trim(target%name)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 2, trim(target%meta)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_int   (stmt, 3, target%state)      /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 4, target%x)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 5, target%y)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_double(stmt, 6, target%z)          /= SQLITE_OK) exit sql_block
-            if (sqlite3_bind_text  (stmt, 7, trim(target%id))   /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  1, trim(target%name)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt,  2, trim(target%meta)) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_int   (stmt,  3, target%state)      /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  4, target%x)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  5, target%y)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  6, target%z)          /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  7, target%lon)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  8, target%lat)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_double(stmt,  9, target%alt)        /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text  (stmt, 10, trim(target%id))   /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -4845,15 +4857,15 @@ contains
             if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT) return
         end if
 
-        node%id        = sqlite3_column_text  (stmt, 0)
-        node%name      = sqlite3_column_text  (stmt, 1)
-        node%meta      = sqlite3_column_text  (stmt, 2)
-        node%x         = sqlite3_column_double(stmt, 3)
-        node%y         = sqlite3_column_double(stmt, 4)
-        node%z         = sqlite3_column_double(stmt, 5)
-        node%longitude = sqlite3_column_double(stmt, 6)
-        node%latitude  = sqlite3_column_double(stmt, 7)
-        node%altitude  = sqlite3_column_double(stmt, 8)
+        node%id   = sqlite3_column_text  (stmt, 0)
+        node%name = sqlite3_column_text  (stmt, 1)
+        node%meta = sqlite3_column_text  (stmt, 2)
+        node%x    = sqlite3_column_double(stmt, 3)
+        node%y    = sqlite3_column_double(stmt, 4)
+        node%z    = sqlite3_column_double(stmt, 5)
+        node%lon  = sqlite3_column_double(stmt, 6)
+        node%lat  = sqlite3_column_double(stmt, 7)
+        node%alt  = sqlite3_column_double(stmt, 8)
 
         rc = E_NONE
     end function db_next_row_node
@@ -4972,26 +4984,32 @@ contains
 
         if (validate_) then
             rc = E_DB_TYPE
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 2) /= SQLITE_INTEGER) return
-            if (sqlite3_column_type(stmt, 3) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 4) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 5) /= SQLITE_TEXT)    return
-            if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
-            if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT)   return
-            if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt,  0) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  1) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  2) /= SQLITE_INTEGER) return
+            if (sqlite3_column_type(stmt,  3) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  4) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  5) /= SQLITE_TEXT)    return
+            if (sqlite3_column_type(stmt,  6) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt,  7) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt,  8) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt,  9) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 10) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 11) /= SQLITE_FLOAT)   return
         end if
 
-        sensor%id      = sqlite3_column_text  (stmt, 0)
-        sensor%node_id = sqlite3_column_text  (stmt, 1)
-        sensor%type    = sqlite3_column_int   (stmt, 2)
-        sensor%name    = sqlite3_column_text  (stmt, 3)
-        sensor%sn      = sqlite3_column_text  (stmt, 4)
-        sensor%meta    = sqlite3_column_text  (stmt, 5)
-        sensor%x       = sqlite3_column_double(stmt, 6)
-        sensor%y       = sqlite3_column_double(stmt, 7)
-        sensor%z       = sqlite3_column_double(stmt, 8)
+        sensor%id      = sqlite3_column_text  (stmt,  0)
+        sensor%node_id = sqlite3_column_text  (stmt,  1)
+        sensor%type    = sqlite3_column_int   (stmt,  2)
+        sensor%name    = sqlite3_column_text  (stmt,  3)
+        sensor%sn      = sqlite3_column_text  (stmt,  4)
+        sensor%meta    = sqlite3_column_text  (stmt,  5)
+        sensor%x       = sqlite3_column_double(stmt,  6)
+        sensor%y       = sqlite3_column_double(stmt,  7)
+        sensor%z       = sqlite3_column_double(stmt,  8)
+        sensor%lon     = sqlite3_column_double(stmt,  9)
+        sensor%lat     = sqlite3_column_double(stmt, 10)
+        sensor%alt     = sqlite3_column_double(stmt, 11)
 
         rc = E_NONE
     end function db_next_row_sensor
@@ -5079,6 +5097,9 @@ contains
             if (sqlite3_column_type(stmt, 4) /= SQLITE_FLOAT)   return
             if (sqlite3_column_type(stmt, 5) /= SQLITE_FLOAT)   return
             if (sqlite3_column_type(stmt, 6) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 7) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 8) /= SQLITE_FLOAT)   return
+            if (sqlite3_column_type(stmt, 9) /= SQLITE_FLOAT)   return
         end if
 
         target%id    = sqlite3_column_text  (stmt, 0)
@@ -5088,6 +5109,9 @@ contains
         target%x     = sqlite3_column_double(stmt, 4)
         target%y     = sqlite3_column_double(stmt, 5)
         target%z     = sqlite3_column_double(stmt, 6)
+        target%lon   = sqlite3_column_double(stmt, 7)
+        target%lat   = sqlite3_column_double(stmt, 8)
+        target%alt   = sqlite3_column_double(stmt, 9)
 
         rc = E_NONE
     end function db_next_row_target
