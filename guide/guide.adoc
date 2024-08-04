@@ -6546,15 +6546,17 @@ LOG%MESSAGE="dummy log message",
   },
   "properties": {
     "type": "node",
-    "id": "dummy-node",
-    "name": "Dummy Node",
-    "meta": "Description",
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
-    "lon": 0.0,
-    "lat": 0.0,
-    "alt": 0.0
+    "data": {
+      "id": "dummy-node",
+      "name": "Dummy Node",
+      "meta": "Description",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "lon": 0.0,
+      "lat": 0.0,
+      "alt": 0.0
+    }
   }
 }
 ....
@@ -7002,15 +7004,20 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
   },
   "properties": {
     "type": "sensor",
-    "id": "dummy-sensor",
-    "name": "Dummy Sensor",
-    "meta": "Description",
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
-    "lon": 0.0,
-    "lat": 0.0,
-    "alt": 0.0
+    "data": {
+      "id": "dummy-sensor",
+      "node_id": "dummy-node",
+      "type": 3,
+      "name": "Dummy Sensor",
+      "sn": "00000",
+      "meta": "Description",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "lon": 0.0,
+      "lat": 0.0,
+      "alt": 0.0
+    }
   }
 }
 ....
@@ -7165,15 +7172,18 @@ SENSOR%ALT=0.0
   },
   "properties": {
     "type": "target",
-    "id": "dummy-target",
-    "name": "Dummy Target",
-    "meta": "Description",
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
-    "lon": 0.0,
-    "lat": 0.0,
-    "alt": 0.0
+    "data": {
+      "id": "dummy-target",
+      "name": "Dummy Target",
+      "meta": "Description",
+      "state": 0,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "lon": 0.0,
+      "lat": 0.0,
+      "alt": 0.0
+    }
   }
 }
 ....

@@ -32,14 +32,22 @@ function createMap(id, url, lon, lat, zoom, features)
  */
 function onEachFeature(feature, layer)
 {
-    let popupContent = '';
+    let content = '';
 
-    if (feature.properties && feature.properties.meta)
+    if (feature.properties && feature.properties.data)
     {
-        popupContent = feature.properties.meta;
+        if (feature.properties.data.name)
+        {
+            content += `<strong>${feature.properties.data.name}</strong><br>`;
+        }
+
+        if (feature.properties.data.meta)
+        {
+            content += feature.properties.data.meta;
+        }
     }
 
-    layer.bindPopup(popupContent);
+    layer.bindPopup(content);
 }
 
 /**
@@ -59,7 +67,7 @@ function pointToLayer(feature, latlng)
     switch (feature.properties.type)
     {
         case 'node':
-            options.fillColor = "indigo";
+            options.fillColor = "gold";
             break;
         case 'sensor':
             options.fillColor = "crimson";

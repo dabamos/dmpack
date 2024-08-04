@@ -1789,6 +1789,8 @@ select[multiple] {
 .packed      { --density: 0; }
 .autodensity { --density: 1; }
 
+#map { height: 600px; }
+
 @media (min-width: 768px)  { .autodensity { --density: 2; } }
 @media (min-width: 1024px) { .autodensity { --density: 3; } }
 

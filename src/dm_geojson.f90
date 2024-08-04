@@ -13,7 +13,7 @@ module dm_geojson
     private
 
     interface dm_geojson_from
-        !! Generic derived type to GeoJSON converter.
+        !! Generic derived type to GeoJSON serialisation functions.
         module procedure :: geojson_from_node
         module procedure :: geojson_from_sensor
         module procedure :: geojson_from_target
@@ -22,7 +22,8 @@ module dm_geojson
     interface dm_geojson_write
         !! Generic derived type to GeoJSON writer.
         module procedure :: geojson_write_node
-        module procedure :: geojson_write_nodes
+        module procedure :: geojson_write_sensor
+        module procedure :: geojson_write_target
     end interface dm_geojson_write
 
     public :: dm_geojson_feature_point
@@ -32,15 +33,15 @@ module dm_geojson
     private :: geojson_from_node
     private :: geojson_from_sensor
     private :: geojson_from_target
-
     private :: geojson_write_node
-    private :: geojson_write_nodes
+    private :: geojson_write_sensor
+    private :: geojson_write_target
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    subroutine dm_geojson_feature_point(geojson, type, id, name, meta, x, y, z, lon, lat, alt)
-        !! Returns a GeoJSON string of the following form:
+    subroutine dm_geojson_feature_point(geojson, type, lon, lat, alt, data)
+        !! Returns GeoJSON string of the following form:
         !!
         !! ```json
         !! {
@@ -55,50 +56,38 @@ contains
         !!   },
         !!   "properties": {
         !!     "type": "node",
-        !!     "id": "dummy-node",
-        !!     "name": "Dummy Node",
-        !!     "meta": "dummy description"
-        !!     "x": 0.0,
-        !!     "y": 0.0,
-        !!     "z": 0.0,
-        !!     "lon": 10.4541194000,
-        !!     "lat": 51.1642292000,
-        !!     "alt": 10.0000000000
+        !!     "data": {
+        !!       "id": "dummy-node",
+        !!       "name": "Dummy Node",
+        !!       "meta": "dummy description"
+        !!       "x": 0.0,
+        !!       "y": 0.0,
+        !!       "z": 0.0,
+        !!       "lon": 10.4541194000,
+        !!       "lat": 51.1642292000,
+        !!       "alt": 10.0000000000
+        !!     }
         !!   }
         !! }
         !! ```
         character(len=:), allocatable, intent(out) :: geojson !! Output GeoJSON string.
-        integer,                       intent(in)  :: type    !! Point type.
-        character(len=*),              intent(in)  :: id      !! Point id.
-        character(len=*),              intent(in)  :: name    !! Point name.
-        character(len=*),              intent(in)  :: meta    !! Point meta data.
-        real(kind=r8),                 intent(in)  :: x       !! Point x.
-        real(kind=r8),                 intent(in)  :: y       !! Point y.
-        real(kind=r8),                 intent(in)  :: z       !! Point z.
+        integer,                       intent(in)  :: type    !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
         real(kind=r8),                 intent(in)  :: lon     !! Point longitude.
         real(kind=r8),                 intent(in)  :: lat     !! Point latitude.
         real(kind=r8),                 intent(in)  :: alt     !! Point altitude.
+        character(len=*),              intent(in)  :: data    !! Point JSON data.
 
         integer :: type_
 
         type_ = TYPE_NONE
         if (dm_type_valid(type)) type_ = type
 
-        geojson = &
-            '{"type":"Feature",' // &
-            '"geometry":{"type":"Point",' // '"coordinates":[' // &
-            dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
-            ']},"properties":{' // &
-            '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
-            '"id":"'   // id                      // '",' // &
-            '"name":"' // name                    // '",' // &
-            '"meta":"' // dm_json_escape(meta)    // '",' // &
-            '"x":'     // dm_ftoa(x)              // ','  // &
-            '"y":'     // dm_ftoa(y)              // ','  // &
-            '"z":'     // dm_ftoa(z)              // ','  // &
-            '"lon":'   // dm_ftoa(lon)            // ','  // &
-            '"lat":'   // dm_ftoa(lat)            // ','  // &
-            '"alt":'   // dm_ftoa(alt)            // '}}'
+        geojson = '{"type":"Feature",' // &
+                  '"geometry":{"type":"Point",' // '"coordinates":[' // &
+                  dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
+                  ']},"properties":{' // &
+                  '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
+                  '"data":"' // trim(data)              // '}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
@@ -111,17 +100,7 @@ contains
         type(node_type), intent(inout) :: node    !! Node type.
         character(len=:), allocatable  :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson = geojson, &
-                                      type    = TYPE_NODE, &
-                                      id      = trim(node%id), &
-                                      name    = trim(node%name), &
-                                      meta    = trim(node%meta), &
-                                      x       = node%x, &
-                                      y       = node%y, &
-                                      z       = node%z, &
-                                      lon     = node%lon, &
-                                      lat     = node%lat, &
-                                      alt     = node%alt)
+        call dm_geojson_feature_point(geojson, TYPE_NODE, node%lon, node%lat, node%alt, dm_json_from(node))
     end function geojson_from_node
 
     function geojson_from_sensor(sensor) result(geojson)
@@ -131,17 +110,7 @@ contains
         type(sensor_type), intent(inout) :: sensor  !! Sensor type.
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson = geojson, &
-                                      type    = TYPE_SENSOR, &
-                                      id      = trim(sensor%id), &
-                                      name    = trim(sensor%name), &
-                                      meta    = trim(sensor%meta), &
-                                      x       = sensor%x, &
-                                      y       = sensor%y, &
-                                      z       = sensor%z, &
-                                      lon     = sensor%lon, &
-                                      lat     = sensor%lat, &
-                                      alt     = sensor%alt)
+        call dm_geojson_feature_point(geojson, TYPE_SENSOR, sensor%lon, sensor%lat, sensor%alt, dm_json_from(sensor))
     end function geojson_from_sensor
 
     function geojson_from_target(target) result(geojson)
@@ -151,17 +120,7 @@ contains
         type(target_type), intent(inout) :: target  !! Target type.
         character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
 
-        call dm_geojson_feature_point(geojson = geojson, &
-                                      type    = TYPE_TARGET, &
-                                      id      = trim(target%id), &
-                                      name    = trim(target%name), &
-                                      meta    = trim(target%meta), &
-                                      x       = target%x, &
-                                      y       = target%y, &
-                                      z       = target%z, &
-                                      lon     = target%lon, &
-                                      lat     = target%lat, &
-                                      alt     = target%alt)
+        call dm_geojson_feature_point(geojson, TYPE_TARGET, target%lon, target%lat, target%alt, dm_json_from(target))
     end function geojson_from_target
 
     integer function geojson_write_node(node, unit) result(rc)
@@ -181,39 +140,37 @@ contains
         rc = E_NONE
     end function geojson_write_node
 
-    integer function geojson_write_nodes(nodes, unit) result(rc)
-        !! Writes nodes array to file or standard output.
-        use :: dm_node, only: node_type
+    integer function geojson_write_sensor(sensor, unit) result(rc)
+        !! Writes sensor to file or standard output.
+        use :: dm_sensor, only: sensor_type
 
-        type(node_type), intent(inout)        :: nodes(:) !! Node array.
-        integer,         intent(in), optional :: unit     !! File unit.
+        type(sensor_type), intent(inout)        :: sensor !! Sensor type.
+        integer,           intent(in), optional :: unit   !! File unit.
 
-        integer :: i, n, stat, unit_
+        integer :: stat, unit_
 
         rc = E_WRITE
         unit_ = stdout
         if (present(unit)) unit_ = unit
-        n = size(nodes)
-
-        if (n == 0) then
-            write (unit_, '("[]")', iostat=stat)
-            if (stat /= 0) return
-            rc = E_NONE
-            return
-        end if
-
-        write (unit_, '("[")', advance='no', iostat=stat)
-        if (stat /= 0) return
-
-        do i = 1, n
-            write (unit_, '(a)', advance='no', iostat=stat) dm_geojson_from(nodes(i))
-            if (stat /= 0) return
-            if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
-            if (stat /= 0) return
-        end do
-
-        write (unit_, '("]")', iostat=stat)
+        write (unit_, '(a)', iostat=stat) dm_geojson_from(sensor)
         if (stat /= 0) return
         rc = E_NONE
-    end function geojson_write_nodes
+    end function geojson_write_sensor
+
+    integer function geojson_write_target(target, unit) result(rc)
+        !! Writes target to file or standard output.
+        use :: dm_target, only: target_type
+
+        type(target_type), intent(inout)        :: target !! Target type.
+        integer,           intent(in), optional :: unit   !! File unit.
+
+        integer :: stat, unit_
+
+        rc = E_WRITE
+        unit_ = stdout
+        if (present(unit)) unit_ = unit
+        write (unit_, '(a)', iostat=stat) dm_geojson_from(target)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function geojson_write_target
 end module dm_geojson

@@ -716,13 +716,13 @@ contains
         character(len=*), parameter :: JS_DMPACK  = APP_JS_PATH  // '/dmpack.js'       !! DMPACK JS.
         character(len=*), parameter :: JS_LEAFLET = APP_JS_PATH  // '/leaflet.js'      !! Leaflet JS.
         character(len=*), parameter :: STYLE      = APP_CSS_PATH // '/leaflet.min.css' !! Additional CSS file.
-        character(len=*), parameter :: INLINE     = '#map { height: 600px; }' // CR_LF !! Inline CSS.
         character(len=*), parameter :: MAP_ID     = 'map'                              !! HTML element id of map.
         character(len=*), parameter :: TITLE      = 'Map'                              !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        integer       :: i,  rc
+        integer       :: i, rc
+        integer       :: nn, ns, nt
         real(kind=r8) :: lon, lat
         type(db_type) :: db
 
@@ -773,7 +773,7 @@ contains
         end if
 
         ! Output page header.
-        call html_header(TITLE, inline_style=INLINE, style=STYLE)
+        call html_header(TITLE, style=STYLE)
         call dm_cgi_out(dm_html_heading(1, TITLE))
 
         ! Output map element and scripts.
@@ -790,16 +790,28 @@ contains
         call dm_cgi_out('const zoom = 5;')
         call dm_cgi_out('const features = [')
 
-        do i = 1, size(nodes)
-            call dm_cgi_out(dm_geojson_from(nodes(i)) // ',')
+        nn = size(nodes)
+        ns = size(sensors)
+        nt = size(targets)
+
+        do i = 1, nn
+            if (i < nn .or. ns > 0 .or. nt > 0) then
+                call dm_cgi_out(dm_geojson_from(nodes(i)) // ',')
+            else
+                call dm_cgi_out(dm_geojson_from(nodes(i)))
+            end if
         end do
 
-        do i = 1, size(sensors)
-            call dm_cgi_out(dm_geojson_from(sensors(i)) // ',')
+        do i = 1, ns
+            if (i < nn .or. nt > 0) then
+                call dm_cgi_out(dm_geojson_from(sensors(i)) // ',')
+            else
+                call dm_cgi_out(dm_geojson_from(sensors(i)))
+            end if
         end do
 
-        do i = 1, size(targets)
-            if (i < size(targets)) then
+        do i = 1, nt
+            if (i < nt) then
                 call dm_cgi_out(dm_geojson_from(targets(i)) // ',')
             else
                 call dm_cgi_out(dm_geojson_from(targets(i)))
@@ -2329,7 +2341,7 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or alt (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_COL // & ! column 4
                dm_html_label('Longitude', for='lon') // &
@@ -2397,7 +2409,7 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Y or northing (optional)') // &
                dm_html_label('Z', for='z') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='z', name='z', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or alt (optional)') // &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 2
                H_DIV_COL // & ! column 3
                dm_html_label('Longitude', for='lon') // &
