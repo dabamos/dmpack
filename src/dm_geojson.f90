@@ -88,7 +88,7 @@ contains
             '{"type":"Feature",' // &
             '"geometry":{"type":"Point",' // '"coordinates":[' // &
             dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
-            '"]},properties":{' // &
+            ']},"properties":{' // &
             '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
             '"id":"'   // id                      // '",' // &
             '"name":"' // name                    // '",' // &
