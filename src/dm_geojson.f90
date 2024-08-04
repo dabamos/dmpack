@@ -84,10 +84,12 @@ contains
 
         geojson = '{"type":"Feature",' // &
                   '"geometry":{"type":"Point",' // '"coordinates":[' // &
-                  dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
+                  dm_ftoa(lon) // ',' // &
+                  dm_ftoa(lat) // ',' // &
+                  dm_ftoa(alt) // &
                   ']},"properties":{' // &
                   '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
-                  '"data":"' // trim(data)              // '}}'
+                  '"data":'  // trim(data)              // '}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
