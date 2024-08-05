@@ -41,7 +41,9 @@ contains
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
     subroutine dm_geojson_feature_point(geojson, type, lon, lat, alt, data)
-        !! Returns GeoJSON string of the following form:
+        !! Returns GeoJSON feature point of given DMPACK type, longitude,
+        !! latitude, altitude, and type data in JSON. The output string
+        !! `geojson` is of the following form:
         !!
         !! ```json
         !! {
@@ -70,10 +72,12 @@ contains
         !!   }
         !! }
         !! ```
+        !!
+        !! The property _data_ is set to the passed JSON string `data`.
         character(len=:), allocatable, intent(out) :: geojson !! Output GeoJSON string.
         integer,                       intent(in)  :: type    !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
-        real(kind=r8),                 intent(in)  :: lon     !! Point longitude.
-        real(kind=r8),                 intent(in)  :: lat     !! Point latitude.
+        real(kind=r8),                 intent(in)  :: lon     !! Point longitude (decimal).
+        real(kind=r8),                 intent(in)  :: lat     !! Point latitude (decimal).
         real(kind=r8),                 intent(in)  :: alt     !! Point altitude.
         character(len=*),              intent(in)  :: data    !! Point JSON data.
 
@@ -82,45 +86,41 @@ contains
         type_ = TYPE_NONE
         if (dm_type_valid(type)) type_ = type
 
-        geojson = '{"type":"Feature",' // &
-                  '"geometry":{"type":"Point",' // '"coordinates":[' // &
-                  dm_ftoa(lon) // ',' // &
-                  dm_ftoa(lat) // ',' // &
-                  dm_ftoa(alt) // &
-                  ']},"properties":{' // &
-                  '"type":"' // trim(TYPE_NAMES(type_)) // '",' // &
-                  '"data":'  // trim(data)              // '}}'
+        geojson = '{"type":"Feature","geometry":{"type":"Point","coordinates":[' // &
+                  dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
+                  ']},"properties":{"type":"' // trim(TYPE_NAMES(type_)) // '","data":' // &
+                  trim(data) // '}}'
     end subroutine dm_geojson_feature_point
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
     function geojson_from_node(node) result(geojson)
-        !! Returns node in GeoJSON format.
+        !! Returns node as allocatable string in GeoJSON format.
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout) :: node    !! Node type.
-        character(len=:), allocatable  :: geojson !! Alloctable GeoJSON string.
+        character(len=:), allocatable  :: geojson !! GeoJSON string.
 
         call dm_geojson_feature_point(geojson, TYPE_NODE, node%lon, node%lat, node%alt, dm_json_from(node))
     end function geojson_from_node
 
     function geojson_from_sensor(sensor) result(geojson)
-        !! Returns sensor in GeoJSON format.
+        !! Returns sensor as allocatable string in GeoJSON format.
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensor  !! Sensor type.
-        character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
+        character(len=:), allocatable    :: geojson !! GeoJSON string.
 
         call dm_geojson_feature_point(geojson, TYPE_SENSOR, sensor%lon, sensor%lat, sensor%alt, dm_json_from(sensor))
     end function geojson_from_sensor
 
     function geojson_from_target(target) result(geojson)
-        !! Returns target in GeoJSON format.
+        !! Returns target as allocatable string in GeoJSON format.
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: target  !! Target type.
-        character(len=:), allocatable    :: geojson !! Alloctable GeoJSON string.
+        character(len=:), allocatable    :: geojson !! GeoJSON string.
 
         call dm_geojson_feature_point(geojson, TYPE_TARGET, target%lon, target%lat, target%alt, dm_json_from(target))
     end function geojson_from_target
