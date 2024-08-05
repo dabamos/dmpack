@@ -34,7 +34,7 @@ function onEachFeature(feature, layer)
 {
     let content = '';
 
-    if (feature.properties && features.properties.type && feature.properties.data)
+    if (feature.properties && feature.properties.type && feature.properties.data)
     {
         if (feature.properties.data.name)
         {
