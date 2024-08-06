@@ -61,7 +61,7 @@ contains
         !!     "data": {
         !!       "id": "dummy-node",
         !!       "name": "Dummy Node",
-        !!       "meta": "dummy description"
+        !!       "meta": "dummy description",
         !!       "x": 0.0,
         !!       "y": 0.0,
         !!       "z": 0.0,
