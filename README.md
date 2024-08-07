@@ -74,7 +74,7 @@ POSIX semaphores.
 
 ## Requirements
 
-**DMPAC**K has the following requirements:
+**DMPACK** has the following requirements:
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)

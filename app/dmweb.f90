@@ -34,6 +34,7 @@ program dmweb
     !! | `DM_DB_BEAT`         | Path to beat database.                       |
     !! | `DM_DB_LOG`          | Path to log database.                        |
     !! | `DM_DB_OBSERV`       | Path to observation database.                |
+    !! | `DM_TILE_URL`        | URL of map tiles.                            |
     !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
     !!
     !! The databases have to exist at start-up. Add the variables to the
@@ -702,8 +703,8 @@ contains
     end subroutine route_logs
 
     subroutine route_map(env)
-        !! Shows map of sensor and target positions. The environment variable
-        !! `TILE_URL` must be set.
+        !! Shows map of node, sensor, and target positions. The environment
+        !! variable `DM_TILE_URL` must be set.
         !!
         !! ## Path
         !!
@@ -803,7 +804,7 @@ contains
         end do
 
         do i = 1, ns
-            if (i < nn .or. nt > 0) then
+            if (i < ns .or. nt > 0) then
                 call dm_cgi_out(dm_geojson_from(sensors(i)) // ',')
             else
                 call dm_cgi_out(dm_geojson_from(sensors(i)))

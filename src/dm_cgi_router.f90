@@ -128,11 +128,11 @@ contains
 
         integer :: i
 
-        rc = dm_cgi_router_create(router, max_routes=size(ROUTES))
+        rc = dm_cgi_router_create(router, max_routes=size(routes))
         if (dm_is_error(rc)) return
 
         do i = 1, size(routes)
-            rc = dm_cgi_router_add(router, ROUTES(i))
+            rc = dm_cgi_router_add(router, routes(i))
             if (dm_is_error(rc)) return
         end do
     end function dm_cgi_router_set
