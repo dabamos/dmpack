@@ -23,12 +23,9 @@ dmlog - sends log to POSIX message queue
 
 The *dmlog* utility forwards a log message to the POSIX message queue of a
 _dmlogger(1)_ instance. Argument `--message` is mandatory. The default log level
-is `info`.
-
-Valid log levels are: 1 (`debug`), 2 (`info`), 3 (`warning`), 4 (`error`), and 5
-(`critical`).
-
-The program terminates after log transmission.
+is `info` (2). Valid log levels are `debug` (1), `info` (2), `warning` (3),
+`error` (4), `critical` (5), and `user` (6). The program terminates after log
+transmission.
 
 == OPTIONS
 
@@ -39,8 +36,8 @@ The program terminates after log transmission.
   Output available command-line arguments and quit.
 
 *--level*, *-L* _level_::
-  Log level, from 1 (`LL_DEBUG`) to 5 (`LL_CRITICAL`). The default level is
-  2 (`LL_INFO`). The argument may be an integer or name string.
+  Log level, from `debug` (1) to `user` (6) The default level is `info` (2).
+  The argument may be an integer or log level name string.
 
 *--logger*, *-l* _name_::
   Name of logger instance and POSIX message queue (default is `dmlogger`).
@@ -52,13 +49,13 @@ The program terminates after log transmission.
   Node id.
 
 *--observ*, *-O* _id_::
-  Observation id (UUID).
+  Observation id (UUIDv4).
 
 *--sensor*, *-S* _id_::
   Sensor id.
 
 *--source*, *-Z* _source_::
-  Source of the log message (sender).
+  Name of log message source (sender).
 
 *--target*, *-T* _id_::
   Target id.
@@ -84,7 +81,7 @@ The program terminates after log transmission.
 Send a log message to the POSIX message queue of logger `dmlogger`:
 
 ....
-$ dmlog --node dummy-node --level 3 --message "low battery" --source test --verbose
+$ dmlog --node dummy-node --level warning --message "low battery" --source test --verbose
 2022-12-09T22:50:44.161000+01:00 [WARNING ] test - low battery
 ....
 
@@ -92,9 +89,8 @@ The logger will receive the log message and insert it into the log database (if
 the log level is greater or equal the minimum log level):
 
 ....
-$ dmlogger --node dummy-node --database logs.sqlite --verbose
-2022-12-09T22:50:44.161000+01:00 [WARNING ] test - low battery
-2022-12-09T22:50:44.173000+01:00 [DEBUG   ] dmlogger - log [...] inserted
+$ dmlogger --node dummy-node --database log.sqlite --verbose
+2022-12-09T22:50:44.161000+01:00 [WARNING] test - low battery
 ....
 
 == SEE ALSO

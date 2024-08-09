@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-06-19
+.\" Generator: Asciidoctor 2.0.16
+.\"      Date: 2024-08-09
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2024-06-19" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2024-08-09" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -42,12 +42,9 @@ dmlog \- sends log to POSIX message queue
 .sp
 The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
 \fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. The default log level
-is \f(CRinfo\fP.
-.sp
-Valid log levels are: 1 (\f(CRdebug\fP), 2 (\f(CRinfo\fP), 3 (\f(CRwarning\fP), 4 (\f(CRerror\fP), and 5
-(\f(CRcritical\fP).
-.sp
-The program terminates after log transmission.
+is \f(CRinfo\fP (2). Valid log levels are \f(CRdebug\fP (1), \f(CRinfo\fP (2), \f(CRwarning\fP (3),
+\f(CRerror\fP (4), \f(CRcritical\fP (5), and \f(CRuser\fP (6). The program terminates after log
+transmission.
 .SH "OPTIONS"
 .sp
 \fB\-\-error\fP, \fB\-e\fP \fIn\fP
@@ -62,8 +59,8 @@ Output available command\-line arguments and quit.
 .sp
 \fB\-\-level\fP, \fB\-L\fP \fIlevel\fP
 .RS 4
-Log level, from 1 (\f(CRLL_DEBUG\fP) to 5 (\f(CRLL_CRITICAL\fP). The default level is
-2 (\f(CRLL_INFO\fP). The argument may be an integer or name string.
+Log level, from \f(CRdebug\fP (1) to \f(CRuser\fP (6) The default level is \f(CRinfo\fP (2).
+The argument may be an integer or log level name string.
 .RE
 .sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP
@@ -83,7 +80,7 @@ Node id.
 .sp
 \fB\-\-observ\fP, \fB\-O\fP \fIid\fP
 .RS 4
-Observation id (UUID).
+Observation id (UUIDv4).
 .RE
 .sp
 \fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
@@ -93,7 +90,7 @@ Sensor id.
 .sp
 \fB\-\-source\fP, \fB\-Z\fP \fIsource\fP
 .RS 4
-Source of the log message (sender).
+Name of log message source (sender).
 .RE
 .sp
 \fB\-\-target\fP, \fB\-T\fP \fIid\fP
@@ -130,7 +127,7 @@ Send a log message to the POSIX message queue of logger \f(CRdmlogger\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmlog \-\-node dummy\-node \-\-level 3 \-\-message "low battery" \-\-source test \-\-verbose
+$ dmlog \-\-node dummy\-node \-\-level warning \-\-message "low battery" \-\-source test \-\-verbose
 2022\-12\-09T22:50:44.161000+01:00 [WARNING ] test \- low battery
 .fam
 .fi
@@ -142,9 +139,8 @@ the log level is greater or equal the minimum log level):
 .if n .RS 4
 .nf
 .fam C
-$ dmlogger \-\-node dummy\-node \-\-database logs.sqlite \-\-verbose
-2022\-12\-09T22:50:44.161000+01:00 [WARNING ] test \- low battery
-2022\-12\-09T22:50:44.173000+01:00 [DEBUG\&   ] dmlogger \- log [...] inserted
+$ dmlogger \-\-node dummy\-node \-\-database log.sqlite \-\-verbose
+2022\-12\-09T22:50:44.161000+01:00 [WARNING] test \- low battery
 .fam
 .fi
 .if n .RE
