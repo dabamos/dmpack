@@ -913,15 +913,15 @@ sensor.alt: 0.000000000000
 The *dmexport* program writes beats, logs, nodes, sensors, targets,
 observations, and data points from database to file, in ASCII block, CSV, JSON,
 or JSON Lines format. The ASCII block format is only available for X/Y data
-points. The types data point, log, and observation require a sensor id, a target
-id, and a time range in ISO 8601 format.
+points. The types data point, log, and observation require a sensor id, a
+target id, and a time range in ISO 8601 format.
 
-If no output file is given, the data is printed to standard output. The
-output file will be overwritten if it already exists. If no records are found,
-an empty file will be created.
+If no output file is given, the data is printed to standard output. The output
+file will be overwritten if it already exists. If no records are found, an
+empty file will be created.
 
 .Output file formats
-[[dmexport-output]]
+[[dmexport-format]]
 [cols="1,2,2,2,2"]
 |===
 | Type     ^| Block ^| CSV ^| JSON ^| JSONL
@@ -943,7 +943,7 @@ an empty file will be created.
 | Option               | Short | Default | Description
 
 | `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
-| `--format _format_`  | `-f`  | –       | <<dmexport-output,Output file format>> (`block`, `csv`, `json`, `jsonl`).
+| `--format _format_`  | `-f`  | –       | <<dmexport-format,Output file format>> (`block`, `csv`, `json`, `jsonl`).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
 | `--help`             | `-h`  | –       | Output available command-line arguments and quit.
@@ -1012,8 +1012,8 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--force`             | `-F`  | –          | Force file output even if no new log records are available.
 | `--help`              | `-h`  | –          | Output available command-line arguments and quit.
 | `--id _uuid_`         | `-I`  | –          | UUID of the feed, 36 characters long with hyphens.
-| `--maxlevel _level_`  | `-K`  | `critical` | Select log messages of the given maximum <<data-log-level,log level>> (between `debug` or 1 and `user` or 6). Must be greater or equal the minimum level.
-| `--minlevel _level_`  | `-L`  | `debug`    | Select log messages of the given minimum <<data-log-level,log level>> (between `debug` or 1 and `user` or 6).
+| `--maxlevel _level_`  | `-K`  | `critical` | Select log messages of the given maximum <<data-log-level,log level>> (from `debug` or 1 to `user` or 6). Must be greater or equal the minimum level.
+| `--minlevel _level_`  | `-L`  | `debug`    | Select log messages of the given minimum <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
 | `--name _name_`       | `-n`  | `dmfeed`   | Name of instance and table in configuration.
 | `--node _id_`         | `-N`  | –          | Select log messages of the given node id.
 | `--output _file_`     | `-o`  | _stdout_   | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.
@@ -1126,7 +1126,7 @@ Otherwise, the default log level is used instead.
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
 | `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
-| `--level _level_`   | `-L`  | 3       | Default level of log messages, between 1 and 5.
+| `--level _level_`   | `-L`  | 3       | Default <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
 | `--logger _name_`   | `-l`  | –       | Name of <<dmlogger>> process to send logs to.
 | `--name _name_`     | `-n`  | `dmgrc` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –       | Node id.
