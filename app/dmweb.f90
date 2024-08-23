@@ -602,39 +602,41 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'from', from)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'to', to)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'max_results', nresults))) then
-                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
-                    exit response_block
-                end if
+                valid = .false.
 
-                valid = .true.
+                valid_block: block
+                    ! Mandatory parameters.
+                    if (dm_is_error(dm_cgi_get(param, 'from',        from)))     exit valid_block
+                    if (dm_is_error(dm_cgi_get(param, 'to',          to)))       exit valid_block
+                    if (dm_is_error(dm_cgi_get(param, 'max_results', nresults))) exit valid_block
 
-                ! Timestamps.
-                if (.not. dm_time_valid(from)) valid = .false.
-                if (.not. dm_time_valid(to))   valid = .false.
+                    ! Timestamps.
+                    if (.not. dm_time_valid(from)) exit valid_block
+                    if (.not. dm_time_valid(to))   exit valid_block
 
-                ! Node id.
-                if (dm_is_ok(dm_cgi_get(param, 'node_id', node_id))) then
-                    if (.not. dm_id_valid(node_id)) valid = .false.
-                end if
+                    ! Node id.
+                    if (dm_is_ok(dm_cgi_get(param, 'node_id', node_id))) then
+                        if (.not. dm_id_valid(node_id)) exit valid_block
+                    end if
 
-                ! Sensor id.
-                if (dm_is_ok(dm_cgi_get(param, 'sensor_id', sensor_id))) then
-                    if (.not. dm_id_valid(sensor_id)) valid = .false.
-                end if
+                    ! Sensor id.
+                    if (dm_is_ok(dm_cgi_get(param, 'sensor_id', sensor_id))) then
+                        if (.not. dm_id_valid(sensor_id)) exit valid_block
+                    end if
 
-                ! Target id.
-                if (dm_is_ok(dm_cgi_get(param, 'target_id', target_id))) then
-                    if (.not. dm_id_valid(target_id)) valid = .false.
-                end if
+                    ! Target id.
+                    if (dm_is_ok(dm_cgi_get(param, 'target_id', target_id))) then
+                        if (.not. dm_id_valid(target_id)) exit valid_block
+                    end if
 
-                ! Number of results.
-                if (.not. dm_array_has(max_results, nresults)) valid = .false.
+                    ! Number of results.
+                    if (.not. dm_array_has(max_results, nresults)) exit valid_block
+
+                    valid = .true.
+                end block valid_block
 
                 if (.not. valid) then
-                    call html_error('Invalid Parameters', error=E_INVALID)
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
@@ -724,6 +726,7 @@ contains
 
         integer       :: i, rc
         integer       :: nn, ns, nt
+        logical       :: comma
         real(kind=r8) :: lon, lat
         type(db_type) :: db
 
@@ -789,38 +792,29 @@ contains
         call dm_cgi_out('const lon = '  // dm_ftoa(lon)    // ';')
         call dm_cgi_out('const lat = '  // dm_ftoa(lat)    // ';')
         call dm_cgi_out('const zoom = 5;')
-        call dm_cgi_out('const features = [')
+        call dm_cgi_out('const geoJson = { "type": "FeatureCollection", "features": [')
 
         nn = size(nodes)
         ns = size(sensors)
         nt = size(targets)
 
         do i = 1, nn
-            if (i < nn .or. ns > 0 .or. nt > 0) then
-                call dm_cgi_out(dm_geojson_from(nodes(i)) // ',')
-            else
-                call dm_cgi_out(dm_geojson_from(nodes(i)))
-            end if
+            comma = (i < nn .or. ns > 0 .or. nt > 0)
+            call dm_cgi_out(dm_geojson_from(nodes(i), comma))
         end do
 
         do i = 1, ns
-            if (i < ns .or. nt > 0) then
-                call dm_cgi_out(dm_geojson_from(sensors(i)) // ',')
-            else
-                call dm_cgi_out(dm_geojson_from(sensors(i)))
-            end if
+            comma = (i < ns .or. nt > 0)
+            call dm_cgi_out(dm_geojson_from(sensors(i), comma))
         end do
 
         do i = 1, nt
-            if (i < nt) then
-                call dm_cgi_out(dm_geojson_from(targets(i)) // ',')
-            else
-                call dm_cgi_out(dm_geojson_from(targets(i)))
-            end if
+            comma = (i < nt)
+            call dm_cgi_out(dm_geojson_from(targets(i), comma))
         end do
 
-        call dm_cgi_out('];')
-        call dm_cgi_out('createMap(id, url, lon, lat, zoom, features);')
+        call dm_cgi_out(']};')
+        call dm_cgi_out('createMap(id, url, lon, lat, zoom, geoJson);')
         call dm_cgi_out(H_SCRIPT_END)
 
         ! Output page footer.

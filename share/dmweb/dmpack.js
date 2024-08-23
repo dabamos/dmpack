@@ -8,18 +8,17 @@
  * @param {number} lon - The longitude coordinate.
  * @param {number} lat - The latitude coordinate.
  * @param {number} zoom - The Leaflet zoom level.
- * @param {array} features - Array of GeoJSON features.
+ * @param {array} geoJson - GeoJSON feature collection.
  */
-function createMap(id, url, lon, lat, zoom, features)
+function createMap(id, url, lon, lat, zoom, geoJson)
 {
     const options = { attributionControl: false };
     const view    = { lat: lat, lng: lon };
-    const maxZoom = 22;
-    const map     = L.map(id, options).setView(view, zoom);
+    const maxZoom = { maxZoom: 24 };
 
-    L.tileLayer(url, { maxZoom: maxZoom }).addTo(map);
+    const map = L.map(id, options).setView(view, zoom);
 
-    const geoJson = { "type": "FeatureCollection", "features": features };
+    L.tileLayer(url, maxZoom).addTo(map);
 
     L.geoJson(geoJson, {
         pointToLayer,
@@ -28,23 +27,38 @@ function createMap(id, url, lon, lat, zoom, features)
 }
 
 /**
+ * Returns true if type is valid.
+ */
+function isValidType(type)
+{
+    return (type == 'node' || type == 'sensor' || type == 'target');
+}
+
+/**
  * Leaflet callback function.
  */
 function onEachFeature(feature, layer)
 {
+    const base = '/dmpack';
+
     let content = '';
 
     if (feature.properties && feature.properties.type && feature.properties.data)
     {
-        if (feature.properties.data.name)
+        if (feature.properties.data.id && features.properties.data.name)
         {
-            content += `<strong>${feature.properties.data.name}</strong> (${feature.properties.type})<br>`;
+            let name;
+
+            if (isValidType(features.properties.type))
+                name = `<a href="${base}/${features.properties.type}?id=${feature.properties.data.id}">${feature.properties.data.name}</a>`;
+            else
+                name = `${feature.properties.data.name}`;
+
+            content += `<strong>${name}</strong> `;
         }
 
-        if (feature.properties.data.meta)
-        {
-            content += feature.properties.data.meta;
-        }
+        content += `<em>${feature.properties.type}</em><br>`;
+        if (feature.properties.data.meta) content += feature.properties.data.meta;
     }
 
     layer.bindPopup(content);
@@ -55,6 +69,12 @@ function onEachFeature(feature, layer)
  */
 function pointToLayer(feature, latlng)
 {
+    const colors = {
+        node: "gold",
+        sensor: "crimson",
+        target: "chartreuse"
+    };
+
     let options = {
         radius: 4,
         fillColor: "black",
@@ -64,18 +84,8 @@ function pointToLayer(feature, latlng)
         fillOpacity: 0.8
     };
 
-    switch (feature.properties.type)
-    {
-        case 'node':
-            options.fillColor = "gold";
-            break;
-        case 'sensor':
-            options.fillColor = "crimson";
-            break;
-        case 'target':
-            options.fillColor = "chartreuse";
-            break;
-    }
+    if (feature.properties && feature.properties.type && colors.hasOwnProperty(feature.properties.type))
+        options.fillColor = colors[feature.properties.type];
 
     return L.circleMarker(latlng, options);
 }

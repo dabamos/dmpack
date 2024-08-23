@@ -279,9 +279,11 @@ contains
         tty%fd = c_open(trim(tty%path) // c_null_char, flags, 0_c_mode_t)
         if (tty%fd < 0) return
 
+        ! Set TTY attributes.
         rc = dm_tty_set_attributes(tty)
         if (dm_is_error(rc)) return
 
+        ! Flush input and output buffer.
         rc = dm_tty_flush(tty)
     end function dm_tty_open
 
