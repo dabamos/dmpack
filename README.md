@@ -22,14 +22,14 @@ Breaking API changes have to be expected until version 1.0.0.
 
 ## Description
 
-**DMPACK** is a scientific monitoring system developed for automated control
-measurements of buildings, infrastructure, terrain, geodetic nets, and other
-objects. The software runs on sensor nodes, usually IoT gateways, industrial
-embedded systems, or single-board computers, and obtains observation data from
-arbitrary sensors, like robotic total stations, digital levels, inclinometers,
-weather stations, or GNSS receivers. The raw sensor data is then processed,
-stored, and optionally transmitted to a server. The software package may be used
-to monitor objects like:
+**DMPACK** is a scientific monitoring system and sensor network middleware
+developed for automated control measurements of buildings, infrastructure,
+terrain, geodetic nets, and other objects. The software runs on sensor nodes,
+usually IoT gateways, industrial embedded systems, or single-board computers,
+and obtains observation data from arbitrary sensors, like robotic total
+stations, digital levels, inclinometers, weather stations, or GNSS receivers.
+The raw sensor data is then processed, stored, and optionally transmitted to a
+server. The software package may be used to monitor objects like:
 
 * bridges, tunnels, dams
 * motorways, railways
@@ -55,9 +55,9 @@ POSIX semaphores.
 * SQLite database access
 * message passing via POSIX message queues
 * process synchronisation via POSIX semaphores
-* data serialisation (ASCII, CSV, GeoJSON, JSON, JSON Lines, HDF5, Namelist)
+* data serialisation (ASCII, CSV, GeoJSON, HDF5, JSON, JSON Lines, Namelist)
 * server-side web applications (CGI, FastCGI)
-* HTTP-RPC API for remote procedure calls
+* HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
 * client status messages (heartbeats)
 * distributed logging

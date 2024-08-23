@@ -7,7 +7,7 @@ module dm_geocom
     !! for C/C++ and Visual Basic. Functions are given more memorable names,
     !! without any sub-system prefix. Structured types have been removed
     !! altogether. If invalid parameters are passed to the GeoCOM methods, they
-    !! will be replaced with their default values, and an error message will
+    !! will be replaced with their default values, and an error message is
     !! printed in verbose mode.
     !!
     !! Open the serial port with argument `verbose` set to `.true.` to output

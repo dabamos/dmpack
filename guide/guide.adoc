@@ -2308,8 +2308,8 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 | `DM_DB_BEAT`         | Path to heartbeat database (server).
 | `DM_DB_LOG`          | Path to log database (client, server).
 | `DM_DB_OBSERV`       | Path to observation database (client, server).
-| `DM_TILE_URL`        | URL of link:https://leafletjs.com/reference.html#tilelayer-url-template[tile server].
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
+| `DM_TILE_URL`        | URL of link:https://leafletjs.com/reference.html#tilelayer-url-template[tile server].
 |===
 
 The map view requires a URL to the tile server in environment variable
@@ -2572,8 +2572,8 @@ setenv.add-environment = (
   "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
   "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
   "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
-  "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   "DM_READ_ONLY" => "0"
+  "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 )
 
 # Set authentication back-end and path of user file.
@@ -4169,8 +4169,11 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 == GeoCOM API [[geocom-api]]
 
-The official GeoCOM API is divided into the following sub-systems:
+The DMPACK library provides Leica GeoCOM abstraction layers for Fortran and
+<<lua-api,Lua>>, to write distinct programs for TPS control or to load
+evaluable configuration files into <<dmserial>>.
 
+.Sub-systems of the official GeoCOM API [[geocom-api-sub]]
 [cols="1,7"]
 |===
 | Acronym | Name
@@ -4187,6 +4190,58 @@ The official GeoCOM API is divided into the following sub-systems:
 | `SUP`   | Supervisor
 | `TMC`   | Theodolite Measurement and Calculation
 |===
+
+DMPACK does not follow the Leica GeoCOM API for C/C++ and Visual Basic.
+Instead, the API is entirely object-oriented, and methods are given more
+memorable names without any sub-system prefix. Structured types have been
+removed altogether. Named parameter start with prefix `GEOCOM_` and return
+codes with prefix `GRC_`. See the
+link:https://www.dabamos.de/dmpack/doc/module/dm_geocom.html[source code documentation]
+for an overview of the API.
+
+The following example in Fortran opens the TTY `/dev/ttyUSB0`, calls the null
+procedure of the instrument (`COM_NullProc`), and then prints return code,
+associated error message, and last request to standard output:
+
+[source,fortran]
+....
+! geocom.f90
+program main
+    use :: dmpack
+    implicit none (type, external)
+
+    integer            :: rc      ! DMPACK return code.
+    type(geocom_class) :: geocom  ! GeoCOM object.
+    type(request_type) :: request ! Last request.
+
+    ! Open connection to instrument, quit on error.
+    call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, verbose=.true., error=rc)
+    call dm_error_out(rc, fatal=.true.)
+
+    ! Call remote procedure COM_NullProc and output result.
+    call geocom%null()
+    print '(i0, ": ", a)', geocom%code(), geocom%message()
+
+    ! Output last request.
+    call geocom%last_request(request)
+    call dm_request_out(request)
+
+    ! Close connection.
+    call geocom%close()
+end program main
+....
+
+Make sure that the instrument is configured to 115,200 baud. Invalid parameters
+passed to the GeoCOM methods will be replaced with their default values, and an
+error message is printed in verbose mode.
+
+If the DMPACK library is installed to `/opt`, build, link, and run the example
+program with:
+
+....
+$ gfortran -I/opt/include/dmpack -o geocom geocom.f90 /opt/lib/libdmpack.a -lpcre2-8
+$ ./geocom
+....
 
 === Enumerators [[geocom-api-enums]]
 
