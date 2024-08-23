@@ -300,7 +300,7 @@ contains
         end if
 
         if (present(pattern)) then
-            write (request%pattern, '("%R1P,0,0:", 2a)') trim(pattern), GEOCOM_DELIMITER
+            write (request%pattern, '("%R1P,0,0:", a)') trim(pattern)
         end if
 
         if (present(mode)) request%mode = mode
