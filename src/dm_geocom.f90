@@ -790,7 +790,8 @@ contains
         logical,             intent(in),  optional :: verbose   !! Print errors to standard error.
         integer,             intent(out), optional :: error     !! DMPACK error code
 
-        integer :: i, n, rc
+        integer :: baud_rate_, retries_
+        integer :: i, rc
 
         tty_block: block
             rc = E_EXIST
@@ -805,13 +806,27 @@ contains
             this%verbose = .false.
             if (present(verbose)) this%verbose = verbose
 
-            ! Validate and set baud rate.
-            this%baud = dm_geocom_type_validated(GEOCOM_COM_BAUD_RATE, baud_rate, error=rc)
-
-            if (dm_is_error(rc)) then
-                call this%output(rc, 'invalid baud rate')
-                exit tty_block
-            end if
+            ! Convert GeoCOM baud rate parameter to TTY baud rate parameter.
+            rc = E_INVALID
+            select case (baud_rate)
+                case (GEOCOM_COM_BAUD_2400)
+                    baud_rate_ = TTY_B2400
+                case (GEOCOM_COM_BAUD_4800)
+                    baud_rate_ = TTY_B4800
+                case (GEOCOM_COM_BAUD_9600)
+                    baud_rate_ = TTY_B9600
+                case (GEOCOM_COM_BAUD_19200)
+                    baud_rate_ = TTY_B19200
+                case (GEOCOM_COM_BAUD_38400)
+                    baud_rate_ = TTY_B38400
+                case (GEOCOM_COM_BAUD_57600)
+                    baud_rate_ = TTY_B57600
+                case (GEOCOM_COM_BAUD_115200)
+                    baud_rate_ = TTY_B115200
+                case default
+                    call this%output(rc, 'invalid baud rate')
+                    exit tty_block
+            end select
 
             ! Verify TTY device exists.
             rc = E_NOT_FOUND
@@ -820,25 +835,27 @@ contains
                 exit tty_block
             end if
 
-            n = 0
-            if (present(retries)) n = max(0, retries)
+            retries_ = 0
+            if (present(retries)) retries_ = max(0, retries)
 
             ! Try to open TTY.
-            do i = 0, n
+            do i = 0, retries_
                 rc = dm_tty_open(tty       = this%tty, &
                                  path      = path, &
-                                 baud_rate = this%baud, &
+                                 baud_rate = baud_rate_, &
                                  byte_size = TTY_BYTE_SIZE8, &
                                  parity    = TTY_PARITY_NONE, &
                                  stop_bits = TTY_STOP_BITS1)
                 if (dm_is_ok(rc)) exit
 
                 call this%output(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // &
-                                     dm_itoa(i + 1) // ' of ' // dm_itoa(n + 1) // ')')
+                                     dm_itoa(i + 1) // ' of ' // dm_itoa(retries_ + 1) // ')')
 
                 ! Try again.
-                if (i < n) call dm_sleep(WAIT_TIME)
+                if (i < retries_) call dm_sleep(WAIT_TIME)
             end do
+
+            if (dm_is_error(rc)) call this%output(rc, 'could not open TTY ' // path)
         end block tty_block
 
         this%rc = rc
