@@ -11,9 +11,9 @@ module dm_log
     !! | 1     | `debug`    | Debug messages.                              |
     !! | 2     | `info`     | Hint message.                                |
     !! | 3     | `warning`  | Warning message.                             |
-    !! | 5     | `error`    | Non-critical error message.                  |
-    !! | 4     | `critical` | Critical error message (not used by DMPACK). |
-    !! | 5     | `user`     | User-defined level (not used by DMPACK).     |
+    !! | 4     | `error`    | Non-critical error message.                  |
+    !! | 5     | `critical` | Critical error message (not used by DMPACK). |
+    !! | 6     | `user`     | User-defined level (not used by DMPACK).     |
     !!
     !! Log level _critical_ is reserved for monitoring events and not used by
     !! DMPACK internally. Level _user_ is reserved for user-defined events and

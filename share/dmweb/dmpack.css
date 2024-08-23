@@ -1789,8 +1789,6 @@ select[multiple] {
 .packed      { --density: 0; }
 .autodensity { --density: 1; }
 
-#map { height: 600px; }
-
 @media (min-width: 768px)  { .autodensity { --density: 2; } }
 @media (min-width: 1024px) { .autodensity { --density: 3; } }
 
@@ -1799,6 +1797,9 @@ select[multiple] {
 .row .col           { flex: 1 1 100%; }
 
 @media (max-width: 40rem)  { .row { flex-direction: column; } }
+
+/* Leaflet map height. */
+#map { height: 600px; }
 
 /*
 .row, .rows > * {
