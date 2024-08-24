@@ -95,6 +95,9 @@ module dm_modbus
     public :: dm_modbus_byte_order_from_name
     public :: dm_modbus_close
     public :: dm_modbus_connect
+    public :: dm_modbus_create
+    public :: dm_modbus_create_rtu
+    public :: dm_modbus_create_tcp
     public :: dm_modbus_destroy
     public :: dm_modbus_error_message
     public :: dm_modbus_flush
@@ -107,9 +110,6 @@ module dm_modbus
     public :: dm_modbus_get_slave
     public :: dm_modbus_mode
     public :: dm_modbus_read_registers
-    public :: dm_modbus_create
-    public :: dm_modbus_create_rtu
-    public :: dm_modbus_create_tcp
     public :: dm_modbus_set_debug
     public :: dm_modbus_set_real
     public :: dm_modbus_set_real_abcd
