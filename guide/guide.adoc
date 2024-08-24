@@ -1597,7 +1597,7 @@ dmpipe = {
   format = "none",                  -- Output format (`csv` or `jsonl`).
   jobs = {                          -- Jobs to perform.
     {
-      disabled = false,             -- Enable to skip job.
+      disabled = false,             -- Skip job.
       onetime = false,              -- Run job only once.
       observation = {               -- Observation to execute.
         name = "dummy-observ",      -- Observation name (required).
@@ -1657,6 +1657,7 @@ $ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
 `gnuplot-nox`, create a symbolic link or add an alias to the global profile:
 
+[source,text]
 ....
 alias gnuplot="gnuplot-nox"
 ....
@@ -1873,6 +1874,7 @@ Add the export statement to the global profile `/etc/profile`. If _gnuplot(1)_
 is installed under a name other than `gnuplot`, for example, `gnuplot-nox`,
 create a symbolic link or add an alias to `/etc/profile`:
 
+[source,text]
 ....
 alias gnuplot="gnuplot-nox"
 ....
@@ -2288,6 +2290,7 @@ If _gnuplot(1)_ is installed under a name other than `gnuplot`, for example,
 `gnuplot-nox`, create a symbolic link or add an alias to the global profile
 `/etc/profile`:
 
+[source,text]
 ....
 alias gnuplot="gnuplot-nox"
 ....
@@ -2295,6 +2298,7 @@ alias gnuplot="gnuplot-nox"
 On FreeBSD, it might be necessary to add the environment variable `GDFONTPATH`
 to the path of the font directory:
 
+[source,text]
 ....
 export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 ....
@@ -2606,12 +2610,11 @@ $HTTP["url"] =^ "/dmpack/" {
 ....
 
 Copy the directory `dmweb` from `/usr/local/share/dmpack/` (or
-`/usr/share/dmpack/` on Linux) to the WWW root directory, in this case,
-`/var/www/`, or simply create a symlink:
+`/opt/share/dmpack/`) to the WWW root directory, in this case, `/var/www/`, or
+simply create a symlink:
 
 ....
-# cd /var/www/
-# ln -s /usr/local/share/dmpack/dmweb dmweb
+# ln -s /usr/local/share/dmpack/dmweb /var/www/dmweb
 ....
 
 If the files have to be served from a path other than the root path, add a
@@ -2636,7 +2639,8 @@ synchronisation tables for all record types.
 Log Database:: Stores all log messages in single table.
 Beat Database:: Stores heartbeat messages by unique node id.
 
-The databases are usually located in directory `/var/dmpack/`.
+The databases are usually located in directory `/var/dmpack/` or
+`/opt/var/dmpack/`.
 
 === Administration
 
@@ -2765,12 +2769,14 @@ The NTP daemon _ntpd(8)_ is configured through file `/etc/ntp.conf`. If
 favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
 with a single server, for example:
 
+[source,text]
 ....
 server ptbtime1.ptb.de iburst
 ....
 
 Add the following entries to `/etc/rc.conf`:
 
+[source,text]
 ....
 ntpd_enable="YES"
 ntpd_sync_on_start="YES"
@@ -2797,6 +2803,7 @@ enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
 We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
 and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
 
+[source,text]
 ....
 GRUB_CMDLINE_LINUX_DEFAULT="quiet usbcore.autosuspend=-1"
 ....
@@ -2835,6 +2842,7 @@ reasonable values:
 The maximum message size has to be at least 16384 bytes. Add the settings to
 `/etc/sysctl.conf` to make them permanent:
 
+[source,text]
 ....
 fs.mqueue.msg_max=32
 fs.mqueue.msgsize_max=16384
@@ -2915,158 +2923,463 @@ XML feed of logs by running <<dmfeed>> every five minutes:
 The feed is updated only if new logs have arrived in the meantime, unless option
 `--force` is passed as an additional argument.
 
-== Third-Party Software
+== Sensor Control [[sensor-control]]
 
-This section covers the custom installation of third-party software.
+This sections provides covers the configuration and initialisation of DMPACK
+programs for sensor data collection. Basic knowledge of regular expressions and
+familiarity with the Lua syntax are recommended. The sensor control examples are
+written for Linux and assume DMPACK to be installed to `/opt/`. The path
+`/opt/bin/` must be added to the global `PATH` variable.
 
-=== HDFView [[third-party-hdfview]]
+=== Humidity Sensor (RS-232)
 
-HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
-files. Application images for Linux, macOS, and Windows are available for
-download on the website of
-link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
-program has to be compiled from source. The following build dependencies are
-required:
+.Driesen + Kern DKRF400 temperature and humidity sensor
+[#img-dkrf400]
+image::dkrf400.png[DKRF400,align="center"]
 
-* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
-* link:https://www.freshports.org/devel/cmake[devel/cmake]
-* link:https://www.freshports.org/devel/git[devel/git]
-* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
-* link:https://www.freshports.org/lang/gcc[lang/gcc]
-* link:https://www.freshports.org/x11-toolkits/swt[x11-toolkits/swt]
+The DKRF400 is a temperature and humidity probe made by Driesen + Kern GmbH.
+The standard probe DKRF400 can be used at temperatures between –40 …
++80&nbsp;°C, with an accuracy of ±0.3&nbsp;°C at 25&nbsp;°C. The probe is
+suitable for the range of 0 … 100&nbsp;% relative humidity and has an accuracy
+of ±1.8&nbsp;% in the range of 20 … 80&nbsp;%. The sensor returns the following
+measured parameters:
 
-The HDF4 and HDF5 libraries have to be built from source as well.
+* temperature [°C],
+* relative humidity [%],
+* absolute humidity [g/m^3^],
+* dew point [°C],
+* wet-bulb temperature [°C].
 
-==== Building HDF4
+The DKRF400 is available with analog and digital output signals (RS-232, USB,
+RS-485). This section is based on the digital version with RS-232 interface. Use
+an USB serial adapter if the sensor node does not provide a distinct COM port.
+By default, the digital DKRF400 starts sending values over the serial line once
+the sensor is connected to the host. We can change to the request/response mode
+through a basic ASCII protocol: the command `s\r` stops the streaming of
+reponses and command `Meter\r` returns a single response (`\r` is carriage
+return).
 
-Clone the HDF4 repository and compile with CMake:
+.Serial interface specifications of the DKRF400 sensor
+[%noheader,cols="1,5",stripes=none]
+|===
+| **Name**      | DKRF400
+| **Vendor**    | Driesen + Kern GmbH
+| **Interface** | RS-232
+| **Protocol**  | ASCII
+| **Connector** | D-sub (DE-9)
+| **Baud rate** | 9600
+| **Byte size** | 8
+| **Parity**    | none
+| **Stop bits** | 2
+| **DTR**       | enabled
+| **RTS**       | enabled
+|===
 
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
-$ cd hdf4/
-$ mkdir build && cd build/
-$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
-  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
-  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
-  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
-  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
-  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
-$ cmake --build . --config Release
-....
-
-Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
-build directory.
-
-==== Building HDF5 [[third-party-hdf5]]
-
-In the next step, clone the HDF5 repository and build with CMake, too:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
-$ cd hdf5/
-$ mkdir build && cd build/
-$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
-  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
-  -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
-  -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
-  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
-  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
-$ cmake --build . --config Release
-....
-
-Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
-to `bin/` in the HDF5 build directory.
-
-==== Building HDFView
-
-Finally, clone the HDFView repository, set the build properties, and compile
-with _ant(1)_:
+The serial connection can be tested with _minicom(1)_.
 
 ....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
-$ cd hdfview/
+$ sudo apt-get install minicom
 ....
 
-Set the following properties in `build.properties`:
+In this case, the first COM port is mapped to device `/dev/ttyS0`. The user
+under which _minicom(1)_ runs must be member of group `dialout` to access the
+device. The command-line argument `-s` is passed to display the setup menu at
+start:
 
 ....
-hdf.lib.dir = /tmp/hdf4/build/bin
-hdf5.lib.dir = /tmp/hdf5/build/bin
-hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
-build.debug = false
+$ minicom -s
 ....
 
-Build with _ant(1)_:
+Select _Serial port setup_ to change the TTY parameters to 9600 baud and 8N2.
+Return and select _Exit_ to receive sensor responses:
 
+[source,text]
 ....
-$ ant run
-....
+Welcome to minicom 2.8
 
-The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
-`swt.jar` has to be replaced with the version installed system-wide:
+OPTIONS: I18n
+Port /dev/ttyS0, 20:56:16
 
-....
-$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
-....
+Press CTRL-A Z for help on special keys
 
-Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
-
-....
-java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
-  -cp "./*" hdf.view.HDFView "$@"
-....
-
-To start HDFView, run:
-
-....
-$ cd build/HDF_Group/HDFView/99.99.99/
-$ sh hdfview.sh
-....
-
-=== SQLite 3 [[third-party-sqlite]]
-
-DMPACK depends on SQLite version 3.39.0 or newer. If the requirement is not met
-by the operating system, build the latest version from source:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/sqlite/sqlite.git
-$ cd sqlite/
-$ ./configure
+-MTAA-DKrF400
+Enhanced Architecture HW.V. 4.0
+SW.V. 4.12 build Sep 28 2010 13:49:50C 530 166
+(c) Driesen+Kern GmbH Bad Bramstedt Germany
+SNr: XXXXX
+Range:     -40'C   ..       80'C               0%    ..      100%
+status: 0840    08      00      00      01      00      80      25      01
+Vref: 2500.000000
+SHT1X7X
+   26.84 'C        53.03 %         13.52 g/m3      16.46 'C        19.97 'C
+   26.84 'C        53.03 %         13.52 g/m3      16.46 'C        19.97 'C
+   26.84 'C        52.97 %         13.51 g/m3      16.44 'C        19.96 'C
 ....
 
-Install SQLite 3 and test the command-line utility:
+The key combination `CTRL` + `A` `O` shows the main menu again, and `CTRL` + `A`
+`X` exits _minicom(1)_.
+
+==== Databases
+
+Use *dminit* to create the observation and the log database in directory
+`/opt/var/dmpack/`:
 
 ....
-$ sudo make install
-$ /usr/local/bin/sqlite3 --version
+$ cd /opt/var/dmpack/
+$ dminit --database observ.sqlite --type observ --wal
+$ dminit --database log.sqlite --type log --wal
 ....
 
-=== Zstandard [[third-party-zstd]]
-
-If the Zstandard version provided in the Linux package repository is too old to
-be compatible with DMPACK, we can compile the library simply from source. Git
-and CMake must be installed:
+Create node `node-1`, sensor `dkrf400`, and target `target-1` in database
+`/opt/var/dmpack/observ.sqlite` through *dmdbctl*:
 
 ....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/facebook/zstd.git
-$ cd zstd/build/cmake/
-$ mkdir build && cd build/
-$ cmake ..
-$ cmake --build . --config Release
-$ sudo cmake --install . --prefix /usr/local
+$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor --id dkrf400 --name "DKRF400" --node node-1
+$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
 ....
 
-Execute the Zstandard command-line utility to verify the installation:
+==== Configuration
+
+.Creating the regular expression pattern of the DKRF400 response with link:https://regex101.com/[regex101.com]
+[#img-regex101]
+image::regex101.png[regex101.com,align="center"]
+
+On request `Meter\r`, the sensor returns an ASCII response containing
+temperature, relative humidity, absolute humidity, dew point, and wet-bulb
+temperature:
+
+[source,text]
+....
+   21.90 'C  \t   57.60 %   \t   11.11 g/m3\t   13.16 'C  \t   16.50 'C  \t\r
+....
+
+The tab character `0x09` and the carriage return `0x0d` in the raw response of
+the sensor will be replaced by *dmserial* with `\t` and `\r` respectively. The
+program also extracts the values from the raw response and adds them to the
+entries in the pre-defined responses list if a regular expression pattern has
+been declared. The following pattern was made with the online tool
+link:https://reg101.com/[regex101.com] (<<img-regex101>>) and matches the sensor
+responses of the DKRF400:
+
+[source,text]
+....
+^\s*(?<temp>[-0-9.]+)\s.C\s+.t\s+(?<humrel>[-0-9.]+)\s%\s+.t\s+(?<humabs>[-0-9.]+)\sg.m3.t\s+(?<dew>[-0-9.]+)\s.C\s+.t\s+(?<wetbulb>[-0-9.]+)
+....
+
+The group names `temp`, `humrel`, `humabs`, `dew`, and `wetbulb` within the
+pattern must match the names given in the responses list. The name length is
+limited to 8 characters. Optionally, the responses can be given a unit in
+attribute `unit` and a <<data-response-types,response type>> in attribute
+`type`. If no response type is set, `RESPONSE_TYPE_REAL64` (double precision
+number) is assumed by default.
+
+In the configuration file, each backslash character `\` has to be escaped with
+an additional `\`. Simply replace every occurance of `\` with `\\`:
+
+[source,text]
+....
+^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)
+....
+
+Set the regular expression pattern as value of attribute `pattern` in request
+`get_values` of observation `meter`. The complete configuration file of
+*dmserial* is listed below.
+
+[source,lua]
+....
+-- dmserial.conf
+
+-- Global variables of identifiers used in the configuration. The values must
+-- match the records added to the database.
+node_id   = "node-1"
+sensor_id = "dkrf400"
+target_id = "target-1"
+
+-- Table of observations to be used in jobs list. The attribute `receivers`
+-- contains a list of up to 16 processes to forward the observation to in
+-- sequential order.
+observs = {
+  -- List of sensor commands to be send to the DKRF400.
+  {
+    -- 1) Start the sensor by sending a single carriage return.
+    name = "start",             -- Observation name (required).
+    target_id = target_id,      -- Target id (required).
+    receivers = { },            -- List of receivers (up to 16).
+    requests = {                -- List of requests (up to 8).
+      {
+        name = "start_sensor",  -- Request name (required).
+        request = "\\r",        -- Raw request to send to sensor.
+        delimiter = "\\n",      -- Response delimiter.
+        pattern = "",           -- RegEx pattern of the response.
+        delay = 500             -- Delay in msec to wait afterwards.
+      }
+    }
+  },
+  {
+    -- 2) Stop "Meter Mode". The sensor response will be ignored if no delimiter
+    --    is set (as the DKRF400 does not always return a response to the
+    --    command).
+    name = "stop",              -- Observation name (required).
+    target_id = target_id,      -- Target id (required).
+    receivers = { },            -- List of receivers (up to 16).
+    requests = {                -- List of requests (up to 8).
+      {
+        name = "stop_meter",    -- Request name (required).
+        request = "s\\r",       -- Raw request to send to sensor.
+        delimiter = "",         -- Response delimiter.
+        pattern = "",           -- RegEx pattern of the response.
+        delay = 500             -- Delay in msec to wait afterwards.
+      }
+    }
+  },
+  {
+    -- 3) Perform single measurement.
+    name = "meter",             -- Observation name (required).
+    target_id = target_id,      -- Target id (required).
+    receivers = { "dmdb" },     -- List of receivers (up to 16).
+    requests = {                -- List of requests (up to 8).
+      {
+        name = "get_values",    -- Request name (required).
+        request = "Meter\\r",   -- Raw request to send to sensor.
+        delimiter = "\\r",      -- Response delimiter.
+        pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
+        delay = 0,              -- Delay in msec to wait afterwards.
+        responses = {           -- List of expected responses.
+          { name = "temp",    unit = "degC" }, -- Temperature (real64).
+          { name = "humrel",  unit = "%"    }, -- Relative humidity (real64).
+          { name = "humabs",  unit = "g/m3" }, -- Absolute humidity (real64).
+          { name = "dew",     unit = "degC" }, -- Dew point (real64).
+          { name = "wetbulb", unit = "degC" }  -- Wet-bulb temperature (real64).
+        }
+      }
+    }
+  }
+}
+
+-- Settings of program dmserial. Change the name to the parameter given through
+-- command-line argument `--name`.
+dmserial = {
+  logger = "dmlogger",   -- Name of logger instance (implies log forwarding).
+  node = node_id,        -- Sensor node id (required).
+  sensor = sensor_id,    -- Sensor id (required).
+  output = "",           -- Path of optional output file, or `-` for stdout.
+  format = "",           -- Output file format (`csv`, `jsonl`).
+  path = "/dev/ttyUSB0", -- TTY device path.
+  baudrate = 9600,       -- TTY baud rate.
+  bytesize = 8,          -- TTY byte size (5, 6, 7, 8).
+  parity = "none",       -- TTY parity (`none`, `even`, `odd`).
+  stopbits = 2,          -- TTY stop bits (1, 2).
+  timeout = 5,           -- TTY timeout in seconds (max. 25).
+  dtr = true,            -- TTY Data Terminal Ready (DTR) enabled.
+  rts = true,            -- TTY Request To Send (RTS) enabled.
+  jobs = {               -- List of jobs to perform.
+    {
+      -- 1) Start sensor.
+      disabled = false,         -- Skip job.
+      onetime = true,           -- Run job only once.
+      observation = observs[1], -- Observation to perform.
+      delay = 2000              -- Delay in msec to wait afterwards.
+    },
+    {
+      -- 2) Stop "Meter Mode".
+      disabled = false,         -- Skip job.
+      onetime = true,           -- Run job only once.
+      observation = observs[2], -- Observation to perform.
+      delay = 2000              -- Delay in msec to wait afterwards.
+    },
+    {
+      -- 3) Measure values.
+      disabled = false,         -- Skip job.
+      onetime = false,          -- Run job only once.
+      observation = observs[3], -- Observation to perform.
+      delay = 300 * 1000        -- Delay in msec to wait afterwards.
+    }
+  },
+  debug = false,        -- Forward debug messages to logger.
+  verbose = true        -- Output debug messages to console.
+}
+....
+
+Save the configuration to `/opt/etc/dmpack/dmserial.conf`.
+
+==== Monitoring
+
+Start the *dmlogger* process first:
 
 ....
-$ /usr/local/bin/zstd --version
+$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+....
+
+Then, start the *dmdb* database process:
+
+....
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+....
+
+Finally, start *dmserial* to execute the configured jobs:
+
+....
+$ dmserial --config /opt/etc/dmpack/dmserial.conf
+....
+
+=== Temperature Sensor (1-Wire)
+
+1-Wire is a half-duplex serial bus designed by Dallas Semiconductor that is
+typically used to communicate with low-cost digital thermometers and weather
+stations. This section describes the configuration of DMPACK programs to
+retrieve temperature values from a single 1-Wire sensor. The following hardware
+is required:
+
+* 1-Wire temperature sensor,
+* USB adapter LinkUSB.
+
+Make sure that <<sys-conf-power-saving,USB power saving>> is disabled or the
+LinkUSB adapter may be detached after a while. The sensor data is read with
+*dmfs* and stored to database with *dmdb*. Additionally, the *dmlogger* program
+will capture log messages. The sensor has to be mounted through the virtual
+1-Wire File System (OWFS).
+
+==== 1-Wire File System
+
+The 1-Wire File System provides an abstraction layer to access the measurement
+values of attached sensors. An additional driver is required to mount the
+virtual file system to which sensors are mapped. On Linux, simply install the
+OWFS package:
+
+....
+$ sudo apt-get install owfs
+....
+
+Then, connect the temperature sensor via the USB adapter. The device path may be
+`/dev/ttyUSB0` or `/dev/ttyU0` depending on the operating system, and will
+differ if an RS-232 adapter is used instead. Mount the file system with
+_owfs(1)_ under `/mnt/1wire/`:
+
+....
+$ sudo mkdir -p /mnt/1wire
+$ sudo owfs -C -d /dev/ttyUSB0 --allow_other -m /mnt/1wire
+....
+
+The command-line argument `-C` selects output in °C. The settings can be added
+to the _owfs(1)_ configuration file `/etc/owfs.conf`:
+
+....
+device = /dev/ttyUSB0
+mountpoint = /mnt/1wire
+allow_other
+Celsius
+....
+
+The file system is mounted automatically at system start-up if _owfs(1)_ is
+configured to run as a service. Read a temperature value from the connected
+sensor:
+
+....
+$ cat /mnt/1wire/10.DCA98C020800/temperature
+19.12
+....
+
+The name of the virtual directory `10.DCA98C020800` depends on the sensor id.
+
+==== Databases
+
+Once the file system is configured, initialise the observation and log databases
+with *dminit*:
+
+....
+$ cd /opt/var/dmpack/
+$ dminit --database observ.sqlite --type observ --wal
+$ dminit --database log.sqlite --type log --wal
+....
+
+Create node `node-1`, sensor `owfs`, and target `target-1` in database
+`/opt/var/dmpack/observ.sqlite` through *dmdbctl*:
+
+....
+$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor --id owfs --name "OWFS" --node node-1
+$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+....
+
+==== Configuration
+
+The DMPACK program *dmfs* will read temperature values periodically from the
+OWFS and forward observations to *dmdb* to be saved in the database. Copy the
+following *dmfs* configuration to `/opt/etc/dmpack/dmfs.conf`:
+
+[source,lua]
+....
+-- dmfs.conf
+
+-- Global identifiers and sensor file path used in the configuration. The
+-- identifiers must match the records in the database.
+node_id   = "node-1"
+sensor_id = "owfs"
+target_id = "target-1"
+file_path = "/mnt/1wire/10.DCA98C020800/temperature"
+
+dmfs = {
+  logger = "dmlogger",          -- Logger to send logs to.
+  node = node_id,               -- Node id (required).
+  sensor = sensor_id,           -- Sensor id (required).
+  output = "",                  -- Path of optional output file, or `-` for stdout.
+  format = "none",              -- Output file format (`csv` or `jsonl`).
+  jobs = {                      -- List of jobs to perform.
+    {
+      disabled = false,         -- Skip job.
+      onetime = false,          -- Run job only once.
+      observation = {           -- Observation to execute (required).
+        name = "get_temp",      -- Observation name (required).
+        target_id = target_id,  -- Target id (required).
+        receivers = { "dmdb" }, -- List of receivers (up to 16).
+        requests = {            -- List of files to read.
+          {
+            request = file_path,              -- File path.
+            pattern = "(?<temp>[-+0-9\\.]+)", -- RegEx pattern of the response.
+            delay = 500,                      -- Delay in msec to wait afterwards.
+            responses = {
+              {
+                name = "temp",                -- RegEx group name (max. 8 characters).
+                unit = "degC",                -- Response unit (max. 8 characters).
+                type = RESPONSE_TYPE_REAL64   -- Response value type.
+              }
+            }
+          }
+        }
+      },
+      delay = 10 * 1000,        -- Delay in msec to wait afterwards.
+    }
+  },
+  debug = false,                -- Forward logs of level DEBUG via IPC.
+  verbose = true                -- Print messages to standard output.
+}
+....
+
+The path `/mnt/1wire/10.DCA98C020800/temperature` in variable `file_path` must
+match the actual file system path of the sensor. The job will be performed every
+10 seconds and repeated indefinitely. Log messages are sent to the *dmlogger*
+process of default name `dmlogger`, and observations to the *dmdb* process of
+default name `dmdb`.
+
+==== Monitoring
+
+Start the *dmlogger* process first:
+
+....
+$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+....
+
+Then, start the *dmdb* database process:
+
+....
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+....
+
+Finally, start *dmfs* to execute the configured job:
+
+....
+$ dmfs --config /opt/etc/dmpack/dmfs.conf
 ....
 
 == RPC API [[rpc-api]]
@@ -6368,6 +6681,7 @@ error=0
 
 ==== Namelist [[data-beat-nml]]
 
+[source,text]
 ....
 
 &DMBEAT
@@ -6532,6 +6846,7 @@ BEAT%UPTIME=3600,
 
 ==== Namelist [[data-log-nml]]
 
+[source,text]
 ....
 &DMLOG
 LOG%ID="26462d27d7ff4ef1b10e0a2e921e638b",
@@ -6612,6 +6927,7 @@ LOG%MESSAGE="dummy log message",
 
 ==== HDF5 [[data-node-hdf5]]
 
+[source,text]
 ....
 DATASET "node_type" {
   DATATYPE H5T_COMPOUND {
@@ -6663,6 +6979,7 @@ DATASET "node_type" {
 
 ==== Namelist [[data-node-nml]]
 
+[source,text]
 ....
 &DMNODE
 NODE%ID="dummy-node",
@@ -6943,6 +7260,7 @@ $ h5dump -H -A 0 observ.hdf5
 
 ==== Namelist [[data-observ-nml]]
 
+[source,text]
 ....
 &DMOBSERV
 OBSERV%ID="9273ab62f9a349b6a4da6dd274ee83e7",
@@ -7073,6 +7391,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 
 ==== HDF5 [[data-sensor-hdf5]]
 
+[source,text]
 ....
 DATASET "sensor_type" {
   DATATYPE H5T_COMPOUND {
@@ -7140,6 +7459,7 @@ DATASET "sensor_type" {
 
 ==== Namelist [[data-sensor-nml]]
 
+[source,text]
 ....
 &DMSENSOR
 SENSOR%ID="dummy-sensor",
@@ -7239,6 +7559,7 @@ SENSOR%ALT=0.0
 
 ==== HDF5 [[data-target-hdf5]]
 
+[source,text]
 ....
 DATASET "target_type" {
   DATATYPE H5T_COMPOUND {
@@ -7291,6 +7612,8 @@ DATASET "target_type" {
 ....
 
 ==== Namelist [[data-target-nml]]
+
+[source,text]
 ....
 &DMTARGET
 TARGET%ID="dummy-target",
@@ -7304,6 +7627,160 @@ TARGET%LON=0.0,
 TARGET%LAT=0.0,
 TARGET%ALT=0.0
 /
+....
+
+== Third-Party Software
+
+This section covers the custom installation of third-party software.
+
+=== HDFView [[third-party-hdfview]]
+
+HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
+files. Application images for Linux, macOS, and Windows are available for
+download on the website of
+link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
+program has to be compiled from source. The following build dependencies are
+required:
+
+* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
+* link:https://www.freshports.org/devel/cmake[devel/cmake]
+* link:https://www.freshports.org/devel/git[devel/git]
+* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
+* link:https://www.freshports.org/lang/gcc[lang/gcc]
+* link:https://www.freshports.org/x11-toolkits/swt[x11-toolkits/swt]
+
+The HDF4 and HDF5 libraries have to be built from source as well.
+
+==== Building HDF4
+
+Clone the HDF4 repository and compile with CMake:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
+$ cd hdf4/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
+  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
+build directory.
+
+==== Building HDF5 [[third-party-hdf5]]
+
+In the next step, clone the HDF5 repository and build with CMake, too:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
+$ cd hdf5/
+$ mkdir build && cd build/
+$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
+  -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
+  -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
+  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
+  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
+  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
+$ cmake --build . --config Release
+....
+
+Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
+to `bin/` in the HDF5 build directory.
+
+==== Building HDFView
+
+Finally, clone the HDFView repository, set the build properties, and compile
+with _ant(1)_:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
+$ cd hdfview/
+....
+
+Set the following properties in `build.properties`:
+
+....
+hdf.lib.dir = /tmp/hdf4/build/bin
+hdf5.lib.dir = /tmp/hdf5/build/bin
+hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
+build.debug = false
+....
+
+Build with _ant(1)_:
+
+....
+$ ant run
+....
+
+The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
+`swt.jar` has to be replaced with the version installed system-wide:
+
+....
+$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
+....
+
+Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
+
+....
+java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
+  -cp "./*" hdf.view.HDFView "$@"
+....
+
+To start HDFView, run:
+
+....
+$ cd build/HDF_Group/HDFView/99.99.99/
+$ sh hdfview.sh
+....
+
+=== SQLite 3 [[third-party-sqlite]]
+
+DMPACK depends on SQLite version 3.39.0 or newer. If the requirement is not met
+by the operating system, build the latest version from source:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/sqlite/sqlite.git
+$ cd sqlite/
+$ ./configure
+....
+
+Install SQLite 3 and test the command-line utility:
+
+....
+$ sudo make install
+$ /usr/local/bin/sqlite3 --version
+....
+
+=== Zstandard [[third-party-zstd]]
+
+If the Zstandard version provided in the Linux package repository is too old to
+be compatible with DMPACK, we can compile the library simply from source. Git
+and CMake must be installed:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/facebook/zstd.git
+$ cd zstd/build/cmake/
+$ mkdir build && cd build/
+$ cmake ..
+$ cmake --build . --config Release
+$ sudo cmake --install . --prefix /usr/local
+....
+
+Execute the Zstandard command-line utility to verify the installation:
+
+....
+$ /usr/local/bin/zstd --version
 ....
 
 == Error Codes [[error-codes]]
