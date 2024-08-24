@@ -1,5 +1,7 @@
 /* jshint esversion: 6 */
 
+"use strict";
+
 /**
  * Creates map with Leaflet.
  *
@@ -27,6 +29,16 @@ function createMap(id, url, lon, lat, zoom, geoJson)
 }
 
 /**
+ * HTML-encodes Unicode characters in string.
+ */
+function encode(str)
+{
+    return str.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+}
+
+/**
  * Returns true if type is valid.
  */
 function isValidType(type)
@@ -45,12 +57,12 @@ function onEachFeature(feature, layer)
 
     if (feature.properties && feature.properties.type && feature.properties.data)
     {
-        if (feature.properties.data.id && features.properties.data.name)
+        if (feature.properties.data.id && feature.properties.data.name)
         {
             let name;
 
-            if (isValidType(features.properties.type))
-                name = `<a href="${base}/${features.properties.type}?id=${feature.properties.data.id}">${feature.properties.data.name}</a>`;
+            if (isValidType(feature.properties.type))
+                name = `<a href="${base}/${feature.properties.type}?id=${feature.properties.data.id}">${feature.properties.data.name}</a>`;
             else
                 name = `${feature.properties.data.name}`;
 
@@ -58,7 +70,7 @@ function onEachFeature(feature, layer)
         }
 
         content += `<em>${feature.properties.type}</em><br>`;
-        if (feature.properties.data.meta) content += feature.properties.data.meta;
+        if (feature.properties.data.meta) content += encode(feature.properties.data.meta);
     }
 
     layer.bindPopup(content);
