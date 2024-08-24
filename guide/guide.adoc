@@ -301,7 +301,7 @@ Then, execute build target `linux` of the Makefile to compile the source:
 $ make linux
 ....
 
-On a 64-bit ARM platform, like those of the Raspberry Pi 3/4/5, select build
+On 64-bit ARM platforms, like those of the Raspberry Pi 3/4/5, select build
 target `linux_aarch64` instead:
 
 ....
@@ -4199,8 +4199,8 @@ codes with prefix `GRC_`. See the
 link:https://www.dabamos.de/dmpack/doc/module/dm_geocom.html[source code documentation]
 for an overview of the API.
 
-The following example in Fortran opens the TTY `/dev/ttyUSB0`, calls the null
-procedure of the instrument (`COM_NullProc`), and then prints return code,
+The following example in Fortran 2018 opens the TTY `/dev/ttyUSB0`, calls the
+null procedure of the instrument (`COM_NullProc`), and then prints return code,
 associated error message, and last request to standard output:
 
 [source,fortran]
@@ -4235,8 +4235,8 @@ Make sure that the instrument is configured to 115,200 baud. Invalid parameters
 passed to the GeoCOM methods will be replaced with their default values, and an
 error message is printed in verbose mode.
 
-If the DMPACK library is installed to `/opt`, build, link, and run the example
-program with:
+If the DMPACK library and module files are installed to `/opt`, build, link, and
+run the example program with:
 
 ....
 $ gfortran -I/opt/include/dmpack -o geocom geocom.f90 /opt/lib/libdmpack.a -lpcre2-8
@@ -5866,7 +5866,7 @@ argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
 [discrete]
 ==== geocom_set_geometric_ppm(enabled, scale_factor, offset, height_ppm, individual_ppm) [[lua-api-geocom-set-geometric-ppm]]
 
-* `enabled`        (_bool_)   – Enable binary communication.
+* `enabled`        (_bool_)   – Enable geometric ppm calculation.
 * `scale_factor`   (_number_) – Scale factor on central meridian.
 * `offset`         (_number_) – Offset from central meridian [m].
 * `height_ppm`     (_number_) – Ppm value due to height above reference.
