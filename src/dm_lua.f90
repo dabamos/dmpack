@@ -104,21 +104,21 @@ module dm_lua
     public :: dm_lua_destroy
     public :: dm_lua_dump_stack
     public :: dm_lua_error
+    public :: dm_lua_error_string
     public :: dm_lua_escape
     public :: dm_lua_eval
     public :: dm_lua_exec
     public :: dm_lua_field
     public :: dm_lua_from
     public :: dm_lua_get
-    public :: dm_lua_read
     public :: dm_lua_init
     public :: dm_lua_is_function
     public :: dm_lua_is_nil
     public :: dm_lua_is_opened
     public :: dm_lua_is_table
-    public :: dm_lua_last_error
     public :: dm_lua_open
     public :: dm_lua_pop
+    public :: dm_lua_read
     public :: dm_lua_register
     public :: dm_lua_set
     public :: dm_lua_table
@@ -182,6 +182,8 @@ contains
         integer,              intent(in)    :: nargs    !! Number of arguments.
         integer,              intent(in)    :: nresults !! Number of results.
 
+        rc = E_NULL
+        if (.not. c_associated(lua%ptr)) return
         rc = dm_lua_error(lua_pcall(lua%ptr, nargs, nresults, 0))
     end function dm_lua_call
 
@@ -209,6 +211,22 @@ contains
         end select
     end function dm_lua_error
 
+    function dm_lua_error_string(lua) result(str)
+        !! Returns last error message as allocatable character string or an
+        !! empty string if no message is available.
+        type(lua_state_type), intent(inout) :: lua !! Lua type.
+        character(len=:), allocatable       :: str !! Last error message.
+
+        lua_block: block
+            if (.not. c_associated(lua%ptr))    exit lua_block
+            if (lua_isstring(lua%ptr, -1) == 0) exit lua_block
+            str = lua_tostring(lua%ptr, -1)
+            return
+        end block lua_block
+
+        if (.not. allocated(str)) str = ''
+    end function dm_lua_error_string
+
     function dm_lua_escape(str) result(res)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
@@ -233,6 +251,8 @@ contains
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
         character(len=*),     intent(in)    :: command !! Lua command to evaluate.
 
+        rc = E_NULL
+        if (.not. c_associated(lua%ptr)) return
         rc = dm_lua_error(lual_dostring(lua%ptr, command))
     end function dm_lua_eval
 
@@ -241,12 +261,14 @@ contains
         type(lua_state_type), intent(inout) :: lua       !! Lua type.
         character(len=*),     intent(in)    :: file_path !! Path to Lua script file.
 
+        rc = E_NULL
+        if (.not. c_associated(lua%ptr)) return
         rc = dm_lua_error(lual_dofile(lua%ptr, trim(file_path)))
     end function dm_lua_exec
 
     integer function dm_lua_init(lua, libs) result(rc)
         !! Initialises Lua interpreter and opens libraries, unless `libs` is
-        !! `.false.`. Returns `E_INVALID` if the Lua pointer is already
+        !! `.false.`. Returns `E_EXIST` if the Lua pointer is already
         !! associated, and `E_LUA` if one of the Lua calls failed.
         type(lua_state_type), intent(inout)        :: lua  !! Lua type.
         logical,              intent(in), optional :: libs !! Open Lua libraries.
@@ -256,21 +278,23 @@ contains
         libs_ = .true.
         if (present(libs)) libs_ = libs
 
-        rc = E_INVALID
+        rc = E_EXIST
         if (c_associated(lua%ptr)) return
 
         rc = E_LUA
         lua%ptr = lual_newstate()
         if (.not. c_associated(lua%ptr)) return
 
-        if (libs_) call lual_openlibs(lua%ptr)
         rc = E_NONE
+        if (libs_) call lual_openlibs(lua%ptr)
     end function dm_lua_init
 
     logical function dm_lua_is_function(lua) result(is_function)
         !! Returns `.true.` if element on top of stack is of type function.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
 
+        is_function = .false.
+        if (.not. c_associated(lua%ptr)) return
         is_function = (lua_isfunction(lua%ptr, -1) == 1)
     end function dm_lua_is_function
 
@@ -278,6 +302,8 @@ contains
         !! Returns `.true.` if element on top of stack is nil.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
 
+        is_nil = .true.
+        if (.not. c_associated(lua%ptr)) return
         is_nil = (lua_isnil(lua%ptr, -1) == 1)
     end function dm_lua_is_nil
 
@@ -292,31 +318,26 @@ contains
         !! Returns `.true.` if element on top of stack is of type table.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
 
+        is_table = .false.
+        if (.not. c_associated(lua%ptr)) return
         is_table = (lua_istable(lua%ptr, -1) == 1)
     end function dm_lua_is_table
 
-    function dm_lua_last_error(lua) result(str)
-        !! Returns last error message as allocatable character string.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-        character(len=:), allocatable       :: str !! Last error message.
-
-        if (lua_isstring(lua%ptr, -1) == 1) then
-            str = lua_tostring(lua%ptr, -1)
-            return
-        end if
-
-        str = ''
-    end function dm_lua_last_error
-
     integer function dm_lua_open(lua, file_path, eval) result(rc)
-        !! Opens Lua script and executes it by default.
+        !! Opens Lua script and executes it by default. The function returns the
+        !! following error codes:
+        !!
+        !! * `E_LUA` on internal Lua error.
+        !! * `E_NOT_FOUND` if the file could not be found.
+        !! * `E_NULL` if the Lua interpreter is not initialised.
+        !!
         type(lua_state_type), intent(inout)        :: lua       !! Lua type.
         character(len=*),     intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
 
         logical :: eval_
 
-        rc = E_INVALID
+        rc = E_NULL
         if (.not. c_associated(lua%ptr)) return
 
         rc = E_NOT_FOUND
@@ -334,12 +355,21 @@ contains
     end function dm_lua_open
 
     integer function dm_lua_table(lua, name, n) result(rc)
-        !! Loads global table of given name.
+        !! Loads global table of given name. The function returns the following
+        !! error codes:
+        !!
+        !! * `E_NOT_FOUND` if the name does not exist.
+        !! * `E_NULL` if the Lua interpreter is not initialised.
+        !! * `E_TYPE` if variable on stack is not a table.
+        !!
         type(lua_state_type), intent(inout)         :: lua  !! Lua type.
         character(len=*),     intent(in)            :: name !! Name of table.
         integer,              intent(out), optional :: n    !! Number of elements in table.
 
         if (present(n)) n = 0
+
+        rc = E_NULL
+        if (.not. c_associated(lua%ptr)) return
 
         rc = E_NOT_FOUND
         if (lua_getglobal(lua%ptr, trim(name)) == LUA_TNIL) return
@@ -355,9 +385,11 @@ contains
     end function dm_lua_table
 
     integer function dm_lua_table_size(lua) result(n)
-        !! Returns size of table on stack.
+        !! Returns size of table on stack. Returns `-1` on error.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
 
+        n = -1
+        if (.not. c_associated(lua%ptr)) return
         n = int(lua_rawlen(lua%ptr, -1), kind=i4)
     end function dm_lua_table_size
 
@@ -366,6 +398,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
 
+        value = 0_i4
+        if (.not. c_associated(lua%ptr)) return
         value = int(lua_tointeger(lua%ptr, idx), kind=i4)
     end function dm_lua_to_int32
 
@@ -374,6 +408,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
 
+        value = 0_i8
+        if (.not. c_associated(lua%ptr)) return
         value = lua_tointeger(lua%ptr, idx)
     end function dm_lua_to_int64
 
@@ -382,6 +418,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
 
+        value = .false.
+        if (.not. c_associated(lua%ptr)) return
         value = lua_toboolean(lua%ptr, idx)
     end function dm_lua_to_logical
 
@@ -390,6 +428,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
 
+        value = 0.0_r4
+        if (.not. c_associated(lua%ptr)) return
         value = real(lua_tonumber(lua%ptr, idx), kind=r4)
     end function dm_lua_to_real32
 
@@ -398,6 +438,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
 
+        value = 0.0_r8
+        if (.not. c_associated(lua%ptr)) return
         value = lua_tonumber(lua%ptr, idx)
     end function dm_lua_to_real64
 
@@ -406,6 +448,11 @@ contains
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: idx   !! Stack index.
         character(len=:), allocatable       :: value !! String value.
+
+        if (.not. c_associated(lua%ptr)) then
+            value = ''
+            return
+        end if
 
         value = lua_tostring(lua%ptr, idx)
     end function dm_lua_to_string

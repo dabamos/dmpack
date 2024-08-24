@@ -6,6 +6,7 @@ module dm_config
     use :: dm_id
     use :: dm_kind
     use :: dm_lua
+    use :: dm_string
     implicit none (type, external)
     private
 
@@ -69,43 +70,51 @@ contains
         geocom_ = .false.
         if (present(geocom)) geocom_ = geocom
 
-        open_block: block
-            rc = E_INVALID
-            if (len_trim(path) == 0) exit open_block
+        rc = E_INVALID
+        if (len_trim(path) == 0) then
+            call dm_error_out(rc, 'missing path to configuration file')
+            return
+        end if
 
-            rc = E_NOT_FOUND
-            if (.not. dm_file_exists(path)) exit open_block
+        rc = E_NOT_FOUND
+        if (.not. dm_file_exists(path)) then
+            call dm_error_out(rc, 'configuration file ' // trim(path) // ' not found')
+            return
+        end if
 
+        lua_block: block
             ! Initialise Lua interpreter.
             rc = dm_lua_init(config%lua, libs=.true.)
-            if (dm_is_error(rc)) exit open_block
+            if (dm_is_error(rc)) exit lua_block
 
             ! Register DMPACK API for Lua.
             rc = dm_lua_api_register(config%lua)
-            if (dm_is_error(rc)) exit open_block
+            if (dm_is_error(rc)) exit lua_block
 
             ! Register GeoCOM API for Lua.
             if (geocom_) then
                 rc = dm_lua_geocom_register(config%lua, procedures=.true., errors=.true.)
-                if (dm_is_error(rc)) exit open_block
+                if (dm_is_error(rc)) exit lua_block
             end if
 
             ! Load and evaluate Lua script.
             rc = dm_lua_open(config%lua, path, eval=.true.)
-            if (dm_is_error(rc)) exit open_block
+            if (dm_is_error(rc)) exit lua_block
 
             ! Load Lua table onto stack.
-            if (present(name)) then
-                rc = E_INVALID
-                if (len_trim(name) == 0) exit open_block
-                rc = dm_lua_table(config%lua, name)
-            end if
-
-            rc = config_error(rc, name)
-        end block open_block
+            if (.not. dm_string_is_present(name)) exit lua_block
+            rc = dm_lua_table(config%lua, name)
+        end block lua_block
 
         if (dm_is_ok(rc)) return
-        call dm_error_out(rc, 'failed to read configuration ' // trim(name) // ' from file ' // path)
+
+        if (rc >= E_LUA .and. rc <= E_LUA_FILE) then
+            call dm_error_out(rc, dm_lua_error_string(config%lua))
+        else if (present(name)) then
+            call dm_error_out(rc, 'failed to read configuration ' // trim(name) // ' from file ' // path)
+        else
+            call dm_error_out(rc, 'failed to read configuration from file ' // path)
+        end if
     end function dm_config_open
 
     integer function dm_config_size(config) result(n)
@@ -143,20 +152,19 @@ contains
         character(len=*), intent(in), optional :: param !! Lua table name.
 
         rc = E_NONE
-        if (error == E_NONE) return
+        if (error == E_NONE)  return
         if (error == E_EMPTY) return
 
         rc = E_CONFIG
-        if (present(param)) then
+        if (dm_string_is_present(param)) then
             call dm_error_out(error, 'invalid parameter ' // trim(param) // ' in configuration')
-            return
+        else
+            call dm_error_out(error, 'invalid parameter in configuration', extra=.true.)
         end if
-
-        call dm_error_out(error, 'invalid parameter in configuration')
     end function config_error
 
     integer function config_get_array_int32(config, name, values) result(rc)
-        !! Returns configuration values as 4-byte integer array.
+        !! Returns configuration values as 4-byte integer array in `values`.
         type(config_type),             intent(inout) :: config    !! Config type.
         character(len=*),              intent(in)    :: name      !! Setting name.
         integer(kind=i4), allocatable, intent(out)   :: values(:) !! Setting values.
@@ -166,7 +174,7 @@ contains
     end function config_get_array_int32
 
     integer function config_get_array_int64(config, name, values) result(rc)
-        !! Returns configuration values as 8-byte integer array.
+        !! Returns configuration values as 8-byte integer array in `values`.
         type(config_type),             intent(inout) :: config    !! Config type.
         character(len=*),              intent(in)    :: name      !! Setting name.
         integer(kind=i8), allocatable, intent(out)   :: values(:) !! Setting values.
@@ -176,7 +184,7 @@ contains
     end function config_get_array_int64
 
     integer function config_get_int32(config, name, value) result(rc)
-        !! Returns configuration value as 4-byte integer.
+        !! Returns configuration value as 4-byte integer in `value`.
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         integer(kind=i4),  intent(inout) :: value  !! Setting value.
@@ -186,7 +194,7 @@ contains
     end function config_get_int32
 
     integer function config_get_int64(config, name, value) result(rc)
-        !! Returns configuration value as 8-byte integer.
+        !! Returns configuration value as 8-byte integer in `value`.
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         integer(kind=i8),  intent(inout) :: value  !! Setting value.
@@ -196,7 +204,7 @@ contains
     end function config_get_int64
 
     integer function config_get_job_list(config, name, value, field) result(rc)
-        !! Returns configuration value as job list.
+        !! Returns configuration value as job list in `value`.
         use :: dm_job
 
         type(config_type),   intent(inout)        :: config !! Config type.
@@ -214,7 +222,7 @@ contains
     end function config_get_job_list
 
     integer function config_get_logical(config, name, value) result(rc)
-        !! Returns configuration value as logical (if 0 or 1).
+        !! Returns configuration value as logical in `value` (if 0 or 1).
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         logical,           intent(inout) :: value  !! Setting value.
@@ -224,7 +232,7 @@ contains
     end function config_get_logical
 
     integer function config_get_real32(config, name, value) result(rc)
-        !! Returns configuration value as 4-byte real.
+        !! Returns configuration value as 4-byte real in `value`.
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         real(kind=r4),     intent(inout) :: value  !! Setting value.
@@ -236,7 +244,7 @@ contains
     end function config_get_real32
 
     integer function config_get_real64(config, name, value) result(rc)
-        !! Returns configuration value as 8-byte real.
+        !! Returns configuration value as 8-byte real in `value`.
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         real(kind=r8),     intent(inout) :: value  !! Setting value.
@@ -246,7 +254,7 @@ contains
     end function config_get_real64
 
     integer function config_get_report(config, name, value, field) result(rc)
-        !! Returns configuration value as report.
+        !! Returns configuration value as report in `value`.
         use :: dm_report
 
         type(config_type), intent(inout)        :: config !! Config type.
@@ -273,8 +281,8 @@ contains
     end function config_get_stack
 
     integer function config_get_string(config, name, value) result(rc)
-        !! Returns configuration value as character string. The string is
-        !! unescaped by default (`\\` is converted to `\`).
+        !! Returns configuration value as character string in `value`. The
+        !! string is unescaped by default (`\\` is converted to `\`).
         type(config_type), intent(inout) :: config !! Config type.
         character(len=*),  intent(in)    :: name   !! Setting name.
         character(len=*),  intent(inout) :: value  !! Setting value.
