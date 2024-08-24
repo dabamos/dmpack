@@ -765,9 +765,8 @@ The *dmdb* program collects observations from a POSIX message queue and
 stores them in a SQLite database. The name of the message queue equals the
 given *dmdb* name and leading `/`. The IPC option enables process
 synchronisation via POSIX semaphores. The value of the semaphore is changed from
-0 to 1 if a new observation has been received. The name of the semaphore equals
-the *dmdb* name with leading `/`. Only a single process shall wait for the
-semaphore.
+0 to 1 if a new observation has been received. Only a single process shall wait
+for the semaphore.
 
 Only <<data-observ,observation types>> in binary format are accepted. Log
 messages are stored to database by the distinct <<dmlogger>> program.
@@ -3165,7 +3164,7 @@ dmserial = {
   sensor = sensor_id,    -- Sensor id (required).
   output = "",           -- Path of optional output file, or `-` for stdout.
   format = "",           -- Output file format (`csv`, `jsonl`).
-  path = "/dev/ttyUSB0", -- TTY device path.
+  path = "/dev/ttyS0",   -- TTY device path.
   baudrate = 9600,       -- TTY baud rate.
   bytesize = 8,          -- TTY byte size (5, 6, 7, 8).
   parity = "none",       -- TTY parity (`none`, `even`, `odd`).
@@ -4507,7 +4506,7 @@ evaluable configuration files into <<dmserial>>.
 DMPACK does not follow the Leica GeoCOM API for C/C++ and Visual Basic.
 Instead, the API is entirely object-oriented, and methods are given more
 memorable names without any sub-system prefix. Structured types have been
-removed altogether. Named parameter start with prefix `GEOCOM_` and return
+removed altogether. Named parameters start with prefix `GEOCOM_` and return
 codes with prefix `GRC_`. See the
 link:https://www.dabamos.de/dmpack/doc/module/dm_geocom.html[source code documentation]
 for an overview of the API.
@@ -4548,8 +4547,8 @@ Make sure that the instrument is configured to 115,200 baud. Invalid parameters
 passed to the GeoCOM methods will be replaced with their default values, and an
 error message is printed in verbose mode.
 
-If the DMPACK library and module files are installed to `/opt`, build, link, and
-run the example program with:
+If the DMPACK library and module files are installed to `/opt/`, build, link,
+and run the example program with:
 
 ....
 $ gfortran -I/opt/include/dmpack -o geocom geocom.f90 /opt/lib/libdmpack.a -lpcre2-8
@@ -6594,6 +6593,7 @@ beat, log, node, observation, sensor, and target types. The syntax is
 case-insensitive, line-breaks are optional. Default values are assumed for
 omitted attributes of data in Namelist format.
 Text:: Status messages of the HTTP-RPC API are returned as key–value pairs in
+plain text format.
 
 The JSON Lines format equals the JSON format, except that multiple records are
 separated by new line. All string attributes of the derived types are 8 bit
@@ -7744,8 +7744,9 @@ $ sh hdfview.sh
 
 === SQLite 3 [[third-party-sqlite]]
 
-DMPACK depends on SQLite version 3.39.0 or newer. If the requirement is not met
-by the operating system, build the latest version from source:
+DMPACK depends on SQLite version 3.39.0 or newer. If only an older package is
+available in the package repository of the operating system, build the latest
+version from source:
 
 ....
 $ cd /tmp/
