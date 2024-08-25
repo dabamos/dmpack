@@ -90,28 +90,14 @@ contains
 
         plot%term = terminal
 
-        ! Make X11 window persistent.
-        if (plot%term == PLOT_TERM_X11) plot%persist = .true.
-
-        if (present(output)) then
-            if (len_trim(output) > 0) plot%output = output
-        end if
-
-        if (present(background)) then
-            if (len_trim(background) > 0) plot%background = background
-        end if
-
-        if (present(foreground)) then
-            if (len_trim(foreground) > 0) plot%foreground = foreground
-        end if
-
-        if (present(font)) then
-            if (len_trim(font) > 0) plot%font = font
-        end if
-
-        if (present(title)) then
-            if (len_trim(title) > 0) plot%title = title
-        end if
+        if (plot%term == PLOT_TERM_X11)       plot%persist    = .true.
+        if (dm_string_is_present(output))     plot%output     = output
+        if (dm_string_is_present(background)) plot%background = background
+        if (dm_string_is_present(foreground)) plot%foreground = foreground
+        if (dm_string_is_present(font))       plot%font       = font
+        if (dm_string_is_present(title))      plot%title      = title
+        if (dm_string_is_present(xlabel))     plot%xlabel     = xlabel
+        if (dm_string_is_present(ylabel))     plot%ylabel     = ylabel
 
         if (present(width)) then
             if (width > 0) plot%width = width
@@ -119,14 +105,6 @@ contains
 
         if (present(height)) then
             if (height > 0) plot%height = height
-        end if
-
-        if (present(xlabel)) then
-            if (len_trim(xlabel) > 0) plot%xlabel = xlabel
-        end if
-
-        if (present(ylabel)) then
-            if (len_trim(ylabel) > 0) plot%ylabel = ylabel
         end if
 
         rc = dm_plot_lines(plot, dps)
