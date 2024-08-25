@@ -42,7 +42,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EXIST` if pipe is already associated.
+        !! * `E_EXIST` if pipe is already connected.
         !! * `E_INVALID` if access mode is invalid.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -53,7 +53,7 @@ contains
         character(len=2) :: a
 
         rc = E_EXIST
-        if (c_associated(pipe%ptr)) return
+        if (dm_pipe_connected(pipe)) return
 
         rc = E_INVALID
         select case (access)
@@ -68,19 +68,31 @@ contains
         rc = E_SYSTEM
         pipe%ptr = c_popen(trim(command) // c_null_char, a)
         if (.not. c_associated(pipe%ptr)) return
-        pipe%access = access
+
         rc = E_NONE
+        pipe%access = access
     end function dm_pipe_open
 
     integer function dm_pipe_open2(stdin, stdout, stderr, command) result(rc)
         !! Creates three anonymous pipes for bidirectional IPC (`stdin`,
-        !! `stdout`, `stderr`). The function return `E_SYSTEM` on error.
+        !! `stdout`, `stderr`).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if one or more pipe is already conncted.
+        !! * `E_SYSTEM` if opening pipes failed.
+        !!
         type(pipe_type),  intent(out) :: stdin   !! Standard input handle.
         type(pipe_type),  intent(out) :: stdout  !! Standard output handle.
         type(pipe_type),  intent(out) :: stderr  !! Standard error handle.
         character(len=*), intent(in)  :: command !! Program to invoke.
 
         integer :: p1(2), p2(2), p3(2), pid, stat
+
+        rc = E_EXIST
+        if (dm_pipe_connected(stdin))  return
+        if (dm_pipe_connected(stdout)) return
+        if (dm_pipe_connected(stderr)) return
 
         rc = E_SYSTEM
 
@@ -107,9 +119,9 @@ contains
             stdout%ptr = c_fdopen(p2(1), 'r' // c_null_char)
             stderr%ptr = c_fdopen(p3(1), 'r' // c_null_char)
 
-            if (.not. c_associated(stdin%ptr))  return
-            if (.not. c_associated(stdout%ptr)) return
-            if (.not. c_associated(stderr%ptr)) return
+            if (.not. dm_pipe_connected(stdin))  return
+            if (.not. dm_pipe_connected(stdout)) return
+            if (.not. dm_pipe_connected(stderr)) return
 
             rc = E_NONE
             return
@@ -159,7 +171,7 @@ contains
 
         rc = E_INVALID
         if (pipe%access == PIPE_RDONLY) return
-        if (.not. c_associated(pipe%ptr)) return
+        if (.not. dm_pipe_connected(pipe)) return
 
         rc = E_SYSTEM
         if (c_fputs(trim(str) // c_new_line // c_null_char, pipe%ptr) < 0) return
@@ -183,7 +195,7 @@ contains
 
         integer :: stat
 
-        if (c_associated(pipe%ptr)) stat = c_pclose(pipe%ptr)
+        if (dm_pipe_connected(pipe)) stat = c_pclose(pipe%ptr)
         if (stat == 0) pipe%ptr = c_null_ptr
     end subroutine dm_pipe_close
 
@@ -193,7 +205,7 @@ contains
 
         integer :: stat
 
-        if (c_associated(pipe%ptr)) stat = c_fclose(pipe%ptr)
+        if (dm_pipe_connected(pipe)) stat = c_fclose(pipe%ptr)
         if (stat == 0) pipe%ptr = c_null_ptr
     end subroutine dm_pipe_close2
 end module dm_pipe

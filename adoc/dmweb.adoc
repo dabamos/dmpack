@@ -25,13 +25,19 @@ This web application allows users to:
 
 * add and view nodes, sensors, targets;
 * view observations, logs, beats;
-* create plots in SVG format.
+* create plots in SVG format;
+* show interactive map of nodes, sensors, and targets.
 
 Gnuplot is used as the plotting backend and must be present on the host.
 Responses are returned in HTML5.
 
-Copy the style sheet `dmpack.min.css` manually to the WWW root directory, or
-create a symlink.
+The map view requires a URL to the tile server in environment variable
+`DM_TILE_URL`. For example, set the variable to
+`https://tile.openstreetmap.org/{z}/{x}/{y}.png` to use OpenStreetMap as the
+backend.
+
+Copy the directory `/usr/local/share/dmpack/dmweb` to the WWW root or create a
+symlink.
 
 == ENVIRONMENT
 
@@ -49,6 +55,9 @@ to pass them to *dmweb*:
 
 *DM_READ_ONLY*::
   Set to 1 to open databases in read-only mode.
+
+*DM_TILE_URL*::
+  URL of map tile server.
 
 == RESOURCES
 

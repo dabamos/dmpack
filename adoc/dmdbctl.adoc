@@ -45,7 +45,7 @@ through command-line arguments.
 == OPTIONS
 
 *--alt*, *-A* _alt_::
-  Node, sensor, or target altitude in metres.
+  Altitude of node, sensor, or target in metres.
 
 *--create*, *-C* [node|sensor|target]::
   Create database record (node, sensor, or target).
@@ -63,10 +63,10 @@ through command-line arguments.
   ID of node, sensor, or target.
 
 *--lat*, *-L* _lat_::
-  Node, sensor, or target latitude in degrees (decimal).
+  Latitude of node, sensor, or target in degrees (decimal).
 
 *--lon*, *-G* _lon_::
-  Node, sensor, or target longitude in degrees (decimal).
+  Longitude node, sensor, or target in degrees (decimal).
 
 *--meta*, *-M* _meta_::
   Meta description of node, sensor, or target.

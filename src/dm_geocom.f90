@@ -1058,7 +1058,7 @@ contains
         !! If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the
         !! compensator. For positioning distances > 25 gon, this mode might tend
         !! to inaccuracy. If set to `GEOCOM_AUT_PRECISE`, it tries to measure
-        !! the exact inclination of the target. Tends to long positioning time.
+        !! the exact inclination of the target (tends to long positioning time).
         !!
         !! If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to
         !! other face. If set to `GEOCOM_AUT_TARGET`, tries to position into a
@@ -2923,7 +2923,7 @@ contains
         !! If `pos_mode` is `GEOCOM_AUT_NORMAL`, uses the current value of the
         !! compensator. For positioning distances > 25 gon, this mode might tend
         !! to inaccuracy. If set to `GEOCOM_AUT_PRECISE`, tries to measure the
-        !! exact inclination of the target. Tends to long position time.
+        !! exact inclination of the target (tends to long position time).
         !!
         !! If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to
         !! other face. If set to `GEOCOM_AUT_TARGET`, tries to position into a

@@ -81,10 +81,12 @@ contains
         type(cgi_env_type),    intent(inout) :: env         !! CGI environment variables.
         integer,               intent(out)   :: http_status !! Optional status.
 
+        integer                       :: rc
         type(cgi_route_type), pointer :: route
 
         http_status = HTTP_NOT_FOUND
-        if (dm_cgi_router_get(router, trim(env%path_info), route) /= E_NONE) return
+        rc = dm_cgi_router_get(router, trim(env%path_info), route)
+        if (dm_is_error(rc)) return
 
         http_status = HTTP_INTERNAL_SERVER_ERROR
         if (.not. associated(route)) return

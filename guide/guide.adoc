@@ -5701,7 +5701,7 @@ measurement time. This command does not issue a new distance measurement. A
 distance measurement has to be started in advance. If the distance is valid, the
 function ignores `wait_time` and returns the results immediately. If no valid
 distance is available, and the measurement unit is not activated, the angle
-measurement result is retuned after the waiting time.
+measurement result is returned after the waiting time.
 
 [discrete]
 ==== geocom_get_geocom_version() [[lua-api-geocom-get-geocom-version]]
@@ -5968,7 +5968,7 @@ successfully before executing this function.
 [discrete]
 ==== geocom_measure_distance_angle(dist_mode) [[lua-api-geocom-measure-distance-angle]]
 
-* `dist_mode` (_integer_) – Distance measurement program (`GEOCOM_BAP_MEASURE_PRG`).
+* `dist_mode` (_integer_) – Distance measurement program (<<geocom-api-bap-measure-prg,GEOCOM_BAP_MEASURE_PRG>>).
 
 Returns request for *BAP_MeasDistanceAngle* procedure. Creates request for
 measuring Hz, V angles and a single distance. The API function measures angles
@@ -6341,7 +6341,7 @@ mode `2` means method for Australia.
 
 * `center_hz` (_number_) – Search area center Hz angle [rad].
 * `center_v`  (_number_) – Search area center V angle [rad].
-* `range_v`   (_number_) – Search area range Hz angle [rad].
+* `range_hz`  (_number_) – Search area range Hz angle [rad].
 * `range_v`   (_number_) – Search area range V angle [rad].
 * `enabled`   (_bool_)   – Enable search area.
 
@@ -6554,7 +6554,7 @@ The argument `start_mode` has to be one of the following:
 [discrete]
 ==== geocom_take_image(mem_type) [[lua-api-geocom-take-image]]
 
-* `mem_type` (_integer_) – Memory type (`GEOCOM_IMG_MEM_TYPE`).
+* `mem_type` (_integer_) – Memory type (<<geocom-api-img-mem-type,GEOCOM_IMG_MEM_TYPE>>).
 
 Returns request for *IMG_TakeTccImage* procedure. Creates request for capturing
 a telescope image.
@@ -6576,10 +6576,10 @@ format, consisting of time stamp (ISO 8601) and real value.
 CSV:: Export and import of beat, log, node, observation, sensor, and target
 data, with custom field separator and quote character. A CSV header is added
 optionally.
-HDF5:: Export and import of node, observation, sensor, and target data as HDF5
-compound data types.
 GeoJSON:: Export of node, sensor, and target data as
 link:https://geojson.org/|[GeoJSON] feature points.
+HDF5:: Export and import of node, observation, sensor, and target data as HDF5
+compound data types.
 JSON:: Export of beat, log, node, observation, sensor, and target data as
 JSON objects or JSON arrays.
 JSON Lines:: Export of beat, log, node, observation, sensor, and target data in

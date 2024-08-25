@@ -16,7 +16,8 @@ dmfs - reads observations from file or named pipe
 *dmfs* --version
 
 *dmfs* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*debug*] [--*verbose*]
+[--*logger* _name_] [--*format* _format_] [--*output* _file_] [--*debug*]
+[--*verbose*]
 
 == DESCRIPTION
 

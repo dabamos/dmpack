@@ -1338,8 +1338,8 @@ contains
         !! measurement has to be started in advance. If the distance is valid,
         !! the function ignores `wait_time` and returns the results
         !! immediately. If no valid distance is available, and the measurement
-        !! unit is not activated, the angle measurement result is retuned after
-        !! the waiting time.
+        !! unit is not activated, the angle measurement result is returned
+        !! after the waiting time.
         !!
         !! The instrument returns the following responses:
         !!

@@ -39,7 +39,7 @@ program dmapi
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_MAX_NLOGS    = 10000              !! Max. number of logs per request.
     integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Max. number of observations per request.
-    integer, parameter :: APP_NROUTES      = 15                 !! Total number of pages.
+    integer, parameter :: APP_NROUTES      = 15                 !! Total number of routes.
     logical, parameter :: APP_CSV_HEADER   = .false.            !! Add CSV header by default.
     logical, parameter :: APP_READ_ONLY    = .false.            !! Default database access mode.
 

@@ -54,7 +54,7 @@ module dm_cgi
         character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '  !! Array of keys.
         character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '  !! Array of values.
         integer(kind=i8)             :: hashes(CGI_MAX_PARAMS) = 0_i8 !! Array of hashes.
-        integer                      :: cursor                 = 0    !! Number of elements.
+        integer                      :: size                   = 0    !! Number of elements.
     end type cgi_param_type
 
     interface dm_cgi_get
@@ -234,7 +234,7 @@ contains
         integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: str   !! Key or empty.
 
-        if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
+        if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
             allocate (character(len=0) :: str)
             return
         end if
@@ -248,7 +248,7 @@ contains
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         integer                             :: sz    !! Number of parameters.
 
-        sz = param%cursor
+        sz = param%size
     end function dm_cgi_size
 
     function dm_cgi_value(param, loc) result(str)
@@ -257,7 +257,7 @@ contains
         integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: str   !! Value or empty.
 
-        if ((param%cursor == 0) .or. (loc < 1) .or. (loc > param%cursor)) then
+        if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
             allocate (character(len=0) :: str)
             return
         end if
@@ -378,7 +378,7 @@ contains
             end if
 
             param%hashes(i) = dm_hash_fnv1a(trim(param%keys(i)))
-            param%cursor    = param%cursor + 1
+            param%size      = param%size + 1
         end do
     end subroutine dm_cgi_parse
 

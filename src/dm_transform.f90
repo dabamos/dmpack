@@ -6,6 +6,7 @@ module dm_transform
     use :: dm_error
     use :: dm_kind
     use :: dm_la
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -95,7 +96,7 @@ contains
         dx = tx - vx
         dy = ty - vy
 
-        if (dx == 0.0) then
+        if (dm_equals(dx, 0.0_r8)) then
             if (dy > 0.0) then
                 z = 0.5 * PI
             else if (dy < 0.0) then

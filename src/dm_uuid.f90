@@ -23,7 +23,8 @@ contains
         !! before the first invocation by calling `dm_init()` once.
         character(len=UUID_LEN) :: uuid
 
-        integer :: b(UUID_LEN), i, j
+        integer :: i, j
+        integer :: b(UUID_LEN)
         real    :: r(UUID_LEN)
 
         call random_number(r)
@@ -44,8 +45,8 @@ contains
         character(len=UUID_FULL_LEN) :: uuid
 
         integer :: i, j, k
-        integer :: b(32)
-        real    :: r(32)
+        integer :: b(UUID_LEN)
+        real    :: r(UUID_LEN)
 
         call random_number(r)
 

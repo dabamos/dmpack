@@ -38,7 +38,7 @@ contains
     integer function dm_api_status_from_string(string, api) result(rc)
         !! Reads API status type from given string. Only keys found in the
         !! string are overwritten in the derived type. No error is returned if
-        !! the string does not contain any of the keys. The function return
+        !! the string does not contain any of the keys. The function returns
         !! `E_EMPTY` if the passed string is empty.
         use :: dm_string
 

@@ -2,12 +2,12 @@
 .\"     Title: dmweb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-02-22
+.\"      Date: 2024-08-25
 .\"    Manual: User Commands
 .\"    Source: DMWEB
 .\"  Language: English
 .\"
-.TH "DMWEB" "1" "2024-02-22" "DMWEB" "User Commands"
+.TH "DMWEB" "1" "2024-08-25" "DMWEB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -72,14 +72,32 @@ view observations, logs, beats;
 .  sp -1
 .  IP \(bu 2.3
 .\}
-create plots in SVG format.
+create plots in SVG format;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+show interactive map of nodes, sensors, and targets.
 .RE
 .sp
 Gnuplot is used as the plotting backend and must be present on the host.
 Responses are returned in HTML5.
 .sp
-Copy the style sheet \f(CRdmpack.min.css\fP manually to the WWW root directory, or
-create a symlink.
+The map view requires a URL to the tile server in environment variable
+\f(CRDM_TILE_URL\fP. For example, set the variable to
+\f(CR\c
+.URL "https://tile.openstreetmap.org/{z}/{x}/{y}.png" "" "\fP"
+to use OpenStreetMap as the
+backend.
+.sp
+Copy the directory \f(CR/usr/local/share/dmpack/dmweb\fP to the WWW root or create a
+symlink.
 .SH "ENVIRONMENT"
 .sp
 Add the following environment variables to the configuration of the web server
@@ -103,6 +121,11 @@ Path to observation database.
 \fBDM_READ_ONLY\fP
 .RS 4
 Set to 1 to open databases in read\-only mode.
+.RE
+.sp
+\fBDM_TILE_URL\fP
+.RS 4
+URL of map tile server.
 .RE
 .SH "RESOURCES"
 .sp

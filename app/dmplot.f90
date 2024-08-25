@@ -60,8 +60,10 @@ program dmplot
             exit plot_block
         end if
 
-        ! Create plot.
+        ! Parse output path for format descriptors.
         path = dm_path_parsed(app%output)
+
+        ! Create plot.
         rc = create_graph(dps, app%terminal, path, app%background, app%foreground, &
                           app%font, app%title, app%width, app%height, 'Time', app%response)
         call dm_error_out(rc)

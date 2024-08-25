@@ -58,7 +58,7 @@ observ_start = {
     receivers = { },
     requests = {
         {
-            name = "stop",
+            name = "start",
             request = "\\r",
             delimiter = "\\n",
             pattern = "",

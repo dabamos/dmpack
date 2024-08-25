@@ -45,7 +45,7 @@ program dmfeed
 contains
     logical function is_stale_file(path, time) result(is_stale)
         !! Returns `.true.` if last modification time of file at `path` is
-        !! lower than `time`.
+        !! before `time`.
         character(len=*),        intent(in) :: path !! Path to file.
         character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp of last record.
 
