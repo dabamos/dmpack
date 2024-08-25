@@ -15,30 +15,31 @@ module dm_plot
     integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 512 !! Line buffer length.
 
     ! Line styles.
-    integer, parameter, public :: PLOT_STYLE_NONE        = 0 !! Invalid style.
-    integer, parameter, public :: PLOT_STYLE_LINES       = 1 !! Lines.
-    integer, parameter, public :: PLOT_STYLE_LINESPOINTS = 2 !! Lines with symbols.
-    integer, parameter, public :: PLOT_STYLE_DOTS        = 3 !! Dots.
-    integer, parameter, public :: PLOT_STYLE_POINTS      = 4 !! Points.
-    integer, parameter, public :: PLOT_STYLE_LAST        = 4 !! Never use this.
+    integer, parameter, public :: PLOT_STYLE_NONE         = 0 !! Invalid style.
+    integer, parameter, public :: PLOT_STYLE_LINES        = 1 !! Lines.
+    integer, parameter, public :: PLOT_STYLE_LINESPOINTS  = 2 !! Lines with symbols.
+    integer, parameter, public :: PLOT_STYLE_DOTS         = 3 !! Dots.
+    integer, parameter, public :: PLOT_STYLE_POINTS       = 4 !! Points.
+    integer, parameter, public :: PLOT_STYLE_LAST         = 4 !! Never use this.
 
     ! Gnuplot terminals, see:
     ! http://gnuplot.info/docs_5.5/Terminals.html
-    integer, parameter, public :: PLOT_TERM_NONE      = 0 !! Invalid terminal.
-    integer, parameter, public :: PLOT_TERM_ANSI      = 1 !! ASCII with ANSI colours (dumb).
-    integer, parameter, public :: PLOT_TERM_ASCII     = 2 !! ASCII (dumb).
-    integer, parameter, public :: PLOT_TERM_GIF       = 3 !! GIF (libgd).
-    integer, parameter, public :: PLOT_TERM_PNG       = 4 !! PNG (libgd).
-    integer, parameter, public :: PLOT_TERM_PNG_CAIRO = 5 !! PNG (libcairo).
-    integer, parameter, public :: PLOT_TERM_SIXEL     = 6 !! Sixel (libgd).
-    integer, parameter, public :: PLOT_TERM_SVG       = 7 !! SVG.
-    integer, parameter, public :: PLOT_TERM_X11       = 8 !! X11.
-    integer, parameter, public :: PLOT_TERM_LAST      = 8 !! Never use this.
+    integer, parameter, public :: PLOT_TERMINAL_NONE      = 0 !! Invalid terminal.
+    integer, parameter, public :: PLOT_TERMINAL_ANSI      = 1 !! ASCII with ANSI colours (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_ASCII     = 2 !! ASCII (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_GIF       = 3 !! GIF (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_PNG       = 4 !! PNG (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_PNG_CAIRO = 5 !! PNG (libcairo).
+    integer, parameter, public :: PLOT_TERMINAL_SIXEL     = 6 !! Sixel (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_SVG       = 7 !! SVG.
+    integer, parameter, public :: PLOT_TERMINAL_X11       = 8 !! X11.
+    integer, parameter, public :: PLOT_TERMINAL_LAST      = 8 !! Never use this.
 
-    integer, parameter, public :: PLOT_TERM_NAME_LEN  = 8 !! Max. terminal name length.
+    integer, parameter, public :: PLOT_TERMINAL_NAME_LEN  = 8 !! Max. terminal name length.
 
-    character(len=*), parameter, public :: PLOT_TERM_NAMES(PLOT_TERM_NONE:PLOT_TERM_LAST) = [ &
-        character(len=PLOT_TERM_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'svg', 'x11' &
+    character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
+        character(len=PLOT_TERMINAL_NAME_LEN) :: &
+        'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
     character(len=*), parameter, public :: PLOT_GNUPLOT     = 'gnuplot'           !! Gnuplot binary.
@@ -46,36 +47,36 @@ module dm_plot
 
     type, public :: plot_type
         !! Plot type of plot settings.
-        integer                  :: term       = PLOT_TERM_NONE   !! Output terminal.
-        integer                  :: style      = PLOT_STYLE_LINES !! Plot line style.
-        integer                  :: width      = 800              !! Plot width.
-        integer                  :: height     = 300              !! Plot height.
-        character(len=1024)      :: output     = ' '              !! Output file name.
-        character(len=8)         :: background = ' '              !! Background colour (optional).
-        character(len=8)         :: foreground = '#3b4cc0'        !! Foreground colour (optional).
-        character(len=8)         :: graph      = '#ffffff'        !! Graph background colour.
-        character(len=1024)      :: font       = ' '              !! Font name or file path (optional).
-        character(len=128)       :: title      = ' '              !! Plot title (optional).
-        character(len=128)       :: xlabel     = ' '              !! X label (optional).
-        character(len=128)       :: ylabel     = ' '              !! Y label (optional).
-        character(len=TIME_LEN)  :: xrange(2)  = ' '              !! X axis range.
-        real(kind=r8)            :: yrange(2)  = 0.0_r8           !! Y axis range.
-        logical                  :: bidirect   = .false.          !! Bi-directional anonymous pipe.
-        logical                  :: persist    = .false.          !! Persistent Gnuplot process (use only with X11).
-        logical                  :: xautoscale = .true.           !! Auto-scale X axis.
-        logical                  :: yautoscale = .true.           !! Auto-scale Y axis.
-        logical                  :: grid       = .true.           !! Show grid.
-        logical                  :: legend     = .false.          !! Show legend.
-        type(pipe_type), private :: stdin                         !! Gnuplot’s standard input.
-        type(pipe_type), private :: stdout                        !! Gnuplot’s standard output.
-        type(pipe_type), private :: stderr                        !! Gnuplot’s standard error.
+        integer                  :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
+        integer                  :: style      = PLOT_STYLE_LINES   !! Plot line style.
+        integer                  :: width      = 800                !! Plot width.
+        integer                  :: height     = 300                !! Plot height.
+        character(len=1024)      :: output     = ' '                !! Output file name.
+        character(len=8)         :: background = ' '                !! Background colour (optional).
+        character(len=8)         :: foreground = '#3b4cc0'          !! Foreground colour (optional).
+        character(len=8)         :: graph      = '#ffffff'          !! Graph background colour.
+        character(len=1024)      :: font       = ' '                !! Font name or file path (optional).
+        character(len=128)       :: title      = ' '                !! Plot title (optional).
+        character(len=128)       :: xlabel     = ' '                !! X label (optional).
+        character(len=128)       :: ylabel     = ' '                !! Y label (optional).
+        character(len=TIME_LEN)  :: xrange(2)  = ' '                !! X axis range.
+        real(kind=r8)            :: yrange(2)  = 0.0_r8             !! Y axis range.
+        logical                  :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                  :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
+        logical                  :: xautoscale = .true.             !! Auto-scale X axis.
+        logical                  :: yautoscale = .true.             !! Auto-scale Y axis.
+        logical                  :: grid       = .true.             !! Show grid.
+        logical                  :: legend     = .false.            !! Show legend.
+        type(pipe_type), private :: stdin                           !! Gnuplot’s standard input.
+        type(pipe_type), private :: stdout                          !! Gnuplot’s standard output.
+        type(pipe_type), private :: stderr                          !! Gnuplot’s standard error.
     end type plot_type
 
     public :: dm_plot_error
     public :: dm_plot_lines
     public :: dm_plot_read
-    public :: dm_plot_term_from_name
-    public :: dm_plot_term_valid
+    public :: dm_plot_terminal_from_name
+    public :: dm_plot_terminal_valid
     public :: dm_plot_version
 
     private :: plot_output
@@ -83,7 +84,7 @@ module dm_plot
     private :: plot_set_grid
     private :: plot_set_label
     private :: plot_set_legend
-    private :: plot_set_term
+    private :: plot_set_terminal
     private :: plot_set_title
     private :: plot_set_xaxis
     private :: plot_set_yaxis
@@ -122,7 +123,7 @@ contains
         type(dp_type),   intent(inout) :: dps(:) !! Data points array.
 
         rc = E_INVALID
-        if (plot%term <= PLOT_TERM_NONE .or. plot%term > PLOT_TERM_LAST) return
+        if (plot%terminal <= PLOT_TERMINAL_NONE .or. plot%terminal > PLOT_TERMINAL_LAST) return
 
         if (.not. plot%bidirect) then
             rc = dm_pipe_open(plot%stdin, PLOT_GNUPLOT, PIPE_WRONLY)
@@ -133,14 +134,14 @@ contains
         if (dm_is_error(rc)) return
 
         plot_block: block
-            rc = plot_set_term(plot);   if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_title(plot);  if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_xaxis(plot);  if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_yaxis(plot);  if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_graph(plot);  if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_legend(plot); if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_grid(plot);   if (dm_is_error(rc)) exit plot_block
-            rc = plot_set_label(plot);  if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_terminal(plot); if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_title(plot);    if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_xaxis(plot);    if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_yaxis(plot);    if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_graph(plot);    if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_legend(plot);   if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_grid(plot);     if (dm_is_error(rc)) exit plot_block
+            rc = plot_set_label(plot);    if (dm_is_error(rc)) exit plot_block
 
             rc = plot_output(plot, dps)
         end block plot_block
@@ -174,53 +175,53 @@ contains
         call dm_pipe_close2(plot%stdout)
     end function dm_plot_read
 
-    pure elemental integer function dm_plot_term_from_name(name) result(term)
+    pure elemental integer function dm_plot_terminal_from_name(name) result(terminal)
         !! Returns Gnuplot terminal backend of given name.
         character(len=*), intent(in) :: name
 
-        character(len=PLOT_TERM_NAME_LEN) :: name_
+        character(len=PLOT_TERMINAL_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_lower(name)
 
         select case (name_)
-            case (PLOT_TERM_NAMES(PLOT_TERM_ANSI))
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI))
                 ! ANSI
-                term = PLOT_TERM_ANSI
-            case (PLOT_TERM_NAMES(PLOT_TERM_ASCII))
+                terminal = PLOT_TERMINAL_ANSI
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII))
                 ! ASCII
-                term = PLOT_TERM_ASCII
-            case (PLOT_TERM_NAMES(PLOT_TERM_GIF))
+                terminal = PLOT_TERMINAL_ASCII
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF))
                 ! GIF
-                term = PLOT_TERM_GIF
-            case (PLOT_TERM_NAMES(PLOT_TERM_PNG))
+                terminal = PLOT_TERMINAL_GIF
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG))
                 ! PNG
-                term = PLOT_TERM_PNG
-            case (PLOT_TERM_NAMES(PLOT_TERM_PNG_CAIRO))
+                terminal = PLOT_TERMINAL_PNG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO))
                 ! PNG Cairo
-                term = PLOT_TERM_PNG_CAIRO
-            case (PLOT_TERM_NAMES(PLOT_TERM_SIXEL))
+                terminal = PLOT_TERMINAL_PNG_CAIRO
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXEL))
                 ! Sixel
-                term = PLOT_TERM_SIXEL
-            case (PLOT_TERM_NAMES(PLOT_TERM_SVG))
+                terminal = PLOT_TERMINAL_SIXEL
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG))
                 ! SVG
-                term = PLOT_TERM_SVG
-            case (PLOT_TERM_NAMES(PLOT_TERM_X11))
+                terminal = PLOT_TERMINAL_SVG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11))
                 ! X11
-                term = PLOT_TERM_X11
+                terminal = PLOT_TERMINAL_X11
             case default
                 ! none
-                term = PLOT_TERM_NONE
+                terminal = PLOT_TERMINAL_NONE
         end select
-    end function dm_plot_term_from_name
+    end function dm_plot_terminal_from_name
 
-    pure elemental logical function dm_plot_term_valid(term) result(valid)
-        !! Returns `.true.` if the given terminal is valid. `PLOT_TERM_NONE` is
+    pure elemental logical function dm_plot_terminal_valid(terminal) result(valid)
+        !! Returns `.true.` if the given terminal is valid. `PLOT_TERMINAL_NONE` is
         !! an invalid terminal.
-        integer, intent(in) :: term !! Terminal type enumerator.
+        integer, intent(in) :: terminal !! Terminal type enumerator.
 
-        valid = (term > PLOT_TERM_NONE .and. term <= PLOT_TERM_LAST)
-    end function dm_plot_term_valid
+        valid = (terminal > PLOT_TERMINAL_NONE .and. terminal <= PLOT_TERMINAL_LAST)
+    end function dm_plot_terminal_valid
 
     function dm_plot_version(name) result(version)
         !! Returns Gnuplot version as allocatable string.
@@ -344,7 +345,7 @@ contains
         if (.not. plot%legend) rc = plot_write(plot, 'set nokey')
     end function plot_set_legend
 
-    integer function plot_set_term(plot) result(rc)
+    integer function plot_set_terminal(plot) result(rc)
         !! Configures the Gnuplot term.
         type(plot_type), intent(inout) :: plot !! Plot settings.
 
@@ -356,13 +357,13 @@ contains
         ! Set output size.
         write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
 
-        select case (plot%term)
-            case (PLOT_TERM_ANSI)
+        select case (plot%terminal)
+            case (PLOT_TERMINAL_ANSI)
                 ! Dumb terminal with ANSI colours.
                 rc = plot_write(plot, 'set term dumb ansi ' // trim(args))
                 if (dm_is_error(rc)) return
 
-            case (PLOT_TERM_ASCII)
+            case (PLOT_TERMINAL_ASCII)
                 ! Dumb terminal, output to stdout or file.
                 rc = plot_write(plot, 'set term dumb mono ' // trim(args))
                 if (dm_is_error(rc)) return
@@ -372,7 +373,7 @@ contains
                 if (n == 0) return
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
-            case (PLOT_TERM_GIF, PLOT_TERM_PNG, PLOT_TERM_PNG_CAIRO, PLOT_TERM_SIXEL, PLOT_TERM_SVG)
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO, PLOT_TERMINAL_SIXEL, PLOT_TERMINAL_SVG)
                 ! Background colour.
                 n = len_trim(plot%background)
                 if (n > 0) args = 'background rgb "' // plot%background(1:n) // '" ' // trim(args)
@@ -382,7 +383,7 @@ contains
                 if (n > 0) args = 'font "' // plot%font(1:n) // '" ' // trim(args)
 
                 ! Set terminal type with additional arguments.
-                rc = plot_write(plot, 'set term ' // trim(PLOT_TERM_NAMES(plot%term)) // ' ' // trim(args))
+                rc = plot_write(plot, 'set term ' // trim(PLOT_TERMINAL_NAMES(plot%terminal)) // ' ' // trim(args))
                 if (dm_is_error(rc)) return
 
                 ! Set output file path (if present).
@@ -390,7 +391,7 @@ contains
                 if (n == 0) return
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
-            case (PLOT_TERM_X11)
+            case (PLOT_TERMINAL_X11)
                 ! Background colour.
                 n = len_trim(plot%background)
                 if (n > 0) args = 'background rgb "' // plot%background(1:n) // '" ' // trim(args)
@@ -402,15 +403,15 @@ contains
                 ! Persistent window.
                 if (plot%persist) args = 'persist ' // trim(args)
 
-                ! Set term type with additional arguments.
-                rc = plot_write(plot, 'set term ' // trim(PLOT_TERM_NAMES(plot%term)) // ' ' // trim(args))
+                ! Set terminal type with additional arguments.
+                rc = plot_write(plot, 'set term ' // trim(PLOT_TERMINAL_NAMES(plot%terminal)) // ' ' // trim(args))
 
             case default
                 return
         end select
 
         rc = E_NONE
-    end function plot_set_term
+    end function plot_set_terminal
 
     integer function plot_set_title(plot) result(rc)
         !! Sets plot title.

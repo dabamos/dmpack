@@ -10,27 +10,27 @@ program dmplot
     character(len=*), parameter :: APP_NAME  = 'dmplot'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)            :: name       = APP_NAME       !! Name of instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN)     :: config     = ' '            !! Path to configuration file.
-        character(len=FILE_PATH_LEN)     :: database   = ' '            !! Path to observation database.
-        character(len=NODE_ID_LEN)       :: node       = ' '            !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor     = ' '            !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target     = ' '            !! Target id.
-        character(len=RESPONSE_NAME_LEN) :: response   = ' '            !! Response name.
-        character(len=TIME_LEN)          :: from       = ' '            !! Start of time range (ISO 8601).
-        character(len=TIME_LEN)          :: to         = ' '            !! End of time range (ISO 8601).
-        integer                          :: terminal   = PLOT_TERM_NONE !! Plot terminal (Gnuplot terminal).
-        character(len=FILE_PATH_LEN)     :: output     = ' '            !! Path of plot file.
-        character(len=8)                 :: background = ' '            !! Background colour.
-        character(len=8)                 :: foreground = ' '            !! Foreground colour (graph).
-        character(len=32)                :: font       = ' '            !! Font name.
-        character(len=80)                :: title      = ' '            !! Plot title.
-        integer                          :: width      = 1000           !! Plot width.
-        integer                          :: height     = 400            !! Plot height.
+        character(len=ID_LEN)            :: name       = APP_NAME           !! Name of instance and POSIX semaphore.
+        character(len=FILE_PATH_LEN)     :: config     = ' '                !! Path to configuration file.
+        character(len=FILE_PATH_LEN)     :: database   = ' '                !! Path to observation database.
+        character(len=NODE_ID_LEN)       :: node       = ' '                !! Node id.
+        character(len=SENSOR_ID_LEN)     :: sensor     = ' '                !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target     = ' '                !! Target id.
+        character(len=RESPONSE_NAME_LEN) :: response   = ' '                !! Response name.
+        character(len=TIME_LEN)          :: from       = ' '                !! Start of time range (ISO 8601).
+        character(len=TIME_LEN)          :: to         = ' '                !! End of time range (ISO 8601).
+        integer                          :: terminal   = PLOT_TERMINAL_NONE !! Plot terminal backend.
+        character(len=FILE_PATH_LEN)     :: output     = ' '                !! Path of plot file.
+        character(len=8)                 :: background = ' '                !! Background colour.
+        character(len=8)                 :: foreground = ' '                !! Foreground colour (graph).
+        character(len=32)                :: font       = ' '                !! Font name.
+        character(len=80)                :: title      = ' '                !! Plot title.
+        integer                          :: width      = 1000               !! Plot width.
+        integer                          :: height     = 400                !! Plot height.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -88,16 +88,16 @@ contains
 
         type(plot_type) :: plot
 
-        plot%term = terminal
+        plot%terminal = terminal
 
-        if (plot%term == PLOT_TERM_X11)       plot%persist    = .true.
-        if (dm_string_is_present(output))     plot%output     = output
-        if (dm_string_is_present(background)) plot%background = background
-        if (dm_string_is_present(foreground)) plot%foreground = foreground
-        if (dm_string_is_present(font))       plot%font       = font
-        if (dm_string_is_present(title))      plot%title      = title
-        if (dm_string_is_present(xlabel))     plot%xlabel     = xlabel
-        if (dm_string_is_present(ylabel))     plot%ylabel     = ylabel
+        if (plot%terminal == PLOT_TERMINAL_X11) plot%persist    = .true.
+        if (dm_string_is_present(output))       plot%output     = output
+        if (dm_string_is_present(background))   plot%background = background
+        if (dm_string_is_present(foreground))   plot%foreground = foreground
+        if (dm_string_is_present(font))         plot%font       = font
+        if (dm_string_is_present(title))        plot%title      = title
+        if (dm_string_is_present(xlabel))       plot%xlabel     = xlabel
+        if (dm_string_is_present(ylabel))       plot%ylabel     = ylabel
 
         if (present(width)) then
             if (width > 0) plot%width = width
@@ -114,9 +114,9 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=PLOT_TERM_NAME_LEN) :: terminal
-        character(len=:), allocatable     :: version
-        type(arg_type)                    :: args(17)
+        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
+        character(len=:), allocatable         :: version
+        type(arg_type)                        :: args(17)
 
         rc = E_NONE
 
@@ -130,7 +130,7 @@ contains
             arg_type('response',   short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <name>
             arg_type('from',       short='B', type=ARG_TYPE_TIME),    & ! -B, --from <timestamp>
             arg_type('to',         short='E', type=ARG_TYPE_TIME),    & ! -E, --to <timestamp>
-            arg_type('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERM_NAME_LEN), & ! -m, --terminal <name>
+            arg_type('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN), & ! -m, --terminal <name>
             arg_type('output',     short='o', type=ARG_TYPE_STRING),  & ! -o, --output <file>
             arg_type('background', short='G', type=ARG_TYPE_STRING),  & ! -G, --background <color>
             arg_type('foreground', short='P', type=ARG_TYPE_STRING),  & ! -P, --foreground <color>
@@ -169,7 +169,7 @@ contains
         rc = dm_arg_get(args(16), app%width)
         rc = dm_arg_get(args(17), app%height)
 
-        app%terminal = dm_plot_term_from_name(terminal)
+        app%terminal = dm_plot_terminal_from_name(terminal)
 
         ! Validate settings.
         rc = E_INVALID
@@ -209,7 +209,7 @@ contains
             return
         end if
 
-        if (.not. dm_plot_term_valid(app%terminal)) then
+        if (.not. dm_plot_terminal_valid(app%terminal)) then
             call dm_error_out(rc, 'invalid plot terminal')
             return
         end if
@@ -225,12 +225,17 @@ contains
         end if
 
         select case (app%terminal)
-            case (PLOT_TERM_GIF, PLOT_TERM_PNG, PLOT_TERM_PNG_CAIRO, PLOT_TERM_SVG)
+            case (PLOT_TERMINAL_GIF,       &
+                  PLOT_TERMINAL_PNG,       &
+                  PLOT_TERMINAL_PNG_CAIRO, &
+                  PLOT_TERMINAL_SVG)
                 if (len_trim(app%output) == 0) then
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
-            case (PLOT_TERM_ANSI, PLOT_TERM_SIXEL, PLOT_TERM_X11)
+            case (PLOT_TERMINAL_ANSI,  &
+                  PLOT_TERMINAL_SIXEL, &
+                  PLOT_TERMINAL_X11)
                 ! Ignore output file path.
                 app%output = ' '
         end select
@@ -242,8 +247,8 @@ contains
         !! Reads app configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=PLOT_TERM_NAME_LEN) :: terminal
-        type(config_type)                 :: config
+        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
+        type(config_type)                     :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return
@@ -267,7 +272,7 @@ contains
             rc = dm_config_get(config, 'to',         app%to)
             rc = dm_config_get(config, 'width',      app%width)
 
-            app%terminal = dm_plot_term_from_name(terminal)
+            app%terminal = dm_plot_terminal_from_name(terminal)
         end if
 
         call dm_config_close(config)

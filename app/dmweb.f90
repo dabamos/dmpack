@@ -62,18 +62,18 @@ program dmweb
     ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 5
+    integer, parameter :: APP_PATCH = 6
 
     ! Program parameters.
-    character(len=*), parameter :: APP_BASE_PATH  = '/dmpack'          !! URI base path.
-    character(len=*), parameter :: APP_CSS_PATH   = '/dmweb'           !! Path to CSS directory.
-    character(len=*), parameter :: APP_JS_PATH    = APP_CSS_PATH       !! Path to JavaScript directory.
-    character(len=*), parameter :: APP_TITLE      = 'DMPACK'           !! HTML title and heading.
-    integer,          parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer,          parameter :: APP_PLOT_TERM  = PLOT_TERM_SVG      !! Plotting backend.
-    logical,          parameter :: APP_READ_ONLY  = .false.            !! Default database access mode.
-    real(kind=r8),    parameter :: APP_MAP_LON    = 10.4541194_r8      !! Default map view longitude.
-    real(kind=r8),    parameter :: APP_MAP_LAT    = 51.1642292_r8      !! Default map view latitude.
+    character(len=*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
+    character(len=*), parameter :: APP_CSS_PATH      = '/dmweb'           !! Path to CSS directory.
+    character(len=*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
+    character(len=*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
+    integer,          parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer,          parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
+    logical,          parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
+    real(kind=r8),    parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
+    real(kind=r8),    parameter :: APP_MAP_LON       = 10.4541194_r8      !! Default map view longitude.
 
     ! Global settings.
     character(len=FILE_PATH_LEN) :: db_beat   = ' ' ! Path to beat database.
@@ -1342,7 +1342,7 @@ contains
                 end if
 
                 ! Plotting via Gnuplot.
-                plot%term     = APP_PLOT_TERM
+                plot%terminal = APP_PLOT_TERMINAL
                 plot%font     = 'sans'
                 plot%graph    = '#ffffff'
                 plot%bidirect = .true.

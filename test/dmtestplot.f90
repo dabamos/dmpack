@@ -48,10 +48,7 @@ contains
         if (dm_test_skip('DM_PIPE_SKIP')) return
 
         stat = TEST_FAILED
-        plot%term = PLOT_TERM_SVG
-        ! plot%term = PLOT_TERM_PNG_CAIRO
-        ! plot%font = '/usr/local/share/fonts/gnu-unifont-ttf/unifont.ttf'
-
+        plot%terminal   = PLOT_TERMINAL_SVG
         plot%title      = 'Dummy Plot'
         plot%bidirect   = .true.
         plot%background = 'white'

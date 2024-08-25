@@ -10,7 +10,7 @@ program dmreport
     character(len=*), parameter :: APP_NAME  = 'dmreport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     character(len=*), parameter :: APP_FONT        = 'Open Sans' !! Default font name.
     integer,          parameter :: APP_PLOT_WIDTH  = 1000        !! Default plot width.
@@ -68,7 +68,7 @@ contains
 
         ! Plot settings.
         plot%bidirect = .true.          ! Bi-directional pipe to Gnuplot.
-        plot%term     = format          ! Gnuplot terminal.
+        plot%terminal = format          ! Gnuplot terminal.
         plot%font     = APP_FONT        ! Font name.
         plot%width    = APP_PLOT_WIDTH  ! Plot width.
         plot%height   = APP_PLOT_HEIGHT ! Plot height.
@@ -80,14 +80,9 @@ contains
             plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
         end if
 
-        ! Set title, meta, colour, width, and height.
-        if (present(title)) then
-            if (len_trim(title) > 0) plot%title = title
-        end if
-
-        if (present(color)) then
-            if (len_trim(color) > 0) plot%foreground = color
-        end if
+        ! Set title, colour, width, and height.
+        if (dm_string_is_present(title)) plot%title      = title
+        if (dm_string_is_present(color)) plot%foreground = color
 
         if (present(width)) then
             if (width > 0) plot%width = width
@@ -98,12 +93,12 @@ contains
         end if
 
         ! Select MIME type according to format.
-        select case (plot%term)
-            case (PLOT_TERM_GIF)
+        select case (plot%terminal)
+            case (PLOT_TERMINAL_GIF)
                 mime = MIME_GIF
-            case (PLOT_TERM_PNG, PLOT_TERM_PNG_CAIRO)
+            case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO)
                 mime = MIME_PNG
-            case (PLOT_TERM_SVG)
+            case (PLOT_TERMINAL_SVG)
                 mime = MIME_SVG
             case default
                 ! Fail-safe: should never occur.
@@ -143,14 +138,16 @@ contains
         character(len=:), allocatable   :: html !! Generated HTML.
 
         html = H_NAV // H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(from)        // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node Meta:' // H_TH_END // H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node X:'    // H_TH_END // H_TD // dm_ftoa(node%x)           // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node Y:'    // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node Z:'    // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(from)        // H_TD_END // &
+                       H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // &
+                       H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node X:'    // H_TH_END // H_TD // dm_ftoa(node%x)           // H_TD_END // &
+                       H_TH // 'Longitude:' // H_TH_END // H_TD // dm_ftoa(node%lon)         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Y:'    // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // &
+                       H_TH // 'Latitude:'  // H_TH_END // H_TD // dm_ftoa(node%lat)         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Z:'    // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // &
+                       H_TH // 'Altitude:'  // H_TH_END // H_TD // dm_ftoa(node%alt)         // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
@@ -228,10 +225,10 @@ contains
             if (allocated(plot%observs)) n = size(plot%observs)
 
             do i = 1, n
-                format = dm_plot_term_from_name(plot%observs(i)%format)
+                format = dm_plot_terminal_from_name(plot%observs(i)%format)
 
-                if (format /= PLOT_TERM_GIF       .and. format /= PLOT_TERM_PNG .and. &
-                    format /= PLOT_TERM_PNG_CAIRO .and. format /= PLOT_TERM_SVG) then
+                if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
+                    format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
                     call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
                     return
                 end if
@@ -467,10 +464,10 @@ contains
                         end if
 
                         ! Get Gnuplot terminal name.
-                        format = dm_plot_term_from_name(report%plot%observs(i)%format)
+                        format = dm_plot_terminal_from_name(report%plot%observs(i)%format)
 
-                        if (format /= PLOT_TERM_GIF       .and. format /= PLOT_TERM_PNG .and. &
-                            format /= PLOT_TERM_PNG_CAIRO .and. format /= PLOT_TERM_SVG) then
+                        if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
+                            format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
                             ! Fail safe: should never occur.
                             write (unit, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
                             exit plot_block
