@@ -441,7 +441,8 @@ directory `/opt` instead, run:
 $ doas make install PREFIX=/opt
 ....
 
-In this case, path `/opt/bin` must be included in `PATH` environment variable.
+In this case, path `/opt/bin` must be included in the global `PATH` environment
+variable.
 
 ==== FPM [[freebsd-fpm]]
 
@@ -2924,11 +2925,11 @@ The feed is updated only if new logs have arrived in the meantime, unless option
 
 == Sensor Control [[sensor-control]]
 
-This sections provides covers the configuration and initialisation of DMPACK
-programs for sensor data collection. Basic knowledge of regular expressions and
-familiarity with the Lua syntax are recommended. The sensor control examples are
-written for Linux and assume DMPACK to be installed to `/opt/`. The path
-`/opt/bin/` must be added to the global `PATH` variable.
+This section covers the configuration and initialisation of DMPACK for sensor
+data collection. Basic knowledge of regular expressions and familiarity with the
+Lua syntax are recommended. The sensor control examples are written for Linux
+and assume DMPACK to be installed to `/opt`. The path `/opt/bin` must be added
+to the global `PATH` variable.
 
 === Humidity Sensor (RS-232)
 
@@ -2953,10 +2954,10 @@ The DKRF400 is available with analog and digital output signals (RS-232, USB,
 RS-485). This section is based on the digital version with RS-232 interface. Use
 an USB serial adapter if the sensor node does not provide a distinct COM port.
 By default, the digital DKRF400 starts sending values over the serial line once
-the sensor is connected to the host. We can change to the request/response mode
-through a basic ASCII protocol: the command `s\r` stops the streaming of
-reponses and command `Meter\r` returns a single response (`\r` is carriage
-return).
+the sensor is connected to the host. We can change from stream to
+request/response mode through a basic ASCII protocol: the command `s\r` stops
+the continuous output of reponses and the command `Meter\r` returns a single
+response (`\r` is carriage return).
 
 .Serial interface specifications of the DKRF400 sensor
 [%noheader,cols="1,5",stripes=none]
