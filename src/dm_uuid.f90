@@ -44,34 +44,14 @@ contains
         !! seeded before the first invocation by calling `dm_init()` once.
         character(len=UUID_FULL_LEN) :: uuid
 
-        integer :: i, j, k
-        integer :: b(UUID_LEN)
-        real    :: r(UUID_LEN)
-
-        call random_number(r)
-
-        b     = int(r * 16)
-        b(13) = 4
-        b(17) = ior(iand(b(17), 3), 8)
-
-        j = 1
-
-        do i = 1, UUID_LEN + 4
-            select case (i)
-                case (9, 14, 19, 24)
-                    uuid(i:i) = '-'
-                case default
-                    k = 1 + b(j)
-                    uuid(i:i) = UUID_SET(k:k)
-                    j = j + 1
-            end select
-        end do
+        uuid = dm_uuid4_hyphenize(dm_uuid4())
     end function dm_uuid4_hyphens
 
     pure elemental function dm_uuid4_hyphenize(uuid) result(str)
         !! Returns given UUID with hyphens, i.e., turns string
         !! `00000000000000000000000000000000` into
-        !! `00000000-0000-0000-0000-000000000000`.
+        !! `00000000-0000-0000-0000-000000000000`. The function does not
+        !! validate the passed indentifier.
         character(len=UUID_LEN), intent(in) :: uuid
         character(len=UUID_FULL_LEN)        :: str
 
