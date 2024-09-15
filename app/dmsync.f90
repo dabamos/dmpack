@@ -149,28 +149,28 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        rc = dm_arg_get(args( 3), app%logger)
-        rc = dm_arg_get(args( 4), app%wait)
-        rc = dm_arg_get(args( 5), app%node)
-        rc = dm_arg_get(args( 6), app%database)
-        rc = dm_arg_get(args( 7), app%type_name)
-        rc = dm_arg_get(args( 8), app%host)
-        rc = dm_arg_get(args( 9), app%port)
-        rc = dm_arg_get(args(10), app%username)
-        rc = dm_arg_get(args(11), app%password)
-        rc = dm_arg_get(args(12), app%interval)
-        rc = dm_arg_get(args(13), app%create)
-        rc = dm_arg_get(args(14), app%debug)
-        rc = dm_arg_get(args(15), app%tls)
-        rc = dm_arg_get(args(16), app%verbose)
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%wait)
+        call dm_arg_get(args( 5), app%node)
+        call dm_arg_get(args( 6), app%database)
+        call dm_arg_get(args( 7), app%type_name)
+        call dm_arg_get(args( 8), app%host)
+        call dm_arg_get(args( 9), app%port)
+        call dm_arg_get(args(10), app%username)
+        call dm_arg_get(args(11), app%password)
+        call dm_arg_get(args(12), app%interval)
+        call dm_arg_get(args(13), app%create)
+        call dm_arg_get(args(14), app%debug)
+        call dm_arg_get(args(15), app%tls)
+        call dm_arg_get(args(16), app%verbose)
 
         app%type = dm_sync_type_from_name(app%type_name)
 
@@ -232,23 +232,22 @@ contains
 
         rc = dm_config_open(config, app%config, app%name)
 
-        if_block: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger)
-            rc = dm_config_get(config, 'wait',     app%wait)
-            rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'database', app%database)
-            rc = dm_config_get(config, 'type',     app%type_name)
-            rc = dm_config_get(config, 'host',     app%host)
-            rc = dm_config_get(config, 'port',     app%port)
-            rc = dm_config_get(config, 'username', app%username)
-            rc = dm_config_get(config, 'password', app%password)
-            rc = dm_config_get(config, 'interval', app%interval)
-            rc = dm_config_get(config, 'create',   app%create)
-            rc = dm_config_get(config, 'debug',    app%debug)
-            rc = dm_config_get(config, 'tls',      app%tls)
-            rc = dm_config_get(config, 'verbose',  app%verbose)
-            rc = E_NONE
-        end if if_block
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'wait',     app%wait)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'type',     app%type_name)
+            call dm_config_get(config, 'host',     app%host)
+            call dm_config_get(config, 'port',     app%port)
+            call dm_config_get(config, 'username', app%username)
+            call dm_config_get(config, 'password', app%password)
+            call dm_config_get(config, 'interval', app%interval)
+            call dm_config_get(config, 'create',   app%create)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'tls',      app%tls)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
 
         call dm_config_close(config)
     end function read_config

@@ -178,19 +178,19 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        rc = dm_arg_get(args(3), app%report%node)
-        rc = dm_arg_get(args(4), app%report%from)
-        rc = dm_arg_get(args(5), app%report%to)
-        rc = dm_arg_get(args(6), app%report%output)
-        rc = dm_arg_get(args(7), app%report%style)
+        call dm_arg_get(args(3), app%report%node)
+        call dm_arg_get(args(4), app%report%from)
+        call dm_arg_get(args(5), app%report%to)
+        call dm_arg_get(args(6), app%report%output)
+        call dm_arg_get(args(7), app%report%style)
 
         ! Validate settings.
         rc = E_INVALID
@@ -292,7 +292,7 @@ contains
         if (dm_is_ok(rc)) then
             ! Take the table from the top of the Lua stack,
             ! do not load a table field.
-            rc = dm_config_get(config, app%name, app%report, field=.false.)
+            call dm_config_get(config, app%name, app%report, field=.false.)
         end if
 
         call dm_config_close(config)

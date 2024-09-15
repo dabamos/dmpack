@@ -106,11 +106,11 @@ contains
         if (dm_is_error(rc)) return
 
         ! Database type (observ, log, beat).
-        rc = dm_arg_get(args(1), type)
-        rc = dm_arg_get(args(2), app%database)
-        rc = dm_arg_get(args(3), app%force)
-        rc = dm_arg_get(args(4), app%sync)
-        rc = dm_arg_get(args(5), app%wal)
+        call dm_arg_get(args(1), type)
+        call dm_arg_get(args(2), app%database)
+        call dm_arg_get(args(3), app%force)
+        call dm_arg_get(args(4), app%sync)
+        call dm_arg_get(args(5), app%wal)
 
         ! Validate options.
         app%type = dm_type_from_name(type)

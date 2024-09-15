@@ -90,19 +90,19 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_modbus_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args( 1), app%rtu%path,      passed=has_path)
-        rc = dm_arg_get(args( 2), app%rtu%baud_rate, passed=has_baud_rate)
-        rc = dm_arg_get(args( 3), app%rtu%byte_size, passed=has_byte_size)
-        rc = dm_arg_get(args( 4), parity,            passed=has_parity)
-        rc = dm_arg_get(args( 5), app%rtu%stop_bits, passed=has_stop_bits)
-        rc = dm_arg_get(args( 6), app%tcp%address,   passed=has_address)
-        rc = dm_arg_get(args( 7), app%tcp%port,      passed=has_port)
-        rc = dm_arg_get(args( 8), app%slave)
-        rc = dm_arg_get(args( 9), app%registers,     passed=has_registers)
-        rc = dm_arg_get(args(10), read_address,      passed=has_read)
-        rc = dm_arg_get(args(11), write_address,     passed=has_write)
-        rc = dm_arg_get(args(12), byte_order,        passed=app%float)
-        rc = dm_arg_get(args(13), app%verbose)
+        call dm_arg_get(args( 1), app%rtu%path,      passed=has_path)
+        call dm_arg_get(args( 2), app%rtu%baud_rate, passed=has_baud_rate)
+        call dm_arg_get(args( 3), app%rtu%byte_size, passed=has_byte_size)
+        call dm_arg_get(args( 4), parity,            passed=has_parity)
+        call dm_arg_get(args( 5), app%rtu%stop_bits, passed=has_stop_bits)
+        call dm_arg_get(args( 6), app%tcp%address,   passed=has_address)
+        call dm_arg_get(args( 7), app%tcp%port,      passed=has_port)
+        call dm_arg_get(args( 8), app%slave)
+        call dm_arg_get(args( 9), app%registers,     passed=has_registers)
+        call dm_arg_get(args(10), read_address,      passed=has_read)
+        call dm_arg_get(args(11), write_address,     passed=has_write)
+        call dm_arg_get(args(12), byte_order,        passed=app%float)
+        call dm_arg_get(args(13), app%verbose)
 
         ! Modbus RTU or TCP mode.
         rc = E_INVALID

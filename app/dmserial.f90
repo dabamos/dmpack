@@ -194,29 +194,29 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_lua_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        rc = dm_arg_get(args( 3), app%logger)
-        rc = dm_arg_get(args( 4), app%node)
-        rc = dm_arg_get(args( 5), app%sensor)
-        rc = dm_arg_get(args( 6), app%output)
-        rc = dm_arg_get(args( 7), app%format_name)
-        rc = dm_arg_get(args( 8), app%path)
-        rc = dm_arg_get(args( 9), app%baud_rate)
-        rc = dm_arg_get(args(10), app%byte_size)
-        rc = dm_arg_get(args(11), app%parity)
-        rc = dm_arg_get(args(12), app%stop_bits)
-        rc = dm_arg_get(args(13), app%timeout)
-        rc = dm_arg_get(args(14), app%dtr)
-        rc = dm_arg_get(args(15), app%rts)
-        rc = dm_arg_get(args(16), app%debug)
-        rc = dm_arg_get(args(17), app%verbose)
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node)
+        call dm_arg_get(args( 5), app%sensor)
+        call dm_arg_get(args( 6), app%output)
+        call dm_arg_get(args( 7), app%format_name)
+        call dm_arg_get(args( 8), app%path)
+        call dm_arg_get(args( 9), app%baud_rate)
+        call dm_arg_get(args(10), app%byte_size)
+        call dm_arg_get(args(11), app%parity)
+        call dm_arg_get(args(12), app%stop_bits)
+        call dm_arg_get(args(13), app%timeout)
+        call dm_arg_get(args(14), app%dtr)
+        call dm_arg_get(args(15), app%rts)
+        call dm_arg_get(args(16), app%debug)
+        call dm_arg_get(args(17), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -314,23 +314,23 @@ contains
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger)
-            rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'sensor',   app%sensor)
-            rc = dm_config_get(config, 'path',     app%path)
-            rc = dm_config_get(config, 'baudrate', app%baud_rate)
-            rc = dm_config_get(config, 'bytesize', app%byte_size)
-            rc = dm_config_get(config, 'parity',   app%parity)
-            rc = dm_config_get(config, 'stopbits', app%stop_bits)
-            rc = dm_config_get(config, 'timeout',  app%timeout)
-            rc = dm_config_get(config, 'dtr',      app%dtr)
-            rc = dm_config_get(config, 'rts',      app%rts)
-            rc = dm_config_get(config, 'output',   app%output)
-            rc = dm_config_get(config, 'format',   app%format_name)
-            rc = dm_config_get(config, 'debug',    app%debug)
-            rc = dm_config_get(config, 'verbose',  app%verbose)
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'sensor',   app%sensor)
+            call dm_config_get(config, 'path',     app%path)
+            call dm_config_get(config, 'baudrate', app%baud_rate)
+            call dm_config_get(config, 'bytesize', app%byte_size)
+            call dm_config_get(config, 'parity',   app%parity)
+            call dm_config_get(config, 'stopbits', app%stop_bits)
+            call dm_config_get(config, 'timeout',  app%timeout)
+            call dm_config_get(config, 'dtr',      app%dtr)
+            call dm_config_get(config, 'rts',      app%rts)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'format',   app%format_name)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
 
-            rc = dm_config_get(config, 'jobs', app%jobs)
+            call dm_config_get(config, 'jobs', app%jobs)
         end if
 
         call dm_config_close(config)

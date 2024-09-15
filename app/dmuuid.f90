@@ -66,9 +66,9 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%convert)
-        rc = dm_arg_get(args(2), app%count)
-        rc = dm_arg_get(args(3), app%hyphens)
+        call dm_arg_get(args(1), app%convert)
+        call dm_arg_get(args(2), app%count)
+        call dm_arg_get(args(3), app%hyphens)
 
         rc = E_INVALID
 

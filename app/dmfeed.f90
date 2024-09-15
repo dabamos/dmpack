@@ -106,28 +106,28 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        rc = dm_arg_get(args( 3), app%database)
-        rc = dm_arg_get(args( 4), app%output)
-        rc = dm_arg_get(args( 5), app%node)
-        rc = dm_arg_get(args( 6), app%entries)
-        rc = dm_arg_get(args( 7), app%min_level)
-        rc = dm_arg_get(args( 8), app%max_level)
-        rc = dm_arg_get(args( 9), app%force)
-        rc = dm_arg_get(args(10), app%atom%author)
-        rc = dm_arg_get(args(11), app%atom%email)
-        rc = dm_arg_get(args(12), app%atom%id)
-        rc = dm_arg_get(args(13), app%atom%title)
-        rc = dm_arg_get(args(14), app%atom%subtitle)
-        rc = dm_arg_get(args(15), app%atom%url)
-        rc = dm_arg_get(args(16), app%atom%xsl)
+        call dm_arg_get(args( 3), app%database)
+        call dm_arg_get(args( 4), app%output)
+        call dm_arg_get(args( 5), app%node)
+        call dm_arg_get(args( 6), app%entries)
+        call dm_arg_get(args( 7), app%min_level)
+        call dm_arg_get(args( 8), app%max_level)
+        call dm_arg_get(args( 9), app%force)
+        call dm_arg_get(args(10), app%atom%author)
+        call dm_arg_get(args(11), app%atom%email)
+        call dm_arg_get(args(12), app%atom%id)
+        call dm_arg_get(args(13), app%atom%title)
+        call dm_arg_get(args(14), app%atom%subtitle)
+        call dm_arg_get(args(15), app%atom%url)
+        call dm_arg_get(args(16), app%atom%xsl)
 
         ! Validate passed options.
         rc = E_INVALID
@@ -181,21 +181,20 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'database', app%database)
-            rc = dm_config_get(config, 'output',   app%output)
-            rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'entries',  app%entries)
-            rc = dm_config_get(config, 'minlevel', app%min_level)
-            rc = dm_config_get(config, 'maxlevel', app%max_level)
-            rc = dm_config_get(config, 'force',    app%force)
-            rc = dm_config_get(config, 'author',   app%atom%author)
-            rc = dm_config_get(config, 'email',    app%atom%email)
-            rc = dm_config_get(config, 'id',       app%atom%id)
-            rc = dm_config_get(config, 'title',    app%atom%title)
-            rc = dm_config_get(config, 'subtitle', app%atom%subtitle)
-            rc = dm_config_get(config, 'url',      app%atom%url)
-            rc = dm_config_get(config, 'xsl',      app%atom%xsl)
-            rc = E_NONE
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'entries',  app%entries)
+            call dm_config_get(config, 'minlevel', app%min_level)
+            call dm_config_get(config, 'maxlevel', app%max_level)
+            call dm_config_get(config, 'force',    app%force)
+            call dm_config_get(config, 'author',   app%atom%author)
+            call dm_config_get(config, 'email',    app%atom%email)
+            call dm_config_get(config, 'id',       app%atom%id)
+            call dm_config_get(config, 'title',    app%atom%title)
+            call dm_config_get(config, 'subtitle', app%atom%subtitle)
+            call dm_config_get(config, 'url',      app%atom%url)
+            call dm_config_get(config, 'xsl',      app%atom%xsl)
         end if
 
         call dm_config_close(config)

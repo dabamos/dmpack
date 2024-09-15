@@ -67,16 +67,16 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args( 1), app%logger)
-        rc = dm_arg_get(args( 2), app%verbose)
-        rc = dm_arg_get(args( 3), log%level, LL_INFO)
-        rc = dm_arg_get(args( 4), log%error)
-        rc = dm_arg_get(args( 5), log%node_id)
-        rc = dm_arg_get(args( 6), log%sensor_id)
-        rc = dm_arg_get(args( 7), log%target_id)
-        rc = dm_arg_get(args( 8), log%observ_id)
-        rc = dm_arg_get(args( 9), log%source, APP_NAME)
-        rc = dm_arg_get(args(10), log%message)
+        call dm_arg_get(args( 1), app%logger)
+        call dm_arg_get(args( 2), app%verbose)
+        call dm_arg_get(args( 3), log%level, LL_INFO)
+        call dm_arg_get(args( 4), log%error)
+        call dm_arg_get(args( 5), log%node_id)
+        call dm_arg_get(args( 6), log%sensor_id)
+        call dm_arg_get(args( 7), log%target_id)
+        call dm_arg_get(args( 8), log%observ_id)
+        call dm_arg_get(args( 9), log%source, APP_NAME)
+        call dm_arg_get(args(10), log%message)
 
         rc = E_INVALID
 

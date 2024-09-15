@@ -296,13 +296,13 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), type_name)
-        rc = dm_arg_get(args(2), app%database)
-        rc = dm_arg_get(args(3), app%input)
-        rc = dm_arg_get(args(4), app%quote)
-        rc = dm_arg_get(args(5), app%separator)
-        rc = dm_arg_get(args(6), app%dry)
-        rc = dm_arg_get(args(7), app%verbose)
+        call dm_arg_get(args(1), type_name)
+        call dm_arg_get(args(2), app%database)
+        call dm_arg_get(args(3), app%input)
+        call dm_arg_get(args(4), app%quote)
+        call dm_arg_get(args(5), app%separator)
+        call dm_arg_get(args(6), app%dry)
+        call dm_arg_get(args(7), app%verbose)
 
         app%type = dm_type_from_name(type_name)
 

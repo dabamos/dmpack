@@ -444,54 +444,54 @@ contains
 
         ! Get entity type (node, sensor, target).
         app%operation = sum(merge([1, 2, 3, 4], 0, mask))
-        rc = dm_arg_get(args(app%operation), type)
+        call dm_arg_get(args(app%operation), type)
         app%type = dm_type_from_name(type)
 
         ! Get remaining command-line arguments.
-        rc = dm_arg_get(args(5), app%database)
+        call dm_arg_get(args(5), app%database)
 
         select case (app%type)
             case (TYPE_NODE)
                 ! Get node attributes.
-                rc = dm_arg_get(args( 6), app%node%id)
-                rc = dm_arg_get(args( 7), app%node%name, passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args( 8), app%node%meta, passed=app%mask(ATTR_META))
-                rc = dm_arg_get(args(13), app%node%x,    passed=app%mask(ATTR_X))
-                rc = dm_arg_get(args(14), app%node%y,    passed=app%mask(ATTR_Y))
-                rc = dm_arg_get(args(15), app%node%z,    passed=app%mask(ATTR_Z))
-                rc = dm_arg_get(args(16), app%node%lon,  passed=app%mask(ATTR_LON))
-                rc = dm_arg_get(args(17), app%node%lat,  passed=app%mask(ATTR_LAT))
-                rc = dm_arg_get(args(18), app%node%alt,  passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args( 6), app%node%id)
+                call dm_arg_get(args( 7), app%node%name, passed=app%mask(ATTR_NAME))
+                call dm_arg_get(args( 8), app%node%meta, passed=app%mask(ATTR_META))
+                call dm_arg_get(args(13), app%node%x,    passed=app%mask(ATTR_X))
+                call dm_arg_get(args(14), app%node%y,    passed=app%mask(ATTR_Y))
+                call dm_arg_get(args(15), app%node%z,    passed=app%mask(ATTR_Z))
+                call dm_arg_get(args(16), app%node%lon,  passed=app%mask(ATTR_LON))
+                call dm_arg_get(args(17), app%node%lat,  passed=app%mask(ATTR_LAT))
+                call dm_arg_get(args(18), app%node%alt,  passed=app%mask(ATTR_ALT))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
-                rc = dm_arg_get(args( 6), app%sensor%id)
-                rc = dm_arg_get(args( 7), app%sensor%name,    passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args( 8), app%sensor%meta,    passed=app%mask(ATTR_META))
-                rc = dm_arg_get(args( 9), app%sensor%node_id, passed=app%mask(ATTR_NODE))
-                rc = dm_arg_get(args(10), app%sensor%sn,      passed=app%mask(ATTR_SN))
-                rc = dm_arg_get(args(11), sensor,             passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
-                rc = dm_arg_get(args(13), app%sensor%x,       passed=app%mask(ATTR_X))
-                rc = dm_arg_get(args(14), app%sensor%y,       passed=app%mask(ATTR_Y))
-                rc = dm_arg_get(args(15), app%sensor%z,       passed=app%mask(ATTR_Z))
-                rc = dm_arg_get(args(16), app%sensor%lon,     passed=app%mask(ATTR_LON))
-                rc = dm_arg_get(args(17), app%sensor%lat,     passed=app%mask(ATTR_LAT))
-                rc = dm_arg_get(args(18), app%sensor%alt,     passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args( 6), app%sensor%id)
+                call dm_arg_get(args( 7), app%sensor%name,    passed=app%mask(ATTR_NAME))
+                call dm_arg_get(args( 8), app%sensor%meta,    passed=app%mask(ATTR_META))
+                call dm_arg_get(args( 9), app%sensor%node_id, passed=app%mask(ATTR_NODE))
+                call dm_arg_get(args(10), app%sensor%sn,      passed=app%mask(ATTR_SN))
+                call dm_arg_get(args(11), sensor,             passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                call dm_arg_get(args(13), app%sensor%x,       passed=app%mask(ATTR_X))
+                call dm_arg_get(args(14), app%sensor%y,       passed=app%mask(ATTR_Y))
+                call dm_arg_get(args(15), app%sensor%z,       passed=app%mask(ATTR_Z))
+                call dm_arg_get(args(16), app%sensor%lon,     passed=app%mask(ATTR_LON))
+                call dm_arg_get(args(17), app%sensor%lat,     passed=app%mask(ATTR_LAT))
+                call dm_arg_get(args(18), app%sensor%alt,     passed=app%mask(ATTR_ALT))
 
                 app%sensor%type = dm_sensor_type_from_name(sensor)
 
             case (TYPE_TARGET)
                 ! Get target attributes.
-                rc = dm_arg_get(args( 6), app%target%id)
-                rc = dm_arg_get(args( 7), app%target%name,  passed=app%mask(ATTR_NAME))
-                rc = dm_arg_get(args( 8), app%target%meta,  passed=app%mask(ATTR_META))
-                rc = dm_arg_get(args(12), app%target%state, passed=app%mask(ATTR_STATE))
-                rc = dm_arg_get(args(13), app%target%x,     passed=app%mask(ATTR_X))
-                rc = dm_arg_get(args(14), app%target%y,     passed=app%mask(ATTR_Y))
-                rc = dm_arg_get(args(15), app%target%z,     passed=app%mask(ATTR_Z))
-                rc = dm_arg_get(args(16), app%target%lon,   passed=app%mask(ATTR_LON))
-                rc = dm_arg_get(args(17), app%target%lat,   passed=app%mask(ATTR_LAT))
-                rc = dm_arg_get(args(18), app%target%alt,   passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args( 6), app%target%id)
+                call dm_arg_get(args( 7), app%target%name,  passed=app%mask(ATTR_NAME))
+                call dm_arg_get(args( 8), app%target%meta,  passed=app%mask(ATTR_META))
+                call dm_arg_get(args(12), app%target%state, passed=app%mask(ATTR_STATE))
+                call dm_arg_get(args(13), app%target%x,     passed=app%mask(ATTR_X))
+                call dm_arg_get(args(14), app%target%y,     passed=app%mask(ATTR_Y))
+                call dm_arg_get(args(15), app%target%z,     passed=app%mask(ATTR_Z))
+                call dm_arg_get(args(16), app%target%lon,   passed=app%mask(ATTR_LON))
+                call dm_arg_get(args(17), app%target%lat,   passed=app%mask(ATTR_LAT))
+                call dm_arg_get(args(18), app%target%alt,   passed=app%mask(ATTR_ALT))
 
             case default
                 rc = E_INVALID
@@ -499,7 +499,7 @@ contains
                 return
         end select
 
-        rc = dm_arg_get(args(19), app%verbose)
+        call dm_arg_get(args(19), app%verbose)
 
         ! Validate options.
         rc = E_INVALID

@@ -40,7 +40,7 @@ contains
         ]
 
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
-        rc = dm_arg_get(args(1), app%database)
+        call dm_arg_get(args(1), app%database)
         rc = E_NONE
     end function read_args
 

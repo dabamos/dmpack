@@ -113,19 +113,19 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        rc = dm_arg_get(args(3), app%database)
-        rc = dm_arg_get(args(4), app%node)
-        rc = dm_arg_get(args(5), app%minlevel)
-        rc = dm_arg_get(args(6), app%ipc)
-        rc = dm_arg_get(args(7), app%verbose)
+        call dm_arg_get(args(3), app%database)
+        call dm_arg_get(args(4), app%node)
+        call dm_arg_get(args(5), app%minlevel)
+        call dm_arg_get(args(6), app%ipc)
+        call dm_arg_get(args(7), app%verbose)
 
         rc = E_INVALID
 
@@ -167,12 +167,11 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'database', app%database)
-            rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'minlevel', app%minlevel)
-            rc = dm_config_get(config, 'ipc',      app%ipc)
-            rc = dm_config_get(config, 'verbose',  app%verbose)
-            rc = E_NONE
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'minlevel', app%minlevel)
+            call dm_config_get(config, 'ipc',      app%ipc)
+            call dm_config_get(config, 'verbose',  app%verbose)
         end if
 
         call dm_config_close(config)

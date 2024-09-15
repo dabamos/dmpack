@@ -35,10 +35,17 @@ contains
 
         print *, 'Reading configuration ...'
         config_if: if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'string',  str); if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'integer', i);   if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'logical', l);   if (dm_is_error(rc)) exit config_if
-            rc = dm_config_get(config, 'real',    r);   if (dm_is_error(rc)) exit config_if
+            call dm_config_get(config, 'string', str, error=rc)
+            if (dm_is_error(rc)) exit config_if
+
+            call dm_config_get(config, 'integer', i, error=rc)
+            if (dm_is_error(rc)) exit config_if
+
+            call dm_config_get(config, 'logical', l, error=rc)
+            if (dm_is_error(rc)) exit config_if
+
+            call dm_config_get(config, 'real', r, error=rc)
+            if (dm_is_error(rc)) exit config_if
         end if config_if
 
         call dm_config_close(config)

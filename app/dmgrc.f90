@@ -99,20 +99,20 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_lua_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%name)
-        rc = dm_arg_get(args(2), app%config)
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        rc = dm_arg_get(args(3), app%logger)
-        rc = dm_arg_get(args(4), app%node)
-        rc = dm_arg_get(args(5), app%response)
-        rc = dm_arg_get(args(6), app%level)
-        rc = dm_arg_get(args(7), app%debug)
-        rc = dm_arg_get(args(8), app%verbose)
+        call dm_arg_get(args(3), app%logger)
+        call dm_arg_get(args(4), app%node)
+        call dm_arg_get(args(5), app%response)
+        call dm_arg_get(args(6), app%level)
+        call dm_arg_get(args(7), app%debug)
+        call dm_arg_get(args(8), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -161,27 +161,23 @@ contains
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
-            rc = dm_config_get(config, 'logger',   app%logger)
-            rc = dm_config_get(config, 'node',     app%node)
-            rc = dm_config_get(config, 'response', app%response)
-            rc = dm_config_get(config, 'level',    app%level)
-            rc = dm_config_get(config, 'debug',    app%debug)
-            rc = dm_config_get(config, 'verbose',  app%verbose)
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'response', app%response)
+            call dm_config_get(config, 'level',    app%level)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
 
-            rc = dm_config_get(config, 'levels')
-
-            if (dm_is_ok(rc)) then
-                rc = dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
-                rc = dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
-                rc = dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
-                rc = dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
-                rc = dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
-                rc = dm_config_get(config, 'user',     app%levels(LL_USER)    %codes)
+            if (dm_is_ok(dm_config_field(config, 'levels'))) then
+                call dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
+                call dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
+                call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
+                call dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
+                call dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
+                call dm_config_get(config, 'user',     app%levels(LL_USER)    %codes)
 
                 call dm_config_remove(config)
             end if
-
-            rc = E_NONE
         end if
 
         call dm_config_close(config)

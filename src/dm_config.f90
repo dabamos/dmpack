@@ -27,11 +27,11 @@ module dm_config
         module procedure :: config_get_real32
         module procedure :: config_get_real64
         module procedure :: config_get_report
-        module procedure :: config_get_stack
         module procedure :: config_get_string
     end interface dm_config_get
 
     public :: dm_config_close
+    public :: dm_config_field
     public :: dm_config_get
     public :: dm_config_open
     public :: dm_config_remove
@@ -47,12 +47,20 @@ module dm_config
     private :: config_get_real32
     private :: config_get_real64
     private :: config_get_report
-    private :: config_get_stack
     private :: config_get_string
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
+    integer function dm_config_field(config, name) result(rc)
+        !! Loads field value on to Lua stack.
+        type(config_type), intent(inout) :: config !! Config type.
+        character(len=*),  intent(in)    :: name   !! Setting name.
+
+        rc = dm_lua_field(config%lua, name)
+        if (dm_is_error(rc)) rc = E_CONFIG
+    end function dm_config_field
+
     integer function dm_config_open(config, path, name, geocom) result(rc)
         !! Opens configuration file and optionally loads the table of the given
         !! name if the argument has been passed.
@@ -163,55 +171,73 @@ contains
         end if
     end function config_error
 
-    integer function config_get_array_int32(config, name, values) result(rc)
+    subroutine config_get_array_int32(config, name, values, error)
         !! Returns configuration values as 4-byte integer array in `values`.
-        type(config_type),             intent(inout) :: config    !! Config type.
-        character(len=*),              intent(in)    :: name      !! Setting name.
-        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Setting values.
+        type(config_type),             intent(inout)         :: config    !! Config type.
+        character(len=*),              intent(in)            :: name      !! Setting name.
+        integer(kind=i4), allocatable, intent(out)           :: values(:) !! Setting values.
+        integer,                       intent(out), optional :: error     !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, values)
         rc = config_error(rc, param=name)
-    end function config_get_array_int32
+        if (present(error)) error = rc
+    end subroutine config_get_array_int32
 
-    integer function config_get_array_int64(config, name, values) result(rc)
+    subroutine config_get_array_int64(config, name, values, error)
         !! Returns configuration values as 8-byte integer array in `values`.
-        type(config_type),             intent(inout) :: config    !! Config type.
-        character(len=*),              intent(in)    :: name      !! Setting name.
-        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Setting values.
+        type(config_type),             intent(inout)         :: config    !! Config type.
+        character(len=*),              intent(in)            :: name      !! Setting name.
+        integer(kind=i8), allocatable, intent(out)           :: values(:) !! Setting values.
+        integer,                       intent(out), optional :: error     !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, values)
         rc = config_error(rc, param=name)
-    end function config_get_array_int64
+        if (present(error)) error = rc
+    end subroutine config_get_array_int64
 
-    integer function config_get_int32(config, name, value) result(rc)
+    subroutine config_get_int32(config, name, value, error)
         !! Returns configuration value as 4-byte integer in `value`.
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        integer(kind=i4),  intent(inout) :: value  !! Setting value.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        integer(kind=i4),  intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, value)
         rc = config_error(rc, param=name)
-    end function config_get_int32
+        if (present(error)) error = rc
+    end subroutine config_get_int32
 
-    integer function config_get_int64(config, name, value) result(rc)
+    subroutine config_get_int64(config, name, value, error)
         !! Returns configuration value as 8-byte integer in `value`.
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        integer(kind=i8),  intent(inout) :: value  !! Setting value.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        integer(kind=i8),  intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, value)
         rc = config_error(rc, param=name)
-    end function config_get_int64
+        if (present(error)) error = rc
+    end subroutine config_get_int64
 
-    integer function config_get_job_list(config, name, value, field) result(rc)
+    subroutine config_get_job_list(config, name, value, error, field)
         !! Returns configuration value as job list in `value`.
         use :: dm_job
 
-        type(config_type),   intent(inout)        :: config !! Config type.
-        character(len=*),    intent(in)           :: name   !! Setting name.
-        type(job_list_type), intent(out)          :: value  !! Setting value.
-        logical,             intent(in), optional :: field  !! Read from table field.
+        type(config_type),   intent(inout)         :: config !! Config type.
+        character(len=*),    intent(in)            :: name   !! Setting name.
+        type(job_list_type), intent(out)           :: value  !! Setting value.
+        integer,             intent(out), optional :: error  !! Error code.
+        logical,             intent(in),  optional :: field  !! Read from table field.
 
+        integer :: rc
         logical :: field_
 
         field_ = .true.
@@ -219,49 +245,64 @@ contains
         if (field_) rc = dm_lua_field(config%lua, name)
         rc = dm_lua_to(config%lua, value)
         rc = config_error(rc, param=name)
-    end function config_get_job_list
+        if (present(error)) error = rc
+    end subroutine config_get_job_list
 
-    integer function config_get_logical(config, name, value) result(rc)
+    subroutine config_get_logical(config, name, value, error)
         !! Returns configuration value as logical in `value` (if 0 or 1).
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        logical,           intent(inout) :: value  !! Setting value.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        logical,           intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, value)
         rc = config_error(rc, param=name)
-    end function config_get_logical
+        if (present(error)) error = rc
+    end subroutine config_get_logical
 
-    integer function config_get_real32(config, name, value) result(rc)
+    subroutine config_get_real32(config, name, value, error)
         !! Returns configuration value as 4-byte real in `value`.
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        real(kind=r4),     intent(inout) :: value  !! Setting value.
-        real(kind=r8)                    :: value_
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        real(kind=r4),     intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
 
-        rc = dm_config_get(config, name, value_)
+        integer       :: rc
+        real(kind=r8) :: value_
+
+        call dm_config_get(config, name, value_, rc)
+        if (present(error)) error = rc
         if (dm_is_error(rc)) return
         value = real(value_, kind=r4)
-    end function config_get_real32
+    end subroutine config_get_real32
 
-    integer function config_get_real64(config, name, value) result(rc)
+    subroutine config_get_real64(config, name, value, error)
         !! Returns configuration value as 8-byte real in `value`.
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        real(kind=r8),     intent(inout) :: value  !! Setting value.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        real(kind=r8),     intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, value)
         rc = config_error(rc, param=name)
-    end function config_get_real64
+        if (present(error)) error = rc
+    end subroutine config_get_real64
 
-    integer function config_get_report(config, name, value, field) result(rc)
+    subroutine config_get_report(config, name, value, error, field)
         !! Returns configuration value as report in `value`.
         use :: dm_report
 
-        type(config_type), intent(inout)        :: config !! Config type.
-        character(len=*),  intent(in)           :: name   !! Setting name.
-        type(report_type), intent(out)          :: value  !! Setting value.
-        logical,           intent(in), optional :: field  !! Read from table field.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        type(report_type), intent(out)           :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+        logical,           intent(in),  optional :: field  !! Read from table field.
 
+        integer :: rc
         logical :: field_
 
         field_ = .true.
@@ -269,25 +310,21 @@ contains
         if (field_) rc = dm_lua_field(config%lua, name)
         rc = dm_lua_to(config%lua, value)
         rc = config_error(rc, param=name)
-    end function config_get_report
+        if (present(error)) error = rc
+    end subroutine config_get_report
 
-    integer function config_get_stack(config, name) result(rc)
-        !! Loads field value on to Lua stack.
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-
-        rc = dm_lua_field(config%lua, name)
-        rc = config_error(rc, param=name)
-    end function config_get_stack
-
-    integer function config_get_string(config, name, value) result(rc)
+    subroutine config_get_string(config, name, value, error)
         !! Returns configuration value as character string in `value`. The
         !! string is unescaped by default (`\\` is converted to `\`).
-        type(config_type), intent(inout) :: config !! Config type.
-        character(len=*),  intent(in)    :: name   !! Setting name.
-        character(len=*),  intent(inout) :: value  !! Setting value.
+        type(config_type), intent(inout)         :: config !! Config type.
+        character(len=*),  intent(in)            :: name   !! Setting name.
+        character(len=*),  intent(inout)         :: value  !! Setting value.
+        integer,           intent(out), optional :: error  !! Error code.
+
+        integer :: rc
 
         rc = dm_lua_field(config%lua, name, value, unescape=.true.)
         rc = config_error(rc, param=name)
-    end function config_get_string
+        if (present(error)) error = rc
+    end subroutine config_get_string
 end module dm_config

@@ -96,11 +96,11 @@ contains
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
         if (dm_is_error(rc)) return
 
-        rc = dm_arg_get(args(1), app%database)
-        rc = dm_arg_get(args(2), app%backup)
-        rc = dm_arg_get(args(3), app%vacuum)
-        rc = dm_arg_get(args(4), app%wal)
-        rc = dm_arg_get(args(5), app%verbose)
+        call dm_arg_get(args(1), app%database)
+        call dm_arg_get(args(2), app%backup)
+        call dm_arg_get(args(3), app%vacuum)
+        call dm_arg_get(args(4), app%wal)
+        call dm_arg_get(args(5), app%verbose)
 
         rc = E_INVALID
 

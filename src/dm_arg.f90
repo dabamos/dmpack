@@ -18,15 +18,16 @@ module dm_arg
     !! ]
     !!
     !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=0)
-    !! rc = dm_arg_get(args(1), input)
-    !! rc = dm_arg_get(args(2), delay)
-    !! rc = dm_arg_get(args(3), verbose)
+    !! call dm_error_out(rc)
+    !!
+    !! call dm_arg_get(args(1), input,   error=rc)
+    !! call dm_arg_get(args(2), delay,   error=rc)
+    !! call dm_arg_get(args(3), verbose, error=rc)
     !! ```
     !!
     !! Each argument requires name and type. The default type is
-    !! `ARG_TYPE_LOGICAL`. Errors are indicated by the return codes. The
-    !! command-line arguments `--help`/-`h` and `--version`/`-v` are processed
-    !! automatically by function `dm_arg_read()`.
+    !! `ARG_TYPE_LOGICAL`. The command-line arguments `--help`/-`h` and
+    !! `--version`/`-v` are processed automatically by function `dm_arg_read()`.
     use :: dm_ascii
     use :: dm_error
     use :: dm_file
@@ -506,79 +507,79 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    integer function arg_get_int32(arg, value, default, passed) result(rc)
+    subroutine arg_get_int32(arg, value, default, passed, error)
         !! Returns argument value as 4-byte integer.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         integer,        intent(inout)         :: value   !! Argument value.
         integer,        intent(in),  optional :: default !! Default value.
         logical,        intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
+        integer,        intent(out), optional :: error   !! Argument error.
 
         if (present(passed)) passed = arg%passed
+        if (present(error))  error  = arg%error
 
-        if (rc == E_ARG_NOT_FOUND) then
+        if (arg%error == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
 
         value = dm_atoi(arg%value)
-    end function arg_get_int32
+    end subroutine arg_get_int32
 
-    integer function arg_get_logical(arg, value, default, passed) result(rc)
+    subroutine arg_get_logical(arg, value, default, passed, error)
         !! Returns `.true.` if argument has been passed.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         logical,        intent(inout)         :: value   !! Argument value.
         logical,        intent(in),  optional :: default !! Default value.
         logical,        intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
+        integer,        intent(out), optional :: error   !! Argument error.
 
         if (present(passed)) passed = arg%passed
+        if (present(error))  error  = arg%error
 
-        if (rc == E_ARG_NOT_FOUND) then
+        if (arg%error == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
 
         value = .true.
-    end function arg_get_logical
+    end subroutine arg_get_logical
 
-    integer function arg_get_real64(arg, value, default, passed) result(rc)
+    subroutine arg_get_real64(arg, value, default, passed, error)
         !! Returns argument value as 8-byte real.
         type(arg_type), intent(inout)         :: arg     !! Arg type.
         real(kind=r8),  intent(inout)         :: value   !! Argument value.
         real(kind=r8),  intent(in),  optional :: default !! Default value.
         logical,        intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
+        integer,        intent(out), optional :: error   !! Argument error.
 
         if (present(passed)) passed = arg%passed
+        if (present(error))  error  = arg%error
 
-        if (rc == E_ARG_NOT_FOUND) then
+        if (arg%error == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
 
         value = dm_atof(arg%value)
-    end function arg_get_real64
+    end subroutine arg_get_real64
 
-    integer function arg_get_string(arg, value, default, passed) result(rc)
+    subroutine arg_get_string(arg, value, default, passed, error)
         !! Returns argument value as character string.
         type(arg_type),   intent(inout)         :: arg     !! Arg type.
         character(len=*), intent(inout)         :: value   !! Argument value.
         character(len=*), intent(in),  optional :: default !! Default value.
         logical,          intent(out), optional :: passed  !! Passed or not.
-
-        rc = arg%error
+        integer,          intent(out), optional :: error   !! Argument error.
 
         if (present(passed)) passed = arg%passed
+        if (present(error))  error  = arg%error
 
-        if (rc == E_ARG_NOT_FOUND) then
+        if (arg%error == E_ARG_NOT_FOUND) then
             if (present(default)) value = default
             return
         end if
 
         value = arg%value
-    end function arg_get_string
+    end subroutine arg_get_string
 end module dm_arg
