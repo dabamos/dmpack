@@ -1139,6 +1139,7 @@ options:
 	@echo "LDLIBS     = $(LDLIBS)"
 	@echo "INCHDF5    = $(INCHDF5)"
 	@echo "LIBCURL    = $(LIBCURL)"
+	@echo "LIBCRYPTO  = $(LIBCRYPTO)"
 	@echo "LIBFASTCGI = $(LIBFASTCGI)"
 	@echo "LIBHDF5    = $(LIBHDF5)"
 	@echo "LIBLAPACK  = $(LIBLAPACK)"
@@ -1149,6 +1150,7 @@ options:
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
+	@echo "LIBZ       = $(LIBZ)"
 
 # ******************************************************************************
 #
