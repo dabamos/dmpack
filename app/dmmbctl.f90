@@ -15,6 +15,10 @@ program dmmbctl
     integer, parameter :: ACTION_READ  = 0 !! Read values.
     integer, parameter :: ACTION_WRITE = 1 !! Write values.
 
+    integer, parameter :: MODE_NONE = 0    !! Unset mode.
+    integer, parameter :: MODE_RTU  = 1    !! Modbus RTU mode.
+    integer, parameter :: MODE_TCP  = 2    !! Modbus TCP mode.
+
     type :: rtu_type
         !! Modbus RTU settings.
         character(len=FILE_PATH_LEN) :: path      = ' '             !! Path (required).
@@ -34,7 +38,7 @@ program dmmbctl
         !! Application settings.
         integer        :: action     = ACTION_READ      !! Modbus read or write operation.
         integer        :: address    = 0                !! Modbus address.
-        integer        :: mode       = MODBUS_MODE_NONE !! Modbus mode (RTU, TCP).
+        integer        :: mode       = MODE_NONE        !! Modbus mode (RTU, TCP).
         integer        :: byte_order = MODBUS_REAL_ABCD !! Modbus byte order of float values.
         integer        :: registers  = 1                !! Modbus register count to read or write.
         integer        :: slave      = 1                !! Modbus slave id.
@@ -118,13 +122,13 @@ contains
         end if
 
         if (has_path) then
-            app%mode = MODBUS_MODE_RTU
+            app%mode = MODE_RTU
         else if (has_address) then
-            app%mode = MODBUS_MODE_TCP
+            app%mode = MODE_TCP
         end if
 
         select case (app%mode)
-            case (MODBUS_MODE_RTU)
+            case (MODE_RTU)
                 ! Required arguments.
                 if (.not. has_baud_rate) then
                     call dm_error_out(rc, 'argument --baudrate is required')
@@ -185,7 +189,7 @@ contains
                     return
                 end if
 
-            case (MODBUS_MODE_TCP)
+            case (MODE_TCP)
                 ! Required arguments.
                 if (.not. has_port) then
                     call dm_error_out(rc, 'argument --port is required')

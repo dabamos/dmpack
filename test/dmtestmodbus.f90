@@ -22,8 +22,8 @@ program dmtestmodbus
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        integer           :: rc
-        type(modbus_type) :: modbus
+        integer               :: rc
+        type(modbus_tcp_type) :: modbus
 
         stat = TEST_FAILED
 

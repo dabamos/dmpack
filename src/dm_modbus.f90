@@ -11,9 +11,9 @@ module dm_modbus
     !! RTU connection:
     !!
     !! ```fortran
-    !! integer           :: i, rc, s
-    !! integer(kind=u2)  :: regs(2)
-    !! type(modbus_type) :: modbus
+    !! integer               :: i, rc, s
+    !! integer(kind=u2)      :: regs(2)
+    !! type(modbus_rtu_type) :: modbus
     !!
     !! ! Create Modbus RTU context and connect to device 10.
     !! rc = dm_modbus_create(modbus    = modbus, &
@@ -57,11 +57,6 @@ module dm_modbus
     implicit none (type, external)
     private
 
-    ! Modbus modes.
-    integer, parameter, public :: MODBUS_MODE_NONE = 0 !! None (invalid).
-    integer, parameter, public :: MODBUS_MODE_RTU  = 1 !! Modbus RTU (Remote Terminal Unit).
-    integer, parameter, public :: MODBUS_MODE_TCP  = 2 !! Modbus TCP (Transmission Control Protocol).
-
     ! Byte orders of 4-byte real values.
     integer, parameter, public :: MODBUS_REAL_ABCD = 0 !! ABCD byte order.
     integer, parameter, public :: MODBUS_REAL_BADC = 1 !! BADC byte order.
@@ -82,9 +77,18 @@ module dm_modbus
     type, public :: modbus_type
         !! Opaque Modbus RTU/TCP context type.
         private
-        integer     :: mode = MODBUS_MODE_NONE !! RTU or TCP.
-        type(c_ptr) :: ctx  = c_null_ptr       !! C pointer to Modbus context.
+        type(c_ptr) :: ctx  = c_null_ptr !! C pointer to Modbus RTU/TCP context.
     end type modbus_type
+
+    type, extends(modbus_type), public :: modbus_rtu_type
+        !! Opaque Modbus RTU context type.
+        private
+    end type modbus_rtu_type
+
+    type, extends(modbus_type), public :: modbus_tcp_type
+        !! Opaque Modbus TCP context type.
+        private
+    end type modbus_tcp_type
 
     interface dm_modbus_create
         !! Generic function to create Modbus RTU or TCP context.
@@ -108,7 +112,6 @@ module dm_modbus
     public :: dm_modbus_get_real_dcba
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
-    public :: dm_modbus_mode
     public :: dm_modbus_read_registers
     public :: dm_modbus_set_debug
     public :: dm_modbus_set_real
@@ -165,7 +168,7 @@ contains
         !! * `E_IO` if no connection could be established.
         !! * `E_NULL` if the modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
@@ -186,12 +189,12 @@ contains
         !!
         use :: dm_tty
 
-        type(modbus_type), intent(out) :: modbus    !! Modbus type.
-        character(len=*),  intent(in)  :: path      !! Device path.
-        integer,           intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B*`).
-        integer,           intent(in)  :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
-        integer,           intent(in)  :: parity    !! Parity enumerator (`TTY_PARITY_*`).
-        integer,           intent(in)  :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
+        type(modbus_rtu_type), intent(out) :: modbus    !! Modbus RTU type.
+        character(len=*),      intent(in)  :: path      !! Device path.
+        integer,               intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B*`).
+        integer,               intent(in)  :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
+        integer,               intent(in)  :: parity    !! Parity enumerator (`TTY_PARITY_*`).
+        integer,               intent(in)  :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
 
         character :: parity_
         integer   :: byte_size_, stop_bits_
@@ -233,8 +236,7 @@ contains
         end select
 
         rc = E_MODBUS
-        modbus%mode = MODBUS_MODE_RTU
-        modbus%ctx  = modbus_new_rtu(path, baud_rate, parity_, byte_size_, stop_bits_)
+        modbus%ctx = modbus_new_rtu(path, baud_rate, parity_, byte_size_, stop_bits_)
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_NONE
@@ -248,16 +250,15 @@ contains
         !! * `E_INVALID` if the given arguments are invalid.
         !! * `E_MODBUS` if no Modbus context could be created.
         !!
-        type(modbus_type), intent(out) :: modbus  !! Modbus type.
-        character(len=*),  intent(in)  :: address !! IPv4 address.
-        integer,           intent(in)  :: port    !! Port number.
+        type(modbus_tcp_type), intent(out) :: modbus  !! Modbus TCP type.
+        character(len=*),      intent(in)  :: address !! IPv4 address.
+        integer,               intent(in)  :: port    !! Port number.
 
         rc = E_INVALID
         if (len_trim(address) == 0) return
 
         rc = E_MODBUS
-        modbus%mode = MODBUS_MODE_TCP
-        modbus%ctx  = modbus_new_tcp(address, port)
+        modbus%ctx = modbus_new_tcp(address, port)
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_NONE
@@ -280,7 +281,7 @@ contains
         !! * `E_MODBUS` if flushing failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
@@ -355,20 +356,16 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if the Modbus mode is not RTU.
         !! * `E_MODBUS` if getting the serial mode failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-        integer,           intent(out)   :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
+        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU type.
+        integer,               intent(out)   :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         mode = -1
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
-
-        rc = E_INVALID
-        if (modbus%mode /= MODBUS_MODE_RTU) return
 
         rc = E_MODBUS
         mode = modbus_rtu_get_serial_mode(modbus%ctx)
@@ -384,8 +381,8 @@ contains
         !! * `E_MODBUS` if getting the slave failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-        integer,           intent(out)   :: slave  !! Device id.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        integer,            intent(out)   :: slave  !! Device id.
 
         slave = -1
 
@@ -399,14 +396,6 @@ contains
         rc = E_NONE
     end function dm_modbus_get_slave
 
-    integer function dm_modbus_mode(modbus) result(mode)
-        !! Returns Modbus mode (`MODBUS_MODE_NONE`, `MODBUS_MODE_RTU` or
-        !! `MODBUS_MODE_TCP`).
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-
-        mode = modbus%mode
-    end function dm_modbus_mode
-
     integer function dm_modbus_read_registers(modbus, address, registers, n) result(rc)
         !! Reads many registers from `address`. The size of argument
         !! `registers` determines the number of registers to read, unless
@@ -419,10 +408,10 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
-        integer,           intent(in)              :: address      !! Address to read from.
-        integer(kind=u2),  intent(inout)           :: registers(:) !! Register values (unsigned).
-        integer,           intent(inout), optional :: n            !! Number of registers to read on input, number of registers read on output.
+        class(modbus_type), intent(inout)           :: modbus       !! Modbus RTU/TCP type.
+        integer,            intent(in)              :: address      !! Address to read from.
+        integer(kind=u2),   intent(inout)           :: registers(:) !! Register values (unsigned).
+        integer,            intent(inout), optional :: n            !! Number of registers to read on input, number of registers read on output.
 
         integer :: nregisters, stat
 
@@ -449,8 +438,8 @@ contains
 
     integer function dm_modbus_set_debug(modbus, debug) result(rc)
         !! Sets debug flag of the Modbus context. Returns `E_MODBUS` on error.
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-        logical,           intent(in)    :: debug  !! Enable debug mode.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        logical,            intent(in)    :: debug  !! Enable debug mode.
 
         rc = E_MODBUS
         if (modbus_set_debug(modbus%ctx, dm_f_c_logical(debug)) == -1) return
@@ -467,14 +456,13 @@ contains
         !! * `E_MODBUS` if setting the serial mode failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-        integer,           intent(in)    :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
+        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU type.
+        integer,               intent(in)    :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_INVALID
-        if (modbus%mode /= MODBUS_MODE_RTU) return
         if (mode /= MODBUS_RTU_RS232 .or. mode /= MODBUS_RTU_RS485) return
 
         rc = E_MODBUS
@@ -491,8 +479,8 @@ contains
         !! * `E_MODBUS` if setting the slave failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
-        integer,           intent(in)    :: slave  !! Device id.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: slave  !! Device id.
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
@@ -505,8 +493,8 @@ contains
 
     function dm_modbus_version(name) result(version)
         !! Returns libmodbus version as allocatable string.
-        logical, intent(in), optional :: name !! Add prefix `libmodbus/`.
-        character(len=:), allocatable :: version
+        logical, intent(in), optional :: name    !! Add prefix `libmodbus/`.
+        character(len=:), allocatable :: version !! Version string.
 
         character(len=8) :: v
         logical          :: name_
@@ -534,9 +522,9 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout) :: modbus   !! Modbus type.
-        integer,           intent(in)    :: address  !! Address to write to.
-        integer(kind=u2),  intent(in)    :: register !! Register value (unsigned).
+        class(modbus_type), intent(inout) :: modbus   !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address  !! Address to write to.
+        integer(kind=u2),   intent(in)    :: register !! Register value (unsigned).
 
         integer :: stat
 
@@ -562,10 +550,10 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_type), intent(inout)           :: modbus       !! Modbus type.
-        integer,           intent(in)              :: address      !! Address to write to.
-        integer(kind=u2),  intent(inout)           :: registers(:) !! Register values (unsigned).
-        integer,           intent(inout), optional :: n            !! Number of registers to write on input, number of registers written on output.
+        class(modbus_type), intent(inout)           :: modbus       !! Modbus RTU/TCP type.
+        integer,            intent(in)              :: address      !! Address to write to.
+        integer(kind=u2),   intent(inout)           :: registers(:) !! Register values (unsigned).
+        integer,            intent(inout), optional :: n            !! Number of registers to write on input, number of registers written on output.
 
         integer :: nregisters, stat
 
@@ -592,16 +580,16 @@ contains
     ! PUBLIC SUBROUTINES.
     ! ******************************************************************
     subroutine dm_modbus_close(modbus)
-        !! Closes the Modbus connection.
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
+        !! Closes the Modbus RTU/TCP connection.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCPtype.
 
         if (.not. c_associated(modbus%ctx)) return
         call modbus_close(modbus%ctx)
     end subroutine dm_modbus_close
 
     subroutine dm_modbus_destroy(modbus)
-        !! Destroys the Modbus context.
-        type(modbus_type), intent(inout) :: modbus !! Modbus type.
+        !! Destroys the Modbus RTU/TCP context.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
 
         if (.not. c_associated(modbus%ctx)) return
         call modbus_free(modbus%ctx)

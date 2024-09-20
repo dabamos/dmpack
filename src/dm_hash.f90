@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_hash
-    !! Hashing algorithms.
+    !! Non-cryptographic hash functions (DJB2, DJB2a, FNV-1, FNV-1a).
     use :: dm_kind
     use :: dm_platform
     implicit none (type, external)

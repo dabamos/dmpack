@@ -35,12 +35,12 @@
 #   export DM_PIPE_SKIP=1
 #
 TESTS="dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
-dmtestconfig dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
-dmtesthtml dmtestid dmtestjob dmtestjson dmtestlog dmtestlogger dmtestlua \
-dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
-dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring \
-dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid \
-dmtestversion dmtestz dmtestzlib dmtestzstd"
+dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash \
+dmtesthdf5 dmtesthtml dmtestid dmtestjob dmtestjson dmtestlog dmtestlogger \
+dmtestlua dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml \
+dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
+dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
+dmtestuuid dmtestversion dmtestz dmtestzlib dmtestzstd"
 
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0

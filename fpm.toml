@@ -182,6 +182,11 @@ name = "dmtestconfig"
 main = "dmtestconfig.f90"
 
 [[test]]
+name = "dmtestcrypto"
+main = "dmtestcrypto.f90"
+link = [ "crypto" ]
+
+[[test]]
 name = "dmtestcsv"
 main = "dmtestcsv.f90"
 

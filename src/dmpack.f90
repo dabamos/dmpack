@@ -40,6 +40,7 @@ module dmpack
     use :: dm_cgi_router
     use :: dm_config
     use :: dm_const
+    use :: dm_crypto
     use :: dm_csv
     use :: dm_db
     use :: dm_dp

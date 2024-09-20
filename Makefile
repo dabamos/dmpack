@@ -160,6 +160,7 @@ INCHDF5 = `pkg-config --cflags hdf5`
 
 # Shared libraries to link.
 LIBCURL    = `pkg-config --libs-only-l libcurl`
+LIBCRYPTO  = -lcrypto
 LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
@@ -229,6 +230,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_cgi_router.f90 \
       $(SRCDIR)/dm_config.f90 \
       $(SRCDIR)/dm_const.f90 \
+      $(SRCDIR)/dm_crypto.f90 \
       $(SRCDIR)/dm_csv.f90 \
       $(SRCDIR)/dm_db.f90 \
       $(SRCDIR)/dm_dp.f90 \
@@ -320,6 +322,7 @@ OBJ = dm_ansi.o \
       dm_cgi_router.o \
       dm_config.o \
       dm_const.o \
+      dm_crypto.o \
       dm_csv.o \
       dm_db.o \
       dm_dp.o \
@@ -429,8 +432,8 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMSYNC) $(DMUUID) $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
-      dmtestconfig dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
+test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconfig \
+      dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
       dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson \
       dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
       dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
@@ -620,6 +623,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -663,6 +667,9 @@ dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 
 dmtestconfig: test/dmtestconfig.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LIBLUA54) $(LDLIBS)
+
+dmtestcrypto: test/dmtestcrypto.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcrypto test/dmtestcrypto.f90 $(TARGET) $(LIBCRYPTO) $(LDLIBS)
 
 dmtestcsv: test/dmtestcsv.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcsv test/dmtestcsv.f90 $(TARGET) $(LDLIBS)
@@ -1132,6 +1139,7 @@ options:
 	@echo "LDLIBS     = $(LDLIBS)"
 	@echo "INCHDF5    = $(INCHDF5)"
 	@echo "LIBCURL    = $(LIBCURL)"
+	@echo "LIBCRYPTO  = $(LIBCRYPTO)"
 	@echo "LIBFASTCGI = $(LIBFASTCGI)"
 	@echo "LIBHDF5    = $(LIBHDF5)"
 	@echo "LIBLAPACK  = $(LIBLAPACK)"
@@ -1142,6 +1150,7 @@ options:
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
+	@echo "LIBZ       = $(LIBZ)"
 
 # ******************************************************************************
 #
