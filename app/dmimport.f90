@@ -144,10 +144,7 @@ contains
                 end select
 
                 ! Ignore comments and empty rows.
-                if (rc == E_EOR) then
-                    rc = E_NONE
-                    cycle read_loop
-                end if
+                if (rc == E_EOR) cycle read_loop
 
                 ! End of file reached.
                 if (rc == E_EOF) then

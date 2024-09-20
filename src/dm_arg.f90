@@ -20,9 +20,9 @@ module dm_arg
     !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=0)
     !! call dm_error_out(rc)
     !!
-    !! call dm_arg_get(args(1), input,   error=rc)
-    !! call dm_arg_get(args(2), delay,   error=rc)
-    !! call dm_arg_get(args(3), verbose, error=rc)
+    !! call dm_arg_get(args(1), input)
+    !! call dm_arg_get(args(2), delay)
+    !! call dm_arg_get(args(3), verbose)
     !! ```
     !!
     !! Each argument requires name and type. The default type is
