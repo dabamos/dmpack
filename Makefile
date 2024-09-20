@@ -160,7 +160,7 @@ INCHDF5 = `pkg-config --cflags hdf5`
 
 # Shared libraries to link.
 LIBCURL    = `pkg-config --libs-only-l libcurl`
-LIBCRYPT   = -lcrypto
+LIBCRYPTO  = -lcrypto
 LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
@@ -669,7 +669,7 @@ dmtestconfig: test/dmtestconfig.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LIBLUA54) $(LDLIBS)
 
 dmtestcrypto: test/dmtestcrypto.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcrypto test/dmtestcrypto.f90 $(TARGET) $(LIBCRYPT) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcrypto test/dmtestcrypto.f90 $(TARGET) $(LIBCRYPTO) $(LDLIBS)
 
 dmtestcsv: test/dmtestcsv.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestcsv test/dmtestcsv.f90 $(TARGET) $(LDLIBS)
