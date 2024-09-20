@@ -183,6 +183,7 @@ contains
         !! * `E_ALLOC` if the allocation if `content` failed.
         !! * `E_IO` if opening the file failed.
         !! * `E_READ` if reading from file failed.
+        !!
         character(len=*),              intent(in)            :: path    !! File path.
         character(len=:), allocatable, intent(out)           :: content !! Byte string.
         integer(kind=i8),              intent(out), optional :: size    !! Content size.
@@ -237,6 +238,7 @@ contains
         !!
         !! * `E_IO` if opening the file failed.
         !! * `E_WRITE` if writing to file failed.
+        !!
         character(len=*), intent(in)            :: path    !! Output file path.
         character(len=*), intent(in)            :: content !! Bytes to write.
         logical,          intent(in),  optional :: raw     !! Unformatted output if true.
