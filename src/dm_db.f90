@@ -80,14 +80,14 @@ module dm_db
     type, public :: db_type
         !! Opaque SQLite database connectivity type.
         private
-        type(c_ptr) :: ptr       = c_null_ptr !! C pointer to SQLite 3 database.
+        type(c_ptr) :: ctx       = c_null_ptr !! C pointer to SQLite 3 database.
         logical     :: read_only = .false.    !! Read-only flag.
     end type db_type
 
     type, public :: db_stmt_type
         !! Opaque SQLite database statement type.
         private
-        type(c_ptr) :: ptr = c_null_ptr !! C pointer to SQLite 3 statement.
+        type(c_ptr) :: ctx = c_null_ptr !! C pointer to SQLite 3 statement.
     end type db_stmt_type
 
     abstract interface
@@ -526,7 +526,7 @@ contains
 
         sql_block: block
             rc = E_DB_BACKUP
-            ptr = sqlite3_backup_init(backup%ptr, 'main', db%ptr, 'main')
+            ptr = sqlite3_backup_init(backup%ctx, 'main', db%ctx, 'main')
             if (.not. c_associated(ptr)) exit sql_block
 
             do
@@ -565,9 +565,9 @@ contains
         if (optimize_) rc = dm_db_optimize(db)
 
         rc = E_DB
-        if (sqlite3_close(db%ptr) /= SQLITE_OK) return
+        if (sqlite3_close(db%ctx) /= SQLITE_OK) return
 
-        db%ptr = c_null_ptr
+        db%ctx = c_null_ptr
         rc = E_NONE
     end function dm_db_close
 
@@ -586,7 +586,7 @@ contains
         !! Returns `.true.` if database type has associated pointer.
         type(db_type), intent(inout) :: db !! Database type.
 
-        connected = c_associated(db%ptr)
+        connected = c_associated(db%ctx)
     end function dm_db_connected
 
     integer function dm_db_count_beats(db, n) result(rc)
@@ -875,7 +875,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_BEAT, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_BEAT, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -914,7 +914,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_LOG, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_LOG, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(log_id)) /= SQLITE_OK) exit sql_block
@@ -953,7 +953,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -1003,7 +1003,7 @@ contains
         sql_block: block
             ! Delete observation.
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_OBSERV, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_OBSERV, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -1051,7 +1051,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_SENSOR, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(sensor_id)) /= SQLITE_OK) exit sql_block
@@ -1090,7 +1090,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_TARGET, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(target_id)) /= SQLITE_OK) exit sql_block
@@ -1137,7 +1137,7 @@ contains
 
         integer :: error
 
-        error = sqlite3_errcode(db%ptr)
+        error = sqlite3_errcode(db%ctx)
         if (present(sqlite_error)) sqlite_error = error
 
         select case (error)
@@ -1179,7 +1179,7 @@ contains
         type(db_type), intent(inout)  :: db      !! Database type.
         character(len=:), allocatable :: message !! Error message.
 
-        message = sqlite3_errmsg(db%ptr)
+        message = sqlite3_errmsg(db%ctx)
     end function dm_db_error_message
 
     integer function dm_db_finalize(db_stmt) result(rc)
@@ -1188,8 +1188,8 @@ contains
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
 
         rc = E_NONE
-        if (.not. c_associated(db_stmt%ptr)) return
-        if (sqlite3_finalize(db_stmt%ptr) /= SQLITE_OK) rc = E_DB_FINALIZE
+        if (.not. c_associated(db_stmt%ctx)) return
+        if (sqlite3_finalize(db_stmt%ctx) /= SQLITE_OK) rc = E_DB_FINALIZE
     end function dm_db_finalize
 
     integer function dm_db_get_application_id(db, id) result(rc)
@@ -1211,7 +1211,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA application_id', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA application_id', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1254,7 +1254,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA data_version', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA data_version', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1288,7 +1288,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA foreign_keys', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA foreign_keys', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1327,7 +1327,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA journal_mode', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA journal_mode', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1378,7 +1378,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA query_only', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA query_only', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1414,7 +1414,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA user_version', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA user_version', stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -1474,12 +1474,12 @@ contains
 
         ! Set given statement.
         stmt = c_null_ptr
-        if (present(db_stmt)) stmt = db_stmt%ptr
+        if (present(db_stmt)) stmt = db_stmt%ctx
 
         sql_block: block
             if (.not. c_associated(stmt)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_BEAT, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_BEAT, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -1502,7 +1502,7 @@ contains
         end block sql_block
 
         if (present(db_stmt)) then
-            db_stmt%ptr = stmt
+            db_stmt%ctx = stmt
         else
             stat = sqlite3_finalize(stmt)
         end if
@@ -1604,7 +1604,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_LOG, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_LOG, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt,  1, trim(log%id))        /= SQLITE_OK) exit sql_block
@@ -1663,7 +1663,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text  (stmt, 1, trim(node%id))   /= SQLITE_OK) exit sql_block
@@ -1730,7 +1730,7 @@ contains
 
         ! Set given statement.
         stmt = c_null_ptr
-        if (present(db_stmt)) stmt = db_stmt%ptr
+        if (present(db_stmt)) stmt = db_stmt%ctx
 
         ! Begin transaction.
         rc = E_DB_TRANSACTION
@@ -1739,7 +1739,7 @@ contains
         sql_block: block
             if (.not. c_associated(stmt)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_OBSERV, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_OBSERV, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             ! Add observation data.
@@ -1788,7 +1788,7 @@ contains
         end block sql_block
 
         if (present(db_stmt)) then
-            db_stmt%ptr = stmt
+            db_stmt%ctx = stmt
         else
             if (sqlite3_finalize(stmt) /= SQLITE_OK) rc = E_DB_FINALIZE
         end if
@@ -1899,7 +1899,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text  (stmt,  1, trim(sensor%id))      /= SQLITE_OK) exit sql_block
@@ -2097,7 +2097,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_TARGET, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text  (stmt,  1, trim(target%id))   /= SQLITE_OK) exit sql_block
@@ -2242,7 +2242,7 @@ contains
 
         ! Open database.
         if (sqlite3_initialize() /= SQLITE_OK) return
-        if (sqlite3_open_v2(trim(path), db%ptr, flag) /= SQLITE_OK) return
+        if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
 
         ! Enable foreign keys constraint.
         if (foreign_keys_) then
@@ -2306,7 +2306,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, 'PRAGMA optimize', stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, 'PRAGMA optimize', stmt) /= SQLITE_OK) exit sql_block
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
             rc = E_NONE
@@ -2319,7 +2319,7 @@ contains
         !! Returns `.true.` if given statement has been prepared.
         type(db_stmt_type), intent(inout) :: db_stmt
 
-        prepared = c_associated(db_stmt%ptr)
+        prepared = c_associated(db_stmt%ctx)
     end function dm_db_prepared
 
     logical function dm_db_read_only(db) result(read_only)
@@ -2361,7 +2361,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEAT, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEAT, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -2397,7 +2397,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS // QUERY, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS // QUERY, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -2435,7 +2435,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // QUERY, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_LOGS // QUERY, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(log_id)) /= SQLITE_OK) exit sql_block
@@ -2472,7 +2472,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_NODES // QUERY, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -2508,7 +2508,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_LOG, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOG, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(log_id)) /= SQLITE_OK) exit sql_block
@@ -2549,7 +2549,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS_BY_OBSERV, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS_BY_OBSERV, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -2569,7 +2569,7 @@ contains
             if (n == 0) exit sql_block
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_LOGS_BY_OBSERV, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOGS_BY_OBSERV, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -2612,7 +2612,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -2651,7 +2651,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERV, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERV, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -2778,13 +2778,13 @@ contains
         sql_block: block
             if (has_param) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
 
                 rc = db_bind_observs(k)
                 if (dm_is_error(rc)) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -2809,7 +2809,7 @@ contains
             if (has_limit)  query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERV_IDS // query, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERV_IDS // query, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             k  = 1
@@ -2904,7 +2904,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERV_VIEWS, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERV_VIEWS, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id))       /= SQLITE_OK) exit sql_block
@@ -2931,9 +2931,9 @@ contains
 
             rc = E_DB_PREPARE
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERV_VIEWS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERV_VIEWS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
             else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERV_VIEWS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERV_VIEWS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -3013,7 +3013,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS_BY_ID, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS_BY_ID, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ1%node_id))   /= SQLITE_OK) exit sql_block
@@ -3043,9 +3043,9 @@ contains
 
             rc = E_DB_PREPARE
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS_BY_ID // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS_BY_ID // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
             else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS_BY_ID, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS_BY_ID, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -3121,7 +3121,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS_BY_TIME, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS_BY_TIME, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id))   /= SQLITE_OK) exit sql_block
@@ -3147,9 +3147,9 @@ contains
 
             rc = E_DB_PREPARE
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS_BY_TIME // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS_BY_TIME // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
             else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS_BY_TIME, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS_BY_TIME, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -3207,7 +3207,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(sensor_id)) /= SQLITE_OK) exit sql_block
@@ -3438,7 +3438,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TABLES, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TABLES, stmt) /= SQLITE_OK) exit sql_block
 
             i = 1
 
@@ -3500,7 +3500,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TARGET, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(target_id)) /= SQLITE_OK) exit sql_block
@@ -3552,7 +3552,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, QUERY // dm_itoa(id), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, QUERY // dm_itoa(id), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -3608,11 +3608,11 @@ contains
             rc = E_DB_PREPARE
             select case (mode)
                 case (DB_AUTO_VACUUM_NONE)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // '0', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // '0', stmt)
                 case (DB_AUTO_VACUUM_FULL)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // '1', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // '1', stmt)
                 case (DB_AUTO_VACUUM_INCREMENTAL)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // '2', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // '2', stmt)
             end select
             if (stat /= SQLITE_OK) exit sql_block
 
@@ -3639,7 +3639,7 @@ contains
         type(c_ptr),   intent(in)     :: client_data !! C pointer to client data.
 
         rc = E_DB
-        if (sqlite3_busy_handler(db%ptr, c_funloc(callback), client_data) /= SQLITE_OK) return
+        if (sqlite3_busy_handler(db%ctx, c_funloc(callback), client_data) /= SQLITE_OK) return
         rc = E_NONE
     end function dm_db_set_busy_handler
 
@@ -3649,7 +3649,7 @@ contains
         integer,       intent(in)    :: msec !! Timeout in mseconds.
 
         rc = E_DB
-        if (sqlite3_busy_timeout(db%ptr, msec) /= SQLITE_OK) return
+        if (sqlite3_busy_timeout(db%ctx, msec) /= SQLITE_OK) return
         rc = E_NONE
     end function dm_db_set_busy_timeout
 
@@ -3672,9 +3672,9 @@ contains
         sql_block: block
             rc = E_DB_PREPARE
             if (enabled) then
-                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'ON', stmt)
+                stat = sqlite3_prepare_v2(db%ctx, QUERY // 'ON', stmt)
             else
-                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'OFF', stmt)
+                stat = sqlite3_prepare_v2(db%ctx, QUERY // 'OFF', stmt)
             end if
             if (stat /= SQLITE_OK) exit sql_block
 
@@ -3716,17 +3716,17 @@ contains
 
             select case (mode)
                 case (DB_JOURNAL_OFF)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'OFF', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'OFF', stmt)
                 case (DB_JOURNAL_DELETE)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'DELETE', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'DELETE', stmt)
                 case (DB_JOURNAL_TRUNCATE)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'TRUNCATE', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'TRUNCATE', stmt)
                 case (DB_JOURNAL_PERSIST)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'PERSIST', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'PERSIST', stmt)
                 case (DB_JOURNAL_MEMORY)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'MEMORY', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'MEMORY', stmt)
                 case (DB_JOURNAL_WAL)
-                    stat = sqlite3_prepare_v2(db%ptr, QUERY // 'WAL', stmt)
+                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'WAL', stmt)
             end select
 
             if (stat /= SQLITE_OK) exit sql_block
@@ -3783,9 +3783,9 @@ contains
         sql_block: block
             rc = E_DB_PREPARE
             if (enabled) then
-                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'ON', stmt)
+                stat = sqlite3_prepare_v2(db%ctx, QUERY // 'ON', stmt)
             else
-                stat = sqlite3_prepare_v2(db%ptr, QUERY // 'OFF', stmt)
+                stat = sqlite3_prepare_v2(db%ctx, QUERY // 'OFF', stmt)
             end if
             if (stat /= SQLITE_OK) exit sql_block
 
@@ -3809,9 +3809,9 @@ contains
 
         rc = E_DB
         if (present(client_data)) then
-            udp = sqlite3_update_hook(db%ptr, c_funloc(callback), client_data)
+            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), client_data)
         else
-            udp = sqlite3_update_hook(db%ptr, c_funloc(callback), c_null_ptr)
+            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), c_null_ptr)
         end if
         rc = E_NONE
     end function dm_db_set_update_handler
@@ -3843,7 +3843,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, QUERY // dm_itoa(version), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, QUERY // dm_itoa(version), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
@@ -3902,7 +3902,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_UPDATE_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             ! Node id must be last argument!
@@ -3961,7 +3961,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_SENSOR, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_UPDATE_SENSOR, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             ! Sensor id must be last argument!
@@ -4023,7 +4023,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_UPDATE_TARGET, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_UPDATE_TARGET, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             ! Target id must be last argument!
@@ -4081,7 +4081,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(SQL_TABLE_NAMES(table))) /= SQLITE_OK) exit sql_block
@@ -4133,13 +4133,13 @@ contains
         sql_block: block
             if (present(into)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, QUERY // ' INTO ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, QUERY // ' INTO ?', stmt) /= SQLITE_OK) exit sql_block
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_text(stmt, 1, trim(into)) /= SQLITE_OK) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, QUERY, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, QUERY, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_STEP
@@ -4289,7 +4289,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -4322,7 +4322,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_RECEIVERS, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_RECEIVERS, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -4354,7 +4354,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_REQUESTS, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_REQUESTS, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -4386,7 +4386,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_DELETE_OBSERV_RESPONSES, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_DELETE_OBSERV_RESPONSES, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(observ_id)) /= SQLITE_OK) exit sql_block
@@ -4411,7 +4411,7 @@ contains
         integer :: stat
 
         rc = E_DB_EXEC
-        stat = sqlite3_exec(db%ptr, query, c_null_funptr, c_null_ptr, err_msg)
+        stat = sqlite3_exec(db%ctx, query, c_null_funptr, c_null_ptr, err_msg)
 
         if (stat /= SQLITE_OK) return
         rc = E_NONE
@@ -4440,15 +4440,15 @@ contains
         sql_block: block
             select case (table)
                 case (SQL_TABLE_LOGS)
-                    rc = sqlite3_prepare_v2(db%ptr, SQL_EXISTS_LOG, stmt)
+                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_LOG, stmt)
                 case (SQL_TABLE_NODES)
-                    rc = sqlite3_prepare_v2(db%ptr, SQL_EXISTS_NODE, stmt)
+                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_NODE, stmt)
                 case (SQL_TABLE_OBSERVS)
-                    rc = sqlite3_prepare_v2(db%ptr, SQL_EXISTS_OBSERV, stmt)
+                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_OBSERV, stmt)
                 case (SQL_TABLE_SENSORS)
-                    rc = sqlite3_prepare_v2(db%ptr, SQL_EXISTS_SENSOR, stmt)
+                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_SENSOR, stmt)
                 case (SQL_TABLE_TARGETS)
-                    rc = sqlite3_prepare_v2(db%ptr, SQL_EXISTS_TARGET, stmt)
+                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_TARGET, stmt)
                 case default
                     return
             end select
@@ -4490,7 +4490,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_RECEIVER, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_RECEIVER, stmt) /= SQLITE_OK) exit sql_block
 
             row_loop: do i = 1, n
                 rc = E_INVALID
@@ -4541,7 +4541,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_REQUEST, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_REQUEST, stmt) /= SQLITE_OK) exit sql_block
 
             row_loop: do i = 1, nreq
                 rc = E_DB_BIND
@@ -4606,7 +4606,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_INSERT_RESPONSE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_INSERT_RESPONSE, stmt) /= SQLITE_OK) exit sql_block
 
             row_loop: do i = 1, nres
                 rc = E_DB_BIND
@@ -4652,7 +4652,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, query, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, query, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(sync%id))        /= SQLITE_OK) exit sql_block
@@ -5188,13 +5188,13 @@ contains
             sql_block: block
                 if (present(limit)) then
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
                     rc = E_DB_BIND
                     if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
                 else
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS, stmt) /= SQLITE_OK) exit sql_block
                 end if
 
                 do i = 1, n
@@ -5235,20 +5235,20 @@ contains
         if (.not. dm_db_prepared(db_stmt)) then
             if (present(limit)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
 
                 rc = E_DB_BIND
-                if (sqlite3_bind_int64(db_stmt%ptr, 1, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_BEATS, db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS, db_stmt%ctx) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, beat)
+        rc = db_next_row(db_stmt%ctx, beat)
     end function db_select_beats_iter
 
     integer function db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
@@ -5291,7 +5291,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NDATA_POINTS, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NDATA_POINTS, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id))       /= SQLITE_OK) exit sql_block
@@ -5319,9 +5319,9 @@ contains
 
             rc = E_DB_PREPARE
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
             else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -5387,29 +5387,29 @@ contains
         if (.not. dm_db_prepared(db_stmt)) then
             rc = E_DB_PREPARE
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
             else
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_DATA_POINTS, db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS, db_stmt%ctx) /= SQLITE_OK) return
             end if
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(db_stmt%ptr, 1, trim(node_id))       /= SQLITE_OK) return
-            if (sqlite3_bind_text(db_stmt%ptr, 2, trim(sensor_id))     /= SQLITE_OK) return
-            if (sqlite3_bind_text(db_stmt%ptr, 3, trim(target_id))     /= SQLITE_OK) return
-            if (sqlite3_bind_text(db_stmt%ptr, 4, trim(response_name)) /= SQLITE_OK) return
-            if (sqlite3_bind_int (db_stmt%ptr, 5, error_)              /= SQLITE_OK) return
-            if (sqlite3_bind_text(db_stmt%ptr, 6, trim(from))          /= SQLITE_OK) return
-            if (sqlite3_bind_text(db_stmt%ptr, 7, trim(to))            /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 1, trim(node_id))       /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 2, trim(sensor_id))     /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 3, trim(target_id))     /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 4, trim(response_name)) /= SQLITE_OK) return
+            if (sqlite3_bind_int (db_stmt%ctx, 5, error_)              /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 6, trim(from))          /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 7, trim(to))            /= SQLITE_OK) return
 
             if (present(limit)) then
-                if (sqlite3_bind_int64(db_stmt%ptr, 8, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, 8, limit) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, dp)
+        rc = db_next_row(db_stmt%ctx, dp)
     end function db_select_data_points_iter
 
     integer function db_select_json_beats_array(db, strings, limit, nbeats) result(rc)
@@ -5456,13 +5456,13 @@ contains
             sql_block: block
                 if (present(limit)) then
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
                     rc = E_DB_BIND
                     if (sqlite3_bind_int64(stmt, 1, n) /= SQLITE_OK) exit sql_block
                 else
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS, stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS, stmt) /= SQLITE_OK) exit sql_block
                 end if
 
                 do i = 1, n
@@ -5505,20 +5505,20 @@ contains
         if (.not. dm_db_prepared(db_stmt)) then
             if (present(limit)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
 
                 rc = E_DB_BIND
-                if (sqlite3_bind_int64(db_stmt%ptr, 1, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_BEATS, db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS, db_stmt%ctx) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, json)
+        rc = db_next_row(db_stmt%ctx, json)
     end function db_select_json_beats_iter
 
     integer function db_select_json_logs_array(db, strings, node_id, sensor_id, target_id, source, from, to, &
@@ -5637,13 +5637,13 @@ contains
         sql_block: block
             if (has_param) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
 
                 rc = db_bind_logs(k)
                 if (dm_is_error(rc)) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -5671,7 +5671,7 @@ contains
             if (has_limit) query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             k  = 1
@@ -5872,7 +5872,7 @@ contains
             if (has_limit) query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_LOGS // query, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_LOGS // query, db_stmt%ctx) /= SQLITE_OK) return
 
             rc = E_DB_BIND
             k  = 1
@@ -5884,14 +5884,14 @@ contains
 
             if (has_limit) then
                 ! Bind limit.
-                if (sqlite3_bind_int64(db_stmt%ptr, k, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, json)
+        rc = db_next_row(db_stmt%ctx, json)
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -5900,47 +5900,47 @@ contains
             i = 1
 
             if (has_min_level) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, min_level) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, min_level) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_max_level) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, max_level) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, max_level) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_error) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, error) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, error) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(from)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(to)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(node_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(sensor_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(target_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_source) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(source)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(source)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
@@ -5994,13 +5994,13 @@ contains
             sql_block: block
                 if (present(limit)) then
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
                     rc = E_DB_BIND
                     if (sqlite3_bind_int64(stmt, 1, n) /= SQLITE_OK) exit sql_block
                 else
                     rc = E_DB_PREPARE
-                    if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_NODES // QUERY, stmt) /= SQLITE_OK) exit sql_block
+                    if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY, stmt) /= SQLITE_OK) exit sql_block
                 end if
 
                 do i = 1, n
@@ -6045,20 +6045,20 @@ contains
         if (.not. dm_db_prepared(db_stmt)) then
             if (present(limit)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?', db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
 
                 rc = E_DB_BIND
-                if (sqlite3_bind_int64(db_stmt%ptr, 1, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_JSON_NODES // QUERY, db_stmt%ptr) /= SQLITE_OK) return
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY, db_stmt%ctx) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, json)
+        rc = db_next_row(db_stmt%ctx, json)
     end function db_select_json_nodes_iter
 
     integer function db_select_logs_array(db, logs, node_id, sensor_id, target_id, source, from, to, &
@@ -6173,13 +6173,13 @@ contains
         sql_block: block
             if (has_param) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
 
                 rc = db_bind_logs(k)
                 if (dm_is_error(rc)) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -6206,7 +6206,7 @@ contains
             if (has_limit) query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             k  = 1
@@ -6402,7 +6402,7 @@ contains
             if (has_limit) query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_LOGS // query, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOGS // query, db_stmt%ctx) /= SQLITE_OK) return
 
             rc = E_DB_BIND
             k  = 1
@@ -6412,14 +6412,14 @@ contains
             end if
 
             if (has_limit) then
-                if (sqlite3_bind_int64(db_stmt%ptr, k, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, log)
+        rc = db_next_row(db_stmt%ctx, log)
     contains
         integer function db_bind_logs(i) result(rc)
             integer, intent(out) :: i
@@ -6428,47 +6428,47 @@ contains
             i = 1
 
             if (has_min_level) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, min_level) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, min_level) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_max_level) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, max_level) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, max_level) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_error) then
-                if (sqlite3_bind_int(db_stmt%ptr, i, error) /= SQLITE_OK) return
+                if (sqlite3_bind_int(db_stmt%ctx, i, error) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(from)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(to)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(node_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(sensor_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(target_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_source) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(source)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(source)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
@@ -6511,7 +6511,7 @@ contains
 
             sql_block: block
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NODES, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NODES, stmt) /= SQLITE_OK) exit sql_block
 
                 do i = 1, n
                     rc = E_DB_NO_ROWS
@@ -6547,13 +6547,13 @@ contains
 
         if (.not. dm_db_prepared(db_stmt)) then
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NODES, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NODES, db_stmt%ctx) /= SQLITE_OK) return
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, node)
+        rc = db_next_row(db_stmt%ctx, node)
     end function db_select_nodes_iter
 
     integer function db_select_nrows(db, table, n) result(rc)
@@ -6580,7 +6580,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, QUERY // SQL_TABLE_NAMES(table), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -6690,13 +6690,13 @@ contains
         sql_block: block
             if (has_param) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
 
                 rc = db_bind_observs(k)
                 if (dm_is_error(rc)) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_NO_ROWS
@@ -6720,7 +6720,7 @@ contains
             if (has_limit)  query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             k  = 1
@@ -6878,7 +6878,7 @@ contains
             if (has_limit)  query = query // ' LIMIT ?'
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_OBSERVS // query, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS // query, db_stmt%ctx) /= SQLITE_OK) return
 
             rc = E_DB_BIND
             k  = 1
@@ -6888,14 +6888,14 @@ contains
             end if
 
             if (has_limit) then
-                if (sqlite3_bind_int64(db_stmt%ptr, k, limit) /= SQLITE_OK) return
+                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
             end if
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, observ)
+        rc = db_next_row(db_stmt%ctx, observ)
         if (dm_is_error(rc)) return
         if (stub_view) return
 
@@ -6927,27 +6927,27 @@ contains
             i = 1
 
             if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(node_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(sensor_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(target_id)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(from)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
             if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ptr, i, trim(to)) /= SQLITE_OK) return
+                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
                 i = i + 1
             end if
 
@@ -7054,7 +7054,7 @@ contains
         sql_block: block
             if (.not. c_associated(stmt)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_RECEIVERS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_RECEIVERS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -7124,7 +7124,7 @@ contains
         sql_block: block
             if (.not. c_associated(stmt)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_REQUESTS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_REQUESTS, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -7220,7 +7220,7 @@ contains
         sql_block: block
             if (.not. c_associated(stmt)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_RESPONSES, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_RESPONSES, stmt) /= SQLITE_OK) exit sql_block
             end if
 
             rc = E_DB_BIND
@@ -7301,7 +7301,7 @@ contains
 
             sql_block: block
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS, stmt) /= SQLITE_OK) exit sql_block
 
                 row_loop: do i = 1, n
                     rc = E_DB_NO_ROWS
@@ -7337,13 +7337,13 @@ contains
 
         if (.not. dm_db_prepared(db_stmt)) then
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS, db_stmt%ctx) /= SQLITE_OK) return
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, sensor)
+        rc = db_next_row(db_stmt%ctx, sensor)
     end function db_select_sensors_iter
 
     integer function db_select_sensors_by_node_array(db, node_id, sensors, nsensors) result(rc)
@@ -7377,7 +7377,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_NSENSORS_BY_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NSENSORS_BY_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -7397,7 +7397,7 @@ contains
             if (n == 0) exit sql_block
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS_BY_NODE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS_BY_NODE, stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(stmt, 1, trim(node_id)) /= SQLITE_OK) exit sql_block
@@ -7440,16 +7440,16 @@ contains
             if (len_trim(node_id) == 0) return
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_SENSORS_BY_NODE, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS_BY_NODE, db_stmt%ctx) /= SQLITE_OK) return
 
             rc = E_DB_BIND
-            if (sqlite3_bind_text(db_stmt%ptr, 1, trim(node_id)) /= SQLITE_OK) return
+            if (sqlite3_bind_text(db_stmt%ctx, 1, trim(node_id)) /= SQLITE_OK) return
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, sensor)
+        rc = db_next_row(db_stmt%ctx, sensor)
     end function db_select_sensors_by_node_iter
 
     integer function db_select_sync(db, type, query, sync) result(rc)
@@ -7476,7 +7476,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, trim(query), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, trim(query), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -7523,7 +7523,7 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, trim(count_query), stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_prepare_v2(db%ctx, trim(count_query), stmt) /= SQLITE_OK) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -7545,13 +7545,13 @@ contains
 
             if (present(limit)) then
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, trim(query) // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, trim(query) // ' LIMIT ?', stmt) /= SQLITE_OK) exit sql_block
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_int64(stmt, 1, limit) /= SQLITE_OK) exit sql_block
             else
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, trim(query), stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, trim(query), stmt) /= SQLITE_OK) exit sql_block
             end if
 
             do i = 1, n
@@ -7603,7 +7603,7 @@ contains
 
             sql_block: block
                 rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TARGETS, stmt) /= SQLITE_OK) exit sql_block
+                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TARGETS, stmt) /= SQLITE_OK) exit sql_block
 
                 do i = 1, n
                     rc = E_DB_NO_ROWS
@@ -7639,13 +7639,13 @@ contains
 
         if (.not. dm_db_prepared(db_stmt)) then
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ptr, SQL_SELECT_TARGETS, db_stmt%ptr) /= SQLITE_OK) return
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TARGETS, db_stmt%ctx) /= SQLITE_OK) return
         end if
 
         rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ptr) /= SQLITE_ROW) return
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
-        rc = db_next_row(db_stmt%ptr, target)
+        rc = db_next_row(db_stmt%ctx, target)
     end function db_select_targets_iter
 
     ! ******************************************************************

@@ -306,7 +306,7 @@ contains
 
         integer                    :: i, stat
         logical                    :: debug_
-        type(c_ptr)                :: curl_ptr, list_ptr
+        type(c_ptr)                :: curl_ctx, list_ctx
         type(payload_type), target :: payload
 
         stat = CURLE_OK
@@ -324,100 +324,100 @@ contains
             payload%length = len(payload%data)
 
             ! Send mail to server.
-            list_ptr = c_null_ptr
-            curl_ptr = curl_easy_init()
+            list_ctx = c_null_ptr
+            curl_ctx = curl_easy_init()
 
             rc = E_MAIL
-            if (.not. c_associated(curl_ptr)) exit mail_block
+            if (.not. c_associated(curl_ctx)) exit mail_block
 
             ! Prepare request.
             curl_block: block
                 ! SMTP server URL.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_URL, server%url)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_URL, server%url)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! SMTP user name.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_USERNAME, server%username)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_USERNAME, server%username)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! SMTP password.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_PASSWORD, server%password)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_PASSWORD, server%password)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Transport-Layer Security.
                 if (server%tls /= MAIL_PLAIN) then
                     ! StartTLS.
                     if (server%tls == MAIL_TLS) then
-                        stat = curl_easy_setopt(curl_ptr, CURLOPT_USE_SSL, CURLUSESSL_ALL)
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL)
                         if (stat /= CURLE_OK) exit curl_block
                     end if
 
                     if (.not. server%verify_ssl) then
                         ! Skip peer verification.
-                        stat = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYPEER, 0)
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0)
                         if (stat /= CURLE_OK) exit curl_block
 
                         ! Skip host verification.
-                        stat = curl_easy_setopt(curl_ptr, CURLOPT_SSL_VERIFYHOST, 0)
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYHOST, 0)
                         if (stat /= CURLE_OK) exit curl_block
                     end if
                 end if
 
                 ! Set MAIL FROM.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_FROM, dm_mail_address(mail%from))
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_FROM, dm_mail_address(mail%from))
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Set recipients.
                 do i = 1, size(mail%to)
-                    list_ptr = curl_slist_append(list_ptr, dm_mail_address(mail%to(i)))
+                    list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%to(i)))
                 end do
 
                 do i = 1, size(mail%cc)
-                    list_ptr = curl_slist_append(list_ptr, dm_mail_address(mail%cc(i)))
+                    list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%cc(i)))
                 end do
 
                 do i = 1, size(mail%bcc)
-                    list_ptr = curl_slist_append(list_ptr, dm_mail_address(mail%bcc(i)))
+                    list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%bcc(i)))
                 end do
 
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_MAIL_RCPT, list_ptr)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_RCPT, list_ctx)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Set timeout.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_TIMEOUT, server%timeout)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_TIMEOUT, server%timeout)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Set connection timeout.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_CONNECTTIMEOUT, server%connect_timeout)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_CONNECTTIMEOUT, server%connect_timeout)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Set callback function.
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_READFUNCTION, c_funloc(dm_mail_read_callback))
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_READFUNCTION, c_funloc(dm_mail_read_callback))
                 if (stat /= CURLE_OK) exit curl_block
 
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_READDATA, c_loc(payload))
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_READDATA, c_loc(payload))
                 if (stat /= CURLE_OK) exit curl_block
 
-                stat = curl_easy_setopt(curl_ptr, CURLOPT_UPLOAD, 1)
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD, 1)
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Enable or disable debug messages.
                 if (debug_) then
-                    stat = curl_easy_setopt(curl_ptr, CURLOPT_VERBOSE, 1)
+                    stat = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE, 1)
                     if (stat /= CURLE_OK) exit curl_block
                 else
-                    stat = curl_easy_setopt(curl_ptr, CURLOPT_NOSIGNAL, 1)
+                    stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1)
                     if (stat /= CURLE_OK) exit curl_block
                 end if
 
                 ! Send request.
-                stat = curl_easy_perform(curl_ptr)
+                stat = curl_easy_perform(curl_ctx)
             end block curl_block
 
             rc = dm_mail_error(stat)
 
-            call curl_slist_free_all(list_ptr)
-            call curl_easy_cleanup(curl_ptr)
+            call curl_slist_free_all(list_ctx)
+            call curl_easy_cleanup(curl_ctx)
         end block mail_block
 
         if (present(error_curl)) error_curl = stat

@@ -15,7 +15,7 @@ module dm_sem
         !! Opaque named semaphore type.
         private
         character(len=SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
-        type(c_ptr)                 :: ptr  = c_null_ptr !! C pointer to named semaphore.
+        type(c_ptr)                 :: ctx  = c_null_ptr !! C pointer to named semaphore.
     end type sem_type
 
     public :: dm_sem_close
@@ -36,10 +36,10 @@ contains
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_NULL
-        if (.not. c_associated(sem%ptr)) return
+        if (.not. c_associated(sem%ctx)) return
 
         rc = E_SYSTEM
-        if (c_sem_close(sem%ptr) /= 0) return
+        if (c_sem_close(sem%ctx) /= 0) return
 
         rc = E_NONE
     end function dm_sem_close
@@ -82,11 +82,11 @@ contains
         sem%name = '/' // name
 
         rc = E_SYSTEM
-        sem%ptr = c_sem_open(name  = trim(sem%name) // c_null_char, &
+        sem%ctx = c_sem_open(name  = trim(sem%name) // c_null_char, &
                              oflag = flag, &
                              mode  = int(mode_, kind=c_mode_t), &
                              value = value_)
-        if (.not. c_associated(sem%ptr)) return
+        if (.not. c_associated(sem%ctx)) return
 
         rc = E_NONE
     end function dm_sem_open
@@ -104,7 +104,7 @@ contains
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
-        if (c_sem_post(sem%ptr) /= 0) return
+        if (c_sem_post(sem%ctx) /= 0) return
         rc = E_NONE
     end function dm_sem_post
 
@@ -123,7 +123,7 @@ contains
         integer,        intent(out)   :: value !! Returned value.
 
         rc = E_SYSTEM
-        if (c_sem_getvalue(sem%ptr, value) /= 0) return
+        if (c_sem_getvalue(sem%ctx, value) /= 0) return
         rc = E_NONE
     end function dm_sem_value
 
@@ -132,7 +132,7 @@ contains
         type(sem_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
-        if (c_sem_wait(sem%ptr) /= 0) return
+        if (c_sem_wait(sem%ctx) /= 0) return
         rc = E_NONE
     end function dm_sem_wait
 end module dm_sem

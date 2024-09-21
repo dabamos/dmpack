@@ -17,7 +17,7 @@ module dm_pipe
         !! Opaque pipe type. Stores the C pointer of uni-directional pipe.
         private
         integer     :: access = 0          !! `PIPE_RDONLY` or `PIPE_WRONLY`.
-        type(c_ptr) :: ptr    = c_null_ptr !! Pointer of pipe.
+        type(c_ptr) :: ctx    = c_null_ptr !! Pointer of pipe.
     end type pipe_type
 
     public :: dm_pipe_connected
@@ -33,7 +33,7 @@ contains
         !! Returns `.true.` if pipe is connected.
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
 
-        connected = c_associated(pipe%ptr)
+        connected = c_associated(pipe%ctx)
     end function dm_pipe_connected
 
     integer function dm_pipe_open(pipe, command, access) result(rc)
@@ -66,8 +66,8 @@ contains
         end select
 
         rc = E_SYSTEM
-        pipe%ptr = c_popen(trim(command) // c_null_char, a)
-        if (.not. c_associated(pipe%ptr)) return
+        pipe%ctx = c_popen(trim(command) // c_null_char, a)
+        if (.not. c_associated(pipe%ctx)) return
 
         rc = E_NONE
         pipe%access = access
@@ -115,9 +115,9 @@ contains
             stat = c_close(p2(2))
             stat = c_close(p3(2))
 
-            stdin%ptr  = c_fdopen(p1(2), 'w' // c_null_char)
-            stdout%ptr = c_fdopen(p2(1), 'r' // c_null_char)
-            stderr%ptr = c_fdopen(p3(1), 'r' // c_null_char)
+            stdin%ctx  = c_fdopen(p1(2), 'w' // c_null_char)
+            stdout%ctx = c_fdopen(p2(1), 'r' // c_null_char)
+            stderr%ctx = c_fdopen(p3(1), 'r' // c_null_char)
 
             if (.not. dm_pipe_connected(stdin))  return
             if (.not. dm_pipe_connected(stdout)) return
@@ -154,7 +154,7 @@ contains
         sz = 0_i8
         bytes = ' '
         if (pipe%access == PIPE_WRONLY) return
-        sz = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ptr)
+        sz = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_read
 
     integer function dm_pipe_write(pipe, str) result(rc)
@@ -174,7 +174,7 @@ contains
         if (.not. dm_pipe_connected(pipe)) return
 
         rc = E_SYSTEM
-        if (c_fputs(trim(str) // c_new_line // c_null_char, pipe%ptr) < 0) return
+        if (c_fputs(trim(str) // c_new_line // c_null_char, pipe%ctx) < 0) return
 
         rc = E_NONE
     end function dm_pipe_write
@@ -186,7 +186,7 @@ contains
 
         sz = 0_i8
         if (pipe%access == PIPE_RDONLY) return
-        sz = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ptr)
+        sz = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_write2
 
     subroutine dm_pipe_close(pipe)
@@ -195,8 +195,8 @@ contains
 
         integer :: stat
 
-        if (dm_pipe_connected(pipe)) stat = c_pclose(pipe%ptr)
-        if (stat == 0) pipe%ptr = c_null_ptr
+        if (dm_pipe_connected(pipe)) stat = c_pclose(pipe%ctx)
+        if (stat == 0) pipe%ctx = c_null_ptr
     end subroutine dm_pipe_close
 
     subroutine dm_pipe_close2(pipe)
@@ -205,7 +205,7 @@ contains
 
         integer :: stat
 
-        if (dm_pipe_connected(pipe)) stat = c_fclose(pipe%ptr)
-        if (stat == 0) pipe%ptr = c_null_ptr
+        if (dm_pipe_connected(pipe)) stat = c_fclose(pipe%ctx)
+        if (stat == 0) pipe%ctx = c_null_ptr
     end subroutine dm_pipe_close2
 end module dm_pipe

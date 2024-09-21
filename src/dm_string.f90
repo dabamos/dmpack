@@ -378,7 +378,7 @@ contains
         !! Converts string to 4-byte integer.
         character(len=*), intent(in)            :: str   !! Input.
         integer(kind=i4), intent(out)           :: i     !! Output.
-        integer,          intent(out), optional :: error !! error code.
+        integer,          intent(out), optional :: error !! Error code.
 
         integer :: stat
 
@@ -393,7 +393,7 @@ contains
         !! Converts string to 8-byte integer.
         character(len=*), intent(in)            :: str   !! Input.
         integer(kind=i8), intent(out)           :: i     !! Output.
-        integer,          intent(out), optional :: error !! error code.
+        integer,          intent(out), optional :: error !! Error code.
 
         integer :: stat
 
@@ -408,7 +408,7 @@ contains
         !! Converts string to 4-byte real.
         character(len=*), intent(in)            :: str   !! Input.
         real(kind=r4),    intent(out)           :: f     !! Output.
-        integer,          intent(out), optional :: error !! error code.
+        integer,          intent(out), optional :: error !! Error code.
 
         integer :: stat
 
@@ -423,7 +423,7 @@ contains
         !! Converts string to 8-byte real.
         character(len=*), intent(in)            :: str   !! Input.
         real(kind=r8),    intent(out)           :: f     !! Output.
-        integer,          intent(out), optional :: error !! error code.
+        integer,          intent(out), optional :: error !! Error code.
 
         integer :: stat
 

@@ -49,12 +49,13 @@ contains
         type(c_ptr), intent(in), value :: ptr !! C pointer to Lua interpreter.
         integer(kind=c_int)            :: rc  !! Return code.
 
+        integer              :: stat
         type(lua_state_type) :: lua
 
-        lua = lua_state_type(ptr)
+        lua  = lua_state_type(ptr)
+        stat = dm_lua_api_register(lua)    ! Register DMPACK Lua API.
+        stat = dm_lua_geocom_register(lua) ! Register DMPACK GeoCOM API.
 
-        rc = dm_lua_api_register(lua)    ! Register DMPACK Lua API.
-        rc = dm_lua_geocom_register(lua) ! Register DMPACK GeoCOM API.
         rc = 1
     end function luaopen_libdmpack
 end module dm_lua_lib

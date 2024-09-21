@@ -254,8 +254,8 @@ contains
         rc = E_IO
 
         write_block: block
-            ! Unformatted output.
             if (raw_) then
+                ! Unformatted output.
                 open (access  = 'stream', &
                       action  = 'write', &
                       file    = trim(path), &
@@ -268,22 +268,19 @@ contains
                 rc = E_WRITE
                 write (fu, iostat=stat) content
                 if (stat /= 0) exit write_block
+            else
+                ! Formatted output.
+                open (action  = 'write', &
+                      file    = trim(path), &
+                      iostat  = stat, &
+                      newunit = fu, &
+                      status  = 'replace')
+                if (stat /= 0) exit write_block
 
-                rc = E_NONE
-                exit write_block
+                rc = E_WRITE
+                write (fu, '(a)', iostat=stat) content
+                if (stat /= 0) exit write_block
             end if
-
-            ! Formatted output.
-            open (action  = 'write', &
-                  file    = trim(path), &
-                  iostat  = stat, &
-                  newunit = fu, &
-                  status  = 'replace')
-            if (stat /= 0) exit write_block
-
-            rc = E_WRITE
-            write (fu, '(a)', iostat=stat) content
-            if (stat /= 0) exit write_block
 
             rc = E_NONE
         end block write_block

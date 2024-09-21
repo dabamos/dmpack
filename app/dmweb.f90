@@ -571,9 +571,9 @@ contains
             logical                       :: has_level, valid
             type(cgi_param_type)          :: param
 
-            type(node_type),   allocatable  :: nodes(:)
-            type(sensor_type), allocatable  :: sensors(:)
-            type(target_type), allocatable  :: targets(:)
+            type(node_type),   allocatable :: nodes(:)
+            type(sensor_type), allocatable :: sensors(:)
+            type(target_type), allocatable :: targets(:)
 
             max_results = [ 25, 50, 100, 250, 500 ]
 
@@ -2433,11 +2433,7 @@ contains
         character(len=*), intent(in), optional :: title   !! Page title.
         character(len=*), intent(in), optional :: extra   !! Extra message, pre-formatted.
 
-        if (present(title)) then
-            call html_header(title)
-        else
-            call html_header()
-        end if
+        call html_header(title)
 
         if (present(status)) then
             call dm_cgi_out(dm_html_heading(1, dm_itoa(status) // ' ' // dm_http_status_string(status)))
