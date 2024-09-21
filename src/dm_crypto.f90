@@ -21,7 +21,7 @@ module dm_crypto
 
     integer, parameter :: c_unsigned_char = c_signed_char
 
-    character(len=*), parameter :: HASH_FMT = '(*(z2.2))'
+    character(len=*), parameter :: FMT_HASH = '(*(z2.2))'
 
     ! Digest array sizes.
     integer, parameter, public :: CRYPTO_MD4_DIGEST_LEN       = 16
@@ -146,7 +146,7 @@ contains
         hash = ' '
         ptr  = c_md4(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_md4
 
@@ -162,7 +162,7 @@ contains
         hash = ' '
         ptr  = c_md5(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_md5
 
@@ -178,7 +178,7 @@ contains
         hash = ' '
         ptr  = c_ripemd160(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_ripemd160
 
@@ -194,7 +194,7 @@ contains
         hash = ' '
         ptr  = c_sha1(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_sha1
 
@@ -210,7 +210,7 @@ contains
         hash = ' '
         ptr  = c_sha224(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_sha224
 
@@ -226,7 +226,7 @@ contains
         hash = ' '
         ptr  = c_sha256(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_sha256
 
@@ -242,7 +242,7 @@ contains
         hash = ' '
         ptr  = c_sha384(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_sha384
 
@@ -258,7 +258,7 @@ contains
         hash = ' '
         ptr  = c_sha512(str, len(str, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
-        write (hash, HASH_FMT) (raw(i), i = 1, size(raw))
+        write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_to_lower(hash)
     end function dm_crypto_sha512
 end module dm_crypto
