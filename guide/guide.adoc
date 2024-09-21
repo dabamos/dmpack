@@ -4527,6 +4527,9 @@ program main
     type(geocom_class) :: geocom  ! GeoCOM object.
     type(request_type) :: request ! Last request.
 
+    ! Initialise DMPACK.
+    call dm_init()
+
     ! Open connection to instrument, quit on error.
     call geocom%open('/dev/ttyUSB0', GEOCOM_COM_BAUD_115200, verbose=.true., error=rc)
     call dm_error_out(rc, fatal=.true.)
