@@ -54,8 +54,6 @@ contains
         type(app_type), intent(out) :: app
         type(arg_type)              :: args(3)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('convert', short='C', type=ARG_TYPE_LOGICAL), & ! -C, --convert
             arg_type('count',   short='n', type=ARG_TYPE_INTEGER), & ! -n, --count

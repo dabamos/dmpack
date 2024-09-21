@@ -82,8 +82,6 @@ contains
 
         type(arg_type) :: args(5)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('database', short='d', type=ARG_TYPE_DB,     required=.true.), & ! -d, --database <path>
             arg_type('backup',   short='b', type=ARG_TYPE_STRING, required=.true.), & ! -b, --backup <path>

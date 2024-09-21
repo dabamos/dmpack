@@ -91,8 +91,6 @@ contains
         character(len=TYPE_NAME_LEN) :: type
         type(arg_type)               :: args(5)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('type',     short='t', type=ARG_TYPE_STRING, required=.true.), & ! -t, --type [beat|log|observ]
             arg_type('database', short='d', type=ARG_TYPE_STRING, required=.true.), & ! -d, --database <path>

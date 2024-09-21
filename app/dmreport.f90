@@ -161,8 +161,6 @@ contains
         type(report_log_type),  pointer :: log
         type(report_plot_type), pointer :: plot
 
-        rc = E_NONE
-
         args = [ &
             arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
             arg_type('config', short='c', type=ARG_TYPE_FILE),   & ! -c, --config <path>

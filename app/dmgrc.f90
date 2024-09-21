@@ -82,8 +82,6 @@ contains
         integer        :: i
         type(arg_type) :: args(8)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>

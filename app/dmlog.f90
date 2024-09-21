@@ -47,8 +47,6 @@ contains
         type(log_type), intent(out) :: log
         type(arg_type)              :: args(10)
 
-        rc = E_NONE
-
         ! Required and optional command-line arguments.
         args = [ &
             arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>

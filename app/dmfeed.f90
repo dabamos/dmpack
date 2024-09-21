@@ -80,8 +80,6 @@ contains
         character(len=:), allocatable :: version
         type(arg_type)                :: args(16)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>

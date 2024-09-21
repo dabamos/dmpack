@@ -95,8 +95,6 @@ contains
         character(len=:), allocatable :: version
         type(arg_type)                :: args(7)
 
-        rc = E_NONE
-
         ! Required and optional command-line arguments.
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>

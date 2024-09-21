@@ -72,8 +72,6 @@ contains
         logical          :: has_read, has_write
         type(arg_type)   :: args(13)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('path',      short='p', type=ARG_TYPE_STRING),                       & ! -p, --path <string>
             arg_type('baudrate',  short='B', type=ARG_TYPE_INTEGER),                      & ! -B, --baudrate <n>

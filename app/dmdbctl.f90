@@ -400,8 +400,6 @@ contains
         logical        :: mask(OP_LAST) ! CRUD operation mask.
         type(arg_type) :: args(19)
 
-        rc = E_NONE
-
         ! Required and optional command-line arguments.
         args = [ &
             arg_type('create',    short='C', type=ARG_TYPE_STRING), &                               ! -C, --create <type>

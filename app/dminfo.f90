@@ -64,11 +64,7 @@ contains
         if (has_db) then
             sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to open database ' // app%database)
-                return
-            end if
+            if (dm_is_error(rc)) call dm_error_out(rc, 'failed to open database ' // app%database, fatal=.true.)
         end if
 
         ! Compiler and build options.

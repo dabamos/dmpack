@@ -187,8 +187,6 @@ contains
         character(len=6) :: format_name, type_name
         type(arg_type)   :: args(12)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('database',  short='d', type=ARG_TYPE_DB, required=.true.), & ! -d, --database <path>
             arg_type('output',    short='o', type=ARG_TYPE_STRING),              & ! -o, --output <path>

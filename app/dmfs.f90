@@ -111,8 +111,6 @@ contains
         type(app_type), intent(out) :: app !! App settings.
         type(arg_type)              :: args(9)
 
-        rc = E_NONE
-
         args = [ &
             arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
             arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
