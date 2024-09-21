@@ -45,7 +45,7 @@ POSIX semaphores.
 
 ## System Architecture
 
-![Schema](https://www.dabamos.de/images/dmpack_schema.png)
+![Schema](https://raw.githubusercontent.com/dabamos/dmpack/refs/heads/master/guide/resources/images/schema.png)
 
 ## Features
 
