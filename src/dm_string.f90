@@ -15,16 +15,6 @@ module dm_string
         character(len=:), allocatable :: data
     end type string_type
 
-    interface dm_to_lower
-        !! Alias for procedure.
-        module procedure :: dm_string_to_lower
-    end interface dm_to_lower
-
-    interface dm_to_upper
-        !! Alias for procedure.
-        module procedure :: dm_string_to_upper
-    end interface dm_to_upper
-
     interface dm_lower
         !! Alias for procedure.
         module procedure :: dm_string_lower
@@ -35,13 +25,15 @@ module dm_string
         module procedure :: dm_string_upper
     end interface dm_upper
 
-    interface dm_string_to
-        !! Generic string to number converter.
-        module procedure :: string_to_int32
-        module procedure :: string_to_int64
-        module procedure :: string_to_real32
-        module procedure :: string_to_real64
-    end interface dm_string_to
+    interface dm_to_lower
+        !! Alias for procedure.
+        module procedure :: dm_string_to_lower
+    end interface dm_to_lower
+
+    interface dm_to_upper
+        !! Alias for procedure.
+        module procedure :: dm_string_to_upper
+    end interface dm_to_upper
 
     interface dm_string_from
         !! Generic number to string converter.
@@ -51,14 +43,23 @@ module dm_string
         module procedure :: string_from_real64
     end interface dm_string_from
 
+    interface dm_string_to
+        !! Generic string to number converter.
+        module procedure :: string_to_int32
+        module procedure :: string_to_int64
+        module procedure :: string_to_real32
+        module procedure :: string_to_real64
+    end interface dm_string_to
+
     ! Public procedures.
     public :: dm_lower
-    public :: dm_to_lower
-    public :: dm_to_upper
     public :: dm_upper
 
-    public :: dm_string_to
+    public :: dm_to_lower
+    public :: dm_to_upper
+
     public :: dm_string_from
+    public :: dm_string_to
 
     public :: dm_string_count_char
     public :: dm_string_count_lines

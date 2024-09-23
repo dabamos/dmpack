@@ -70,12 +70,12 @@ contains
         !! Returns synchonisation type from given name.
         character(len=*), intent(in) :: name !! Sync type name.
 
-        character(len=SYNC_TYPE_NAME_LEN) :: n
+        character(len=SYNC_TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
-        n = dm_to_lower(name)
+        name_ = dm_to_lower(name)
 
-        select case (n)
+        select case (name_)
             case (SYNC_TYPE_NAMES(SYNC_TYPE_NODE))
                 type = SYNC_TYPE_NODE
             case (SYNC_TYPE_NAMES(SYNC_TYPE_SENSOR))
