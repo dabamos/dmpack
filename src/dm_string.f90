@@ -235,7 +235,7 @@ contains
         if (allocated(string%data)) deallocate (string%data)
     end subroutine dm_string_destroy
 
-    subroutine dm_string_lower(str)
+    pure elemental subroutine dm_string_lower(str)
         !! Converts given string to lower case.
         character(len=*), intent(inout) :: str !! Input/output string.
 
@@ -248,7 +248,7 @@ contains
         end do
     end subroutine dm_string_lower
 
-    subroutine dm_string_split(str, array, del, n)
+    pure subroutine dm_string_split(str, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.
         character(len=*), intent(in)            :: str
         character(len=*), intent(inout)         :: array(:)
@@ -278,7 +278,7 @@ contains
         if (present(n)) n = i
     end subroutine dm_string_split
 
-    subroutine dm_string_upper(str)
+    pure elemental subroutine dm_string_upper(str)
         !! Converts given string to upper case.
         character(len=*), intent(inout) :: str !! Input/output string.
 
