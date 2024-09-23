@@ -506,7 +506,7 @@ contains
         ! Try to open TTY/PTY.
         call logger%debug('opening TTY '  // trim(app%path) // ' to sensor ' // trim(app%sensor) // &
                           ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
-                          dm_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
+                          dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
         do
             rc = dm_tty_open(tty)

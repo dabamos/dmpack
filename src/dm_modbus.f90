@@ -133,7 +133,7 @@ contains
         !! Sets argument `byte_order` to `MODBUS_REAL_ACBD` if `string` is
         !! `ABCD` (case insensitive). Returns `E_INVALID` and sets `byte_order`
         !! to `MODBUS_REAL_ABCD` if the string is invalid.
-        use :: dm_string, only: dm_string_upper
+        use :: dm_string, only: dm_to_upper
 
         character(len=*), intent(in)  :: name       !! Input string.
         integer,          intent(out) :: byte_order !! Byte order of real values.
@@ -143,7 +143,7 @@ contains
         rc = E_NONE
 
         ! Normalise name.
-        name_ = dm_string_upper(name)
+        name_ = dm_to_upper(name)
 
         select case (name_)
             case ('ABCD')

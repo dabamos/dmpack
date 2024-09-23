@@ -122,14 +122,14 @@ contains
         !! converted to lower-case before. If `name` neither matches `none`,
         !! `debug`, `warning`, `error`, `critical`, nor `user` this function
         !! returns `LL_NONE`.
-        use :: dm_string, only: dm_lower
+        use :: dm_string, only: dm_to_lower
 
         character(len=*), intent(in) :: name !! Log level name.
 
         character(len=LOG_LEVEL_NAME_LEN) :: name_
 
         ! Normalise name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG))

@@ -185,13 +185,13 @@ contains
     pure elemental integer function dm_z_type_from_name(name) result(z)
         !! Returns compression type enumerator from name. The function returns
         !! `Z_TYPE_INVALID` if the name is not a valid type name.
-        use :: dm_string, only: dm_lower
+        use :: dm_string, only: dm_to_lower
 
         character(len=*), intent(in)   :: name !! Compression enumerator name.
         character(len=Z_TYPE_NAME_LEN) :: name_
 
         ! Normalise type name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (Z_TYPE_NAMES(Z_TYPE_NONE))

@@ -32,13 +32,13 @@ contains
         !! Returns type from given name. If `name` is longer than
         !! `TYPE_NAME_LEN`, only the characters from `1` to `TYPE_NAME_LEN` are
         !! compared.
-        use :: dm_string, only: dm_lower
+        use :: dm_string, only: dm_to_lower
 
         character(len=*), intent(in) :: name !! Derived type name.
         character(len=TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (TYPE_NAMES(TYPE_NODE))

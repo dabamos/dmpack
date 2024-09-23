@@ -297,7 +297,7 @@ contains
         parity = 0
         if (present(error)) error = E_INVALID
 
-        select case (dm_lower(name))
+        select case (dm_to_lower(name))
             case ('none')
                 parity = TTY_PARITY_NONE
             case ('odd')

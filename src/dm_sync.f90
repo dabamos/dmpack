@@ -73,7 +73,7 @@ contains
         character(len=SYNC_TYPE_NAME_LEN) :: n
 
         ! Normalise name.
-        n = dm_lower(name)
+        n = dm_to_lower(name)
 
         select case (n)
             case (SYNC_TYPE_NAMES(SYNC_TYPE_NODE))

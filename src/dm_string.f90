@@ -15,16 +15,6 @@ module dm_string
         character(len=:), allocatable :: data
     end type string_type
 
-    interface dm_lower
-        !! Alias for procedure.
-        module procedure :: dm_string_lower
-    end interface dm_lower
-
-    interface dm_upper
-        !! Alias for procedure.
-        module procedure :: dm_string_upper
-    end interface dm_upper
-
     interface dm_to_lower
         !! Alias for procedure.
         module procedure :: dm_string_to_lower
@@ -34,6 +24,16 @@ module dm_string
         !! Alias for procedure.
         module procedure :: dm_string_to_upper
     end interface dm_to_upper
+
+    interface dm_lower
+        !! Alias for procedure.
+        module procedure :: dm_string_lower
+    end interface dm_lower
+
+    interface dm_upper
+        !! Alias for procedure.
+        module procedure :: dm_string_upper
+    end interface dm_upper
 
     interface dm_string_to
         !! Generic string to number converter.
@@ -53,9 +53,9 @@ module dm_string
 
     ! Public procedures.
     public :: dm_lower
-    public :: dm_upper
     public :: dm_to_lower
     public :: dm_to_upper
+    public :: dm_upper
 
     public :: dm_string_to
     public :: dm_string_from
@@ -168,7 +168,8 @@ contains
         use :: dm_ascii, only: dm_ascii_is_printable
 
         character(len=*), intent(in) :: str !! String to validate.
-        integer                      :: i
+
+        integer :: i
 
         is = .false.
 
@@ -179,7 +180,7 @@ contains
         is = .true.
     end function dm_string_is_printable
 
-    pure elemental function dm_string_lower(str) result(lower)
+    pure elemental function dm_string_to_lower(str) result(lower)
         !! Returns given string in lower case.
         character(len=*), intent(in) :: str   !! String to convert.
         character(len=len(str))      :: lower !! Result.
@@ -192,9 +193,9 @@ contains
             if (a >= 'A' .and. a <= 'Z') a = achar(iachar(a) + 32)
             lower(i:i) = a
         end do
-    end function dm_string_lower
+    end function dm_string_to_lower
 
-    pure elemental function dm_string_upper(str) result(upper)
+    pure elemental function dm_string_to_upper(str) result(upper)
         !! Returns given string in upper case.
         character(len=*), intent(in) :: str   !! String to convert.
         character(len=len(str))      :: upper !! Result.
@@ -207,7 +208,7 @@ contains
             if (a >= 'a' .and. a <= 'z') a = achar(iachar(a) - 32)
             upper(i:i) = a
         end do
-    end function dm_string_upper
+    end function dm_string_to_upper
 
     ! ******************************************************************
     ! PUBLIC SUBROUTINES.
@@ -232,6 +233,19 @@ contains
 
         if (allocated(string%data)) deallocate (string%data)
     end subroutine dm_string_destroy
+
+    subroutine dm_string_lower(str)
+        !! Converts given string to lower case.
+        character(len=*), intent(inout) :: str !! Input/output string.
+
+        character :: a
+        integer   :: i
+
+        do i = 1, len(str)
+            a = str(i:i)
+            if (a >= 'A' .and. a <= 'Z') str(i:i) = achar(iachar(a) + 32)
+        end do
+    end subroutine dm_string_lower
 
     subroutine dm_string_split(str, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.
@@ -263,20 +277,7 @@ contains
         if (present(n)) n = i
     end subroutine dm_string_split
 
-    subroutine dm_string_to_lower(str)
-        !! Converts given string to lower case.
-        character(len=*), intent(inout) :: str !! Input/output string.
-
-        character :: a
-        integer   :: i
-
-        do i = 1, len(str)
-            a = str(i:i)
-            if (a >= 'A' .and. a <= 'Z') str(i:i) = achar(iachar(a) + 32)
-        end do
-    end subroutine dm_string_to_lower
-
-    subroutine dm_string_to_upper(str)
+    subroutine dm_string_upper(str)
         !! Converts given string to upper case.
         character(len=*), intent(inout) :: str !! Input/output string.
 
@@ -287,7 +288,7 @@ contains
             a = str(i:i)
             if (a >= 'a' .and. a <= 'z') str(i:i) = achar(iachar(a) - 32)
         end do
-    end subroutine dm_string_to_upper
+    end subroutine dm_string_upper
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
