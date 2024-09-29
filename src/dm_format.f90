@@ -26,13 +26,13 @@ contains
     pure elemental integer function dm_format_from_name(name) result(format)
         !! Returns format enumerator from given name. If the argument is not a
         !! valid format, the function returns `FORMAT_NONE`.
-        use :: dm_string, only: dm_lower
+        use :: dm_string, only: dm_to_lower
 
         character(len=*), intent(in)   :: name !! Format name.
         character(len=FORMAT_NAME_LEN) :: name_
 
         ! Normalise name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (FORMAT_NAMES(FORMAT_BLOCK))

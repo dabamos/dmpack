@@ -182,7 +182,7 @@ contains
         character(len=PLOT_TERMINAL_NAME_LEN) :: name_
 
         ! Normalise name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI))

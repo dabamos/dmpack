@@ -97,13 +97,13 @@ contains
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)
         !! Returns format enumerator from given name.
-        use :: dm_string, only: dm_lower
+        use :: dm_string, only: dm_to_lower
         character(len=*), intent(in) :: name !! Format name.
 
         character(len=SENSOR_TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
-        name_ = dm_lower(name)
+        name_ = dm_to_lower(name)
 
         select case (name_)
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_VIRTUAL))
