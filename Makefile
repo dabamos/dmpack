@@ -218,7 +218,7 @@ DMWEB    = $(DISTDIR)/dmweb
 
 # Library source files.
 SRC = $(SRCDIR)/dm_ansi.f90 \
-      $(SRCDIR)/dm_api.f90 \
+      $(SRCDIR)/dm_api_status.f90 \
       $(SRCDIR)/dm_arg.f90 \
       $(SRCDIR)/dm_ascii.f90 \
       $(SRCDIR)/dm_atom.f90 \
@@ -310,7 +310,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
 
 # Library object files.
 OBJ = dm_ansi.o \
-      dm_api.o \
+      dm_api_status.o \
       dm_arg.o \
       dm_ascii.o \
       dm_atom.o \
@@ -596,7 +596,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mail.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_http.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mime.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_api.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_api_status.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rpc.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqtt.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_cgi.f90

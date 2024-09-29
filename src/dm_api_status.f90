@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_api
+module dm_api_status
     !! HTTP-RPC API status message.
     use :: dm_ascii, NL => ASCII_LF
     use :: dm_error
@@ -118,4 +118,4 @@ contains
 
         str = str // NL // 'error=' // dm_itoa(api%error)
     end function dm_api_status_to_string
-end module dm_api
+end module dm_api_status

@@ -28,7 +28,7 @@ module dmpack
     !!
     !! Change `/usr/local` to the installation prefix.
     use :: dm_ansi
-    use :: dm_api
+    use :: dm_api_status
     use :: dm_arg
     use :: dm_ascii
     use :: dm_atom
