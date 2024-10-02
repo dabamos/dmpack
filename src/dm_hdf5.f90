@@ -63,7 +63,7 @@ module dm_hdf5
     integer, parameter, public :: HDF5_FILTER_FLETCHER32 = 3 !! Fletcher32 checksum (`H5Z_FILTER_FLETCHER32`).
     integer, parameter, public :: HDF5_FILTER_SZIP       = 4 !! SZIP compression (`H5Z_FILTER_SZIP`).
 
-    type, public :: hdf5_id_type
+    type, private :: hdf5_id_type
         !! Opaque HDF5 id type.
         private
         integer(kind=hid_t) :: id = -1 !! Identifier.

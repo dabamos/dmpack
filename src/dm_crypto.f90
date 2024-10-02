@@ -15,11 +15,10 @@ module dm_crypto
     !! The functions return hexadecimal character strings in lower-case format.
     !! Link this module against `-lcrypto`.
     use, intrinsic :: iso_c_binding
+    use :: dm_c,      only: c_unsigned_char
     use :: dm_string, only: dm_lower
     implicit none (type, external)
     private
-
-    integer, parameter :: c_unsigned_char = c_signed_char
 
     character(len=*), parameter :: FMT_HASH = '(*(z2.2))'
 

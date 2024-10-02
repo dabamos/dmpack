@@ -74,7 +74,7 @@ module dm_modbus
     public :: MODBUS_RTU_RTS_UP
     public :: MODBUS_RTU_RTS_DOWN
 
-    type, public :: modbus_type
+    type, private :: modbus_type
         !! Opaque Modbus RTU/TCP context type.
         private
         type(c_ptr) :: ctx  = c_null_ptr !! C pointer to Modbus RTU/TCP context.

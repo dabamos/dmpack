@@ -7,6 +7,8 @@ module dm_c
     implicit none (type, external)
     private
 
+    integer, parameter, public :: c_unsigned_char = c_signed_char
+
     interface dm_to_signed
         !! Converts unsigned integer to signed integer.
         module procedure :: dm_uint16_to_int32
