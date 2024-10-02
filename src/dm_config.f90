@@ -1,7 +1,40 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_config
-    !! Module for loading Lua configuration files.
+    !! Module for loading Lua-based configuration files.
+    !!
+    !! The following configuration file `myapp.config` is given as an example
+    !! for a program `myapp`:
+    !!
+    !! ```lua
+    !! -- myapp.config
+    !! myapp = {
+    !!     database = "observ.sqlite",
+    !!     node = "dummy-node",
+    !!     verbose = true
+    !! }
+    !! ```
+    !!
+    !! In Fortran, open the configuration file and read the settings with
+    !! subroutine `dm_config_get()`:
+    !!
+    !!
+    !! ```fortran
+    !! character(len=:), allocatable :: database, node
+    !! integer                       :: rc
+    !! logical                       :: verbose
+    !! type(config_type)             :: config
+    !!
+    !! rc = dm_config_open(config, 'myapp.config', 'myapp')
+    !!
+    !! if (dm_is_ok(rc)) then
+    !!     call dm_config_get(config, 'database', database)
+    !!     call dm_config_get(config, 'node',     node)
+    !!     call dm_config_get(config, 'verbose',  verbose)
+    !! end if
+    !!
+    !! call dm_config_close(config)
+    !! ```
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -64,6 +97,14 @@ contains
     integer function dm_config_open(config, path, name, geocom) result(rc)
         !! Opens configuration file and optionally loads the table of the given
         !! name if the argument has been passed.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if the file path is empty.
+        !! * `E_LUA` if a Lua error occured.
+        !! * `E_NOT_FOUND` if the configuration file is not found.
+        !! * `E_TYPE` if the configuration `name` is not a Lua table.
+        !!
         use :: dm_file,       only: dm_file_exists
         use :: dm_lua_api,    only: dm_lua_api_register
         use :: dm_lua_geocom, only: dm_lua_geocom_register

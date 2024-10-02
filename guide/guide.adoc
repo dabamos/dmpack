@@ -80,10 +80,11 @@ equivalent to the BSD 2-Clause and MIT licences. The source code and the
 documentation are available online. See the project website for further
 information:
 
-* link:https://www.dabamos.de/[Project Website]
+* link:https://www.dabamos.de/dmpack.html[Project Website]
 * link:https://www.dabamos.de/dmpack/guide/[User Guide]
+* link:https://www.dabamos.de/dmpack.html#screen-shots[Screen Shots]
 * link:https://www.dabamos.de/dmpack/doc/[Source Code Documentation]
-* link:https://github.com/dabamos/dmpack[Source Code Repository]
+* link:https://github.com/dabamos/dmpack[GitHub Repository]
 
 == Software Architecture
 

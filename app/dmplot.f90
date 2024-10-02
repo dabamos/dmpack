@@ -12,6 +12,8 @@ program dmplot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 3
 
+    character(len=*), parameter :: X_LABEL = 'Time'
+
     type :: app_type
         !! Application settings.
         character(len=ID_LEN)            :: name       = APP_NAME           !! Name of instance and POSIX semaphore.
@@ -43,48 +45,24 @@ program dmplot
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    plot_block: block
-        character(len=:), allocatable :: path
-        type(dp_type),    allocatable :: dps(:)
-
-        rc = read_data_points(dps, app%database, app%node, app%sensor, &
-                              app%target, app%response, app%from, app%to)
-
-        if (rc == E_DB_NO_ROWS) then
-            call dm_error_out(rc, 'no observations found in database ' // app%database)
-            exit plot_block
-        end if
-
-        if (dm_is_error(rc)) then
-            call dm_error_out(rc)
-            exit plot_block
-        end if
-
-        ! Parse output path for format descriptors.
-        path = dm_path_parsed(app%output)
-
-        ! Create plot.
-        rc = create_graph(dps, app%terminal, path, app%background, app%foreground, &
-                          app%font, app%title, app%width, app%height, 'Time', app%response)
-        call dm_error_out(rc)
-    end block plot_block
-
+    ! Create plot.
+    rc = create_plot(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function create_graph(dps, terminal, output, background, foreground, &
                                   font, title, width, height, xlabel, ylabel) result(rc)
         !! Writes plot to file or shows X11 window.
-        type(dp_type),    intent(inout)         :: dps(:)     !! Data points array.
-        integer,          intent(in)            :: terminal   !! Plot terminal.
-        character(len=*), intent(in),  optional :: output     !! Output file.
-        character(len=*), intent(in),  optional :: background !! Background colour.
-        character(len=*), intent(in),  optional :: foreground !! Foreground colour.
-        character(len=*), intent(in),  optional :: font       !! Plot font.
-        character(len=*), intent(in),  optional :: title      !! Plot title.
-        integer,          intent(in),  optional :: width      !! Plot width.
-        integer,          intent(in),  optional :: height     !! Plot height.
-        character(len=*), intent(in),  optional :: xlabel     !! X label.
-        character(len=*), intent(in),  optional :: ylabel     !! Y label.
+        type(dp_type),    intent(inout)        :: dps(:)     !! Data points array.
+        integer,          intent(in)           :: terminal   !! Plot terminal.
+        character(len=*), intent(in), optional :: output     !! Output file.
+        character(len=*), intent(in), optional :: background !! Background colour.
+        character(len=*), intent(in), optional :: foreground !! Foreground colour.
+        character(len=*), intent(in), optional :: font       !! Plot font.
+        character(len=*), intent(in), optional :: title      !! Plot title.
+        integer,          intent(in), optional :: width      !! Plot width.
+        integer,          intent(in), optional :: height     !! Plot height.
+        character(len=*), intent(in), optional :: xlabel     !! X label.
+        character(len=*), intent(in), optional :: ylabel     !! Y label.
 
         type(plot_type) :: plot
 
@@ -110,12 +88,40 @@ contains
         rc = dm_plot_lines(plot, dps)
     end function create_graph
 
+    integer function create_plot(app) result(rc)
+        type(app_type), intent(inout) :: app !! App type.
+
+        character(len=:), allocatable :: path
+        type(dp_type),    allocatable :: dps(:)
+
+        plot_block: block
+            ! Read data points from database.
+            rc = read_data_points(dps, app%database, app%node, app%sensor, app%target, &
+                                  app%response, app%from, app%to)
+            if (dm_is_error(rc)) exit plot_block
+
+            ! Parse output path for format descriptors.
+            path = dm_path_parsed(app%output)
+
+            ! Create plot.
+            rc = create_graph(dps, app%terminal, path, app%background, app%foreground, app%font, &
+                              app%title, app%width, app%height, X_LABEL, app%response)
+        end block plot_block
+
+        if (rc == E_DB_NO_ROWS) then
+            call dm_error_out(rc, 'no observations found in database ' // app%database)
+        else if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+        end if
+    end function create_plot
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
         type(app_type), intent(out) :: app !! App type.
 
         character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
         character(len=:), allocatable         :: version
+        logical                               :: found
         type(arg_type)                        :: args(17)
 
         args = [ &
@@ -138,8 +144,18 @@ contains
             arg_type('height',     short='H', type=ARG_TYPE_INTEGER)  & ! -H, --height <n>
         ]
 
+        ! Create version string and search for Gnuplot.
+        version = dm_plot_version(.true., found) // ' ' // &
+                  dm_lua_version(.true.)         // ' ' // &
+                  dm_db_version(.true.)
+
+        rc = E_NOT_FOUND
+        if (.not. found) then
+            call dm_error_out(rc, 'Gnuplot not found')
+            return
+        end if
+
         ! Read all command-line arguments.
-        version = dm_plot_version(.true.) // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
@@ -178,37 +194,37 @@ contains
         end if
 
         if (.not. dm_id_valid(app%node)) then
-            call dm_error_out(rc, 'invalid node id')
+            call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
         if (.not. dm_id_valid(app%sensor)) then
-            call dm_error_out(rc, 'invalid sensor id')
+            call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
 
         if (.not. dm_id_valid(app%target)) then
-            call dm_error_out(rc, 'invalid target id')
+            call dm_error_out(rc, 'invalid or missing target id')
             return
         end if
 
         if (.not. dm_id_valid(app%response)) then
-            call dm_error_out(rc, 'invalid response name')
+            call dm_error_out(rc, 'invalid or missing response name')
             return
         end if
 
         if (.not. dm_time_valid(app%from)) then
-            call dm_error_out(rc, 'invalid from timestamp')
+            call dm_error_out(rc, 'invalid or missing from timestamp')
             return
         end if
 
         if (.not. dm_time_valid(app%to)) then
-            call dm_error_out(rc, 'invalid to timestamp')
+            call dm_error_out(rc, 'invalid or missing to timestamp')
             return
         end if
 
         if (.not. dm_plot_terminal_valid(app%terminal)) then
-            call dm_error_out(rc, 'invalid plot terminal')
+            call dm_error_out(rc, 'invalid or missing plot terminal')
             return
         end if
 
@@ -223,17 +239,14 @@ contains
         end if
 
         select case (app%terminal)
-            case (PLOT_TERMINAL_GIF,       &
-                  PLOT_TERMINAL_PNG,       &
-                  PLOT_TERMINAL_PNG_CAIRO, &
-                  PLOT_TERMINAL_SVG)
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, &
+                  PLOT_TERMINAL_PNG_CAIRO, PLOT_TERMINAL_SVG)
+                ! File-based formats.
                 if (len_trim(app%output) == 0) then
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
-            case (PLOT_TERMINAL_ANSI,  &
-                  PLOT_TERMINAL_SIXEL, &
-                  PLOT_TERMINAL_X11)
+            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXEL, PLOT_TERMINAL_X11)
                 ! Ignore output file path.
                 app%output = ' '
         end select

@@ -77,7 +77,7 @@ program dmserial
                           verbose = app%verbose)
 
     ! Register signal handler.
-    call dm_signal_register(signal_handler)
+    call dm_signal_register(signal_callback)
 
     ! Run main loop.
     rc = run(app, tty)
@@ -596,9 +596,8 @@ contains
         end select
     end function write_observ
 
-    subroutine signal_handler(signum) bind(c)
+    subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        use, intrinsic :: iso_c_binding, only: c_int
         integer(kind=c_int), intent(in), value :: signum
 
         select case (signum)
@@ -612,5 +611,5 @@ contains
 
                 call dm_stop(STOP_SUCCESS)
         end select
-    end subroutine signal_handler
+    end subroutine signal_callback
 end program dmserial

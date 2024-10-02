@@ -64,7 +64,7 @@ program dmbeat
     end if
 
     ! Run main loop.
-    call dm_signal_register(signal_handler)
+    call dm_signal_register(signal_callback)
     call run(app, rc)
 
     ! Clean-up.
@@ -305,10 +305,9 @@ contains
         call logger%debug('finished transmission')
     end subroutine run
 
-    subroutine signal_handler(signum) bind(c)
+    subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        use, intrinsic :: iso_c_binding, only: c_int
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
         select case (signum)
@@ -317,5 +316,5 @@ contains
                 call dm_rpc_destroy()
                 call dm_stop(STOP_SUCCESS)
         end select
-    end subroutine signal_handler
+    end subroutine signal_callback
 end program dmbeat

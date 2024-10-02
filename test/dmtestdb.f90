@@ -704,7 +704,7 @@ contains
 
         ! Add error log handler.
         rc = dm_db_shutdown()
-        rc = dm_db_set_log_handler(log_handler)
+        rc = dm_db_set_log_callback(log_callback)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
@@ -741,7 +741,7 @@ contains
         rc = dm_db_backup(db         = db, &
                           path       = DB_OBSERV_BACKUP, &
                           wal        =.true., &
-                          callback   = backup_handler, &
+                          callback   = backup_callback, &
                           nsteps     = 500, &
                           sleep_time = 5)
         call dm_error_out(rc)
@@ -1060,14 +1060,14 @@ contains
         stat = TEST_PASSED
     end function test19
 
-    subroutine backup_handler(remaining, page_count)
+    subroutine backup_callback(remaining, page_count)
         integer, intent(in) :: remaining
         integer, intent(in) :: page_count
 
         print '(" *** Progress: ", f5.1, " %")', 100.0 * (page_count - remaining) / page_count
-    end subroutine backup_handler
+    end subroutine backup_callback
 
-    subroutine log_handler(client_data, err_code, err_msg_ptr) bind(c)
+    subroutine log_callback(client_data, err_code, err_msg_ptr) bind(c)
         !! Callback for SQLite error logs.
         use, intrinsic :: iso_c_binding
         use :: sqlite3_util, only: c_f_str_ptr
@@ -1082,5 +1082,5 @@ contains
         if (.not. allocated(err_msg)) return
         print '("Error ", i0, ": ", a)', err_code, err_msg
         deallocate (err_msg)
-    end subroutine log_handler
+    end subroutine log_callback
 end program dmtestdb

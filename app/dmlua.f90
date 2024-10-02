@@ -98,7 +98,7 @@ program dmlua
         end if
 
         ! Register signal handlers and run the IPC loop.
-        call dm_signal_register(signal_handler)
+        call dm_signal_register(signal_callback)
         call run(app, lua, mqueue)
     end block init_block
 
@@ -309,9 +309,8 @@ contains
         end do ipc_loop
     end subroutine run
 
-    subroutine signal_handler(signum) bind(c)
+    subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        use, intrinsic :: iso_c_binding, only: c_int
         integer(kind=c_int), intent(in), value :: signum
 
         select case (signum)
@@ -319,5 +318,5 @@ contains
                 call logger%info('exit on signal ' // dm_itoa(signum))
                 call halt(E_NONE)
         end select
-    end subroutine signal_handler
+    end subroutine signal_callback
 end program dmlua

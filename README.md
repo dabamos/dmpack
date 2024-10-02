@@ -13,10 +13,11 @@ The library and the accompanying programs are written in Fortran 2018, with
 some smaller parts in Lua. At the moment, **DMPACK** runs on 64-bit Linux and
 FreeBSD only.
 
-* [Project Website](https://www.dabamos.de/)
+* [Project Website](https://www.dabamos.de/dmpack.html)
 * [User Guide](https://www.dabamos.de/dmpack/guide/)
+* [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
-* [Source Code Repository](https://github.com/dabamos/dmpack)
+* [GitHub Repository](https://github.com/dabamos/dmpack)
 
 Breaking API changes have to be expected until version 1.0.0.
 

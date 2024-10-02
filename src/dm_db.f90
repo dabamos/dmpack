@@ -91,34 +91,34 @@ module dm_db
     end type db_stmt_type
 
     abstract interface
-        function dm_db_busy_handler(client_data, n) bind(c)
+        function dm_db_busy_callback(client_data, n) bind(c)
             !! C-interoperable callback function that is invoked on error
             !! `SQL_BUSY`. May return 0 to signal that no more invocations are
             !! desired.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: client_data        !! Client data.
-            integer(kind=c_int), intent(in), value :: n                  !! Number of times the busy handler has been invoked previously.
-            integer(kind=c_int)                    :: dm_db_busy_handler !! Returns value.
-        end function dm_db_busy_handler
+            type(c_ptr),         intent(in), value :: client_data         !! Client data.
+            integer(kind=c_int), intent(in), value :: n                   !! Number of times the busy callback has been invoked previously.
+            integer(kind=c_int)                    :: dm_db_busy_callback !! Returns value.
+        end function dm_db_busy_callback
 
-        subroutine dm_db_backup_handler(remaining, page_count)
+        subroutine dm_db_backup_callback(remaining, page_count)
             !! Callback routine that is invoked if passed to `dm_db_backup()`.
             implicit none
             integer, intent(in) :: remaining  !! Remaining pages.
             integer, intent(in) :: page_count !! Total number of pages.
-        end subroutine dm_db_backup_handler
+        end subroutine dm_db_backup_callback
 
-        subroutine dm_db_log_handler(client_data, err_code, err_msg_ptr) bind(c)
+        subroutine dm_db_log_callback(client_data, err_code, err_msg_ptr) bind(c)
             !! C-interoperable callback routine that is invoked for each created SQLite log.
             import :: c_int, c_ptr
             implicit none
             type(c_ptr),         intent(in), value :: client_data !! Client data.
             integer(kind=c_int), intent(in), value :: err_code    !! SQLite error code.
             type(c_ptr),         intent(in), value :: err_msg_ptr !! SQLite error message.
-        end subroutine dm_db_log_handler
+        end subroutine dm_db_log_callback
 
-        subroutine dm_db_update_handler(client_data, type, db_name, table_name, row_id) bind(c)
+        subroutine dm_db_update_callback(client_data, type, db_name, table_name, row_id) bind(c)
             !! C-interoperable callback routine that is invoked on database updates.
             import :: c_int, c_int64_t, c_ptr
             implicit none
@@ -127,7 +127,7 @@ module dm_db
             type(c_ptr),             intent(in), value :: db_name     !! Database name.
             type(c_ptr),             intent(in), value :: table_name  !! Table name.
             integer(kind=c_int64_t), intent(in), value :: row_id      !! Row id.
-        end subroutine dm_db_update_handler
+        end subroutine dm_db_update_callback
     end interface
 
     interface db_next_row
@@ -251,10 +251,10 @@ module dm_db
     end interface dm_db_update
 
     ! Abstract interfaces.
-    public :: dm_db_backup_handler
-    public :: dm_db_busy_handler
-    public :: dm_db_log_handler
-    public :: dm_db_update_handler
+    public :: dm_db_backup_callback
+    public :: dm_db_busy_callback
+    public :: dm_db_log_callback
+    public :: dm_db_update_callback
 
     ! Public procedures.
     public :: dm_db_attach
@@ -360,13 +360,13 @@ module dm_db
     public :: dm_db_sensor_exists
     public :: dm_db_set_application_id
     public :: dm_db_set_auto_vacuum
-    public :: dm_db_set_busy_handler
+    public :: dm_db_set_busy_callback
     public :: dm_db_set_busy_timeout
     public :: dm_db_set_foreign_keys
     public :: dm_db_set_journal_mode
-    public :: dm_db_set_log_handler
+    public :: dm_db_set_log_callback
     public :: dm_db_set_query_only
-    public :: dm_db_set_update_handler
+    public :: dm_db_set_update_callback
     public :: dm_db_set_user_version
     public :: dm_db_shutdown
     public :: dm_db_sleep
@@ -493,12 +493,12 @@ contains
         integer, parameter :: NSTEPS_DEFAULT     = 500 !! Number of steps.
         integer, parameter :: SLEEP_TIME_DEFAULT = 250 !! Busy sleep time in [msec].
 
-        type(db_type),    intent(inout)           :: db         !! Database type.
-        character(len=*), intent(in)              :: path       !! File path of backup database to be created.
-        logical,          intent(in),    optional :: wal        !! Enable WAL mode for backup.
-        procedure(dm_db_backup_handler), optional :: callback   !! Progress callback routine.
-        integer,          intent(in),    optional :: nsteps     !! Number of steps per iteration (default: 500).
-        integer,          intent(in),    optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
+        type(db_type),    intent(inout)            :: db         !! Database type.
+        character(len=*), intent(in)               :: path       !! File path of backup database to be created.
+        logical,          intent(in),     optional :: wal        !! Enable WAL mode for backup.
+        procedure(dm_db_backup_callback), optional :: callback   !! Progress callback routine.
+        integer,          intent(in),     optional :: nsteps     !! Number of steps per iteration (default: 500).
+        integer,          intent(in),     optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
 
         integer       :: stat
         integer       :: nsteps_, sleep_time_
@@ -3625,7 +3625,7 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_set_auto_vacuum
 
-    integer function dm_db_set_busy_handler(db, callback, client_data) result(rc)
+    integer function dm_db_set_busy_callback(db, callback, client_data) result(rc)
         !! Sets SQLite busy callback that is invoked whenever the database is
         !! busy.
         !!
@@ -3634,14 +3634,14 @@ contains
         !! desired.
         !!
         !! The function returns `E_DB` on error.
-        type(db_type), intent(inout)  :: db          !! Database type.
-        procedure(dm_db_busy_handler) :: callback    !! Callback function.
-        type(c_ptr),   intent(in)     :: client_data !! C pointer to client data.
+        type(db_type), intent(inout)   :: db          !! Database type.
+        procedure(dm_db_busy_callback) :: callback    !! Callback function.
+        type(c_ptr),   intent(in)      :: client_data !! C pointer to client data.
 
         rc = E_DB
         if (sqlite3_busy_handler(db%ctx, c_funloc(callback), client_data) /= SQLITE_OK) return
         rc = E_NONE
-    end function dm_db_set_busy_handler
+    end function dm_db_set_busy_callback
 
     integer function dm_db_set_busy_timeout(db, msec) result(rc)
         !! Sets SQLite busy timeout in msec. Returns `E_DB` on error.
@@ -3740,10 +3740,10 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_set_journal_mode
 
-    integer function dm_db_set_log_handler(callback, client_data) result(rc)
+    integer function dm_db_set_log_callback(callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine. The function returns `E_DB` on error.
-        procedure(dm_db_log_handler)      :: callback    !! Callback routine.
+        procedure(dm_db_log_callback)      :: callback    !! Callback routine.
         type(c_ptr), intent(in), optional :: client_data !! C pointer to client data.
 
         rc = E_DB
@@ -3753,7 +3753,7 @@ contains
             if (sqlite3_config(SQLITE_CONFIG_LOG, c_funloc(callback), c_null_ptr) /= SQLITE_OK) return
         end if
         rc = E_NONE
-    end function dm_db_set_log_handler
+    end function dm_db_set_log_callback
 
     integer function dm_db_set_query_only(db, enabled) result(rc)
         !! Sets query-only pragma.
@@ -3798,12 +3798,12 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_set_query_only
 
-    integer function dm_db_set_update_handler(db, callback, client_data) result(rc)
+    integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine. The function returns `E_DB` on error.
-        type(db_type), intent(inout)        :: db          !! Database type.
-        procedure(dm_db_update_handler)     :: callback    !! Callback routine.
-        type(c_ptr),   intent(in), optional :: client_data !! C pointer to client data.
+        type(db_type), intent(inout)         :: db          !! Database type.
+        procedure(dm_db_update_callback)     :: callback    !! Callback routine.
+        type(c_ptr),   intent(in), optional  :: client_data !! C pointer to client data.
 
         type(c_ptr) :: udp
 
@@ -3814,7 +3814,7 @@ contains
             udp = sqlite3_update_hook(db%ctx, c_funloc(callback), c_null_ptr)
         end if
         rc = E_NONE
-    end function dm_db_set_update_handler
+    end function dm_db_set_update_callback
 
     integer function dm_db_set_user_version(db, version) result(rc)
         !! Sets database user version.
@@ -4205,7 +4205,7 @@ contains
     ! ******************************************************************
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to
-        !! be set through `dm_db_set_log_handler()` initially.
+        !! be set through `dm_db_set_log_callback()` initially.
         integer,          intent(in) :: err_code !! Error code.
         character(len=*), intent(in) :: err_msg  !! Error message.
 

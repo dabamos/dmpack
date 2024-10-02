@@ -29,7 +29,7 @@ contains
 
         thread_block: block
             print *, 'Creating thread ...'
-            rc = dm_thread_create(thread, thread_routine, arg)
+            rc = dm_thread_create(thread, thread_callback, arg)
             if (dm_is_error(rc)) exit thread_block
 
             print *, 'Joining thread ...'
@@ -43,7 +43,7 @@ contains
         stat = TEST_PASSED
     end function test01
 
-    subroutine thread_routine(arg) bind(c)
+    subroutine thread_callback(arg) bind(c)
         use, intrinsic :: iso_c_binding
         type(c_ptr), intent(in), value :: arg
         integer, pointer               :: i
@@ -51,5 +51,5 @@ contains
         if (.not. c_associated(arg)) return
         call c_f_pointer(arg, i)
         print *, '>>> client data:', i
-    end subroutine thread_routine
+    end subroutine thread_callback
 end program dmtestthread

@@ -223,9 +223,12 @@ contains
         valid = (terminal > PLOT_TERMINAL_NONE .and. terminal <= PLOT_TERMINAL_LAST)
     end function dm_plot_terminal_valid
 
-    function dm_plot_version(name) result(version)
+    function dm_plot_version(name, found) result(version)
         !! Returns Gnuplot version as allocatable string.
-        logical, intent(in), optional :: name !! Add prefix `gnuplot/`.
+        character(len=*), parameter :: NAME_STR = 'gnuplot'
+
+        logical, intent(in),  optional :: name  !! Add prefix `gnuplot/`.
+        logical, intent(out), optional :: found !! Returns `.true.` if Gnuplot has been found.
         character(len=:), allocatable :: version
 
         character(len=3)  :: v
@@ -236,7 +239,8 @@ contains
         type(pipe_type)   :: pipe
 
         name_ = .false.
-        if (present(name)) name_ = name
+        if (present(name))  name_ = name
+        if (present(found)) found = .false.
 
         rc = dm_pipe_open(pipe, PLOT_GNUPLOT // ' --version', PIPE_RDONLY)
         v  = '0.0'
@@ -244,12 +248,13 @@ contains
         if (dm_is_ok(rc)) then
             sz = dm_pipe_read(pipe, buffer)
             if (sz > 11) v = buffer(9:11)
+            if (present(found) .and. buffer(1:7) == NAME_STR) found = .true.
         end if
 
         call dm_pipe_close(pipe)
 
         if (name_) then
-            version = 'gnuplot/' // v
+            version = NAME_STR // '/' // v
         else
             version = v
         end if

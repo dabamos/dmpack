@@ -60,7 +60,7 @@ program dmpipe
                           verbose = app%verbose)
 
     ! Run main loop.
-    call dm_signal_register(signal_handler)
+    call dm_signal_register(signal_callback)
     call run(app)
 contains
     integer function output_observ(observ, type) result(rc)
@@ -442,9 +442,8 @@ contains
         end do job_loop
     end subroutine run
 
-    subroutine signal_handler(signum) bind(c)
+    subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        use, intrinsic :: iso_c_binding, only: c_int
         integer(kind=c_int), intent(in), value :: signum
 
         select case (signum)
@@ -452,5 +451,5 @@ contains
                 call logger%info('exit on signal ' // dm_itoa(signum))
                 call dm_stop(STOP_SUCCESS)
         end select
-    end subroutine signal_handler
+    end subroutine signal_callback
 end program dmpipe

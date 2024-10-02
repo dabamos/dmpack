@@ -82,7 +82,7 @@ program dmlogger
         end if
 
         ! Run the IPC loop.
-        call dm_signal_register(signal_handler)
+        call dm_signal_register(signal_callback)
         call run(app, db, mqueue, sem)
     end block init_block
 
@@ -277,10 +277,9 @@ contains
         end do ipc_loop
     end subroutine run
 
-    subroutine signal_handler(signum) bind(c)
+    subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        use, intrinsic :: iso_c_binding, only: c_int
         integer(kind=c_int), intent(in), value :: signum
 
         select case (signum)
@@ -289,5 +288,5 @@ contains
                 call dm_sleep(2)
                 call halt(0)
         end select
-    end subroutine signal_handler
+    end subroutine signal_callback
 end program dmlogger
