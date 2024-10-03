@@ -70,6 +70,7 @@ program dmweb
     character(len=*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
     character(len=*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer,          parameter :: APP_NROUTES      = 19                  !! Total number of routes.
     integer,          parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
     logical,          parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
     real(kind=r8),    parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
@@ -87,7 +88,7 @@ program dmweb
     logical :: has_tile_url  = .false.              ! Map tile URL passed.
     logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
 
-    type(cgi_route_type)  :: routes(19)
+    type(cgi_route_type)  :: routes(APP_NROUTES)
     type(cgi_router_type) :: router
 
     ! Initialise DMPACK.
@@ -738,7 +739,7 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         if (len_trim(tile_url) == 0) then
-            call html_error('No tile map URL provided in environment variable DM_TILE_URL.', error=E_EMPTY)
+            call html_error('Missing Environment Variable', error=E_EMPTY)
             return
         end if
 

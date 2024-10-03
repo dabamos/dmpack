@@ -12,7 +12,7 @@ program dmplot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 3
 
-    character(len=*), parameter :: X_LABEL = 'Time'
+    character(len=*), parameter :: APP_X_LABEL = 'Time'
 
     type :: app_type
         !! Application settings.
@@ -105,7 +105,7 @@ contains
 
             ! Create plot.
             rc = create_graph(dps, app%terminal, path, app%background, app%foreground, app%font, &
-                              app%title, app%width, app%height, X_LABEL, app%response)
+                              app%title, app%width, app%height, APP_X_LABEL, app%response)
         end block plot_block
 
         if (rc == E_DB_NO_ROWS) then
@@ -149,8 +149,8 @@ contains
                   dm_lua_version(.true.)         // ' ' // &
                   dm_db_version(.true.)
 
-        rc = E_NOT_FOUND
         if (.not. found) then
+            rc = E_NOT_FOUND
             call dm_error_out(rc, 'Gnuplot not found')
             return
         end if

@@ -3,11 +3,11 @@
 module dm_config
     !! Module for loading Lua-based configuration files.
     !!
-    !! The following configuration file `myapp.config` is given as an example
-    !! for a program `myapp`:
+    !! The following configuration file `myapp.conf` is given as an example for
+    !! a program `myapp`:
     !!
     !! ```lua
-    !! -- myapp.config
+    !! -- myapp.conf
     !! myapp = {
     !!     database = "observ.sqlite",
     !!     node = "dummy-node",
@@ -25,7 +25,7 @@ module dm_config
     !! logical                       :: verbose
     !! type(config_type)             :: config
     !!
-    !! rc = dm_config_open(config, 'myapp.config', 'myapp')
+    !! rc = dm_config_open(config, 'myapp.conf', 'myapp')
     !!
     !! if (dm_is_ok(rc)) then
     !!     call dm_config_get(config, 'database', database)

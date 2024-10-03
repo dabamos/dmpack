@@ -126,7 +126,7 @@ contains
         write (unit_, '("target.id: ", a)')        trim(target%id)
         write (unit_, '("target.name: ", a)')      trim(target%name)
         write (unit_, '("target.meta: ", a)')      trim(target%meta)
-        write (unit_, '("target.state: ", i0)')    target%state
+        write (unit_, '("target.state: ", a)')     dm_target_state_name(target%state)
         write (unit_, '("target.x: ", 1pg0.12)')   target%x
         write (unit_, '("target.y: ", 1pg0.12)')   target%y
         write (unit_, '("target.z: ", 1pg0.12)')   target%z

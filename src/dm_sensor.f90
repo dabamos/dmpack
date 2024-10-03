@@ -26,13 +26,15 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_GNSS    = 9  !! GNSS sensor.
     integer, parameter, public :: SENSOR_TYPE_LEVEL   = 10 !! Level sensor.
     integer, parameter, public :: SENSOR_TYPE_MEMS    = 11 !! MEMS sensor.
-    integer, parameter, public :: SENSOR_TYPE_LAST    = 11 !! Never use this.
+    integer, parameter, public :: SENSOR_TYPE_CAMERA  = 12 !! IP camera or webcam.
+    integer, parameter, public :: SENSOR_TYPE_LAST    = 12 !! Never use this.
 
     integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7 !! Max. length of sensor type name.
 
     character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
-        character(len=SENSOR_TYPE_NAME_LEN) :: 'none', 'virtual', 'system', 'fs', 'process', 'network', &
-                                               'multi', 'meteo', 'rts', 'gnss', 'level', 'mems' &
+        character(len=SENSOR_TYPE_NAME_LEN) :: &
+        'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'meteo', 'rts', &
+        'gnss', 'level', 'mems', 'camera' &
     ] !! Array of sensor type names.
 
     type, public :: sensor_type
@@ -62,6 +64,7 @@ module dm_sensor
 
     public :: dm_sensor_equals
     public :: dm_sensor_type_from_name
+    public :: dm_sensor_type_name
     public :: dm_sensor_type_valid
     public :: dm_sensor_out
     public :: dm_sensor_valid
@@ -96,9 +99,9 @@ contains
     end function dm_sensor_equals
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)
-        !! Returns format enumerator from given name.
+        !! Returns type enumerator from given name.
         use :: dm_string, only: dm_to_lower
-        character(len=*), intent(in) :: name !! Format name.
+        character(len=*), intent(in) :: name !! Sensor type name.
 
         character(len=SENSOR_TYPE_NAME_LEN) :: name_
 
@@ -128,10 +131,25 @@ contains
                 type = SENSOR_TYPE_LEVEL
             case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MEMS))
                 type = SENSOR_TYPE_MEMS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_CAMERA))
+                type = SENSOR_TYPE_CAMERA
             case default
                 type = SENSOR_TYPE_NONE
         end select
     end function dm_sensor_type_from_name
+
+    pure function dm_sensor_type_name(type) result(name)
+        !! Returns name of given type enumerator as allocatable string.
+        integer, intent(in)           :: type !! Sensor type enumerator `SENSOR_TYPE_*`.
+        character(len=:), allocatable :: name !! Sensor type name.
+
+        if (.not. dm_sensor_type_valid(type)) then
+            name = 'invalid'
+            return
+        end if
+
+        name = trim(SENSOR_TYPE_NAMES(type))
+    end function dm_sensor_type_name
 
     pure elemental logical function dm_sensor_type_valid(type) result(valid)
         !! Returns `.true.` if `type` is valid sensor type. The type
@@ -164,17 +182,9 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("sensor.id: ", a)')      trim(sensor%id)
-        write (unit_, '("sensor.node_id: ", a)') trim(sensor%node_id)
-
-        write (unit_, '("sensor.type: ")', advance='no')
-
-        if (dm_sensor_type_valid(sensor%type)) then
-            write (unit_, '(a)') trim(SENSOR_TYPE_NAMES(sensor%type))
-        else
-            write (unit_, '("invalid")')
-        end if
-
+        write (unit_, '("sensor.id: ", a)')        trim(sensor%id)
+        write (unit_, '("sensor.node_id: ", a)')   trim(sensor%node_id)
+        write (unit_, '("sensor.type: ")')         dm_sensor_type_name(sensor%type)
         write (unit_, '("sensor.name: ", a)')      trim(sensor%name)
         write (unit_, '("sensor.sn: ", a)')        trim(sensor%sn)
         write (unit_, '("sensor.meta: ", a)')      trim(sensor%meta)

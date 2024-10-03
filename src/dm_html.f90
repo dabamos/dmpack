@@ -1440,18 +1440,13 @@ contains
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
         character(len=:), allocatable    :: html   !! Generated HTML.
 
-        integer :: type
-
-        type = sensor%type
-        if (.not. dm_sensor_type_valid(type)) type = SENSOR_TYPE_NONE
-
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Type' // H_TH_END // &
-                       H_TD // trim(SENSOR_TYPE_NAMES(type)) // H_TD_END // H_TR_END // &
+                       H_TD // dm_sensor_type_name(sensor%type) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                        H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Serial Number' // H_TH_END // &
@@ -1483,7 +1478,7 @@ contains
         character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
         character(len=:), allocatable           :: html       !! Generated HTML.
 
-        integer           :: i, t
+        integer           :: i
         logical           :: is_anchor
         type(anchor_type) :: anchor
 
@@ -1504,9 +1499,6 @@ contains
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)
-            t = sensors(i)%type
-            if (.not. dm_sensor_type_valid(t)) t = SENSOR_TYPE_NONE
-
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
 
             if (is_anchor) then
@@ -1518,14 +1510,14 @@ contains
                 html = html // H_TD // dm_html_encode(sensors(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(sensors(i)%node_id) // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%name)    // H_TD_END // &
-                           H_TD // trim(SENSOR_TYPE_NAMES(t))         // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%sn)      // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%meta)    // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%x)              // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%y)              // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%z)              // H_TD_END // &
+            html = html // H_TD // dm_html_encode(sensors(i)%node_id)   // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%name)      // H_TD_END // &
+                           H_TD // dm_sensor_type_name(sensors(i)%type) // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%sn)        // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%meta)      // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%x)                // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%y)                // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%z)                // H_TD_END // &
                            H_TR_END
         end do
 
