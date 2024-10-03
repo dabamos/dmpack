@@ -93,7 +93,7 @@ for testing.
   Port of RPC API server. The default is `0`, which selects the port
   automatically depending on the protocol.
 
-*--tls*, *-X*::
+*--tls*, *-E*::
   Use TLS-encrypted connection.
 
 *--type*, *-t* [log|node|observ|sensor|target]::

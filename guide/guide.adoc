@@ -743,7 +743,7 @@ for testing.
 | `--node _id_`          | `-N`  | –        | Node id.
 | `--password _string_`  | `-P`  | –        | API password.
 | `--port _port_`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for automatic).
-| `--tls`                | `-X`  | off      | Use TLS encryption.
+| `--tls`                | `-E`  | off      | Use TLS encryption.
 | `--username _string_`  | `-U`  | –        | API user name. If set, implies HTTP Basic Auth.
 | `--verbose`            | `-V`  | off      | Print log messages to _stderr_.
 | `--version`            | `-v`  | –        | Output version information and quit.
@@ -1022,7 +1022,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--title _string_`    | `-C`  | –          | Title of feed.
 | `--url _url_`         | `-U`  | –          | Public URL of the feed.
 | `--version`           | `-v`  | –          | Output version information and quit.
-| `--xsl`               | `-X`  | –          | Path to XSLT style sheet.
+| `--xsl`               | `-x`  | –          | Path to XSLT style sheet.
 |===
 
 [discrete]
@@ -1277,7 +1277,7 @@ readers.
 | `--database _file_` | `-d`  | –       | Path of the new SQLite database (required).
 | `--force`           | `-F`  | off     | Force the table creation even if the database already exists.
 | `--help`            | `-h`  | –       | Output available command-line arguments and quit.
-| `--sync`            | `-Y`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server.
+| `--sync`            | `-s`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server.
 | `--type _type_`     | `-t`  | –       | Type of database, either  `beat`, `log`, or `observ` (required).
 | `--version`         | `-v`  | –       | Output version information and quit.
 | `--wal`             | `-W`  | off     | Enable journal mode Write-Ahead Logging (WAL).
@@ -2171,7 +2171,7 @@ for testing.
 | `--node _id_`          | `-N`  | –        | Node id, required for types `sensor` and `observ`.
 | `--password _string_`  | `-P`  | –        | API password.
 | `--port _port_`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for automatic).
-| `--tls`                | `-X`  | off      | Use TLS-encrypted connection.
+| `--tls`                | `-E`  | off      | Use TLS-encrypted connection.
 
 | `--type _type_`
 | `-t`

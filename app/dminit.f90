@@ -95,7 +95,7 @@ contains
             arg_type('type',     short='t', type=ARG_TYPE_STRING, required=.true.), & ! -t, --type [beat|log|observ]
             arg_type('database', short='d', type=ARG_TYPE_STRING, required=.true.), & ! -d, --database <path>
             arg_type('force',    short='F', type=ARG_TYPE_LOGICAL),                 & ! -F, --force
-            arg_type('sync',     short='Y', type=ARG_TYPE_LOGICAL),                 & ! -Y, --sync
+            arg_type('sync',     short='s', type=ARG_TYPE_LOGICAL),                 & ! -s, --sync
             arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL)                  & ! -W, --wal
         ]
 

@@ -137,7 +137,7 @@ contains
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
             arg_type('create',   short='C', type=ARG_TYPE_LOGICAL), & ! -C, --create
             arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('tls',      short='X', type=ARG_TYPE_LOGICAL), & ! -X, --tls
+            arg_type('tls',      short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
             arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 

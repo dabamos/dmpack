@@ -71,7 +71,7 @@ for testing.
   Port of RPC API server. The default is 0 (automatic selection depending on
   protocol).
 
-*--tls*, *-X*::
+*--tls*, *-E*::
   Use TLS encryption.
 
 *--username*, *-U* _user_::

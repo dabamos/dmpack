@@ -40,7 +40,7 @@ readers.
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
-*--sync*, *-Y*::
+*--sync*, *-s*::
   Add synchronisation tables. Enable for data synchronisation between client
   and server.
 
