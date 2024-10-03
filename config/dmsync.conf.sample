@@ -5,20 +5,21 @@
 --
 -- Settings:
 --
---      create   - Create sync tables in database if they do not exist.
---      database - Path to SQLite database.
---      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
---      host     - IP or FQDN of HTTP-RPC API server.
---      interval - Synchronisation interval in seconds (optional).
---      logger   - Name of logger to send logs to (optional).
---      node     - Node id, required for types `sensor`, `observ`.
---      password - HTTP Basic Auth password (optional).
---      port     - Port the HTTP-RPC API server is listening to (default: 0, automatic).
---      tls      - Enable TLS encryption.
---      type     - Data type to synchronise (`log`, `node`, `observ`, `sensor`, or `target`).
---      user     - HTTP Basic Auth user name (optional).
---      verbose  - Print logs to standard error.
---      wait     - Name of process to wait for, e.g., `dmdb` or `dmlogger` (optional).
+--      compression - Compression library to use (`none`, `zlib`, `zstd`).
+--      create      - Create sync tables in database if they do not exist.
+--      database    - Path to SQLite database.
+--      debug       - Forward log messages of level DEBUG via IPC (if logger is set).
+--      host        - IP or FQDN of HTTP-RPC API server.
+--      interval    - Synchronisation interval in seconds (optional).
+--      logger      - Name of logger to send logs to (optional).
+--      node        - Node id, required for types `sensor`, `observ`.
+--      password    - HTTP Basic Auth password (optional).
+--      port        - Port the HTTP-RPC API server is listening to (default: 0, automatic).
+--      tls         - Enable TLS encryption.
+--      type        - Data type to synchronise (`log`, `node`, `observ`, `sensor`, or `target`).
+--      user        - HTTP Basic Auth user name (optional).
+--      verbose     - Print logs to standard error.
+--      wait        - Name of process to wait for, e.g., `dmdb` or `dmlogger` (optional).
 --
 
 dmsync = {
@@ -30,6 +31,7 @@ dmsync = {
     tls = false,
     username = "dummy-node",
     password = "secret",
+    compression = "zstd",
     interval = 0,
     logger = "",
     wait = "",
