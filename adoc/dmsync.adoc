@@ -17,8 +17,8 @@ dmsync - synchronises databases between client and server
 
 *dmsync* --*database* _file_ --*type* _type_ --*host* _host_ [--*port* _port_]
 [--*tls*] [--*username* _user_] [--*password* _password_] [--*node* _id_]
-[--*interval* _n_] [--*wait* _name_] [--*logger* _name_] [--*create*]
-[--*debug*] [--*verbose*]
+[--*interval* _n_] [--*wait* _name_] [--*compression* _name_]
+[--*logger* _name_] [--*create*] [--*debug*] [--*verbose*]
 
 *dmsync* --*config* _file_ [--*name* _name_]
 
@@ -53,6 +53,10 @@ Passing the server credentials via the command-line arguments `--username` and
 for testing.
 
 == OPTIONS
+
+*--compression*, *-x* _name_::
+  Compression library to use for payload data (`none`, `zlib`, `zstd`). The
+  default is `zstd` (Z standard). Select `zlib` for deflate compression.
 
 *--config*, *-c* _file_::
   Path to configuration file.

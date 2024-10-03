@@ -10,12 +10,11 @@ program dmsync
     character(len=*), parameter :: APP_NAME  = 'dmsync'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 5
+    integer,          parameter :: APP_PATCH = 6
 
     integer, parameter :: APP_DB_NATTEMPTS    = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
-    integer, parameter :: APP_RPC_COMPRESSION = Z_TYPE_ZSTD        !! RPC payload compression (none, deflate, zstd).
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
@@ -23,24 +22,26 @@ program dmsync
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name      = APP_NAME       !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)   :: config    = ' '            !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger    = ' '            !! Name of logger.
-        character(len=SEM_NAME_LEN)    :: wait      = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(len=NODE_ID_LEN)     :: node      = ' '            !! Node id.
-        character(len=FILE_PATH_LEN)   :: database  = ' '            !! Path to database.
-        character(len=HOST_LEN)        :: host      = ' '            !! IP or FQDN of API.
-        integer                        :: port      = 0              !! HTTP port of API (0 selects port automatically).
-        character(len=USERNAME_LEN)    :: username  = ' '            !! HTTP Basic Auth user name.
-        character(len=PASSWORD_LEN)    :: password  = ' '            !! HTTP Basic Auth password.
-        character(len=TYPE_NAME_LEN)   :: type_name = ' '            !! Database record type string.
-        integer                        :: type      = SYNC_TYPE_NONE !! Database record type.
-        integer                        :: interval  = 0              !! Sync interval in seconds.
-        logical                        :: create    = .false.        !! Create synchronisation tables.
-        logical                        :: debug     = .false.        !! Forward debug messages via IPC.
-        logical                        :: ipc       = .false.        !! Watch named semaphore for synchronisation.
-        logical                        :: tls       = .false.        !! Use TLS encryption.
-        logical                        :: verbose   = .false.        !! Print debug messages to stderr.
+        character(len=ID_LEN)          :: name             = APP_NAME       !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)   :: config           = ' '            !! Path to configuration file.
+        character(len=LOGGER_NAME_LEN) :: logger           = ' '            !! Name of logger.
+        character(len=SEM_NAME_LEN)    :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(len=NODE_ID_LEN)     :: node             = ' '            !! Node id.
+        character(len=FILE_PATH_LEN)   :: database         = ' '            !! Path to database.
+        character(len=HOST_LEN)        :: host             = ' '            !! IP or FQDN of API.
+        integer                        :: port             = 0              !! HTTP port of API (0 selects port automatically).
+        character(len=USERNAME_LEN)    :: username         = ' '            !! HTTP Basic Auth user name.
+        character(len=PASSWORD_LEN)    :: password         = ' '            !! HTTP Basic Auth password.
+        character(len=Z_TYPE_NAME_LEN) :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
+        character(len=TYPE_NAME_LEN)   :: type_name        = ' '            !! Database record type string.
+        integer                        :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
+        integer                        :: type             = SYNC_TYPE_NONE !! Database record type.
+        integer                        :: interval         = 0              !! Sync interval in seconds.
+        logical                        :: create           = .false.        !! Create synchronisation tables.
+        logical                        :: debug            = .false.        !! Forward debug messages via IPC.
+        logical                        :: ipc              = .false.        !! Watch named semaphore for synchronisation.
+        logical                        :: tls              = .false.        !! Use TLS encryption.
+        logical                        :: verbose          = .false.        !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -120,30 +121,35 @@ contains
         type(app_type), intent(out) :: app
 
         character(len=:), allocatable :: version
-        type(arg_type)                :: args(16)
+        type(arg_type)                :: args(17)
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('wait',     short='w', type=ARG_TYPE_STRING),  & ! -w, --wait <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
-            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type log|observ
-            arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',     short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
-            arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('create',   short='C', type=ARG_TYPE_LOGICAL), & ! -C, --create
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('tls',      short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('name',        short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('config',      short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',      short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('wait',        short='w', type=ARG_TYPE_STRING),  & ! -w, --wait <string>
+            arg_type('node',        short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('database',    short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
+            arg_type('host',        short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
+            arg_type('port',        short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
+            arg_type('username',    short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
+            arg_type('password',    short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
+            arg_type('compression', short='x', type=ARG_TYPE_STRING),  & ! -x, --compression <name>
+            arg_type('type',        short='t', type=ARG_TYPE_STRING),  & ! -t, --type log|observ
+            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
+            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL), & ! -C, --create
+            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
+            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
+        ! Generate version string.
+        version = dm_rpc_version()       // ' ' // &
+                  dm_lua_version(.true.) // ' ' // &
+                  dm_db_version(.true.)  // ' ' // &
+                  dm_zstd_version(.true.)
+
         ! Read all command-line arguments.
-        version = dm_rpc_version()      // ' ' // dm_lua_version(.true.) // ' ' // &
-                  dm_db_version(.true.) // ' ' // dm_zstd_version(.true.)
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
@@ -159,19 +165,27 @@ contains
         call dm_arg_get(args( 4), app%wait)
         call dm_arg_get(args( 5), app%node)
         call dm_arg_get(args( 6), app%database)
-        call dm_arg_get(args( 7), app%type_name)
-        call dm_arg_get(args( 8), app%host)
-        call dm_arg_get(args( 9), app%port)
-        call dm_arg_get(args(10), app%username)
-        call dm_arg_get(args(11), app%password)
-        call dm_arg_get(args(12), app%interval)
-        call dm_arg_get(args(13), app%create)
-        call dm_arg_get(args(14), app%debug)
-        call dm_arg_get(args(15), app%tls)
-        call dm_arg_get(args(16), app%verbose)
+        call dm_arg_get(args( 7), app%host)
+        call dm_arg_get(args( 8), app%port)
+        call dm_arg_get(args( 9), app%username)
+        call dm_arg_get(args(10), app%password)
+        call dm_arg_get(args(11), app%compression_name)
+        call dm_arg_get(args(12), app%type_name)
+        call dm_arg_get(args(13), app%interval)
+        call dm_arg_get(args(14), app%create)
+        call dm_arg_get(args(15), app%debug)
+        call dm_arg_get(args(16), app%tls)
+        call dm_arg_get(args(17), app%verbose)
 
+        ! Sync data type.
         app%type = dm_sync_type_from_name(app%type_name)
 
+        ! Compression library.
+        if (len_trim(app%compression_name) > 0) then
+            app%compression = dm_z_type_from_name(app%compression_name)
+        end if
+
+        ! Validate settings.
         rc = E_INVALID
 
         if (.not. dm_id_valid(app%name)) then
@@ -217,6 +231,11 @@ contains
             return
         end if
 
+        if (.not. dm_z_valid(app%compression)) then
+            call dm_error_out(rc, 'invalid compression')
+            return
+        end if
+
         rc = E_NONE
     end function read_args
 
@@ -231,20 +250,21 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'wait',     app%wait)
-            call dm_config_get(config, 'node',     app%node)
-            call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'type',     app%type_name)
-            call dm_config_get(config, 'host',     app%host)
-            call dm_config_get(config, 'port',     app%port)
-            call dm_config_get(config, 'username', app%username)
-            call dm_config_get(config, 'password', app%password)
-            call dm_config_get(config, 'interval', app%interval)
-            call dm_config_get(config, 'create',   app%create)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'tls',      app%tls)
-            call dm_config_get(config, 'verbose',  app%verbose)
+            call dm_config_get(config, 'logger',      app%logger)
+            call dm_config_get(config, 'wait',        app%wait)
+            call dm_config_get(config, 'node',        app%node)
+            call dm_config_get(config, 'database',    app%database)
+            call dm_config_get(config, 'host',        app%host)
+            call dm_config_get(config, 'port',        app%port)
+            call dm_config_get(config, 'username',    app%username)
+            call dm_config_get(config, 'password',    app%password)
+            call dm_config_get(config, 'compression', app%compression_name)
+            call dm_config_get(config, 'type',        app%type_name)
+            call dm_config_get(config, 'interval',    app%interval)
+            call dm_config_get(config, 'create',      app%create)
+            call dm_config_get(config, 'debug',       app%debug)
+            call dm_config_get(config, 'tls',         app%tls)
+            call dm_config_get(config, 'verbose',     app%verbose)
         end if
 
         call dm_config_close(config)
@@ -279,6 +299,12 @@ contains
         limit = APP_SYNC_LIMIT
 
         call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+
+        if (app%compression == Z_TYPE_NONE) then
+            call logger%debug('compression is disabled')
+        else
+            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
+        end if
 
         ! Allocate type array, and generate URL of HTTP-RPC API endpoint.
         select case (app%type)
@@ -322,7 +348,7 @@ contains
         do i = 1, APP_SYNC_LIMIT
             requests(i)%url         = url
             requests(i)%user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-            requests(i)%compression = APP_RPC_COMPRESSION
+            requests(i)%compression = app%compression
 
             if (len_trim(app%username) > 0 .and. len_trim(app%password) > 0) then
                 requests(i)%auth     = RPC_AUTH_BASIC
@@ -449,7 +475,8 @@ contains
                     has_api_status = .false.
 
                     if (responses(i)%content_type == MIME_TEXT) then
-                        has_api_status = dm_is_ok(dm_api_status_from_string(responses(i)%payload, api_status))
+                        rc = dm_api_status_from_string(responses(i)%payload, api_status)
+                        has_api_status = dm_is_ok(rc)
                     end if
 
                     ! Log the HTTP response code.
@@ -544,7 +571,7 @@ contains
                 if (nsyncs > limit) then
                     if (dm_is_error(last_error)) then
                         ! Wait a grace period on error.
-                        call logger%debug('waiting 30 sec before next sync attempt')
+                        call logger%debug('next sync attempt in 30 sec')
                         call dm_sleep(30)
                     end if
 

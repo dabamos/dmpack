@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 5
+    integer,          parameter :: APP_PATCH = 6
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
@@ -18,20 +18,22 @@ program dmbeat
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name     = APP_NAME !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)     :: node     = ' '      !! Sensor node id (required).
-        character(len=HOST_LEN)        :: host     = ' '      !! IP or FQDN of API (`127.0.0.1`, `example.com`).
-        integer                        :: port     = 0        !! API port (set to 0 for protocol default).
-        logical                        :: tls      = .false.  !! TLS encryption.
-        character(len=USERNAME_LEN)    :: username = ' '      !! HTTP Basic Auth user name.
-        character(len=PASSWORD_LEN)    :: password = ' '      !! HTTP Basic Auth password.
-        integer                        :: count    = 0        !! Maximum number of heartbeats to send (0 means unlimited).
-        integer                        :: interval = 60       !! Emit interval in seconds (>= 0).
-        logical                        :: debug    = .false.  !! Forward debug messages via IPC.
-        logical                        :: ipc      = .false.  !! Send logs via IPC (requires logger name to be set).
-        logical                        :: verbose  = .false.  !! Print debug messages to stderr.
+        character(len=ID_LEN)          :: name             = APP_NAME    !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)   :: config           = ' '         !! Path to configuration file.
+        character(len=LOGGER_NAME_LEN) :: logger           = ' '         !! Name of logger (name implies IPC).
+        character(len=NODE_ID_LEN)     :: node             = ' '         !! Sensor node id (required).
+        character(len=HOST_LEN)        :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
+        integer                        :: port             = 0           !! API port (set to 0 for protocol default).
+        logical                        :: tls              = .false.     !! TLS encryption.
+        character(len=USERNAME_LEN)    :: username         = ' '         !! HTTP Basic Auth user name.
+        character(len=PASSWORD_LEN)    :: password         = ' '         !! HTTP Basic Auth password.
+        character(len=Z_TYPE_NAME_LEN) :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
+        integer                        :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
+        integer                        :: count            = 0           !! Maximum number of heartbeats to send (0 means unlimited).
+        integer                        :: interval         = 60          !! Emit interval in seconds (>= 0).
+        logical                        :: debug            = .false.     !! Forward debug messages via IPC.
+        logical                        :: ipc              = .false.     !! Send logs via IPC (requires logger name to be set).
+        logical                        :: verbose          = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -56,16 +58,18 @@ program dmbeat
                           verbose = app%verbose)
 
     ! Initialise RPC backend.
-    rc = dm_rpc_init()
+    init_block: block
+        rc = dm_rpc_init()
 
-    if (dm_is_error(rc)) then
-        call logger%error('failed to initialize libcurl', error=rc)
-        call dm_stop(STOP_FAILURE)
-    end if
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize libcurl', error=rc)
+            exit init_block
+        end if
 
-    ! Run main loop.
-    call dm_signal_register(signal_callback)
-    call run(app, rc)
+        ! Run main loop.
+        call dm_signal_register(signal_callback)
+        call run(app, rc)
+    end block init_block
 
     ! Clean-up.
     call dm_rpc_destroy()
@@ -76,22 +80,23 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(len=:), allocatable :: version
-        type(arg_type)                :: args(13)
+        type(arg_type)                :: args(14)
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',     short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('tls',      short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('username', short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
-            arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('count',    short='C', type=ARG_TYPE_INTEGER), & ! -C, --count <n>
-            arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('name',        short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',      short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',      short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',        short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('host',        short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
+            arg_type('port',        short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
+            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
+            arg_type('username',    short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
+            arg_type('password',    short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
+            arg_type('compression', short='x', type=ARG_TYPE_STRING),  & ! -x, --compression <name>
+            arg_type('count',       short='C', type=ARG_TYPE_INTEGER), & ! -C, --count <n>
+            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
+            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -114,11 +119,18 @@ contains
         call dm_arg_get(args( 7), app%tls)
         call dm_arg_get(args( 8), app%username)
         call dm_arg_get(args( 9), app%password)
-        call dm_arg_get(args(10), app%count)
-        call dm_arg_get(args(11), app%interval)
-        call dm_arg_get(args(12), app%debug)
-        call dm_arg_get(args(13), app%verbose)
+        call dm_arg_get(args(10), app%compression_name)
+        call dm_arg_get(args(11), app%count)
+        call dm_arg_get(args(12), app%interval)
+        call dm_arg_get(args(13), app%debug)
+        call dm_arg_get(args(14), app%verbose)
 
+        ! Compression library.
+        if (len_trim(app%compression_name) > 0) then
+            app%compression = dm_z_type_from_name(app%compression_name)
+        end if
+
+        ! Validate settings.
         rc = E_INVALID
 
         if (len_trim(app%logger) > 0) then
@@ -150,6 +162,11 @@ contains
             return
         end if
 
+        if (.not. dm_z_valid(app%compression)) then
+            call dm_error_out(rc, 'invalid compression')
+            return
+        end if
+
         rc = E_NONE
     end function read_args
 
@@ -164,17 +181,18 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node)
-            call dm_config_get(config, 'host',     app%host)
-            call dm_config_get(config, 'port',     app%port)
-            call dm_config_get(config, 'tls',      app%tls)
-            call dm_config_get(config, 'username', app%username)
-            call dm_config_get(config, 'password', app%password)
-            call dm_config_get(config, 'count',    app%count)
-            call dm_config_get(config, 'interval', app%interval)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
+            call dm_config_get(config, 'logger',      app%logger)
+            call dm_config_get(config, 'node',        app%node)
+            call dm_config_get(config, 'host',        app%host)
+            call dm_config_get(config, 'port',        app%port)
+            call dm_config_get(config, 'tls',         app%tls)
+            call dm_config_get(config, 'username',    app%username)
+            call dm_config_get(config, 'password',    app%password)
+            call dm_config_get(config, 'compression', app%compression_name)
+            call dm_config_get(config, 'count',       app%count)
+            call dm_config_get(config, 'interval',    app%interval)
+            call dm_config_get(config, 'debug',       app%debug)
+            call dm_config_get(config, 'verbose',     app%verbose)
         end if
 
         call dm_config_close(config)
@@ -200,6 +218,9 @@ contains
 
         if (present(error)) error = E_NONE
 
+        ! Last error code.
+        last_error = E_NONE
+
         ! Client and library version.
         client = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
 
@@ -211,10 +232,13 @@ contains
             return
         end if
 
-        last_error = E_NONE
-        niter = 0
-
         call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+
+        if (app%compression == Z_TYPE_NONE) then
+            call logger%debug('compression is disabled')
+        else
+            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
+        end if
 
         emit_loop: do
             call dm_timer_start(timer)
@@ -239,16 +263,19 @@ contains
                              username    = app%username, &
                              password    = app%password, &
                              user_agent  = client, &
-                             compression = Z_TYPE_ZSTD)
+                             compression = app%compression)
 
             if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
 
+            ! Read API status response from payload.
             has_api_status = .false.
 
             if (response%content_type == MIME_TEXT) then
-                has_api_status = dm_is_ok(dm_api_status_from_string(response%payload, api_status))
+                rc = dm_api_status_from_string(response%payload, api_status)
+                has_api_status = dm_is_ok(rc)
             end if
 
+            ! Log the HTTP response code.
             select case (response%code)
                 case (0)
                     rc = E_RPC_CONNECT
@@ -291,10 +318,9 @@ contains
 
             last_error = rc
 
-            if (app%count > 0) then
-                niter = dm_inc(niter)
-                if (niter >= app%count) exit emit_loop
-            end if
+            if (app%count <= 1) exit emit_loop
+            niter = dm_inc(niter)
+            if (niter >= app%count) exit emit_loop
 
             call dm_timer_stop(timer)
             delay = max(0, int(app%interval - dm_timer_result(timer)))

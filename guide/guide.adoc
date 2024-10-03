@@ -716,14 +716,25 @@ $ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
 
 The *dmbeat* program is a heartbeat emitter that sends
 <<data-beat,handshake messages>> via HTTP POST to a remote <<dmapi>> service.
-The heartbeats include time stamp, system uptime, and last connection error. The
-server may inspect this data to check if a client is still running and has
+Heartbeats include the following attributes:
+
+[cols="3,14"]
+|===
+| Attribute   | Description
+
+| `node_id`   | Node id.
+| `address`   | IPv4/IPv6 address of client.
+| `client`    | Client software name and version.
+| `time_sent` | Date and time heartbeat was sent (ISO 8601).
+| `time_recv` | Date and time heartbeat was received (ISO 8601).
+| `error`     | Last client connection error.
+| `interval`  | Emit interval in seconds.
+| `uptime`    | Client uptime in seconds.
+|===
+
+The server may inspect the data to check if a client is still running and has
 network access. The RPC endpoint on the server is expected at URL
 `[http|https]://<host>:<port>/api/v1/beat`.
-
-Passing the server credentials via the command-line arguments `--username` and
-`--password` is insecure on multi-user operating systems and only recommended
-for testing.
 
 [discrete]
 ==== Command-Line Options
@@ -732,6 +743,7 @@ for testing.
 |===
 | Option                 | Short | Default  | Description
 
+| `--compression _name_` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--count _n_`          | `-C`  | 0        | Number of heartbeats to send (unlimited if 0).
 | `--debug`              | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
@@ -2159,6 +2171,7 @@ for testing.
 |===
 | Option                 | Short | Default  | Description
 
+| `--compression _name_` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--create`             | `-C`  | off      | Create missing database synchronisation tables.
 | `--database _file_`    | `-d`  | –        | Path to log or observation database.

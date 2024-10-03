@@ -37,8 +37,8 @@ dmsync \- synchronises databases between client and server
 .sp
 \fBdmsync\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBtype\fP \fItype\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP]
 [\-\-\fBtls\fP] [\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP] [\-\-\fBnode\fP \fIid\fP]
-[\-\-\fBinterval\fP \fIn\fP] [\-\-\fBwait\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBcreate\fP]
-[\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+[\-\-\fBinterval\fP \fIn\fP] [\-\-\fBwait\fP \fIname\fP] [\-\-\fBcompression\fP \fIname\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBcreate\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .sp
 \fBdmsync\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
@@ -71,6 +71,12 @@ Passing the server credentials via the command\-line arguments \f(CR\-\-username
 \f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
 for testing.
 .SH "OPTIONS"
+.sp
+\fB\-\-compression\fP, \fB\-x\fP \fIname\fP
+.RS 4
+Compression library to use for payload data (\f(CRnone\fP, \f(CRzlib\fP, \f(CRzstd\fP). The
+default is \f(CRzstd\fP (Z standard). Select \f(CRzlib\fP for deflate compression.
+.RE
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
 .RS 4
