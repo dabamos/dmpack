@@ -21,7 +21,7 @@ module dm_z
     integer, parameter, public :: Z_TYPE_NAME_LEN = 4 !! Max. type enumerator name length.
 
     character(len=*), parameter, public :: Z_TYPE_NAMES(0:Z_TYPE_LAST) = [ &
-        character(len=4) :: 'none', 'zlib', 'zstd' &
+        character(len=Z_TYPE_NAME_LEN) :: 'none', 'zlib', 'zstd' &
     ] !! Compression type enumerator names.
 
     interface dm_z_compress
@@ -57,6 +57,7 @@ module dm_z
     public :: dm_z_compress_types
     public :: dm_z_type_from_encoding
     public :: dm_z_type_from_name
+    public :: dm_z_type_name
     public :: dm_z_type_to_encoding
     public :: dm_z_uncompress
     public :: dm_z_valid
@@ -204,6 +205,19 @@ contains
                 z = Z_TYPE_INVALID
         end select
     end function dm_z_type_from_name
+
+    pure function dm_z_type_name(z) result(str)
+        !! Returns compression type name as allocatable string.
+        integer, intent(in)           :: z   !! Compression enumerator.
+        character(len=:), allocatable :: str !! Compression type name.
+
+        if (.not. dm_z_valid(z)) then
+            str = 'invalid'
+            return
+        end if
+
+        str = trim(Z_TYPE_NAMES(z))
+    end function dm_z_type_name
 
     pure function dm_z_type_to_encoding(z) result(encoding)
         !! Returns allocatable HTTP content type string from compression type

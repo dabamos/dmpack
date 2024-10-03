@@ -372,10 +372,6 @@ contains
         character(len=*),        intent(in), optional :: user_agent  !! HTTP User Agent.
         integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
-
         if (present(url))         request%url         = trim(url)
         if (present(user_agent))  request%user_agent  = trim(user_agent)
         if (present(compression)) request%compression = compression
@@ -391,6 +387,12 @@ contains
 
         rc = dm_z_compress_type(type, request%compression, request%payload)
         if (dm_is_error(rc)) return
+
+        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
+
+        request%accept       = MIME_TEXT
+        request%content_type = MIME_NML
+        request%method       = RPC_METHOD_POST
 
         rc = rpc_request(request, response)
     end function dm_rpc_send_type
@@ -882,6 +884,10 @@ contains
 
         ! No debug messages to stdout.
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_NOSIGNAL, 1)
+        if (stat /= CURLE_OK) return
+
+        ! No verbose output.
+        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_VERBOSE, 0)
         if (stat /= CURLE_OK) return
 
         ! Set read timeout.
