@@ -128,7 +128,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_CORRUPT` if job list is not initialised properly.
-        !! * `E_EMPTY` if job list is empty.
+        !! * `E_EMPTY` if job list is empty or has no more jobs left.
         !!
         type(job_list_type), intent(inout)         :: job_list !! Job list type.
         type(job_type),      intent(out)           :: job      !! Job type.

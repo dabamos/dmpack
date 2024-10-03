@@ -8,8 +8,8 @@ module dm_path
     public :: dm_path_parsed
 contains
     function dm_path_parsed(path) result(parsed)
-        !! Returns a parsed path, or an empty string. The following format
-        !! descriptors are allowed:
+        !! Returns a parsed path or an empty string on error. The following
+        !! format descriptors are allowed:
         !!
         !! | Format | Description  |
         !! |--------|--------------|
@@ -20,7 +20,7 @@ contains
         !! | `%m`   | minute       |
         !! | `%s`   | second       |
         !!
-        !! The descriptors wil be replaced with their current values.
+        !! The descriptors will be replaced with their current values.
         character(len=*), intent(in)  :: path   !! Input path.
         character(len=:), allocatable :: parsed !! Output path.
 

@@ -452,7 +452,7 @@ contains
         !! * `E_DB_ATTACH` if database attach query failed.
         !! * `E_NOT_FOUND` if database at `path` does not exist.
         !!
-        use :: dm_file
+        use :: dm_file, only: dm_file_exists
 
         character(len=*), parameter :: QUERY_FMT = '("ATTACH DATABASE ''", a, "'' AS ", a)'
 

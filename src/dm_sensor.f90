@@ -140,7 +140,7 @@ contains
 
     pure function dm_sensor_type_name(type) result(name)
         !! Returns name of given type enumerator as allocatable string.
-        integer, intent(in)           :: type !! Sensor type enumerator `SENSOR_TYPE_*`.
+        integer, intent(in)           :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
         character(len=:), allocatable :: name !! Sensor type name.
 
         if (.not. dm_sensor_type_valid(type)) then

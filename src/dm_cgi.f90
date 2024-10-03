@@ -193,29 +193,24 @@ contains
         rc = E_NONE
     end function dm_cgi_decode
 
-    function dm_cgi_has(param, key) result(has)
+    logical function dm_cgi_has(param, key) result(has)
         !! Returns whether key exists in `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
-        logical          :: has
         integer          :: loc
         integer(kind=i8) :: hash
 
-        has  = .false.
         hash = dm_hash_fnv1a(trim(key))
         loc  = findloc(param%hashes, hash, dim=1)
-
-        if (loc == 0) return
-        has = .true.
+        has  = (loc > 0)
     end function dm_cgi_has
 
-    function dm_cgi_has_value(param, key) result(has)
+    logical function dm_cgi_has_value(param, key) result(has)
         !! Returns whether key exists in `param` and has value.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
-        logical          :: has
         integer          :: loc
         integer(kind=i8) :: hash
 
@@ -242,11 +237,10 @@ contains
         str = trim(param%keys(loc))
     end function dm_cgi_key
 
-    function dm_cgi_size(param) result(sz)
+    integer function dm_cgi_size(param) result(sz)
         !! Returns the current number of elements in the given (opaque) CGI
         !! parameter type.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
-        integer                             :: sz    !! Number of parameters.
 
         sz = param%size
     end function dm_cgi_size
