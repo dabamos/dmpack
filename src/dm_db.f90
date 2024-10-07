@@ -250,7 +250,7 @@ module dm_db
         module procedure :: dm_db_update_target
     end interface dm_db_update
 
-    ! Abstract interfaces.
+    ! Public abstract interfaces.
     public :: dm_db_backup_callback
     public :: dm_db_busy_callback
     public :: dm_db_log_callback
@@ -262,7 +262,6 @@ module dm_db
     public :: dm_db_begin
     public :: dm_db_close
     public :: dm_db_commit
-    public :: dm_db_connected
     public :: dm_db_count_beats
     public :: dm_db_count_logs
     public :: dm_db_count_nodes
@@ -296,6 +295,12 @@ module dm_db
     public :: dm_db_get_journal_mode
     public :: dm_db_get_query_only
     public :: dm_db_get_user_version
+    public :: dm_db_has_log
+    public :: dm_db_has_node
+    public :: dm_db_has_observ
+    public :: dm_db_has_sensor
+    public :: dm_db_has_table
+    public :: dm_db_has_target
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
@@ -312,14 +317,13 @@ module dm_db
     public :: dm_db_insert_sync_sensor
     public :: dm_db_insert_sync_target
     public :: dm_db_insert_target
+    public :: dm_db_is_connected
+    public :: dm_db_is_read_only
+    public :: dm_db_is_threadsafe
     public :: dm_db_log
-    public :: dm_db_log_exists
-    public :: dm_db_node_exists
-    public :: dm_db_observ_exists
     public :: dm_db_open
     public :: dm_db_optimize
     public :: dm_db_prepared
-    public :: dm_db_read_only
     public :: dm_db_rollback
     public :: dm_db_select
     public :: dm_db_select_beat
@@ -357,7 +361,6 @@ module dm_db
     public :: dm_db_select_tables
     public :: dm_db_select_target
     public :: dm_db_select_targets
-    public :: dm_db_sensor_exists
     public :: dm_db_set_application_id
     public :: dm_db_set_auto_vacuum
     public :: dm_db_set_busy_callback
@@ -370,15 +373,12 @@ module dm_db
     public :: dm_db_set_user_version
     public :: dm_db_shutdown
     public :: dm_db_sleep
-    public :: dm_db_table_exists
-    public :: dm_db_target_exists
-    public :: dm_db_threadsafe
     public :: dm_db_update
     public :: dm_db_update_node
     public :: dm_db_update_sensor
     public :: dm_db_update_target
     public :: dm_db_vacuum
-    public :: dm_db_valid
+    public :: dm_db_validate
     public :: dm_db_version
 
     ! Private procedures.
@@ -389,7 +389,7 @@ module dm_db
     private :: db_delete_requests  ! obsolete
     private :: db_delete_responses ! obsolete
     private :: db_exec
-    private :: db_exists
+    private :: db_has
     private :: db_insert_receivers
     private :: db_insert_requests
     private :: db_insert_responses
@@ -425,15 +425,15 @@ module dm_db
     private :: db_select_nodes_iter
     private :: db_select_nrows
     private :: db_select_observs_array
-    private :: db_select_observs_iter
     private :: db_select_observs_data
+    private :: db_select_observs_iter
     private :: db_select_receivers
     private :: db_select_requests
     private :: db_select_responses
     private :: db_select_sensors_array
-    private :: db_select_sensors_iter
     private :: db_select_sensors_by_node_array
     private :: db_select_sensors_by_node_iter
+    private :: db_select_sensors_iter
     private :: db_select_sync
     private :: db_select_syncs
     private :: db_select_targets_array
@@ -582,13 +582,6 @@ contains
         if (dm_is_error(db_rollback(db))) rc = E_DB_ROLLBACK
     end function dm_db_commit
 
-    logical function dm_db_connected(db) result(connected)
-        !! Returns `.true.` if database type has associated pointer.
-        type(db_type), intent(inout) :: db !! Database type.
-
-        connected = c_associated(db%ctx)
-    end function dm_db_connected
-
     integer function dm_db_count_beats(db, n) result(rc)
         !! Returns number of rows in table `beats`.
         type(db_type),    intent(inout) :: db !! Database type.
@@ -718,7 +711,7 @@ contains
         if (db%read_only) return
 
         rc = E_INVALID
-        if (.not. dm_db_connected(db)) return
+        if (.not. dm_db_is_connected(db)) return
 
         rc = db_exec(db, SQL_CREATE_BEATS)
         if (dm_is_error(rc)) return
@@ -750,7 +743,7 @@ contains
         if (db%read_only) return
 
         rc = E_INVALID
-        if (.not. dm_db_connected(db)) return
+        if (.not. dm_db_is_connected(db)) return
 
         sync_ = .false.
         if (present(sync)) sync_ = sync
@@ -795,7 +788,7 @@ contains
         if (db%read_only) return
 
         rc = E_INVALID
-        if (.not. dm_db_connected(db)) return
+        if (.not. dm_db_is_connected(db)) return
 
         sync_ = .false.
         if (present(sync)) sync_ = sync
@@ -1429,6 +1422,60 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_get_user_version
 
+    logical function dm_db_has_log(db, log_id) result(has)
+        !! Returns `.true.` if log id exists.
+        type(db_type),     intent(inout) :: db     !! Database type.
+        character(len=*),  intent(in)    :: log_id !! Log id (UUID).
+
+        has = db_has(db, SQL_TABLE_LOGS, log_id)
+    end function dm_db_has_log
+
+    logical function dm_db_has_node(db, node_id) result(has)
+        !! Returns `.true.` if node id exists.
+        type(db_type),     intent(inout) :: db      !! Database type.
+        character(len=*),  intent(in)    :: node_id !! Node id.
+
+        has = db_has(db, SQL_TABLE_NODES, node_id)
+    end function dm_db_has_node
+
+    logical function dm_db_has_observ(db, observ_id) result(has)
+        !! Returns `.true.` if observation id exists.
+        type(db_type),     intent(inout) :: db        !! Database type.
+        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
+
+        has = db_has(db, SQL_TABLE_OBSERVS, observ_id)
+    end function dm_db_has_observ
+
+    logical function dm_db_has_table(db, table) result(has)
+        !! Returns `.true.` if given table exists in database.
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer,       intent(in)    :: table !! Table enumerator.
+
+        integer     :: stat
+        type(c_ptr) :: stmt
+
+        has = .false.
+        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
+
+        sql_block: block
+            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
+            if (sqlite3_bind_text(stmt, 1, trim(SQL_TABLE_NAMES(table))) /= SQLITE_OK) exit sql_block
+            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
+            has = .true.
+        end block sql_block
+
+        stat = sqlite3_finalize(stmt)
+    end function dm_db_has_table
+
+    logical function dm_db_has_target(db, target_id) result(has)
+        !! Returns `.true.` if target id exists.
+        type(db_type),     intent(inout) :: db        !! Database type.
+        character(len=*),  intent(in)    :: target_id !! Target id.
+
+        has = db_has(db, SQL_TABLE_TARGETS, target_id)
+    end function dm_db_has_target
+
     integer function dm_db_init() result(rc)
         !! Initialises SQLite backend. Returns `E_DB` on error.
         rc = E_DB
@@ -1469,7 +1516,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_beat_valid(beat)) return
+            if (.not. dm_beat_is_valid(beat)) return
         end if
 
         ! Set given statement.
@@ -1599,7 +1646,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_log_valid(log)) return
+            if (.not. dm_log_is_valid(log)) return
         end if
 
         sql_block: block
@@ -1658,7 +1705,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_node_valid(node)) return
+            if (.not. dm_node_is_valid(node)) return
         end if
 
         sql_block: block
@@ -1725,7 +1772,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_observ_valid(observ)) return
+            if (.not. dm_observ_is_valid(observ)) return
         end if
 
         ! Set given statement.
@@ -1894,7 +1941,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_sensor_valid(sensor)) return
+            if (.not. dm_sensor_is_valid(sensor)) return
         end if
 
         sql_block: block
@@ -2092,7 +2139,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_target_valid(target)) return
+            if (.not. dm_target_is_valid(target)) return
         end if
 
         sql_block: block
@@ -2120,29 +2167,28 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_insert_target
 
-    logical function dm_db_log_exists(db, log_id) result(exists)
-        !! Returns `.true.` if log id exists.
-        type(db_type),     intent(inout) :: db     !! Database type.
-        character(len=*),  intent(in)    :: log_id !! Log id (UUID).
+    logical function dm_db_is_connected(db) result(connected)
+        !! Returns `.true.` if database type has associated pointer.
+        type(db_type), intent(inout) :: db !! Database type.
 
-        exists = db_exists(db, SQL_TABLE_LOGS, log_id)
-    end function dm_db_log_exists
+        connected = c_associated(db%ctx)
+    end function dm_db_is_connected
 
-    logical function dm_db_node_exists(db, node_id) result(exists)
-        !! Returns `.true.` if node id exists.
-        type(db_type),     intent(inout) :: db      !! Database type.
-        character(len=*),  intent(in)    :: node_id !! Node id.
+    logical function dm_db_is_read_only(db) result(read_only)
+        !! Returns `.true.` if database is in read-only mode. This function
+        !! checks only the opaque database type for the read-only flag. It is
+        !! still possible to enable ready-only access by calling
+        !! `dm_db_set_query_only()`. The function `dm_db_get_query_only()`
+        !! returns the status of the `query_only` pragma.
+        type(db_type), intent(inout) :: db !! Database type.
 
-        exists = db_exists(db, SQL_TABLE_NODES, node_id)
-    end function dm_db_node_exists
+        read_only = db%read_only
+    end function dm_db_is_read_only
 
-    logical function dm_db_observ_exists(db, observ_id) result(exists)
-        !! Returns `.true.` if observation id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
-
-        exists = db_exists(db, SQL_TABLE_OBSERVS, observ_id)
-    end function dm_db_observ_exists
+    logical function dm_db_is_threadsafe() result(safe)
+        !! Returns true if SQLite 3 was compiled threadsafe.
+        safe = (sqlite3_threadsafe() == SQLITE_OK)
+    end function dm_db_is_threadsafe
 
     integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
                                 timeout, validate, wal) result(rc)
@@ -2217,7 +2263,7 @@ contains
         exists = dm_file_exists(path)
 
         rc = E_INVALID
-        if (dm_db_connected(db)) return
+        if (dm_db_is_connected(db)) return
 
         rc = E_NOT_FOUND
         if (.not. create_ .and. .not. exists) return
@@ -2277,7 +2323,7 @@ contains
 
         ! Validate the application id and the user version of the database.
         if (validate_) then
-            rc = dm_db_valid(db)
+            rc = dm_db_validate(db)
             if (dm_is_error(rc)) return
         end if
 
@@ -2321,17 +2367,6 @@ contains
 
         prepared = c_associated(db_stmt%ctx)
     end function dm_db_prepared
-
-    logical function dm_db_read_only(db) result(read_only)
-        !! Returns `.true.` if database is in read-only mode. This function
-        !! checks only the opaque database type for the read-only flag. It is
-        !! still possible to enable ready-only access by calling
-        !! `dm_db_set_query_only()`. The function `dm_db_get_query_only()`
-        !! returns the status of the `query_only` pragma.
-        type(db_type), intent(inout) :: db !! Database type.
-
-        read_only = db%read_only
-    end function dm_db_read_only
 
     integer function dm_db_rollback(db) result(rc)
         !! Rolls a transaction back. Returns `E_DB_ROLLBACK` on error.
@@ -3514,13 +3549,13 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_select_target
 
-    logical function dm_db_sensor_exists(db, sensor_id) result(exists)
+    logical function dm_db_has_sensor(db, sensor_id) result(exists)
         !! Returns `.true.` if sensor id exists.
         type(db_type),     intent(inout) :: db        !! Database type.
         character(len=*),  intent(in)    :: sensor_id !! Sensor id.
 
-        exists = db_exists(db, SQL_TABLE_SENSORS, sensor_id)
-    end function dm_db_sensor_exists
+        exists = db_has(db, SQL_TABLE_SENSORS, sensor_id)
+    end function dm_db_has_sensor
 
     integer function dm_db_set_application_id(db, id) result(rc)
         !! Set the 32-bit signed big-endian “Application ID” integer located at
@@ -3861,11 +3896,6 @@ contains
         rc = E_NONE
     end function dm_db_shutdown
 
-    logical function dm_db_threadsafe() result(safe)
-        !! Returns true if SQLite 3 was compiled threadsafe.
-        safe = (sqlite3_threadsafe() == SQLITE_OK)
-    end function dm_db_threadsafe
-
     integer function dm_db_update_node(db, node, validate) result(rc)
         !! Updates the given node in database. The node data is validated by
         !! default.
@@ -3897,7 +3927,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_node_valid(node)) return
+            if (.not. dm_node_is_valid(node)) return
         end if
 
         sql_block: block
@@ -3956,7 +3986,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_sensor_valid(sensor)) return
+            if (.not. dm_sensor_is_valid(sensor)) return
         end if
 
         sql_block: block
@@ -4018,7 +4048,7 @@ contains
 
         if (validate_) then
             rc = E_INVALID
-            if (.not. dm_target_valid(target)) return
+            if (.not. dm_target_is_valid(target)) return
         end if
 
         sql_block: block
@@ -4046,63 +4076,6 @@ contains
 
         stat = sqlite3_finalize(stmt)
     end function dm_db_update_target
-
-    integer function dm_db_table_exists(db, table, exists) result(rc)
-        !! Returns whether given table exists in database. The result code is
-        !! `E_NONE` if the table has been found, else `E_DB_NO_ROWS`. The
-        !! logical result is returned in `exists`. Pass the enumerator
-        !! `SQL_TABLE_*` from `dm_sql`, for instance:
-        !!
-        !! ```fortran
-        !! integer :: rc
-        !! logical :: exists
-        !!
-        !! rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
-        !! ```
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_TYPE` if query result is of unexpected type.
-        !! * `E_INVALID` if argument `table` is invalid.
-        !!
-        type(db_type), intent(inout)         :: db     !! Database type.
-        integer,       intent(in)            :: table  !! Table enumerator.
-        logical,       intent(out), optional :: exists !! Table exists.
-
-        integer     :: stat
-        type(c_ptr) :: stmt
-
-        rc = E_INVALID
-        if (present(exists)) exists = .false.
-        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
-
-        sql_block: block
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TABLE, stmt) /= SQLITE_OK) exit sql_block
-
-            rc = E_DB_BIND
-            if (sqlite3_bind_text(stmt, 1, trim(SQL_TABLE_NAMES(table))) /= SQLITE_OK) exit sql_block
-
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-
-            rc = E_NONE
-        end block sql_block
-
-        stat = sqlite3_finalize(stmt)
-        if (present(exists) .and. rc == E_NONE) exists = .true.
-    end function dm_db_table_exists
-
-    logical function dm_db_target_exists(db, target_id) result(exists)
-        !! Returns `.true.` if target id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: target_id !! Target id.
-
-        exists = db_exists(db, SQL_TABLE_TARGETS, target_id)
-    end function dm_db_target_exists
 
     integer function dm_db_vacuum(db, into) result(rc)
         !! Vacuums database schema `main`, or, if `into` is passed, vacuums
@@ -4151,7 +4124,7 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_vacuum
 
-    integer function dm_db_valid(db) result(rc)
+    integer function dm_db_validate(db) result(rc)
         !! Validates an opened DMPACK database. The application id must match
         !! the constant `DB_APPLICATION_ID`, and the user version must be equal
         !! to `DB_USER_VERSION`.
@@ -4181,7 +4154,7 @@ contains
         if (user_version /= DB_USER_VERSION) return
 
         rc = E_NONE
-    end function dm_db_valid
+    end function dm_db_validate
 
     function dm_db_version(name) result(version)
         !! Returns SQLite 3 library version as allocatable string.
@@ -4417,7 +4390,7 @@ contains
         rc = E_NONE
     end function db_exec
 
-    logical function db_exists(db, table, id) result(exists)
+    logical function db_has(db, table, id) result(has)
         !! Returns `.true.` if id exists in table. Argument `table` must be one
         !! of the following:
         !!
@@ -4435,7 +4408,7 @@ contains
         integer     :: rc
         type(c_ptr) :: stmt
 
-        exists = .false.
+        has = .false.
 
         sql_block: block
             select case (table)
@@ -4457,11 +4430,12 @@ contains
             if (sqlite3_bind_text(stmt, 1, trim(id)) /= SQLITE_OK) exit sql_block
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
             if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
-            if (sqlite3_column_int(stmt, 0) == 1) exists = .true.
+
+            has = (sqlite3_column_int(stmt, 0) == 1)
         end block sql_block
 
         rc = sqlite3_finalize(stmt)
-    end function db_exists
+    end function db_has
 
     integer function db_insert_receivers(db, observ_id, receivers) result(rc)
         !! Adds receivers of an observation to database.
@@ -4494,7 +4468,7 @@ contains
 
             row_loop: do i = 1, n
                 rc = E_INVALID
-                if (.not. dm_id_valid(receivers(i))) exit row_loop
+                if (.not. dm_id_is_valid(receivers(i))) exit row_loop
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_text(stmt, 1, trim(observ_id))    /= SQLITE_OK) exit row_loop
@@ -7472,7 +7446,7 @@ contains
         type(c_ptr) :: stmt
 
         rc = E_INVALID
-        if (.not. dm_sync_type_valid(type)) return
+        if (.not. dm_sync_type_is_valid(type)) return
 
         sql_block: block
             rc = E_DB_PREPARE
@@ -7519,7 +7493,7 @@ contains
         nsyncs = 0_i8
 
         rc = E_INVALID
-        if (.not. dm_sync_type_valid(type)) return
+        if (.not. dm_sync_type_is_valid(type)) return
 
         sql_block: block
             rc = E_DB_PREPARE

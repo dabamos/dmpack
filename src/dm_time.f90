@@ -40,6 +40,7 @@ module dm_time
     public :: dm_time_delta_to_string
     public :: dm_time_diff
     public :: dm_time_from_unix
+    public :: dm_time_is_valid
     public :: dm_time_mseconds
     public :: dm_time_now
     public :: dm_time_rfc2822
@@ -48,7 +49,6 @@ module dm_time
     public :: dm_time_to_beats
     public :: dm_time_to_human
     public :: dm_time_to_unix
-    public :: dm_time_valid
     public :: dm_time_zone
     public :: dm_time_zone_iso
 
@@ -171,6 +171,56 @@ contains
 
         seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
     end function dm_time_diff
+
+    pure elemental logical function dm_time_is_valid(time, strict) result(valid)
+        !! Returns `.true.` if given time stamp follows the form of ISO 8601. The
+        !! time stamp does not have to be complete to be valid, unless `strict`
+        !! is `.true.`. Then, argument `time` must be 32-characters long.
+        !! Otherwise, the minimum length of a time stamp to be valid is 4
+        !! characters, the maximum is 32 characters.
+        use :: dm_ascii, only: dm_ascii_is_digit
+
+        character(len=*), intent(in)           :: time   !! ISO 8601 time stamp to validate.
+        logical,          intent(in), optional :: strict !! Validate length (must be 32 characters).
+
+        character :: a
+        integer   :: i, n
+        logical   :: strict_
+
+        strict_ = .false.
+        if (present(strict)) strict_ = strict
+
+        valid = .false.
+
+        n = len_trim(time)
+
+        if (strict_) then
+            if (n /= TIME_LEN) return
+        else
+            if (n < 4 .or. n > TIME_LEN) return
+        end if
+
+        do i = 1, n
+            a = time(i:i)
+
+            select case (i)
+                case (1:4, 6:7, 9:10, 12:13, 15:16, 18:19, 21:26, 28:29, 31:32)
+                    if (.not. dm_ascii_is_digit(a)) return
+                case (5, 8)
+                    if (a /= '-') return
+                case (11)
+                    if (a /= 'T') return
+                case (14, 17, 30)
+                    if (a /= ':') return
+                case (20)
+                    if (a /= '.') return
+                case (27)
+                    if (a /= '+' .and. a /= '-') return
+            end select
+        end do
+
+        valid = .true.
+    end function dm_time_is_valid
 
     integer(kind=i8) function dm_time_mseconds() result(mseconds)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
@@ -333,56 +383,6 @@ contains
         if (present(useconds)) useconds = tm_usec
         rc = E_NONE
     end function dm_time_to_unix
-
-    pure elemental logical function dm_time_valid(time, strict) result(valid)
-        !! Returns `.true.` if given time stamp follows the form of ISO 8601. The
-        !! time stamp does not have to be complete to be valid, unless `strict`
-        !! is `.true.`. Then, argument `time` must be 32-characters long.
-        !! Otherwise, the minimum length of a time stamp to be valid is 4
-        !! characters, the maximum is 32 characters.
-        use :: dm_ascii, only: dm_ascii_is_digit
-
-        character(len=*), intent(in)           :: time   !! ISO 8601 time stamp to validate.
-        logical,          intent(in), optional :: strict !! Validate length (must be 32 characters).
-
-        character :: a
-        integer   :: i, n
-        logical   :: strict_
-
-        strict_ = .false.
-        if (present(strict)) strict_ = strict
-
-        valid = .false.
-
-        n = len_trim(time)
-
-        if (strict_) then
-            if (n /= TIME_LEN) return
-        else
-            if (n < 4 .or. n > TIME_LEN) return
-        end if
-
-        do i = 1, n
-            a = time(i:i)
-
-            select case (i)
-                case (1:4, 6:7, 9:10, 12:13, 15:16, 18:19, 21:26, 28:29, 31:32)
-                    if (.not. dm_ascii_is_digit(a)) return
-                case (5, 8)
-                    if (a /= '-') return
-                case (11)
-                    if (a /= 'T') return
-                case (14, 17, 30)
-                    if (a /= ':') return
-                case (20)
-                    if (a /= '.') return
-                case (27)
-                    if (a /= '+' .and. a /= '-') return
-            end select
-        end do
-
-        valid = .true.
-    end function dm_time_valid
 
     character(len=5) function dm_time_zone() result(zone)
         !! Returns current time zone as five characters long string, for

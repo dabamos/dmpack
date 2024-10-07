@@ -1362,7 +1362,7 @@ contains
     function dm_html_responses(responses) result(html)
         !! Returns responses as HTML table. Input data will be trimmed and
         !! encoded.
-        use :: dm_response, only: dm_response_type_name, response_type
+        use :: dm_response, only: dm_response_type_to_name, response_type
 
         type(response_type), intent(inout) :: responses(:) !! Observation response type.
         character(len=:), allocatable      :: html         !! Generated HTML.
@@ -1380,11 +1380,11 @@ contains
 
         do i = 1, size(responses)
             html = html // H_TR // &
-                   H_TD // dm_itoa(i)                               // H_TD_END // &
-                   H_TD // dm_html_encode(responses(i)%name)        // H_TD_END // &
-                   H_TD // dm_ftoa(responses(i)%value)              // H_TD_END // &
-                   H_TD // dm_html_encode(responses(i)%unit)        // H_TD_END // &
-                   H_TD // dm_response_type_name(responses(i)%type) // H_TD_END // &
+                   H_TD // dm_itoa(i)                                  // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%name)           // H_TD_END // &
+                   H_TD // dm_ftoa(responses(i)%value)                 // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%unit)           // H_TD_END // &
+                   H_TD // dm_response_type_to_name(responses(i)%type) // H_TD_END // &
                    H_TD // dm_error_message(responses(i)%error) // &
                            ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // &
                    H_TR_END
@@ -1446,7 +1446,7 @@ contains
                H_TR // H_TH // 'Node' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Type' // H_TH_END // &
-                       H_TD // dm_sensor_type_name(sensor%type) // H_TD_END // H_TR_END // &
+                       H_TD // dm_sensor_type_to_name(sensor%type) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                        H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Serial Number' // H_TH_END // &
@@ -1510,14 +1510,14 @@ contains
                 html = html // H_TD // dm_html_encode(sensors(i)%id) // H_TD_END
             end if
 
-            html = html // H_TD // dm_html_encode(sensors(i)%node_id)   // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%name)      // H_TD_END // &
-                           H_TD // dm_sensor_type_name(sensors(i)%type) // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%sn)        // H_TD_END // &
-                           H_TD // dm_html_encode(sensors(i)%meta)      // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%x)                // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%y)                // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%z)                // H_TD_END // &
+            html = html // H_TD // dm_html_encode(sensors(i)%node_id)      // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%name)         // H_TD_END // &
+                           H_TD // dm_sensor_type_to_name(sensors(i)%type) // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%sn)           // H_TD_END // &
+                           H_TD // dm_html_encode(sensors(i)%meta)         // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%x)                   // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%y)                   // H_TD_END // &
+                           H_TD // dm_ftoa(sensors(i)%z)                   // H_TD_END // &
                            H_TR_END
         end do
 

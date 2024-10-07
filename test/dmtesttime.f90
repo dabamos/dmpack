@@ -61,25 +61,25 @@ contains
 
         print *, 'Validating timestamps ...'
 
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000000+00:00')) return
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000000-00:00')) return
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000')) return
-        if (.not. dm_time_valid('1970-01-01T00:00:00')) return
-        if (.not. dm_time_valid('1970-01-01T')) return
-        if (.not. dm_time_valid('1970')) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00.000000+00:00')) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00.000000-00:00')) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00.000')) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00')) return
+        if (.not. dm_time_is_valid('1970-01-01T')) return
+        if (.not. dm_time_is_valid('1970')) return
 
-        if (dm_time_valid('1970-01-01T00:00:00.000+00:00')) return
-        if (dm_time_valid('1970-01-01T00:00:00.000000Z')) return
-        if (dm_time_valid('1970-01-01T00:00:00.000000+00:00 UTC')) return
-        if (dm_time_valid('1970/01/01T00:00:00.000000+00:00')) return
-        if (dm_time_valid('1970-01-01 00:00:00.000000+00:00')) return
-        if (dm_time_valid('1970-01-01T00:00:00.000000 00:00')) return
-        if (dm_time_valid('19')) return
+        if (dm_time_is_valid('1970-01-01T00:00:00.000+00:00')) return
+        if (dm_time_is_valid('1970-01-01T00:00:00.000000Z')) return
+        if (dm_time_is_valid('1970-01-01T00:00:00.000000+00:00 UTC')) return
+        if (dm_time_is_valid('1970/01/01T00:00:00.000000+00:00')) return
+        if (dm_time_is_valid('1970-01-01 00:00:00.000000+00:00')) return
+        if (dm_time_is_valid('1970-01-01T00:00:00.000000 00:00')) return
+        if (dm_time_is_valid('19')) return
 
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000000+00:00', strict=.true.)) return
-        if (.not. dm_time_valid('1970-01-01T00:00:00.000000-00:00', strict=.true.)) return
-        if (dm_time_valid('1970-01-01T00:00:00.000', strict=.true.)) return
-        if (dm_time_valid('1970-01-01T00:00:00', strict=.true.)) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00.000000+00:00', strict=.true.)) return
+        if (.not. dm_time_is_valid('1970-01-01T00:00:00.000000-00:00', strict=.true.)) return
+        if (dm_time_is_valid('1970-01-01T00:00:00.000', strict=.true.)) return
+        if (dm_time_is_valid('1970-01-01T00:00:00', strict=.true.)) return
 
         print *, 'All tests passed'
 

@@ -78,7 +78,7 @@ contains
 
         rc = E_INVALID
 
-        if (.not. dm_error_valid(log%error)) then
+        if (.not. dm_error_is_valid(log%error)) then
             call dm_error_out(rc, 'invalid error code')
             return
         end if

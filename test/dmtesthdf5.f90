@@ -83,9 +83,7 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Validating ...'
-        rc = dm_hdf5_file_valid(FILE_PATH)
-        call dm_error_out(rc)
-        if (dm_is_error(rc)) return
+        if (.not. dm_hdf5_file_is_valid(FILE_PATH)) return
 
         print *, 'Closing ...'
         rc = dm_hdf5_close(file)
@@ -381,7 +379,7 @@ contains
         avail = .false.
 
         do i = HDF5_FILTER_DEFLATE, HDF5_FILTER_SZIP
-            avail(i) = dm_hdf5_filter_available(i, error=rc)
+            avail(i) = dm_hdf5_has_filter(i, error=rc)
             call dm_error_out(rc)
         end do
 

@@ -200,10 +200,10 @@ contains
         integer   :: byte_size_, stop_bits_
 
         rc = E_INVALID
-        if (.not. dm_tty_valid_baud_rate(baud_rate)) return
-        if (.not. dm_tty_valid_byte_size(byte_size)) return
-        if (.not. dm_tty_valid_parity(parity))       return
-        if (.not. dm_tty_valid_stop_bits(stop_bits)) return
+        if (.not. dm_tty_is_valid_baud_rate(baud_rate)) return
+        if (.not. dm_tty_is_valid_byte_size(byte_size)) return
+        if (.not. dm_tty_is_valid_parity(parity))       return
+        if (.not. dm_tty_is_valid_stop_bits(stop_bits)) return
 
         ! Byte size: 5, 6, 7, 8 (start bits).
         select case (byte_size)

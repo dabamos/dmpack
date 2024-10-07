@@ -88,7 +88,7 @@ contains
         call logger%out(log2)
 
         print *, 'Validating log message ...'
-        if (.not. dm_log_valid(log2)) return
+        if (.not. dm_log_is_valid(log2)) return
         if (.not. (log1 == log2)) return
 
         print *, 'Validating JSON ...'
@@ -103,7 +103,7 @@ contains
         call logger%out(log3)
 
         print *, 'Validating log message ...'
-        if (.not. dm_log_valid(log3)) return
+        if (.not. dm_log_is_valid(log3)) return
         if (log3%level /= TEST_LEVEL) return
         if (log3%message /= TEST_MESSAGE) return
         if (log3%error /= TEST_ERROR) return

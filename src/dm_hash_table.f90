@@ -28,10 +28,10 @@ module dm_hash_table
         module procedure :: hash_table_get_key
     end interface dm_hash_table_get
 
-    public :: dm_hash_table_allocated
     public :: dm_hash_table_create
     public :: dm_hash_table_destroy
     public :: dm_hash_table_get
+    public :: dm_hash_table_is_allocated
     public :: dm_hash_table_set
     public :: dm_hash_table_size
 
@@ -42,13 +42,6 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    logical function dm_hash_table_allocated(hash_table) result(is)
-        !! Returns `.true.` if hash table arrays have been allocated.
-        type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
-
-        is = (allocated(hash_table%hashes) .and. allocated(hash_table%values))
-    end function dm_hash_table_allocated
-
     integer function dm_hash_table_create(hash_table, max_entries) result(rc)
         !! Create a new hash table with maximum number of entries.
         type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
@@ -69,6 +62,13 @@ contains
         rc = E_NONE
         hash_table%hashes(:) = 0_i8
     end function dm_hash_table_create
+
+    logical function dm_hash_table_is_allocated(hash_table) result(is)
+        !! Returns `.true.` if hash table arrays have been allocated.
+        type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
+
+        is = (allocated(hash_table%hashes) .and. allocated(hash_table%values))
+    end function dm_hash_table_is_allocated
 
     integer function dm_hash_table_set(hash_table, key, value) result(rc)
         !! Adds element to hash table, or replaces existing value. This function

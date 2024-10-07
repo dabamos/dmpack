@@ -170,6 +170,7 @@ LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
+LIBSTROPHE = `pkg-config --libs-only-l libstrophe expat openssl zlib`
 LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
@@ -185,14 +186,17 @@ LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
+LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFZLIB) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
+              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
 DMBACKUP = $(DISTDIR)/dmbackup
 DMBEAT   = $(DISTDIR)/dmbeat
+DMBOT    = $(DISTDIR)/dmbot
 DMDB     = $(DISTDIR)/dmdb
 DMDBCTL  = $(DISTDIR)/dmdbctl
 DMEXPORT = $(DISTDIR)/dmexport
@@ -251,7 +255,8 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_html.f90 \
       $(SRCDIR)/dm_http.f90 \
       $(SRCDIR)/dm_id.f90 \
-      $(SRCDIR)/dm_net.f90 \
+      $(SRCDIR)/dm_image.f90 \
+      $(SRCDIR)/dm_jabber.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
@@ -270,6 +275,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_mqueue.f90 \
       $(SRCDIR)/dm_mqueue_util.f90 \
       $(SRCDIR)/dm_mutex.f90 \
+      $(SRCDIR)/dm_net.f90 \
       $(SRCDIR)/dm_nml.f90 \
       $(SRCDIR)/dm_node.f90 \
       $(SRCDIR)/dm_observ.f90 \
@@ -343,7 +349,8 @@ OBJ = dm_ansi.o \
       dm_html.o \
       dm_http.o \
       dm_id.o \
-      dm_net.o \
+      dm_image.o \
+      dm_jabber.o \
       dm_job.o \
       dm_json.o \
       dm_jsonl.o \
@@ -362,6 +369,7 @@ OBJ = dm_ansi.o \
       dm_mqueue.o \
       dm_mqueue_util.o \
       dm_mutex.o \
+      dm_net.o \
       dm_nml.o \
       dm_node.o \
       dm_observ.o \
@@ -426,7 +434,7 @@ all:
 build: $(TARGET) $(SHARED) test app
 
 # Apps target.
-app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
+app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
      $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
      $(DMSYNC) $(DMUUID) $(DMWEB)
@@ -519,6 +527,10 @@ $(LIBFUNIX): setup
 	@echo "---"
 	cd vendor/fortran-unix/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	cp vendor/fortran-unix/*.mod $(INCDIR)/
+
+$(LIBFXMPP): setup
+	cd vendor/fortran-xmpp/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFXMPP)"
+	cp vendor/fortran-xmpp/*.mod $(INCDIR)/
 
 $(LIBFZLIB): setup
 	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
@@ -624,6 +636,8 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_image.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_jabber.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -794,6 +808,9 @@ $(DMBACKUP): app/dmbackup.f90 $(TARGET)
 $(DMBEAT): app/dmbeat.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
 
+$(DMBOT): app/dmbot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBSTROPHE) $(LDLIBS)
+
 $(DMDB): app/dmdb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
@@ -908,6 +925,7 @@ install:
 	install -m 755 $(DMAPI)    $(IBINDIR)/
 	install -m 755 $(DMBACKUP) $(IBINDIR)/
 	install -m 755 $(DMBEAT)   $(IBINDIR)/
+	install -m 755 $(DMBOT)    $(IBINDIR)/
 	install -m 755 $(DMDB)     $(IBINDIR)/
 	install -m 755 $(DMDBCTL)  $(IBINDIR)/
 	install -m 755 $(DMEXPORT) $(IBINDIR)/
@@ -1083,6 +1101,9 @@ purge: clean
 	@echo "--- Cleaning fortran-unix ..."
 	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
 	@echo
+	@echo "--- Cleaning fortran-xmpp ..."
+	cd vendor/fortran-xmpp/ && make clean TARGET="../../$(LIBFXMPP)"
+	@echo
 	@echo "--- Cleaning fortran-zlib ..."
 	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZLIB)"
 	@echo
@@ -1147,6 +1168,7 @@ options:
 	@echo "LIBPCRE2   = $(LIBPCRE2)"
 	@echo "LIBPTHREAD = $(LIBPTHREAD)"
 	@echo "LIBRT      = $(LIBRT)"
+	@echo "LIBSTROPHE = $(LIBSTROPHE)"
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"

@@ -127,11 +127,11 @@ contains
 
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -146,7 +146,7 @@ contains
             return
         end if
 
-        if (.not. dm_log_valid(app%minlevel)) then
+        if (.not. dm_log_is_valid(app%minlevel)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if
@@ -223,7 +223,7 @@ contains
             end if
 
             ! Replace missing or invalid sensor node id.
-            if (.not. dm_id_valid(log%node_id)) log%node_id = app%node
+            if (.not. dm_id_is_valid(log%node_id)) log%node_id = app%node
 
             ! Print to standard output.
             if (app%verbose) call logger%out(log)
@@ -232,7 +232,7 @@ contains
             if (log%level < app%minlevel) cycle ipc_loop
 
             ! Skip if log already exists.
-            if (dm_db_log_exists(db, log%id)) then
+            if (dm_db_has_log(db, log%id)) then
                 call logger%warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if

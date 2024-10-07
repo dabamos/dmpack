@@ -17,11 +17,12 @@ module dm_format
     integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 
     character(len=*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
-        character(len=FORMAT_NAME_LEN) :: 'none', 'block', 'csv', 'geojson', 'json', 'jsonl', 'nml' &
+        character(len=FORMAT_NAME_LEN) :: &
+        'none', 'block', 'csv', 'geojson', 'json', 'jsonl', 'nml' &
     ] !! Format names array.
 
     public :: dm_format_from_name
-    public :: dm_format_valid
+    public :: dm_format_is_valid
 contains
     pure elemental integer function dm_format_from_name(name) result(format)
         !! Returns format enumerator from given name. If the argument is not a
@@ -52,11 +53,11 @@ contains
         end select
     end function dm_format_from_name
 
-    pure elemental logical function dm_format_valid(format) result(valid)
+    pure elemental logical function dm_format_is_valid(format) result(valid)
         !! Returns `.true.` if given format is valid. `FORMAT_NONE` is an
         !! invalid format.
         integer, intent(in) :: format !! Format enumerator.
 
         valid = (format > FORMAT_NONE .and. format <= FORMAT_LAST)
-    end function dm_format_valid
+    end function dm_format_is_valid
 end module dm_format

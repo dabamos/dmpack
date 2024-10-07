@@ -76,7 +76,7 @@ contains
             end if
 
             ! Invalid receiver name?
-            if (.not. dm_id_valid(observ%receivers(next))) then
+            if (.not. dm_id_is_valid(observ%receivers(next))) then
                 rc = E_INVALID
                 if (verbose_) then
                     call logger%error('invalid receiver ' // trim(observ%receivers(next)) // &

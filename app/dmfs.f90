@@ -146,22 +146,22 @@ contains
         ! Validate options.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if

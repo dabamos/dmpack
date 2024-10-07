@@ -55,6 +55,7 @@ module dm_thread
     end type thread_type
 
     public :: dm_thread_callback
+
     public :: dm_thread_create
     public :: dm_thread_join
 contains

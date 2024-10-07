@@ -25,6 +25,7 @@ ADDLIB ./lib/libfortran-lua54.a
 ADDLIB ./lib/libfortran-pcre2.a
 ADDLIB ./lib/libfortran-sqlite3.a
 ADDLIB ./lib/libfortran-unix.a
+ADDLIB ./lib/libfortran-xmpp.a
 ADDLIB ./lib/libfortran-zlib.a
 ADDLIB ./lib/libfortran-zstd.a
 SAVE

@@ -73,8 +73,8 @@ contains
     end function is_stale_file
 
     integer function read_args(app) result(rc)
-        !! Reads command-line arguments and configuration
-        !! from file (if `--config` is passed).
+        !! Reads command-line arguments and configuration from file (if
+        !! `--config` is passed).
         type(app_type), intent(out) :: app !! App type.
 
         character(len=:), allocatable :: version
@@ -101,7 +101,7 @@ contains
 
         ! Read all command-line arguments.
         version = dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
+        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -130,7 +130,7 @@ contains
         ! Validate passed options.
         rc = E_INVALID
 
-        if (len_trim(app%node) > 0 .and. .not. dm_id_valid(app%node)) then
+        if (len_trim(app%node) > 0 .and. .not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
@@ -145,12 +145,12 @@ contains
             return
         end if
 
-        if (.not. dm_log_valid(app%min_level)) then
+        if (.not. dm_log_is_valid(app%min_level)) then
             call dm_error_out(rc, 'invalid minimum log level')
             return
         end if
 
-        if (.not. dm_log_valid(app%max_level)) then
+        if (.not. dm_log_is_valid(app%max_level)) then
             call dm_error_out(rc, 'invalid maximum log level')
             return
         end if

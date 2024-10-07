@@ -193,37 +193,37 @@ contains
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
 
-        if (.not. dm_id_valid(app%target)) then
+        if (.not. dm_id_is_valid(app%target)) then
             call dm_error_out(rc, 'invalid or missing target id')
             return
         end if
 
-        if (.not. dm_id_valid(app%response)) then
+        if (.not. dm_id_is_valid(app%response)) then
             call dm_error_out(rc, 'invalid or missing response name')
             return
         end if
 
-        if (.not. dm_time_valid(app%from)) then
+        if (.not. dm_time_is_valid(app%from)) then
             call dm_error_out(rc, 'invalid or missing from timestamp')
             return
         end if
 
-        if (.not. dm_time_valid(app%to)) then
+        if (.not. dm_time_is_valid(app%to)) then
             call dm_error_out(rc, 'invalid or missing to timestamp')
             return
         end if
 
-        if (.not. dm_plot_terminal_valid(app%terminal)) then
+        if (.not. dm_plot_terminal_is_valid(app%terminal)) then
             call dm_error_out(rc, 'invalid or missing plot terminal')
             return
         end if

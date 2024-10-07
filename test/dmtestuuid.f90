@@ -33,7 +33,7 @@ contains
 
         do i = 1, NUUIDS
             uuids(i) = dm_uuid4()
-            if (.not. dm_uuid4_valid(uuids(i))) then
+            if (.not. dm_uuid4_is_valid(uuids(i))) then
                 print *, 'Error: ', uuids(i), ' is invalid'
                 return
             end if

@@ -119,7 +119,8 @@ module dm_error
     integer, parameter, public :: E_HDF5           = 132 !! HDF5 error.
     integer, parameter, public :: E_ZLIB           = 133 !! zlib error.
     integer, parameter, public :: E_ZSTD           = 134 !! Zstandard error.
-    integer, parameter, public :: E_LAST           = 134 !! Never use this.
+    integer, parameter, public :: E_XMPP           = 135 !! libstrophe error.
+    integer, parameter, public :: E_LAST           = 135 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
@@ -130,14 +131,21 @@ module dm_error
         module procedure :: dm_error_out
     end interface dm_perror
 
+    public :: dm_error_is_valid
     public :: dm_error_message
     public :: dm_error_out
-    public :: dm_error_valid
     public :: dm_is_error
     public :: dm_is_ok
     public :: dm_perror
     public :: dm_stop
 contains
+    pure elemental logical function dm_error_is_valid(error) result(valid)
+        !! Returns whether given error code is (likely) valid.
+        integer, intent(in) :: error !! Error code.
+
+        valid = (error >= E_NONE .and. error <= E_LAST)
+    end function dm_error_is_valid
+
     pure function dm_error_message(error) result(message)
         !! Returns error message of given error code `error`.
         integer, intent(in)           :: error   !! Error code.
@@ -335,18 +343,13 @@ contains
                 message = 'zlib error'
             case (E_ZSTD)
                 message = 'zstd error'
+            case (E_XMPP)
+                message = 'XMPP error'
 
             case default
                 message = 'unknown error'
         end select
     end function dm_error_message
-
-    pure elemental logical function dm_error_valid(error) result(valid)
-        !! Returns whether given error code is (likely) valid.
-        integer, intent(in) :: error !! Error code.
-
-        valid = (error >= E_NONE .and. error <= E_LAST)
-    end function dm_error_valid
 
     pure elemental logical function dm_is_error(error) result(is_error)
         !! Returns `.true.` if given code is an error (not `E_NONE`).

@@ -71,7 +71,7 @@ contains
 
         test_block: block
             print *, 'Validating application id ...'
-            rc = dm_db_valid(db)
+            rc = dm_db_validate(db)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'
@@ -584,7 +584,7 @@ contains
 
         test_block: block
             print *, 'Validating application id ...'
-            rc = dm_db_valid(db)
+            rc = dm_db_validate(db)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'
@@ -620,7 +620,7 @@ contains
         test_block: block
             call dm_test_dummy(log1)
 
-            if (.not. dm_log_valid(log1)) then
+            if (.not. dm_log_is_valid(log1)) then
                 print *, 'Error: invalid dummy log'
                 exit test_block
             end if
@@ -802,7 +802,7 @@ contains
 
         test_block: block
             print *, 'Validating application id ...'
-            rc = dm_db_valid(db)
+            rc = dm_db_validate(db)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'

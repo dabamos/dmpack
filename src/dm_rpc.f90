@@ -20,15 +20,14 @@ module dm_rpc
     !! rc  = dm_rpc_send(request, response, observ, url)
     !!
     !! call dm_error_out(rc)
-    !! call dm_rpc_destroy()
+    !! call dm_rpc_shutdown()
     !! ```
     !!
     !! The URL returned by `dm_rpc_url()` will equal
     !! `http://localhost:80/api/v1/observ` in this case.
     !!
-    !! The procedures `dm_rpc_init()` and `dm_rpc_destroy()` have to be called
-    !! once per process, and only if neither the MQTT nor the mail backend is
-    !! initialised already.
+    !! The procedure `dm_rpc_init()` has to be called once per process, and only
+    !! if neither the MQTT nor the mail backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -127,7 +126,7 @@ module dm_rpc
     end interface dm_rpc_send
 
     public :: dm_rpc_callback
-    public :: dm_rpc_destroy
+
     public :: dm_rpc_error
     public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
@@ -139,6 +138,7 @@ module dm_rpc
     public :: dm_rpc_send
     public :: dm_rpc_send_type
     public :: dm_rpc_send_types
+    public :: dm_rpc_shutdown
     public :: dm_rpc_url
     public :: dm_rpc_version
 
@@ -383,7 +383,7 @@ contains
         end if
 
         rc = E_INVALID
-        if (.not. dm_z_valid(request%compression)) return
+        if (.not. dm_z_type_is_valid(request%compression)) return
 
         rc = dm_z_compress_type(type, request%compression, request%payload)
         if (dm_is_error(rc)) return
@@ -444,7 +444,7 @@ contains
         if (present(compression)) z = compression
 
         rc = E_INVALID
-        if (.not. dm_z_valid(z)) return
+        if (.not. dm_z_type_is_valid(z)) return
 
         sequential_ = .false.
         if (present(sequential)) sequential_ = sequential
@@ -583,11 +583,6 @@ contains
         if (.not. allocated(url)) url = ''
     end function dm_rpc_url
 
-    subroutine dm_rpc_destroy()
-        !! Cleans-up RPC backend.
-        call curl_global_cleanup()
-    end subroutine dm_rpc_destroy
-
     impure elemental subroutine dm_rpc_reset(request)
         !! Auxiliary destructor routine to free allocated request memory.
         !! Cleans-up the cURL handles of the request.
@@ -605,6 +600,11 @@ contains
 
         request = rpc_request_type()
     end subroutine dm_rpc_reset
+
+    subroutine dm_rpc_shutdown()
+        !! Cleans up RPC backend.
+        call curl_global_cleanup()
+    end subroutine dm_rpc_shutdown
 
     ! ******************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.

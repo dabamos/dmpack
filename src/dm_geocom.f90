@@ -711,7 +711,7 @@ contains
         !! Closes TTY connection.
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
 
-        if (dm_tty_connected(this%tty)) call dm_tty_close(this%tty)
+        if (dm_tty_is_connected(this%tty)) call dm_tty_close(this%tty)
     end subroutine geocom_close
 
     integer function geocom_code(this) result(grc)
@@ -795,7 +795,7 @@ contains
 
         tty_block: block
             rc = E_EXIST
-            if (dm_tty_connected(this%tty)) then
+            if (dm_tty_is_connected(this%tty)) then
                 call this%output(rc, 'TTY already connected')
                 exit tty_block
             end if
@@ -889,7 +889,7 @@ contains
         tty_block: block
             ! Verify that TTY is not connected yet.
             rc = E_IO
-            if (.not. dm_tty_connected(this%tty)) then
+            if (.not. dm_tty_is_connected(this%tty)) then
                 call this%output(rc, 'TTY not connected')
                 exit tty_block
             end if

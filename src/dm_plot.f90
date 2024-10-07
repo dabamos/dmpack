@@ -76,7 +76,7 @@ module dm_plot
     public :: dm_plot_lines
     public :: dm_plot_read
     public :: dm_plot_terminal_from_name
-    public :: dm_plot_terminal_valid
+    public :: dm_plot_terminal_is_valid
     public :: dm_plot_version
 
     private :: plot_output
@@ -215,13 +215,13 @@ contains
         end select
     end function dm_plot_terminal_from_name
 
-    pure elemental logical function dm_plot_terminal_valid(terminal) result(valid)
-        !! Returns `.true.` if the given terminal is valid. `PLOT_TERMINAL_NONE` is
-        !! an invalid terminal.
+    pure elemental logical function dm_plot_terminal_is_valid(terminal) result(valid)
+        !! Returns `.true.` if the given terminal is valid. `PLOT_TERMINAL_NONE`
+        !! is an invalid terminal.
         integer, intent(in) :: terminal !! Terminal type enumerator.
 
         valid = (terminal > PLOT_TERMINAL_NONE .and. terminal <= PLOT_TERMINAL_LAST)
-    end function dm_plot_terminal_valid
+    end function dm_plot_terminal_is_valid
 
     function dm_plot_version(name, found) result(version)
         !! Returns Gnuplot version as allocatable string.

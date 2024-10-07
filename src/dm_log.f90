@@ -72,11 +72,11 @@ module dm_log
 
     integer, parameter, public :: LOG_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
 
-    interface dm_log_valid
+    interface dm_log_is_valid
         !! Generic log validation function.
-        module procedure :: dm_log_valid_level
-        module procedure :: dm_log_valid_log
-    end interface dm_log_valid
+        module procedure :: log_is_valid_level
+        module procedure :: log_is_valid_log
+    end interface dm_log_is_valid
 
     interface operator (==)
         !! Returns whether logs are equal.
@@ -86,12 +86,12 @@ module dm_log
     public :: operator (==)
 
     public :: dm_log_equals
+    public :: dm_log_is_valid
     public :: dm_log_level_from_name
     public :: dm_log_out
-    public :: dm_log_valid
 
-    private :: dm_log_valid_level
-    private :: dm_log_valid_log
+    private :: log_is_valid_level
+    private :: log_is_valid_log
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -174,7 +174,7 @@ contains
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
     ! ******************************************************************
-    pure elemental logical function dm_log_valid_level(level) result(valid)
+    pure elemental logical function log_is_valid_level(level) result(valid)
         !! Returns `.true.` if given log level is valid. The following level
         !! are valid:
         !!
@@ -188,9 +188,9 @@ contains
         integer, intent(in) :: level !! Log level.
 
         valid = (level > LL_NONE .and. level <= LL_LAST)
-    end function dm_log_valid_level
+    end function log_is_valid_level
 
-    pure elemental logical function dm_log_valid_log(log) result(valid)
+    pure elemental logical function log_is_valid_log(log) result(valid)
         !! Returns `.true.` if given log is valid. A log is valid if it conforms
         !! to the following rules:
         !!
@@ -205,13 +205,13 @@ contains
 
         valid = .false.
 
-        if (.not. dm_log_valid(log%level))             return
-        if (.not. dm_error_valid(log%error))           return
+        if (.not. dm_log_is_valid(log%level))             return
+        if (.not. dm_error_is_valid(log%error))           return
         if (log%id == UUID_DEFAULT)                    return
-        if (.not. dm_uuid4_valid(log%id))              return
-        if (.not. dm_time_valid(log%timestamp))        return
+        if (.not. dm_uuid4_is_valid(log%id))              return
+        if (.not. dm_time_is_valid(log%timestamp))        return
         if (.not. dm_string_is_printable(log%message)) return
 
         valid = .true.
-    end function dm_log_valid_log
+    end function log_is_valid_log
 end module dm_log

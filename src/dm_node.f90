@@ -34,8 +34,8 @@ module dm_node
     public :: operator (==)
 
     public :: dm_node_equals
+    public :: dm_node_is_valid
     public :: dm_node_out
-    public :: dm_node_valid
 contains
     pure elemental logical function dm_node_equals(node1, node2) result(equals)
         !! Returns `.true.` if given nodes are equal.
@@ -61,15 +61,15 @@ contains
         equals= .true.
     end function dm_node_equals
 
-    pure elemental logical function dm_node_valid(node) result(valid)
+    pure elemental logical function dm_node_is_valid(node) result(valid)
         !! Returns `.true.` if given node type elements are valid.
         type(node_type), intent(in) :: node
 
         valid = .false.
-        if (.not. dm_id_valid(node%id)) return
+        if (.not. dm_id_is_valid(node%id)) return
         if (len_trim(node%name) == 0) return
         valid = .true.
-    end function dm_node_valid
+    end function dm_node_is_valid
 
     subroutine dm_node_out(node, unit)
         !! Prints node to standard output or given file unit.

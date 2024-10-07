@@ -219,22 +219,22 @@ contains
         ! Validate options.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
@@ -284,7 +284,7 @@ contains
             return
         end if
 
-        if (.not. dm_tty_valid_timeout(app%timeout)) then
+        if (.not. dm_tty_is_valid_timeout(app%timeout)) then
             call dm_error_out(rc, 'invalid timeout')
             return
         end if
@@ -568,7 +568,7 @@ contains
             call dm_msleep(delay)
         end do job_loop
 
-        if (dm_tty_connected(tty)) then
+        if (dm_tty_is_connected(tty)) then
             call logger%debug('closing TTY ' // app%path)
             call dm_tty_close(tty)
         end if
@@ -604,7 +604,7 @@ contains
             case default
                 call logger%info('exit on signal ' // dm_itoa(signum))
 
-                if (dm_tty_connected(tty)) then
+                if (dm_tty_is_connected(tty)) then
                     call logger%debug('closing TTY ' // tty%path)
                     call dm_tty_close(tty)
                 end if

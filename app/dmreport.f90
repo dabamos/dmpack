@@ -193,17 +193,17 @@ contains
         ! Validate settings.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%report%node)) then
+        if (.not. dm_id_is_valid(app%report%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (.not. dm_time_valid(app%report%from, strict=.false.)) then
+        if (.not. dm_time_is_valid(app%report%from, strict=.false.)) then
             call dm_error_out(rc, 'invalid from timestamp')
             return
         end if
 
-        if (.not. dm_time_valid(app%report%to, strict=.false.)) then
+        if (.not. dm_time_is_valid(app%report%to, strict=.false.)) then
             call dm_error_out(rc, 'invalid to timestamp')
             return
         end if
@@ -231,12 +231,12 @@ contains
                     return
                 end if
 
-                if (.not. dm_id_valid(plot%observs(i)%sensor)) then
+                if (.not. dm_id_is_valid(plot%observs(i)%sensor)) then
                     call dm_error_out(rc, 'invalid sensor id ' // plot%observs(i)%sensor)
                     return
                 end if
 
-                if (.not. dm_id_valid(plot%observs(i)%target)) then
+                if (.not. dm_id_is_valid(plot%observs(i)%target)) then
                     call dm_error_out(rc, 'invalid target id ' // plot%observs(i)%target)
                     return
                 end if
@@ -250,12 +250,12 @@ contains
 
         ! Validate log settings.
         if (.not. log%disabled) then
-            if (.not. dm_log_valid(log%min_level)) then
+            if (.not. dm_log_is_valid(log%min_level)) then
                 call dm_error_out(rc, 'invalid minimum log level')
                 return
             end if
 
-            if (.not. dm_log_valid(log%max_level)) then
+            if (.not. dm_log_is_valid(log%max_level)) then
                 call dm_error_out(rc, 'invalid maximum log level')
                 return
             end if
@@ -272,7 +272,7 @@ contains
         end if
 
         ! Validate a second time, just to be sure.
-        if (.not. dm_report_valid(app%report)) then
+        if (.not. dm_report_is_valid(app%report)) then
             call dm_error_out(rc, 'invalid report settings')
             return
         end if

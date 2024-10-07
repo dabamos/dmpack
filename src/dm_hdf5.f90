@@ -111,9 +111,9 @@ module dm_hdf5
     public :: dm_hdf5_close
     public :: dm_hdf5_destroy
     public :: dm_hdf5_file_free
+    public :: dm_hdf5_file_is_valid
     public :: dm_hdf5_file_path
-    public :: dm_hdf5_file_valid
-    public :: dm_hdf5_filter_available
+    public :: dm_hdf5_has_filter
     public :: dm_hdf5_group_exists
     public :: dm_hdf5_init
     public :: dm_hdf5_open
@@ -183,6 +183,19 @@ contains
         rc = E_NONE
     end function dm_hdf5_file_free
 
+    logical function dm_hdf5_file_is_valid(path) result(is)
+        !! Returns `.true.` if file at given path is a valid HDF5 file.
+        use :: dm_file, only: dm_file_exists
+
+        character(len=*), intent(in) :: path !! File path.
+
+        integer :: stat
+
+        is = .false.
+        if (.not. dm_file_exists(path)) return
+        call h5fis_hdf5_f(trim(path), is, stat)
+    end function dm_hdf5_file_is_valid
+
     integer function dm_hdf5_file_path(file, path, n) result(rc)
         !! Returns file path of given HDF5 file in `path`. The argument `path`
         !! must be large enough to hold the full path. The actual length is
@@ -212,35 +225,7 @@ contains
         rc = E_NONE
     end function dm_hdf5_file_path
 
-    integer function dm_hdf5_file_valid(path) result(rc)
-        !! Returns `E_NONE` if the given file is an HDF5 file, else the
-        !! appropriate error code:
-        !!
-        !! * `E_FORMAT` if the file is not an HDF5 file.
-        !! * `E_NOT_FOUND` if the file does not exist.
-        !! * `E_HDF5` if the HDF5 library call failed.
-        !!
-        use :: dm_file, only: dm_file_exists
-
-        character(len=*), intent(in) :: path !! File path.
-
-        integer :: stat
-        logical :: is_hdf5
-
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(path)) return
-
-        rc = E_HDF5
-        call h5fis_hdf5_f(trim(path), is_hdf5, stat)
-        if (stat < 0) return
-
-        rc = E_FORMAT
-        if (.not. is_hdf5) return
-
-        rc = E_NONE
-    end function dm_hdf5_file_valid
-
-    logical function dm_hdf5_filter_available(filter, error) result(available)
+    logical function dm_hdf5_has_filter(filter, error) result(available)
         !! Returns the status of the given filter. The following filters are
         !! supported:
         !!
@@ -281,7 +266,7 @@ contains
         end block hdf5_block
 
         if (present(error)) error = rc
-    end function dm_hdf5_filter_available
+    end function dm_hdf5_has_filter
 
     logical function dm_hdf5_group_exists(id, name, error) result(exists)
         !! Returns `.true.` if group of given name `name` exists in file or

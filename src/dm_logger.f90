@@ -141,7 +141,7 @@ contains
         logical,             intent(in), optional :: verbose  !! Verbose output.
 
         if (present(name)) then
-            if (dm_id_valid(name)) this%name = name
+            if (dm_id_is_valid(name)) this%name = name
         end if
 
         if (present(node_id))  this%node_id   = node_id
@@ -221,7 +221,7 @@ contains
 
         ! Replace invalid log level with `LL_ERROR`.
         log%level = LL_ERROR
-        if (dm_log_valid(level)) log%level = level
+        if (dm_log_is_valid(level)) log%level = level
 
         ! Create log id.
         log%id = dm_uuid4()
@@ -369,7 +369,7 @@ contains
         integer :: level, unit_
 
         level = LL_ERROR
-        if (dm_log_valid(log%level)) level = log%level
+        if (dm_log_is_valid(log%level)) level = log%level
 
         unit_ = stderr
         if (present(unit)) unit_ = unit

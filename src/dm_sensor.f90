@@ -63,11 +63,11 @@ module dm_sensor
     public :: operator (==)
 
     public :: dm_sensor_equals
-    public :: dm_sensor_type_from_name
-    public :: dm_sensor_type_name
-    public :: dm_sensor_type_valid
+    public :: dm_sensor_is_valid
     public :: dm_sensor_out
-    public :: dm_sensor_valid
+    public :: dm_sensor_type_from_name
+    public :: dm_sensor_type_is_valid
+    public :: dm_sensor_type_to_name
 contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
@@ -97,6 +97,19 @@ contains
 
         equals = .true.
     end function dm_sensor_equals
+
+    pure elemental logical function dm_sensor_is_valid(sensor) result(valid)
+        !! Returns `.true.` if the attributes of the given sensor type are
+        !! valid.
+        type(sensor_type), intent(in) :: sensor !! Sensor type.
+
+        valid = .false.
+        if (.not. dm_sensor_type_is_valid(sensor%type)) return
+        if (.not. dm_id_is_valid(sensor%id)) return
+        if (.not. dm_id_is_valid(sensor%node_id)) return
+        if (len_trim(sensor%name) == 0) return
+        valid = .true.
+    end function dm_sensor_is_valid
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)
         !! Returns type enumerator from given name.
@@ -138,39 +151,26 @@ contains
         end select
     end function dm_sensor_type_from_name
 
-    pure function dm_sensor_type_name(type) result(name)
-        !! Returns name of given type enumerator as allocatable string.
-        integer, intent(in)           :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
-        character(len=:), allocatable :: name !! Sensor type name.
-
-        if (.not. dm_sensor_type_valid(type)) then
-            name = 'invalid'
-            return
-        end if
-
-        name = trim(SENSOR_TYPE_NAMES(type))
-    end function dm_sensor_type_name
-
-    pure elemental logical function dm_sensor_type_valid(type) result(valid)
+    pure elemental logical function dm_sensor_type_is_valid(type) result(valid)
         !! Returns `.true.` if `type` is valid sensor type. The type
         !! `SENSOR_TYPE_NONE` is a valid type.
         integer, intent(in) :: type !! Sensor type.
 
         valid = (type >= SENSOR_TYPE_NONE .and. type <= SENSOR_TYPE_LAST)
-    end function dm_sensor_type_valid
+    end function dm_sensor_type_is_valid
 
-    pure elemental logical function dm_sensor_valid(sensor) result(valid)
-        !! Returns `.true.` if the attributes of the given sensor type are
-        !! valid.
-        type(sensor_type), intent(in) :: sensor !! Sensor type.
+    pure function dm_sensor_type_to_name(type) result(name)
+        !! Returns name of given type enumerator as allocatable string.
+        integer, intent(in)           :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
+        character(len=:), allocatable :: name !! Sensor type name.
 
-        valid = .false.
-        if (.not. dm_sensor_type_valid(sensor%type)) return
-        if (.not. dm_id_valid(sensor%id)) return
-        if (.not. dm_id_valid(sensor%node_id)) return
-        if (len_trim(sensor%name) == 0) return
-        valid = .true.
-    end function dm_sensor_valid
+        if (.not. dm_sensor_type_is_valid(type)) then
+            name = 'invalid'
+            return
+        end if
+
+        name = trim(SENSOR_TYPE_NAMES(type))
+    end function dm_sensor_type_to_name
 
     subroutine dm_sensor_out(sensor, unit)
         !! Prints sensor to standard output or given file unit.
@@ -184,7 +184,7 @@ contains
 
         write (unit_, '("sensor.id: ", a)')        trim(sensor%id)
         write (unit_, '("sensor.node_id: ", a)')   trim(sensor%node_id)
-        write (unit_, '("sensor.type: ")')         dm_sensor_type_name(sensor%type)
+        write (unit_, '("sensor.type: ", a)')      dm_sensor_type_to_name(sensor%type)
         write (unit_, '("sensor.name: ", a)')      trim(sensor%name)
         write (unit_, '("sensor.sn: ", a)')        trim(sensor%sn)
         write (unit_, '("sensor.meta: ", a)')      trim(sensor%meta)

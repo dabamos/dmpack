@@ -24,12 +24,11 @@ module dm_mail
     !!
     !! ! Send e-mail and finalise SMTP backend.
     !! rc = dm_mail_send(mail, server)
-    !! call dm_mail_destroy()
+    !! call dm_mail_shutdown()
     !! ```
     !!
-    !! The procedures `dm_mail_init()` and `dm_mail_destroy()` have to be called
-    !! once per process, and only if neither the RPC nor the MQTT backend is
-    !! initialised already.
+    !! The procedure `dm_mail_init()` has to be called once per process, and
+    !! only if neither the RPC nor the MQTT backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -99,12 +98,12 @@ module dm_mail
     public :: dm_mail_create
     public :: dm_mail_create_mail
     public :: dm_mail_create_server
-    public :: dm_mail_destroy
     public :: dm_mail_error
     public :: dm_mail_error_message
     public :: dm_mail_init
     public :: dm_mail_out
     public :: dm_mail_send
+    public :: dm_mail_shutdown
     public :: dm_mail_url
     public :: dm_mail_write
 
@@ -502,10 +501,10 @@ contains
                   CR_LF // mail%message // CR_LF
     end function dm_mail_write
 
-    subroutine dm_mail_destroy()
-        !! Cleans-up SMTP backend.
+    subroutine dm_mail_shutdown()
+        !! Cleans up SMTP backend.
         call curl_global_cleanup()
-    end subroutine dm_mail_destroy
+    end subroutine dm_mail_shutdown
 
     ! ******************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.

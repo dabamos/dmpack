@@ -86,7 +86,7 @@ contains
         logical :: comma_
 
         type_ = TYPE_NONE
-        if (dm_type_valid(type)) type_ = type
+        if (dm_type_is_valid(type)) type_ = type
 
         comma_ = .false.
         if (present(comma)) comma_ = comma

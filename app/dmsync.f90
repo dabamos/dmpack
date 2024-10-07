@@ -16,7 +16,7 @@ program dmsync
     integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
 
-    integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
+    integer, parameter :: HOST_LEN     = 256 !! Max. length of host.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
     integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
 
@@ -188,11 +188,11 @@ contains
         ! Validate settings.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -231,7 +231,7 @@ contains
             return
         end if
 
-        if (.not. dm_z_valid(app%compression)) then
+        if (.not. dm_z_is_valid(app%compression)) then
             call dm_error_out(rc, 'invalid compression')
             return
         end if
@@ -601,7 +601,7 @@ contains
         stat = STOP_SUCCESS
         if (dm_is_error(error)) stat = STOP_FAILURE
 
-        call dm_rpc_destroy()
+        call dm_rpc_shutdown()
         if (app%ipc) rc = dm_sem_close(sem)
         rc = dm_db_close(db)
         call dm_stop(stat)

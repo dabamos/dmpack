@@ -133,11 +133,11 @@ contains
 
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -152,7 +152,7 @@ contains
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -230,12 +230,12 @@ contains
 
             call logger%debug('received observ ' // observ%name)
 
-            if (.not. dm_observ_valid(observ)) then
+            if (.not. dm_observ_is_valid(observ)) then
                 call logger%error('invalid observ ' // trim(observ%name), error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            if (dm_db_observ_exists(db, observ%id)) then
+            if (dm_db_has_observ(db, observ%id)) then
                 call logger%warning('observ ' // trim(observ%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if

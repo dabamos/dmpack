@@ -46,11 +46,11 @@ module dm_sync
     public :: operator (==)
 
     public :: dm_sync_equals
+    public :: dm_sync_is_valid
     public :: dm_sync_name
     public :: dm_sync_out
     public :: dm_sync_type_from_name
-    public :: dm_sync_type_valid
-    public :: dm_sync_valid
+    public :: dm_sync_type_is_valid
 contains
     pure elemental logical function dm_sync_equals(sync1, sync2) result(equals)
         !! Returns `.true.` if given sync types are equal.
@@ -65,6 +65,16 @@ contains
         if (sync1%attempts  /= sync2%attempts)  return
         equals = .true.
     end function dm_sync_equals
+
+    pure elemental logical function dm_sync_is_valid(sync) result(valid)
+        !! Returns `.true.` if given sync data is valid.
+        type(sync_type), intent(in) :: sync !! Sync type.
+
+        valid = .false.
+        if (.not. dm_sync_type_is_valid(sync%type)) return
+        if (len_trim(sync%id) == 0) return
+        valid = .true.
+    end function dm_sync_is_valid
 
     pure elemental integer function dm_sync_type_from_name(name) result(type)
         !! Returns synchonisation type from given name.
@@ -91,23 +101,13 @@ contains
         end select
     end function dm_sync_type_from_name
 
-    pure elemental logical function dm_sync_type_valid(type) result(valid)
+    pure elemental logical function dm_sync_type_is_valid(type) result(valid)
         !! Returns `.true.` if given sync type enumerator is valid. The
         !! type `SYNC_TYPE_NONE` is invalid.
         integer, intent(in) :: type !! Sync type enum.
 
         valid = (type > SYNC_TYPE_NONE .and. type <= SYNC_TYPE_LAST)
-    end function dm_sync_type_valid
-
-    pure elemental logical function dm_sync_valid(sync) result(valid)
-        !! Returns `.true.` if given sync data is valid.
-        type(sync_type), intent(in) :: sync !! Sync type.
-
-        valid = .false.
-        if (.not. dm_sync_type_valid(sync%type)) return
-        if (len_trim(sync%id) == 0) return
-        valid = .true.
-    end function dm_sync_valid
+    end function dm_sync_type_is_valid
 
     pure function dm_sync_name(type) result(name)
         !! Returns name of synchronisation type.
@@ -131,7 +131,7 @@ contains
         unit_ = stdout
         if (present(unit)) unit_ = unit
 
-        write (unit_, '("sync.type: ", a)')       dm_sync_name(sync%type)
+        write (unit_, '("sync.type: ", a)')       sync%type
         write (unit_, '("sync.id: ", a)')         trim(sync%id)
         write (unit_, '("sync.timestamp: ", a)')  sync%timestamp
         write (unit_, '("sync.code: ", i0)')      sync%code

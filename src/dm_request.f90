@@ -78,11 +78,11 @@ module dm_request
     public :: dm_request_add
     public :: dm_request_equals
     public :: dm_request_get
+    public :: dm_request_index
+    public :: dm_request_is_valid
+    public :: dm_request_out
     public :: dm_request_set
     public :: dm_request_set_response_error
-    public :: dm_request_index
-    public :: dm_request_out
-    public :: dm_request_valid
 
     ! Private procedures.
     private :: request_set_int32
@@ -118,7 +118,7 @@ contains
         if (request%nresponses < 0 .or. request%nresponses >= REQUEST_MAX_NRESPONSES) return
 
         rc = E_INVALID
-        if (.not. dm_response_valid(response)) return
+        if (.not. dm_response_is_valid(response)) return
 
         request%nresponses = request%nresponses + 1
         request%responses(request%nresponses) = response
@@ -179,6 +179,54 @@ contains
         end do
     end function dm_request_index
 
+    pure elemental logical function dm_request_is_valid(request, timestamp) result(valid)
+        !! Returns `.true.` if given observation request is valid. A request is
+        !! valid if it conforms to the following requirements:
+        !!
+        !! * A request name is set and a valid id.
+        !! * A time stamp is set and in ISO 8601 format, unless argument
+        !!   `timestamp` is passed and `.false.`.
+        !! * All ASCII characters in attribute _request_ are printable.
+        !! * The attributes _delay_, _retries_, _state_ and _timeout_ are not
+        !!   negative.
+        !! * The attribute _error_ is a valid error code.
+        !! * The attribute _nresponses_ is within the bounds of array
+        !!   _responses_.
+        !! * All responses are valid.
+        !!
+        type(request_type), intent(in)           :: request   !! Request type.
+        logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
+
+        logical :: timestamp_
+
+        valid = .false.
+
+        timestamp_ = .true.
+        if (present(timestamp)) timestamp_ = timestamp
+
+        if (.not. dm_id_is_valid(request%name)) return
+
+        if (timestamp_) then
+            if (.not. dm_time_is_valid(request%timestamp, strict=.true.)) return
+        end if
+
+        if (.not. dm_string_is_printable(request%request)) return
+
+        if (request%delay < 0) return
+        if (.not. dm_error_is_valid(request%error)) return
+        if (request%retries < 0) return
+        if (request%state < 0) return
+        if (request%timeout < 0) return
+
+        if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return
+
+        if (request%nresponses > 0) then
+            if (.not. all(dm_response_is_valid(request%responses(1:request%nresponses)))) return
+        end if
+
+        valid = .true.
+    end function dm_request_is_valid
+
     integer function dm_request_set_response_error(request, error, name) result(rc)
         !! Sets error code of all responses of the given request. If argument
         !! `name` is given, the error is set only for the first response of the
@@ -208,54 +256,6 @@ contains
 
         rc = E_NONE
     end function dm_request_set_response_error
-
-    pure elemental logical function dm_request_valid(request, timestamp) result(valid)
-        !! Returns `.true.` if given observation request is valid. A request is
-        !! valid if it conforms to the following requirements:
-        !!
-        !! * A request name is set and a valid id.
-        !! * A time stamp is set and in ISO 8601 format, unless argument
-        !!   `timestamp` is passed and `.false.`.
-        !! * All ASCII characters in attribute _request_ are printable.
-        !! * The attributes _delay_, _retries_, _state_ and _timeout_ are not
-        !!   negative.
-        !! * The attribute _error_ is a valid error code.
-        !! * The attribute _nresponses_ is within the bounds of array
-        !!   _responses_.
-        !! * All responses are valid.
-        !!
-        type(request_type), intent(in)           :: request   !! Request type.
-        logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
-
-        logical :: timestamp_
-
-        valid = .false.
-
-        timestamp_ = .true.
-        if (present(timestamp)) timestamp_ = timestamp
-
-        if (.not. dm_id_valid(request%name)) return
-
-        if (timestamp_) then
-            if (.not. dm_time_valid(request%timestamp, strict=.true.)) return
-        end if
-
-        if (.not. dm_string_is_printable(request%request)) return
-
-        if (request%delay < 0) return
-        if (.not. dm_error_valid(request%error)) return
-        if (request%retries < 0) return
-        if (request%state < 0) return
-        if (request%timeout < 0) return
-
-        if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return
-
-        if (request%nresponses > 0) then
-            if (.not. all(dm_response_valid(request%responses(1:request%nresponses)))) return
-        end if
-
-        valid = .true.
-    end function dm_request_valid
 
     subroutine dm_request_out(request, unit)
         !! Prints request to standard output or given file unit.

@@ -65,7 +65,7 @@ POSIX semaphores.
 * Leica GeoCOM API for Fortran
 * time series plotting
 * Lua scripting
-* MQTT connectivity
+* MQTT and XMPP connectivity
 * HTML5 reports
 * Atom XML web feeds
 * e-mail via SMTP
@@ -90,6 +90,7 @@ this package:
 * LAPACK
 * libcurl
 * libmodbus
+* libstrophe
 * Lua 5.4
 * PCRE2
 * SQLite 3
@@ -161,7 +162,7 @@ On 64-bit Raspberry Pi single-board computers, select target `linux_aarch64`.
 | `libdmpack.a`  | DMPACK static library. |
 | `libdmpack.so` | DMPACK shared library. |
 
-Either link your programs against static library `libdmpack.a`, or `-ldmpack` if
+Either link your programs against static library `libdmpack.a` or `-ldmpack` if
 `libdmpack.so` is in your library search path, for example:
 
 ```
@@ -172,30 +173,31 @@ Depending on which parts of the **DMPACK** library are used by third-party
 applications, additional shared libraries have to be linked. The directory
 containing the **DMPACK** module files is passed through argument `-I`.
 
-| Module          | Libraries           | Linker Libraries                         |
-|-----------------|---------------------|------------------------------------------|
-| `dm_config`     | Lua 5.4             | `pkg-config --libs lua-5.4`              |
-| `dm_crypto`     | OpenSSL             | `-lcrypto`                               |
-| `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`              |
-| `dm_fcgi`       | FastCGI             | `-lfcgi`                                 |
-| `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`         |
-| `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`          |
-| `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`              |
-| `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`              |
-| `dm_lua_geocom` | Lua 5.4             | `pkg-config --libs lua-5.4`              |
-| `dm_mail`       | libcurl             | `pkg-config --libs libcurl`              |
-| `dm_modbus`     | libmodbus           | `pkg-config --libs libmodbus`            |
-| `dm_mqtt`       | libcurl             | `pkg-config --libs libcurl`              |
-| `dm_mqueue`     | POSIX               | `-lrt`                                   |
-| `dm_mutex`      | POSIX               | `-lpthread`                              |
-| `dm_regex`      | PCRE2               | `pkg-config --libs libpcre2-8`           |
-| `dm_rpc`        | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd` |
-| `dm_sem`        | POSIX               | `-lpthread`                              |
-| `dm_thread`     | POSIX               | `-lpthread`                              |
-| `dm_transform`  | LAPACK, BLAS        | `pkg-config --libs lapack blas`          |
-| `dm_z`          | zlib, zstd          | `pkg-config --libs zlib libzstd`         |
-| `dm_zlib`       | zlib                | `pkg-config --libs zlib`                 |
-| `dm_zstd`       | zstd                | `pkg-config --libs libzstd`              |
+| Module          | Libraries           | Linker Libraries                                  |
+|-----------------|---------------------|---------------------------------------------------|
+| `dm_config`     | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_crypto`     | OpenSSL             | `-lcrypto`                                        |
+| `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`                       |
+| `dm_fcgi`       | FastCGI             | `-lfcgi`                                          |
+| `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
+| `dm_jabber`     | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
+| `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_lua_geocom` | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_mail`       | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_modbus`     | libmodbus           | `pkg-config --libs libmodbus`                     |
+| `dm_mqtt`       | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_mqueue`     | POSIX               | `-lrt`                                            |
+| `dm_mutex`      | POSIX               | `-lpthread`                                       |
+| `dm_regex`      | PCRE2               | `pkg-config --libs libpcre2-8`                    |
+| `dm_rpc`        | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd`          |
+| `dm_sem`        | POSIX               | `-lpthread`                                       |
+| `dm_thread`     | POSIX               | `-lpthread`                                       |
+| `dm_transform`  | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
+| `dm_z`          | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
+| `dm_zlib`       | zlib                | `pkg-config --libs zlib`                          |
+| `dm_zstd`       | zstd                | `pkg-config --libs libzstd`                       |
 
 ## Source Code Structure
 
@@ -233,7 +235,7 @@ To convert the [User Guide](guide/README.md) from AsciiDoc to HTML, run:
 $ make guide
 ```
 
-The result is written to `guide/guide.html`.
+The output is written to `guide/guide.html`.
 
 ## Source Code Documentation
 

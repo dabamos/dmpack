@@ -35,8 +35,8 @@ module dm_beat
     public :: operator (==)
 
     public :: dm_beat_equals
+    public :: dm_beat_is_valid
     public :: dm_beat_out
-    public :: dm_beat_valid
 contains
     pure elemental logical function dm_beat_equals(beat1, beat2) result(equals)
         !! Returns `.true.` if given beats are equal.
@@ -55,20 +55,20 @@ contains
         equals= .true.
     end function dm_beat_equals
 
-    pure elemental logical function dm_beat_valid(beat) result(valid)
+    pure elemental logical function dm_beat_is_valid(beat) result(valid)
         !! Returns `.true.` if given beat type elements are valid.
         use :: dm_string, only: dm_string_is_printable
 
         type(beat_type), intent(in) :: beat !! Beat type.
 
         valid = .false.
-        if (.not. dm_id_valid(beat%node_id))            return
-        if (.not. dm_string_is_printable(beat%client))  return
-        if (.not. dm_time_valid(beat%time_sent))        return
-        if (.not. dm_time_valid(beat%time_recv))        return
-        if (beat%interval < 0_i8) return
+        if (.not. dm_id_is_valid(beat%node_id))        return
+        if (.not. dm_string_is_printable(beat%client)) return
+        if (.not. dm_time_is_valid(beat%time_sent))    return
+        if (.not. dm_time_is_valid(beat%time_recv))    return
+        if (beat%interval < 0) return
         valid = .true.
-    end function dm_beat_valid
+    end function dm_beat_is_valid
 
     subroutine dm_beat_out(beat, unit)
         !! Prints beat to standard output or given file unit.

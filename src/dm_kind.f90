@@ -19,13 +19,13 @@ module dm_kind
     !! * standard input:  `stdin`  (⇒ `input_unit`)
     !! * standard output: `stdout` (⇒ `output_unit`)
     !!
-    use, intrinsic :: iso_fortran_env, only: i2     => int16, &
-                                             i4     => int32, &
-                                             i8     => int64, &
-                                             r4     => real32, &
-                                             r8     => real64, &
-                                             u2     => int16, &
-                                             u4     => int32, &
+    use, intrinsic :: iso_fortran_env, only: i2     => int16,      &
+                                             i4     => int32,      &
+                                             i8     => int64,      &
+                                             r4     => real32,     &
+                                             r8     => real64,     &
+                                             u2     => int16,      &
+                                             u4     => int32,      &
                                              stderr => error_unit, &
                                              stdin  => input_unit, &
                                              stdout => output_unit

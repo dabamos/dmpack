@@ -196,7 +196,7 @@ contains
                 end if
 
                 ! Validate beat.
-                if (.not. dm_beat_valid(beat)) then
+                if (.not. dm_beat_is_valid(beat)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid beat data', E_INVALID)
                     exit response_block
                 end if
@@ -238,7 +238,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(node_id)) then
+            if (.not. dm_id_is_valid(node_id)) then
                 call api_error(code, 'invalid parameter node_id', E_INVALID)
                 exit response_block
             end if
@@ -452,7 +452,7 @@ contains
                 end if
 
                 ! Validate log.
-                if (.not. dm_log_valid(log)) then
+                if (.not. dm_log_is_valid(log)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid log data', E_INVALID)
                     exit response_block
                 end if
@@ -466,7 +466,7 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_log_exists(db, log%id)) then
+                if (dm_db_has_log(db, log%id)) then
                     call api_error(HTTP_CONFLICT, 'log exists', E_EXIST)
                     exit response_block
                 end if
@@ -496,7 +496,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_uuid4_valid(id)) then
+            if (.not. dm_uuid4_is_valid(id)) then
                 call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -610,17 +610,17 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(node_id)) then
+            if (.not. dm_id_is_valid(node_id)) then
                 call api_error(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(from)) then
+            if (.not. dm_time_is_valid(from)) then
                 call api_error(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(to)) then
+            if (.not. dm_time_is_valid(to)) then
                 call api_error(code, 'invalid parameter to', rc)
                 exit response_block
             end if
@@ -785,7 +785,7 @@ contains
                 end if
 
                 ! Validate node data.
-                if (.not. dm_node_valid(node)) then
+                if (.not. dm_node_is_valid(node)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid node data', E_INVALID)
                     exit response_block
                 end if
@@ -799,7 +799,7 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_node_exists(db, node%id)) then
+                if (dm_db_has_node(db, node%id)) then
                     call api_error(HTTP_CONFLICT, 'node exists', E_EXIST)
                     exit response_block
                 end if
@@ -829,7 +829,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(id)) then
+            if (.not. dm_id_is_valid(id)) then
                 call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1041,7 +1041,7 @@ contains
                 end if
 
                 ! Validate observation data.
-                if (.not. dm_observ_valid(observ)) then
+                if (.not. dm_observ_is_valid(observ)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid observ data', E_INVALID)
                     exit response_block
                 end if
@@ -1055,7 +1055,7 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_observ_exists(db, observ%id)) then
+                if (dm_db_has_observ(db, observ%id)) then
                     call api_error(HTTP_CONFLICT, 'observation exists', E_EXIST)
                     exit response_block
                 end if
@@ -1085,7 +1085,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_uuid4_valid(id)) then
+            if (.not. dm_uuid4_is_valid(id)) then
                 call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1212,27 +1212,27 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(node_id)) then
+            if (.not. dm_id_is_valid(node_id)) then
                 call api_error(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(sensor_id)) then
+            if (.not. dm_id_is_valid(sensor_id)) then
                 call api_error(code, 'invalid parameter sensor_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(target_id)) then
+            if (.not. dm_id_is_valid(target_id)) then
                 call api_error(code, 'invalid parameter target_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(from)) then
+            if (.not. dm_time_is_valid(from)) then
                 call api_error(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(to)) then
+            if (.not. dm_time_is_valid(to)) then
                 call api_error(code, 'invalid parameter to', rc)
                 exit response_block
             end if
@@ -1450,7 +1450,7 @@ contains
                 end if
 
                 ! Validate sensor data.
-                if (.not. dm_sensor_valid(sensor)) then
+                if (.not. dm_sensor_is_valid(sensor)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid sensor data', E_INVALID)
                     exit response_block
                 end if
@@ -1464,7 +1464,7 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_sensor_exists(db, sensor%id)) then
+                if (dm_db_has_sensor(db, sensor%id)) then
                     call api_error(HTTP_CONFLICT, 'sensor exists', E_EXIST)
                     exit response_block
                 end if
@@ -1494,7 +1494,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(id)) then
+            if (.not. dm_id_is_valid(id)) then
                 call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1707,13 +1707,13 @@ contains
                 end if
 
                 ! Validate target data.
-                if (.not. dm_target_valid(target)) then
+                if (.not. dm_target_is_valid(target)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid target data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_target_exists(db, target%id)) then
+                if (dm_db_has_target(db, target%id)) then
                     call api_error(HTTP_CONFLICT, 'target exists', E_EXIST)
                     exit response_block
                 end if
@@ -1743,7 +1743,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(id)) then
+            if (.not. dm_id_is_valid(id)) then
                 call api_error(code, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1957,32 +1957,32 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_id_valid(node_id)) then
+            if (.not. dm_id_is_valid(node_id)) then
                 call api_error(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(sensor_id)) then
+            if (.not. dm_id_is_valid(sensor_id)) then
                 call api_error(code, 'invalid parameter sensor_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(target_id)) then
+            if (.not. dm_id_is_valid(target_id)) then
                 call api_error(code, 'invalid parameter target_id', rc)
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(response)) then
+            if (.not. dm_id_is_valid(response)) then
                 call api_error(code, 'invalid parameter response', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(from)) then
+            if (.not. dm_time_is_valid(from)) then
                 call api_error(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
-            if (.not. dm_time_valid(to)) then
+            if (.not. dm_time_is_valid(to)) then
                 call api_error(code, 'invalid parameter to', rc)
                 exit response_block
             end if

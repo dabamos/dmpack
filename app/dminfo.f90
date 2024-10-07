@@ -54,7 +54,7 @@ contains
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode, user_version
         integer(kind=i8)              :: n, sz
-        logical                       :: exists, foreign_keys, has_db
+        logical                       :: foreign_keys, has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
@@ -86,41 +86,50 @@ contains
             print '("db.schema_version: ", i0)', user_version
             print '("db.size: ", i0)',           sz
 
-            rc = dm_db_table_exists(db, SQL_TABLE_BEATS, exists)
-            if (exists) rc = dm_db_count_beats(db, n)
-            if (exists) print '("db.table.beats.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_BEATS)) then
+                rc = dm_db_count_beats(db, n)
+                print '("db.table.beats.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
-            if (exists) rc = dm_db_count_logs(db, n)
-            if (exists) print '("db.table.logs.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_LOGS)) then
+                rc = dm_db_count_logs(db, n)
+                print '("db.table.logs.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_NODES, exists)
-            if (exists) rc = dm_db_count_nodes(db, n)
-            if (exists) print '("db.table.nodes.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_NODES)) then
+                rc = dm_db_count_nodes(db, n)
+                print '("db.table.nodes.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_OBSERVS, exists)
-            if (exists) rc = dm_db_count_observs(db, n)
-            if (exists) print '("db.table.observs.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_OBSERVS)) then
+                rc = dm_db_count_observs(db, n)
+                print '("db.table.observs.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_RECEIVERS, exists)
-            if (exists) rc = dm_db_count_receivers(db, n)
-            if (exists) print '("db.table.receivers.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_RECEIVERS)) then
+                rc = dm_db_count_receivers(db, n)
+                print '("db.table.receivers.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_REQUESTS, exists)
-            if (exists) rc = dm_db_count_requests(db, n)
-            if (exists) print '("db.table.requests.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_REQUESTS)) then
+                rc = dm_db_count_requests(db, n)
+                print '("db.table.requests.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_RESPONSES, exists)
-            if (exists) rc = dm_db_count_responses(db, n)
-            if (exists) print '("db.table.responses.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_RESPONSES)) then
+                rc = dm_db_count_responses(db, n)
+                print '("db.table.responses.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_SENSORS, exists)
-            if (exists) rc = dm_db_count_sensors(db, n)
-            if (exists) print '("db.table.sensors.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_SENSORS)) then
+                rc = dm_db_count_sensors(db, n)
+                print '("db.table.sensors.rows: ", i0)', n
+            end if
 
-            rc = dm_db_table_exists(db, SQL_TABLE_TARGETS, exists)
-            if (exists) rc = dm_db_count_targets(db, n)
-            if (exists) print '("db.table.targets.rows: ", i0)', n
+            if (dm_db_has_table(db, SQL_TABLE_TARGETS)) then
+                rc = dm_db_count_targets(db, n)
+                print '("db.table.targets.rows: ", i0)', n
+            end if
 
             rc = dm_db_close(db)
         end if

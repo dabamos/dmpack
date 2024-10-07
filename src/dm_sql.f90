@@ -14,20 +14,22 @@ module dm_sql
     integer, parameter, public :: SQL_TABLE_REQUESTS     = 6  !! Requests table.
     integer, parameter, public :: SQL_TABLE_RESPONSES    = 7  !! Responses table.
     integer, parameter, public :: SQL_TABLE_LOGS         = 8  !! Logs table.
-    integer, parameter, public :: SQL_TABLE_BEATS        = 9  !! Heartbeats table.
-    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 10 !! Sync nodes table.
-    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 11 !! Sync sensors table.
-    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 12 !! Sync targets table.
-    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 13 !! Sync observations table.
-    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 14 !! Sync logs table.
-    integer, parameter, public :: SQL_TABLE_LAST         = 14 !! Never use this.
+    integer, parameter, public :: SQL_TABLE_IMAGES       = 9  !! Images table.
+    integer, parameter, public :: SQL_TABLE_BEATS        = 10 !! Heartbeats table.
+    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 11 !! Sync nodes table.
+    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 12 !! Sync sensors table.
+    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 13 !! Sync targets table.
+    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 14 !! Sync observations table.
+    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 15 !! Sync logs table.
+    integer, parameter, public :: SQL_TABLE_SYNC_IMAGES  = 16 !! Sync images table.
+    integer, parameter, public :: SQL_TABLE_LAST         = 16 !! Never use this.
 
     integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
 
     character(len=*), parameter, public :: SQL_TABLE_NAMES(SQL_TABLE_LAST) = [ &
         character(len=SQL_TABLE_NAME_LEN) :: 'nodes', 'sensors', 'targets', 'observs', &
-        'receivers', 'requests', 'responses', 'logs', 'beats', 'sync_nodes', &
-        'sync_sensors', 'sync_targets', 'sync_observs', 'sync_logs' &
+        'receivers', 'requests', 'responses', 'logs', 'images', 'beats', 'sync_nodes', &
+        'sync_sensors', 'sync_targets', 'sync_observs', 'sync_logs', 'sync_images' &
     ] !! SQL table names.
 
     ! ******************************************************************
@@ -51,6 +53,7 @@ module dm_sql
     ! ******************************************************************
     ! TABLE CREATION QUERIES.
     ! ******************************************************************
+    ! Beats schema.
     character(len=*), parameter, public :: SQL_CREATE_BEATS = &
         'CREATE TABLE IF NOT EXISTS beats(' // NL // &
         'beat_id   INTEGER PRIMARY KEY,' // NL // &

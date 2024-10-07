@@ -325,7 +325,7 @@ contains
 
             print *, 'Validating report ...'
             rc = E_INVALID
-            if (.not. dm_report_valid(report)) exit test_block
+            if (.not. dm_report_is_valid(report)) exit test_block
 
             rc = E_NONE
         end block test_block

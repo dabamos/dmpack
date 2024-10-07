@@ -98,9 +98,11 @@ module dm_lua
         module procedure :: lua_to_request
     end interface dm_lua_to
 
+    ! Public abstract interfaces.
+    public :: dm_lua_callback
+
     ! Public procedures.
     public :: dm_lua_call
-    public :: dm_lua_callback
     public :: dm_lua_destroy
     public :: dm_lua_dump_stack
     public :: dm_lua_error

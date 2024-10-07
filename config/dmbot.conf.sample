@@ -1,0 +1,29 @@
+--
+-- Example configuration file for dmbot.
+--
+-- Rename table "dmbot" to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      host     - IP or FQDN of XMPP server.
+--      jid      - Jabber ID.
+--      logger   - Name of logger to send logs to (optional).
+--      node     - Node id.
+--      password - Jabber ID password.
+--      port     - Port of XMPP server (default: 5222).
+--      tls      - Force TLS encryption.
+--      verbose  - Print logs to standard error.
+--
+
+dmbot = {
+    node = "dummy-node",
+    logger = "",
+    host = "example.com",
+    port = 5222,
+    jid = "user@example.com",
+    password = "secret",
+    tls = true,
+    debug = false,
+    verbose = true
+}

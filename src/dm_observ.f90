@@ -91,8 +91,8 @@ module dm_observ
     public :: dm_observ_add_request
     public :: dm_observ_equals
     public :: dm_observ_index
+    public :: dm_observ_is_valid
     public :: dm_observ_out
-    public :: dm_observ_valid
     public :: dm_observ_view_equals
 
     ! private :: observ_write_formatted
@@ -115,7 +115,7 @@ contains
         if (observ%nreceivers < 0 .or. observ%nreceivers >= OBSERV_MAX_NRECEIVERS) return
 
         rc = E_INVALID
-        if (.not. dm_id_valid(receiver, max_len=OBSERV_RECEIVER_LEN)) return
+        if (.not. dm_id_is_valid(receiver, max_len=OBSERV_RECEIVER_LEN)) return
 
         observ%nreceivers = observ%nreceivers + 1
         observ%receivers(observ%nreceivers) = receiver
@@ -210,7 +210,7 @@ contains
         rc = E_NOT_FOUND
     end function dm_observ_index
 
-    pure elemental logical function dm_observ_valid(observ, id, timestamp) result(valid)
+    pure elemental logical function dm_observ_is_valid(observ, id, timestamp) result(valid)
         !! Returns `.true.` if given observation is valid. An observation is
         !! valid if it conforms to the following requirements:
         !!
@@ -247,39 +247,39 @@ contains
         if (id_) then
             if (observ%id == UUID_DEFAULT) return
 
-            if (.not. dm_uuid4_valid(observ%id))     return
-            if (.not. dm_id_valid(observ%node_id))   return
-            if (.not. dm_id_valid(observ%sensor_id)) return
-            if (.not. dm_id_valid(observ%target_id)) return
+            if (.not. dm_uuid4_is_valid(observ%id))     return
+            if (.not. dm_id_is_valid(observ%node_id))   return
+            if (.not. dm_id_is_valid(observ%sensor_id)) return
+            if (.not. dm_id_is_valid(observ%target_id)) return
         end if
 
-        if (.not. dm_id_valid(observ%name)) return
+        if (.not. dm_id_is_valid(observ%name)) return
 
         if (timestamp_) then
-            if (.not. dm_time_valid(observ%timestamp, strict=.true.)) return
+            if (.not. dm_time_is_valid(observ%timestamp, strict=.true.)) return
         end if
 
         if (len_trim(observ%source) > 0) then
-            if (.not. dm_id_valid(observ%source)) return
+            if (.not. dm_id_is_valid(observ%source)) return
         end if
 
         if (observ%priority < 0) return
-        if (.not. dm_error_valid(observ%error)) return
+        if (.not. dm_error_is_valid(observ%error)) return
 
         if (observ%next       < 0 .or. observ%next       > OBSERV_MAX_NRECEIVERS) return
         if (observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS) return
         if (observ%nrequests  < 0 .or. observ%nrequests  > OBSERV_MAX_NREQUESTS)  return
 
         if (observ%nreceivers > 0) then
-            if (.not. all(dm_id_valid(observ%receivers(1:observ%nreceivers)))) return
+            if (.not. all(dm_id_is_valid(observ%receivers(1:observ%nreceivers)))) return
         end if
 
         if (observ%nrequests > 0) then
-            if (.not. all(dm_request_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))) return
+            if (.not. all(dm_request_is_valid(observ%requests(1:observ%nrequests), timestamp=timestamp_))) return
         end if
 
         valid = .true.
-    end function dm_observ_valid
+    end function dm_observ_is_valid
 
     pure elemental logical function dm_observ_view_equals(view1, view2) result(equals)
         !! Returns `.true.` if given observation views are equal.

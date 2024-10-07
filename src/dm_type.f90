@@ -26,7 +26,7 @@ module dm_type
         'request', 'response', 'log', 'beat', 'dp' ] !! Type names array.
 
     public :: dm_type_from_name
-    public :: dm_type_valid
+    public :: dm_type_is_valid
 contains
     integer function dm_type_from_name(name) result(type)
         !! Returns type from given name. If `name` is longer than
@@ -64,11 +64,11 @@ contains
         end select
     end function dm_type_from_name
 
-    pure elemental logical function dm_type_valid(type) result(valid)
+    pure elemental logical function dm_type_is_valid(type) result(valid)
         !! Returns `.true.` if given type enumerator is valid. `TYPE_NONE` is
         !! an invalid type.
         integer, intent(in) :: type !! Type enumerator.
 
         valid = (type > TYPE_NONE .and. type <= TYPE_LAST)
-    end function dm_type_valid
+    end function dm_type_is_valid
 end module dm_type

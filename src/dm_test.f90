@@ -53,6 +53,7 @@ module dm_test
     end interface dm_test_dummy
 
     public :: dm_test_callback
+
     public :: dm_test_dummy
     public :: dm_test_dummy_beat
     public :: dm_test_dummy_log

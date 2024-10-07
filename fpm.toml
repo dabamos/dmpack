@@ -20,6 +20,7 @@ fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
 fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
+fortran-xmpp    = { git = "https://github.com/interkosmos/fortran-xmpp.git" }
 fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
 fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 
@@ -43,6 +44,11 @@ link = [ "sqlite3" ]
 name = "dmbeat"
 main = "dmbeat.f90"
 link = [ "curl", "lua-5.4", "rt", "z", "zstd" ]
+
+[[executable]]
+name = "dmbot"
+main = "dmbot.f90"
+link = [ "expat", "libstrophe", "lua-5.4", "openssl", "rt", "sqlite3", "z" ]
 
 [[executable]]
 name = "dmdb"

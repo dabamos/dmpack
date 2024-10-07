@@ -115,27 +115,27 @@ contains
         ! Validate options.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (.not. dm_id_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
+        if (.not. dm_id_is_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
             call dm_error_out(rc, 'invalid response name')
             return
         end if
 
-        if (.not. dm_log_valid(app%level)) then
+        if (.not. dm_log_is_valid(app%level)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if

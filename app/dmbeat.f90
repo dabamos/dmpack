@@ -72,7 +72,7 @@ program dmbeat
     end block init_block
 
     ! Clean-up.
-    call dm_rpc_destroy()
+    call dm_rpc_shutdown()
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function read_args(app) result(rc)
@@ -134,7 +134,7 @@ contains
         rc = E_INVALID
 
         if (len_trim(app%logger) > 0) then
-            if (.not. dm_id_valid(app%logger)) then
+            if (.not. dm_id_is_valid(app%logger)) then
                 call dm_error_out(rc, 'invalid logger name')
                 return
             end if
@@ -142,7 +142,7 @@ contains
             app%ipc = .true.
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -162,7 +162,7 @@ contains
             return
         end if
 
-        if (.not. dm_z_valid(app%compression)) then
+        if (.not. dm_z_is_valid(app%compression)) then
             call dm_error_out(rc, 'invalid compression')
             return
         end if
@@ -339,7 +339,7 @@ contains
         select case (signum)
             case default
                 call logger%info('exit on signal ' // dm_itoa(signum))
-                call dm_rpc_destroy()
+                call dm_rpc_shutdown()
                 call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_callback

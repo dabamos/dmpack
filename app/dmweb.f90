@@ -506,7 +506,7 @@ contains
                 exit response_block
             end if
 
-            if (.not. dm_uuid4_valid(id)) then
+            if (.not. dm_uuid4_is_valid(id)) then
                 call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
@@ -612,22 +612,22 @@ contains
                     if (dm_is_error(dm_cgi_get(param, 'max_results', nresults))) exit valid_block
 
                     ! Timestamps.
-                    if (.not. dm_time_valid(from)) exit valid_block
-                    if (.not. dm_time_valid(to))   exit valid_block
+                    if (.not. dm_time_is_valid(from)) exit valid_block
+                    if (.not. dm_time_is_valid(to))   exit valid_block
 
                     ! Node id.
                     if (dm_is_ok(dm_cgi_get(param, 'node_id', node_id))) then
-                        if (.not. dm_id_valid(node_id)) exit valid_block
+                        if (.not. dm_id_is_valid(node_id)) exit valid_block
                     end if
 
                     ! Sensor id.
                     if (dm_is_ok(dm_cgi_get(param, 'sensor_id', sensor_id))) then
-                        if (.not. dm_id_valid(sensor_id)) exit valid_block
+                        if (.not. dm_id_is_valid(sensor_id)) exit valid_block
                     end if
 
                     ! Target id.
                     if (dm_is_ok(dm_cgi_get(param, 'target_id', target_id))) then
-                        if (.not. dm_id_valid(target_id)) exit valid_block
+                        if (.not. dm_id_is_valid(target_id)) exit valid_block
                     end if
 
                     ! Number of results.
@@ -950,7 +950,7 @@ contains
                 rc = dm_cgi_get(param, 'alt',  node%alt)
 
                 ! Validate node data.
-                if (.not. dm_node_valid(node)) then
+                if (.not. dm_node_is_valid(node)) then
                     call html_error('Invalid Node', error=E_INVALID)
                     exit response_block
                 end if
@@ -1019,7 +1019,7 @@ contains
             return
         end if
 
-        if (.not. dm_uuid4_valid(id)) then
+        if (.not. dm_uuid4_is_valid(id)) then
             call html_error('Invalid Parameter', error=E_INVALID)
             return
         end if
@@ -1157,11 +1157,11 @@ contains
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id)   .or. &
-                    .not. dm_id_valid(sensor_id) .or. &
-                    .not. dm_id_valid(target_id) .or. &
-                    .not. dm_time_valid(from)    .or. &
-                    .not. dm_time_valid(to)) then
+                if (.not. dm_id_is_valid(node_id)   .or. &
+                    .not. dm_id_is_valid(sensor_id) .or. &
+                    .not. dm_id_is_valid(target_id) .or. &
+                    .not. dm_time_is_valid(from)    .or. &
+                    .not. dm_time_is_valid(to)) then
                     call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1305,12 +1305,12 @@ contains
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_valid(node_id)       .or. &
-                    .not. dm_id_valid(sensor_id)     .or. &
-                    .not. dm_id_valid(target_id)     .or. &
-                    .not. dm_id_valid(response_name) .or. &
-                    .not. dm_time_valid(from)        .or. &
-                    .not. dm_time_valid(to)) then
+                if (.not. dm_id_is_valid(node_id)       .or. &
+                    .not. dm_id_is_valid(sensor_id)     .or. &
+                    .not. dm_id_is_valid(target_id)     .or. &
+                    .not. dm_id_is_valid(response_name) .or. &
+                    .not. dm_time_is_valid(from)        .or. &
+                    .not. dm_time_is_valid(to)) then
                     call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1439,7 +1439,7 @@ contains
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(id)) then
+            if (.not. dm_id_is_valid(id)) then
                 call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
@@ -1523,7 +1523,7 @@ contains
                 rc = dm_cgi_get(param, 'alt',  sensor%alt)
 
                 ! Validate sensor data.
-                if (.not. dm_sensor_valid(sensor)) then
+                if (.not. dm_sensor_is_valid(sensor)) then
                     call html_error('Invalid Sensor', error=E_INVALID)
                     exit response_block
                 end if
@@ -1753,7 +1753,7 @@ contains
                 exit response_block
             end if
 
-            if (.not. dm_id_valid(id)) then
+            if (.not. dm_id_is_valid(id)) then
                 call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
@@ -1836,7 +1836,7 @@ contains
                 rc = dm_cgi_get(param, 'alt',   target%alt)
 
                 ! Validate target data.
-                if (.not. dm_target_valid(target)) then
+                if (.not. dm_target_is_valid(target)) then
                     call html_error('Invalid Target', error=E_INVALID)
                     exit response_block
                 end if

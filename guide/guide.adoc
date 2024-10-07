@@ -39,7 +39,7 @@ as:
 * distributed logging,
 * plotting and reporting,
 * web-based data access,
-* MQTT connectivity,
+* MQTT and XMPP connectivity,
 * Leica GeoCOM API,
 * scripting,
 * e-mail.
@@ -190,6 +190,7 @@ package:
 * link:https://www.netlib.org/lapack/[LAPACK]
 * link:https://curl.se/libcurl/[libcurl] (≥ 8.0.0)
 * link:https://libmodbus.org/[libmodbus]
+* link:https://strophe.im/libstrophe/[libstrophe]
 * link:https://www.lua.org/[Lua 5.4]
 * link:https://www.pcre.org/[PCRE2]
 * link:https://www.sqlite.org/[SQLite 3] (≥ 3.39.0)
@@ -258,8 +259,8 @@ The third-party dependencies have to be installed with development headers:
 $ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libmodbus5 \
   libmodbus-dev libhdf5-103-1 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev \
-  libpcre2-8-0 libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev zlib1g \
-  zlib1g-dev libzstd1 libzstd-dev gnuplot
+  libpcre2-8-0 libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev libstrophe0 \
+  libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev gnuplot
 ....
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
@@ -385,7 +386,7 @@ First, install the build and run-time dependencies:
 ....
 $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
   devel/pcre2 devel/pkgconf ftp/curl lang/gcc lang/lua54 math/gnuplot math/lapack \
-  science/hdf5 www/fcgi
+  net-im/libstrophe science/hdf5 www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
@@ -7893,4 +7894,5 @@ $ /usr/local/bin/zstd --version
 | 132  | `E_HDF5`            | HDF5 library error.
 | 133  | `E_ZLIB`            | Zlib library error.
 | 134  | `E_ZSTD`            | Zstandard library error.
+| 135  | `E_XMPP`            | libstrophe library error.
 |===

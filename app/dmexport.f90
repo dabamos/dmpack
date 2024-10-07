@@ -244,12 +244,12 @@ contains
 
         ! Log, observation, and data point.
         if (app%type == TYPE_LOG .or. app%type == TYPE_OBSERV .or. app%type == TYPE_DP) then
-            if (.not. dm_time_valid(app%from)) then
+            if (.not. dm_time_is_valid(app%from)) then
                 call dm_error_out(rc, 'invalid or missing argument --from')
                 return
             end if
 
-            if (.not. dm_time_valid(app%to)) then
+            if (.not. dm_time_is_valid(app%to)) then
                 call dm_error_out(rc, 'invalid or missing argument --to')
                 return
             end if
@@ -257,17 +257,17 @@ contains
 
         ! Observation and data point.
         if (app%type == TYPE_OBSERV .or. app%type == TYPE_DP) then
-            if (.not. dm_id_valid(app%node)) then
+            if (.not. dm_id_is_valid(app%node)) then
                  call dm_error_out(rc, 'invalid or missing argument --node')
                  return
             end if
 
-            if (.not. dm_id_valid(app%sensor)) then
+            if (.not. dm_id_is_valid(app%sensor)) then
                 call dm_error_out(rc, 'invalid or missing argument --sensor')
                 return
             end if
 
-            if (.not. dm_id_valid(app%target)) then
+            if (.not. dm_id_is_valid(app%target)) then
                 call dm_error_out(rc, 'invalid or missing argument --target')
                 return
             end if
@@ -275,7 +275,7 @@ contains
 
         ! Data point.
         if (app%type == TYPE_DP) then
-            if (.not. dm_id_valid(app%response)) then
+            if (.not. dm_id_is_valid(app%response)) then
                  call dm_error_out(rc, 'invalid or missing argument --response')
                  return
             end if

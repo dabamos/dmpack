@@ -154,7 +154,7 @@ contains
         call dm_error_out(rc)
         print '(1x, i0, a, f8.5, a)', (i - 1), ' observations sent in ', dt, ' sec'
 
-        call dm_rpc_destroy()
+        call dm_rpc_shutdown()
         stat = TEST_PASSED
     end function test02
 
@@ -206,7 +206,7 @@ contains
         end do
 
         print '(1x, i0, a, f8.5, a)', NOBSERVS, ' observations sent in ', dt, ' sec'
-        call dm_rpc_destroy()
+        call dm_rpc_shutdown()
 
         if (error) return
         stat = TEST_PASSED
@@ -260,7 +260,7 @@ contains
         end do
 
         print '(1x, i0, a, f8.5, a)', NOBSERVS, ' observations sent in ', dt, ' sec'
-        call dm_rpc_destroy()
+        call dm_rpc_shutdown()
 
         if (error) return
         stat = TEST_PASSED
@@ -305,7 +305,7 @@ contains
 
         print '(a)', response%payload
         call dm_rpc_reset(request)
-        call dm_rpc_destroy()
+        call dm_rpc_shutdown()
 
         print '(1x, a, f8.5, a)', 'Beat sent in ', dt, ' sec'
         stat = TEST_PASSED

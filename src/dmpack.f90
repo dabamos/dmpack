@@ -61,6 +61,8 @@ module dmpack
     use :: dm_html
     use :: dm_http
     use :: dm_id
+    use :: dm_image
+    use :: dm_jabber
     use :: dm_job
     use :: dm_json
     use :: dm_jsonl

@@ -22,6 +22,18 @@ module dm_crypto
 
     character(len=*), parameter :: FMT_HASH = '(*(z2.2))'
 
+    !! Algorithms.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_NONE      = 0 !! Invalid.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_MD4       = 1 !! MD4.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_MD5       = 2 !! MD5.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_RIPEMD160 = 3 !! RIPEMD-160.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_SHA1      = 4 !! SHA-1.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_SHA224    = 5 !! SHA-224.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_SHA256    = 6 !! SHA-256.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_SHA384    = 7 !! SHA-384.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_SHA512    = 8 !! SHA-512.
+    integer, parameter, public :: CRYPTO_HASH_TYPE_LAST      = 8 !! Never use this.
+
     ! Digest array sizes.
     integer, parameter, public :: CRYPTO_MD4_DIGEST_LEN       = 16
     integer, parameter, public :: CRYPTO_MD5_DIGEST_LEN       = 16

@@ -146,17 +146,17 @@ contains
         ! Validate options.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
 
-        if (.not. dm_id_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
@@ -242,7 +242,7 @@ contains
             end if
 
             ! Validate observation.
-            if (.not. dm_observ_valid(observ_in)) then
+            if (.not. dm_observ_is_valid(observ_in)) then
                 call logger%error('received invalid observ ' // trim(observ_in%name), &
                                   observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
@@ -290,7 +290,7 @@ contains
                 end if
 
                 ! Validate returned observation.
-                if (.not. dm_observ_valid(observ_out)) then
+                if (.not. dm_observ_is_valid(observ_out)) then
                     rc = E_INVALID
                     call logger%error('invalid observ returned from Lua function ' // &
                                       trim(app%proc) // '()', error=rc, observ=observ_in)

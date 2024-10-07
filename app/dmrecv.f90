@@ -140,17 +140,17 @@ contains
         ! Validate settings.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (len_trim(app%node) > 0 .and. .not. dm_id_valid(app%node)) then
+        if (len_trim(app%node) > 0 .and. .not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -184,7 +184,7 @@ contains
                 return
             end if
 
-            if (.not. dm_id_valid(app%response)) then
+            if (.not. dm_id_is_valid(app%response)) then
                 call dm_error_out(rc, 'invalid or missing response name')
                 return
             end if
@@ -275,7 +275,7 @@ contains
             ! Validate observation or log.
             if (app%type == TYPE_OBSERV) then
                 ! Observation.
-                if (.not. dm_observ_valid(observ)) then
+                if (.not. dm_observ_is_valid(observ)) then
                     call logger%error('invalid observ received', error=E_INVALID)
                     cycle ipc_loop
                 end if
@@ -283,7 +283,7 @@ contains
                 call logger%debug('received observ ' // trim(observ%id))
             else if (app%type == TYPE_LOG) then
                 ! Log.
-                if (.not. dm_log_valid(log)) then
+                if (.not. dm_log_is_valid(log)) then
                     call logger%error('invalid log received', error=E_INVALID)
                     cycle ipc_loop
                 end if

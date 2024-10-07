@@ -40,14 +40,13 @@ module dm_mqtt
     !! rc  = dm_mqtt_init()
     !! url = dm_mqtt_url(host='127.0.0.1', topic='/fortran', port=1883)
     !! rc  = dm_mqtt_publish(url, 'Hello, from Fortran!')
-    !! call dm_mqtt_destroy()
+    !! call dm_mqtt_shutdown()
     !! ```
     !!
     !! Any client subscribing topic `/fortran` will receive the message.
     !!
-    !! The procedures `dm_mqtt_init()` and `dm_mqtt_destroy()` have to be called
-    !! once per process, and only if neither the RPC nor the mail backend is
-    !! initialised already.
+    !! The procedure `dm_mqtt_init()` has to be called once per process, and
+    !! only if neither the RPC nor the mail backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -56,10 +55,10 @@ module dm_mqtt
     implicit none (type, external)
     private
 
-    public :: dm_mqtt_destroy
     public :: dm_mqtt_init
     public :: dm_mqtt_publish
     public :: dm_mqtt_url
+    public :: dm_mqtt_shutdown
 contains
     integer function dm_mqtt_init() result(rc)
         !! Initialises MQTT backend.
@@ -185,8 +184,8 @@ contains
         if (.not. allocated(url)) url = ''
     end function dm_mqtt_url
 
-    subroutine dm_mqtt_destroy()
-        !! Cleans-up MQTT backend.
+    subroutine dm_mqtt_shutdown()
+        !! Cleans up MQTT backend.
         call curl_global_cleanup()
-    end subroutine dm_mqtt_destroy
+    end subroutine dm_mqtt_shutdown
 end module dm_mqtt

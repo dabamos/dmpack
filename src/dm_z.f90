@@ -46,22 +46,22 @@ module dm_z
         module procedure :: z_uncompress_target
     end interface dm_z_uncompress
 
-    interface dm_z_valid
+    interface dm_z_is_valid
         !! Generic validation function.
-        module procedure :: dm_z_valid_type
-    end interface dm_z_valid
+        module procedure :: dm_z_type_is_valid
+    end interface dm_z_is_valid
 
     ! Public procedures.
     public :: dm_z_compress
     public :: dm_z_compress_type
     public :: dm_z_compress_types
+    public :: dm_z_is_valid
     public :: dm_z_type_from_encoding
     public :: dm_z_type_from_name
+    public :: dm_z_type_is_valid
     public :: dm_z_type_name
     public :: dm_z_type_to_encoding
     public :: dm_z_uncompress
-    public :: dm_z_valid
-    public :: dm_z_valid_type
 
     ! Private procedures.
     private :: z_compress
@@ -145,7 +145,7 @@ contains
         if (stat /= 0) return
 
         rc = E_INVALID
-        if (.not. dm_z_valid(z)) return
+        if (.not. dm_z_is_valid(z)) return
 
         do i = 1, n
             if (z == Z_TYPE_ZSTD) then
@@ -206,12 +206,21 @@ contains
         end select
     end function dm_z_type_from_name
 
+    pure elemental logical function dm_z_type_is_valid(z) result(valid)
+        !! Returns `.true.` if the given compression enumerator `z` is
+        !! valid. The type `Z_TYPE_NONE` is a valid type, and `Z_TYPE_INVALID`
+        !! is invalid.
+        integer, intent(in) :: z !! Compression enumerator.
+
+        valid = (z >= Z_TYPE_NONE .and. z <= Z_TYPE_LAST)
+    end function dm_z_type_is_valid
+
     pure function dm_z_type_name(z) result(str)
         !! Returns compression type name as allocatable string.
         integer, intent(in)           :: z   !! Compression enumerator.
         character(len=:), allocatable :: str !! Compression type name.
 
-        if (.not. dm_z_valid(z)) then
+        if (.not. dm_z_is_valid(z)) then
             str = 'invalid'
             return
         end if
@@ -235,15 +244,6 @@ contains
                 encoding = ''
         end select
     end function dm_z_type_to_encoding
-
-    pure elemental logical function dm_z_valid_type(z) result(valid)
-        !! Returns `.true.` if the given compression enumerator `z` is
-        !! valid. The type `Z_TYPE_NONE` is a valid type, and `Z_TYPE_INVALID`
-        !! is invalid.
-        integer, intent(in) :: z !! Compression enumerator.
-
-        valid = (z >= Z_TYPE_NONE .and. z <= Z_TYPE_LAST)
-    end function dm_z_valid_type
 
     ! ******************************************************************
     ! PRIVATE PROCEDURES.
@@ -275,7 +275,7 @@ contains
         if (present(output_len)) output_len = 0_i8
 
         rc = E_INVALID
-        if (.not. dm_z_valid(z)) then
+        if (.not. dm_z_is_valid(z)) then
             output = ''
             return
         end if
@@ -469,7 +469,7 @@ contains
         if (present(output_len)) output_len = 0_i8
 
         rc = E_INVALID
-        if (.not. dm_z_valid(z)) return
+        if (.not. dm_z_is_valid(z)) return
 
         rc = E_NONE
         select case (z)

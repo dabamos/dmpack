@@ -25,7 +25,8 @@ module dm_target
     integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Max. target state name length.
 
     character(len=*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
-        character(len=TARGET_STATE_NAME_LEN) :: 'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' &
+        character(len=TARGET_STATE_NAME_LEN) :: &
+        'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' &
     ] !! Target state names.
 
     type, public :: target_type
@@ -37,9 +38,9 @@ module dm_target
         real(kind=r8)                  :: x     = 0.0_r8            !! Target x or easting (optional).
         real(kind=r8)                  :: y     = 0.0_r8            !! Target y or northing (optional).
         real(kind=r8)                  :: z     = 0.0_r8            !! Target z or altitude (optional).
-        real(kind=r8)                  :: lon   = 0.0_r8           !! Longitude in degrees (optional).
-        real(kind=r8)                  :: lat   = 0.0_r8           !! Latitude in degrees (optional).
-        real(kind=r8)                  :: alt   = 0.0_r8           !! Altitude or elevation in metres (optional).
+        real(kind=r8)                  :: lon   = 0.0_r8            !! Longitude in degrees (optional).
+        real(kind=r8)                  :: lat   = 0.0_r8            !! Latitude in degrees (optional).
+        real(kind=r8)                  :: alt   = 0.0_r8            !! Altitude or elevation in metres (optional).
     end type target_type
 
     integer, parameter, public :: TARGET_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -52,10 +53,11 @@ module dm_target
     public :: operator (==)
 
     public :: dm_target_equals
+    public :: dm_target_is_valid
     public :: dm_target_out
+    public :: dm_target_state_is_valid
     public :: dm_target_state_name
-    public :: dm_target_state_valid
-    public :: dm_target_valid
+
 contains
     pure elemental logical function dm_target_equals(target1, target2) result(equals)
         !! Returns `.true.` if given targets are equal.
@@ -80,37 +82,37 @@ contains
         equals= .true.
     end function dm_target_equals
 
+    pure elemental logical function dm_target_is_valid(target) result(valid)
+        !! Returns `.true.` if given target type elements are valid.
+        type(target_type), intent(in) :: target !! Target type.
+
+        valid = .false.
+        if (.not. dm_id_is_valid(target%id)) return
+        if (len_trim(target%name) == 0) return
+        if (.not. dm_target_state_is_valid(target%state)) return
+        valid = .true.
+    end function dm_target_is_valid
+
+    pure elemental logical function dm_target_state_is_valid(state) result(valid)
+        !! Returns `.true.` if the state of the given target type is known.
+        integer, intent(in) :: state !! Target state.
+
+        valid = (state >= TARGET_STATE_NONE .and. state <= TARGET_STATE_LAST)
+    end function dm_target_state_is_valid
+
     pure function dm_target_state_name(state) result(str)
         !! Returns the name of the known target state as an allocatable
         !! character string, or `unknown` if the state is not known.
         integer, intent(in)           :: state !! Target state.
         character(len=:), allocatable :: str !! Target state name.
 
-        if (.not. dm_target_state_valid(state)) then
-            str = 'unknown'
+        if (.not. dm_target_state_is_valid(state)) then
+            str = 'invalid'
             return
         end if
 
         str = trim(TARGET_STATE_NAMES(state))
     end function dm_target_state_name
-
-    pure elemental logical function dm_target_state_valid(state) result(valid)
-        !! Returns `.true.` if the state of the given target type is known.
-        integer, intent(in) :: state !! Target state.
-
-        valid = (state >= TARGET_STATE_NONE .and. state <= TARGET_STATE_LAST)
-    end function dm_target_state_valid
-
-    pure elemental logical function dm_target_valid(target) result(valid)
-        !! Returns `.true.` if given target type elements are valid.
-        type(target_type), intent(in) :: target !! Target type.
-
-        valid = .false.
-        if (.not. dm_id_valid(target%id)) return
-        if (len_trim(target%name) == 0) return
-        if (.not. dm_target_state_valid(target%state)) return
-        valid = .true.
-    end function dm_target_valid
 
     subroutine dm_target_out(target, unit)
         !! Prints target to standard output or given file unit. If not unit is

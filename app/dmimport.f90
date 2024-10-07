@@ -45,7 +45,7 @@ contains
 
         integer          :: error, stat, unit
         integer(kind=i8) :: nrecs, nrows
-        logical          :: exists, valid
+        logical          :: has, valid
         real(kind=r8)    :: dt
         type(db_type)    :: db
         type(timer_type) :: timer
@@ -91,18 +91,18 @@ contains
                 ! Check for appropriate database table.
                 select case (app%type)
                     case (TYPE_NODE)
-                        rc = dm_db_table_exists(db, SQL_TABLE_NODES, exists)
+                        has = dm_db_has_table(db, SQL_TABLE_NODES)
                     case (TYPE_SENSOR)
-                        rc = dm_db_table_exists(db, SQL_TABLE_SENSORS, exists)
+                        has = dm_db_has_table(db, SQL_TABLE_SENSORS)
                     case (TYPE_TARGET)
-                        rc = dm_db_table_exists(db, SQL_TABLE_TARGETS, exists)
+                        has = dm_db_has_table(db, SQL_TABLE_TARGETS)
                     case (TYPE_OBSERV)
-                        rc = dm_db_table_exists(db, SQL_TABLE_OBSERVS, exists)
+                        has = dm_db_has_table(db, SQL_TABLE_OBSERVS)
                     case (TYPE_LOG)
-                        rc = dm_db_table_exists(db, SQL_TABLE_LOGS, exists)
+                        has = dm_db_has_table(db, SQL_TABLE_LOGS)
                 end select
 
-                if (dm_is_error(rc) .or. .not. exists) then
+                if (.not. has) then
                     rc = E_INVALID
                     call dm_error_out(rc, 'database table not found')
                     exit import_block
@@ -162,15 +162,15 @@ contains
                 if (app%dry) then
                     select case (app%type)
                         case (TYPE_NODE)
-                            valid = dm_node_valid(node)
+                            valid = dm_node_is_valid(node)
                         case (TYPE_SENSOR)
-                            valid = dm_sensor_valid(sensor)
+                            valid = dm_sensor_is_valid(sensor)
                         case (TYPE_TARGET)
-                            valid = dm_target_valid(target)
+                            valid = dm_target_is_valid(target)
                         case (TYPE_OBSERV)
-                            valid = dm_observ_valid(observ)
+                            valid = dm_observ_is_valid(observ)
                         case (TYPE_LOG)
-                            valid = dm_log_valid(log)
+                            valid = dm_log_is_valid(log)
                     end select
 
                     if (.not. valid) then

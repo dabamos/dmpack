@@ -58,8 +58,8 @@ contains
 
         rc = E_INVALID
         if (job%valid) then
-            if (.not. dm_observ_valid(job%observ, id=.false., timestamp=.false.)) return
-            if (.not. dm_id_valid(job%observ%target_id)) return
+            if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) return
+            if (.not. dm_id_is_valid(job%observ%target_id)) return
         end if
 
         job_list%njobs   = i

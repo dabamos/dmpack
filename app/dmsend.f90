@@ -105,17 +105,17 @@ contains
         ! Validate settings.
         rc = E_INVALID
 
-        if (.not. dm_id_valid(app%name)) then
+        if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
             return
         end if
 
-        if (len_trim(app%node) > 0 .and. .not. dm_id_valid(app%node)) then
+        if (len_trim(app%node) > 0 .and. .not. dm_id_is_valid(app%node)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_valid(app%logger)) then
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -136,7 +136,7 @@ contains
                 return
             end if
         else
-            if (.not. dm_id_valid(app%receiver)) then
+            if (.not. dm_id_is_valid(app%receiver)) then
                 call dm_error_out(rc, 'invalid receiver')
                 return
             end if
@@ -246,7 +246,7 @@ contains
                     end if
 
                     ! Validate input.
-                    if (.not. dm_observ_valid(observ)) then
+                    if (.not. dm_observ_is_valid(observ)) then
                         call logger%error('invalid input observ ' // observ%id, error=E_INVALID)
                         cycle ipc_loop
                     end if
@@ -284,7 +284,7 @@ contains
                     end if
 
                     ! Validate input.
-                    if (.not. dm_log_valid(log)) then
+                    if (.not. dm_log_is_valid(log)) then
                         call logger%error('invalid input log ' // log%id, error=E_INVALID)
                         cycle ipc_loop
                     end if

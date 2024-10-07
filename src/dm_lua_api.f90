@@ -191,6 +191,7 @@ contains
             rc = dm_lua_set(lua, 'E_HDF5',           E_HDF5);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_XMPP',           E_XMPP);           if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.

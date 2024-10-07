@@ -81,7 +81,7 @@ module dm_arg
     public :: dm_arg_help
     public :: dm_arg_parse
     public :: dm_arg_read
-    public :: dm_arg_type_valid
+    public :: dm_arg_type_is_valid
     public :: dm_arg_validate
 
     private :: arg_get_int32
@@ -299,7 +299,7 @@ contains
         rc = E_EMPTY
 
         validate_loop: do i = 1, size(args)
-            if (.not. dm_arg_type_valid(args(i)%type)) then
+            if (.not. dm_arg_type_is_valid(args(i)%type)) then
                 call dm_error_out(E_TYPE, 'argument --' // trim(args(i)%name) // ' has no valid type')
                 cycle
             end if
@@ -367,12 +367,12 @@ contains
         end do validate_loop
     end function dm_arg_read
 
-    pure elemental logical function dm_arg_type_valid(type) result(valid)
+    pure elemental logical function dm_arg_type_is_valid(type) result(valid)
         !! Returns `.true.` if passed type is a valid argument type.
         integer, intent(in) :: type !! Argument type (`ARG_TYPE_*`).
 
         valid = (type >= ARG_TYPE_NONE .and. type <= ARG_TYPE_LAST)
-    end function dm_arg_type_valid
+    end function dm_arg_type_is_valid
 
     integer function dm_arg_validate(arg) result(rc)
         !! Validates given argument. Arguments of type `ARG_TYPE_LEVEL` are
@@ -404,7 +404,7 @@ contains
 
         ! Validate the type.
         rc = E_ARG_TYPE
-        if (.not. dm_arg_type_valid(arg%type)) return
+        if (.not. dm_arg_type_is_valid(arg%type)) return
 
         select case (arg%type)
             case (ARG_TYPE_INTEGER)
@@ -425,15 +425,15 @@ contains
 
             case (ARG_TYPE_ID)
                 ! DMPACK identifier.
-                if (.not. dm_id_valid(arg%value)) return
+                if (.not. dm_id_is_valid(arg%value)) return
 
             case (ARG_TYPE_UUID)
                 ! UUIDv4.
-                if (.not. dm_uuid4_valid(arg%value)) return
+                if (.not. dm_uuid4_is_valid(arg%value)) return
 
             case (ARG_TYPE_TIME)
                 ! ISO 8601.
-                if (.not. dm_time_valid(arg%value)) return
+                if (.not. dm_time_is_valid(arg%value)) return
 
             case (ARG_TYPE_LEVEL)
                 ! Log level.
@@ -450,7 +450,7 @@ contains
                     arg%value = dm_itoa(level)
                 end if
 
-                if (.not. dm_log_valid(level)) return
+                if (.not. dm_log_is_valid(level)) return
 
             case (ARG_TYPE_FILE, ARG_TYPE_DB)
                 ! File or database.
