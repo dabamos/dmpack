@@ -16,6 +16,9 @@
 [submodule "vendor/fortran-unix"]
 	path = vendor/fortran-unix
 	url = https://github.com/interkosmos/fortran-unix
+[submodule "vendor/fortran-xmpp"]
+	path = vendor/fortran-xmpp
+	url = https://github.com/interkosmos/fortran-xmpp
 [submodule "vendor/fortran-zlib"]
 	path = vendor/fortran-zlib
 	url = https://github.com/interkosmos/fortran-zlib
