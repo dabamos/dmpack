@@ -5,8 +5,8 @@ module dm_jabber
     !!
     !! Link this module against `pkg-config --libs libstrophe expat openssl zlib`.
     !!
-    !! The following example just connects to an XMPP server and sends a
-    !! presence stanza:
+    !! The following example just connects to an XMPP server on port 5222 and
+    !! sends a presence stanza:
     !!
     !! ```fortran
     !! integer                   :: rc     !! Return code.
@@ -36,7 +36,6 @@ module dm_jabber
     !!
     !! ```fortran
     !! subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
-    !!     use, intrinsic :: iso_c_binding
     !!     use :: xmpp
     !!
     !!     type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
@@ -79,6 +78,9 @@ module dm_jabber
     implicit none (type, external)
     private
 
+    integer, parameter, public :: JABBER_JID_LEN      = 64  !! Max. length of Jabber id.
+    integer, parameter, public :: JABBER_JID_FULL_LEN = 128 !! Max. length of JID with additional resource.
+
     integer, parameter, public :: JABBER_PORT     = 5222 !! Default XMPP port (StartTLS).
     integer, parameter, public :: JABBER_PORT_TLS = 5223 !! Secondary XMPP port (TLS).
 
@@ -89,11 +91,98 @@ module dm_jabber
     integer, parameter, public :: JABBER_LL_WARNING = XMPP_LEVEL_WARN
     integer, parameter, public :: JABBER_LL_ERROR   = XMPP_LEVEL_ERROR
 
+    ! Stanza names.
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ACTOR            = 'actor'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_AFTER            = 'after'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_BEFORE           = 'before'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_BLOCK            = 'block'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_BLOCKLIST        = 'blocklist'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_BODY             = 'body'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_C                = 'c'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_COMMAND          = 'command'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_CONFERENCE       = 'conference'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_CONFIGURE        = 'configure'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_CONTENT_TYPE     = 'content-type'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_DATA             = 'data'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_DELAY            = 'delay'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_DESTROY          = 'destroy'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_DISABLE          = 'disable'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ENABLE           = 'enable'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ERROR            = 'error'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_EVENT            = 'event'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_FEATURE          = 'feature'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_FIELD            = 'field'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_FILENAME         = 'filename'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_FIN              = 'fin'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_FIRST            = 'first'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_GET              = 'get'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_GROUP            = 'group'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_HEADER           = 'header'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_IDENTITY         = 'identity'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_INFO             = 'info'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_INVITE           = 'invite'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_IQ               = 'iq'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ITEM             = 'item'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ITEMS            = 'items'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_LAST             = 'last'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_MAX              = 'max'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_MESSAGE          = 'message'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_METADATA         = 'metadata'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_MINIMIZE         = 'minimize'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_MOOD             = 'mood'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_NICK             = 'nick'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_OPENPGP          = 'openpgp'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_ORIGIN_ID        = 'origin-id'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PASSWORD         = 'password'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PING             = 'ping'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PRESENCE         = 'presence'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PRIORITY         = 'priority'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PROPOSE          = 'propose'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUBKEY_METADATA  = 'pubkey-metadata'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUBLIC_KEYS_LIST = 'public-keys-list'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUBLISH          = 'publish'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUBLISH_OPTIONS  = 'publish-options'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUBSUB           = 'pubsub'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUPKEY           = 'pubkey'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_PUT              = 'put'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_QUERY            = 'query'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_REASON           = 'reason'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_RECEIVED         = 'received'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_REPORT           = 'report'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_REQUEST          = 'request'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_RESULT           = 'result'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SENT             = 'sent'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SHOW             = 'show'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SIZE             = 'size'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SLOT             = 'slot'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_STANZA_ID        = 'stanza-id'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_STATUS           = 'status'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_STORAGE          = 'storage'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SUBJECT          = 'subject'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_SUBSCRIBE        = 'subscribe'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_TEXT             = 'text'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_UNBLOCK          = 'unblock'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_URL              = 'url'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_USERNAME         = 'username'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_VALUE            = 'value'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_VCARD            = 'vCard'
+    character(len=*), parameter, public :: JABBER_STANZA_NAME_X                = 'x'
+
+    ! Stanza default texts.
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_AWAY    = 'away'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_CHAT    = 'chat'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_DND     = 'dnd'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_OFFLINE = 'unavailable'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_ONLINE  = 'online'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_XA      = 'xa'
+
     type, public :: jabber_type
         !! Jabber/XMPP context type.
-        type(c_ptr) :: ctx        = c_null_ptr !! libstrophe context.
-        type(c_ptr) :: connection = c_null_ptr !! libstrophe connection.
-        type(c_ptr) :: sm_state   = c_null_ptr !! libstrophe stream management state.
+        type(c_ptr)                        :: ctx        = c_null_ptr !! libstrophe context.
+        type(c_ptr)                        :: connection = c_null_ptr !! libstrophe connection.
+        type(c_ptr)                        :: sm_state   = c_null_ptr !! libstrophe stream management state.
+        character(len=JABBER_JID_LEN)      :: jid        = ' '        !! Jabber id.
+        character(len=JABBER_JID_FULL_LEN) :: jid_full   = ' '        !! Jabber id with resource.
     end type jabber_type
 
     ! Imported abstract interfaces.
@@ -113,11 +202,12 @@ module dm_jabber
     public :: dm_jabber_init
     public :: dm_jabber_is_connected
     public :: dm_jabber_run
+    public :: dm_jabber_send_presence
     public :: dm_jabber_set_stream_management_state
     public :: dm_jabber_shutdown
 contains
     integer function dm_jabber_connect(jabber, host, port, jid, password, callback, user_data, &
-                                       keep_alive, tls_required, tls_trusted) result(rc)
+                                       resource, keep_alive, tls_required, tls_trusted) result(rc)
         !! Connects to XMPP server.
         !!
         !! The function returns the following error codes:
@@ -134,6 +224,7 @@ contains
         character(len=*),  intent(in)            :: password     !! JID account password.
         procedure(dm_jabber_connection_callback) :: callback     !! Jabber connection handler.
         type(c_ptr),       intent(in), optional  :: user_data    !! C pointer to user data.
+        character(len=*),  intent(in), optional  :: resource     !! Optional resource (`<jid>@<domain>/<resource>`.
         logical,           intent(in), optional  :: keep_alive   !! Enable TCP Keep Alive.
         logical,           intent(in), optional  :: tls_required !! TLS is mandatory.
         logical,           intent(in), optional  :: tls_trusted  !! Trust TLS certificate.
@@ -174,11 +265,20 @@ contains
         stat = xmpp_conn_set_flags(jabber%connection, flags)
         if (stat /= XMPP_EOK) return
 
+        ! Set JID.
+        jabber%jid = jid
+
+        if (present(resource)) then
+            jabber%jid_full = trim(jid) // '/' // resource
+        else
+            jabber%jid_full = jid
+        end if
+
         ! Set credentials.
-        call xmpp_conn_set_jid (jabber%connection, trim(jid))
+        call xmpp_conn_set_jid (jabber%connection, trim(jabber%jid_full))
         call xmpp_conn_set_pass(jabber%connection, trim(password))
 
-        ! Set TCP Keep Alive.
+        ! Set TCP Keep Alive using default callback.
         if (keep_alive_) call xmpp_conn_set_sockopt_callback(jabber%connection, xmpp_sockopt_cb_keepalive)
 
         ! Set stream management state if available.
@@ -215,21 +315,19 @@ contains
         type(jabber_type), intent(out)          :: jabber    !! Jabber context type.
         integer,           intent(in), optional :: log_level !! Log level of libstrophe (`JABBER_LL_*`).
 
-        integer     :: level
+        integer     :: ll
         type(c_ptr) :: log
 
         rc = E_INVALID
         log = c_null_ptr
 
         ! Set log level.
-        level = JABBER_LL_NONE
-        if (present(log_level)) level = log_level
-        if (level < JABBER_LL_NONE .or. level > JABBER_LL_ERROR) return
+        ll = JABBER_LL_NONE
+        if (present(log_level)) ll = log_level
+        if (ll < JABBER_LL_NONE .or. ll> JABBER_LL_ERROR) return
 
         ! Enable logging.
-        if (level /= JABBER_LL_NONE) then
-            log = xmpp_get_default_logger(level)
-        end if
+        if (ll /= JABBER_LL_NONE) log = xmpp_get_default_logger(ll)
 
         ! Create libstrophe context.
         rc = E_XMPP
@@ -246,9 +344,14 @@ contains
         integer :: stat
 
         rc = E_XMPP
-        call xmpp_disconnect(jabber%connection)
-        stat = xmpp_conn_release(jabber%connection)
-        if (stat /= XMPP_EOK) return
+
+        if (dm_jabber_is_connected(jabber)) then
+            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_OFFLINE)
+            call xmpp_disconnect(jabber%connection)
+            stat = xmpp_conn_release(jabber%connection)
+            if (stat /= XMPP_EOK) return
+        end if
+
         rc = E_NONE
     end function dm_jabber_disconnect
 
@@ -256,6 +359,8 @@ contains
         !! Returns `.true.` if connection is open.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
 
+        is = c_associated(jabber%connection)
+        if (.not. is) return
         is = (xmpp_conn_is_connected(jabber%connection) == 1)
     end function dm_jabber_is_connected
 
@@ -284,6 +389,47 @@ contains
         if (.not. c_associated(jabber%ctx)) return
         call xmpp_run(jabber%ctx)
     end subroutine dm_jabber_run
+
+    subroutine dm_jabber_send_presence(jabber, show, status)
+        !! Sends presence to XMPP server.
+        use :: dm_string
+
+        type(jabber_type), intent(inout)        :: jabber !! Jabber context type.
+        character(len=*),  intent(in), optional :: show   !! Availability (`online`, `offline`, `dnd`, …).
+        character(len=*),  intent(in), optional :: status !! Status description text.
+
+        integer     :: stat
+        type(c_ptr) :: attr, pres, text
+
+        if (.not. dm_jabber_is_connected(jabber)) return
+
+        pres = xmpp_presence_new(jabber%ctx)
+
+        if (dm_string_is_present(show)) then
+            attr = xmpp_stanza_new(jabber%ctx)
+            stat = xmpp_stanza_set_name(attr, JABBER_STANZA_NAME_SHOW)
+            text = xmpp_stanza_new(jabber%ctx)
+            stat = xmpp_stanza_set_text(text, trim(show))
+            stat = xmpp_stanza_add_child(attr, text)
+            stat = xmpp_stanza_add_child(pres, attr)
+            stat = xmpp_stanza_release(text)
+            stat = xmpp_stanza_release(attr)
+        end if
+
+        if (dm_string_is_present(status)) then
+            attr = xmpp_stanza_new(jabber%ctx)
+            stat = xmpp_stanza_set_name(attr, JABBER_STANZA_NAME_STATUS)
+            text = xmpp_stanza_new(jabber%ctx)
+            stat = xmpp_stanza_set_text(text, trim(status))
+            stat = xmpp_stanza_add_child(attr, text)
+            stat = xmpp_stanza_add_child(pres, attr)
+            stat = xmpp_stanza_release(text)
+            stat = xmpp_stanza_release(attr)
+        end if
+
+        call xmpp_send(jabber%connection, pres)
+        stat = xmpp_stanza_release(pres)
+    end subroutine dm_jabber_send_presence
 
     subroutine dm_jabber_set_stream_management_state(jabber)
         !! Saves current XMPP stream management state to Jabber context.

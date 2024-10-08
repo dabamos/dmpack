@@ -4,6 +4,7 @@
 ! Licence: ISC
 program dmbot
     !! This program is an XMPP bot for remote control of sensor nodes.
+    use, intrinsic :: iso_c_binding
     use :: dmpack
     implicit none (type, external)
 
@@ -12,8 +13,10 @@ program dmbot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
+    logical, parameter :: APP_TCP_KEEP_ALIVE = .true.  !! Enable TCP Keep Alive.
+    logical, parameter :: APP_TLS_TRUSTED    = .false. !! Trust unknown TLS certificate.
+
     integer, parameter :: HOST_LEN     = 256 !! Max. length of XMPP host.
-    integer, parameter :: JID_LEN      = 256 !! Max. length of XMPP jid.
     integer, parameter :: PASSWORD_LEN = 256 !! Max. length of XMPP password.
 
     type :: app_type
@@ -25,14 +28,17 @@ program dmbot
         character(len=HOST_LEN)        :: host      = ' '         !! IP or FQDN of XMPP server.
         integer                        :: port      = JABBER_PORT !! Port of XMPP server.
         logical                        :: tls       = .true.      !! TLS is mandatory.
-        character(len=JID_LEN)         :: jid       = ' '         !! HTTP Basic Auth user name.
+        character(len=JABBER_JID_LEN)  :: jid       = ' '         !! HTTP Basic Auth user name.
         character(len=PASSWORD_LEN)    :: password  = ' '         !! HTTP Basic Auth password.
         logical                        :: debug     = .false.     !! Force writing of output file.
         logical                        :: verbose   = .false.     !! Force writing of output file.
     end type app_type
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App settings.
+    class(logger_class), pointer :: logger ! Logger object.
+
+    integer                   :: rc     ! Return code.
+    type(app_type)            :: app    ! App settings.
+    type(jabber_type), target :: jabber ! Jabber context.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -40,7 +46,57 @@ program dmbot
     ! Read command-line arguments and configuration from file.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+
+    ! Initialise logger.
+    logger => dm_logger_get()
+    call logger%configure(name    = app%logger, &                 ! Name of logger process.
+                          node_id = app%node, &                   ! Node id.
+                          source  = app%name, &                   ! Log source.
+                          debug   = app%debug, &                  ! Forward DEBUG messages via IPC.
+                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
+                          verbose = app%verbose)                  ! Print logs to standard error.
+
+    ! Initialise environment.
+    init_block: block
+        ! Initialise XMPP backend.
+        call dm_jabber_init()
+        rc = dm_jabber_create(jabber)
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+            exit init_block
+        end if
+
+        ! Connect to XMPP server.
+        rc = dm_jabber_connect(jabber       = jabber, &
+                               host         = app%host, &
+                               port         = app%port, &
+                               jid          = app%jid, &
+                               password     = app%password, &
+                               callback     = connect_callback, &
+                               user_data    = c_loc(jabber), &
+                               resource     = app%name, &
+                               keep_alive   = APP_TCP_KEEP_ALIVE, &
+                               tls_required = app%tls, &
+                               tls_trusted  = APP_TLS_TRUSTED)
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+            exit init_block
+        end if
+
+        ! Register signal handler.
+        call dm_signal_register(signal_callback)
+
+        ! Run event loop of bot.
+        call dm_jabber_run(jabber)
+    end block init_block
+
+    call halt(rc)
 contains
+    ! ******************************************************************
+    ! FUNCTIONS.
+    ! ******************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and configuration from file (if
         !! `--config` is passed).
@@ -130,17 +186,132 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',  app%logger)
-            call dm_config_get(config, 'node',    app%node)
-            call dm_config_get(config, 'host',    app%host)
-            call dm_config_get(config, 'port',    app%port)
-            call dm_config_get(config, 'tls',     app%tls)
-            call dm_config_get(config, 'jid',     app%jid)
-            call dm_config_get(config, 'password',app%password)
-            call dm_config_get(config, 'debug',   app%debug)
-            call dm_config_get(config, 'verbose', app%verbose)
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'host',     app%host)
+            call dm_config_get(config, 'port',     app%port)
+            call dm_config_get(config, 'tls',      app%tls)
+            call dm_config_get(config, 'jid',      app%jid)
+            call dm_config_get(config, 'password', app%password)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
         end if
 
         call dm_config_close(config)
     end function read_config
+
+    ! ******************************************************************
+    ! SUBROUTINES.
+    ! ******************************************************************
+    subroutine halt(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: rc, stat
+
+        stat = STOP_SUCCESS
+        if (dm_is_error(error)) stat = STOP_FAILURE
+
+        rc = dm_jabber_disconnect(jabber)
+        call dm_jabber_destroy(jabber)
+        call dm_jabber_shutdown()
+
+        call dm_stop(stat)
+    end subroutine halt
+
+    ! ******************************************************************
+    ! CALLBACK PROCEDURES.
+    ! ******************************************************************
+    function disconnect_callback(connection, user_data) bind(c)
+        use :: xmpp
+
+        type(c_ptr), intent(in), value :: connection !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: user_data  !! void *
+        integer(kind=c_int)            :: disconnect_callback
+
+        disconnect_callback = 0
+        call xmpp_disconnect(connection)
+    end function disconnect_callback
+
+    function message_callback(connection, stanza, user_data) bind(c)
+        use :: xmpp
+
+        type(c_ptr), intent(in), value :: connection !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: stanza     !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data  !! void *
+        integer(kind=c_int)            :: message_callback
+
+        character(len=:), allocatable :: from, reply_text, text, type
+        integer                       :: stat
+        type(c_ptr)                   :: body, reply
+
+        message_callback = 1
+
+        body = xmpp_stanza_get_child_by_name(stanza, 'body')
+        if (.not. c_associated(body)) return
+
+        type = xmpp_stanza_get_type(stanza)
+        if (type == 'error') return
+
+        text = xmpp_stanza_get_text(body)
+        from = xmpp_stanza_get_from(stanza)
+
+        call logger%debug('incoming message from ' // from)
+
+        reply = xmpp_stanza_reply(stanza)
+
+        if (.not. c_associated(reply)) then
+            stat = xmpp_stanza_set_type(reply, 'chat')
+        end if
+
+        if (text == '!quit') then
+            reply_text = 'bye!'
+            call xmpp_timed_handler_add(connection, disconnect_callback, int(500, kind=c_unsigned_long), c_null_ptr)
+        else
+            reply_text = trim(text) // ' to you too!'
+        end if
+
+        stat = xmpp_message_set_body(reply, reply_text)
+        call xmpp_send(jabber%connection, reply)
+    end function message_callback
+
+    subroutine connect_callback(connection, event, error, stream_error, user_data) bind(c)
+        use :: xmpp
+
+        type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
+        integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
+        integer(kind=c_int),       intent(in), value :: error        !! int
+        type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
+        type(c_ptr),               intent(in), value :: user_data    !! void *
+
+        type(jabber_type), pointer :: jabber
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, jabber)
+
+        if (event == XMPP_CONN_CONNECT) then
+            call logger%debug('connected')
+
+            call xmpp_handler_add(connection, message_callback, '', 'message', '', jabber%ctx)
+
+            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
+        else
+            call logger%debug('disconnected')
+
+            call xmpp_handler_delete(connection, message_callback)
+
+            call xmpp_stop(jabber%ctx)
+        end if
+    end subroutine connect_callback
+
+    subroutine signal_callback(signum) bind(c)
+        !! Default POSIX signal handler of the program.
+        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+
+        select case (signum)
+            case default
+                call logger%info('exit on signal ' // dm_itoa(signum))
+                call halt(E_NONE)
+        end select
+    end subroutine signal_callback
 end program dmbot
