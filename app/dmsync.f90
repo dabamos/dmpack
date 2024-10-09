@@ -54,7 +54,7 @@ program dmsync
     ! Initialise DMPACK.
     call dm_init()
 
-    ! Read command-line options and configuration from file.
+    ! Read command-line options and configuration file.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 

@@ -30,8 +30,8 @@ module dm_jabber
     !! call dm_jabber_shutdown()
     !! ```
     !!
-    !! The connection callback must be of C-interoperable abstract interface
-    !! `dm_jabber_connection_handler()`, which is an alias for
+    !! The callback passed to the connect function must be of C-interoperable
+    !! abstract interface `dm_jabber_connect_callback()`, which is an alias for
     !! `xmpp_conn_handler()` from module `xmpp`, for example:
     !!
     !! ```fortran
@@ -69,7 +69,7 @@ module dm_jabber
     use, intrinsic :: iso_c_binding
     use :: xmpp, dm_jabber_callback              => xmpp_handler,              &
                  dm_jabber_certfail_callback     => xmpp_certfail_handler,     &
-                 dm_jabber_connect_callback   => xmpp_conn_handler,         &
+                 dm_jabber_connect_callback      => xmpp_conn_handler,         &
                  dm_jabber_global_timed_callback => xmpp_global_timed_handler, &
                  dm_jabber_log_callback          => xmpp_log_handler,          &
                  dm_jabber_password_callback     => xmpp_password_callback,    &
@@ -252,9 +252,8 @@ contains
         if (present(tls_trusted))  tls_trusted_  = tls_trusted
 
         ! Create new connection.
-        jabber%connection = xmpp_conn_new(jabber%ctx)
-
         rc = E_XMPP
+        jabber%connection = xmpp_conn_new(jabber%ctx)
         if (.not. c_associated(jabber%connection)) return
 
         ! Set flags.
@@ -338,7 +337,8 @@ contains
     end function dm_jabber_create
 
     integer function dm_jabber_disconnect(jabber) result(rc)
-        !! Disconnects from server and releases connection.
+        !! Disconnects from server and releases connection. The function returns
+        !! `E_XMPP` on error.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
 
         integer :: stat
@@ -395,7 +395,7 @@ contains
 
         type(jabber_type), intent(inout)        :: jabber !! Jabber context type.
         character(len=*),  intent(in), optional :: show   !! Availability (`online`, `offline`, `dnd`, …).
-        character(len=*),  intent(in), optional :: status !! Status description text.
+        character(len=*),  intent(in), optional :: status !! Human-readable status description text.
 
         integer     :: stat
         type(c_ptr) :: attr, pres, text

@@ -63,7 +63,7 @@ program dmbot
         rc = dm_jabber_create(jabber)
 
         if (dm_is_error(rc)) then
-            call dm_error_out(rc)
+            call logger%error('failed to create libstrophe context', error=rc)
             exit init_block
         end if
 
@@ -81,16 +81,16 @@ program dmbot
                                tls_trusted  = APP_TLS_TRUSTED)
 
         if (dm_is_error(rc)) then
-            call dm_error_out(rc)
+            call logger%error('failed to connect to ' // trim(app%host) // ':' // &
+                              dm_itoa(app%port), error=rc)
             exit init_block
         end if
-
-        call logger%info('started ' // APP_NAME)
 
         ! Register signal handler.
         call dm_signal_register(signal_callback)
 
         ! Run event loop of bot.
+        call logger%info('started ' // APP_NAME)
         call dm_jabber_run(jabber)
     end block init_block
 
@@ -240,15 +240,11 @@ contains
 
         if (event == XMPP_CONN_CONNECT) then
             call logger%debug('connected')
-
             call xmpp_handler_add(connection, message_callback, '', 'message', '', c_null_ptr)
-
             call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
         else
             call logger%debug('disconnected')
-
             call xmpp_handler_delete(connection, message_callback)
-
             call xmpp_stop(jabber%ctx)
         end if
     end subroutine connect_callback
