@@ -187,7 +187,7 @@ contains
         is_file   = .false.
 
         if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
-        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+        call logger%info('started ' // APP_NAME)
 
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then

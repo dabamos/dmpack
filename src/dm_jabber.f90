@@ -20,7 +20,7 @@ module dm_jabber
     !!                        port       = JABBER_PORT, &
     !!                        jid        = 'user@example.com',
     !!                        password   = 'secret', &
-    !!                        callback   = connection_callback, &
+    !!                        callback   = connect_callback, &
     !!                        user_data  = c_loc(jabber), &
     !!                        keep_alive = .true.)
     !! if (dm_is_ok(rc)) call dm_jabber_run(jabber)
@@ -35,7 +35,7 @@ module dm_jabber
     !! `xmpp_conn_handler()` from module `xmpp`, for example:
     !!
     !! ```fortran
-    !! subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
+    !! subroutine connect_callback(connection, event, error, stream_error, user_data) bind(c)
     !!     use :: xmpp
     !!
     !!     type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
@@ -61,7 +61,7 @@ module dm_jabber
     !!         print '("disconnected")'
     !!         call xmpp_stop(jabber%ctx)
     !!     end if
-    !! end subroutine connection_callback
+    !! end subroutine connect_callback
     !! ```
     !!
     !! XMPP protocol handling is covered by module `xmpp` from library
@@ -69,7 +69,7 @@ module dm_jabber
     use, intrinsic :: iso_c_binding
     use :: xmpp, dm_jabber_callback              => xmpp_handler,              &
                  dm_jabber_certfail_callback     => xmpp_certfail_handler,     &
-                 dm_jabber_connection_callback   => xmpp_conn_handler,         &
+                 dm_jabber_connect_callback   => xmpp_conn_handler,         &
                  dm_jabber_global_timed_callback => xmpp_global_timed_handler, &
                  dm_jabber_log_callback          => xmpp_log_handler,          &
                  dm_jabber_password_callback     => xmpp_password_callback,    &
@@ -188,7 +188,7 @@ module dm_jabber
     ! Imported abstract interfaces.
     public :: dm_jabber_callback
     public :: dm_jabber_certfail_callback
-    public :: dm_jabber_connection_callback
+    public :: dm_jabber_connect_callback
     public :: dm_jabber_global_timed_callback
     public :: dm_jabber_log_callback
     public :: dm_jabber_password_callback
@@ -217,17 +217,17 @@ contains
         !! * `E_NULL` if the XMPP context is not associated.
         !! * `E_XMPP` if a connection context could not be created.
         !!
-        type(jabber_type), intent(inout)         :: jabber       !! Jabber context type.
-        character(len=*),  intent(in)            :: host         !! XMPP server (IP address or FQDN).
-        integer,           intent(in)            :: port         !! XMPP server port.
-        character(len=*),  intent(in)            :: jid          !! Jabber ID (JID).
-        character(len=*),  intent(in)            :: password     !! JID account password.
-        procedure(dm_jabber_connection_callback) :: callback     !! Jabber connection handler.
-        type(c_ptr),       intent(in), optional  :: user_data    !! C pointer to user data.
-        character(len=*),  intent(in), optional  :: resource     !! Optional resource (`<jid>@<domain>/<resource>`.
-        logical,           intent(in), optional  :: keep_alive   !! Enable TCP Keep Alive.
-        logical,           intent(in), optional  :: tls_required !! TLS is mandatory.
-        logical,           intent(in), optional  :: tls_trusted  !! Trust TLS certificate.
+        type(jabber_type), intent(inout)        :: jabber       !! Jabber context type.
+        character(len=*),  intent(in)           :: host         !! XMPP server (IP address or FQDN).
+        integer,           intent(in)           :: port         !! XMPP server port.
+        character(len=*),  intent(in)           :: jid          !! Jabber ID (JID).
+        character(len=*),  intent(in)           :: password     !! JID account password.
+        procedure(dm_jabber_connect_callback)   :: callback     !! Jabber connection handler.
+        type(c_ptr),       intent(in), optional :: user_data    !! C pointer to user data.
+        character(len=*),  intent(in), optional :: resource     !! Optional resource (`<jid>@<domain>/<resource>`.
+        logical,           intent(in), optional :: keep_alive   !! Enable TCP Keep Alive.
+        logical,           intent(in), optional :: tls_required !! TLS is mandatory.
+        logical,           intent(in), optional :: tls_trusted  !! Trust TLS certificate.
 
         integer              :: stat
         integer(kind=c_long) :: flags
@@ -343,15 +343,14 @@ contains
 
         integer :: stat
 
+        rc = E_NONE
+        if (.not. dm_jabber_is_connected(jabber)) return
+
         rc = E_XMPP
-
-        if (dm_jabber_is_connected(jabber)) then
-            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_OFFLINE)
-            call xmpp_disconnect(jabber%connection)
-            stat = xmpp_conn_release(jabber%connection)
-            if (stat /= XMPP_EOK) return
-        end if
-
+        call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_OFFLINE)
+        call xmpp_disconnect(jabber%connection)
+        stat = xmpp_conn_release(jabber%connection)
+        if (stat /= XMPP_EOK) return
         rc = E_NONE
     end function dm_jabber_disconnect
 

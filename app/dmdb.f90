@@ -215,7 +215,7 @@ contains
         type(observ_type) :: observ
 
         steps = 0
-        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+        call logger%info('started ' // APP_NAME)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
@@ -291,7 +291,7 @@ contains
 
         select case (signum)
             case default
-                call logger%info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_signal_name(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_callback

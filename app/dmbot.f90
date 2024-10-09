@@ -85,6 +85,8 @@ program dmbot
             exit init_block
         end if
 
+        call logger%info('started ' // APP_NAME)
+
         ! Register signal handler.
         call dm_signal_register(signal_callback)
 
@@ -222,6 +224,35 @@ contains
     ! ******************************************************************
     ! CALLBACK PROCEDURES.
     ! ******************************************************************
+    subroutine connect_callback(connection, event, error, stream_error, user_data) bind(c)
+        use :: xmpp
+
+        type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
+        integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
+        integer(kind=c_int),       intent(in), value :: error        !! int
+        type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
+        type(c_ptr),               intent(in), value :: user_data    !! void *
+
+        type(jabber_type), pointer :: jabber
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, jabber)
+
+        if (event == XMPP_CONN_CONNECT) then
+            call logger%debug('connected')
+
+            call xmpp_handler_add(connection, message_callback, '', 'message', '', c_null_ptr)
+
+            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
+        else
+            call logger%debug('disconnected')
+
+            call xmpp_handler_delete(connection, message_callback)
+
+            call xmpp_stop(jabber%ctx)
+        end if
+    end subroutine connect_callback
+
     function disconnect_callback(connection, user_data) bind(c)
         use :: xmpp
 
@@ -246,23 +277,20 @@ contains
         type(c_ptr)                   :: body, reply
 
         message_callback = 1
+        call logger%debug('received message from ' // from)
 
         body = xmpp_stanza_get_child_by_name(stanza, 'body')
         if (.not. c_associated(body)) return
 
+        ! Ignore error messages.
         type = xmpp_stanza_get_type(stanza)
         if (type == 'error') return
 
-        text = xmpp_stanza_get_text(body)
-        from = xmpp_stanza_get_from(stanza)
-
-        call logger%debug('incoming message from ' // from)
-
+        text  = xmpp_stanza_get_text(body)
+        from  = xmpp_stanza_get_from(stanza)
         reply = xmpp_stanza_reply(stanza)
 
-        if (.not. c_associated(reply)) then
-            stat = xmpp_stanza_set_type(reply, 'chat')
-        end if
+        if (.not. c_associated(reply)) stat = xmpp_stanza_set_type(reply, 'chat')
 
         if (text == '!quit') then
             reply_text = 'bye!'
@@ -275,42 +303,13 @@ contains
         call xmpp_send(jabber%connection, reply)
     end function message_callback
 
-    subroutine connect_callback(connection, event, error, stream_error, user_data) bind(c)
-        use :: xmpp
-
-        type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
-        integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
-        integer(kind=c_int),       intent(in), value :: error        !! int
-        type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
-        type(c_ptr),               intent(in), value :: user_data    !! void *
-
-        type(jabber_type), pointer :: jabber
-
-        if (.not. c_associated(user_data)) return
-        call c_f_pointer(user_data, jabber)
-
-        if (event == XMPP_CONN_CONNECT) then
-            call logger%debug('connected')
-
-            call xmpp_handler_add(connection, message_callback, '', 'message', '', jabber%ctx)
-
-            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
-        else
-            call logger%debug('disconnected')
-
-            call xmpp_handler_delete(connection, message_callback)
-
-            call xmpp_stop(jabber%ctx)
-        end if
-    end subroutine connect_callback
-
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
         select case (signum)
             case default
-                call logger%info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_signal_name(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_callback

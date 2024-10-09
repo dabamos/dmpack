@@ -298,7 +298,7 @@ contains
         name  = dm_sync_name(app%type)
         limit = APP_SYNC_LIMIT
 
-        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+        call logger%info('started ' // APP_NAME)
 
         if (app%compression == Z_TYPE_NONE) then
             call logger%debug('compression is disabled')
@@ -613,7 +613,7 @@ contains
 
         select case (signum)
             case default
-                call logger%info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_signal_name(signum))
                 call halt(E_NONE)
         end select
     end subroutine signal_callback

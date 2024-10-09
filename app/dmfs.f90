@@ -406,7 +406,7 @@ contains
         type(observ_type), pointer :: observ ! Observation of job.
 
         debug = (app%debug .or. app%verbose)
-        call logger%info('started ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH))
+        call logger%info('started ' // APP_NAME)
 
         ! Run until no jobs are left.
         job_loop: do
@@ -464,7 +464,7 @@ contains
 
         select case (signum)
             case default
-                call logger%info('exit on signal ' // dm_itoa(signum))
+                call logger%info('exit on signal ' // dm_signal_name(signum))
                 call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_callback

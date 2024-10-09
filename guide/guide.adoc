@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2024-07-04
+:docdate: 2024-08-09
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -144,13 +144,12 @@ link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
 The project appears to be abandoned. (GPLv3)
-link:http://istsos.org/[istSOS]:: A server implementation of the
-OGC Sensor Observation Service in Python, for managing and dispatching
-observations from monitoring sensors. The project also provides a graphical user
-interface and a RESTful web API to automate administration procedures. Developed
-by Istituto Scienze della Terra, University of Applied Sciences and Arts of
-Southern Switzerland. The software seems not to be actively maintained anymore.
-(GPLv2)
+link:http://istsos.org/[istSOS2]:: A server implementation of the OGC Sensor
+Observation Service in Python, for managing and dispatching observations from
+monitoring sensors. The project also provides a graphical user interface and a
+RESTful web API to automate administration procedures. Developed by Istituto
+Scienze della Terra, University of Applied Sciences and Arts of Southern
+Switzerland. The software seems not to be actively maintained anymore. (GPLv2)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring
@@ -190,7 +189,7 @@ package:
 * link:https://www.netlib.org/lapack/[LAPACK]
 * link:https://curl.se/libcurl/[libcurl] (≥ 8.0.0)
 * link:https://libmodbus.org/[libmodbus]
-* link:https://strophe.im/libstrophe/[libstrophe]
+* link:https://strophe.im/libstrophe/[libstrophe] (≥ 0.13.1)
 * link:https://www.lua.org/[Lua 5.4]
 * link:https://www.pcre.org/[PCRE2]
 * link:https://www.sqlite.org/[SQLite 3] (≥ 3.39.0)
