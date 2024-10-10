@@ -6,6 +6,7 @@ program dmbot
     !! This program is an XMPP bot for remote control of sensor nodes.
     use, intrinsic :: iso_c_binding
     use :: dmpack
+    use :: xmpp
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmbot'
@@ -13,43 +14,41 @@ program dmbot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: APP_HOST_LEN       = 256     !! Max. length of XMPP host.
-    integer, parameter :: APP_PASSWORD_LEN   = 256     !! Max. length of XMPP password.
-
+    integer, parameter :: APP_PING_INTERVAL  = 60      !! XMPP ping interval in seconds.
     logical, parameter :: APP_TCP_KEEP_ALIVE = .true.  !! Enable TCP Keep Alive.
     logical, parameter :: APP_TLS_TRUSTED    = .false. !! Trust unknown TLS certificate.
 
     ! Bot commands.
-    integer, parameter :: BOT_COMMAND_PREFIX_LEN  = 1
-    integer, parameter :: BOT_COMMAND_NAME_LEN    = 6
+    integer, parameter :: BOT_COMMAND_PREFIX_LEN  = 1  !! Command prefix length.
+    integer, parameter :: BOT_COMMAND_NAME_LEN    = 6  !! Max. command name length.
     integer, parameter :: BOT_COMMAND_LEN         = BOT_COMMAND_PREFIX_LEN + BOT_COMMAND_NAME_LEN
 
-    integer, parameter :: BOT_COMMAND_NONE   = 0
-    integer, parameter :: BOT_COMMAND_BEATS  = 1
-    integer, parameter :: BOT_COMMAND_DATE   = 2
-    integer, parameter :: BOT_COMMAND_LOG    = 3
-    integer, parameter :: BOT_COMMAND_POKE   = 4
-    integer, parameter :: BOT_COMMAND_UPTIME = 5
-    integer, parameter :: BOT_NCOMMANDS      = 5
+    integer, parameter :: BOT_COMMAND_NONE   = 0 !! No or invalid command.
+    integer, parameter :: BOT_COMMAND_BEATS  = 1 !! Show time in Swatch Internet Time (.beats).
+    integer, parameter :: BOT_COMMAND_DATE   = 2 !! Show date and time.
+    integer, parameter :: BOT_COMMAND_LOG    = 3 !! Send log message to logger.
+    integer, parameter :: BOT_COMMAND_POKE   = 4 !! Wake up bot.
+    integer, parameter :: BOT_COMMAND_UPTIME = 5 !! Show system uptime.
+    integer, parameter :: BOT_NCOMMANDS      = 5 !! Number of commands.
 
-    character(len=BOT_COMMAND_PREFIX_LEN), parameter :: BOT_COMMAND_PREFIX = '!'
+    character(len=BOT_COMMAND_PREFIX_LEN), parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
     character(len=BOT_COMMAND_NAME_LEN),   parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
         character(len=BOT_COMMAND_NAME_LEN) :: 'beats', 'date', 'log', 'poke', 'uptime' &
-    ]
+    ] !! Command names.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)           :: name      = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)    :: config    = ' '         !! Path to config file.
-        character(len=LOGGER_NAME_LEN)  :: logger    = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)      :: node      = ' '         !! Node id.
-        character(len=APP_HOST_LEN)     :: host      = ' '         !! IP or FQDN of XMPP server.
-        integer                         :: port      = JABBER_PORT !! Port of XMPP server.
-        logical                         :: tls       = .true.      !! TLS is mandatory.
-        character(len=JABBER_JID_LEN)   :: jid       = ' '         !! HTTP Basic Auth user name.
-        character(len=APP_PASSWORD_LEN) :: password  = ' '         !! HTTP Basic Auth password.
-        logical                         :: debug     = .false.     !! Force writing of output file.
-        logical                         :: verbose   = .false.     !! Force writing of output file.
+        character(len=ID_LEN)              :: name      = APP_NAME    !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)       :: config    = ' '         !! Path to config file.
+        character(len=LOGGER_NAME_LEN)     :: logger    = ' '         !! Name of logger.
+        character(len=NODE_ID_LEN)         :: node      = ' '         !! Node id.
+        character(len=JABBER_HOST_LEN)     :: host      = ' '         !! IP or FQDN of XMPP server.
+        integer                            :: port      = JABBER_PORT !! Port of XMPP server.
+        logical                            :: tls       = .true.      !! TLS is mandatory.
+        character(len=JABBER_JID_LEN)      :: jid       = ' '         !! HTTP Basic Auth user name.
+        character(len=JABBER_PASSWORD_LEN) :: password  = ' '         !! HTTP Basic Auth password.
+        logical                            :: debug     = .false.     !! Force writing of output file.
+        logical                            :: verbose   = .false.     !! Force writing of output file.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -91,7 +90,7 @@ program dmbot
                                port         = app%port, &
                                jid          = app%jid, &
                                password     = app%password, &
-                               callback     = connect_callback, &
+                               callback     = connection_callback, &
                                user_data    = c_loc(jabber), &
                                resource     = app%name, &
                                keep_alive   = APP_TCP_KEEP_ALIVE, &
@@ -117,22 +116,21 @@ contains
     ! ******************************************************************
     ! FUNCTIONS.
     ! ******************************************************************
-    integer function parse_message(message, command) result(rc)
-        character(len=*), intent(in)  :: message !! XMPP message received from client.
-        integer,          intent(out) :: command !! Command requested or `BOT_COMMAND_NONE`.
+    integer function parse_message(message) result(command)
+        !! Parses message string and returns the requested command or
+        !! `BOT_COMMAND_NONE`.
+        character(len=*), intent(in) :: message !! XMPP message received from client.
 
         integer                        :: i
         character(len=BOT_COMMAND_LEN) :: buffer
 
-        rc = E_INVALID
         command = BOT_COMMAND_NONE
+        buffer  = dm_to_lower(adjustl(message))
 
-        buffer = dm_to_lower(adjustl(message))
         if (buffer(:BOT_COMMAND_PREFIX_LEN) /= BOT_COMMAND_PREFIX) return
 
         do i = 1, BOT_NCOMMANDS
             if (buffer(BOT_COMMAND_PREFIX_LEN + 1:) /= BOT_COMMAND_NAMES(i)) cycle
-            rc = E_NONE
             command = i
             exit
         end do
@@ -248,24 +246,75 @@ contains
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
+        integer :: stat
 
         stat = STOP_SUCCESS
         if (dm_is_error(error)) stat = STOP_FAILURE
 
-        rc = dm_jabber_disconnect(jabber)
+        if (dm_jabber_is_connected(jabber)) then
+            call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_OFFLINE)
+            call logger%debug('set presence to offline')
+
+            call dm_jabber_disconnect(jabber)
+        end if
+
         call dm_jabber_destroy(jabber)
         call dm_jabber_shutdown()
-
         call dm_stop(stat)
     end subroutine halt
 
     ! ******************************************************************
+    ! COMMANDS.
+    ! ******************************************************************
+    function bot_reply_beats() result(reply)
+        !! Returns current time in Swatch Internet Time (.beats).
+        character(len=:), allocatable :: reply
+
+        character(len=TIME_BEATS_LEN) :: beats
+        integer                       :: rc
+
+        rc = dm_time_to_beats(dm_time_now(), beats)
+        reply = trim(beats) // ' .beats'
+    end function bot_reply_beats
+
+    function bot_reply_date() result(reply)
+        !! Returns current date and time in ISO 8601.
+        character(len=:), allocatable :: reply
+
+        reply = dm_time_now()
+    end function bot_reply_date
+
+    function bot_reply_poke(bot_name) result(reply)
+        !! Returns awake message.
+        character(len=*), intent(in), optional :: bot_name
+        character(len=:), allocatable          :: reply
+
+        if (.not. dm_string_is_present(bot_name)) then
+            reply = trim(bot_name)
+        else
+            reply = APP_NAME
+        end if
+
+        reply = reply // ' is awake'
+    end function bot_reply_poke
+
+    function bot_reply_uptime() result(reply)
+        !! Returns system uptime.
+        character(len=:), allocatable :: reply
+
+        integer(kind=r8)      :: seconds
+        type(time_delta_type) :: uptime
+
+        call dm_system_uptime(seconds)
+        call dm_time_delta_from_seconds(uptime, seconds)
+
+        reply = 'uptime ' // dm_time_delta_to_string(uptime)
+    end function bot_reply_uptime
+
+    ! ******************************************************************
     ! CALLBACK PROCEDURES.
     ! ******************************************************************
-    subroutine connect_callback(connection, event, error, stream_error, user_data) bind(c)
-        use :: xmpp
-
+    subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
         type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
         integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
         integer(kind=c_int),       intent(in), value :: error        !! int
@@ -278,65 +327,177 @@ contains
         call c_f_pointer(user_data, jabber)
 
         if (event == XMPP_CONN_CONNECT) then
-            call logger%debug('connected')
-            call xmpp_handler_add(connection, message_callback, '', 'message', '', c_null_ptr)
+            call logger%debug('connected as ' // trim(jabber%jid) // ' to server ' // &
+                              trim(jabber%host) // ':' // dm_itoa(jabber%port))
+
+            ! Add handlers.
+            call xmpp_handler_add(connection, iq_callback, '', 'iq', '', user_data)
+            call xmpp_handler_add(connection, message_callback, '', 'message', '', user_data)
+            call xmpp_timed_handler_add(connection, ping_callback, int(APP_PING_INTERVAL * 1000, kind=c_long), user_data)
+
+            ! Set presence to online.
             call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
+            call logger%debug('set presence to online')
         else
-            call logger%debug('disconnected')
+            call logger%debug('disconnected from ' // trim(jabber%host) // ':' // dm_itoa(jabber%port))
+
+            ! Delete handlers.
+            call xmpp_timed_handler_delete(connection, ping_callback)
             call xmpp_handler_delete(connection, message_callback)
+            call xmpp_handler_delete(connection, iq_callback)
+
             call xmpp_stop(jabber%ctx)
         end if
-    end subroutine connect_callback
+    end subroutine connection_callback
 
     function disconnect_callback(connection, user_data) bind(c)
-        use :: xmpp
+        type(c_ptr), intent(in), value :: connection          !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: user_data           !! void *
+        integer(kind=c_int)            :: disconnect_callback !! int
 
-        type(c_ptr), intent(in), value :: connection !! xmpp_conn_t *
-        type(c_ptr), intent(in), value :: user_data  !! void *
-        integer(kind=c_int)            :: disconnect_callback
+        type(jabber_type), pointer :: jabber
 
         disconnect_callback = 0
-        call xmpp_disconnect(connection)
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, jabber)
+
+        ! Set presence to offline.
+        call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_OFFLINE)
+        call logger%debug('set presence to offline')
+
+        call dm_jabber_disconnect(jabber)
     end function disconnect_callback
 
-    function message_callback(connection, stanza, user_data) bind(c)
-        use :: xmpp
+    function iq_callback(connection, iq_stanza, user_data) bind(c)
+        type(c_ptr), intent(in), value :: connection  !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: iq_stanza   !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data   !! void *
+        integer(kind=c_int)            :: iq_callback !! int
 
-        type(c_ptr), intent(in), value :: connection !! xmpp_conn_t *
-        type(c_ptr), intent(in), value :: stanza     !! xmpp_stanza_t *
-        type(c_ptr), intent(in), value :: user_data  !! void *
-        integer(kind=c_int)            :: message_callback
+        character(len=:), allocatable :: from, id, type
+        integer                       :: stat
+        type(jabber_type), pointer    :: jabber
+        type(c_ptr)                   :: ping_stanza, result_stanza
+
+        iq_callback = 1
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, jabber)
+
+        from = xmpp_stanza_get_from(iq_stanza)
+        id   = xmpp_stanza_get_id(iq_stanza)
+        type = xmpp_stanza_get_type(iq_stanza)
+
+        if (len(type) == 0 .or. len(id) == 0) return
+
+        if (type == JABBER_STANZA_TYPE_RESULT) then
+            if (id == jabber%ping_id) then
+                jabber%ping_id = ' '
+                return
+            end if
+        else if (type == JABBER_STANZA_TYPE_GET) then
+            ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
+
+            if (c_associated(ping_stanza)) then
+                call logger%debug('received ping from ' // from)
+                result_stanza = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_RESULT, id)
+            else
+                result_stanza = dm_jabber_create_error_iq(jabber, id, JABBER_STANZA_TYPE_CANCEL, JABBER_STANZA_NAME_SERVICE_UNAVAILABLE)
+            end if
+
+            stat = xmpp_stanza_set_to(result_stanza, from)
+            call xmpp_send(connection, result_stanza)
+            stat = xmpp_stanza_release(result_stanza)
+        else if (type == JABBER_STANZA_TYPE_ERROR) then
+            ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
+
+            if (c_associated(ping_stanza) .and. id == jabber%ping_id) then
+                call xmpp_timed_handler_delete(connection, ping_callback)
+                jabber%ping_id = ' '
+                return
+            end if
+        end if
+    end function iq_callback
+
+    function message_callback(connection, stanza, user_data) bind(c)
+        type(c_ptr), intent(in), value :: connection       !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: stanza           !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data        !! void *
+        integer(kind=c_int)            :: message_callback !! int
 
         character(len=:), allocatable :: from, reply_text, text, type
         integer                       :: stat
         type(c_ptr)                   :: body, reply
 
         message_callback = 1
-        call logger%debug('received message from ' // from)
 
-        body = xmpp_stanza_get_child_by_name(stanza, 'body')
+        body = xmpp_stanza_get_child_by_name(stanza, JABBER_STANZA_NAME_BODY)
         if (.not. c_associated(body)) return
 
         ! Ignore error messages.
         type = xmpp_stanza_get_type(stanza)
-        if (type == 'error') return
+        if (type == JABBER_STANZA_TYPE_ERROR) return
 
-        text  = xmpp_stanza_get_text(body)
-        from  = xmpp_stanza_get_from(stanza)
+        text = xmpp_stanza_get_text(body)
+        from = xmpp_stanza_get_from(stanza)
+
+        call logger%debug('received message from ' // from)
+
+        select case (parse_message(text))
+            case (BOT_COMMAND_BEATS)
+                reply_text = bot_reply_beats()
+
+            case (BOT_COMMAND_DATE)
+                reply_text = bot_reply_date()
+
+            case (BOT_COMMAND_POKE)
+                reply_text = bot_reply_poke(app%name)
+
+            case (BOT_COMMAND_UPTIME)
+                reply_text = bot_reply_uptime()
+
+            ! case (BOT_COMMAND_QUIT)
+            !     call xmpp_timed_handler_add(connection, disconnect_callback, int(500, kind=c_long), user_data)
+
+            case default
+                return
+        end select
+
         reply = xmpp_stanza_reply(stanza)
-
         if (.not. c_associated(reply)) stat = xmpp_stanza_set_type(reply, 'chat')
-
-        if (text == '!quit') then
-            reply_text = 'bye!'
-            call xmpp_timed_handler_add(connection, disconnect_callback, int(500, kind=c_unsigned_long), c_null_ptr)
-        else
-            reply_text = trim(text) // ' to you too!'
-        end if
 
         stat = xmpp_message_set_body(reply, reply_text)
         call xmpp_send(jabber%connection, reply)
+        call logger%debug('sent message to ' // from)
     end function message_callback
+
+    function ping_callback(connection, user_data) bind(c)
+        !! https://xmpp.org/extensions/xep-0199.html
+        type(c_ptr), intent(in), value :: connection    !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: user_data     !! void *
+        integer(kind=c_int)            :: ping_callback !! int
+
+        integer                    :: stat
+        type(c_ptr)                :: iq_stanza
+        type(jabber_type), pointer :: jabber
+
+        ping_callback = 1
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, jabber)
+
+        if (len_trim(jabber%ping_id) > 0) then
+            ! Already sent (lost).
+            call xmpp_disconnect(connection)
+            return
+        end if
+
+        jabber%ping_id = dm_uuid4()
+        iq_stanza = dm_jabber_create_ping_iq(jabber, jabber%ping_id)
+        call xmpp_send(connection, iq_stanza)
+        stat = xmpp_stanza_release(iq_stanza)
+    end function ping_callback
 
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
