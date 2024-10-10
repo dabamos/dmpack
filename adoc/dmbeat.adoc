@@ -16,7 +16,7 @@ dmbeat - sends status messages to an RPC server
 *dmbeat* --version
 
 *dmbeat* --*node* _id_ --*host* _host_ [--*port* _port_] [--*tls*]
-[--*username* _user_] [--*password* _password_ [--*count* _n_]
+[--*username* _user_] [--*password* _password_] [--*count* _n_]
 [--*interval* _seconds_] [--*compression* _name_] [--*logger* _name_]
 [--*debug*] [--*verbose*]
 
@@ -73,8 +73,8 @@ for testing.
   arguments is insecure and only recommended for testing.
 
 *--port*, *-q* _port_::
-  Port of RPC API server. The default is 0 (automatic selection depending on
-  protocol).
+  Port of RPC API server. The default port is 0 (automatic selection depending
+  on protocol).
 
 *--tls*, *-E*::
   Use TLS encryption.

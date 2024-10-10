@@ -1,0 +1,100 @@
+= dmbot(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMBOT
+
+== NAME
+
+dmbot - XMPP chat bot for remote control
+
+== SYNOPSIS
+
+*dmbot* --help
+
+*dmbot* --version
+
+*dmbot* --*node* _id_ --*jid* _jid_ --*password* _password_ --*host* _host_
+[--*port* _port_] [--*tls*] [--*logger* _name_] [--*debug*] [--*verbose*]
+
+*dmbot* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The program is an XMPP bot that accepts commands via chat.
+
+Passing the XMPP credentials via the command-line arguments `--jid` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  Path to Lua-based configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--host*, *-H* _host_::
+  Domain of XMPP host.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of instance and table in given configuration file (default is `dmbot`).
+
+*--node*, *-N* _id_::
+  Sensor node id.
+
+*--password*, *-P* _password_::
+  JID password. Be aware that passing the credentials via command-line
+  arguments is insecure and only recommended for testing.
+
+*--port*, *-q* _port_::
+  Port of XMPP server. The default port is 5222.
+
+*--tls*, *-E*::
+  Force TLS encryption.
+
+*--jid*, *-J* _user_::
+  Jabber id (JID) of the form `user@example.com`.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Program executed without errors.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Connect with JID `user@example.com` to an XMPP server on port 5223 and wait for
+commands:
+
+....
+$ dmbot --node dummy-node --jid user@example.com --password secret \
+  --host example.com --port 5223 --tls --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2024 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.
