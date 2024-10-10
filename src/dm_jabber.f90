@@ -214,8 +214,8 @@ module dm_jabber
     ! Public procedures.
     public :: dm_jabber_connect
     public :: dm_jabber_create
-    public :: dm_jabber_create_error_iq
-    public :: dm_jabber_create_ping_iq
+    public :: dm_jabber_create_iq_error
+    public :: dm_jabber_create_iq_ping
     public :: dm_jabber_destroy
     public :: dm_jabber_disconnect
     public :: dm_jabber_init
@@ -355,7 +355,7 @@ contains
         rc = E_NONE
     end function dm_jabber_create
 
-    type(c_ptr) function dm_jabber_create_error_iq(jabber, id, type, condition) result(iq_stanza)
+    type(c_ptr) function dm_jabber_create_iq_error(jabber, id, type, condition) result(iq_stanza)
         !! Returns C pointer to new error iq stanza.
         type(jabber_type), intent(inout)        :: jabber    !! Jabber context type.
         character(len=*),  intent(in)           :: id        !! Stanza id.
@@ -365,21 +365,25 @@ contains
         integer     :: stat
         type(c_ptr) :: condition_stanza, error_stanza
 
-        iq_stanza        = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_ERROR, id)
-        error_stanza     = xmpp_stanza_new(jabber%ctx)
-        condition_stanza = xmpp_stanza_new(jabber%ctx)
+        iq_stanza    = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_ERROR, id)
+        error_stanza = xmpp_stanza_new(jabber%ctx)
 
         stat = xmpp_stanza_set_name(iq_stanza, JABBER_STANZA_NAME_ERROR)
         stat = xmpp_stanza_set_type(error_stanza, type)
-        stat = xmpp_stanza_set_name(condition_stanza, condition)
-        stat = xmpp_stanza_set_ns(condition_stanza, XMPP_NS_STANZAS_IETF)
-        stat = xmpp_stanza_add_child(error_stanza, condition_stanza)
-        stat = xmpp_stanza_add_child(iq_stanza, error_stanza)
-        stat = xmpp_stanza_release(condition_stanza)
-        stat = xmpp_stanza_release(error_stanza)
-    end function dm_jabber_create_error_iq
 
-    type(c_ptr) function dm_jabber_create_ping_iq(jabber, id, to) result(iq_stanza)
+        if (present(condition)) then
+            condition_stanza = xmpp_stanza_new(jabber%ctx)
+            stat = xmpp_stanza_set_name(condition_stanza, condition)
+            stat = xmpp_stanza_set_ns(condition_stanza, XMPP_NS_STANZAS_IETF)
+            stat = xmpp_stanza_add_child(error_stanza, condition_stanza)
+        end if
+
+        stat = xmpp_stanza_add_child(iq_stanza, error_stanza)
+        if (present(condition)) stat = xmpp_stanza_release(condition_stanza)
+        stat = xmpp_stanza_release(error_stanza)
+    end function dm_jabber_create_iq_error
+
+    type(c_ptr) function dm_jabber_create_iq_ping(jabber, id, to) result(iq_stanza)
         !! Returns C pointer to new ping iq stanza.
         type(jabber_type), intent(inout)        :: jabber !! Jabber context type.
         character(len=*),  intent(in)           :: id     !! Stanza id.
@@ -397,7 +401,7 @@ contains
         stat = xmpp_stanza_set_ns(ping_stanza, JABBER_STANZA_NS_PING)
         stat = xmpp_stanza_add_child(iq_stanza, ping_stanza)
         stat = xmpp_stanza_release(ping_stanza)
-    end function dm_jabber_create_ping_iq
+    end function dm_jabber_create_iq_ping
 
     logical function dm_jabber_is_connected(jabber) result(is)
         !! Returns `.true.` if connection is open.
