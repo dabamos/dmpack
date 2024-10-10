@@ -391,33 +391,37 @@ contains
 
         if (len(type) == 0 .or. len(id) == 0) return
 
-        if (type == JABBER_STANZA_TYPE_RESULT) then
-            if (id == jabber%ping_id) then
-                jabber%ping_id = ' '
-                return
-            end if
-        else if (type == JABBER_STANZA_TYPE_GET) then
-            ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
+        select case (type)
+            case (JABBER_STANZA_TYPE_RESULT)
+                if (id == jabber%ping_id) then
+                    jabber%ping_id = ' '
+                    return
+                end if
 
-            if (c_associated(ping_stanza)) then
-                call logger%debug('received ping from ' // from)
-                result_stanza = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_RESULT, id)
-            else
-                result_stanza = dm_jabber_create_error_iq(jabber, id, JABBER_STANZA_TYPE_CANCEL, JABBER_STANZA_NAME_SERVICE_UNAVAILABLE)
-            end if
+            case (JABBER_STANZA_TYPE_GET)
+                ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
 
-            stat = xmpp_stanza_set_to(result_stanza, from)
-            call xmpp_send(connection, result_stanza)
-            stat = xmpp_stanza_release(result_stanza)
-        else if (type == JABBER_STANZA_TYPE_ERROR) then
-            ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
+                if (c_associated(ping_stanza)) then
+                    call logger%debug('received ping from ' // from)
+                    result_stanza = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_RESULT, id)
+                else
+                    result_stanza = dm_jabber_create_iq_error(jabber, id, JABBER_STANZA_TYPE_CANCEL, &
+                                                              JABBER_STANZA_NAME_SERVICE_UNAVAILABLE)
+                end if
 
-            if (c_associated(ping_stanza) .and. id == jabber%ping_id) then
-                call xmpp_timed_handler_delete(connection, ping_callback)
-                jabber%ping_id = ' '
-                return
-            end if
-        end if
+                stat = xmpp_stanza_set_to(result_stanza, from)
+                call xmpp_send(connection, result_stanza)
+                stat = xmpp_stanza_release(result_stanza)
+
+            case (JABBER_STANZA_TYPE_ERROR)
+                ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
+
+                if (c_associated(ping_stanza) .and. id == jabber%ping_id) then
+                    call xmpp_timed_handler_delete(connection, ping_callback)
+                    jabber%ping_id = ' '
+                    return
+                end if
+        end select
     end function iq_callback
 
     function message_callback(connection, stanza, user_data) bind(c)
@@ -461,6 +465,7 @@ contains
             !     call xmpp_timed_handler_add(connection, disconnect_callback, int(500, kind=c_long), user_data)
 
             case default
+                ! No reply.
                 return
         end select
 
@@ -494,7 +499,7 @@ contains
         end if
 
         jabber%ping_id = dm_uuid4()
-        iq_stanza = dm_jabber_create_ping_iq(jabber, jabber%ping_id)
+        iq_stanza = dm_jabber_create_iq_ping(jabber, jabber%ping_id)
         call xmpp_send(connection, iq_stanza)
         stat = xmpp_stanza_release(iq_stanza)
     end function ping_callback
