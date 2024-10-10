@@ -13,25 +13,43 @@ program dmbot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
+    integer, parameter :: APP_HOST_LEN       = 256     !! Max. length of XMPP host.
+    integer, parameter :: APP_PASSWORD_LEN   = 256     !! Max. length of XMPP password.
+
     logical, parameter :: APP_TCP_KEEP_ALIVE = .true.  !! Enable TCP Keep Alive.
     logical, parameter :: APP_TLS_TRUSTED    = .false. !! Trust unknown TLS certificate.
 
-    integer, parameter :: HOST_LEN     = 256 !! Max. length of XMPP host.
-    integer, parameter :: PASSWORD_LEN = 256 !! Max. length of XMPP password.
+    ! Bot commands.
+    integer, parameter :: BOT_COMMAND_PREFIX_LEN  = 1
+    integer, parameter :: BOT_COMMAND_NAME_LEN    = 6
+    integer, parameter :: BOT_COMMAND_LEN         = BOT_COMMAND_PREFIX_LEN + BOT_COMMAND_NAME_LEN
+
+    integer, parameter :: BOT_COMMAND_NONE   = 0
+    integer, parameter :: BOT_COMMAND_BEATS  = 1
+    integer, parameter :: BOT_COMMAND_DATE   = 2
+    integer, parameter :: BOT_COMMAND_LOG    = 3
+    integer, parameter :: BOT_COMMAND_POKE   = 4
+    integer, parameter :: BOT_COMMAND_UPTIME = 5
+    integer, parameter :: BOT_NCOMMANDS      = 5
+
+    character(len=BOT_COMMAND_PREFIX_LEN), parameter :: BOT_COMMAND_PREFIX = '!'
+    character(len=BOT_COMMAND_NAME_LEN),   parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
+        character(len=BOT_COMMAND_NAME_LEN) :: 'beats', 'date', 'log', 'poke', 'uptime' &
+    ]
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name      = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)   :: config    = ' '         !! Path to config file.
-        character(len=LOGGER_NAME_LEN) :: logger    = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node      = ' '         !! Node id.
-        character(len=HOST_LEN)        :: host      = ' '         !! IP or FQDN of XMPP server.
-        integer                        :: port      = JABBER_PORT !! Port of XMPP server.
-        logical                        :: tls       = .true.      !! TLS is mandatory.
-        character(len=JABBER_JID_LEN)  :: jid       = ' '         !! HTTP Basic Auth user name.
-        character(len=PASSWORD_LEN)    :: password  = ' '         !! HTTP Basic Auth password.
-        logical                        :: debug     = .false.     !! Force writing of output file.
-        logical                        :: verbose   = .false.     !! Force writing of output file.
+        character(len=ID_LEN)           :: name      = APP_NAME    !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)    :: config    = ' '         !! Path to config file.
+        character(len=LOGGER_NAME_LEN)  :: logger    = ' '         !! Name of logger.
+        character(len=NODE_ID_LEN)      :: node      = ' '         !! Node id.
+        character(len=APP_HOST_LEN)     :: host      = ' '         !! IP or FQDN of XMPP server.
+        integer                         :: port      = JABBER_PORT !! Port of XMPP server.
+        logical                         :: tls       = .true.      !! TLS is mandatory.
+        character(len=JABBER_JID_LEN)   :: jid       = ' '         !! HTTP Basic Auth user name.
+        character(len=APP_PASSWORD_LEN) :: password  = ' '         !! HTTP Basic Auth password.
+        logical                         :: debug     = .false.     !! Force writing of output file.
+        logical                         :: verbose   = .false.     !! Force writing of output file.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -99,6 +117,27 @@ contains
     ! ******************************************************************
     ! FUNCTIONS.
     ! ******************************************************************
+    integer function parse_message(message, command) result(rc)
+        character(len=*), intent(in)  :: message !! XMPP message received from client.
+        integer,          intent(out) :: command !! Command requested or `BOT_COMMAND_NONE`.
+
+        integer                        :: i
+        character(len=BOT_COMMAND_LEN) :: buffer
+
+        rc = E_INVALID
+        command = BOT_COMMAND_NONE
+
+        buffer = dm_to_lower(adjustl(message))
+        if (buffer(:BOT_COMMAND_PREFIX_LEN) /= BOT_COMMAND_PREFIX) return
+
+        do i = 1, BOT_NCOMMANDS
+            if (buffer(BOT_COMMAND_PREFIX_LEN + 1:) /= BOT_COMMAND_NAMES(i)) cycle
+            rc = E_NONE
+            command = i
+            exit
+        end do
+    end function parse_message
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and configuration from file (if
         !! `--config` is passed).
