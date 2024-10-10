@@ -12,7 +12,7 @@ module dm_logger
     !! ```fortran
     !! class(logger_class), pointer :: logger
     !!
-    !! logger => dm_logger_get()
+    !! logger => dm_logger_get_default()
     !! call logger%configure(name='dmlogger', ipc=.true., verbose=.true.)
     !! call logger%error('log message')
     !! ```
@@ -74,7 +74,7 @@ module dm_logger
     class(logger_class), allocatable, target, save :: MODULE_LOGGER
 
     ! Public procedures.
-    public :: dm_logger_get
+    public :: dm_logger_get_default
 
     ! Private procedures.
     private :: logger_configure
@@ -93,7 +93,7 @@ contains
     ! ******************************************************************
     ! PUBLIC PROCEDURES.
     ! ******************************************************************
-    function dm_logger_get() result(logger)
+    function dm_logger_get_default() result(logger)
         !! Returns pointer to global logger. The function allocates the logger
         !! if it does not exist yet.
         class(logger_class), pointer :: logger !! Pointer to logger object.
@@ -108,7 +108,7 @@ contains
         end if
 
         logger => MODULE_LOGGER
-    end function dm_logger_get
+    end function dm_logger_get_default
 
     ! ******************************************************************
     ! PRIVATE CLASS METHODS.

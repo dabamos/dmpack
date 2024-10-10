@@ -32,7 +32,7 @@ program dmlog
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
-    logger => dm_logger_get()
+    logger => dm_logger_get_default()
     call logger%configure(name=app%logger, ipc=.true., verbose=app%verbose)
 
     ! Prepare and send log.

@@ -44,7 +44,7 @@ program dmlogger
 
     init_block: block
         ! Initialise logger.
-        logger => dm_logger_get()
+        logger => dm_logger_get_default()
         call logger%configure(name    = app%name, &  ! Name of global logger.
                               node_id = app%node, &  ! Sensor node id.
                               source  = app%name, &  ! Application name.

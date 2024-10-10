@@ -60,7 +60,7 @@ contains
         log1%error     = TEST_ERROR
 
         print *, 'Initialising logger ...'
-        logger => dm_logger_get()
+        logger => dm_logger_get_default()
         call logger%configure(name=LOGGER_NAME, debug=.true., ipc=.true., no_color=.true.)
 
         print *, 'Opening log message queue ...'

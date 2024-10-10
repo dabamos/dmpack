@@ -65,7 +65,7 @@ program dmbot
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
-    logger => dm_logger_get()
+    logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &                 ! Name of logger process.
                           node_id = app%node, &                   ! Node id.
                           source  = app%name, &                   ! Log source.

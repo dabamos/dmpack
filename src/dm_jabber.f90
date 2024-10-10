@@ -342,7 +342,7 @@ contains
         ! Set log level.
         ll = JABBER_LL_NONE
         if (present(log_level)) ll = log_level
-        if (ll < JABBER_LL_NONE .or. ll> JABBER_LL_ERROR) return
+        if (ll < JABBER_LL_NONE .or. ll > JABBER_LL_ERROR) return
 
         ! Enable logging.
         if (ll /= JABBER_LL_NONE) log = xmpp_get_default_logger(ll)

@@ -63,7 +63,7 @@ contains
         ! Enable logging.
         verbose_ = .true.
         if (present(verbose)) verbose_ = verbose
-        if (verbose_) logger => dm_logger_get()
+        if (verbose_) logger => dm_logger_get_default()
 
         do
             ! Increase the receiver index.
