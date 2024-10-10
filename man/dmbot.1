@@ -1,0 +1,153 @@
+'\" t
+.\"     Title: dmbot
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2024-10-10
+.\"    Manual: User Commands
+.\"    Source: DMBOT
+.\"  Language: English
+.\"
+.TH "DMBOT" "1" "2024-10-10" "DMBOT" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmbot \- XMPP chat bot for remote control
+.SH "SYNOPSIS"
+.sp
+\fBdmbot\fP \-\-help
+.sp
+\fBdmbot\fP \-\-version
+.sp
+\fBdmbot\fP \-\-\fBnode\fP \fIid\fP \-\-\fBjid\fP \fIjid\fP \-\-\fBpassword\fP \fIpassword\fP \-\-\fBhost\fP \fIhost\fP
+[\-\-\fBport\fP \fIport\fP] [\-\-\fBtls\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmbot\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The program is an XMPP bot that accepts commands via chat.
+.sp
+Passing the XMPP credentials via the command\-line arguments \f(CR\-\-jid\fP and
+\f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
+for testing.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to Lua\-based configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-host\fP, \fB\-H\fP \fIhost\fP
+.RS 4
+Domain of XMPP host.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of instance and table in given configuration file (default is \f(CRdmbot\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Sensor node id.
+.RE
+.sp
+\fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
+.RS 4
+JID password. Be aware that passing the credentials via command\-line
+arguments is insecure and only recommended for testing.
+.RE
+.sp
+\fB\-\-port\fP, \fB\-q\fP \fIport\fP
+.RS 4
+Port of XMPP server. The default port is 5222.
+.RE
+.sp
+\fB\-\-tls\fP, \fB\-E\fP
+.RS 4
+Force TLS encryption.
+.RE
+.sp
+\fB\-\-jid\fP, \fB\-J\fP \fIuser\fP
+.RS 4
+Jabber id (JID) of the form \f(CRuser@example.com\fP.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program executed without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Connect with JID \f(CRuser@example.com\fP to an XMPP server on port 5223 and wait for
+commands:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmbot \-\-node dummy\-node \-\-jid user@example.com \-\-password secret \(rs
+  \-\-host example.com \-\-port 5223 \-\-tls \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2024 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

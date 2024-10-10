@@ -2,12 +2,12 @@
 .\"     Title: dmbeat
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-10-03
+.\"      Date: 2024-10-10
 .\"    Manual: User Commands
 .\"    Source: DMBEAT
 .\"  Language: English
 .\"
-.TH "DMBEAT" "1" "2024-10-03" "DMBEAT" "User Commands"
+.TH "DMBEAT" "1" "2024-10-10" "DMBEAT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,7 +36,7 @@ dmbeat \- sends status messages to an RPC server
 \fBdmbeat\fP \-\-version
 .sp
 \fBdmbeat\fP \-\-\fBnode\fP \fIid\fP \-\-\fBhost\fP \fIhost\fP [\-\-\fBport\fP \fIport\fP] [\-\-\fBtls\fP]
-[\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP [\-\-\fBcount\fP \fIn\fP]
+[\-\-\fBusername\fP \fIuser\fP] [\-\-\fBpassword\fP \fIpassword\fP] [\-\-\fBcount\fP \fIn\fP]
 [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBcompression\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP]
 [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .sp
@@ -114,8 +114,8 @@ arguments is insecure and only recommended for testing.
 .sp
 \fB\-\-port\fP, \fB\-q\fP \fIport\fP
 .RS 4
-Port of RPC API server. The default is 0 (automatic selection depending on
-protocol).
+Port of RPC API server. The default port is 0 (automatic selection depending
+on protocol).
 .RE
 .sp
 \fB\-\-tls\fP, \fB\-E\fP
