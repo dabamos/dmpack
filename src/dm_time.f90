@@ -18,6 +18,7 @@ module dm_time
     ! time stamp. Make sure that hard-coded edit descriptors match the length,
     ! for instance, in modules `dm_block`, `dm_dp`, and `dm_plot`.
     integer,          parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
+    integer,          parameter, public :: TIME_BEATS_LEN = 8  !! Length of beats string.
     integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Length of human-readable time stamp.
     character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
@@ -301,8 +302,8 @@ contains
         !! (_.beat time_) in the form `@1000.00` in `beats`. One beat is
         !! equivalent to one decimal minute in the French decimal time (1 min
         !! 26.4 sec in Solar time).
-        character(len=TIME_LEN), intent(in)  :: time  !! ISO 8601 time stamp.
-        character(len=8),        intent(out) :: beats !! Timestamp converted to _.beat_.
+        character(len=TIME_LEN),       intent(in)  :: time  !! ISO 8601 time stamp.
+        character(len=TIME_BEATS_LEN), intent(out) :: beats !! Timestamp converted to _.beat_.
 
         integer          :: hour, minute, second
         integer(kind=i8) :: bmt, utc
