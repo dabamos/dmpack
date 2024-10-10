@@ -18,7 +18,7 @@ module dm_jabber
     !! rc = dm_jabber_connect(jabber     = jabber, &
     !!                        host       = 'example.com', &
     !!                        port       = JABBER_PORT, &
-    !!                        jid        = 'user@example.com',
+    !!                        jid        = 'user@example.com', &
     !!                        password   = 'secret', &
     !!                        callback   = connection_callback, &
     !!                        user_data  = c_loc(jabber), &
@@ -243,7 +243,7 @@ contains
         character(len=*),  intent(in)            :: password     !! JID account password.
         procedure(dm_jabber_connection_callback) :: callback     !! Jabber connection handler.
         type(c_ptr),       intent(in), optional  :: user_data    !! C pointer to user data.
-        character(len=*),  intent(in), optional  :: resource     !! Optional resource (`<jid>@<domain>/<resource>`.
+        character(len=*),  intent(in), optional  :: resource     !! Optional resource (`<jid>@<domain>/<resource>`).
         logical,           intent(in), optional  :: keep_alive   !! Enable TCP Keep Alive.
         logical,           intent(in), optional  :: tls_required !! TLS is mandatory.
         logical,           intent(in), optional  :: tls_trusted  !! Trust TLS certificate.
