@@ -220,9 +220,9 @@ module dm_jabber
     public :: dm_jabber_disconnect
     public :: dm_jabber_init
     public :: dm_jabber_is_connected
+    public :: dm_jabber_preserve_stream_management_state
     public :: dm_jabber_run
     public :: dm_jabber_send_presence
-    public :: dm_jabber_set_stream_management_state
     public :: dm_jabber_shutdown
 contains
     integer function dm_jabber_connect(jabber, host, port, jid, password, callback, user_data, &
@@ -435,6 +435,13 @@ contains
         call xmpp_initialize()
     end subroutine dm_jabber_init
 
+    subroutine dm_jabber_preserve_stream_management_state(jabber)
+        !! Saves current XMPP stream management state to Jabber context.
+        type(jabber_type), intent(inout) :: jabber !! Jabber context type.
+
+        jabber%sm_state = xmpp_conn_get_sm_state(jabber%connection)
+    end subroutine dm_jabber_preserve_stream_management_state
+
     subroutine dm_jabber_run(jabber)
         !! Starts XMPP event loop.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
@@ -483,13 +490,6 @@ contains
         call xmpp_send(jabber%connection, pres)
         stat = xmpp_stanza_release(pres)
     end subroutine dm_jabber_send_presence
-
-    subroutine dm_jabber_set_stream_management_state(jabber)
-        !! Saves current XMPP stream management state to Jabber context.
-        type(jabber_type), intent(inout) :: jabber !! Jabber context type.
-
-        jabber%sm_state = xmpp_conn_get_sm_state(jabber%connection)
-    end subroutine dm_jabber_set_stream_management_state
 
     subroutine dm_jabber_shutdown()
         !! Shuts down XMPP backend (libstrophe).
