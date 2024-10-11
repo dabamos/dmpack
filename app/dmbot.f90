@@ -289,13 +289,13 @@ contains
         character(len=*), intent(in), optional :: bot_name
         character(len=:), allocatable          :: reply
 
-        if (.not. dm_string_is_present(bot_name)) then
+        if (dm_string_is_present(bot_name)) then
             reply = trim(bot_name)
         else
             reply = APP_NAME
         end if
 
-        reply = reply // ' is awake'
+        reply = reply // ' is online'
     end function bot_reply_poke
 
     function bot_reply_uptime() result(reply)
