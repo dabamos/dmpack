@@ -12,28 +12,28 @@ program dmbeat
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: HOST_LEN     = 256 !! Max. length of host name.
-    integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
-    integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
+    integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
+    integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.
+    integer, parameter :: APP_PASSWORD_LEN = 256 !! Max. length of password.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name             = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)   :: config           = ' '         !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger           = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)     :: node             = ' '         !! Sensor node id (required).
-        character(len=HOST_LEN)        :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
-        integer                        :: port             = 0           !! API port (set to 0 for protocol default).
-        logical                        :: tls              = .false.     !! TLS encryption.
-        character(len=USERNAME_LEN)    :: username         = ' '         !! HTTP Basic Auth user name.
-        character(len=PASSWORD_LEN)    :: password         = ' '         !! HTTP Basic Auth password.
-        character(len=Z_TYPE_NAME_LEN) :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
-        integer                        :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
-        integer                        :: count            = 0           !! Maximum number of heartbeats to send (0 means unlimited).
-        integer                        :: interval         = 60          !! Emit interval in seconds (>= 0).
-        logical                        :: debug            = .false.     !! Forward debug messages via IPC.
-        logical                        :: ipc              = .false.     !! Send logs via IPC (requires logger name to be set).
-        logical                        :: verbose          = .false.     !! Print debug messages to stderr.
+        character(len=ID_LEN)           :: name             = APP_NAME    !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
+        character(len=LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
+        character(len=NODE_ID_LEN)      :: node             = ' '         !! Sensor node id (required).
+        character(len=APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
+        integer                         :: port             = 0           !! API port (set to 0 for protocol default).
+        logical                         :: tls              = .false.     !! TLS encryption.
+        character(len=APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
+        character(len=APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
+        character(len=Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
+        integer                         :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
+        integer                         :: count            = 0           !! Maximum number of heartbeats to send (0 means unlimited).
+        integer                         :: interval         = 60          !! Emit interval in seconds (>= 0).
+        logical                         :: debug            = .false.     !! Forward debug messages via IPC.
+        logical                         :: ipc              = .false.     !! Send logs via IPC (requires logger name to be set).
+        logical                         :: verbose          = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -50,12 +50,12 @@ program dmbeat
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &
-                          node_id = app%node, &
-                          source  = app%name, &
-                          debug   = app%debug, &
-                          ipc     = app%ipc, &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger, & ! Name of logger process.
+                          node_id = app%node,   & ! Node id.
+                          source  = app%name,   & ! Log source.
+                          debug   = app%debug,  & ! Forward DEBUG messages via IPC.
+                          ipc     = app%ipc,    & ! Enable IPC.
+                          verbose = app%verbose)  ! Print logs to standard error.
 
     ! Initialise RPC backend.
     init_block: block
@@ -68,7 +68,7 @@ program dmbeat
 
         ! Run main loop.
         call dm_signal_register(signal_callback)
-        call run(app, rc)
+        call run(app, error=rc)
     end block init_block
 
     ! Clean-up.
@@ -171,9 +171,10 @@ contains
     end function read_args
 
     integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
+        !! Reads configuration from file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_type) :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return

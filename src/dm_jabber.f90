@@ -173,33 +173,55 @@ module dm_jabber
     character(len=*), parameter, public :: JABBER_STANZA_NAME_X                   = 'x'
 
     ! Stanze default name spaces.
-    character(len=*), parameter, public :: JABBER_STANZA_NS_PING = 'urn:xmpp:ping'
+    character(len=*), parameter, public :: JABBER_STANZA_NS_AUTH                = XMPP_NS_AUTH
+    character(len=*), parameter, public :: JABBER_STANZA_NS_BIND                = XMPP_NS_BIND
+    character(len=*), parameter, public :: JABBER_STANZA_NS_CLIENT              = XMPP_NS_CLIENT
+    character(len=*), parameter, public :: JABBER_STANZA_NS_COMPONENT           = XMPP_NS_COMPONENT
+    character(len=*), parameter, public :: JABBER_STANZA_NS_COMPRESSION         = XMPP_NS_COMPRESSION
+    character(len=*), parameter, public :: JABBER_STANZA_NS_DISCO_INFO          = XMPP_NS_DISCO_INFO
+    character(len=*), parameter, public :: JABBER_STANZA_NS_DISCO_ITEMS         = XMPP_NS_DISCO_ITEMS
+    character(len=*), parameter, public :: JABBER_STANZA_NS_FEATURE_COMPRESSION = XMPP_NS_FEATURE_COMPRESSION
+    character(len=*), parameter, public :: JABBER_STANZA_NS_PING                = 'urn:xmpp:ping'
+    character(len=*), parameter, public :: JABBER_STANZA_NS_REGISTER            = XMPP_NS_REGISTER
+    character(len=*), parameter, public :: JABBER_STANZA_NS_ROSTER              = XMPP_NS_ROSTER
+    character(len=*), parameter, public :: JABBER_STANZA_NS_SASL                = XMPP_NS_SASL
+    character(len=*), parameter, public :: JABBER_STANZA_NS_SESSION             = XMPP_NS_SESSION
+    character(len=*), parameter, public :: JABBER_STANZA_NS_SM                  = XMPP_NS_SM
+    character(len=*), parameter, public :: JABBER_STANZA_NS_STANZAS_IETF        = XMPP_NS_STANZAS_IETF
+    character(len=*), parameter, public :: JABBER_STANZA_NS_STREAMS             = XMPP_NS_STREAMS
+    character(len=*), parameter, public :: JABBER_STANZA_NS_STREAMS_IETF        = XMPP_NS_STREAMS_IETF
+    character(len=*), parameter, public :: JABBER_STANZA_NS_TLS                 = XMPP_NS_TLS
 
     ! Stanza default texts.
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_AWAY    = 'away'
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_CHAT    = 'chat'
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_DND     = 'dnd'
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_OFFLINE = 'unavailable'
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_ONLINE  = 'online'
-    character(len=*), parameter, public :: JABBER_STANZA_TEXT_XA      = 'xa'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_AWAY   = 'away'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_CHAT   = 'chat'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_DND    = 'dnd'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_ONLINE = 'online'
+    character(len=*), parameter, public :: JABBER_STANZA_TEXT_XA     = 'xa'
 
     ! Stanza default types.
-    character(len=*), parameter, public :: JABBER_STANZA_TYPE_CANCEL = 'cancel'
-    character(len=*), parameter, public :: JABBER_STANZA_TYPE_ERROR  = 'error'
-    character(len=*), parameter, public :: JABBER_STANZA_TYPE_GET    = 'get'
-    character(len=*), parameter, public :: JABBER_STANZA_TYPE_RESULT = 'result'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_CANCEL      = 'cancel'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_CHAT        = 'chat'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_ERROR       = 'error'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_GET         = 'get'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_MODIFY      = 'modify'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_NORMAL      = 'normal'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_RESULT      = 'result'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_SET         = 'set'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_SUBMIT      = 'submit'
+    character(len=*), parameter, public :: JABBER_STANZA_TYPE_UNAVAILABLE = 'unavailable'
 
     type, public :: jabber_type
         !! Jabber/XMPP context type.
         type(c_ptr)                        :: ctx        = c_null_ptr  !! libstrophe context.
         type(c_ptr)                        :: connection = c_null_ptr  !! libstrophe connection.
         type(c_ptr)                        :: sm_state   = c_null_ptr  !! libstrophe stream management state.
-        character(len=JABBER_HOST_LEN)     :: host       = ' '         !! Jabber server host.
-        integer                            :: port       = JABBER_PORT !! Jabber server port.
-        character(len=JABBER_JID_LEN)      :: jid        = ' '         !! Jabber id of account.
-        character(len=JABBER_JID_FULL_LEN) :: jid_full   = ' '         !! Jabber id with resource.
-        character(len=JABBER_PASSWORD_LEN) :: password   = ' '         !! Jabber password of account.
-        character(len=JABBER_PING_ID_LEN)  :: ping_id    = ' '
+        character(len=JABBER_HOST_LEN)     :: host       = ' '         !! XMPP server host.
+        integer                            :: port       = JABBER_PORT !! XMPP server port.
+        character(len=JABBER_JID_LEN)      :: jid        = ' '         !! XMPP id of account.
+        character(len=JABBER_JID_FULL_LEN) :: jid_full   = ' '         !! XMPP id with resource.
+        character(len=JABBER_PASSWORD_LEN) :: password   = ' '         !! XMPP password of account.
+        character(len=JABBER_PING_ID_LEN)  :: ping_id    = ' '         !! XMPP ping id (XEP-0199).
     end type jabber_type
 
     ! Imported abstract interfaces.
@@ -374,7 +396,7 @@ contains
         if (present(condition)) then
             condition_stanza = xmpp_stanza_new(jabber%ctx)
             stat = xmpp_stanza_set_name(condition_stanza, condition)
-            stat = xmpp_stanza_set_ns(condition_stanza, XMPP_NS_STANZAS_IETF)
+            stat = xmpp_stanza_set_ns(condition_stanza, JABBER_STANZA_NS_STANZAS_IETF)
             stat = xmpp_stanza_add_child(error_stanza, condition_stanza)
         end if
 
