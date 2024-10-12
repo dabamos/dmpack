@@ -97,13 +97,13 @@ contains
 
         ! Required and optional command-line arguments.
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('database', short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('minlevel', short='L', type=ARG_TYPE_LEVEL),   & ! -L, --minlevel <n>
-            arg_type('ipc',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --ipc
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
+            arg_type('database', short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
+            arg_type('minlevel', short='L', type=ARG_TYPE_LEVEL),    & ! -L, --minlevel <n>
+            arg_type('ipc',      short='Q', type=ARG_TYPE_LOGICAL),  & ! -Q, --ipc
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.

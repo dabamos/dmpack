@@ -71,10 +71,10 @@ module dm_jabber
     implicit none (type, external)
     private
 
-    integer, parameter, public :: JABBER_HOST_LEN     = 256    !! Max. length of host.
-    integer, parameter, public :: JABBER_JID_LEN      = 64     !! Max. length of Jabber id.
-    integer, parameter, public :: JABBER_JID_FULL_LEN = 128    !! Max. length of JID with additional resource.
-    integer, parameter, public :: JABBER_PASSWORD_LEN = 64     !! Max. length of password.
+    integer, parameter, public :: JABBER_HOST_LEN     = 255    !! Max. length of host (XEP-0029).
+    integer, parameter, public :: JABBER_JID_LEN      = 256    !! Max. length of Jabber id (XEP-0029).
+    integer, parameter, public :: JABBER_JID_FULL_LEN = 768    !! Max. length of JID with additional resource (XEP-0029).
+    integer, parameter, public :: JABBER_PASSWORD_LEN = 256    !! Max. length of password.
     integer, parameter, public :: JABBER_PING_ID_LEN  = ID_LEN !! Max. length of ping id.
 
     integer, parameter, public :: JABBER_PORT     = 5222 !! Default XMPP port (StartTLS).
@@ -246,6 +246,7 @@ module dm_jabber
     public :: dm_jabber_is_connected
     public :: dm_jabber_preserve_stream_management_state
     public :: dm_jabber_roster_add
+    public :: dm_jabber_roster_destroy
     public :: dm_jabber_roster_has
     public :: dm_jabber_run
     public :: dm_jabber_send_presence
@@ -468,6 +469,13 @@ contains
     end function dm_jabber_is_connected
 
     integer function dm_jabber_roster_add(roster, jid) result(rc)
+        !! Adds JID to roster type.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if the roster could not be allocated.
+        !! * `E_BOUNDS` if the length of the jid is greater than `JABBER_ID_LEN`.
+        !!
         type(roster_type), intent(inout) :: roster !! Roster type.
         character(len=*),  intent(in)    :: jid    !! JID to add.
 
@@ -497,7 +505,8 @@ contains
 
     logical function dm_jabber_roster_has(roster, jid) result(has)
         !! Returns `.true.` if roster contains JID. Any resource appended to
-        !! the JID is ignored.
+        !! the JID is ignored, i.e., the JID `foo@example.com/mobile` equals a
+        !! JID `foo@example.com` in the roster.
         type(roster_type), intent(inout) :: roster !! Roster type.
         character(len=*),  intent(in)    :: jid    !! JID to search.
 
@@ -548,6 +557,12 @@ contains
         jabber%sm_state = xmpp_conn_get_sm_state(jabber%connection)
     end subroutine dm_jabber_preserve_stream_management_state
 
+    subroutine dm_jabber_roster_destroy(roster)
+        type(roster_type), intent(inout) :: roster
+
+        if (allocated(roster%jids)) deallocate (roster%jids)
+    end subroutine dm_jabber_roster_destroy
+
     subroutine dm_jabber_run(jabber)
         !! Starts XMPP event loop.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
@@ -557,11 +572,11 @@ contains
     end subroutine dm_jabber_run
 
     subroutine dm_jabber_send_presence(jabber, show, status)
-        !! Sends presence to XMPP server.
+        !! Creates and sends presence to XMPP server.
         use :: dm_string
 
         type(jabber_type), intent(inout)        :: jabber !! Jabber context type.
-        character(len=*),  intent(in), optional :: show   !! Availability (`online`, `offline`, `dnd`, …).
+        character(len=*),  intent(in), optional :: show   !! Availability (`away`, `dnd`, `online`, …).
         character(len=*),  intent(in), optional :: status !! Human-readable status description text.
 
         integer     :: stat
@@ -598,6 +613,7 @@ contains
     end subroutine dm_jabber_send_presence
 
     subroutine dm_jabber_send_stanza(jabber, stanza, release)
+        !! Sends stanza to server and releases it by default.
         type(jabber_type), intent(inout)        :: jabber  !! Jabber context type.
         type(c_ptr),       intent(in)           :: stanza  !! Stanza to send.
         logical,           intent(in), optional :: release !! Release stanza afterwards.
@@ -618,7 +634,7 @@ contains
     end subroutine dm_jabber_shutdown
 
     subroutine dm_jabber_stop(jabber)
-        !! Stops XMPP context (libstrophe).
+        !! Stops event loop (libstrophe).
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
 
         call xmpp_stop(jabber%ctx)

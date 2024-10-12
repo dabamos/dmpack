@@ -37,19 +37,19 @@ module dm_arg
     private
 
     ! Argument value types.
-    integer, parameter, public :: ARG_TYPE_NONE    =  0 !! None type (invalid).
-    integer, parameter, public :: ARG_TYPE_LOGICAL =  1 !! Logical argument.
-    integer, parameter, public :: ARG_TYPE_INTEGER =  2 !! Integer value.
-    integer, parameter, public :: ARG_TYPE_REAL    =  3 !! Real value.
-    integer, parameter, public :: ARG_TYPE_CHAR    =  4 !! Single character value.
-    integer, parameter, public :: ARG_TYPE_STRING  =  5 !! Character string value.
-    integer, parameter, public :: ARG_TYPE_ID      =  6 !! Valid ID value.
-    integer, parameter, public :: ARG_TYPE_UUID    =  7 !! Valid UUIDv4 value.
-    integer, parameter, public :: ARG_TYPE_TIME    =  8 !! Valid ISO 8601 value.
-    integer, parameter, public :: ARG_TYPE_LEVEL   =  9 !! Log level (name string or integer value).
-    integer, parameter, public :: ARG_TYPE_FILE    = 10 !! Path to file on file system (must exist).
-    integer, parameter, public :: ARG_TYPE_DB      = 11 !! Path to database on file system (must exist).
-    integer, parameter, public :: ARG_TYPE_LAST    = 11 !! Never use this.
+    integer, parameter, public :: ARG_TYPE_NONE     =  0 !! None type (invalid).
+    integer, parameter, public :: ARG_TYPE_LOGICAL  =  1 !! Logical argument.
+    integer, parameter, public :: ARG_TYPE_INTEGER  =  2 !! Integer value.
+    integer, parameter, public :: ARG_TYPE_REAL     =  3 !! Real value.
+    integer, parameter, public :: ARG_TYPE_CHAR     =  4 !! Single character value.
+    integer, parameter, public :: ARG_TYPE_STRING   =  5 !! Character string value.
+    integer, parameter, public :: ARG_TYPE_ID       =  6 !! Valid ID value.
+    integer, parameter, public :: ARG_TYPE_UUID     =  7 !! Valid UUIDv4 value.
+    integer, parameter, public :: ARG_TYPE_TIME     =  8 !! Valid ISO 8601 value.
+    integer, parameter, public :: ARG_TYPE_LEVEL    =  9 !! Log level (name string or integer value).
+    integer, parameter, public :: ARG_TYPE_FILE     = 10 !! Path to file on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_DATABASE = 11 !! Path to database on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_LAST     = 11 !! Never use this.
 
     integer, parameter, public :: ARG_NAME_LEN  = 32            !! Maximum length of argument name.
     integer, parameter, public :: ARG_VALUE_LEN = FILE_PATH_LEN !! Maximum length of argument value.
@@ -342,7 +342,7 @@ contains
                             call dm_error_out(rc, 'argument --' // trim(args(i)%name) // ' is not a valid log level')
                         case (ARG_TYPE_FILE)
                             call dm_error_out(rc, 'file ' // trim(args(i)%value) // ' not found')
-                        case (ARG_TYPE_DB)
+                        case (ARG_TYPE_DATABASE)
                             call dm_error_out(rc, 'database ' // trim(args(i)%value) // ' not found')
                     end select
 
@@ -438,21 +438,12 @@ contains
             case (ARG_TYPE_LEVEL)
                 ! Log level.
                 if (arg%length == 0) return
-
-                ! Convert string to integer.
-                call dm_string_to(arg%value, level, error)
-
-                ! On error, try to read level from level name, and convert the
-                ! result back to string. An invalid log level name is turned
-                ! into `LL_NONE`.
-                if (dm_is_error(error)) then
-                    level     = dm_log_level_from_name(arg%value)
-                    arg%value = dm_itoa(level)
-                end if
-
+                level = dm_log_level_from_string(arg%value)
                 if (.not. dm_log_is_valid(level)) return
+                ! Set argument value to numeric log level.
+                arg%value = dm_itoa(level)
 
-            case (ARG_TYPE_FILE, ARG_TYPE_DB)
+            case (ARG_TYPE_FILE, ARG_TYPE_DATABASE)
                 ! File or database.
                 if (arg%length == 0) return
                 if (arg%required .and. .not. dm_file_exists(arg%value)) return
@@ -493,7 +484,7 @@ contains
                     write (stdout, '("<level>")')
                 case (ARG_TYPE_FILE)
                     write (stdout, '("<file>")')
-                case (ARG_TYPE_DB)
+                case (ARG_TYPE_DATABASE)
                     write (stdout, '("<database>")')
                 case default
                     write (stdout, *)

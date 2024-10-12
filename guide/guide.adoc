@@ -788,23 +788,33 @@ All commands start with prefix `!`. For an overview, send chat command `!help`
 to the bot. The following commands are supported:
 
 !beats::
-  Returns current time of the sensor node in
+  Return current time of the sensor node in
   link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time]
   (_.beats_).
 !date::
-  Returns date and time of the sensor node in ISO 8601.
+  Return date and time of the sensor node in ISO 8601.
 !help::
-  Returns help text.
+  Return help text.
+!jid::
+  Return full JID of bot.
+!log <level> "<message>"::
+  Send log message of given level to logger. The argument `level` must be a
+  valid log level name or numeric log level. The argument `message` must be in
+  quotes if it contains spaces.
+!node::
+  Return node id of bot.
 !poke::
-  Returns a message if the bot is online.
+  Return a message if the bot is online.
 !reconnect::
-  Reconnects bot and updates local roster list.
+  Reconnect bot and update local roster list.
 !roster::
-  Returns list of authorised users from the roster.
+  Return list of authorised users from the roster.
 !uname::
-  Returns name and version of the operating system.
+  Return name and version of the operating system.
 !uptime::
-  Returns uptime of the operating system.
+  Return uptime of the operating system.
+!version::
+  Return bot version.
 
 Update the list of authorised users by adding them to the roster of the bot and
 sending command `!reconnect` afterwards. The bot will update the local roster
@@ -831,6 +841,7 @@ for testing.
 | `--node _id_`         | `-N`  | –       | Node id.
 | `--password _string_` | `-P`  | –       | Bot password.
 | `--port _port_`       | `-q`  | 5222    | Port of XMPP server.
+| `--reconnect`         | `-R`  | off     | Reconnect on error.
 | `--tls`               | `-E`  | off     | Force TLS encryption.
 | `--verbose`           | `-V`  | off     | Print log messages to _stderr_.
 | `--version`           | `-v`  | –       | Output version information and quit.
@@ -851,7 +862,7 @@ Start a chat with the JID and send a command. For instance, on command
 `!uptime` the bot may send the following reply:
 
 ```
-uptime 0 days 23 hours 57 mins 32 secs
+uptime: 0 days 23 hours 57 mins 32 secs
 ```
 
 === dmdb [[dmdb]]
@@ -1514,8 +1525,8 @@ The following log levels are accepted:
 | off
 | Use POSIX semaphore for process synchronisation. The name of the semaphore
 matches the instance name (with leading slash). The semaphore is set to 1
-whenever a new log message was received. Only a single process may wait for
-this semaphore.
+whenever a new log message is received. Only a single process may wait for this
+semaphore.
 
 | `--minlevel _level_`
 | `-L`
@@ -3005,10 +3016,11 @@ MAILTO=/dev/null
 @hourly -q /usr/local/share/dmpack/dmreport/mkreport.sh
 ....
 
-Status mails and logging are disabled. The shell script `mkreport.sh` must have
-the execution bits set. Modify the script according to your set-up. The
-parameter `-q` disables syslog messages. Additionally, we may update an Atom
-XML feed of logs by running <<dmfeed>> every five minutes:
+Alter script `mkreport.sh` to your set-up. Status mails and logging are
+disabled. The shell script `mkreport.sh` must have the execution bits set.
+Modify the script according to your set-up. The parameter `-q` disables syslog
+messages. Additionally, we may update an Atom XML feed of logs by running
+<<dmfeed>> every five minutes:
 
 [source,crontab]
 ....
@@ -3111,8 +3123,8 @@ SHT1X7X
    26.84 'C        52.97 %         13.51 g/m3      16.44 'C        19.96 'C
 ....
 
-The key combination `CTRL` + `A` `O` shows the main menu again, and `CTRL` + `A`
-`X` exits _minicom(1)_.
+The key combination `CTRL` + `A` `O` shows the options menu again, and
+`CTRL` + `A` `X` exits _minicom(1)_.
 
 ==== Databases
 
@@ -7894,16 +7906,16 @@ $ /usr/local/bin/zstd --version
 |  2   | `E_DUMMY`           | Dummy error.
 |  3   | `E_INVALID`         | Invalid input/argument.
 |  4   | `E_INCOMPLETE`      | Input/argument missing.
-|  5   | `E_UNEXPECTED`      | Unexpected input.
-|  6   | `E_TYPE`            | Type error.
-|  7   | `E_IO`              | I/O operation failed.
-|  8   | `E_READ`            | Read operation failed.
-|  9   | `E_WRITE`           | Write operation failed.
-| 10   | `E_EOF`             | End of file.
-| 11   | `E_EOR`             | End of record.
-| 12   | `E_ALLOC`           | Memory allocation failed.
-| 13   | `E_BOUNDS`          | Out of bounds error.
-| 14   | `E_EXIST`           | Resource exists.
+|  5   | `E_TYPE`            | Type error.
+|  6   | `E_IO`              | I/O operation failed.
+|  7   | `E_READ`            | Read operation failed.
+|  8   | `E_WRITE`           | Write operation failed.
+|  9   | `E_EOF`             | End of file.
+| 10   | `E_EOR`             | End of record.
+| 11   | `E_ALLOC`           | Memory allocation failed.
+| 12   | `E_BOUNDS`          | Out of bounds error.
+| 13   | `E_EXIST`           | Resource exists.
+| 14   | `E_NOT_FOUND`       | Resource not found.
 | 15   | `E_SYSTEM`          | System call failed.
 | 16   | `E_MEMORY`          | No memory.
 | 17   | `E_FULL`            | Disk full.
@@ -7912,12 +7924,11 @@ $ /usr/local/bin/zstd --version
 | 20   | `E_LIMIT`           | Limit reached.
 | 21   | `E_TIMEOUT`         | Timeout occured.
 | 22   | `E_FORMAT`          | Format error.
-| 23   | `E_NOT_FOUND`       | Resource not found.
-| 24   | `E_PERM`            | No permission.
-| 25   | `E_READ_ONLY`       | Read-only access.
-| 26   | `E_CORRUPT`         | Data corrupted.
-| 27   | `E_CONFIG`          | Invalid configuration.
-| 28   | `E_GEOCOM`          | GeoCOM error.
+| 23   | `E_PERM`            | No permission.
+| 24   | `E_READ_ONLY`       | Read-only access.
+| 25   | `E_CORRUPT`         | Data corrupted.
+| 26   | `E_CONFIG`          | Invalid configuration.
+| 27   | `E_GEOCOM`          | GeoCOM error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_BUSY`         | Database is busy.

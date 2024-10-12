@@ -88,6 +88,7 @@ module dm_log
     public :: dm_log_equals
     public :: dm_log_is_valid
     public :: dm_log_level_from_name
+    public :: dm_log_level_from_string
     public :: dm_log_out
 
     private :: log_is_valid_level
@@ -148,6 +149,23 @@ contains
                 level = LL_NONE
         end select
     end function dm_log_level_from_name
+
+    integer function dm_log_level_from_string(str) result(level)
+        !! Return log level from string, either level name or numeric level.
+        use :: dm_string, only: dm_string_to
+
+        character(len=*), intent(in) :: str !! Log level name or numeric level.
+
+        integer :: rc
+
+        ! Convert string to integer.
+        call dm_string_to(str, level, error=rc)
+        if (dm_is_ok(rc)) return
+
+        ! On error, try to read level from level name. An invalid log level name
+        ! is turned into `LL_NONE`.
+        level = dm_log_level_from_name(str)
+    end function dm_log_level_from_string
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.

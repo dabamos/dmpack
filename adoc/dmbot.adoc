@@ -31,21 +31,31 @@ All commands start with prefix `!`. For an overview, send chat command `!help`
 to the bot. The following commands are supported:
 
 !beats::
-  Returns current time of the sensor node in Swatch Internet Time.
+  Return current time of the sensor node in Swatch Internet Time.
 !date::
-  Returns date and time of the sensor node in ISO 8601.
+  Return date and time of the sensor node in ISO 8601.
 !help::
-  Returns help text.
+  Return help text.
+!jid::
+  Return full JID of bot.
+!log <level> "<message>"::
+  Send log message of given level to logger. The argument `level` must be a
+  valid log level name or numeric log level. The argument `message` must be in
+  quotes.
+!node::
+  Return node id of bot.
 !poke::
-  Returns a message if the bot is online.
+  Return status message if bot is online.
 !reconnect::
-  Reconnects bot and updates local roster list.
+  Reconnect bot and update local roster list.
 !roster::
-  Returns list of authorised users from the roster.
+  Return list of authorised users from the roster.
 !uname::
-  Returns name and version of the operating system.
+  Return name and version of the operating system.
 !uptime::
-  Returns uptime of the operating system
+  Return uptime of the operating system
+!version::
+  Return bot version.
 
 Update the list of authorised users by adding them to the roster of the bot and
 sending command `!reconnect` afterwards. The bot will update the local roster
@@ -88,6 +98,9 @@ for testing.
 
 *--port*, *-q* _port_::
   Port of XMPP server. The default port is 5222.
+
+*--reconnect*, *-R*::
+  Reconnect on error.
 
 *--tls*, *-E*::
   Force TLS encryption.

@@ -36,7 +36,7 @@ contains
         type(arg_type)              :: args(1)
 
         args = [ &
-            arg_type(name='database', short='d', type=ARG_TYPE_DB) & ! -d, --database <path>
+            arg_type(name='database', short='d', type=ARG_TYPE_DATABASE) & ! -d, --database <path>
         ]
 
         rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))

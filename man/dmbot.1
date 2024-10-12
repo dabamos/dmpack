@@ -2,12 +2,12 @@
 .\"     Title: dmbot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-10-12
+.\"      Date: 2024-10-13
 .\"    Manual: User Commands
 .\"    Source: DMBOT
 .\"  Language: English
 .\"
-.TH "DMBOT" "1" "2024-10-12" "DMBOT" "User Commands"
+.TH "DMBOT" "1" "2024-10-13" "DMBOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -51,42 +51,64 @@ to the bot. The following commands are supported:
 .sp
 !beats
 .RS 4
-Returns current time of the sensor node in Swatch Internet Time.
+Return current time of the sensor node in Swatch Internet Time.
 .RE
 .sp
 !date
 .RS 4
-Returns date and time of the sensor node in ISO 8601.
+Return date and time of the sensor node in ISO 8601.
 .RE
 .sp
 !help
 .RS 4
-Returns help text.
+Return help text.
+.RE
+.sp
+!jid
+.RS 4
+Return full JID of bot.
+.RE
+.sp
+!log <level> "<message>"
+.RS 4
+Send log message of given level to logger. The argument \f(CRlevel\fP must be a
+valid log level name or numeric log level. The argument \f(CRmessage\fP must be in
+quotes.
+.RE
+.sp
+!node
+.RS 4
+Return node id of bot.
 .RE
 .sp
 !poke
 .RS 4
-Returns a message if the bot is online.
+Return status message if bot is online.
 .RE
 .sp
 !reconnect
 .RS 4
-Reconnects bot and updates local roster list.
+Reconnect bot and update local roster list.
 .RE
 .sp
 !roster
 .RS 4
-Returns list of authorised users from the roster.
+Return list of authorised users from the roster.
 .RE
 .sp
 !uname
 .RS 4
-Returns name and version of the operating system.
+Return name and version of the operating system.
 .RE
 .sp
 !uptime
 .RS 4
-Returns uptime of the operating system
+Return uptime of the operating system
+.RE
+.sp
+!version
+.RS 4
+Return bot version.
 .RE
 .sp
 Update the list of authorised users by adding them to the roster of the bot and
@@ -148,6 +170,11 @@ arguments is insecure and only recommended for testing.
 \fB\-\-port\fP, \fB\-q\fP \fIport\fP
 .RS 4
 Port of XMPP server. The default port is 5222.
+.RE
+.sp
+\fB\-\-reconnect\fP, \fB\-R\fP
+.RS 4
+Reconnect on error.
 .RE
 .sp
 \fB\-\-tls\fP, \fB\-E\fP

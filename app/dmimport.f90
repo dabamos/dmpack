@@ -281,7 +281,7 @@ contains
 
         args = [ &
             arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
-            arg_type('database',  short='d', type=ARG_TYPE_DB),                      & ! -d, --database <path>
+            arg_type('database',  short='d', type=ARG_TYPE_DATABASE),                & ! -d, --database <path>
             arg_type('input',     short='i', type=ARG_TYPE_STRING, required=.true.), & ! -i, --input <path>
             arg_type('quote',     short='q', type=ARG_TYPE_CHAR),                    & ! -q, --quote <char>
             arg_type('separator', short='s', type=ARG_TYPE_CHAR),                    & ! -s, --separator <char>

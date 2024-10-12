@@ -101,7 +101,6 @@ contains
             rc = dm_lua_set(lua, 'E_DUMMY',          E_DUMMY);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_INVALID',        E_INVALID);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_INCOMPLETE',     E_INCOMPLETE);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_UNEXPECTED',     E_UNEXPECTED);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_TYPE',           E_TYPE);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_IO',             E_IO);             if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_READ',           E_READ);           if (dm_is_error(rc)) return
@@ -111,6 +110,7 @@ contains
             rc = dm_lua_set(lua, 'E_ALLOC',          E_ALLOC);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_BOUNDS',         E_BOUNDS);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_EXIST',          E_EXIST);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_FOUND',      E_NOT_FOUND);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_SYSTEM',         E_SYSTEM);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_MEMORY',         E_MEMORY);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_FULL',           E_FULL);           if (dm_is_error(rc)) return
@@ -119,7 +119,6 @@ contains
             rc = dm_lua_set(lua, 'E_LIMIT',          E_LIMIT);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_TIMEOUT',        E_TIMEOUT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_NOT_FOUND',      E_NOT_FOUND);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_PERM',           E_PERM);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return

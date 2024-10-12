@@ -5,25 +5,31 @@
 --
 -- Settings:
 --
---      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
---      host     - IP or FQDN of XMPP server.
---      jid      - Jabber ID.
---      logger   - Name of logger to send logs to (optional).
---      node     - Node id.
---      password - Jabber ID password.
---      port     - Port of XMPP server (default: 5222).
---      tls      - Force TLS encryption.
---      verbose  - Print logs to standard error.
+--      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
+--      host      - IP or FQDN of XMPP server.
+--      jid       - Jabber ID.
+--      logger    - Name of logger to send logs to (optional).
+--      log_db    - Path to log database (optional).
+--      node      - Node id.
+--      observ_db - Path to log database (optional).
+--      password  - Jabber ID password.
+--      port      - Port of XMPP server (default: 5222).
+--      reconnect - Reconnect on error.
+--      tls       - Force TLS encryption.
+--      verbose   - Print logs to standard error.
 --
 
 dmbot = {
     node = "dummy-node",
     logger = "",
+    log_db = "",
+    observ_db = "",
     host = "example.com",
     port = 5222,
-    jid = "user@example.com",
+    jid = "bot@example.com",
     password = "secret",
     tls = true,
+    reconnect = false,
     debug = false,
     verbose = true
 }

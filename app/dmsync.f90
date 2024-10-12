@@ -70,9 +70,7 @@ program dmsync
     ! Initialise environment.
     init_block: block
         ! Open SQLite database.
-        rc = dm_db_open(db      = db, &
-                        path    = app%database, &
-                        timeout = APP_DB_TIMEOUT)
+        rc = dm_db_open(db, app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open database', error=rc)
@@ -124,23 +122,23 @@ contains
         type(arg_type)                :: args(17)
 
         args = [ &
-            arg_type('name',        short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',      short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',      short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('wait',        short='w', type=ARG_TYPE_STRING),  & ! -w, --wait <string>
-            arg_type('node',        short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('database',    short='d', type=ARG_TYPE_DB),      & ! -d, --database <path>
-            arg_type('host',        short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',        short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('username',    short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
-            arg_type('password',    short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('compression', short='x', type=ARG_TYPE_STRING),  & ! -x, --compression <name>
-            arg_type('type',        short='t', type=ARG_TYPE_STRING),  & ! -t, --type log|observ
-            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL), & ! -C, --create
-            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('name',        short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
+            arg_type('config',      short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
+            arg_type('logger',      short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
+            arg_type('wait',        short='w', type=ARG_TYPE_STRING),   & ! -w, --wait <string>
+            arg_type('node',        short='N', type=ARG_TYPE_ID),       & ! -N, --node <string>
+            arg_type('database',    short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
+            arg_type('host',        short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
+            arg_type('port',        short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
+            arg_type('username',    short='U', type=ARG_TYPE_STRING),   & ! -U, --username <string>
+            arg_type('password',    short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
+            arg_type('compression', short='x', type=ARG_TYPE_STRING),   & ! -x, --compression <name>
+            arg_type('type',        short='t', type=ARG_TYPE_STRING),   & ! -t, --type log|observ
+            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER),  & ! -I, --interval <n>
+            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL),  & ! -C, --create
+            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
+            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
+            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
         ]
 
         ! Generate version string.

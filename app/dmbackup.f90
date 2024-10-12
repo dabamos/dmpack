@@ -83,8 +83,8 @@ contains
         type(arg_type) :: args(5)
 
         args = [ &
-            arg_type('database', short='d', type=ARG_TYPE_DB,     required=.true.), & ! -d, --database <path>
-            arg_type('backup',   short='b', type=ARG_TYPE_STRING, required=.true.), & ! -b, --backup <path>
+            arg_type('database', short='d', type=ARG_TYPE_DATABASE, required=.true.), & ! -d, --database <path>
+            arg_type('backup',   short='b', type=ARG_TYPE_STRING,   required=.true.), & ! -b, --backup <path>
             arg_type('vacuum',   short='U', type=ARG_TYPE_LOGICAL), & ! -U, --vacuum
             arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL), & ! -W, --wal
             arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose

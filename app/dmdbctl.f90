@@ -406,8 +406,8 @@ contains
             arg_type('read',      short='R', type=ARG_TYPE_STRING), &                               ! -R, --read <type>
             arg_type('update',    short='U', type=ARG_TYPE_STRING), &                               ! -U, --update <type>
             arg_type('delete',    short='D', type=ARG_TYPE_STRING), &                               ! -D, --delete <type>
-            arg_type('database',  short='d', type=ARG_TYPE_DB, required=.true.), &                  ! -d, --database <path>
-            arg_type('id',        short='I', type=ARG_TYPE_ID, required=.true.), &                  ! -I, --id <id>
+            arg_type('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.), &            ! -d, --database <path>
+            arg_type('id',        short='I', type=ARG_TYPE_ID,       required=.true.), &            ! -I, --id <id>
             arg_type('name',      short='n', type=ARG_TYPE_STRING, max_len=NODE_NAME_LEN), &        ! -n, --name <string>
             arg_type('meta',      short='M', type=ARG_TYPE_STRING, max_len=NODE_META_LEN), &        ! -M, --meta <string>
             arg_type('node',      short='N', type=ARG_TYPE_ID), &                                   ! -N, --node <id>

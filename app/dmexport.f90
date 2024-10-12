@@ -188,18 +188,18 @@ contains
         type(arg_type)   :: args(12)
 
         args = [ &
-            arg_type('database',  short='d', type=ARG_TYPE_DB, required=.true.), & ! -d, --database <path>
-            arg_type('output',    short='o', type=ARG_TYPE_STRING),              & ! -o, --output <path>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),                  & ! -N, --node <id>
-            arg_type('sensor',    short='S', type=ARG_TYPE_ID),                  & ! -S, --sensor <id>
-            arg_type('target',    short='T', type=ARG_TYPE_ID),                  & ! -T, --target <id>
-            arg_type('from',      short='B', type=ARG_TYPE_TIME),                & ! -F, --from <timestamp>
-            arg_type('to',        short='E', type=ARG_TYPE_TIME),                & ! -T, --to <timestamp>
+            arg_type('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.), & ! -d, --database <path>
+            arg_type('output',    short='o', type=ARG_TYPE_STRING),                    & ! -o, --output <path>
+            arg_type('node',      short='N', type=ARG_TYPE_ID),                        & ! -N, --node <id>
+            arg_type('sensor',    short='S', type=ARG_TYPE_ID),                        & ! -S, --sensor <id>
+            arg_type('target',    short='T', type=ARG_TYPE_ID),                        & ! -T, --target <id>
+            arg_type('from',      short='B', type=ARG_TYPE_TIME),                      & ! -F, --from <timestamp>
+            arg_type('to',        short='E', type=ARG_TYPE_TIME),                      & ! -T, --to <timestamp>
             arg_type('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN),                & ! -R, --response <name>
             arg_type('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.), & ! -f, --format <string>
             arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.), & ! -t, --type <string>
-            arg_type('header',    short='H', type=ARG_TYPE_LOGICAL),             & ! -H, --header
-            arg_type('separator', short='s', type=ARG_TYPE_CHAR)                 & ! -a, --separator <char>
+            arg_type('header',    short='H', type=ARG_TYPE_LOGICAL),                   & ! -H, --header
+            arg_type('separator', short='s', type=ARG_TYPE_CHAR)                       & ! -a, --separator <char>
         ]
 
         ! Read all command-line arguments.

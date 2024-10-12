@@ -21,17 +21,20 @@ program dmbot
     logical, parameter :: APP_TLS_TRUSTED    = .false. !! Trust unknown TLS certificate.
 
     ! Bot commands.
-    integer, parameter :: BOT_COMMAND_NONE      = 0       !! No or invalid command.
-    integer, parameter :: BOT_COMMAND_BEATS     = 1       !! Show time in Swatch Internet Time (.beats).
-    integer, parameter :: BOT_COMMAND_DATE      = 2       !! Show date and time.
-    integer, parameter :: BOT_COMMAND_HELP      = 3       !! Show date and time.
-    integer, parameter :: BOT_COMMAND_LOG       = 4       !! Send log message to logger.
-    integer, parameter :: BOT_COMMAND_POKE      = 5       !! Wake up bot.
-    integer, parameter :: BOT_COMMAND_RECONNECT = 6       !! Reconnect.
-    integer, parameter :: BOT_COMMAND_ROSTER    = 7       !! Show roster.
-    integer, parameter :: BOT_COMMAND_UNAME     = 8       !! Show Unix name.
-    integer, parameter :: BOT_COMMAND_UPTIME    = 9       !! Show system uptime.
-    integer, parameter :: BOT_NCOMMANDS         = 9       !! Number of commands.
+    integer, parameter :: BOT_COMMAND_NONE      = 0    !! Invalid command.
+    integer, parameter :: BOT_COMMAND_BEATS     = 1    !! Return time in Swatch Internet Time (.beats).
+    integer, parameter :: BOT_COMMAND_DATE      = 2    !! Return date and time.
+    integer, parameter :: BOT_COMMAND_HELP      = 3    !! Return help text.
+    integer, parameter :: BOT_COMMAND_JID       = 4    !! Return log message to logger.
+    integer, parameter :: BOT_COMMAND_LOG       = 5    !! Return log message to logger.
+    integer, parameter :: BOT_COMMAND_NODE      = 6    !! Return node id.
+    integer, parameter :: BOT_COMMAND_POKE      = 7    !! Return bot response if online.
+    integer, parameter :: BOT_COMMAND_RECONNECT = 8    !! Reconnect and reload roster.
+    integer, parameter :: BOT_COMMAND_ROSTER    = 9    !! Return roster.
+    integer, parameter :: BOT_COMMAND_UNAME     = 10   !! Return system name and version.
+    integer, parameter :: BOT_COMMAND_UPTIME    = 11   !! Return system uptime.
+    integer, parameter :: BOT_COMMAND_VERSION   = 12   !! Return bot version.
+    integer, parameter :: BOT_NCOMMANDS         = 12   !! Number of commands.
 
     integer, parameter :: BOT_COMMAND_PREFIX_LEN = 1   !! Command prefix length.
     integer, parameter :: BOT_COMMAND_NAME_LEN   = 9   !! Max. command name length.
@@ -40,28 +43,35 @@ program dmbot
     character(len=BOT_COMMAND_PREFIX_LEN), parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
     character(len=BOT_COMMAND_NAME_LEN),   parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
         character(len=BOT_COMMAND_NAME_LEN) :: &
-        'beats', 'date', 'help', 'log', 'poke', 'reconnect', 'roster', 'uname', 'uptime' &
+        'beats', 'date', 'help', 'jid', 'log', 'node', 'poke', 'reconnect', 'roster', &
+        'uname', 'uptime', 'version' &
     ] !! Command names.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)              :: name     = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)       :: config   = ' '         !! Path to config file.
-        character(len=LOGGER_NAME_LEN)     :: logger   = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node     = ' '         !! Node id.
-        character(len=JABBER_HOST_LEN)     :: host     = ' '         !! IP or FQDN of XMPP server.
-        integer                            :: port     = JABBER_PORT !! Port of XMPP server.
-        logical                            :: tls      = .true.      !! TLS is mandatory.
-        character(len=JABBER_JID_LEN)      :: jid      = ' '         !! HTTP Basic Auth user name.
-        character(len=JABBER_PASSWORD_LEN) :: password = ' '         !! HTTP Basic Auth password.
-        logical                            :: debug    = .false.     !! Force writing of output file.
-        logical                            :: verbose  = .false.     !! Force writing of output file.
+        character(len=ID_LEN)              :: name      = APP_NAME    !! Name of instance/configuration/resource.
+        character(len=FILE_PATH_LEN)       :: config    = ' '         !! Path to config file.
+        character(len=LOGGER_NAME_LEN)     :: logger    = ' '         !! Name of logger.
+        character(len=NODE_ID_LEN)         :: node      = ' '         !! Node id.
+        character(len=FILE_PATH_LEN)       :: log_db    = ' '         !! Path to log database.
+        character(len=FILE_PATH_LEN)       :: observ_db = ' '         !! Path to observ database.
+        character(len=JABBER_HOST_LEN)     :: host      = ' '         !! Domain of XMPP server.
+        integer                            :: port      = JABBER_PORT !! Port of XMPP server.
+        logical                            :: tls       = .true.      !! Force TLS encryption.
+        character(len=JABBER_JID_LEN)      :: jid       = ' '         !! JID of bot account.
+        character(len=JABBER_PASSWORD_LEN) :: password  = ' '         !! Password of bot account.
+        logical                            :: reconnect = .false.     !! Reconnect on error.
+        logical                            :: debug     = .false.     !! Forward debug messages via IPC.
+        logical                            :: verbose   = .false.     !! Print debug messages to stderr.
     end type app_type
 
     type :: bot_type
         !! User data to be passed to libstrophe callbacks.
         character(len=ID_LEN)          :: name      = APP_NAME !! Name of instance/configuration.
+        character(len=NODE_ID_LEN)     :: node_id   = ' '      !! Node id.
         character(len=APP_PING_ID_LEN) :: ping_id   = ' '      !! XMPP ping id (XEP-0199).
+        character(len=FILE_PATH_LEN)   :: log_db    = ' '      !! Path to log database.
+        character(len=FILE_PATH_LEN)   :: observ_db = ' '      !! Path to observ database.
         logical                        :: reconnect = .false.  !! Reconnection flag.
         type(jabber_type)              :: jabber               !! Jabber context type.
         type(roster_type)              :: roster               !! JID roster.
@@ -71,12 +81,12 @@ program dmbot
 
     integer                :: rc  ! Return code.
     type(app_type)         :: app ! App settings.
-    type(bot_type), target :: bot ! Context data.
+    type(bot_type), target :: bot ! Bot type.
 
     ! Initialise DMPACK.
     call dm_init()
 
-    ! Read command-line arguments and configuration from file.
+    ! Read command-line arguments and configuration file.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
@@ -91,16 +101,12 @@ program dmbot
 
     ! Initialise environment.
     init_block: block
+        call dm_jabber_init()
         call logger%info('started ' // APP_NAME)
 
-        ! Initialise XMPP backend.
-        call dm_jabber_init()
-
         do
-            ! Initialise bot.
-            bot%name      = app%name
-            bot%ping_id   = ' '
-            bot%reconnect = .false.
+            ! Initialise bot context.
+            call bot_init(bot, app)
 
             ! Create libstrophe context.
             rc = dm_jabber_create(bot%jabber)
@@ -136,10 +142,9 @@ program dmbot
             call dm_jabber_run(bot%jabber)
 
             ! Preserve stream management state for reconnection.
-            if (bot%reconnect) then
-                call dm_jabber_preserve_stream_management_state(bot%jabber)
-            end if
+            if (bot%reconnect) call dm_jabber_preserve_stream_management_state(bot%jabber)
 
+            ! Disconnect and reconnect.
             call dm_jabber_disconnect(bot%jabber)
             if (.not. bot%reconnect) exit
         end do
@@ -156,20 +161,23 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(len=:), allocatable :: version
-        type(arg_type)                :: args(11)
+        type(arg_type)                :: args(14)
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('host',     short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',     short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('tls',      short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('jid',      short='J', type=ARG_TYPE_STRING),  & ! -J, --jid <string>
-            arg_type('password', short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('name',      short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
+            arg_type('config',    short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
+            arg_type('logger',    short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
+            arg_type('node',      short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
+            arg_type('log-db',    short='L', type=ARG_TYPE_DATABASE), & ! -L, --log-db <path>
+            arg_type('observ-db', short='O', type=ARG_TYPE_DATABASE), & ! -O, --observ-db <path>
+            arg_type('host',      short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
+            arg_type('port',      short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
+            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
+            arg_type('jid',       short='J', type=ARG_TYPE_STRING),   & ! -J, --jid <string>
+            arg_type('password',  short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
+            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL),  & ! -R, --reconnect
+            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -187,13 +195,16 @@ contains
         ! Get all other arguments.
         call dm_arg_get(args( 3), app%logger)
         call dm_arg_get(args( 4), app%node)
-        call dm_arg_get(args( 5), app%host)
-        call dm_arg_get(args( 6), app%port)
-        call dm_arg_get(args( 7), app%tls)
-        call dm_arg_get(args( 8), app%jid)
-        call dm_arg_get(args( 9), app%password)
-        call dm_arg_get(args(10), app%debug)
-        call dm_arg_get(args(11), app%verbose)
+        call dm_arg_get(args( 5), app%log_db)
+        call dm_arg_get(args( 6), app%observ_db)
+        call dm_arg_get(args( 7), app%host)
+        call dm_arg_get(args( 8), app%port)
+        call dm_arg_get(args( 9), app%tls)
+        call dm_arg_get(args(10), app%jid)
+        call dm_arg_get(args(11), app%password)
+        call dm_arg_get(args(12), app%reconnect)
+        call dm_arg_get(args(13), app%debug)
+        call dm_arg_get(args(14), app%verbose)
 
         ! Validate passed options.
         rc = E_INVALID
@@ -223,6 +234,16 @@ contains
             return
         end if
 
+        if (len_trim(app%log_db) > 0 .and. .not. dm_file_exists(app%log_db)) then
+            call dm_error_out(rc, 'log database does not exist')
+            return
+        end if
+
+        if (len_trim(app%observ_db) > 0 .and. .not. dm_file_exists(app%observ_db)) then
+            call dm_error_out(rc, 'observ database does not exist')
+            return
+        end if
+
         if (app%port == 0) app%port = JABBER_PORT
 
         rc = E_NONE
@@ -240,15 +261,18 @@ contains
         rc = dm_config_open(config, app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node)
-            call dm_config_get(config, 'host',     app%host)
-            call dm_config_get(config, 'port',     app%port)
-            call dm_config_get(config, 'tls',      app%tls)
-            call dm_config_get(config, 'jid',      app%jid)
-            call dm_config_get(config, 'password', app%password)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
+            call dm_config_get(config, 'logger',    app%logger)
+            call dm_config_get(config, 'node',      app%node)
+            call dm_config_get(config, 'log_db',    app%log_db)
+            call dm_config_get(config, 'observ_db', app%observ_db)
+            call dm_config_get(config, 'host',      app%host)
+            call dm_config_get(config, 'port',      app%port)
+            call dm_config_get(config, 'tls',       app%tls)
+            call dm_config_get(config, 'jid',       app%jid)
+            call dm_config_get(config, 'password',  app%password)
+            call dm_config_get(config, 'reconnect', app%reconnect)
+            call dm_config_get(config, 'debug',     app%debug)
+            call dm_config_get(config, 'verbose',   app%verbose)
         end if
 
         call dm_config_close(config)
@@ -301,6 +325,7 @@ contains
         jabber => bot%jabber
 
         if (event == XMPP_CONN_CONNECT) then
+            ! Connected to server.
             call logger%debug('connected as ' // trim(jabber%jid_full) // ' to server ' // &
                               trim(jabber%host) // ':' // dm_itoa(jabber%port))
 
@@ -320,6 +345,7 @@ contains
             call xmpp_send(connection, iq_stanza)
             stat = xmpp_stanza_release(iq_stanza)
         else
+            ! Disconnected from server.
             call logger%debug('disconnected from ' // trim(jabber%host) // ':' // dm_itoa(jabber%port))
             call xmpp_timed_handler_delete(connection, ping_callback)
             call xmpp_handler_delete(connection, message_callback)
@@ -354,6 +380,7 @@ contains
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
 
+        ! Get stanza attributes.
         from = xmpp_stanza_get_from(iq_stanza)
         id   = xmpp_stanza_get_id(iq_stanza)
         type = xmpp_stanza_get_type(iq_stanza)
@@ -362,20 +389,17 @@ contains
 
         select case (type)
             case (JABBER_STANZA_TYPE_RESULT)
-                if (id == bot%ping_id) then
-                    bot%ping_id = ' '
-                    return
-                end if
+                if (id == bot%ping_id) bot%ping_id = ' '
 
             case (JABBER_STANZA_TYPE_GET)
                 ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, JABBER_STANZA_NS_PING)
 
                 if (c_associated(ping_stanza)) then
                     call logger%debug('received ping from ' // from)
-                    result_stanza = dm_jabber_create_iq_result(bot%jabber, id)
+                    result_stanza = dm_jabber_create_iq_result(bot%jabber, id=id)
                 else
-                    result_stanza = dm_jabber_create_iq_error(bot%jabber, id, JABBER_STANZA_TYPE_CANCEL, &
-                                                              JABBER_STANZA_NAME_SERVICE_UNAVAILABLE)
+                    result_stanza = dm_jabber_create_iq_error(bot%jabber, id=id, type=JABBER_STANZA_TYPE_CANCEL, &
+                                                              condition=JABBER_STANZA_NAME_SERVICE_UNAVAILABLE)
                 end if
 
                 stat = xmpp_stanza_set_to(result_stanza, from)
@@ -388,7 +412,6 @@ contains
                 if (c_associated(ping_stanza) .and. id == bot%ping_id) then
                     call xmpp_timed_handler_delete(connection, ping_callback)
                     bot%ping_id = ' '
-                    return
                 end if
         end select
     end function iq_callback
@@ -411,6 +434,7 @@ contains
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
 
+        ! Get stanza body.
         body_stanza = xmpp_stanza_get_child_by_name(stanza, JABBER_STANZA_NAME_BODY)
         if (.not. c_associated(body_stanza)) return
 
@@ -418,10 +442,11 @@ contains
         type = xmpp_stanza_get_type(stanza)
 
         if (type == JABBER_STANZA_TYPE_ERROR) then
-            call logger%warning('received error message', error=E_UNEXPECTED)
+            call logger%warning('received error message', error=E_IO)
             return
         end if
 
+        ! Get stanza attributes.
         text = xmpp_stanza_get_text(body_stanza)
         from = xmpp_stanza_get_from(stanza)
 
@@ -435,6 +460,7 @@ contains
             call logger%warning('unauthorized access by ' // from, error=E_PERM)
         end if
 
+        ! Don't send empty reply.
         if (len(reply) == 0) return
 
         ! Create and send reply stanza.
@@ -470,6 +496,7 @@ contains
             return
         end if
 
+        ! Send ping.
         bot%ping_id = dm_uuid4()
         iq_stanza   = dm_jabber_create_iq_ping(bot%jabber, bot%ping_id)
 
@@ -494,14 +521,18 @@ contains
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
 
+        ! Check stanza type.
         if (xmpp_stanza_get_type(stanza) == JABBER_STANZA_TYPE_ERROR) then
-            call logger%error('roster query failed', error=E_UNEXPECTED)
+            call logger%error('roster query failed', error=E_IO)
             return
         end if
 
         call logger%debug('received roster from server')
-        if (allocated(bot%roster%jids)) deallocate (bot%roster%jids)
 
+        ! Deallocate old roster.
+        call dm_jabber_roster_destroy(bot%roster)
+
+        ! Add all JIDs in stanza to roster.
         query_stanza = xmpp_stanza_get_child_by_name(stanza, JABBER_STANZA_NAME_QUERY)
         item_stanza  = xmpp_stanza_get_children(query_stanza)
 
@@ -525,175 +556,278 @@ contains
     end subroutine signal_callback
 
     ! ******************************************************************
-    ! BOT COMMANDS.
+    ! BOT PROCEDURES.
     ! ******************************************************************
     function bot_dispatch(bot, from, message) result(reply)
         !! Parses message string and returns the reply for the requested
         !! command.
+        integer, parameter :: ARGUMENT_LEN = 512
+        integer, parameter :: COMMAND_LEN  = BOT_COMMAND_PREFIX_LEN + BOT_COMMAND_NAME_LEN
+
         type(bot_type),   intent(inout) :: bot     !! Bot type.
         character(len=*), intent(in)    :: from    !! Client JID.
         character(len=*), intent(in)    :: message !! Message received from JID.
-        character(len=:), allocatable   :: reply
+        character(len=:), allocatable   :: reply   !! Reply string.
 
-        integer                        :: command, i
-        character(len=BOT_COMMAND_LEN) :: buffer
+        character(len=:), allocatable :: response
+        character(len=ARGUMENT_LEN)   :: argument
+        character(len=COMMAND_LEN)    :: command
+        integer                       :: command_type
+        integer                       :: i, j
 
-        command = BOT_COMMAND_NONE
-        buffer  = dm_to_lower(adjustl(message))
+        command_type = BOT_COMMAND_NONE
 
-        if (buffer(:BOT_COMMAND_PREFIX_LEN) == BOT_COMMAND_PREFIX) then
-            do i = 1, BOT_NCOMMANDS
-                if (buffer(BOT_COMMAND_PREFIX_LEN + 1:) /= BOT_COMMAND_NAMES(i)) cycle
-                command = i
+        if (len_trim(message) == 0) then
+            reply = ''
+            return
+        end if
+
+        ! Split message into command and argument.
+        i = index(message, ' ')
+        if (i == 0) i = len(message)
+        j = i + 1
+
+        command = dm_to_lower(message(:i))
+
+        if (j < len(message)) then
+            argument = trim(message(j:))
+        else
+            argument = ''
+        end if
+
+        ! Search roster for JID.
+        if (command(:BOT_COMMAND_PREFIX_LEN) == BOT_COMMAND_PREFIX) then
+            i = BOT_COMMAND_PREFIX_LEN + 1
+
+            do j = 1, BOT_NCOMMANDS
+                if (BOT_COMMAND_NAMES(j) /= command(i:)) cycle
+                command_type = j
                 exit
             end do
         end if
 
-        if (command == BOT_COMMAND_NONE) then
+        if (command_type == BOT_COMMAND_NONE) then
+            reply = 'unrecognized command (send !help for a list of all commands)'
             call logger%debug('received invalid command from ' // from)
-        else
-            call logger%debug('received command ' // BOT_COMMAND_PREFIX // &
-                              trim(BOT_COMMAND_NAMES(command)) // ' from ' // from)
+            return
         end if
 
-        select case (command)
+        call logger%debug('received command ' // trim(command) // ' from ' // from)
+
+        select case (command_type)
             case (BOT_COMMAND_BEATS)
-                reply = bot_reply_beats()
-
+                response = bot_handle_beats()
             case (BOT_COMMAND_DATE)
-                reply = bot_reply_date()
-
+                response = bot_handle_date()
             case (BOT_COMMAND_HELP)
-                reply = bot_reply_help()
-
+                response = bot_handle_help()
+            case (BOT_COMMAND_JID)
+                response = bot_handle_jid(bot)
+            case (BOT_COMMAND_LOG)
+                response = bot_handle_log(bot, argument)
+            case (BOT_COMMAND_NODE)
+                response = bot_handle_node(bot)
             case (BOT_COMMAND_POKE)
-                reply = bot_reply_poke(bot%name)
-
+                response = bot_handle_poke(bot)
             case (BOT_COMMAND_RECONNECT)
-                reply = bot_reply_reconnect(bot%jabber%connection)
-
+                response = bot_handle_reconnect(bot)
             case (BOT_COMMAND_ROSTER)
-                reply = bot_reply_roster(bot%roster)
-
+                response = bot_handle_roster(bot)
             case (BOT_COMMAND_UNAME)
-                reply = bot_reply_uname()
-
+                response = bot_handle_uname()
             case (BOT_COMMAND_UPTIME)
-                reply = bot_reply_uptime()
-
-            case default
-                reply = 'not a command: send !help for a list of all commands'
+                response = bot_handle_uptime()
+            case (BOT_COMMAND_VERSION)
+                response = bot_handle_version()
         end select
+
+        reply = trim(BOT_COMMAND_NAMES(command_type)) // ': ' // response
     end function bot_dispatch
 
-    function bot_reply_beats() result(reply)
+    subroutine bot_init(bot, app)
+        !! Initialises bot.
+        type(bot_type), intent(inout) :: bot !! Bot type.
+        type(app_type), intent(inout) :: app !! App type.
+
+        bot%name      = app%name
+        bot%node_id   = app%node
+        bot%log_db    = app%log_db
+        bot%observ_db = app%observ_db
+        bot%reconnect = app%reconnect
+    end subroutine bot_init
+
+    ! ******************************************************************
+    ! BOT COMMAND HANDLING FUNCTIONS.
+    ! ******************************************************************
+    function bot_handle_beats() result(response)
         !! Returns current time in Swatch Internet Time (.beats).
-        character(len=:), allocatable :: reply
+        character(len=:), allocatable :: response !! Response string.
 
         character(len=TIME_BEATS_LEN) :: beats
         integer                       :: rc
 
         rc = dm_time_to_beats(dm_time_now(), beats)
-        reply = trim(beats)
-    end function bot_reply_beats
+        response = trim(beats)
+    end function bot_handle_beats
 
-    function bot_reply_date() result(reply)
+    function bot_handle_date() result(response)
         !! Returns current date and time in ISO 8601.
-        character(len=:), allocatable :: reply
+        character(len=:), allocatable :: response !! Response string.
 
-        reply = dm_time_now()
-    end function bot_reply_date
+        response = dm_time_now()
+    end function bot_handle_date
 
-    function bot_reply_help() result(reply)
+    function bot_handle_help() result(response)
         !! Returns help text.
         character(len=*), parameter :: NL  = ASCII_LF
         character(len=*), parameter :: NL2 = ASCII_LF // ASCII_LF
 
-        character(len=:), allocatable :: reply
+        character(len=:), allocatable :: response !! Response string.
 
-        reply = 'This bot supports the following commands:' // NL2 // &
-                '    !beats     - returns time in Swatch Internet Time' // NL // &
-                '    !date      - returns date and time in ISO 8601' // NL // &
-                '    !help      - returns this help text' // NL // &
-                '    !poke      - returns message if bot is online' // NL // &
-                '    !reconnect - reconnect to server' // NL // &
-                '    !roster    - returns list of authorized users' // NL // &
-                '    !uname     - returns system name' // NL // &
-                '    !uptime    - returns system uptime' // NL2 // &
-                'The bot answers to authorized users only.'
-    end function bot_reply_help
+        response = 'you may enter one of the following commands'      // NL // &
+                   '!beats     - return time in Swatch Internet Time' // NL // &
+                   '!date      - return date and time in ISO 8601'    // NL // &
+                   '!help      - return this help text'               // NL // &
+                   '!jid       - return bot JID'                      // NL // &
+                   '!log       - send log message to logger'          // NL // &
+                   '!node      - return node id'                      // NL // &
+                   '!poke      - return message if bot is online'     // NL // &
+                   '!reconnect - reconnect to server'                 // NL // &
+                   '!roster    - return list of authorized users'     // NL // &
+                   '!uname     - return system name'                  // NL // &
+                   '!uptime    - return system uptime'                // NL // &
+                   '!version   - return bot version'
+    end function bot_handle_help
 
-    function bot_reply_poke(bot_name) result(reply)
-        !! Returns awake message.
-        character(len=*), intent(in), optional :: bot_name
-        character(len=:), allocatable          :: reply
+    function bot_handle_jid(bot) result(response)
+        !! Returns full JID of bot.
+        type(bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=:), allocatable :: response !! Response string.
 
-        if (dm_string_is_present(bot_name)) then
-            reply = trim(bot_name)
+        response = '<' // trim(bot%jabber%jid_full) // '>'
+    end function bot_handle_jid
+
+    function bot_handle_log(bot, argument) result(response)
+        !! Sends log message to logger.
+        type(bot_type),   intent(inout) :: bot      !! Bot type.
+        character(len=*), intent(in)    :: argument !! Command arguments.
+        character(len=:), allocatable   :: response !! Response string.
+
+        character(len=LOG_LEVEL_NAME_LEN) :: level
+        character(len=LOG_MESSAGE_LEN)    :: message
+
+        integer :: lvl, stat
+
+        read (argument, *, iostat=stat) level, message
+
+        if (stat /= 0) then
+            response = 'missing arguments <level> "<message>"'
+            return
+        end if
+
+        lvl = dm_log_level_from_string(level)
+
+        if (.not. dm_log_is_valid(lvl)) then
+            response = 'invalid level'
+            return
+        end if
+
+        call logger%log(lvl, message, source=bot%name)
+        response = 'sent ' // trim(LOG_LEVEL_NAMES_LOWER(lvl)) // ' message to ' // logger%get_name()
+    end function bot_handle_log
+
+    function bot_handle_node(bot) result(response)
+        !! Returns node id.
+        type(bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=:), allocatable :: response !! Response string.
+
+        if (len_trim(bot%node_id) > 0) then
+            response = trim(bot%node_id)
         else
-            reply = APP_NAME
+            response = 'n/a'
+        end if
+    end function bot_handle_node
+
+    function bot_handle_poke(bot) result(response)
+        !! Returns awake message.
+        type(bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=:), allocatable :: response !! Response string.
+
+        if (len_trim(bot%name) > 0) then
+            response = trim(bot%name)
+        else
+            response = APP_NAME
         end if
 
-        reply = reply // ' is online'
-    end function bot_reply_poke
+        response = response // ' is online'
+    end function bot_handle_poke
 
-    function bot_reply_reconnect(connection) result(reply)
+    function bot_handle_reconnect(bot) result(response)
         !! Reconnects bot.
-        type(c_ptr), intent(in)       :: connection
-        character(len=:), allocatable :: reply
+        type(bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=:), allocatable :: response !! Response string.
 
-        reply = 'reconnecting ...'
-        call xmpp_timed_handler_add(connection, disconnect_callback, 500_c_long, c_null_ptr)
         bot%reconnect = .true.
-   end function bot_reply_reconnect
+        call xmpp_timed_handler_add(bot%jabber%connection, disconnect_callback, 500_c_long, c_null_ptr)
+        response = 'bye'
+   end function bot_handle_reconnect
 
-    function bot_reply_roster(roster) result(reply)
+    function bot_handle_roster(bot) result(response)
         !! Returns bot roster.
-        type(roster_type), intent(inout) :: roster
-        character(len=:), allocatable    :: reply
+        type(bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=:), allocatable :: response !! Response string.
 
-        integer :: i
+        integer :: i, n
 
-        if (.not. allocated(roster%jids)) then
-            reply = 'roster unavailable'
+        if (.not. allocated(bot%roster%jids)) then
+            response = 'unavailable'
             return
         end if
 
-        if (size(roster%jids) == 0) then
-            reply = 'roster is empty'
+        n = size(bot%roster%jids)
+
+        if (n == 0) then
+            response = 'empty'
             return
         end if
 
-        reply = 'roster: ' // trim(roster%jids(1))
+        response = '<' // trim(bot%roster%jids(1)) // '>'
 
-        do i = 2, size(roster%jids)
-            reply = reply // ', ' // trim(roster%jids(i))
+        do i = 2, n
+            response = response // ', <' // trim(bot%roster%jids(i)) // '>'
         end do
-    end function bot_reply_roster
+    end function bot_handle_roster
 
-    function bot_reply_uname() result(reply)
+    function bot_handle_uname() result(response)
         !! Returns Unix name.
-        character(len=:), allocatable :: reply
+        character(len=:), allocatable :: response !! Response string.
 
         type(uname_type) :: uname
 
         call dm_system_uname(uname)
-        reply = trim(uname%system_name) // ' ' // &
-                trim(uname%node_name)   // ' ' // &
-                trim(uname%release)     // ' ' // &
-                trim(uname%version)     // ' ' // &
-                trim(uname%machine)
-    end function bot_reply_uname
+        response = trim(uname%system_name) // ' ' // &
+                   trim(uname%node_name)   // ' ' // &
+                   trim(uname%release)     // ' ' // &
+                   trim(uname%version)     // ' ' // &
+                   trim(uname%machine)
+    end function bot_handle_uname
 
-    function bot_reply_uptime() result(reply)
+    function bot_handle_uptime() result(response)
         !! Returns system uptime.
-        character(len=:), allocatable :: reply
+        character(len=:), allocatable :: response !! Response string.
 
         integer(kind=r8)      :: seconds
         type(time_delta_type) :: uptime
 
         call dm_system_uptime(seconds)
         call dm_time_delta_from_seconds(uptime, seconds)
-        reply = 'uptime ' // dm_time_delta_to_string(uptime)
-    end function bot_reply_uptime
+        response = dm_time_delta_to_string(uptime)
+    end function bot_handle_uptime
+
+    function bot_handle_version() result(response)
+        !! Returns bot version.
+        character(len=:), allocatable :: response !! Response string.
+
+        response = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+    end function bot_handle_version
 end program dmbot

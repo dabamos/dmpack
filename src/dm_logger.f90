@@ -59,6 +59,8 @@ module dm_logger
         procedure :: send     => logger_send
         ! Public methods.
         procedure, public :: configure => logger_configure
+        procedure, public :: get_name  => logger_get_name
+        procedure, public :: is_ipc    => logger_is_ipc
         procedure, public :: out       => logger_out
         ! Public logging methods.
         generic,   public :: log       => log_args, log_type
@@ -79,6 +81,8 @@ module dm_logger
     ! Private procedures.
     private :: logger_configure
     private :: logger_fail
+    private :: logger_get_name
+    private :: logger_is_ipc
     private :: logger_log_args
     private :: logger_log_critical
     private :: logger_log_debug
@@ -177,6 +181,21 @@ contains
 
         call this%out(log)
     end subroutine logger_fail
+
+    function logger_get_name(this) result(name)
+        !! Returns name of logger as allocatable string.
+        class(logger_class), intent(inout) :: this !! Logger object.
+        character(len=:), allocatable      :: name !! Logger name.
+
+        name = trim(this%name)
+    end function logger_get_name
+
+    logical function logger_is_ipc(this) result(is)
+        !! Returns `.true.` if IPC is enabled.
+        class(logger_class), intent(inout) :: this !! Logger object.
+
+        is = this%ipc
+    end function logger_is_ipc
 
     subroutine logger_log_args(this, level, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a log message to the message queue (fire & forget). Only the
