@@ -2,12 +2,12 @@
 .\"     Title: dmlogger
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-07-08
+.\"      Date: 2024-10-12
 .\"    Manual: User Commands
 .\"    Source: DMLOGGER
 .\"  Language: English
 .\"
-.TH "DMLOGGER" "1" "2024-07-08" "DMLOGGER" "User Commands"
+.TH "DMLOGGER" "1" "2024-10-12" "DMLOGGER" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -79,7 +79,7 @@ Output available command\-line arguments and quit.
 Use POSIX semaphore for process synchronisation. The name of the semaphore
 matches the instance name (with leading slash). The semaphore is set to 1
 each time a log message has been received. Only a single process shall wait
-this semaphore.
+for this semaphore.
 .RE
 .sp
 \fB\-\-minlevel\fP, \fB\-L\fP \fIlevel\fP
@@ -128,12 +128,12 @@ Create a POSIX message queue \f(CR/dmlogger\fP and wait for incoming logs:
 .if n .RS 4
 .nf
 .fam C
-$ dmlogger \-\-node dummy\-node \-\-database /var/dmpack/log.sqlite \-\-minlevel 4
+$ dmlogger \-\-node dummy\-node \-\-database /var/dmpack/log.sqlite \-\-minlevel info
 .fam
 .fi
 .if n .RE
 .sp
-Received logs are inserted only if they are of level 4 (ERROR) or higher.
+Received logs are inserted only if they are of level \fIinfo\fP or higher.
 .SH "SEE ALSO"
 .sp
 \fIdmlog(1)\fP, \fIdmsync(1)\fP

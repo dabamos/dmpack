@@ -2,12 +2,12 @@
 .\"     Title: dmbot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-10-10
+.\"      Date: 2024-10-12
 .\"    Manual: User Commands
 .\"    Source: DMBOT
 .\"  Language: English
 .\"
-.TH "DMBOT" "1" "2024-10-10" "DMBOT" "User Commands"
+.TH "DMBOT" "1" "2024-10-12" "DMBOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmbot \- XMPP chat bot for remote control
+dmbot \- XMPP chat bot for remote control of sensor nodes
 .SH "SYNOPSIS"
 .sp
 \fBdmbot\fP \-\-help
@@ -41,7 +41,57 @@ dmbot \- XMPP chat bot for remote control
 \fBdmbot\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
-The program is an XMPP bot that accepts commands via chat.
+This program is an XMPP bot that accepts commands via chat. Clients must be
+granted access first by adding them to the roster of the bot account. The bot
+denies requests from clients whose JID is not included in the roster. The XMPP
+resource is automatically set to the name of the bot instance.
+.sp
+All commands start with prefix \f(CR!\fP. For an overview, send chat command \f(CR!help\fP
+to the bot. The following commands are supported:
+.sp
+!beats
+.RS 4
+Returns current time of the sensor node in Swatch Internet Time.
+.RE
+.sp
+!date
+.RS 4
+Returns date and time of the sensor node in ISO 8601.
+.RE
+.sp
+!help
+.RS 4
+Returns help text.
+.RE
+.sp
+!poke
+.RS 4
+Returns a message if the bot is online.
+.RE
+.sp
+!reconnect
+.RS 4
+Reconnects bot and updates local roster list.
+.RE
+.sp
+!roster
+.RS 4
+Returns list of authorised users from the roster.
+.RE
+.sp
+!uname
+.RS 4
+Returns name and version of the operating system.
+.RE
+.sp
+!uptime
+.RS 4
+Returns uptime of the operating system
+.RE
+.sp
+Update the list of authorised users by adding them to the roster of the bot and
+sending command \f(CR!reconnect\fP afterwards. The bot will update the local roster
+after the reconnection.
 .sp
 Passing the XMPP credentials via the command\-line arguments \f(CR\-\-jid\fP and
 \f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
@@ -65,7 +115,12 @@ Output available command\-line arguments and quit.
 .sp
 \fB\-\-host\fP, \fB\-H\fP \fIhost\fP
 .RS 4
-Domain of XMPP host.
+Domain of XMPP server.
+.RE
+.sp
+\fB\-\-jid\fP, \fB\-J\fP \fIuser\fP
+.RS 4
+Jabber id (JID) of the form \f(CRuser@example.com\fP.
 .RE
 .sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP
@@ -75,7 +130,8 @@ Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
 .sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
-Name of instance and table in given configuration file (default is \f(CRdmbot\fP).
+Name of instance, XMPP resource, and table in given configuration file
+(default is \f(CRdmbot\fP).
 .RE
 .sp
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP
@@ -97,11 +153,6 @@ Port of XMPP server. The default port is 5222.
 \fB\-\-tls\fP, \fB\-E\fP
 .RS 4
 Force TLS encryption.
-.RE
-.sp
-\fB\-\-jid\fP, \fB\-J\fP \fIuser\fP
-.RS 4
-Jabber id (JID) of the form \f(CRuser@example.com\fP.
 .RE
 .sp
 \fB\-\-verbose\fP, \fB\-V\fP
@@ -128,13 +179,13 @@ Program execution failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Connect with JID \f(CRuser@example.com\fP to an XMPP server on port 5223 and wait for
+Connect with JID \f(CRbot@example.com\fP to an XMPP server on port 5223 and wait for
 commands:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmbot \-\-node dummy\-node \-\-jid user@example.com \-\-password secret \(rs
+$ dmbot \-\-node dummy\-node \-\-jid bot@example.com \-\-password secret \(rs
   \-\-host example.com \-\-port 5223 \-\-tls \-\-verbose
 .fam
 .fi

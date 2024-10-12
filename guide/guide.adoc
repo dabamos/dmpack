@@ -577,6 +577,8 @@ header, the server returns data in CSV, JSON, JSON Lines or Namelist format.
 Requires a FastCGI-compatible web server, such as _lighttpd(1)_.
 <<dmbeat>>:: Sends short status messages (heartbeats) periodically to a remote
 <<dmapi>> instance.
+<<dmbot>>:: Accepts commands sent via XMPP/Jabber to monitor the status of
+sensor nodes.
 <<dmsync>>:: Synchronises nodes, sensors, targets, observations, and log
 messages between client and <<dmapi>> server. Only uni-directional
 synchronisation from client to server is supported.
@@ -772,6 +774,85 @@ $ dmbeat --node dummy-node --host 127.0.0.1 --count 1 --verbose
 
 A sensor node with id `dummy-node` must exist in the server database. The
 web application <<dmweb>> lists the beats received by the server.
+
+=== dmbot [[dmbot]]
+
+The *dmbot* program is an XMPP bot that accepts commands via chat. Clients must
+be granted access first by adding them to the roster of the bot account. The
+bot denies requests from clients whose JID is not included in the roster. The
+XMPP resource is automatically set to the name of the bot instance. If the JID
+of the bot account is `bot@example.com`, the full JID will be set to
+`bot@example.com/dmbot` if the bot name is `dmbot`.
+
+All commands start with prefix `!`. For an overview, send chat command `!help`
+to the bot. The following commands are supported:
+
+!beats::
+  Returns current time of the sensor node in
+  link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time]
+  (_.beats_).
+!date::
+  Returns date and time of the sensor node in ISO 8601.
+!help::
+  Returns help text.
+!poke::
+  Returns a message if the bot is online.
+!reconnect::
+  Reconnects bot and updates local roster list.
+!roster::
+  Returns list of authorised users from the roster.
+!uname::
+  Returns name and version of the operating system.
+!uptime::
+  Returns uptime of the operating system.
+
+Update the list of authorised users by adding them to the roster of the bot and
+sending command `!reconnect` afterwards. The bot will update the local roster
+after the reconnection.
+
+Passing the XMPP credentials via the command-line arguments `--jid` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
+
+[discrete]
+==== Command-Line Options
+
+[cols="3,1,1,6"]
+|===
+| Option                | Short | Default | Description
+
+| `--config _file_`     | `-c`  | –       | Path to configuration file.
+| `--debug`             | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
+| `--help`              | `-h`  | –       | Output available command-line arguments and quit.
+| `--host _host_`       | `-H`  | –       | FQDN of XMPP server (for instance, `example.com`).
+| `--jid _string_`      | `-J`  | –       | Bot Jabber ID (for example, `bot@example.com`).
+| `--logger _name_`     | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`       | `-n`  | `dmbot` | Optional name of instance, XMPP resource, and table in configuration.
+| `--node _id_`         | `-N`  | –       | Node id.
+| `--password _string_` | `-P`  | –       | Bot password.
+| `--port _port_`       | `-q`  | 5222    | Port of XMPP server.
+| `--tls`               | `-E`  | off     | Force TLS encryption.
+| `--verbose`           | `-V`  | off     | Print log messages to _stderr_.
+| `--version`           | `-v`  | –       | Output version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+Connect with JID `bot@example.com` to an XMPP server on port 5223 and wait for
+commands:
+
+....
+$ dmbot --node dummy-node --jid bot@example.com --password secret \
+  --host example.com --port 5223 --tls --verbose
+....
+
+Start a chat with the JID and send a command. For instance, on command
+`!uptime` the bot may send the following reply:
+
+```
+uptime 0 days 23 hours 57 mins 32 secs
+```
 
 === dmdb [[dmdb]]
 
@@ -7813,29 +7894,30 @@ $ /usr/local/bin/zstd --version
 |  2   | `E_DUMMY`           | Dummy error.
 |  3   | `E_INVALID`         | Invalid input/argument.
 |  4   | `E_INCOMPLETE`      | Input/argument missing.
-|  5   | `E_TYPE`            | Type error.
-|  6   | `E_IO`              | I/O operation failed.
-|  7   | `E_READ`            | Read operation failed.
-|  8   | `E_WRITE`           | Write operation failed.
-|  9   | `E_EOF`             | End of file.
-| 10   | `E_EOR`             | End of record.
-| 11   | `E_ALLOC`           | Memory allocation failed.
-| 12   | `E_BOUNDS`          | Out of bounds error.
-| 13   | `E_EXIST`           | Resource exists.
-| 14   | `E_SYSTEM`          | System call failed.
-| 15   | `E_MEMORY`          | No memory.
-| 16   | `E_FULL`            | Disk full.
-| 17   | `E_EMPTY`           | No data.
-| 18   | `E_NULL`            | Pointer not associated.
-| 19   | `E_LIMIT`           | Limit reached.
-| 20   | `E_TIMEOUT`         | Timeout occured.
-| 21   | `E_FORMAT`          | Format error.
-| 22   | `E_NOT_FOUND`       | Resource not found.
-| 23   | `E_PERM`            | No permission.
-| 24   | `E_READ_ONLY`       | Read-only access.
-| 25   | `E_CORRUPT`         | Data corrupted.
-| 26   | `E_CONFIG`          | Invalid configuration.
-| 27   | `E_GEOCOM`          | GeoCOM error.
+|  5   | `E_UNEXPECTED`      | Unexpected input.
+|  6   | `E_TYPE`            | Type error.
+|  7   | `E_IO`              | I/O operation failed.
+|  8   | `E_READ`            | Read operation failed.
+|  9   | `E_WRITE`           | Write operation failed.
+| 10   | `E_EOF`             | End of file.
+| 11   | `E_EOR`             | End of record.
+| 12   | `E_ALLOC`           | Memory allocation failed.
+| 13   | `E_BOUNDS`          | Out of bounds error.
+| 14   | `E_EXIST`           | Resource exists.
+| 15   | `E_SYSTEM`          | System call failed.
+| 16   | `E_MEMORY`          | No memory.
+| 17   | `E_FULL`            | Disk full.
+| 18   | `E_EMPTY`           | No data.
+| 19   | `E_NULL`            | Pointer not associated.
+| 20   | `E_LIMIT`           | Limit reached.
+| 21   | `E_TIMEOUT`         | Timeout occured.
+| 22   | `E_FORMAT`          | Format error.
+| 23   | `E_NOT_FOUND`       | Resource not found.
+| 24   | `E_PERM`            | No permission.
+| 25   | `E_READ_ONLY`       | Read-only access.
+| 26   | `E_CORRUPT`         | Data corrupted.
+| 27   | `E_CONFIG`          | Invalid configuration.
+| 28   | `E_GEOCOM`          | GeoCOM error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_BUSY`         | Database is busy.

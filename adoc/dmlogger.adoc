@@ -54,7 +54,7 @@ then trigger the log synchronisation.
   Use POSIX semaphore for process synchronisation. The name of the semaphore
   matches the instance name (with leading slash). The semaphore is set to 1
   each time a log message has been received. Only a single process shall wait
-  this semaphore.
+  for this semaphore.
 
 *--minlevel*, *-L* _level_::
   Minimum level for a log to be stored in the database, from 1 (`LL_DEBUG`) to
@@ -88,10 +88,10 @@ then trigger the log synchronisation.
 Create a POSIX message queue `/dmlogger` and wait for incoming logs:
 
 ....
-$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --minlevel 4
+$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --minlevel info
 ....
 
-Received logs are inserted only if they are of level 4 (ERROR) or higher.
+Received logs are inserted only if they are of level _info_ or higher.
 
 == SEE ALSO
 

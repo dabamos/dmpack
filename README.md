@@ -114,6 +114,7 @@ The following programs are based on the **DMPACK** library.
 | [dmapi](adoc/dmapi.adoc)       | FastCGI-based HTTP-RPC API service.                                 |
 | [dmbackup](adoc/dmbackup.adoc) | Creates online backups of DMPACK databases.                         |
 | [dmbeat](adoc/dmbeat.adoc)     | Sends status messages (heartbeats) periodically to RPC service.     |
+| [dmbot](adoc/dmbot.adoc)       | XMPP chat bot that answers to commands from authorised users.       |
 | [dmdb](adoc/dmdb.adoc)         | Stores observations received from message queue in database.        |
 | [dmdbctl](adoc/dmdbctl.adoc)   | Command-line interface to observation databases.                    |
 | [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
