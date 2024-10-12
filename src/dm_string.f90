@@ -73,6 +73,7 @@ module dm_string
     public :: dm_string_to_upper
     public :: dm_string_upper
 
+    ! Public string type procedures.
     public :: dm_string_allocate
     public :: dm_string_destroy
 
