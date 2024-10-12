@@ -101,6 +101,7 @@ contains
             rc = dm_lua_set(lua, 'E_DUMMY',          E_DUMMY);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_INVALID',        E_INVALID);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_INCOMPLETE',     E_INCOMPLETE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_UNEXPECTED',     E_UNEXPECTED);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_TYPE',           E_TYPE);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_IO',             E_IO);             if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_READ',           E_READ);           if (dm_is_error(rc)) return

@@ -19,29 +19,30 @@ module dm_error
     integer, parameter, public :: E_DUMMY          =   2 !! Dummy error or not implemented.
     integer, parameter, public :: E_INVALID        =   3 !! Invalid input/argument.
     integer, parameter, public :: E_INCOMPLETE     =   4 !! Input/argument missing.
-    integer, parameter, public :: E_TYPE           =   5 !! Type error.
-    integer, parameter, public :: E_IO             =   6 !! I/O operation failed.
-    integer, parameter, public :: E_READ           =   7 !! Read operation failed.
-    integer, parameter, public :: E_WRITE          =   8 !! Write operation failed.
-    integer, parameter, public :: E_EOF            =   9 !! I/O end of file.
-    integer, parameter, public :: E_EOR            =  10 !! I/O end of record.
-    integer, parameter, public :: E_ALLOC          =  11 !! Memory allocation failed.
-    integer, parameter, public :: E_BOUNDS         =  12 !! Out of bounds error.
-    integer, parameter, public :: E_EXIST          =  13 !! Resource exists.
-    integer, parameter, public :: E_SYSTEM         =  14 !! System call failed.
-    integer, parameter, public :: E_MEMORY         =  15 !! No memory.
-    integer, parameter, public :: E_FULL           =  16 !! Disk full.
-    integer, parameter, public :: E_EMPTY          =  17 !! No data.
-    integer, parameter, public :: E_NULL           =  18 !! Pointer not associated.
-    integer, parameter, public :: E_LIMIT          =  19 !! Memory limit reached.
-    integer, parameter, public :: E_TIMEOUT        =  20 !! Timeout occured.
-    integer, parameter, public :: E_FORMAT         =  21 !! Format error.
-    integer, parameter, public :: E_NOT_FOUND      =  22 !! Resource not found.
-    integer, parameter, public :: E_PERM           =  23 !! No permission.
-    integer, parameter, public :: E_READ_ONLY      =  24 !! Read-only access.
-    integer, parameter, public :: E_CORRUPT        =  25 !! Data corrupted.
-    integer, parameter, public :: E_CONFIG         =  26 !! Invalid configuration error.
-    integer, parameter, public :: E_GEOCOM         =  27 !! GeoCOM error.
+    integer, parameter, public :: E_UNEXPECTED     =   5 !! Unexpected input.
+    integer, parameter, public :: E_TYPE           =   6 !! Type error.
+    integer, parameter, public :: E_IO             =   7 !! I/O operation failed.
+    integer, parameter, public :: E_READ           =   8 !! Read operation failed.
+    integer, parameter, public :: E_WRITE          =   9 !! Write operation failed.
+    integer, parameter, public :: E_EOF            =  10 !! I/O end of file.
+    integer, parameter, public :: E_EOR            =  11 !! I/O end of record.
+    integer, parameter, public :: E_ALLOC          =  12 !! Memory allocation failed.
+    integer, parameter, public :: E_BOUNDS         =  13 !! Out of bounds error.
+    integer, parameter, public :: E_EXIST          =  14 !! Resource exists.
+    integer, parameter, public :: E_SYSTEM         =  15 !! System call failed.
+    integer, parameter, public :: E_MEMORY         =  16 !! No memory.
+    integer, parameter, public :: E_FULL           =  17 !! Disk full.
+    integer, parameter, public :: E_EMPTY          =  18 !! No data.
+    integer, parameter, public :: E_NULL           =  19 !! Pointer not associated.
+    integer, parameter, public :: E_LIMIT          =  20 !! Memory limit reached.
+    integer, parameter, public :: E_TIMEOUT        =  21 !! Timeout occured.
+    integer, parameter, public :: E_FORMAT         =  22 !! Format error.
+    integer, parameter, public :: E_NOT_FOUND      =  23 !! Resource not found.
+    integer, parameter, public :: E_PERM           =  24 !! No permission.
+    integer, parameter, public :: E_READ_ONLY      =  25 !! Read-only access.
+    integer, parameter, public :: E_CORRUPT        =  26 !! Data corrupted.
+    integer, parameter, public :: E_CONFIG         =  27 !! Invalid configuration error.
+    integer, parameter, public :: E_GEOCOM         =  28 !! GeoCOM error.
 
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
@@ -163,6 +164,8 @@ contains
                 message = 'invalid'
             case (E_INCOMPLETE)
                 message = 'incomplete'
+            case (E_UNEXPECTED)
+                message = 'unexpected'
             case (E_TYPE)
                 message = 'type error'
             case (E_IO)
