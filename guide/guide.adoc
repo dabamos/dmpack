@@ -290,8 +290,8 @@ If Git is not available, download the archive of the master branch instead and
 run the shell script `fetchvendor.sh` to fetch the missing submodules:
 
 ....
-$ curl -L -s -o dmpack.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip dmpack.zip
+$ curl -L -s -o dmpack-master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip dmpack-master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
 ....
@@ -825,7 +825,7 @@ for testing.
 | `--debug`             | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
 | `--help`              | `-h`  | –       | Output available command-line arguments and quit.
 | `--host _host_`       | `-H`  | –       | FQDN of XMPP server (for instance, `example.com`).
-| `--jid _string_`      | `-J`  | –       | Bot Jabber ID (for example, `bot@example.com`).
+| `--jid _string_`      | `-J`  | –       | Bot Jabber id (for example, `bot@example.com`).
 | `--logger _name_`     | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`       | `-n`  | `dmbot` | Optional name of instance, XMPP resource, and table in configuration.
 | `--node _id_`         | `-N`  | –       | Node id.

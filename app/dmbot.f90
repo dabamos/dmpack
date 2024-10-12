@@ -418,7 +418,7 @@ contains
         type = xmpp_stanza_get_type(stanza)
 
         if (type == JABBER_STANZA_TYPE_ERROR) then
-            call logger%warning('received error stanza', error=E_UNEXPECTED)
+            call logger%warning('received error message', error=E_UNEXPECTED)
             return
         end if
 
@@ -495,7 +495,7 @@ contains
         call c_f_pointer(user_data, bot)
 
         if (xmpp_stanza_get_type(stanza) == JABBER_STANZA_TYPE_ERROR) then
-            call logger%error('roster query failed', error=E_XMPP)
+            call logger%error('roster query failed', error=E_UNEXPECTED)
             return
         end if
 

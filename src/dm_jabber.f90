@@ -25,7 +25,6 @@ module dm_jabber
     !!                        keep_alive = .true.)
     !! if (dm_is_ok(rc)) call dm_jabber_run(jabber)
     !!
-    !! call dm_jabber_disconnect(jabber)
     !! call dm_jabber_destroy(jabber)
     !! call dm_jabber_shutdown()
     !! ```
@@ -44,21 +43,14 @@ module dm_jabber
     !!     type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
     !!     type(c_ptr),               intent(in), value :: user_data    !! void *
     !!
-    !!     integer                    :: stat
-    !!     type(c_ptr)                :: presence
     !!     type(jabber_type), pointer :: jabber
     !!
     !!     if (.not. c_associated(user_data)) return
     !!     call c_f_pointer(user_data, jabber)
     !!
     !!     if (event == XMPP_CONN_CONNECT) then
-    !!         print '("connected")'
-    !!
-    !!         presence = xmpp_presence_new(jabber%ctx)
-    !!         call xmpp_send(connection, presence)
-    !!         stat = xmpp_stanza_release(presence)
+    !!         call dm_jabber_send_presence(jabber, JABBER_STANZA_TEXT_ONLINE)
     !!     else
-    !!         print '("disconnected")'
     !!         call dm_jabber_stop(jabber)
     !!     end if
     !! end subroutine connection_callback
@@ -75,14 +67,15 @@ module dm_jabber
                  dm_jabber_password_callback     => xmpp_password_callback,    &
                  dm_jabber_timed_callback        => xmpp_timed_handler
     use :: dm_error
+    use :: dm_id
     implicit none (type, external)
     private
 
-    integer, parameter, public :: JABBER_HOST_LEN     = 256 !! Max. length of host.
-    integer, parameter, public :: JABBER_JID_LEN      = 64  !! Max. length of Jabber id.
-    integer, parameter, public :: JABBER_JID_FULL_LEN = 128 !! Max. length of JID with additional resource.
-    integer, parameter, public :: JABBER_PASSWORD_LEN = 64  !! Max. length of password.
-    integer, parameter, public :: JABBER_PING_ID_LEN  = 32  !! Max. length of ping id.
+    integer, parameter, public :: JABBER_HOST_LEN     = 256    !! Max. length of host.
+    integer, parameter, public :: JABBER_JID_LEN      = 64     !! Max. length of Jabber id.
+    integer, parameter, public :: JABBER_JID_FULL_LEN = 128    !! Max. length of JID with additional resource.
+    integer, parameter, public :: JABBER_PASSWORD_LEN = 64     !! Max. length of password.
+    integer, parameter, public :: JABBER_PING_ID_LEN  = ID_LEN !! Max. length of ping id.
 
     integer, parameter, public :: JABBER_PORT     = 5222 !! Default XMPP port (StartTLS).
     integer, parameter, public :: JABBER_PORT_TLS = 5223 !! Secondary XMPP port (TLS).

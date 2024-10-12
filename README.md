@@ -145,8 +145,8 @@ executing the provided Makefile, or by using the
 [User Guide](https://www.dabamos.de/dmpack/guide/#_installation) for complete
 installation instructions.
 
-Clone the **DMPACK** repository recursively and execute the Makefile with build
-target `freebsd`, `linux`, or `linux_aarch64`:
+Clone the **DMPACK** repository recursively with Git and execute the Makefile
+with build target `freebsd`, `linux`, or `linux_aarch64`:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
@@ -154,7 +154,19 @@ $ make [freebsd|linux|linux_aarch64]
 $ make install PREFIX=/opt
 ```
 
-On 64-bit Raspberry Pi single-board computers, select target `linux_aarch64`.
+If Git is not available, download the archive of the master branch instead and
+run the shell script `fetchvendor.sh` to fetch the missing submodules:
+
+```
+$ curl -L -s -o dmpack-master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip dmpack-master.zip
+$ cd dmpack-master/
+$ sh fetchvendor.sh
+$ make [freebsd|linux|linux_aarch64]
+$ make install PREFIX=/opt
+```
+
+On 64-bit Raspberry Pi single-board computers running Linux, select target `linux_aarch64`.
 
 ## Library
 
