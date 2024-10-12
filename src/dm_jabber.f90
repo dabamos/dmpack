@@ -59,7 +59,7 @@ module dm_jabber
     !!         stat = xmpp_stanza_release(presence)
     !!     else
     !!         print '("disconnected")'
-    !!         call xmpp_stop(jabber%ctx)
+    !!         call dm_jabber_stop(jabber)
     !!     end if
     !! end subroutine connection_callback
     !! ```
@@ -192,6 +192,9 @@ module dm_jabber
     character(len=*), parameter, public :: JABBER_STANZA_NS_STREAMS_IETF        = XMPP_NS_STREAMS_IETF
     character(len=*), parameter, public :: JABBER_STANZA_NS_TLS                 = XMPP_NS_TLS
 
+    ! Stanza default attributes.
+    character(len=*), parameter, public :: JABBER_STANZA_ATTR_JID = 'jid'
+
     ! Stanza default texts.
     character(len=*), parameter, public :: JABBER_STANZA_TEXT_AWAY   = 'away'
     character(len=*), parameter, public :: JABBER_STANZA_TEXT_CHAT   = 'chat'
@@ -221,8 +224,12 @@ module dm_jabber
         character(len=JABBER_JID_LEN)      :: jid        = ' '         !! XMPP id of account.
         character(len=JABBER_JID_FULL_LEN) :: jid_full   = ' '         !! XMPP id with resource.
         character(len=JABBER_PASSWORD_LEN) :: password   = ' '         !! XMPP password of account.
-        character(len=JABBER_PING_ID_LEN)  :: ping_id    = ' '         !! XMPP ping id (XEP-0199).
     end type jabber_type
+
+    type, public :: roster_type
+        !! Jabber roster type.
+        character(len=JABBER_JID_LEN), allocatable :: jids(:) !! JID array.
+    end type roster_type
 
     ! Imported abstract interfaces.
     public :: dm_jabber_callback
@@ -238,15 +245,24 @@ module dm_jabber
     public :: dm_jabber_create
     public :: dm_jabber_create_iq_error
     public :: dm_jabber_create_iq_ping
+    public :: dm_jabber_create_iq_result
+    public :: dm_jabber_create_iq_roster
     public :: dm_jabber_destroy
     public :: dm_jabber_disconnect
     public :: dm_jabber_init
     public :: dm_jabber_is_connected
     public :: dm_jabber_preserve_stream_management_state
+    public :: dm_jabber_roster_add
+    public :: dm_jabber_roster_has
     public :: dm_jabber_run
     public :: dm_jabber_send_presence
+    public :: dm_jabber_send_stanza
     public :: dm_jabber_shutdown
+    public :: dm_jabber_stop
 contains
+    ! ******************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! ******************************************************************
     integer function dm_jabber_connect(jabber, host, port, jid, password, callback, user_data, &
                                        resource, keep_alive, tls_required, tls_trusted) result(rc)
         !! Connects to XMPP server.
@@ -425,6 +441,31 @@ contains
         stat = xmpp_stanza_release(ping_stanza)
     end function dm_jabber_create_iq_ping
 
+    type(c_ptr) function dm_jabber_create_iq_result(jabber, id) result(iq_stanza)
+        !! Returns C pointer to new result iq stanza.
+        type(jabber_type), intent(inout) :: jabber !! Jabber context type.
+        character(len=*),  intent(in)    :: id     !! Stanza id.
+
+        iq_stanza = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_RESULT, id)
+    end function dm_jabber_create_iq_result
+
+    type(c_ptr) function dm_jabber_create_iq_roster(jabber, id) result(iq_stanza)
+        !! Returns C pointer to new roster iq stanza.
+        type(jabber_type), intent(inout) :: jabber !! Jabber context type.
+        character(len=*),  intent(in)    :: id     !! Stanza id.
+
+        integer     :: stat
+        type(c_ptr) :: query_stanza
+
+        iq_stanza    = xmpp_iq_new(jabber%ctx, JABBER_STANZA_TYPE_GET, id)
+        query_stanza = xmpp_stanza_new(jabber%ctx)
+
+        stat = xmpp_stanza_set_name(query_stanza, JABBER_STANZA_NAME_QUERY)
+        stat = xmpp_stanza_set_ns(query_stanza, JABBER_STANZA_NS_ROSTER)
+        stat = xmpp_stanza_add_child(iq_stanza, query_stanza)
+        stat = xmpp_stanza_release(query_stanza)
+    end function dm_jabber_create_iq_roster
+
     logical function dm_jabber_is_connected(jabber) result(is)
         !! Returns `.true.` if connection is open.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
@@ -433,6 +474,56 @@ contains
         if (is) is = (xmpp_conn_is_connected(jabber%connection) == 1)
     end function dm_jabber_is_connected
 
+    integer function dm_jabber_roster_add(roster, jid) result(rc)
+        type(roster_type), intent(inout) :: roster !! Roster type.
+        character(len=*),  intent(in)    :: jid    !! JID to add.
+
+        integer                                    :: n, stat
+        character(len=JABBER_JID_LEN), allocatable :: buffer(:)
+
+        rc = E_BOUNDS
+        if (len_trim(jid) > JABBER_JID_LEN) return
+
+        rc = E_ALLOC
+        if (.not. allocated(roster%jids)) then
+            allocate (roster%jids(0), stat=stat)
+            if (stat /= 0) return
+        end if
+
+        n = size(roster%jids)
+
+        allocate (buffer(n + 1), stat=stat)
+        if (stat /= 0) return
+
+        buffer(:n)    = roster%jids
+        buffer(n + 1) = jid
+        call move_alloc(buffer, roster%jids)
+
+        rc = E_NONE
+    end function dm_jabber_roster_add
+
+    logical function dm_jabber_roster_has(roster, jid) result(has)
+        !! Returns `.true.` if roster contains JID. Any resource appended to
+        !! the JID is ignored.
+        type(roster_type), intent(inout) :: roster !! Roster type.
+        character(len=*),  intent(in)    :: jid    !! JID to search.
+
+        integer :: i, n
+
+        has = .false.
+        if (.not. allocated(roster%jids)) return
+
+        do i = 1, size(roster%jids)
+            n = len_trim(roster%jids(i))
+            if (jid(:n) /= roster%jids(i)) cycle
+            has = .true.
+            exit
+        end do
+    end function dm_jabber_roster_has
+
+    ! ******************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! ******************************************************************
     subroutine dm_jabber_destroy(jabber)
         !! Destroys XMPP context and an closes the connection if still open.
         type(jabber_type), intent(inout) :: jabber !! Jabber context type.
@@ -513,8 +604,30 @@ contains
         stat = xmpp_stanza_release(pres)
     end subroutine dm_jabber_send_presence
 
+    subroutine dm_jabber_send_stanza(jabber, stanza, release)
+        type(jabber_type), intent(inout)        :: jabber  !! Jabber context type.
+        type(c_ptr),       intent(in)           :: stanza  !! Stanza to send.
+        logical,           intent(in), optional :: release !! Release stanza afterwards.
+
+        integer :: stat
+        logical :: release_
+
+        release_ = .true.
+        if (present(release)) release_ = release
+
+        call xmpp_send(jabber%connection, stanza)
+        if (release_) stat = xmpp_stanza_release(stanza)
+    end subroutine dm_jabber_send_stanza
+
     subroutine dm_jabber_shutdown()
         !! Shuts down XMPP backend (libstrophe).
         call xmpp_shutdown()
     end subroutine dm_jabber_shutdown
+
+    subroutine dm_jabber_stop(jabber)
+        !! Stops XMPP context (libstrophe).
+        type(jabber_type), intent(inout) :: jabber !! Jabber context type.
+
+        call xmpp_stop(jabber%ctx)
+    end subroutine dm_jabber_stop
 end module dm_jabber
