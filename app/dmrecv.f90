@@ -33,7 +33,7 @@ program dmrecv
         character(len=ID_LEN)            :: name        = APP_NAME    !! Name of process and POSIX message queue.
         character(len=FILE_PATH_LEN)     :: config      = ' '         !! Path to configuration file.
         character(len=LOGGER_NAME_LEN)   :: logger      = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)       :: node        = ' '         !! Node id (optional).
+        character(len=NODE_ID_LEN)       :: node_id     = ' '         !! Node id (optional).
         character(len=FILE_PATH_LEN)     :: output      = ' '         !! Path of output file (stdout if empty or `-`).
         character(len=FORMAT_NAME_LEN)   :: format_name = ' '         !! Format name.
         character(len=TYPE_NAME_LEN)     :: type_name   = ' '         !! Type name.
@@ -63,7 +63,7 @@ program dmrecv
     ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &
-                          node_id = app%node, &
+                          node_id = app%node_id, &
                           source  = app%name, &
                           debug   = app%debug, &
                           ipc     = (len_trim(app%logger) > 0), &
@@ -123,7 +123,7 @@ contains
 
         ! Overwrite settings.
         call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node)
+        call dm_arg_get(args( 4), app%node_id)
         call dm_arg_get(args( 5), app%output)
         call dm_arg_get(args( 6), app%format_name)
         call dm_arg_get(args( 7), app%type_name)
@@ -145,7 +145,7 @@ contains
             return
         end if
 
-        if (len_trim(app%node) > 0 .and. .not. dm_id_is_valid(app%node)) then
+        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
@@ -206,7 +206,7 @@ contains
 
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'node',     app%node_id)
             call dm_config_get(config, 'output',   app%output)
             call dm_config_get(config, 'format',   app%format_name)
             call dm_config_get(config, 'response', app%response)

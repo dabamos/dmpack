@@ -24,8 +24,8 @@ program dmserial
         character(len=ID_LEN)              :: name        = APP_NAME    !! Instance and configuration name (required).
         character(len=FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file (required).
         character(len=LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node        = ' '         !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor      = ' '         !! Sensor id (required).
+        character(len=NODE_ID_LEN)         :: node_id     = ' '         !! Node id (required).
+        character(len=SENSOR_ID_LEN)       :: sensor_id   = ' '         !! Sensor id (required).
         character(len=FILE_PATH_LEN)       :: output      = ' '         !! Path of output file.
         integer                            :: output_type = OUTPUT_NONE !! Output type.
         character(len=FORMAT_NAME_LEN)     :: format_name = ' '         !! Output format name.
@@ -70,7 +70,7 @@ program dmserial
     ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &
-                          node_id = app%node, &
+                          node_id = app%node_id, &
                           source  = app%name, &
                           debug   = app%debug, &
                           ipc     = (len_trim(app%logger) > 0), &
@@ -201,8 +201,8 @@ contains
 
         ! Get all other arguments.
         call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node)
-        call dm_arg_get(args( 5), app%sensor)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%sensor_id)
         call dm_arg_get(args( 6), app%output)
         call dm_arg_get(args( 7), app%format_name)
         call dm_arg_get(args( 8), app%path)
@@ -224,12 +224,12 @@ contains
             return
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_is_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor_id)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
@@ -313,8 +313,8 @@ contains
 
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node)
-            call dm_config_get(config, 'sensor',   app%sensor)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'sensor',   app%sensor_id)
             call dm_config_get(config, 'path',     app%path)
             call dm_config_get(config, 'baudrate', app%baud_rate)
             call dm_config_get(config, 'bytesize', app%byte_size)
@@ -504,7 +504,7 @@ contains
         call logger%info('started ' // APP_NAME)
 
         ! Try to open TTY/PTY.
-        call logger%debug('opening TTY '  // trim(app%path) // ' to sensor ' // trim(app%sensor) // &
+        call logger%debug('opening TTY '  // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
                           ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
                           dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
@@ -541,11 +541,11 @@ contains
 
                 if (debug) then
                     call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // &
-                                      app%sensor, observ=observ)
+                                      app%sensor_id, observ=observ)
                 end if
 
                 ! Read observation from TTY.
-                rc = read_observ(tty, observ, app%node, app%sensor, app%name, debug=debug)
+                rc = read_observ(tty, observ, app%node_id, app%sensor_id, app%name, debug=debug)
 
                 ! Forward observation via POSIX message queue.
                 rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
@@ -557,7 +557,7 @@ contains
 
                 if (debug) then
                     call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // &
-                                      app%sensor, observ=observ)
+                                      app%sensor_id, observ=observ)
                 end if
             end if
 

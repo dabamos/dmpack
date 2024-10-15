@@ -47,6 +47,7 @@ module dm_lua
         !! Pushes table element on stack and optionally returns value.
         module procedure :: lua_field_array_int32
         module procedure :: lua_field_array_int64
+        module procedure :: lua_field_array_string
         module procedure :: lua_field_int32
         module procedure :: lua_field_int64
         module procedure :: lua_field_logical
@@ -139,6 +140,7 @@ module dm_lua
     ! Private procedures.
     private :: lua_field_array_int32
     private :: lua_field_array_int64
+    private :: lua_field_array_string
     private :: lua_field_int32
     private :: lua_field_int64
     private :: lua_field_logical
@@ -681,6 +683,52 @@ contains
         call lua_pop(lua%ctx, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_int64
+
+    integer function lua_field_array_string(lua, name, values, unescape) result(rc)
+        !! Returns allocatable character array from table field `name` in
+        !! `values`. If `values` is allocated, it will be deallocated first.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_LIMIT` if a string length is greater than the array length.
+        !! * `E_TYPE` if not a table or not a string element.
+        !!
+        !! On error, `values` will be allocated but empty.
+        type(lua_state_type),          intent(inout)        :: lua       !! Lua type.
+        character(len=*),              intent(in)           :: name      !! Table field name.
+        character(len=*), allocatable, intent(inout)        :: values(:) !! Table field values.
+        logical,                       intent(in), optional :: unescape  !! Unescape strings.
+
+        if (allocated(values)) deallocate (values)
+
+        lua_block: block
+            integer :: i, n, stat
+
+            rc = E_EMPTY
+            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_istable(lua%ctx, -1) == 0) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = E_ALLOC
+            allocate (values(n), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            do i = 1, n
+                rc = dm_lua_get(lua, i, values(i), unescape)
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call lua_pop(lua%ctx, 1)
+        if (.not. allocated(values)) allocate (values(0))
+    end function lua_field_array_string
 
     integer function lua_field_int32(lua, name, value) result(rc)
         !! Returns 4-byte integer from table field `name` in `value`.

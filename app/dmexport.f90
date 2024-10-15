@@ -17,9 +17,9 @@ program dmexport
         !! Command-line arguments.
         character(len=FILE_PATH_LEN)     :: database  = ' '         !! Path to database.
         character(len=FILE_PATH_LEN)     :: output    = ' '         !! Output file path, empty or '-' for stdout.
-        character(len=NODE_ID_LEN)       :: node      = ' '         !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor    = ' '         !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target    = ' '         !! Target id.
+        character(len=NODE_ID_LEN)       :: node_id   = ' '         !! Node id.
+        character(len=SENSOR_ID_LEN)     :: sensor_id = ' '         !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target_id = ' '         !! Target id.
         character(len=TIME_LEN)          :: from      = ' '         !! Time range start.
         character(len=TIME_LEN)          :: to        = ' '         !! Time range end.
         character(len=RESPONSE_NAME_LEN) :: response  = ' '         !! Response name.
@@ -83,16 +83,16 @@ contains
             case (TYPE_TARGET)
                 rc = dm_db_select_targets(db, targets)
             case (TYPE_OBSERV)
-                rc = dm_db_select_observs(db, observs, node_id=app%node, sensor_id=app%sensor, &
-                                          target_id=app%target, from=app%from, to=app%to)
+                rc = dm_db_select_observs(db, observs, node_id=app%node_id, sensor_id=app%sensor_id, &
+                                          target_id=app%target_id, from=app%from, to=app%to)
             case (TYPE_LOG)
-                rc = dm_db_select_logs(db, logs, node_id=app%node, sensor_id=app%sensor, &
-                                       target_id=app%target, from=app%from, to=app%to)
+                rc = dm_db_select_logs(db, logs, node_id=app%node_id, sensor_id=app%sensor_id, &
+                                       target_id=app%target_id, from=app%from, to=app%to)
             case (TYPE_BEAT)
                 rc = dm_db_select_beats(db, beats)
             case (TYPE_DP)
-                rc = dm_db_select_data_points(db, data_points, node_id=app%node, sensor_id=app%sensor, &
-                                              target_id=app%target, response_name=app%response, &
+                rc = dm_db_select_data_points(db, data_points, node_id=app%node_id, sensor_id=app%sensor_id, &
+                                              target_id=app%target_id, response_name=app%response, &
                                               from=app%from, to=app%to)
         end select
 
@@ -208,9 +208,9 @@ contains
 
         call dm_arg_get(args( 1), app%database)
         call dm_arg_get(args( 2), app%output)
-        call dm_arg_get(args( 3), app%node)
-        call dm_arg_get(args( 4), app%sensor)
-        call dm_arg_get(args( 5), app%target)
+        call dm_arg_get(args( 3), app%node_id)
+        call dm_arg_get(args( 4), app%sensor_id)
+        call dm_arg_get(args( 5), app%target_id)
         call dm_arg_get(args( 6), app%from)
         call dm_arg_get(args( 7), app%to)
         call dm_arg_get(args( 8), app%response)
@@ -257,17 +257,17 @@ contains
 
         ! Observation and data point.
         if (app%type == TYPE_OBSERV .or. app%type == TYPE_DP) then
-            if (.not. dm_id_is_valid(app%node)) then
+            if (.not. dm_id_is_valid(app%node_id)) then
                  call dm_error_out(rc, 'invalid or missing argument --node')
                  return
             end if
 
-            if (.not. dm_id_is_valid(app%sensor)) then
+            if (.not. dm_id_is_valid(app%sensor_id)) then
                 call dm_error_out(rc, 'invalid or missing argument --sensor')
                 return
             end if
 
-            if (.not. dm_id_is_valid(app%target)) then
+            if (.not. dm_id_is_valid(app%target_id)) then
                 call dm_error_out(rc, 'invalid or missing argument --target')
                 return
             end if

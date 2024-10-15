@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_im
-    !! Instant messenger module for Jabber/XMPP connectivity, based on
+    !! Instant messaging module for Jabber/XMPP connectivity, based on
     !! _libstrophe_.
     !!
     !! Link this module against `pkg-config --libs libstrophe expat openssl zlib`.

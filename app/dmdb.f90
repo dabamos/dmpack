@@ -24,7 +24,7 @@ program dmdb
         character(len=FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
         character(len=FILE_PATH_LEN)   :: database = ' '      !! Path to SQLite database file.
-        character(len=NODE_ID_LEN)     :: node     = ' '      !! Node id.
+        character(len=NODE_ID_LEN)     :: node_id  = ' '      !! Node id.
         logical                        :: debug    = .false.  !! Forward debug messages via IPC.
         logical                        :: ipc      = .false.  !! Use POSIX semaphore for process synchronisation.
         logical                        :: verbose  = .false.  !! Print debug messages to stderr.
@@ -32,11 +32,11 @@ program dmdb
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer           :: rc     ! Return code.
-    type(app_type)    :: app    ! App settings.
-    type(db_type)     :: db     ! Database handle.
-    type(mqueue_type) :: mqueue ! POSIX message queue handle.
-    type(sem_type)    :: sem    ! POSIX semaphore handle.
+    integer              :: rc     ! Return code.
+    type(app_type)       :: app    ! App settings.
+    type(db_type)        :: db     ! Database handle.
+    type(mqueue_type)    :: mqueue ! POSIX message queue handle.
+    type(sem_named_type) :: sem    ! POSIX semaphore handle.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -48,7 +48,7 @@ program dmdb
     ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &
-                          node_id = app%node, &
+                          node_id = app%node_id, &
                           source  = app%name, &
                           debug   = app%debug, &
                           ipc     = (len_trim(app%logger) > 0), &
@@ -126,7 +126,7 @@ contains
         ! Overwrite configuration.
         call dm_arg_get(args(3), app%logger)
         call dm_arg_get(args(4), app%database)
-        call dm_arg_get(args(5), app%node)
+        call dm_arg_get(args(5), app%node_id)
         call dm_arg_get(args(6), app%debug)
         call dm_arg_get(args(7), app%ipc)
         call dm_arg_get(args(8), app%verbose)
@@ -152,7 +152,7 @@ contains
             return
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -173,7 +173,7 @@ contains
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'logger',   app%logger)
             call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'node',     app%node_id)
             call dm_config_get(config, 'debug',    app%debug)
             call dm_config_get(config, 'ipc',      app%ipc)
             call dm_config_get(config, 'verbose',  app%verbose)
@@ -206,10 +206,10 @@ contains
     subroutine run(app, db, mqueue, sem)
         !! Opens observation message queue for reading, and stores received
         !! derived types in database.
-        type(app_type),    intent(inout) :: app     !! App settings.
-        type(db_type),     intent(inout) :: db      !! Database type.
-        type(mqueue_type), intent(inout) :: mqueue  !! Message queue type.
-        type(sem_type),    intent(inout) :: sem     !! Semaphore type.
+        type(app_type),       intent(inout) :: app    !! App settings.
+        type(db_type),        intent(inout) :: db     !! Database type.
+        type(mqueue_type),    intent(inout) :: mqueue !! Message queue type.
+        type(sem_named_type), intent(inout) :: sem    !! Semaphore type.
 
         integer           :: rc, steps, value
         type(observ_type) :: observ

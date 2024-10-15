@@ -131,7 +131,7 @@ contains
         do i = 1, NOBSERVS
             if (modulo(i, 10) == 0) print *, '>>> ', i
 
-            rc = dm_rpc_send(request     = request, &
+            rc = dm_rpc_post(request     = request, &
                              response    = response, &
                              type        = observs(i), &
                              username    = username, &
@@ -188,7 +188,7 @@ contains
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
+        rc = dm_rpc_post(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
                          username, password, compression=Z_TYPE_ZSTD)
         call dm_timer_stop(timer, dt)
 
@@ -242,7 +242,7 @@ contains
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
+        rc = dm_rpc_post(requests, responses, observs, dm_rpc_url(host, endpoint='/observ'), &
                          username, password, compression=Z_TYPE_ZSTD, sequential=.true.)
         call dm_timer_stop(timer, dt)
 
@@ -291,7 +291,7 @@ contains
 
         print *, 'Sending beat via HTTP POST ...'
         call dm_timer_start(timer)
-        rc = dm_rpc_send(request     = request, &
+        rc = dm_rpc_post(request     = request, &
                          response    = response, &
                          type        = beat, &
                          username    = username, &

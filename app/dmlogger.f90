@@ -21,7 +21,7 @@ program dmlogger
         character(len=ID_LEN)        :: name     = APP_NAME   !! Name of logger instance and POSIX semaphore.
         character(len=FILE_PATH_LEN) :: config   = ' '        !! Path to configuration file.
         character(len=FILE_PATH_LEN) :: database = ' '        !! Path to SQLite database file.
-        character(len=NODE_ID_LEN)   :: node     = ' '        !! Node id.
+        character(len=NODE_ID_LEN)   :: node_id  = ' '        !! Node id.
         integer                      :: minlevel = LL_WARNING !! Minimum level for a log to be stored in the database.
         logical                      :: ipc      = .false.    !! Use POSIX semaphore for process synchronisation.
         logical                      :: verbose  = .false.    !! Print debug messages to stderr.
@@ -29,11 +29,11 @@ program dmlogger
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer           :: rc     ! Return code.
-    type(app_type)    :: app    ! App configuration.
-    type(db_type)     :: db     ! Global database handle.
-    type(mqueue_type) :: mqueue ! Global POSIX message queue handle.
-    type(sem_type)    :: sem    ! Global POSIX semaphore handle.
+    integer              :: rc     ! Return code.
+    type(app_type)       :: app    ! App configuration.
+    type(db_type)        :: db     ! Global database handle.
+    type(mqueue_type)    :: mqueue ! Global POSIX message queue handle.
+    type(sem_named_type) :: sem    ! Global POSIX semaphore handle.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -45,11 +45,11 @@ program dmlogger
     init_block: block
         ! Initialise logger.
         logger => dm_logger_get_default()
-        call logger%configure(name    = app%name, &  ! Name of global logger.
-                              node_id = app%node, &  ! Sensor node id.
-                              source  = app%name, &  ! Application name.
-                              ipc     = .false., &   ! Don't send logs via IPC.
-                              verbose = app%verbose) ! Prints logs to terminal.
+        call logger%configure(name    = app%name, &    ! Name of global logger.
+                              node_id = app%node_id, & ! Sensor node id.
+                              source  = app%name, &    ! Application name.
+                              ipc     = .false., &     ! Don't send logs via IPC.
+                              verbose = app%verbose)   ! Prints logs to terminal.
 
         ! Open SQLite database.
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
@@ -120,7 +120,7 @@ contains
 
         ! Overwrite settings.
         call dm_arg_get(args(3), app%database)
-        call dm_arg_get(args(4), app%node)
+        call dm_arg_get(args(4), app%node_id)
         call dm_arg_get(args(5), app%minlevel)
         call dm_arg_get(args(6), app%ipc)
         call dm_arg_get(args(7), app%verbose)
@@ -131,7 +131,7 @@ contains
             call dm_error_out(rc, 'invalid name')
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -166,7 +166,7 @@ contains
 
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'node',     app%node_id)
             call dm_config_get(config, 'minlevel', app%minlevel)
             call dm_config_get(config, 'ipc',      app%ipc)
             call dm_config_get(config, 'verbose',  app%verbose)
@@ -199,10 +199,10 @@ contains
     subroutine run(app, db, mqueue, sem)
         !! Stores received logs in database. The given message queue has to be
         !! opened already.
-        type(app_type),    intent(inout) :: app    !! App settings.
-        type(db_type),     intent(inout) :: db     !! Log database.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
-        type(sem_type),    intent(inout) :: sem    !! Semaphore.
+        type(app_type),       intent(inout) :: app    !! App settings.
+        type(db_type),        intent(inout) :: db     !! Log database.
+        type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
+        type(sem_named_type), intent(inout) :: sem    !! Semaphore.
 
         integer        :: rc, steps, value
         type(log_type) :: log
@@ -223,7 +223,7 @@ contains
             end if
 
             ! Replace missing or invalid sensor node id.
-            if (.not. dm_id_is_valid(log%node_id)) log%node_id = app%node
+            if (.not. dm_id_is_valid(log%node_id)) log%node_id = app%node_id
 
             ! Print to standard output.
             if (app%verbose) call logger%out(log)

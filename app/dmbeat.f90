@@ -21,7 +21,7 @@ program dmbeat
         character(len=ID_LEN)           :: name             = APP_NAME    !! Name of instance/configuration.
         character(len=FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
         character(len=LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)      :: node             = ' '         !! Sensor node id (required).
+        character(len=NODE_ID_LEN)      :: node_id          = ' '         !! Sensor node id (required).
         character(len=APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
         integer                         :: port             = 0           !! API port (set to 0 for protocol default).
         logical                         :: tls              = .false.     !! TLS encryption.
@@ -50,12 +50,12 @@ program dmbeat
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, & ! Name of logger process.
-                          node_id = app%node,   & ! Node id.
-                          source  = app%name,   & ! Log source.
-                          debug   = app%debug,  & ! Forward DEBUG messages via IPC.
-                          ipc     = app%ipc,    & ! Enable IPC.
-                          verbose = app%verbose)  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,  & ! Name of logger process.
+                          node_id = app%node_id, & ! Node id.
+                          source  = app%name,    & ! Log source.
+                          debug   = app%debug,   & ! Forward DEBUG messages via IPC.
+                          ipc     = app%ipc,     & ! Enable IPC.
+                          verbose = app%verbose)   ! Print logs to standard error.
 
     ! Initialise RPC backend.
     init_block: block
@@ -113,7 +113,7 @@ contains
 
         ! Get all other arguments.
         call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node)
+        call dm_arg_get(args( 4), app%node_id)
         call dm_arg_get(args( 5), app%host)
         call dm_arg_get(args( 6), app%port)
         call dm_arg_get(args( 7), app%tls)
@@ -142,7 +142,7 @@ contains
             app%ipc = .true.
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
@@ -183,7 +183,7 @@ contains
 
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'logger',      app%logger)
-            call dm_config_get(config, 'node',        app%node)
+            call dm_config_get(config, 'node',        app%node_id)
             call dm_config_get(config, 'host',        app%host)
             call dm_config_get(config, 'port',        app%port)
             call dm_config_get(config, 'tls',         app%tls)
@@ -243,10 +243,10 @@ contains
 
         emit_loop: do
             call dm_timer_start(timer)
-            call logger%debug('emitting beat for node ' // trim(app%node) // ' to host ' // app%host)
+            call logger%debug('emitting beat for node ' // trim(app%node_id) // ' to host ' // app%host)
 
             ! Create new heartbeat.
-            beat = beat_type(node_id   = app%node, &
+            beat = beat_type(node_id   = app%node_id, &
                              client    = client, &
                              time_sent = dm_time_now(), &
                              interval  = app%interval, &
@@ -256,8 +256,8 @@ contains
             call dm_system_uptime(uptime, rc)
             beat%uptime = int(uptime, kind=i4)
 
-            ! Send RPC request to API, use Zstandard compression.
-            rc = dm_rpc_send(request     = request, &
+            ! Send RPC request to API, use compression if available.
+            rc = dm_rpc_post(request     = request, &
                              response    = response, &
                              type        = beat, &
                              url         = url, &

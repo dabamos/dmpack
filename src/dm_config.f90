@@ -53,6 +53,7 @@ module dm_config
         !! Generic interface to return configuration value by name.
         module procedure :: config_get_array_int32
         module procedure :: config_get_array_int64
+        module procedure :: config_get_array_string
         module procedure :: config_get_int32
         module procedure :: config_get_int64
         module procedure :: config_get_job_list
@@ -73,6 +74,7 @@ module dm_config
     private :: config_error
     private :: config_get_array_int32
     private :: config_get_array_int64
+    private :: config_get_array_string
     private :: config_get_int32
     private :: config_get_int64
     private :: config_get_job_list
@@ -239,6 +241,20 @@ contains
         rc = config_error(rc, param=name)
         if (present(error)) error = rc
     end subroutine config_get_array_int64
+
+    subroutine config_get_array_string(config, name, values, error)
+        !! Returns configuration values as string array in `values`.
+        type(config_type),             intent(inout)         :: config    !! Config type.
+        character(len=*),              intent(in)            :: name      !! Setting name.
+        character(len=*), allocatable, intent(inout)         :: values(:) !! Setting values.
+        integer,                       intent(out), optional :: error     !! Error code.
+
+        integer :: rc
+
+        rc = dm_lua_field(config%lua, name, values)
+        rc = config_error(rc, param=name)
+        if (present(error)) error = rc
+    end subroutine config_get_array_string
 
     subroutine config_get_int32(config, name, value, error)
         !! Returns configuration value as 4-byte integer in `value`.

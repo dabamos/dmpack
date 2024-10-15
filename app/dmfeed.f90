@@ -21,7 +21,7 @@ program dmfeed
         character(len=FILE_PATH_LEN) :: config    = ' '         !! Path to config file.
         character(len=FILE_PATH_LEN) :: database  = ' '         !! Path to log database.
         character(len=FILE_PATH_LEN) :: output    = ' '         !! Output path of Atom file (stdout if empty).
-        character(len=NODE_ID_LEN)   :: node      = ' '         !! Optional node id.
+        character(len=NODE_ID_LEN)   :: node_id   = ' '         !! Optional node id.
         integer                      :: entries   = 50          !! Max. number of entries in feed.
         integer                      :: min_level = LL_DEBUG    !! Minimum log level
         integer                      :: max_level = LL_CRITICAL !! Maximum log level.
@@ -114,7 +114,7 @@ contains
         ! Get all other arguments.
         call dm_arg_get(args( 3), app%database)
         call dm_arg_get(args( 4), app%output)
-        call dm_arg_get(args( 5), app%node)
+        call dm_arg_get(args( 5), app%node_id)
         call dm_arg_get(args( 6), app%entries)
         call dm_arg_get(args( 7), app%min_level)
         call dm_arg_get(args( 8), app%max_level)
@@ -130,7 +130,7 @@ contains
         ! Validate passed options.
         rc = E_INVALID
 
-        if (len_trim(app%node) > 0 .and. .not. dm_id_is_valid(app%node)) then
+        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
@@ -181,7 +181,7 @@ contains
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'database', app%database)
             call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'node',     app%node)
+            call dm_config_get(config, 'node',     app%node_id)
             call dm_config_get(config, 'entries',  app%entries)
             call dm_config_get(config, 'minlevel', app%min_level)
             call dm_config_get(config, 'maxlevel', app%max_level)
@@ -221,10 +221,10 @@ contains
             end if
 
             ! Get logs from database.
-            if (len_trim(app%node) > 0) then
+            if (len_trim(app%node_id) > 0) then
                 rc = dm_db_select_logs(db        = db, &
                                        logs      = logs, &
-                                       node_id   = app%node, &
+                                       node_id   = app%node_id, &
                                        min_level = app%min_level, &
                                        max_level = app%max_level, &
                                        desc      = .true., &

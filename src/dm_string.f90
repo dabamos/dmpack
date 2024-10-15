@@ -68,6 +68,7 @@ module dm_string
     public :: dm_string_is_present
     public :: dm_string_is_printable
     public :: dm_string_lower
+    public :: dm_string_replace
     public :: dm_string_split
     public :: dm_string_to_lower
     public :: dm_string_to_upper
@@ -248,6 +249,19 @@ contains
             if (a >= 'A' .and. a <= 'Z') str(i:i) = achar(iachar(a) + 32)
         end do
     end subroutine dm_string_lower
+
+    subroutine dm_string_replace(str, a, b)
+        !! Replaces character `a` in `str` with `b`.
+        character(len=*), intent(inout) :: str !! String to parse.
+        character,        intent(in)    :: a   !! Character to replace.
+        character,        intent(in)    :: b   !! Substitute character.
+
+        integer :: i
+
+        do i = 1, len(str)
+            if (str(i:i) == a) str(i:i) = b
+        end do
+    end subroutine dm_string_replace
 
     pure subroutine dm_string_split(str, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.

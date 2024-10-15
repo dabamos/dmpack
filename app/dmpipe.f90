@@ -27,8 +27,8 @@ program dmpipe
         character(len=ID_LEN)          :: name        = APP_NAME    !! Instance and configuration name (required).
         character(len=FILE_PATH_LEN)   :: config      = ' '         !! Path to configuration file (required).
         character(len=LOGGER_NAME_LEN) :: logger      = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node        = ' '         !! Node id (required).
-        character(len=SENSOR_ID_LEN)   :: sensor      = ' '         !! Sensor id (required).
+        character(len=NODE_ID_LEN)     :: node_id     = ' '         !! Node id (required).
+        character(len=SENSOR_ID_LEN)   :: sensor_id   = ' '         !! Sensor id (required).
         character(len=FILE_PATH_LEN)   :: output      = ' '         !! Path of output file.
         character(len=FORMAT_NAME_LEN) :: format_name = 'none'      !! Output format name.
         integer                        :: output_type = OUTPUT_NONE !! Output type.
@@ -53,7 +53,7 @@ program dmpipe
     ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &
-                          node_id = app%node, &
+                          node_id = app%node_id, &
                           source  = app%name, &
                           debug   = app%debug, &
                           ipc     = (len_trim(app%logger) > 0), &
@@ -136,8 +136,8 @@ contains
 
         ! Get all other arguments.
         call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node)
-        call dm_arg_get(args(5), app%sensor)
+        call dm_arg_get(args(4), app%node_id)
+        call dm_arg_get(args(5), app%sensor_id)
         call dm_arg_get(args(6), app%output)
         call dm_arg_get(args(7), app%format_name)
         call dm_arg_get(args(8), app%debug)
@@ -151,12 +151,12 @@ contains
             return
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_is_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor_id)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
@@ -203,9 +203,9 @@ contains
             call dm_config_get(config, 'format',  app%format_name)
             call dm_config_get(config, 'jobs',    app%jobs)
             call dm_config_get(config, 'logger',  app%logger)
-            call dm_config_get(config, 'node',    app%node)
+            call dm_config_get(config, 'node',    app%node_id)
+            call dm_config_get(config, 'sensor',  app%sensor_id)
             call dm_config_get(config, 'output',  app%output)
-            call dm_config_get(config, 'sensor',  app%sensor)
             call dm_config_get(config, 'debug',   app%debug)
             call dm_config_get(config, 'verbose', app%verbose)
         end if
@@ -423,7 +423,7 @@ contains
                 if (debug) call logger%debug('starting observ ' // observ%name, observ=observ)
 
                 ! Read observation.
-                rc = read_observ(pipe, observ, app%node, app%sensor, app%name, debug=debug)
+                rc = read_observ(pipe, observ, app%node_id, app%sensor_id, app%name, debug=debug)
 
                 ! Forward observation.
                 rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)

@@ -19,9 +19,9 @@ program dmplot
         character(len=ID_LEN)            :: name       = APP_NAME           !! Name of instance and POSIX semaphore.
         character(len=FILE_PATH_LEN)     :: config     = ' '                !! Path to configuration file.
         character(len=FILE_PATH_LEN)     :: database   = ' '                !! Path to observation database.
-        character(len=NODE_ID_LEN)       :: node       = ' '                !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor     = ' '                !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target     = ' '                !! Target id.
+        character(len=NODE_ID_LEN)       :: node_id    = ' '                !! Node id.
+        character(len=SENSOR_ID_LEN)     :: sensor_id  = ' '                !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target_id  = ' '                !! Target id.
         character(len=RESPONSE_NAME_LEN) :: response   = ' '                !! Response name.
         character(len=TIME_LEN)          :: from       = ' '                !! Start of time range (ISO 8601).
         character(len=TIME_LEN)          :: to         = ' '                !! End of time range (ISO 8601).
@@ -96,7 +96,7 @@ contains
 
         plot_block: block
             ! Read data points from database.
-            rc = read_data_points(dps, app%database, app%node, app%sensor, app%target, &
+            rc = read_data_points(dps, app%database, app%node_id, app%sensor_id, app%target_id, &
                                   app%response, app%from, app%to)
             if (dm_is_error(rc)) exit plot_block
 
@@ -168,9 +168,9 @@ contains
 
         ! Read all other options.
         call dm_arg_get(args( 3), app%database)
-        call dm_arg_get(args( 4), app%node)
-        call dm_arg_get(args( 5), app%sensor)
-        call dm_arg_get(args( 6), app%target)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%sensor_id)
+        call dm_arg_get(args( 6), app%target_id)
         call dm_arg_get(args( 7), app%response)
         call dm_arg_get(args( 8), app%from)
         call dm_arg_get(args( 9), app%to)
@@ -193,17 +193,17 @@ contains
             return
         end if
 
-        if (.not. dm_id_is_valid(app%node)) then
+        if (.not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid or missing node id')
             return
         end if
 
-        if (.not. dm_id_is_valid(app%sensor)) then
+        if (.not. dm_id_is_valid(app%sensor_id)) then
             call dm_error_out(rc, 'invalid or missing sensor id')
             return
         end if
 
-        if (.not. dm_id_is_valid(app%target)) then
+        if (.not. dm_id_is_valid(app%target_id)) then
             call dm_error_out(rc, 'invalid or missing target id')
             return
         end if
@@ -274,11 +274,11 @@ contains
             call dm_config_get(config, 'terminal',   terminal)
             call dm_config_get(config, 'from',       app%from)
             call dm_config_get(config, 'height',     app%height)
-            call dm_config_get(config, 'node',       app%node)
+            call dm_config_get(config, 'node',       app%node_id)
             call dm_config_get(config, 'output',     app%output)
             call dm_config_get(config, 'response',   app%response)
-            call dm_config_get(config, 'sensor',     app%sensor)
-            call dm_config_get(config, 'target',     app%target)
+            call dm_config_get(config, 'sensor',     app%sensor_id)
+            call dm_config_get(config, 'target',     app%target_id)
             call dm_config_get(config, 'title',      app%title)
             call dm_config_get(config, 'to',         app%to)
             call dm_config_get(config, 'width',      app%width)

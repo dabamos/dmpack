@@ -26,7 +26,7 @@ program dmsync
         character(len=FILE_PATH_LEN)   :: config           = ' '            !! Path to configuration file.
         character(len=LOGGER_NAME_LEN) :: logger           = ' '            !! Name of logger.
         character(len=SEM_NAME_LEN)    :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(len=NODE_ID_LEN)     :: node             = ' '            !! Node id.
+        character(len=NODE_ID_LEN)     :: node_id          = ' '            !! Node id.
         character(len=FILE_PATH_LEN)   :: database         = ' '            !! Path to database.
         character(len=HOST_LEN)        :: host             = ' '            !! IP or FQDN of API.
         integer                        :: port             = 0              !! HTTP port of API (0 selects port automatically).
@@ -46,10 +46,10 @@ program dmsync
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App settings.
-    type(db_type)  :: db  ! Database type.
-    type(sem_type) :: sem ! POSIX semaphore type.
+    integer              :: rc  ! Return code.
+    type(app_type)       :: app ! App settings.
+    type(db_type)        :: db  ! Database type.
+    type(sem_named_type) :: sem ! POSIX semaphore type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -61,7 +61,7 @@ program dmsync
     ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger, &                 ! Name of logger process.
-                          node_id = app%node, &                   ! Node id.
+                          node_id = app%node_id, &                ! Node id.
                           source  = app%name, &                   ! Log source.
                           debug   = app%debug, &                  ! Forward DEBUG messages via IPC.
                           ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
@@ -161,7 +161,7 @@ contains
         ! Overwrite settings.
         call dm_arg_get(args( 3), app%logger)
         call dm_arg_get(args( 4), app%wait)
-        call dm_arg_get(args( 5), app%node)
+        call dm_arg_get(args( 5), app%node_id)
         call dm_arg_get(args( 6), app%database)
         call dm_arg_get(args( 7), app%host)
         call dm_arg_get(args( 8), app%port)
@@ -250,7 +250,7 @@ contains
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'logger',      app%logger)
             call dm_config_get(config, 'wait',        app%wait)
-            call dm_config_get(config, 'node',        app%node)
+            call dm_config_get(config, 'node',        app%node_id)
             call dm_config_get(config, 'database',    app%database)
             call dm_config_get(config, 'host',        app%host)
             call dm_config_get(config, 'port',        app%port)
@@ -270,9 +270,9 @@ contains
 
     integer function run(app, db, sem) result(rc)
         !! Synchronises logs database via RPC API.
-        type(app_type), intent(inout) :: app !! App configuration type.
-        type(db_type),  intent(inout) :: db  !! Database type.
-        type(sem_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),       intent(inout) :: app !! App configuration type.
+        type(db_type),        intent(inout) :: db  !! Database type.
+        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
 
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: name, url
@@ -448,15 +448,15 @@ contains
                 ! Send log to HTTP-RPC API. Reuse the RPC request.
                 select case (app%type)
                     case (SYNC_TYPE_LOG)
-                        rc = dm_rpc_send(requests(1:n), responses, logs(1:n))
+                        rc = dm_rpc_post(requests(1:n), responses, logs(1:n))
                     case (SYNC_TYPE_NODE)
-                        rc = dm_rpc_send(requests(1:n), responses, nodes(1:n))
+                        rc = dm_rpc_post(requests(1:n), responses, nodes(1:n))
                     case (SYNC_TYPE_OBSERV)
-                        rc = dm_rpc_send(requests(1:n), responses, observs(1:n))
+                        rc = dm_rpc_post(requests(1:n), responses, observs(1:n))
                     case (SYNC_TYPE_SENSOR)
-                        rc = dm_rpc_send(requests(1:n), responses, sensors(1:n))
+                        rc = dm_rpc_post(requests(1:n), responses, sensors(1:n))
                     case (SYNC_TYPE_TARGET)
-                        rc = dm_rpc_send(requests(1:n), responses, targets(1:n))
+                        rc = dm_rpc_post(requests(1:n), responses, targets(1:n))
                 end select
 
                 call dm_timer_stop(rpc_timer, dt)

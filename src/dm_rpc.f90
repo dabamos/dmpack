@@ -17,7 +17,7 @@ module dm_rpc
     !! call dm_error_out(rc, fatal=.true.)
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
-    !! rc  = dm_rpc_send(request, response, observ, url)
+    !! rc  = dm_rpc_post(request, response, observ, url)
     !!
     !! call dm_error_out(rc)
     !! call dm_rpc_shutdown()
@@ -57,6 +57,7 @@ module dm_rpc
     ! HTTP Method.
     integer, parameter, public :: RPC_METHOD_GET  = 0 !! HTTP GET method.
     integer, parameter, public :: RPC_METHOD_POST = 1 !! HTTP POST method.
+    integer, parameter, public :: RPC_METHOD_PUT  = 2 !! HTTP PUT method.
 
     ! TCP Keep-Alive.
     logical, parameter, public :: RPC_KEEP_ALIVE          = .true. !! Enable TCP keep-alive.
@@ -113,17 +114,17 @@ module dm_rpc
         module procedure :: rpc_request_single
     end interface rpc_request
 
+    interface dm_rpc_post
+        !! Generic RPC post function.
+        module procedure :: dm_rpc_post_type
+        module procedure :: dm_rpc_post_types
+    end interface dm_rpc_post
+
     interface dm_rpc_request
         !! Generic RPC request function.
         module procedure :: dm_rpc_request_multi
         module procedure :: dm_rpc_request_single
     end interface dm_rpc_request
-
-    interface dm_rpc_send
-        !! Generic RPC send function.
-        module procedure :: dm_rpc_send_type
-        module procedure :: dm_rpc_send_types
-    end interface dm_rpc_send
 
     public :: dm_rpc_callback
 
@@ -131,13 +132,13 @@ module dm_rpc
     public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
     public :: dm_rpc_init
+    public :: dm_rpc_post
+    public :: dm_rpc_post_type
+    public :: dm_rpc_post_types
     public :: dm_rpc_request
     public :: dm_rpc_request_multi
     public :: dm_rpc_request_single
     public :: dm_rpc_reset
-    public :: dm_rpc_send
-    public :: dm_rpc_send_type
-    public :: dm_rpc_send_types
     public :: dm_rpc_shutdown
     public :: dm_rpc_url
     public :: dm_rpc_version
@@ -269,83 +270,7 @@ contains
         rc = E_NONE
     end function dm_rpc_init
 
-    integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &
-                                          user_agent, compression) result(rc)
-        !! Sends multiple HTTP requests by GET or POST method, with optional
-        !! deflate or zstd compression.
-        type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
-        type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
-        character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
-        integer,                              intent(in), optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),                     intent(in), optional :: accept       !! HTTP Accept header.
-        character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
-        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
-        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
-
-        integer :: i
-
-        do i = 1, size(requests)
-            ! Set request parameters.
-            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
-
-            if (present(accept))      requests(i)%accept      = trim(accept)
-            if (present(method))      requests(i)%method      = method
-            if (present(url))         requests(i)%url         = trim(url)
-            if (present(user_agent))  requests(i)%user_agent  = trim(user_agent)
-            if (present(compression)) requests(i)%compression = compression
-
-            ! HTTP Basic Auth.
-            if (present(username) .and. present(password)) then
-                requests(i)%auth     = RPC_AUTH_BASIC
-                requests(i)%username = trim(username)
-                requests(i)%password = trim(password)
-            end if
-        end do
-
-        rc = rpc_request_multi(requests, responses)
-    end function dm_rpc_request_multi
-
-    integer function dm_rpc_request_single(request, response, url, method, payload, content_type, &
-                                           accept, username, password, user_agent, compression) result(rc)
-        !! Sends single HTTP request by GET or POST method, and with optional
-        !! deflate or zstd compression.
-        type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
-        type(rpc_response_type), intent(out)             :: response     !! RPC response type.
-        character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
-        integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),        intent(inout), optional :: payload      !! Payload data (for POST only).
-        character(len=*),        intent(in),    optional :: content_type !! Payload content type (for POST only).
-        character(len=*),        intent(in),    optional :: accept       !! HTTP Accept header.
-        character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
-        character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
-        integer,                 intent(in),    optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
-
-        ! Set request parameters.
-        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
-
-        if (present(url))         request%url         = trim(url)
-        if (present(method))      request%method      = method
-        if (present(accept))      request%accept      = trim(accept)
-        if (present(user_agent))  request%user_agent  = trim(user_agent)
-        if (present(compression)) request%compression = compression
-
-        if (present(username) .and. present(password)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            request%password = trim(password)
-        end if
-
-        if (request%method == RPC_METHOD_POST) then
-            if (present(content_type)) request%content_type = trim(content_type)
-            if (present(payload))      request%payload      = payload
-        end if
-
-        rc = rpc_request_single(request, response)
-    end function dm_rpc_request_single
-
-    integer function dm_rpc_send_type(request, response, type, url, username, password, &
+    integer function dm_rpc_post_type(request, response, type, url, username, password, &
                                       user_agent, compression) result(rc)
         !! Sends a single derived type in Namelist format to a given URL, with
         !! optional authentication and compression. The URL has to be the API
@@ -395,9 +320,9 @@ contains
         request%method       = RPC_METHOD_POST
 
         rc = rpc_request(request, response)
-    end function dm_rpc_send_type
+    end function dm_rpc_post_type
 
-    integer function dm_rpc_send_types(requests, responses, types, url, username, password, &
+    integer function dm_rpc_post_types(requests, responses, types, url, username, password, &
                                        user_agent, compression, sequential) result(rc)
         !! Sends multiple derived types concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
@@ -504,7 +429,83 @@ contains
         do i = 1, n
             rc = rpc_request(requests(i), responses(i))
         end do
-    end function dm_rpc_send_types
+    end function dm_rpc_post_types
+
+    integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &
+                                          user_agent, compression) result(rc)
+        !! Sends multiple HTTP requests by GET, POST, or PUT method, with
+        !! optional deflate or zstd compression.
+        type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
+        type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
+        character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
+        integer,                              intent(in), optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
+        character(len=*),                     intent(in), optional :: accept       !! HTTP Accept header.
+        character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
+        character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
+        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+
+        integer :: i
+
+        do i = 1, size(requests)
+            ! Set request parameters.
+            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
+
+            if (present(accept))      requests(i)%accept      = trim(accept)
+            if (present(method))      requests(i)%method      = method
+            if (present(url))         requests(i)%url         = trim(url)
+            if (present(user_agent))  requests(i)%user_agent  = trim(user_agent)
+            if (present(compression)) requests(i)%compression = compression
+
+            ! HTTP Basic Auth.
+            if (present(username) .and. present(password)) then
+                requests(i)%auth     = RPC_AUTH_BASIC
+                requests(i)%username = trim(username)
+                requests(i)%password = trim(password)
+            end if
+        end do
+
+        rc = rpc_request_multi(requests, responses)
+    end function dm_rpc_request_multi
+
+    integer function dm_rpc_request_single(request, response, url, method, payload, content_type, &
+                                           accept, username, password, user_agent, compression) result(rc)
+        !! Sends single HTTP request by GET, POST, or PUT method, and with
+        !! optional deflate or zstd compression.
+        type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
+        type(rpc_response_type), intent(out)             :: response     !! RPC response type.
+        character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
+        integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
+        character(len=*),        intent(inout), optional :: payload      !! Payload data (for POST only).
+        character(len=*),        intent(in),    optional :: content_type !! Payload content type (for POST only).
+        character(len=*),        intent(in),    optional :: accept       !! HTTP Accept header.
+        character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
+        character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
+        character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
+        integer,                 intent(in),    optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+
+        ! Set request parameters.
+        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
+
+        if (present(url))         request%url         = trim(url)
+        if (present(method))      request%method      = method
+        if (present(accept))      request%accept      = trim(accept)
+        if (present(user_agent))  request%user_agent  = trim(user_agent)
+        if (present(compression)) request%compression = compression
+
+        if (present(username) .and. present(password)) then
+            request%auth     = RPC_AUTH_BASIC
+            request%username = trim(username)
+            request%password = trim(password)
+        end if
+
+        if (request%method == RPC_METHOD_POST) then
+            if (present(content_type)) request%content_type = trim(content_type)
+            if (present(payload))      request%payload      = payload
+        end if
+
+        rc = rpc_request_single(request, response)
+    end function dm_rpc_request_single
 
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
         !! Returns allocatable string of URL to HTTP-RPC API endpoint. Uses the
@@ -846,31 +847,32 @@ contains
         end if
 
         ! Set HTTP POST method.
-        post_if: if (request%method == RPC_METHOD_POST) then
-            ! Enable POST.
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POST, 1)
-            if (stat /= CURLE_OK) return
+        post_select: select case (request%method)
+            case (RPC_METHOD_POST)
+                ! Enable POST.
+                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POST, 1)
+                if (stat /= CURLE_OK) return
 
-            ! Exit if POST payload is missing.
-            if (.not. allocated(request%payload)) exit post_if
+                ! Exit if POST payload is missing.
+                if (.not. allocated(request%payload)) exit post_select
 
-            ! Pass POST data directly.
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8))
-            if (stat /= CURLE_OK) return
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDS, c_loc(request%payload))
-            if (stat /= CURLE_OK) return
+                ! Pass POST data directly.
+                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8))
+                if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDS, c_loc(request%payload))
+                if (stat /= CURLE_OK) return
 
-            ! Signal content encoding (deflate, zstd).
-            if (request%compression > Z_TYPE_NONE) then
-                request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Encoding: ' // &
-                                                     dm_z_type_to_encoding(request%compression))
-            end if
+                ! Signal content encoding (deflate, zstd).
+                if (request%compression > Z_TYPE_NONE) then
+                    request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Encoding: ' // &
+                                                         dm_z_type_to_encoding(request%compression))
+                end if
 
-            ! Set content type.
-            if (.not. dm_string_is_empty(request%content_type)) then
-                request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Type: ' // request%content_type)
-            end if
-        end if post_if
+                ! Set content type.
+                if (.not. dm_string_is_empty(request%content_type)) then
+                    request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Type: ' // request%content_type)
+                end if
+        end select post_select
 
         ! Set follow location header.
         if (request%follow_location) then
