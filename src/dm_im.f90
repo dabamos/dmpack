@@ -274,14 +274,14 @@ module dm_im
 
     type, public :: im_type
         !! IM/XMPP context type.
-        type(c_ptr)                    :: ctx        = c_null_ptr  !! libstrophe context.
-        type(c_ptr)                    :: connection = c_null_ptr  !! libstrophe connection.
-        type(c_ptr)                    :: sm_state   = c_null_ptr  !! libstrophe stream management state.
-        character(len=IM_HOST_LEN)     :: host       = ' '         !! XMPP server host.
-        integer                        :: port       = IM_PORT     !! XMPP server port.
-        character(len=IM_JID_LEN)      :: jid        = ' '         !! XMPP id of account.
-        character(len=IM_JID_FULL_LEN) :: jid_full   = ' '         !! XMPP id with resource.
-        character(len=IM_PASSWORD_LEN) :: password   = ' '         !! XMPP password of account.
+        type(c_ptr)                    :: ctx        = c_null_ptr !! libstrophe context.
+        type(c_ptr)                    :: connection = c_null_ptr !! libstrophe connection.
+        type(c_ptr)                    :: sm_state   = c_null_ptr !! libstrophe stream management state.
+        character(len=IM_HOST_LEN)     :: host       = ' '        !! XMPP server host.
+        integer                        :: port       = IM_PORT    !! XMPP server port.
+        character(len=IM_JID_LEN)      :: jid        = ' '        !! XMPP id of account.
+        character(len=IM_JID_FULL_LEN) :: jid_full   = ' '        !! XMPP id with resource.
+        character(len=IM_PASSWORD_LEN) :: password   = ' '        !! XMPP password of account.
     end type im_type
 
     type, public :: im_upload_type
@@ -336,7 +336,7 @@ contains
     ! PUBLIC FUNCTIONS.
     ! ******************************************************************
     integer function dm_im_connect(im, host, port, jid, password, callback, user_data, &
-                                       resource, keep_alive, tls_required, tls_trusted) result(rc)
+                                   resource, keep_alive, tls_required, tls_trusted) result(rc)
         !! Connects to XMPP server.
         !!
         !! The function returns the following error codes:

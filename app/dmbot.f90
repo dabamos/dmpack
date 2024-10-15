@@ -314,8 +314,8 @@ contains
         type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
         type(c_ptr),               intent(in), value :: user_data    !! void *
 
-        type(bot_type),    pointer :: bot
-        type(im_type), pointer :: im
+        type(bot_type), pointer :: bot
+        type(im_type),  pointer :: im
 
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
@@ -567,8 +567,8 @@ contains
     logical function bot_is_authorized(group, jid) result(is)
         !! Returns `.true.` if JID is in group. If the group is empty, all JIDs
         !! are authorised!
-        character(len=IM_JID_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
-        character(len=*),          intent(in)    :: jid      !! JIDs to validate.
+        character(len=IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
+        character(len=*),               intent(in)    :: jid      !! JIDs to validate.
 
         integer :: i, j, n
 

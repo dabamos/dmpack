@@ -692,7 +692,7 @@ contains
         !!
         !! * `E_ALLOC` if array allocation failed.
         !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_LIMIT` if a string length is greater than the array length.
+        !! * `E_BOUNDS` if a string length is greater than the array length.
         !! * `E_TYPE` if not a table or not a string element.
         !!
         !! On error, `values` will be allocated but empty.
@@ -861,8 +861,8 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if the field of given name is null.
-        !! * `E_LIMIT` if the actual string length is greater than the length of
-        !!    the passed value argument.
+        !! * `E_BOUNDS` if the actual string length is greater than the length
+        !!    of the passed value argument.
         !! * `E_TYPE` if the field is not of type string.
         !!
         !! On error, `value` will not be overwritten.
@@ -892,7 +892,7 @@ contains
                 value = str
             end if
 
-            rc = E_LIMIT
+            rc = E_BOUNDS
             if (len(str) > len(value)) exit lua_block
 
             rc = E_NONE
@@ -1052,8 +1052,8 @@ contains
         !!
         !! * `E_EMPTY` if the table element of given name is null.
         !! * `E_INVALID` if the element on top of the stack is not a table.
-        !! * `E_LIMIT` if the actual string length is greater than the length of
-        !!    the passed value argument.
+        !! * `E_BOUNDS` if the actual string length is greater than the length
+        !!    of the passed value argument.
         !! * `E_TYPE` if the table element is not of type string.
         !!
         !! On error, `value` will not be overwritten.
@@ -1086,7 +1086,7 @@ contains
                 value = str
             end if
 
-            rc = E_LIMIT
+            rc = E_BOUNDS
             if (len(str) > len(value)) exit lua_block
 
             rc = E_NONE
