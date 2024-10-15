@@ -255,8 +255,8 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_html.f90 \
       $(SRCDIR)/dm_http.f90 \
       $(SRCDIR)/dm_id.f90 \
+      $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
-      $(SRCDIR)/dm_jabber.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
@@ -349,8 +349,8 @@ OBJ = dm_ansi.o \
       dm_html.o \
       dm_http.o \
       dm_id.o \
+      dm_im.o \
       dm_image.o \
-      dm_jabber.o \
       dm_job.o \
       dm_json.o \
       dm_jsonl.o \
@@ -636,8 +636,8 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_image.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_jabber.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.

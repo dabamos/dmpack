@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2024-08-09
+:docdate: 2024-08-15
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -777,11 +777,13 @@ web application <<dmweb>> lists the beats received by the server.
 
 === dmbot [[dmbot]]
 
-The *dmbot* program is an XMPP bot that accepts commands via chat. Clients must
-be granted access first by adding them to the roster of the bot account. The
-bot denies requests from clients whose JID is not included in the roster. The
-XMPP resource is automatically set to the name of the bot instance. If the JID
-of the bot account is `bot@example.com`, the full JID will be set to
+The *dmbot* program is an XMPP bot that accepts commands via chat. Access to the
+bot is limited to the JIDs added to table `group` in the configuration file.
+Requests from clients whose JID is not in the table will be rejected. If table
+`group` is empty, all clients are allowed to send commands to the bot.
+
+The XMPP resource is automatically set to the name of the bot instance. If the
+JID of the bot account is `bot@example.com`, the full JID will be set to
 `bot@example.com/dmbot` if the bot name is `dmbot`.
 
 All commands start with prefix `!`. For an overview, send chat command `!help`
@@ -807,18 +809,12 @@ to the bot. The following commands are supported:
   Return a message if the bot is online.
 !reconnect::
   Reconnect bot and update local roster list.
-!roster::
-  Return list of authorised users from the roster.
 !uname::
   Return name and version of the operating system.
 !uptime::
   Return uptime of the operating system.
 !version::
   Return bot version.
-
-Update the list of authorised users by adding them to the roster of the bot and
-sending command `!reconnect` afterwards. The bot will update the local roster
-after the reconnection.
 
 Passing the XMPP credentials via the command-line arguments `--jid` and
 `--password` is insecure on multi-user operating systems and only recommended
@@ -858,8 +854,9 @@ $ dmbot --node dummy-node --jid bot@example.com --password secret \
   --host example.com --port 5223 --tls --verbose
 ....
 
-Start a chat with the JID and send a command. For instance, on command
-`!uptime` the bot may send the following reply:
+If no configuration file is used, any client may send commands to the bot
+without authorisation. Start a chat with the bot JID and send a command. For
+instance, on command `!uptime` the bot sends a reply like the following:
 
 ```
 uptime: 0 days 23 hours 57 mins 32 secs

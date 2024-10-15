@@ -6,6 +6,7 @@
 -- Settings:
 --
 --      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
+--      group     - List of authorised JIDs. If empty, all users can send commands!
 --      host      - IP or FQDN of XMPP server.
 --      jid       - Jabber ID.
 --      logger    - Name of logger to send logs to (optional).
@@ -22,14 +23,15 @@
 dmbot = {
     node = "dummy-node",
     logger = "",
-    log_db = "",
-    observ_db = "",
+    jid = "juliet@capulet.example",
+    password = "secret",
     host = "example.com",
     port = 5222,
-    jid = "bot@example.com",
-    password = "secret",
     tls = true,
     reconnect = false,
+    log_db = "",
+    observ_db = "",
+    group = { "romeo@montague.tld" },
     debug = false,
     verbose = true
 }

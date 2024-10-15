@@ -193,7 +193,7 @@ containing the **DMPACK** module files is passed through argument `-I`.
 | `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`                       |
 | `dm_fcgi`       | FastCGI             | `-lfcgi`                                          |
 | `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
-| `dm_jabber`     | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_im`         | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
 | `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
 | `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`                       |

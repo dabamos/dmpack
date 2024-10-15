@@ -2,12 +2,12 @@
 .\"     Title: dmbot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2024-10-13
+.\"      Date: 2024-10-15
 .\"    Manual: User Commands
 .\"    Source: DMBOT
 .\"  Language: English
 .\"
-.TH "DMBOT" "1" "2024-10-13" "DMBOT" "User Commands"
+.TH "DMBOT" "1" "2024-10-15" "DMBOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -41,10 +41,10 @@ dmbot \- XMPP chat bot for remote control of sensor nodes
 \fBdmbot\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
-This program is an XMPP bot that accepts commands via chat. Clients must be
-granted access first by adding them to the roster of the bot account. The bot
-denies requests from clients whose JID is not included in the roster. The XMPP
-resource is automatically set to the name of the bot instance.
+This program is an XMPP bot that accepts commands via chat. Access to the bot is
+limited to the JIDs added to table \f(CRgroup\fP in the configuration file. Requests
+from clients whose JID is not in the table will be rejected. If table \f(CRgroup\fP is
+empty, all clients are allowed to send commands to the bot.
 .sp
 All commands start with prefix \f(CR!\fP. For an overview, send chat command \f(CR!help\fP
 to the bot. The following commands are supported:
@@ -91,11 +91,6 @@ Return status message if bot is online.
 Reconnect bot and update local roster list.
 .RE
 .sp
-!roster
-.RS 4
-Return list of authorised users from the roster.
-.RE
-.sp
 !uname
 .RS 4
 Return name and version of the operating system.
@@ -110,10 +105,6 @@ Return uptime of the operating system
 .RS 4
 Return bot version.
 .RE
-.sp
-Update the list of authorised users by adding them to the roster of the bot and
-sending command \f(CR!reconnect\fP afterwards. The bot will update the local roster
-after the reconnection.
 .sp
 Passing the XMPP credentials via the command\-line arguments \f(CR\-\-jid\fP and
 \f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
@@ -217,6 +208,9 @@ $ dmbot \-\-node dummy\-node \-\-jid bot@example.com \-\-password secret \(rs
 .fam
 .fi
 .if n .RE
+.sp
+If no configuration file is used, any client may send commands to the bot
+without authorisation.
 .SH "RESOURCES"
 .sp
 \fBProject web site:\fP \c
