@@ -3,6 +3,7 @@
 build/
 dist/
 doc/
+dump/
 env/
 include/
 lib/
@@ -25,4 +26,5 @@ man/pdf/
 *.sql
 *.sqlite
 *.swp
+favicon.png
 rsync_*
