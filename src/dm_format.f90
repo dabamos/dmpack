@@ -36,20 +36,13 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (FORMAT_NAMES(FORMAT_BLOCK))
-                format = FORMAT_BLOCK
-            case (FORMAT_NAMES(FORMAT_CSV))
-                format = FORMAT_CSV
-            case (FORMAT_NAMES(FORMAT_GEOJSON))
-                format = FORMAT_GEOJSON
-            case (FORMAT_NAMES(FORMAT_JSON))
-                format = FORMAT_JSON
-            case (FORMAT_NAMES(FORMAT_JSONL))
-                format = FORMAT_JSONL
-            case (FORMAT_NAMES(FORMAT_NML))
-                format = FORMAT_NML
-            case default
-                format = FORMAT_NONE
+            case (FORMAT_NAMES(FORMAT_BLOCK));   format = FORMAT_BLOCK
+            case (FORMAT_NAMES(FORMAT_CSV));     format = FORMAT_CSV
+            case (FORMAT_NAMES(FORMAT_GEOJSON)); format = FORMAT_GEOJSON
+            case (FORMAT_NAMES(FORMAT_JSON));    format = FORMAT_JSON
+            case (FORMAT_NAMES(FORMAT_JSONL));   format = FORMAT_JSONL
+            case (FORMAT_NAMES(FORMAT_NML));     format = FORMAT_NML
+            case default;                        format = FORMAT_NONE
         end select
     end function dm_format_from_name
 

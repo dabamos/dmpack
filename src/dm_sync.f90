@@ -86,18 +86,12 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (SYNC_TYPE_NAMES(SYNC_TYPE_NODE))
-                type = SYNC_TYPE_NODE
-            case (SYNC_TYPE_NAMES(SYNC_TYPE_SENSOR))
-                type = SYNC_TYPE_SENSOR
-            case (SYNC_TYPE_NAMES(SYNC_TYPE_TARGET))
-                type = SYNC_TYPE_TARGET
-            case (SYNC_TYPE_NAMES(SYNC_TYPE_OBSERV))
-                type = SYNC_TYPE_OBSERV
-            case (SYNC_TYPE_NAMES(SYNC_TYPE_LOG))
-                type = SYNC_TYPE_LOG
-            case default
-                type = SYNC_TYPE_NONE
+            case (SYNC_TYPE_NAMES(SYNC_TYPE_NODE));   type = SYNC_TYPE_NODE
+            case (SYNC_TYPE_NAMES(SYNC_TYPE_SENSOR)); type = SYNC_TYPE_SENSOR
+            case (SYNC_TYPE_NAMES(SYNC_TYPE_TARGET)); type = SYNC_TYPE_TARGET
+            case (SYNC_TYPE_NAMES(SYNC_TYPE_OBSERV)); type = SYNC_TYPE_OBSERV
+            case (SYNC_TYPE_NAMES(SYNC_TYPE_LOG));    type = SYNC_TYPE_LOG
+            case default;                             type = SYNC_TYPE_NONE
         end select
     end function dm_sync_type_from_name
 

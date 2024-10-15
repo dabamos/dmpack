@@ -495,86 +495,52 @@ contains
 
         ! Byte size (start bits).
         select case (tty%byte_size)
-            case (TTY_BYTE_SIZE5)
-                byte_size = CS5
-            case (TTY_BYTE_SIZE6)
-                byte_size = CS6
-            case (TTY_BYTE_SIZE7)
-                byte_size = CS7
-            case (TTY_BYTE_SIZE8)
-                byte_size = CS8
-            case default
-                return
+            case (TTY_BYTE_SIZE5); byte_size = CS5
+            case (TTY_BYTE_SIZE6); byte_size = CS6
+            case (TTY_BYTE_SIZE7); byte_size = CS7
+            case (TTY_BYTE_SIZE8); byte_size = CS8
+            case default;          return
         end select
 
         ! Stop bits.
         select case (tty%stop_bits)
-            case (TTY_STOP_BITS1)
-                stop_bits = 0
-            case (TTY_STOP_BITS2)
-                stop_bits = CSTOPB
-            case default
-                return
+            case (TTY_STOP_BITS1); stop_bits = 0
+            case (TTY_STOP_BITS2); stop_bits = CSTOPB
+            case default;          return
         end select
 
         ! Parity.
         select case (tty%parity)
-            case (TTY_PARITY_NONE)
-                parity = 0
-            case (TTY_PARITY_ODD)
-                parity = ior(PARENB, PARODD)
-            case (TTY_PARITY_EVEN)
-                parity = PARENB
-            case default
-                return
+            case (TTY_PARITY_NONE); parity = 0
+            case (TTY_PARITY_ODD);  parity = ior(PARENB, PARODD)
+            case (TTY_PARITY_EVEN); parity = PARENB
+            case default;           return
         end select
 
         ! Baud rate.
         select case (tty%baud_rate)
-            case (TTY_B0)
-                baud_rate = B0
-            case (TTY_B50)
-                baud_rate = B50
-            case (TTY_B75)
-                baud_rate = B75
-            case (TTY_B110)
-                baud_rate = B110
-            case (TTY_B134)
-                baud_rate = B134
-            case (TTY_B150)
-                baud_rate = B150
-            case (TTY_B200)
-                baud_rate = B200
-            case (TTY_B300)
-                baud_rate = B300
-            case (TTY_B600)
-                baud_rate = B600
-            case (TTY_B1200)
-                baud_rate = B1200
-            case (TTY_B1800)
-                baud_rate = B1800
-            case (TTY_B2400)
-                baud_rate = B2400
-            case (TTY_B4800)
-                baud_rate = B4800
-            case (TTY_B9600)
-                baud_rate = B9600
-            case (TTY_B19200)
-                baud_rate = B19200
-            case (TTY_B38400)
-                baud_rate = B38400
-            case (TTY_B57600)
-                baud_rate = B57600
-            case (TTY_B115200)
-                baud_rate = B115200
-            case (TTY_B230400)
-                baud_rate = B230400
-            case (TTY_B460800)
-                baud_rate = B460800
-            case (TTY_B921600)
-                baud_rate = B921600
-            case default
-                return
+            case (TTY_B0);      baud_rate = B0
+            case (TTY_B50);     baud_rate = B50
+            case (TTY_B75);     baud_rate = B75
+            case (TTY_B110);    baud_rate = B110
+            case (TTY_B134);    baud_rate = B134
+            case (TTY_B150);    baud_rate = B150
+            case (TTY_B200);    baud_rate = B200
+            case (TTY_B300);    baud_rate = B300
+            case (TTY_B600);    baud_rate = B600
+            case (TTY_B1200);   baud_rate = B1200
+            case (TTY_B1800);   baud_rate = B1800
+            case (TTY_B2400);   baud_rate = B2400
+            case (TTY_B4800);   baud_rate = B4800
+            case (TTY_B9600);   baud_rate = B9600
+            case (TTY_B19200);  baud_rate = B19200
+            case (TTY_B38400);  baud_rate = B38400
+            case (TTY_B57600);  baud_rate = B57600
+            case (TTY_B115200); baud_rate = B115200
+            case (TTY_B230400); baud_rate = B230400
+            case (TTY_B460800); baud_rate = B460800
+            case (TTY_B921600); baud_rate = B921600
+            case default;       return
         end select
 
         rc = E_SYSTEM
@@ -726,12 +692,9 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (value)
-            case (1)
-                stop_bits = TTY_STOP_BITS1
-            case (2)
-                stop_bits = TTY_STOP_BITS2
-            case default
-                return
+            case (1);     stop_bits = TTY_STOP_BITS1
+            case (2);     stop_bits = TTY_STOP_BITS2
+            case default; return
         end select
 
         if (present(error)) error = E_NONE

@@ -212,26 +212,16 @@ contains
                 esc = .false.
 
                 select case (str(i:i))
-                    case ('a')
-                        res = res // ASCII_BEL
-                    case ('b')
-                        res = res // ASCII_BS
-                    case ('t')
-                        res = res // ASCII_TAB
-                    case ('n')
-                        res = res // ASCII_LF
-                    case ('v')
-                        res = res // ASCII_VT
-                    case ('f')
-                        res = res // ASCII_FF
-                    case ('r')
-                        res = res // ASCII_CR
-                    case ('e')
-                        res = res // ASCII_ESC
-                    case ('x')
-                        npc = .true.
-                    case (achar(92)) ! \
-                        res = res // str(i:i)
+                    case ('a'); res = res // ASCII_BEL
+                    case ('b'); res = res // ASCII_BS
+                    case ('t'); res = res // ASCII_TAB
+                    case ('n'); res = res // ASCII_LF
+                    case ('v'); res = res // ASCII_VT
+                    case ('f'); res = res // ASCII_FF
+                    case ('r'); res = res // ASCII_CR
+                    case ('e'); res = res // ASCII_ESC
+                    case ('x'); npc = .true.
+                    case (achar(92)); res = res // str(i:i)
                 end select
             else if (npc) then
                 ! Escaped non-printable characters, from `\x00` to `\xFF`.

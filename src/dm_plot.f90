@@ -185,33 +185,15 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI))
-                ! ANSI
-                terminal = PLOT_TERMINAL_ANSI
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII))
-                ! ASCII
-                terminal = PLOT_TERMINAL_ASCII
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF))
-                ! GIF
-                terminal = PLOT_TERMINAL_GIF
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG))
-                ! PNG
-                terminal = PLOT_TERMINAL_PNG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO))
-                ! PNG Cairo
-                terminal = PLOT_TERMINAL_PNG_CAIRO
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXEL))
-                ! Sixel
-                terminal = PLOT_TERMINAL_SIXEL
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG))
-                ! SVG
-                terminal = PLOT_TERMINAL_SVG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11))
-                ! X11
-                terminal = PLOT_TERMINAL_X11
-            case default
-                ! none
-                terminal = PLOT_TERMINAL_NONE
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI));      terminal = PLOT_TERMINAL_ANSI      ! ANSI
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII));     terminal = PLOT_TERMINAL_ASCII     ! ASCII
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF));       terminal = PLOT_TERMINAL_GIF       ! GIF
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG));       terminal = PLOT_TERMINAL_PNG       ! PNG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO)); terminal = PLOT_TERMINAL_PNG_CAIRO ! PNG Cairo
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXEL));     terminal = PLOT_TERMINAL_SIXEL     ! Sixel
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG));       terminal = PLOT_TERMINAL_SVG       ! SVG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11));       terminal = PLOT_TERMINAL_X11       ! X11
+            case default;                                        terminal = PLOT_TERMINAL_NONE      ! none
         end select
     end function dm_plot_terminal_from_name
 
@@ -224,7 +206,8 @@ contains
     end function dm_plot_terminal_is_valid
 
     function dm_plot_version(name, found) result(version)
-        !! Returns Gnuplot version as allocatable string.
+        !! Returns Gnuplot version as allocatable string. This function is quite
+        !! slow as Gnuplot has to be started in a new process.
         character(len=*), parameter :: NAME_STR = 'gnuplot'
 
         logical, intent(in),  optional :: name  !! Add prefix `gnuplot/`.
@@ -276,16 +259,11 @@ contains
         if (size(dps) == 0) return
 
         select case (plot%style)
-            case (PLOT_STYLE_LINES)
-                style = 'lines'
-            case (PLOT_STYLE_LINESPOINTS)
-                style = 'linespoints'
-            case (PLOT_STYLE_DOTS)
-                style = 'dots'
-            case (PLOT_STYLE_POINTS)
-                style = 'points'
-            case default
-                style = 'lines'
+            case (PLOT_STYLE_LINES);       style = 'lines'
+            case (PLOT_STYLE_LINESPOINTS); style = 'linespoints'
+            case (PLOT_STYLE_DOTS);        style = 'dots'
+            case (PLOT_STYLE_POINTS);      style = 'points'
+            case default;                  style = 'lines'
         end select
 
         if (len_trim(plot%foreground) > 0) then

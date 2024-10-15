@@ -153,201 +153,104 @@ contains
 
         select case (error)
             ! General errors.
-            case (E_NONE)
-                message = 'none'
-            case (E_ERROR)
-                message = 'error'
-            case (E_DUMMY)
-                message = 'dummy error'
-            case (E_INVALID)
-                message = 'invalid'
-            case (E_INCOMPLETE)
-                message = 'incomplete'
-            case (E_TYPE)
-                message = 'type error'
-            case (E_IO)
-                message = 'I/O error'
-            case (E_READ)
-                message = 'read error'
-            case (E_WRITE)
-                message = 'write error'
-            case (E_EOF)
-                message = 'end of file'
-            case (E_EOR)
-                message = 'end of record'
-            case (E_ALLOC)
-                message = 'memory allocation error'
-            case (E_BOUNDS)
-                message = 'out of bounds'
-            case (E_EXIST)
-                message = 'resource exists'
-            case (E_NOT_FOUND)
-                message = 'resource not found'
-            case (E_SYSTEM)
-                message = 'system call failed'
-            case (E_MEMORY)
-                message = 'no memory'
-            case (E_FULL)
-                message = 'disk full'
-            case (E_EMPTY)
-                message = 'no data'
-            case (E_NULL)
-                message = 'null pointer'
-            case (E_LIMIT)
-                message = 'limit reached'
-            case (E_TIMEOUT)
-                message = 'timeout'
-            case (E_FORMAT)
-                message = 'format error'
-            case (E_PERM)
-                message = 'no permission'
-            case (E_READ_ONLY)
-                message = 'read only'
-            case (E_CORRUPT)
-                message = 'data corrupted'
-            case (E_CONFIG)
-                message = 'configuration error'
-            case (E_GEOCOM)
-                message = 'GeoCOM error'
-
+            case (E_NONE);           message = 'none'
+            case (E_ERROR);          message = 'error'
+            case (E_DUMMY);          message = 'dummy error'
+            case (E_INVALID);        message = 'invalid'
+            case (E_INCOMPLETE);     message = 'incomplete'
+            case (E_TYPE);           message = 'type error'
+            case (E_IO);             message = 'I/O error'
+            case (E_READ);           message = 'read error'
+            case (E_WRITE);          message = 'write error'
+            case (E_EOF);            message = 'end of file'
+            case (E_EOR);            message = 'end of record'
+            case (E_ALLOC);          message = 'memory allocation error'
+            case (E_BOUNDS);         message = 'out of bounds'
+            case (E_EXIST);          message = 'resource exists'
+            case (E_NOT_FOUND);      message = 'resource not found'
+            case (E_SYSTEM);         message = 'system call failed'
+            case (E_MEMORY);         message = 'no memory'
+            case (E_FULL);           message = 'disk full'
+            case (E_EMPTY);          message = 'no data'
+            case (E_NULL);           message = 'null pointer'
+            case (E_LIMIT);          message = 'limit reached'
+            case (E_TIMEOUT);        message = 'timeout'
+            case (E_FORMAT);         message = 'format error'
+            case (E_PERM);           message = 'no permission'
+            case (E_READ_ONLY);      message = 'read only'
+            case (E_CORRUPT);        message = 'data corrupted'
+            case (E_CONFIG);         message = 'configuration error'
+            case (E_GEOCOM);         message = 'GeoCOM error'
             ! Database.
-            case (E_DB)
-                message = 'database error'
-            case (E_DB_ID)
-                message = 'database application id invalid'
-            case (E_DB_BUSY)
-                message = 'database busy'
-            case (E_DB_LOCKED)
-                message = 'database locked'
-            case (E_DB_EXEC)
-                message = 'database execution failed'
-            case (E_DB_CONSTRAINT)
-                message = 'database contraint error'
-            case (E_DB_TRANSACTION)
-                message = 'database transaction failed'
-            case (E_DB_ROLLBACK)
-                message = 'database rollback failed'
-            case (E_DB_PREPARE)
-                message = 'database statement preparation failed'
-            case (E_DB_FINALIZE)
-                message = 'database statement finalization failed'
-            case (E_DB_BIND)
-                message = 'database bind failed'
-            case (E_DB_TYPE)
-                message = 'database type mismatch'
-            case (E_DB_STEP)
-                message = 'database execution step failed'
-            case (E_DB_NO_ROWS)
-                message = 'database returned no rows'
-            case (E_DB_BACKUP)
-                message = 'database backup error'
-            case (E_DB_ATTACH)
-                message = 'database attach failed'
-            case (E_DB_DETACH)
-                message = 'database detach failed'
-            case (E_DB_VERSION)
-                message = 'database version incompatible'
-
+            case (E_DB);             message = 'database error'
+            case (E_DB_ID);          message = 'database application id invalid'
+            case (E_DB_BUSY);        message = 'database busy'
+            case (E_DB_LOCKED);      message = 'database locked'
+            case (E_DB_EXEC);        message = 'database execution failed'
+            case (E_DB_CONSTRAINT);  message = 'database contraint error'
+            case (E_DB_TRANSACTION); message = 'database transaction failed'
+            case (E_DB_ROLLBACK);    message = 'database rollback failed'
+            case (E_DB_PREPARE);     message = 'database statement preparation failed'
+            case (E_DB_FINALIZE);    message = 'database statement finalization failed'
+            case (E_DB_BIND);        message = 'database bind failed'
+            case (E_DB_TYPE);        message = 'database type mismatch'
+            case (E_DB_STEP);        message = 'database execution step failed'
+            case (E_DB_NO_ROWS);     message = 'database returned no rows'
+            case (E_DB_BACKUP);      message = 'database backup error'
+            case (E_DB_ATTACH);      message = 'database attach failed'
+            case (E_DB_DETACH);      message = 'database detach failed'
+            case (E_DB_VERSION);     message = 'database version incompatible'
             ! Options.
-            case (E_ARG)
-                message = 'argument error'
-            case (E_ARG_NOT_FOUND)
-                message = 'argument not found'
-            case (E_ARG_INVALID)
-                message = 'argument invalid or missing'
-            case (E_ARG_NO_VALUE)
-                message = 'argument value missing'
-            case (E_ARG_TYPE)
-                message = 'argument type invalid'
-            case (E_ARG_LENGTH)
-                message = 'argument length invalid'
-            case (E_ARG_UNKNOWN)
-                message = 'argument is unknown'
-
+            case (E_ARG);            message = 'argument error'
+            case (E_ARG_NOT_FOUND);  message = 'argument not found'
+            case (E_ARG_INVALID);    message = 'argument invalid or missing'
+            case (E_ARG_NO_VALUE);   message = 'argument value missing'
+            case (E_ARG_TYPE);       message = 'argument type invalid'
+            case (E_ARG_LENGTH);     message = 'argument length invalid'
+            case (E_ARG_UNKNOWN);    message = 'argument is unknown'
             ! POSIX message queue.
-            case (E_MQUEUE)
-                message = 'message queue operation failed'
-            case (E_MQUEUE_EMPTY)
-                message = 'message empty'
-
+            case (E_MQUEUE);         message = 'message queue operation failed'
+            case (E_MQUEUE_EMPTY);   message = 'message empty'
             ! Regular expressions.
-            case (E_REGEX)
-                message = 'regular expression failed'
-            case (E_REGEX_COMPILE)
-                message = 'regular expression failed to compile'
-            case (E_REGEX_EXCEEDED)
-                message = 'regular expression pattern exceeds maximum matches'
-            case (E_REGEX_NO_MATCH)
-                message = 'regular expression pattern does not match'
-            case (E_REGEX_NO_GROUP)
-                message = 'regular expression group not found'
-
+            case (E_REGEX);          message = 'regular expression failed'
+            case (E_REGEX_COMPILE);  message = 'regular expression failed to compile'
+            case (E_REGEX_EXCEEDED); message = 'regular expression pattern exceeds maximum matches'
+            case (E_REGEX_NO_MATCH); message = 'regular expression pattern does not match'
+            case (E_REGEX_NO_GROUP); message = 'regular expression group not found'
             ! Sensor.
-            case (E_SENSOR)
-                message = 'sensor error'
-
+            case (E_SENSOR);         message = 'sensor error'
             ! RPC.
-            case (E_RPC)
-                message = 'RPC error'
-            case (E_RPC_CONNECT)
-                message = 'RPC connection error'
-            case (E_RPC_SSL)
-                message = 'RPC SSL error'
-            case (E_RPC_API)
-                message = 'RPC API error'
-            case (E_RPC_AUTH)
-                message = 'RPC authorization error'
-            case (E_RPC_CONFLICT)
-                message = 'RPC conflict'
-            case (E_RPC_SERVER)
-                message = 'RPC server error'
-
+            case (E_RPC);            message = 'RPC error'
+            case (E_RPC_CONNECT);    message = 'RPC connection error'
+            case (E_RPC_SSL);        message = 'RPC SSL error'
+            case (E_RPC_API);        message = 'RPC API error'
+            case (E_RPC_AUTH);       message = 'RPC authorization error'
+            case (E_RPC_CONFLICT);   message = 'RPC conflict'
+            case (E_RPC_SERVER);     message = 'RPC server error'
             ! Mail.
-            case (E_MAIL)
-                message = 'mail error'
-            case (E_MAIL_CONNECT)
-                message = 'mail connection error'
-            case (E_MAIL_SSL)
-                message = 'mail SSL error'
-            case (E_MAIL_AUTH)
-                message = 'mail authorization error'
-
+            case (E_MAIL);           message = 'mail error'
+            case (E_MAIL_CONNECT);   message = 'mail connection error'
+            case (E_MAIL_SSL);       message = 'mail SSL error'
+            case (E_MAIL_AUTH);      message = 'mail authorization error'
             ! MQTT.
-            case (E_MQTT)
-                message = 'MQTT error'
-
+            case (E_MQTT);           message = 'MQTT error'
             ! Lua.
-            case (E_LUA)
-                message = 'Lua error'
-            case (E_LUA_YIELD)
-                message = 'Lua thread yields'
-            case (E_LUA_RUNTIME)
-                message = 'Lua runtime error'
-            case (E_LUA_SYNTAX)
-                message = 'Lua syntax error'
-            case (E_LUA_MEM)
-                message = 'Lua memory error'
-            case (E_LUA_ERROR)
-                message = 'Lua message handling error'
-            case (E_LUA_FILE)
-                message = 'Lua file I/O error'
-
+            case (E_LUA);            message = 'Lua error'
+            case (E_LUA_YIELD);      message = 'Lua thread yields'
+            case (E_LUA_RUNTIME);    message = 'Lua runtime error'
+            case (E_LUA_SYNTAX);     message = 'Lua syntax error'
+            case (E_LUA_MEM);        message = 'Lua memory error'
+            case (E_LUA_ERROR);      message = 'Lua message handling error'
+            case (E_LUA_FILE);       message = 'Lua file I/O error'
             ! Libraries.
-            case (E_LIB)
-                message = 'library error'
-            case (E_MODBUS)
-                message = 'Modbus error'
-            case (E_HDF5)
-                message = 'HDF5 error'
-            case (E_ZLIB)
-                message = 'zlib error'
-            case (E_ZSTD)
-                message = 'zstd error'
-            case (E_XMPP)
-                message = 'XMPP error'
-
-            case default
-                message = 'unknown error'
+            case (E_LIB);            message = 'library error'
+            case (E_MODBUS);         message = 'Modbus error'
+            case (E_HDF5);           message = 'HDF5 error'
+            case (E_ZLIB);           message = 'zlib error'
+            case (E_ZSTD);           message = 'zstd error'
+            case (E_XMPP);           message = 'XMPP error'
+            ! Default.
+            case default;            message = 'unknown error'
         end select
     end function dm_error_message
 

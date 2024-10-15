@@ -133,20 +133,13 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG))
-                level = LL_DEBUG
-            case (LOG_LEVEL_NAMES_LOWER(LL_INFO))
-                level = LL_INFO
-            case (LOG_LEVEL_NAMES_LOWER(LL_WARNING))
-                level = LL_WARNING
-            case (LOG_LEVEL_NAMES_LOWER(LL_ERROR))
-                level = LL_ERROR
-            case (LOG_LEVEL_NAMES_LOWER(LL_CRITICAL))
-                level = LL_CRITICAL
-            case (LOG_LEVEL_NAMES_LOWER(LL_USER))
-                level = LL_USER
-            case default
-                level = LL_NONE
+            case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG));    level = LL_DEBUG
+            case (LOG_LEVEL_NAMES_LOWER(LL_INFO));     level = LL_INFO
+            case (LOG_LEVEL_NAMES_LOWER(LL_WARNING));  level = LL_WARNING
+            case (LOG_LEVEL_NAMES_LOWER(LL_ERROR));    level = LL_ERROR
+            case (LOG_LEVEL_NAMES_LOWER(LL_CRITICAL)); level = LL_CRITICAL
+            case (LOG_LEVEL_NAMES_LOWER(LL_USER));     level = LL_USER
+            case default;                              level = LL_NONE
         end select
     end function dm_log_level_from_name
 
@@ -223,11 +216,11 @@ contains
 
         valid = .false.
 
-        if (.not. dm_log_is_valid(log%level))             return
-        if (.not. dm_error_is_valid(log%error))           return
+        if (.not. dm_log_is_valid(log%level))          return
+        if (.not. dm_error_is_valid(log%error))        return
         if (log%id == UUID_DEFAULT)                    return
-        if (.not. dm_uuid4_is_valid(log%id))              return
-        if (.not. dm_time_is_valid(log%timestamp))        return
+        if (.not. dm_uuid4_is_valid(log%id))           return
+        if (.not. dm_time_is_valid(log%timestamp))     return
         if (.not. dm_string_is_printable(log%message)) return
 
         valid = .true.

@@ -809,20 +809,13 @@ contains
             ! Convert GeoCOM baud rate parameter to TTY baud rate parameter.
             rc = E_INVALID
             select case (baud_rate)
-                case (GEOCOM_COM_BAUD_2400)
-                    baud_rate_ = TTY_B2400
-                case (GEOCOM_COM_BAUD_4800)
-                    baud_rate_ = TTY_B4800
-                case (GEOCOM_COM_BAUD_9600)
-                    baud_rate_ = TTY_B9600
-                case (GEOCOM_COM_BAUD_19200)
-                    baud_rate_ = TTY_B19200
-                case (GEOCOM_COM_BAUD_38400)
-                    baud_rate_ = TTY_B38400
-                case (GEOCOM_COM_BAUD_57600)
-                    baud_rate_ = TTY_B57600
-                case (GEOCOM_COM_BAUD_115200)
-                    baud_rate_ = TTY_B115200
+                case (GEOCOM_COM_BAUD_2400);   baud_rate_ = TTY_B2400
+                case (GEOCOM_COM_BAUD_4800);   baud_rate_ = TTY_B4800
+                case (GEOCOM_COM_BAUD_9600);   baud_rate_ = TTY_B9600
+                case (GEOCOM_COM_BAUD_19200);  baud_rate_ = TTY_B19200
+                case (GEOCOM_COM_BAUD_38400);  baud_rate_ = TTY_B38400
+                case (GEOCOM_COM_BAUD_57600);  baud_rate_ = TTY_B57600
+                case (GEOCOM_COM_BAUD_115200); baud_rate_ = TTY_B115200
                 case default
                     call this%output(rc, 'invalid baud rate')
                     exit tty_block

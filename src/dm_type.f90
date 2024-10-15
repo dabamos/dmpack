@@ -22,8 +22,9 @@ module dm_type
 
     ! Derived type names.
     character(len=*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
-        character(len=TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', &
-        'request', 'response', 'log', 'beat', 'dp' ] !! Type names array.
+        character(len=TYPE_NAME_LEN) :: &
+        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', 'beat', 'dp' &
+    ] !! Type names array.
 
     public :: dm_type_from_name
     public :: dm_type_is_valid
@@ -41,26 +42,16 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (TYPE_NAMES(TYPE_NODE))
-                type = TYPE_NODE
-            case (TYPE_NAMES(TYPE_SENSOR))
-                type = TYPE_SENSOR
-            case (TYPE_NAMES(TYPE_TARGET))
-                type = TYPE_TARGET
-            case (TYPE_NAMES(TYPE_OBSERV))
-                type = TYPE_OBSERV
-            case (TYPE_NAMES(TYPE_REQUEST))
-                type = TYPE_REQUEST
-            case (TYPE_NAMES(TYPE_RESPONSE))
-                type = TYPE_RESPONSE
-            case (TYPE_NAMES(TYPE_LOG))
-                type = TYPE_LOG
-            case (TYPE_NAMES(TYPE_BEAT))
-                type = TYPE_BEAT
-            case (TYPE_NAMES(TYPE_DP))
-                type = TYPE_DP
-            case default
-                type = TYPE_NONE
+            case (TYPE_NAMES(TYPE_NODE));     type = TYPE_NODE
+            case (TYPE_NAMES(TYPE_SENSOR));   type = TYPE_SENSOR
+            case (TYPE_NAMES(TYPE_TARGET));   type = TYPE_TARGET
+            case (TYPE_NAMES(TYPE_OBSERV));   type = TYPE_OBSERV
+            case (TYPE_NAMES(TYPE_REQUEST));  type = TYPE_REQUEST
+            case (TYPE_NAMES(TYPE_RESPONSE)); type = TYPE_RESPONSE
+            case (TYPE_NAMES(TYPE_LOG));      type = TYPE_LOG
+            case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT
+            case (TYPE_NAMES(TYPE_DP));       type = TYPE_DP
+            case default;                     type = TYPE_NONE
         end select
     end function dm_type_from_name
 

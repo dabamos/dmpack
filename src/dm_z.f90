@@ -102,23 +102,18 @@ contains
         integer(kind=i8),              intent(out),   optional :: output_len !! Output length.
         type(zstd_context_type),       intent(inout), optional :: context    !! Zstandard compression context to use with type `Z_TYPE_ZSTD`.
 
+        rc = E_INVALID
+
         select type (t => type)
-            type is (beat_type)
-                rc = z_compress_beat  (t, z, output, output_len, context)
-            type is (log_type)
-                rc = z_compress_log   (t, z, output, output_len, context)
-            type is (node_type)
-                rc = z_compress_node  (t, z, output, output_len, context)
-            type is (observ_type)
-                rc = z_compress_observ(t, z, output, output_len, context)
-            type is (sensor_type)
-                rc = z_compress_sensor(t, z, output, output_len, context)
-            type is (target_type)
-                rc = z_compress_target(t, z, output, output_len, context)
+            type is (beat_type);   rc = z_compress_beat  (t, z, output, output_len, context)
+            type is (log_type);    rc = z_compress_log   (t, z, output, output_len, context)
+            type is (node_type);   rc = z_compress_node  (t, z, output, output_len, context)
+            type is (observ_type); rc = z_compress_observ(t, z, output, output_len, context)
+            type is (sensor_type); rc = z_compress_sensor(t, z, output, output_len, context)
+            type is (target_type); rc = z_compress_target(t, z, output, output_len, context)
             class default
-                rc = E_INVALID
-                output = ''
                 if (present(output_len)) output_len = 0_i8
+                output = ''
         end select
     end function dm_z_compress_type
 
@@ -172,14 +167,10 @@ contains
         character(len=*), intent(in) :: encoding !! Content encoding name.
 
         select case (trim(encoding))
-            case ('')
-                z = Z_TYPE_NONE
-            case ('deflate')
-                z = Z_TYPE_ZLIB
-            case ('zstd')
-                z = Z_TYPE_ZSTD
-            case default
-                z = Z_TYPE_INVALID
+            case ('');        z = Z_TYPE_NONE
+            case ('deflate'); z = Z_TYPE_ZLIB
+            case ('zstd');    z = Z_TYPE_ZSTD
+            case default;     z = Z_TYPE_INVALID
         end select
     end function dm_z_type_from_encoding
 
@@ -195,14 +186,10 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (Z_TYPE_NAMES(Z_TYPE_NONE))
-                z = Z_TYPE_NONE
-            case (Z_TYPE_NAMES(Z_TYPE_ZLIB))
-                z = Z_TYPE_ZLIB
-            case (Z_TYPE_NAMES(Z_TYPE_ZSTD))
-                z = Z_TYPE_ZSTD
-            case default
-                z = Z_TYPE_INVALID
+            case (Z_TYPE_NAMES(Z_TYPE_NONE)); z = Z_TYPE_NONE
+            case (Z_TYPE_NAMES(Z_TYPE_ZLIB)); z = Z_TYPE_ZLIB
+            case (Z_TYPE_NAMES(Z_TYPE_ZSTD)); z = Z_TYPE_ZSTD
+            case default;                     z = Z_TYPE_INVALID
         end select
     end function dm_z_type_from_name
 
@@ -236,12 +223,9 @@ contains
         character(len=:), allocatable :: encoding !! Content encoding string.
 
         select case (z)
-            case (Z_TYPE_ZLIB)
-                encoding = 'deflate'
-            case (Z_TYPE_ZSTD)
-                encoding = 'zstd'
-            case default
-                encoding = ''
+            case (Z_TYPE_ZLIB); encoding = 'deflate'
+            case (Z_TYPE_ZSTD); encoding = 'zstd'
+            case default;       encoding = ''
         end select
     end function dm_z_type_to_encoding
 

@@ -122,32 +122,19 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_VIRTUAL))
-                type = SENSOR_TYPE_VIRTUAL
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_SYSTEM))
-                type = SENSOR_TYPE_SYSTEM
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_FS))
-                type = SENSOR_TYPE_FS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_PROCESS))
-                type = SENSOR_TYPE_PROCESS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_NETWORK))
-                type = SENSOR_TYPE_NETWORK
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MULTI))
-                type = SENSOR_TYPE_MULTI
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_METEO))
-                type = SENSOR_TYPE_METEO
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_GNSS))
-                type = SENSOR_TYPE_GNSS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_RTS))
-                type = SENSOR_TYPE_RTS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_LEVEL))
-                type = SENSOR_TYPE_LEVEL
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MEMS))
-                type = SENSOR_TYPE_MEMS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_CAMERA))
-                type = SENSOR_TYPE_CAMERA
-            case default
-                type = SENSOR_TYPE_NONE
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_VIRTUAL)); type = SENSOR_TYPE_VIRTUAL
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_SYSTEM));  type = SENSOR_TYPE_SYSTEM
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_FS));      type = SENSOR_TYPE_FS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_PROCESS)); type = SENSOR_TYPE_PROCESS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_NETWORK)); type = SENSOR_TYPE_NETWORK
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MULTI));   type = SENSOR_TYPE_MULTI
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_METEO));   type = SENSOR_TYPE_METEO
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_GNSS));    type = SENSOR_TYPE_GNSS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_RTS));     type = SENSOR_TYPE_RTS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_LEVEL));   type = SENSOR_TYPE_LEVEL
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MEMS));    type = SENSOR_TYPE_MEMS
+            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_CAMERA));  type = SENSOR_TYPE_CAMERA
+            case default;                                  type = SENSOR_TYPE_NONE
         end select
     end function dm_sensor_type_from_name
 
