@@ -16,6 +16,7 @@ man/pdf/
 *.*~
 *.a
 *.conf
+*.config
 *.db
 *.hdf5
 *.html
