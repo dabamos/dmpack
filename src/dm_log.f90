@@ -125,7 +125,7 @@ contains
 
         valid = .false.
 
-        if (.not. dm_log_level_is_valid(log%level))          return
+        if (.not. dm_log_level_is_valid(log%level))    return
         if (.not. dm_error_is_valid(log%error))        return
         if (log%id == UUID_DEFAULT)                    return
         if (.not. dm_uuid4_is_valid(log%id))           return

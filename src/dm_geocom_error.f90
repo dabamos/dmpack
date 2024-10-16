@@ -568,7 +568,7 @@ contains
             case (GRC_FTR_NOTENOUGHSPACE);         message = 'not enough space on device to proceed uploading'
             case (GRC_FTR_INVALIDINPUT);           message = 'rename of file failed'
             case (GRC_FTR_MISSINGSETUP);           message = 'invalid parameter as input'
-            ! Default
+            ! unknown
             case default;                          message = 'unknown GeoCOM code (' // dm_itoa(grc) // ')'
         end select
     end function dm_geocom_error_message

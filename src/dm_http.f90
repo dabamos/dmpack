@@ -41,57 +41,32 @@ contains
 
         select case (http_status)
             ! 20X
-            case (HTTP_OK)
-                str = 'OK'
-            case (HTTP_CREATED)
-                str = 'Created'
-            case (HTTP_ACCEPTED)
-                str = 'Accepted'
-            case (HTTP_NO_CONTENT)
-                str = 'No Content'
-            case (HTTP_RESET_CONTENT)
-                str = 'Reset Content'
-
+            case (HTTP_OK);                            str = 'OK'
+            case (HTTP_CREATED);                       str = 'Created'
+            case (HTTP_ACCEPTED);                      str = 'Accepted'
+            case (HTTP_NO_CONTENT);                    str = 'No Content'
+            case (HTTP_RESET_CONTENT);                 str = 'Reset Content'
             ! 4XX
-            case (HTTP_BAD_REQUEST)
-                str = 'Bad Request'
-            case (HTTP_UNAUTHORIZED)
-                str = 'Unauthorized'
-            case (HTTP_PAYMENT_REQUIRED)
-                str = 'Payment Required'
-            case (HTTP_FORBIDDEN)
-                str = 'Forbidden'
-            case (HTTP_NOT_FOUND)
-                str = 'Not Found'
-            case (HTTP_METHOD_NOT_ALLOWED)
-                str = 'Method Not Allowed'
-            case (HTTP_NOT_ACCEPTABLE)
-                str = 'Not Acceptable'
-            case (HTTP_PROXY_AUTHENTICATION_REQUIRED)
-                str = 'Proxy Authentication Required'
-            case (HTTP_REQUEST_TIMEOUT)
-                str = 'Request Timeout'
-            case (HTTP_CONFLICT)
-                str = 'Conflict'
-            case (HTTP_GONE)
-                str = 'Gone'
-            case (HTTP_LENGTH_REQUIRED)
-                str = 'Length Required'
-            case (HTTP_UNSUPPORTED_MEDIA_TYPE)
-                str = 'Unsupported Media Type'
-
+            case (HTTP_BAD_REQUEST);                   str = 'Bad Request'
+            case (HTTP_UNAUTHORIZED);                  str = 'Unauthorized'
+            case (HTTP_PAYMENT_REQUIRED);              str = 'Payment Required'
+            case (HTTP_FORBIDDEN);                     str = 'Forbidden'
+            case (HTTP_NOT_FOUND);                     str = 'Not Found'
+            case (HTTP_METHOD_NOT_ALLOWED);            str = 'Method Not Allowed'
+            case (HTTP_NOT_ACCEPTABLE);                str = 'Not Acceptable'
+            case (HTTP_PROXY_AUTHENTICATION_REQUIRED); str = 'Proxy Authentication Required'
+            case (HTTP_REQUEST_TIMEOUT);               str = 'Request Timeout'
+            case (HTTP_CONFLICT);                      str = 'Conflict'
+            case (HTTP_GONE);                          str = 'Gone'
+            case (HTTP_LENGTH_REQUIRED);               str = 'Length Required'
+            case (HTTP_UNSUPPORTED_MEDIA_TYPE);        str = 'Unsupported Media Type'
             ! 50X
-            case (HTTP_INTERNAL_SERVER_ERROR)
-                str = 'Internal Server Error'
-            case (HTTP_NOT_IMPLEMENTED)
-                str = 'Not Implemented'
-            case (HTTP_BAD_GATEWAY)
-                str = 'Bad Gateway'
-            case (HTTP_SERVICE_UNAVAILABLE)
-                str = 'Service Unavailable'
-
-            case default
-                str = ''
+            case (HTTP_INTERNAL_SERVER_ERROR);         str = 'Internal Server Error'
+            case (HTTP_NOT_IMPLEMENTED);               str = 'Not Implemented'
+            case (HTTP_BAD_GATEWAY);                   str = 'Bad Gateway'
+            case (HTTP_SERVICE_UNAVAILABLE);           str = 'Service Unavailable'
+            ! NIY
+            case default;                              str = ''
         end select
     end function dm_http_status_string
 end module dm_http

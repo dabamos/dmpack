@@ -79,9 +79,9 @@ contains
         type(response_type), intent(in) :: response !! Response type.
 
         valid = .false.
-        if (.not. dm_id_is_valid(response%name)) return
+        if (.not. dm_id_is_valid(response%name))            return
         if (.not. dm_response_type_is_valid(response%type)) return
-        if (.not. dm_error_is_valid(response%error)) return
+        if (.not. dm_error_is_valid(response%error))        return
         valid = .true.
     end function dm_response_is_valid
 
@@ -89,9 +89,7 @@ contains
         !! Returns `.true.` if the given response value type is valid.
         integer, intent(in) :: type !! Response value type.
 
-        valid = .false.
-        if (type < RESPONSE_TYPE_REAL64 .or. type > RESPONSE_TYPE_LAST) return
-        valid = .true.
+        valid = (type >= RESPONSE_TYPE_REAL64 .and. type <= RESPONSE_TYPE_LAST)
     end function dm_response_type_is_valid
 
     pure function dm_response_type_to_name(type) result(str)

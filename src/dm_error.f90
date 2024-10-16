@@ -239,7 +239,7 @@ contains
             case (E_ZLIB);           message = 'zlib error'
             case (E_ZSTD);           message = 'zstd error'
             case (E_XMPP);           message = 'XMPP error'
-            ! Default.
+            ! Unknown.
             case default;            message = 'unknown error'
         end select
     end function dm_error_message

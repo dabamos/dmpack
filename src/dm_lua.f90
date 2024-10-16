@@ -196,22 +196,14 @@ contains
         integer, intent(in) :: lua_error !! Lua error code.
 
         select case (lua_error)
-            case (LUA_OK)
-                rc = E_NONE
-            case (LUA_YIELD)
-                rc = E_LUA_YIELD
-            case (LUA_ERRRUN)
-                rc = E_LUA_RUNTIME
-            case (LUA_ERRSYNTAX)
-                rc = E_LUA_SYNTAX
-            case (LUA_ERRMEM)
-                rc = E_LUA_MEM
-            case (LUA_ERRERR)
-                rc = E_LUA_ERROR
-            case (LUA_ERRFILE)
-                rc = E_LUA_FILE
-            case default
-                rc = E_LUA
+            case (LUA_OK);        rc = E_NONE
+            case (LUA_YIELD);     rc = E_LUA_YIELD
+            case (LUA_ERRRUN);    rc = E_LUA_RUNTIME
+            case (LUA_ERRSYNTAX); rc = E_LUA_SYNTAX
+            case (LUA_ERRMEM);    rc = E_LUA_MEM
+            case (LUA_ERRERR);    rc = E_LUA_ERROR
+            case (LUA_ERRFILE);   rc = E_LUA_FILE
+            case default;         rc = E_LUA
         end select
     end function dm_lua_error
 
@@ -548,16 +540,11 @@ contains
             write (unit_, '(tr1, i0, tr1, a, tr1)', advance='no') i, lua_typename(lua%ctx, type)
 
             select case (type)
-                case (LUA_TNIL)
-                    write (unit_, '("nil")')
-                case (LUA_TBOOLEAN)
-                    write (unit_, '(l1)')   lua_toboolean(lua%ctx, i)
-                case (LUA_TNUMBER)
-                    write (unit_, '(f0.1)') lua_tonumber(lua%ctx, i)
-                case (LUA_TSTRING)
-                    write (unit_, '(a)')    lua_tostring(lua%ctx, i)
-                case default
-                    write (unit_, *)
+                case (LUA_TNIL);     write (unit_, '("nil")')
+                case (LUA_TBOOLEAN); write (unit_, '(l1)')   lua_toboolean(lua%ctx, i)
+                case (LUA_TNUMBER);  write (unit_, '(f0.1)') lua_tonumber(lua%ctx, i)
+                case (LUA_TSTRING);  write (unit_, '(a)')    lua_tostring(lua%ctx, i)
+                case default;        write (unit_, *)
             end select
         end do
     end subroutine dm_lua_dump_stack

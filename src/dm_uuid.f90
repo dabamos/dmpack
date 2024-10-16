@@ -6,8 +6,8 @@ module dm_uuid
     implicit none (type, external)
     private
 
-    integer,          parameter, public :: UUID_LEN      = 32 !! Hex UUIDv4 length.
-    integer,          parameter, public :: UUID_FULL_LEN = 36 !! Full UUIDv4 length (with hyphens).
+    integer,          parameter, public :: UUID_LEN      = 32                    !! Hex UUIDv4 length.
+    integer,          parameter, public :: UUID_FULL_LEN = 36                    !! Full UUIDv4 length (with hyphens).
     character(len=*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
 
     character(len=*), parameter :: UUID_SET = '0123456789abcdef'
@@ -80,17 +80,13 @@ contains
                     if (a /= '4') return
                 case (17)
                     select case (a)
-                        case ('8', '9', 'a', 'b')
-                            continue
-                        case default
-                            return
+                        case ('8', '9', 'a', 'b'); continue
+                        case default;              return
                     end select
                 case default
                     select case (a)
-                        case ('0':'9', 'a':'f')
-                            continue
-                        case default
-                            return
+                        case ('0':'9', 'a':'f'); continue
+                        case default;            return
                     end select
             end select
         end do

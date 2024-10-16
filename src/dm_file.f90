@@ -119,22 +119,14 @@ contains
         file_type = int(iand(status%mode, int(S_IFMT, kind=i8)))
 
         select case (file_type)
-            case (S_IFBLK)
-                status%type = FILE_TYPE_BLOCK
-            case (S_IFCHR)
-                status%type = FILE_TYPE_CHAR
-            case (S_IFDIR)
-                status%type = FILE_TYPE_DIR
-            case (S_IFIFO)
-                status%type = FILE_TYPE_FIFO
-            case (S_IFLNK)
-                status%type = FILE_TYPE_LINK
-            case (S_IFREG)
-                status%type = FILE_TYPE_FILE
-            case (S_IFSOCK)
-                status%type = FILE_TYPE_SOCKET
-            case default
-                status%type = FILE_TYPE_NONE
+            case (S_IFBLK);  status%type = FILE_TYPE_BLOCK
+            case (S_IFCHR);  status%type = FILE_TYPE_CHAR
+            case (S_IFDIR);  status%type = FILE_TYPE_DIR
+            case (S_IFIFO);  status%type = FILE_TYPE_FIFO
+            case (S_IFLNK);  status%type = FILE_TYPE_LINK
+            case (S_IFREG);  status%type = FILE_TYPE_FILE
+            case (S_IFSOCK); status%type = FILE_TYPE_SOCKET
+            case default;    status%type = FILE_TYPE_NONE
         end select
 
         status%a_time = fs%st_atim%tv_sec ! Last access time.

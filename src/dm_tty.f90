@@ -142,16 +142,11 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (value)
-            case (5)
-                byte_size = TTY_BYTE_SIZE5
-            case (6)
-                byte_size = TTY_BYTE_SIZE6
-            case (7)
-                byte_size = TTY_BYTE_SIZE7
-            case (8)
-                byte_size = TTY_BYTE_SIZE8
-            case default
-                return
+            case (5); byte_size = TTY_BYTE_SIZE5
+            case (6); byte_size = TTY_BYTE_SIZE6
+            case (7); byte_size = TTY_BYTE_SIZE7
+            case (8); byte_size = TTY_BYTE_SIZE8
+            case default; return
         end select
 
         if (present(error)) error = E_NONE
@@ -339,14 +334,10 @@ contains
         flags = ior(flags, O_NDELAY)
 
         select case (tty%access)
-            case (TTY_RDONLY)
-                flags = ior(flags, O_RDONLY)
-            case (TTY_WRONLY)
-                flags = ior(flags, O_WRONLY)
-            case (TTY_RDWR)
-                flags = ior(flags, O_RDWR)
-            case default
-                return
+            case (TTY_RDONLY); flags = ior(flags, O_RDONLY)
+            case (TTY_WRONLY); flags = ior(flags, O_WRONLY)
+            case (TTY_RDWR);   flags = ior(flags, O_RDWR)
+            case default;      return
         end select
 
         ! Open TTY.
@@ -373,14 +364,10 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (dm_to_lower(name))
-            case ('none')
-                parity = TTY_PARITY_NONE
-            case ('odd')
-                parity = TTY_PARITY_ODD
-            case ('even')
-                parity = TTY_PARITY_EVEN
-            case default
-                return
+            case ('none'); parity = TTY_PARITY_NONE
+            case ('odd');  parity = TTY_PARITY_ODD
+            case ('even'); parity = TTY_PARITY_EVEN
+            case default;  return
         end select
 
         if (present(error)) error = E_NONE
@@ -692,8 +679,8 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (value)
-            case (1);     stop_bits = TTY_STOP_BITS1
-            case (2);     stop_bits = TTY_STOP_BITS2
+            case (1); stop_bits = TTY_STOP_BITS1
+            case (2); stop_bits = TTY_STOP_BITS2
             case default; return
         end select
 

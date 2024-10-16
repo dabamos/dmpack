@@ -173,12 +173,9 @@ contains
 
         if (present(access)) then
             select case (access)
-                case (MQUEUE_RDONLY)
-                    flag = O_RDONLY
-                case (MQUEUE_WRONLY)
-                    flag = O_WRONLY
-                case (MQUEUE_RDWR)
-                    flag = O_RDWR
+                case (MQUEUE_RDONLY); flag = O_RDONLY
+                case (MQUEUE_WRONLY); flag = O_WRONLY
+                case (MQUEUE_RDWR);   flag = O_RDWR
             end select
         end if
 

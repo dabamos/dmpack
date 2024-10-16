@@ -246,16 +246,11 @@ contains
         hdf5_block: block
             rc = E_INVALID
             select case (filter)
-                case (HDF5_FILTER_DEFLATE)
-                    f = H5Z_FILTER_DEFLATE_F
-                case (HDF5_FILTER_SHUFFLE)
-                    f = H5Z_FILTER_SHUFFLE_F
-                case (HDF5_FILTER_FLETCHER32)
-                    f = H5Z_FILTER_FLETCHER32_F
-                case (HDF5_FILTER_SZIP)
-                    f = H5Z_FILTER_SZIP_F
-                case default
-                    exit hdf5_block
+                case (HDF5_FILTER_DEFLATE);    f = H5Z_FILTER_DEFLATE_F
+                case (HDF5_FILTER_SHUFFLE);    f = H5Z_FILTER_SHUFFLE_F
+                case (HDF5_FILTER_FLETCHER32); f = H5Z_FILTER_FLETCHER32_F
+                case (HDF5_FILTER_SZIP);       f = H5Z_FILTER_SZIP_F
+                case default;                  exit hdf5_block
             end select
 
             rc = E_HDF5
@@ -923,14 +918,11 @@ contains
         mode_ = HDF5_RDWR
         if (present(mode)) mode_ = mode
 
+        rc = E_INVALID
         select case (mode_)
-            case (HDF5_RDONLY)
-                flags = H5F_ACC_RDONLY_F
-            case (HDF5_RDWR)
-                flags = H5F_ACC_RDWR_F
-            case default
-                rc = E_INVALID
-                return
+            case (HDF5_RDONLY); flags = H5F_ACC_RDONLY_F
+            case (HDF5_RDWR);   flags = H5F_ACC_RDWR_F
+            case default;       return
         end select
 
         rc = E_NOT_FOUND

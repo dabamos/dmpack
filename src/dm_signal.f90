@@ -29,66 +29,36 @@ contains
         character(len=:), allocatable :: name   !! Signal name.
 
         select case (signum)
-            case (SIGHUP)
-                name = 'SIGHUP'
-            case (SIGINT)
-                name = 'SIGINT'
-            case (SIGQUIT)
-                name = 'SIGQUIT'
-            case (SIGILL)
-                name = 'SIGILL'
-            case (SIGTRAP)
-                name = 'SIGTRAP'
-            case (SIGABRT) ! SIGIOT
-                name = 'SIGABRT'
-            case (SIGBUS)
-                name = 'SIGBUS'
-            case (SIGFPE)
-                name = 'SIGFPE'
-            case (SIGKILL)
-                name = 'SIGKILL'
-            case (SIGUSR1)
-                name = 'SIGUSR1'
-            case (SIGSEGV)
-                name = 'SIGSEGV'
-            case (SIGUSR2)
-                name = 'SIGUSR2'
-            case (SIGPIPE)
-                name = 'SIGPIPE'
-            case (SIGALRM)
-                name = 'SIGALRM'
-            case (SIGTERM)
-                name = 'SIGTERM'
-            case (SIGCHLD)
-                name = 'SIGCHLD'
-            case (SIGCONT)
-                name = 'SIGCONT'
-            case (SIGSTOP)
-                name = 'SIGSTOP'
-            case (SIGTSTP)
-                name = 'SIGTSTP'
-            case (SIGTTIN)
-                name = 'SIGTTIN'
-            case (SIGTTOU)
-                name = 'SIGTTOU'
-            case (SIGURG)
-                name = 'SIGURG'
-            case (SIGXCPU)
-                name = 'SIGXCPU'
-            case (SIGXFSZ)
-                name = 'SIGXFSZ'
-            case (SIGVTALRM)
-                name = 'SIGVTALRM'
-            case (SIGPROF)
-                name = 'SIGPROF'
-            case (SIGWINCH)
-                name = 'SIGWINCH'
-            case (SIGIO)
-                name = 'SIGIO'
-            case (SIGSYS)
-                name = 'SIGSYS'
-            case default
-                name = dm_itoa(signum)
+            case (SIGHUP);    name = 'SIGHUP'
+            case (SIGINT);    name = 'SIGINT'
+            case (SIGQUIT);   name = 'SIGQUIT'
+            case (SIGILL);    name = 'SIGILL'
+            case (SIGTRAP);   name = 'SIGTRAP'
+            case (SIGABRT);   name = 'SIGABRT' ! SIGIOT
+            case (SIGBUS);    name = 'SIGBUS'
+            case (SIGFPE);    name = 'SIGFPE'
+            case (SIGKILL);   name = 'SIGKILL'
+            case (SIGUSR1);   name = 'SIGUSR1'
+            case (SIGSEGV);   name = 'SIGSEGV'
+            case (SIGUSR2);   name = 'SIGUSR2'
+            case (SIGPIPE);   name = 'SIGPIPE'
+            case (SIGALRM);   name = 'SIGALRM'
+            case (SIGTERM);   name = 'SIGTERM'
+            case (SIGCHLD);   name = 'SIGCHLD'
+            case (SIGCONT);   name = 'SIGCONT'
+            case (SIGSTOP);   name = 'SIGSTOP'
+            case (SIGTSTP);   name = 'SIGTSTP'
+            case (SIGTTIN);   name = 'SIGTTIN'
+            case (SIGTTOU);   name = 'SIGTTOU'
+            case (SIGURG);    name = 'SIGURG'
+            case (SIGXCPU);   name = 'SIGXCPU'
+            case (SIGXFSZ);   name = 'SIGXFSZ'
+            case (SIGVTALRM); name = 'SIGVTALRM'
+            case (SIGPROF);   name = 'SIGPROF'
+            case (SIGWINCH);  name = 'SIGWINCH'
+            case (SIGIO);     name = 'SIGIO'
+            case (SIGSYS);    name = 'SIGSYS'
+            case default;     name = dm_itoa(signum)
         end select
     end function dm_signal_name
 

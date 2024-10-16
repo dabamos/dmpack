@@ -52,20 +52,13 @@ contains
             end if
 
             select case (a)
-                case ('D')
-                    parsed = parsed // date(7:8)
-                case ('M')
-                    parsed = parsed // date(5:6)
-                case ('Y')
-                    parsed = parsed // date(3:4)
-                case ('h')
-                    parsed = parsed // time(1:2)
-                case ('m')
-                    parsed = parsed // time(3:4)
-                case ('s')
-                    parsed = parsed // time(5:6)
-                case default
-                    parsed = parsed // '%' // a
+                case ('D');   parsed = parsed // date(7:8)
+                case ('M');   parsed = parsed // date(5:6)
+                case ('Y');   parsed = parsed // date(3:4)
+                case ('h');   parsed = parsed // time(1:2)
+                case ('m');   parsed = parsed // time(3:4)
+                case ('s');   parsed = parsed // time(5:6)
+                case default; parsed = parsed // '%' // a
             end select
 
             flag = .false.

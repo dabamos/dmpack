@@ -57,12 +57,9 @@ contains
 
         rc = E_INVALID
         select case (access)
-            case (PIPE_RDONLY)
-                a = 'r' // c_null_char
-            case (PIPE_WRONLY)
-                a = 'w' // c_null_char
-            case default
-                return
+            case (PIPE_RDONLY); a = 'r' // c_null_char
+            case (PIPE_WRONLY); a = 'w' // c_null_char
+            case default;       return
         end select
 
         rc = E_SYSTEM

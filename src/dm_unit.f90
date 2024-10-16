@@ -38,14 +38,10 @@ contains
         b%type = UNIT_DEG
 
         select case (a%type)
-            case (UNIT_RAD)
-                b%value = dm_rad_to_deg(a%value)
-            case (UNIT_GON)
-                b%value = dm_gon_to_deg(a%value)
-            case (UNIT_DEG)
-                b%value = a%value
-            case default
-                b%error = E_TYPE
+            case (UNIT_RAD); b%value = dm_rad_to_deg(a%value)
+            case (UNIT_GON); b%value = dm_gon_to_deg(a%value)
+            case (UNIT_DEG); b%value = a%value
+            case default;    b%error = E_TYPE
         end select
     end function dm_unit_to_deg
 
@@ -57,14 +53,10 @@ contains
         b%type = UNIT_GON
 
         select case (a%type)
-            case (UNIT_RAD)
-                b%value = dm_rad_to_gon(a%value)
-            case (UNIT_GON)
-                b%value = a%value
-            case (UNIT_DEG)
-                b%value = dm_deg_to_gon(a%value)
-            case default
-                b%error = E_TYPE
+            case (UNIT_RAD); b%value = dm_rad_to_gon(a%value)
+            case (UNIT_GON); b%value = a%value
+            case (UNIT_DEG); b%value = dm_deg_to_gon(a%value)
+            case default;    b%error = E_TYPE
         end select
     end function dm_unit_to_gon
 
@@ -76,14 +68,10 @@ contains
         b%type = UNIT_RAD
 
         select case (a%type)
-            case (UNIT_RAD)
-                b%value = a%value
-            case (UNIT_GON)
-                b%value = dm_gon_to_rad(a%value)
-            case (UNIT_DEG)
-                b%value = dm_deg_to_rad(a%value)
-            case default
-                b%error = E_TYPE
+            case (UNIT_RAD); b%value = a%value
+            case (UNIT_GON); b%value = dm_gon_to_rad(a%value)
+            case (UNIT_DEG); b%value = dm_deg_to_rad(a%value)
+            case default;    b%error = E_TYPE
         end select
     end function dm_unit_to_rad
 
