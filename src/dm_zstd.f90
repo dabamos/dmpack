@@ -41,9 +41,9 @@ module dm_zstd
     private :: zstd_uncompress_multi
     private :: zstd_uncompress_single
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_zstd_destroy(context) result(rc)
         !! Destroys Zstandard context created with `zstd_compress_multi()` or
         !! `zstd_uncompress_multi()`. The function returns `E_ZSTD` on error.
@@ -96,9 +96,9 @@ contains
         end if
     end function dm_zstd_version
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function zstd_compress_multi(context, input, output, level, input_len, output_len) result(rc)
         !! Compresses input string using the zstd simple context function. If no
         !! compression level is passed, the Zstandard default is used. The

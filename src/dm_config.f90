@@ -84,9 +84,9 @@ module dm_config
     private :: config_get_report
     private :: config_get_string
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_config_field(config, name) result(rc)
         !! Loads field value on to Lua stack.
         type(config_type), intent(inout) :: config !! Config type.
@@ -193,9 +193,9 @@ contains
         call dm_lua_pop(config%lua)
     end subroutine dm_config_remove
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function config_error(error, param) result(rc)
         !! Returns `E_CONFIG` on error and prints error message to standard
         !! error.

@@ -17,9 +17,9 @@ module dm_observ
     implicit none (type, external)
     private
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! OBSERVATION.
-    ! ******************************************************************
+    ! **************************************************************************
     integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
     integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Max. observation name length.
     integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Max. observation source length.
@@ -51,9 +51,9 @@ module dm_observ
 
     integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! OBSERVATION VIEW.
-    ! ******************************************************************
+    ! **************************************************************************
     type, public :: observ_view_type
         !! View of an observation with only one response of a single request.
         character(len=OBSERV_ID_LEN)     :: observ_id         = UUID_DEFAULT         !! Observation id (UUID).
@@ -97,9 +97,9 @@ module dm_observ
 
     ! private :: observ_write_formatted
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_observ_add_receiver(observ, receiver) result(rc)
         !! Validates and adds receiver to observation.
         !!

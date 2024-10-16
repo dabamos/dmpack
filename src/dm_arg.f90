@@ -89,9 +89,9 @@ module dm_arg
     private :: arg_get_real64
     private :: arg_get_string
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function dm_arg_has(name, short) result(has)
         !! Returns `.true.` if argument of given name is passed without value.
         character(len=*), intent(in)           :: name  !! Name of command-line argument.
@@ -439,7 +439,7 @@ contains
                 ! Log level.
                 if (arg%length == 0) return
                 level = dm_log_level_from_string(arg%value)
-                if (.not. dm_log_is_valid(level)) return
+                if (.not. dm_log_level_is_valid(level)) return
                 ! Set argument value to numeric log level.
                 arg%value = dm_itoa(level)
 
@@ -484,9 +484,9 @@ contains
         write (stdout, '(4x, "-v, --version", /)')
     end subroutine dm_arg_help
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine arg_get_int32(arg, value, default, passed, error)
         !! Returns argument value as 4-byte integer.
         type(arg_type), intent(inout)         :: arg     !! Arg type.

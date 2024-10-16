@@ -72,12 +72,6 @@ module dm_log
 
     integer, parameter, public :: LOG_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
 
-    interface dm_log_is_valid
-        !! Generic log validation function.
-        module procedure :: log_is_valid_level
-        module procedure :: log_is_valid_log
-    end interface dm_log_is_valid
-
     interface operator (==)
         !! Returns whether logs are equal.
         module procedure :: dm_log_equals
@@ -89,14 +83,12 @@ module dm_log
     public :: dm_log_is_valid
     public :: dm_log_level_from_name
     public :: dm_log_level_from_string
+    public :: dm_log_level_is_valid
     public :: dm_log_out
-
-    private :: log_is_valid_level
-    private :: log_is_valid_log
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental logical function dm_log_equals(log1, log2) result(equals)
         !! Returns `.true.` if given logs are equal.
         type(log_type), intent(in) :: log1 !! The first log.
@@ -117,6 +109,31 @@ contains
 
         equals = .true.
     end function dm_log_equals
+
+    pure elemental logical function dm_log_is_valid(log) result(valid)
+        !! Returns `.true.` if given log is valid. A log is valid if it conforms
+        !! to the following rules:
+        !!
+        !! * The log level and the error code are valid.
+        !! * The log id is a valid UUID and not the default UUID.
+        !! * The time stamp is in ISO 8601 format.
+        !! * All ASCII characters of the log message are printable.
+        !!
+        use :: dm_string, only: dm_string_is_printable
+
+        type(log_type), intent(in) :: log !! Log to validate.
+
+        valid = .false.
+
+        if (.not. dm_log_level_is_valid(log%level))          return
+        if (.not. dm_error_is_valid(log%error))        return
+        if (log%id == UUID_DEFAULT)                    return
+        if (.not. dm_uuid4_is_valid(log%id))           return
+        if (.not. dm_time_is_valid(log%timestamp))     return
+        if (.not. dm_string_is_printable(log%message)) return
+
+        valid = .true.
+    end function dm_log_is_valid
 
     pure elemental integer function dm_log_level_from_name(name) result(level)
         !! Returns log level from string argument `name`. The string is
@@ -143,7 +160,7 @@ contains
         end select
     end function dm_log_level_from_name
 
-    integer function dm_log_level_from_string(str) result(level)
+    pure elemental integer function dm_log_level_from_string(str) result(level)
         !! Return log level from string, either level name or numeric level.
         use :: dm_string, only: dm_string_to
 
@@ -159,6 +176,22 @@ contains
         ! is turned into `LL_NONE`.
         level = dm_log_level_from_name(str)
     end function dm_log_level_from_string
+
+    pure elemental logical function dm_log_level_is_valid(level) result(valid)
+        !! Returns `.true.` if given log level is valid. The following level
+        !! are valid:
+        !!
+        !! * `LL_DEBUG`
+        !! * `LL_WARNING`
+        !! * `LL_ERROR`
+        !! * `LL_CRITICAL`
+        !! * `LL_USER`
+        !!
+        !! The level `LL_NONE` is invalid.
+        integer, intent(in) :: level !! Log level.
+
+        valid = (level > LL_NONE .and. level <= LL_LAST)
+    end function dm_log_level_is_valid
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
@@ -181,48 +214,4 @@ contains
         write (unit_, '("log.source: ", a)')    trim(log%source)
         write (unit_, '("log.message: ", a)')   trim(log%message)
     end subroutine dm_log_out
-
-    ! ******************************************************************
-    ! PRIVATE PROCEDURES.
-    ! ******************************************************************
-    pure elemental logical function log_is_valid_level(level) result(valid)
-        !! Returns `.true.` if given log level is valid. The following level
-        !! are valid:
-        !!
-        !! * `LL_DEBUG`
-        !! * `LL_WARNING`
-        !! * `LL_ERROR`
-        !! * `LL_CRITICAL`
-        !! * `LL_USER`
-        !!
-        !! The level `LL_NONE` is invalid.
-        integer, intent(in) :: level !! Log level.
-
-        valid = (level > LL_NONE .and. level <= LL_LAST)
-    end function log_is_valid_level
-
-    pure elemental logical function log_is_valid_log(log) result(valid)
-        !! Returns `.true.` if given log is valid. A log is valid if it conforms
-        !! to the following rules:
-        !!
-        !! * The log level and the error code are valid.
-        !! * The log id is a valid UUID and not the default UUID.
-        !! * The time stamp is in ISO 8601 format.
-        !! * All ASCII characters of the log message are printable.
-        !!
-        use :: dm_string, only: dm_string_is_printable
-
-        type(log_type), intent(in) :: log !! Log to validate.
-
-        valid = .false.
-
-        if (.not. dm_log_is_valid(log%level))          return
-        if (.not. dm_error_is_valid(log%error))        return
-        if (log%id == UUID_DEFAULT)                    return
-        if (.not. dm_uuid4_is_valid(log%id))           return
-        if (.not. dm_time_is_valid(log%timestamp))     return
-        if (.not. dm_string_is_printable(log%message)) return
-
-        valid = .true.
-    end function log_is_valid_log
 end module dm_log

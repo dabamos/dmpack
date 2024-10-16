@@ -102,9 +102,9 @@ module dm_util
     private :: real32_to_string
     private :: real64_to_string
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental function dm_atof(str) result(f)
         !! Converts string to 8-byte real.
         character(len=*),intent(in) :: str !! Number string.
@@ -268,9 +268,9 @@ contains
         rc = c_usleep(int(usec, kind=c_useconds_t))
     end subroutine dm_usleep
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC REAL TO INTRINSIC TYPE FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental function dm_real32_to_real64(f) result(r)
         !! Converts 4-byte real to 8-byte real.
         real(kind=r4), intent(in) :: f !! 4-byte real value.
@@ -312,9 +312,9 @@ contains
         r = real(f, kind=r4)
     end subroutine dm_real64_to_real32
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function array_has_int32(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
         integer(kind=i4), intent(inout) :: array(:) !! Input array.
@@ -371,9 +371,9 @@ contains
         end if
     end function inc_int64
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     pure function int32_to_string(i) result(str)
         !! Converts 4-byte integer to allocatable string of length > 0.
         integer, intent(in)           :: i   !! Value.

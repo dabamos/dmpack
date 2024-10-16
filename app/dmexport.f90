@@ -52,7 +52,7 @@ contains
 
         ! Arrays to hold the records from database.
         type(beat_type),   allocatable :: beats(:)
-        type(dp_type),     allocatable :: data_points(:)
+        type(dp_type),     allocatable :: dps(:)
         type(log_type),    allocatable :: logs(:)
         type(node_type),   allocatable :: nodes(:)
         type(observ_type), allocatable :: observs(:)
@@ -91,7 +91,7 @@ contains
             case (TYPE_BEAT)
                 rc = dm_db_select_beats(db, beats)
             case (TYPE_DP)
-                rc = dm_db_select_data_points(db, data_points, node_id=app%node_id, sensor_id=app%sensor_id, &
+                rc = dm_db_select_data_points(db, dps, node_id=app%node_id, sensor_id=app%sensor_id, &
                                               target_id=app%target_id, response_name=app%response, &
                                               from=app%from, to=app%to)
         end select
@@ -114,61 +114,40 @@ contains
             case (FORMAT_BLOCK)
                 rc = E_INVALID
                 if (app%type == TYPE_DP) then
-                    rc = dm_block_write(data_points, unit)
+                    rc = dm_block_write(dps, unit)
                 end if
 
             case (FORMAT_CSV)
                 select case (app%type)
-                    case (TYPE_NODE)
-                        rc = dm_csv_write(nodes, unit, app%header, app%separator)
-                    case (TYPE_SENSOR)
-                        rc = dm_csv_write(sensors, unit, app%header, app%separator)
-                    case (TYPE_TARGET)
-                        rc = dm_csv_write(targets, unit, app%header, app%separator)
-                    case (TYPE_OBSERV)
-                        rc = dm_csv_write(observs, unit, app%header, app%separator)
-                    case (TYPE_LOG)
-                        rc = dm_csv_write(logs, unit, app%header, app%separator)
-                    case (TYPE_BEAT)
-                        rc = dm_csv_write(beats, unit, app%header, app%separator)
-                    case (TYPE_DP)
-                        rc = dm_csv_write(data_points, unit, app%header, app%separator)
+                    case (TYPE_NODE);   rc = dm_csv_write(nodes,   unit, app%header, app%separator)
+                    case (TYPE_SENSOR); rc = dm_csv_write(sensors, unit, app%header, app%separator)
+                    case (TYPE_TARGET); rc = dm_csv_write(targets, unit, app%header, app%separator)
+                    case (TYPE_OBSERV); rc = dm_csv_write(observs, unit, app%header, app%separator)
+                    case (TYPE_LOG);    rc = dm_csv_write(logs,    unit, app%header, app%separator)
+                    case (TYPE_BEAT);   rc = dm_csv_write(beats,   unit, app%header, app%separator)
+                    case (TYPE_DP);     rc = dm_csv_write(dps,     unit, app%header, app%separator)
                 end select
 
             case (FORMAT_JSON)
                 select case (app%type)
-                    case (TYPE_NODE)
-                        rc = dm_json_write(nodes, unit)
-                    case (TYPE_SENSOR)
-                        rc = dm_json_write(sensors, unit)
-                    case (TYPE_TARGET)
-                        rc = dm_json_write(targets, unit)
-                    case (TYPE_OBSERV)
-                        rc = dm_json_write(observs, unit)
-                    case (TYPE_LOG)
-                        rc = dm_json_write(logs, unit)
-                    case (TYPE_BEAT)
-                        rc = dm_json_write(beats, unit)
-                    case (TYPE_DP)
-                        rc = dm_json_write(data_points, unit)
+                    case (TYPE_NODE);   rc = dm_json_write(nodes,   unit)
+                    case (TYPE_SENSOR); rc = dm_json_write(sensors, unit)
+                    case (TYPE_TARGET); rc = dm_json_write(targets, unit)
+                    case (TYPE_OBSERV); rc = dm_json_write(observs, unit)
+                    case (TYPE_LOG);    rc = dm_json_write(logs,    unit)
+                    case (TYPE_BEAT);   rc = dm_json_write(beats,   unit)
+                    case (TYPE_DP);     rc = dm_json_write(dps,     unit)
                 end select
 
             case (FORMAT_JSONL)
                 select case (app%type)
-                    case (TYPE_NODE)
-                        rc = dm_jsonl_write(nodes, unit)
-                    case (TYPE_SENSOR)
-                        rc = dm_jsonl_write(sensors, unit)
-                    case (TYPE_TARGET)
-                        rc = dm_jsonl_write(targets, unit)
-                    case (TYPE_OBSERV)
-                        rc = dm_jsonl_write(observs, unit)
-                    case (TYPE_LOG)
-                        rc = dm_jsonl_write(logs, unit)
-                    case (TYPE_BEAT)
-                        rc = dm_jsonl_write(beats, unit)
-                    case (TYPE_DP)
-                        rc = dm_jsonl_write(data_points, unit)
+                    case (TYPE_NODE);   rc = dm_jsonl_write(nodes,   unit)
+                    case (TYPE_SENSOR); rc = dm_jsonl_write(sensors, unit)
+                    case (TYPE_TARGET); rc = dm_jsonl_write(targets, unit)
+                    case (TYPE_OBSERV); rc = dm_jsonl_write(observs, unit)
+                    case (TYPE_LOG);    rc = dm_jsonl_write(logs,    unit)
+                    case (TYPE_BEAT);   rc = dm_jsonl_write(beats,   unit)
+                    case (TYPE_DP);     rc = dm_jsonl_write(dps,     unit)
                 end select
         end select
 

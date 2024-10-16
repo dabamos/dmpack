@@ -69,9 +69,9 @@ module dm_sensor
     public :: dm_sensor_type_is_valid
     public :: dm_sensor_type_to_name
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental logical function dm_sensor_equals(sensor1, sensor2) result(equals)
         !! Returns `.true.` if given sensors are equal.
         use :: dm_util, only: dm_equals

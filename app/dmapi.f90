@@ -98,9 +98,9 @@ program dmapi
     ! Clean up.
     call dm_cgi_router_destroy(router)
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! ENDPOINTS.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine route_beat(env)
         !! Accepts beat in Namelist format via HTTP POST. Returns beat of
         !! a given node id in CSV, JSON or Namelist format to GET requests.
@@ -2037,9 +2037,9 @@ contains
         rc = dm_db_close(db)
     end subroutine route_timeseries
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! UTILITY ROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     function content_type(env, default)
         !! Returns the content type first found in CGI environment variable
         !! `HTTP_ACCEPT`, either CSV, JSON Lines, JSON, or NML (in this order).

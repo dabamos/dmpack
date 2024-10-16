@@ -39,9 +39,9 @@ module dm_version
     private :: dm_version_to_string_long
     private :: dm_version_to_string_short
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure function dm_version_to_string_app(name, major, minor, patch, library) result(str)
         !! Returns allocatable string of application version, with optional
         !! DMPACK library version appended if `library` is `.true.`.

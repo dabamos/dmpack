@@ -41,9 +41,9 @@ module dm_file
     public :: dm_file_touch
     public :: dm_file_write
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function dm_file_exists(path) result(file_exists)
         !! Returns `.true.` if file at given file path exists.
         character(len=*), intent(in) :: path !! File path.
@@ -143,9 +143,9 @@ contains
         rc = E_NONE
     end function dm_file_status
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_file_delete(path, error)
         !! Deletes file at given file path. Returns `E_IO` on error.
         character(len=*), intent(in)            :: path  !! File to delete.

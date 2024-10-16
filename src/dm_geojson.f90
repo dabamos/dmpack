@@ -37,9 +37,9 @@ module dm_geojson
     private :: geojson_write_sensor
     private :: geojson_write_target
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_geojson_feature_point(geojson, type, lon, lat, alt, data, comma)
         !! Returns GeoJSON feature point of given DMPACK type, longitude,
         !! latitude, altitude, and type data in JSON. The output string
@@ -98,9 +98,9 @@ contains
         if (comma_) geojson = geojson // ','
     end subroutine dm_geojson_feature_point
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function geojson_from_node(node, comma) result(geojson)
         !! Returns node as allocatable string in GeoJSON format.
         use :: dm_node, only: node_type

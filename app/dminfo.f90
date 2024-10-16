@@ -10,7 +10,7 @@ program dminfo
     character(len=*), parameter :: APP_NAME  = 'dminfo'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 6
 
     type :: app_type
         !! Command-line arguments.
@@ -27,6 +27,7 @@ program dminfo
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
+    ! Print information.
     rc = output_info(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
@@ -54,7 +55,7 @@ contains
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode, user_version
         integer(kind=i8)              :: n, sz
-        logical                       :: foreign_keys, has_db
+        logical                       :: has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
@@ -75,11 +76,9 @@ contains
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
             rc = dm_db_get_user_version(db, user_version)
-            rc = dm_db_get_foreign_keys(db, foreign_keys)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
 
             print '("db.application_id: ", z0)', app_id
-            print '("db.foreign_keys: ", l1)',   foreign_keys
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)

@@ -95,12 +95,9 @@ contains
         integer                 :: stat
 
         do
-            uuid = ' '
             read (*, '(a)', iostat=stat) uuid
-
             if (is_iostat_end(rc)) exit
             if (stat /= 0 .or. .not. dm_uuid4_is_valid(uuid)) uuid = UUID_DEFAULT
-
             print '(a)', dm_uuid4_hyphenize(uuid)
         end do
     end subroutine convert

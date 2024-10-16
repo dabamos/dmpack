@@ -94,9 +94,9 @@ module dm_logger
     private :: logger_out
     private :: logger_send
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function dm_logger_get_default() result(logger)
         !! Returns pointer to global logger. The function allocates the logger
         !! if it does not exist yet.
@@ -114,9 +114,9 @@ contains
         logger => MODULE_LOGGER
     end function dm_logger_get_default
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE CLASS METHODS.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine logger_configure(this, name, node_id, source, debug, ipc, blocking, no_color, verbose)
         !! Configures the (global) logger. The argument `name` is set only if
         !! it is a valid id of character set `[-0-9A-Z_a-z]`. The argument
@@ -240,7 +240,7 @@ contains
 
         ! Replace invalid log level with `LL_ERROR`.
         log%level = LL_ERROR
-        if (dm_log_is_valid(level)) log%level = level
+        if (dm_log_level_is_valid(level)) log%level = level
 
         ! Create log id.
         log%id = dm_uuid4()
@@ -388,7 +388,7 @@ contains
         integer :: level, unit_
 
         level = LL_ERROR
-        if (dm_log_is_valid(log%level)) level = log%level
+        if (dm_log_level_is_valid(log%level)) level = log%level
 
         unit_ = stderr
         if (present(unit)) unit_ = unit

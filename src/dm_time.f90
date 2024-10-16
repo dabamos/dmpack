@@ -56,9 +56,9 @@ module dm_time
     private:: time_from_unix_integer
     private:: time_from_unix_string
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental character(len=TIME_LEN) &
     function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(str)
         !! Returns 32-characters long time stamp string in ISO 8601/RFC 3339 of
@@ -440,9 +440,9 @@ contains
         if (present(zone))        write (zone,        '(sp, i0.2, ss, ":", i0.2)') tz_hour, tz_minute
     end subroutine dm_time_strings
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     impure elemental integer function time_from_unix_integer(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to broken-down time
         !! representation. The argument `epoch` is the number of seconds

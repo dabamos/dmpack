@@ -59,9 +59,9 @@ module dm_sem
     private :: sem_wait_named
     private :: sem_wait_unnamed
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_sem_close(sem) result(rc)
         !! Closes named semaphore. The function returns the following error
         !! codes:
@@ -178,9 +178,9 @@ contains
         rc = E_NONE
     end function dm_sem_unlink
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function sem_post_named(sem) result(rc)
         !! Increases semaphore value. Returns `E_SYSTEM` on error.
         type(sem_named_type), intent(inout) :: sem !! Semaphore type.

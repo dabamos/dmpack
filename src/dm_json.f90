@@ -77,9 +77,9 @@ module dm_json
     private :: json_write_target
     private :: json_write_targets
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure function dm_json_escape(str) result(esc)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
@@ -98,9 +98,9 @@ contains
         end do
     end function dm_json_escape
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function json_from_beat(beat) result(json)
         !! Returns beat in JSON format.
         use :: dm_beat, only: beat_type

@@ -405,8 +405,8 @@ contains
     end subroutine dm_geocom_api_request_beep_normal
 
     pure subroutine dm_geocom_api_request_beep_off(request)
-        !! Request of *IOS_BeepOff* procedure. Creates request to stop an
-        !! active beep signal.
+        !! Request of *IOS_BeepOff* procedure. Creates request to stop an active
+        !! beep signal.
         !!
         !! The instrument returns the following responses:
         !!
@@ -582,9 +582,9 @@ contains
     end subroutine dm_geocom_api_request_do_measure
 
     pure subroutine dm_geocom_api_request_download(request, block_number)
-        !! Request of *FTR_Download* procedure. Creates request to get a
-        !! single block of data. The *FTR_SetupDownload* command has to be
-        !! called first.
+        !! Request of *FTR_Download* procedure. Creates request to get a single
+        !! block of data. The *FTR_SetupDownload* command has to be called
+        !! first.
         !!
         !! The block sequence starts with 1. The download process will be
         !! aborted if the block number is set to 0.

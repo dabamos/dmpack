@@ -93,9 +93,9 @@ module dm_cgi
     private :: cgi_get_string
     private :: cgi_param_loc
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function dm_cgi_auth_basic(env) result(auth)
         !! Returns `.true.` if CGI environment variable `AUTH` is set to
         !! `Basic`.
@@ -385,9 +385,9 @@ contains
         call dm_cgi_parse(env%query_string, param)
     end subroutine dm_cgi_query
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function cgi_get_int32(param, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `param` as 32-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and

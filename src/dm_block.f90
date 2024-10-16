@@ -28,9 +28,9 @@ module dm_block
     private :: block_write_data_point
     private :: block_write_data_points
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental character(len=BLOCK_LINE_LEN) &
     function block_from_data_point(data_point) result(str)
         !! Returns ASCII block representation of data point.

@@ -150,9 +150,9 @@ module dm_rpc
     private :: rpc_request_prepare
     private :: rpc_request_single
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function dm_rpc_version() result(version)
         !! Returns version number of libcurl an linked libreries as allocatable
         !! string.
@@ -607,9 +607,9 @@ contains
         call curl_global_cleanup()
     end subroutine dm_rpc_shutdown
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes the
         !! received response chunks to `rpc_response_type` pointer that has to
@@ -636,9 +636,9 @@ contains
         n = nmemb
     end function dm_rpc_write_callback
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
         !!

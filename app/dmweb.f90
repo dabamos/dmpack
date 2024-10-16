@@ -142,9 +142,9 @@ program dmweb
 
     call dm_cgi_router_destroy(router)
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! ENDPOINTS.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine route_beat(env)
         !! Beat page.
         !!
@@ -1873,9 +1873,9 @@ contains
         rc = dm_db_close(db)
     end subroutine route_targets
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! HTML FORM GENERATORS.
-    ! ******************************************************************
+    ! **************************************************************************
     function html_form_logs(nodes, sensors, targets, max_results, node_id, sensor_id, target_id, &
                             source, from, to, level, nresults) result(html)
         !! Returns HTML form for log selection.
@@ -2423,9 +2423,9 @@ contains
                H_FIELDSET_END // H_FORM_END // H_DETAILS_END
     end function html_form_targets
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! UTILITY PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine html_error(heading, error, status, title, extra)
         !! Outputs error page (with header and footer).
         character(len=*), intent(in), optional :: heading !! Page heading.

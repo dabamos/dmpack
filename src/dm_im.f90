@@ -332,9 +332,9 @@ module dm_im
     ! Private callbacks.
     private :: im_http_upload_response_callback
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_im_connect(im, host, port, jid, password, callback, user_data, &
                                    resource, keep_alive, tls_required, tls_trusted) result(rc)
         !! Connects to XMPP server.
@@ -556,9 +556,9 @@ contains
         if (is) is = (xmpp_conn_is_connected(im%connection) == 1)
     end function dm_im_is_connected
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_im_destroy(im)
         !! Destroys XMPP context and an closes the connection if still open.
         type(im_type), intent(inout) :: im !! IM context type.
@@ -667,9 +667,9 @@ contains
         call xmpp_stop(im%ctx)
     end subroutine dm_im_stop
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     function im_stanza_get_error_message(stanza) result(message)
         !! Returns error message of stanza as allocatable string.
         type(c_ptr), intent(in)       :: stanza  !! XMPP stanza pointer.
@@ -692,9 +692,9 @@ contains
         if (.not. allocated(message)) message = 'unknown'
     end function im_stanza_get_error_message
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE CALLBACKS.
-    ! ******************************************************************
+    ! **************************************************************************
     function im_http_upload_response_callback(stanza, user_data) bind(c)
         !! C-interoperable HTTP upload response callback.
         type(c_ptr), intent(in), value :: stanza                           !! xmpp_stanza_t *

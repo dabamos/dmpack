@@ -135,7 +135,7 @@ contains
             return
         end if
 
-        if (.not. dm_log_is_valid(app%level)) then
+        if (.not. dm_log_level_is_valid(app%level)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if
@@ -172,7 +172,7 @@ contains
                 call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
                 call dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
                 call dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
-                call dm_config_get(config, 'user',     app%levels(LL_USER)    %codes)
+                call dm_config_get(config, 'user',     app%levels(LL_USER    )%codes)
 
                 call dm_config_remove(config)
             end if

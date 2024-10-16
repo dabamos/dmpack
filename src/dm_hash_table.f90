@@ -39,9 +39,9 @@ module dm_hash_table
     private :: hash_table_get_key
     private :: hash_table_hash
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_hash_table_create(hash_table, max_entries) result(rc)
         !! Create a new hash table with maximum number of entries.
         type(hash_table_type), intent(inout) :: hash_table  !! Hash table type.
@@ -128,9 +128,9 @@ contains
         end if
     end subroutine dm_hash_table_size
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function hash_table_get_index(hash_table, loc, value) result(rc)
         !! Returns pointer to element in hash table by index `loc`. On error,
         !! `value` will point to null.

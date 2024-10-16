@@ -146,7 +146,7 @@ contains
             return
         end if
 
-        if (.not. dm_log_is_valid(app%minlevel)) then
+        if (.not. dm_log_level_is_valid(app%minlevel)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if

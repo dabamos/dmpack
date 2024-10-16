@@ -98,9 +98,9 @@ module dm_request
     private :: request_get_real64
     private :: request_get_type
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_request_add(request, response) result(rc)
         !! Validates and appends response to the given request.
         !!

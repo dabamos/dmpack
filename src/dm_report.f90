@@ -79,8 +79,8 @@ contains
         valid = .false.
 
         if (.not. dm_id_is_valid(report%node)) return
-        if (len_trim(report%from) == 0)     return
-        if (len_trim(report%to) == 0)       return
+        if (len_trim(report%from) == 0)        return
+        if (len_trim(report%to) == 0)          return
 
         if (.not. report%plot%disabled) then
             if (len_trim(report%plot%database) == 0) return
@@ -96,17 +96,17 @@ contains
 
                 if (.not. dm_id_is_valid(report%plot%observs(i)%sensor)) return
                 if (.not. dm_id_is_valid(report%plot%observs(i)%target)) return
-                if (len_trim(report%plot%observs(i)%response) == 0)   return
-                if (report%plot%observs(i)%width <= 0)                return
-                if (report%plot%observs(i)%height <= 0)               return
+                if (len_trim(report%plot%observs(i)%response) == 0)      return
+                if (report%plot%observs(i)%width <= 0)                   return
+                if (report%plot%observs(i)%height <= 0)                  return
             end do
         end if
 
         if (.not. report%log%disabled) then
-            if (.not. dm_log_is_valid(report%log%min_level))    return
-            if (.not. dm_log_is_valid(report%log%max_level))    return
-            if (report%log%min_level > report%log%max_level) return
-            if (len_trim(report%log%database) == 0)          return
+            if (.not. dm_log_level_is_valid(report%log%min_level)) return
+            if (.not. dm_log_level_is_valid(report%log%max_level)) return
+            if (report%log%min_level > report%log%max_level)       return
+            if (len_trim(report%log%database) == 0)                return
         end if
 
         valid = .true.

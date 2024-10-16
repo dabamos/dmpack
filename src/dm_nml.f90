@@ -90,9 +90,9 @@ module dm_nml
     private :: nml_write_log
     private :: nml_write_observ
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function nml_from_beat(beat, str) result(rc)
         !! Writes beat namelist to string. The passed character string must have
         !! a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.

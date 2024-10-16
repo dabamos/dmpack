@@ -128,6 +128,7 @@ program dmbot
             ! Register signal handler.
             call dm_signal_register(signal_callback)
 
+            ! Check if authorisation is enabled.
             if (size(bot%group) == 0) then
                 call logger%info('bot accepts requests from all clients (authorization is disabled)')
             end if
@@ -146,9 +147,9 @@ program dmbot
 
     call halt(rc)
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function read_args(app, bot) result(rc)
         !! Reads command-line arguments and configuration from file (if
         !! `--config` is passed).
@@ -278,9 +279,9 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine halt(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
@@ -302,9 +303,282 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
-    ! ******************************************************************
+    ! **************************************************************************
+    ! BOT PROCEDURES.
+    ! **************************************************************************
+    function bot_dispatch(bot, from, message) result(reply)
+        !! Parses message string and returns the reply for the requested
+        !! command.
+        type(bot_type),   intent(inout) :: bot     !! Bot type.
+        character(len=*), intent(in)    :: from    !! Client JID.
+        character(len=*), intent(in)    :: message !! Message received from JID.
+        character(len=:), allocatable   :: reply   !! Reply string.
+
+        character(len=:), allocatable :: argument, command, output
+        integer                       :: c
+
+        ! Do not answer to empty messages.
+        if (len_trim(message) == 0) then
+            reply = ''
+            return
+        end if
+
+        c = bot_parse_message(message, command, argument)
+
+        if (c == BOT_COMMAND_NONE) then
+            reply = 'unrecognized command (send !help for a list of all commands)'
+            call logger%debug('received invalid command from ' // from)
+            return
+        end if
+
+        call logger%debug('received command ' // command // ' from ' // from)
+
+        select case (c)
+            case (BOT_COMMAND_BEATS);     output = bot_handle_beats()
+            case (BOT_COMMAND_DATE);      output = bot_handle_date()
+            case (BOT_COMMAND_HELP);      output = bot_handle_help()
+            case (BOT_COMMAND_JID);       output = bot_handle_jid(bot)
+            case (BOT_COMMAND_LOG);       output = bot_handle_log(bot, argument)
+            case (BOT_COMMAND_NODE);      output = bot_handle_node(bot)
+            case (BOT_COMMAND_POKE);      output = bot_handle_poke(bot)
+            case (BOT_COMMAND_RECONNECT); output = bot_handle_reconnect(bot)
+            case (BOT_COMMAND_UNAME);     output = bot_handle_uname()
+            case (BOT_COMMAND_UPTIME);    output = bot_handle_uptime()
+            case (BOT_COMMAND_VERSION);   output = bot_handle_version()
+        end select
+
+        reply = command // ': ' // output
+    end function bot_dispatch
+
+    logical function bot_is_authorized(group, jid) result(is)
+        !! Returns `.true.` if JID is in group. If the group is empty, all JIDs
+        !! are authorised!
+        character(len=IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
+        character(len=*),               intent(in)    :: jid      !! JIDs to validate.
+
+        integer :: i, j, n
+
+        is = .false.
+
+        ! All JIDs are authorised if the group is empty.
+        if (size(group) == 0) then
+            is = .true.
+            return
+        end if
+
+        n = len_trim(jid)
+        if (n == 0) return
+        j = index(jid, '/') - 1
+        if (j < 1) j = n
+
+        do i = 1, size(group)
+            if (jid(:j) == group(i)) then
+                is = .true.
+                exit
+            end if
+        end do
+    end function bot_is_authorized
+
+    integer function bot_parse_message(message, command, argument) result(c)
+        !! Return bot command parsed from string or `BOT_COMMAND_NONE` on error.
+        !! Optionally returns the command string in `command` and the argument
+        !! string in `argument`.
+        character(len=*),              intent(in)            :: message  !! Message to parse.
+        character(len=:), allocatable, intent(out), optional :: command  !! Command string.
+        character(len=:), allocatable, intent(out), optional :: argument !! Argument string.
+
+        character(len=BOT_COMMAND_NAME_LEN) :: name
+        integer                             :: i, j, n
+
+        c = BOT_COMMAND_NONE
+
+        parse_block: block
+            ! Split message into command and argument.
+            i = index(message, BOT_COMMAND_PREFIX)
+            j = index(message, ' ')
+            n = len(message)
+
+            if (j == 0) j = n
+            if (i == 0 .or. i >= j .or. i == n) exit parse_block
+
+            name = dm_to_lower(message(i + 1:j))
+            if (present(command)) command = trim(name)
+            if (present(argument) .and. j < n) argument = adjustl(trim(message(j:)))
+
+            ! Search for command name.
+            do i = 1, BOT_NCOMMANDS
+                if (name == BOT_COMMAND_NAMES(i)) then
+                    c = i
+                    exit parse_block
+                end if
+            end do
+        end block parse_block
+
+        if (present(command)) then
+            if (.not. allocated(command)) command = ''
+        end if
+
+        if (present(argument)) then
+            if (.not. allocated(argument)) argument = ''
+        end if
+    end function bot_parse_message
+
+    ! **************************************************************************
+    ! BOT COMMAND HANDLING FUNCTIONS.
+    ! **************************************************************************
+    function bot_handle_beats() result(output)
+        !! Returns current time in Swatch Internet Time (.beats).
+        character(len=:), allocatable :: output !! Response string.
+
+        character(len=TIME_BEATS_LEN) :: beats
+        integer                       :: rc
+
+        rc = dm_time_to_beats(dm_time_now(), beats)
+        output = trim(beats)
+    end function bot_handle_beats
+
+    function bot_handle_date() result(output)
+        !! Returns current date and time in ISO 8601.
+        character(len=:), allocatable :: output !! Response string.
+
+        output = dm_time_now()
+    end function bot_handle_date
+
+    function bot_handle_help() result(output)
+        !! Returns help text.
+        character(len=:), allocatable :: output !! Response string.
+
+        output = 'you may enter one of the following commands:'     // ASCII_LF // &
+                 '!beats     - return time in Swatch Internet Time' // ASCII_LF // &
+                 '!date      - return date and time in ISO 8601'    // ASCII_LF // &
+                 '!help      - return this help text'               // ASCII_LF // &
+                 '!jid       - return bot JID'                      // ASCII_LF // &
+                 '!log       - send log message to logger'          // ASCII_LF // &
+                 '!node      - return node id'                      // ASCII_LF // &
+                 '!poke      - return message if bot is online'     // ASCII_LF // &
+                 '!reconnect - reconnect to server'                 // ASCII_LF // &
+                 '!uname     - return system name'                  // ASCII_LF // &
+                 '!uptime    - return system uptime'                // ASCII_LF // &
+                 '!version   - return bot version'
+    end function bot_handle_help
+
+    function bot_handle_jid(bot) result(output)
+        !! Returns full JID of bot.
+        type(bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable :: output !! Response string.
+
+        output = '<' // trim(bot%im%jid_full) // '>'
+    end function bot_handle_jid
+
+    function bot_handle_log(bot, argument) result(output)
+        !! Sends log message to logger.
+        type(bot_type),   intent(inout) :: bot      !! Bot type.
+        character(len=*), intent(in)    :: argument !! Command arguments.
+        character(len=:), allocatable   :: output   !! Response string.
+
+        character(len=LOG_LEVEL_NAME_LEN) :: level
+        character(len=LOG_MESSAGE_LEN)    :: message
+
+        integer :: lvl, stat
+
+        read (argument, *, iostat=stat) level, message
+
+        if (stat /= 0) then
+            output = 'missing arguments <level> "<message>"'
+            return
+        end if
+
+        lvl = dm_log_level_from_string(level)
+
+        if (.not. dm_log_level_is_valid(lvl)) then
+            output = 'invalid level'
+            return
+        end if
+
+        call logger%log(lvl, message, source=bot%name)
+        output = 'sent ' // trim(LOG_LEVEL_NAMES_LOWER(lvl)) // ' message to ' // logger%get_name()
+    end function bot_handle_log
+
+    function bot_handle_node(bot) result(output)
+        !! Returns node id.
+        type(bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable :: output !! Response string.
+
+        integer :: n
+
+        n = len_trim(bot%node_id)
+
+        if (n > 0) then
+            output = bot%node_id(:n)
+        else
+            output = 'n/a'
+        end if
+    end function bot_handle_node
+
+    function bot_handle_poke(bot) result(output)
+        !! Returns awake message.
+        type(bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable :: output !! Response string.
+
+        integer :: n
+
+        n = len_trim(bot%name)
+
+        if (n > 0) then
+            output = bot%name(:n)
+        else
+            output = APP_NAME
+        end if
+
+        output = output // ' is online'
+    end function bot_handle_poke
+
+    function bot_handle_reconnect(bot) result(output)
+        !! Reconnects bot.
+        type(bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable :: output !! Response string.
+
+        bot%reconnect = .true.
+        call xmpp_timed_handler_add(bot%im%connection, disconnect_callback, 500_c_long, c_null_ptr)
+        output = 'bye'
+   end function bot_handle_reconnect
+
+    function bot_handle_uname() result(output)
+        !! Returns Unix name.
+        character(len=:), allocatable :: output !! Response string.
+
+        type(uname_type) :: uname
+
+        call dm_system_uname(uname)
+        output = trim(uname%system_name) // ' ' // &
+                 trim(uname%node_name)   // ' ' // &
+                 trim(uname%release)     // ' ' // &
+                 trim(uname%version)     // ' ' // &
+                 trim(uname%machine)
+    end function bot_handle_uname
+
+    function bot_handle_uptime() result(output)
+        !! Returns system uptime.
+        character(len=:), allocatable :: output !! Response string.
+
+        integer(kind=r8)      :: seconds
+        type(time_delta_type) :: uptime
+
+        call dm_system_uptime(seconds)
+        call dm_time_delta_from_seconds(uptime, seconds)
+        output = dm_time_delta_to_string(uptime)
+    end function bot_handle_uptime
+
+    function bot_handle_version() result(output)
+        !! Returns bot version.
+        character(len=:), allocatable :: output !! Response string.
+
+        output = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
+    end function bot_handle_version
+
+    ! **************************************************************************
     ! CALLBACK PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     recursive subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
         !! C-interoperable connection handler called on connect and disconnect
         !! events. Must be passed to `dm_im_connect()`.
@@ -505,280 +779,4 @@ contains
                 call halt(E_NONE)
         end select
     end subroutine signal_callback
-
-    ! ******************************************************************
-    ! BOT PROCEDURES.
-    ! ******************************************************************
-    function bot_dispatch(bot, from, message) result(reply)
-        !! Parses message string and returns the reply for the requested
-        !! command.
-        type(bot_type),   intent(inout) :: bot     !! Bot type.
-        character(len=*), intent(in)    :: from    !! Client JID.
-        character(len=*), intent(in)    :: message !! Message received from JID.
-        character(len=:), allocatable   :: reply   !! Reply string.
-
-        character(len=:), allocatable :: argument, command, output
-        integer                       :: c
-
-        ! Do not answer to empty messages.
-        if (len_trim(message) == 0) then
-            reply = ''
-            return
-        end if
-
-        c = bot_parse_message(message, command, argument)
-
-        if (c == BOT_COMMAND_NONE) then
-            reply = 'unrecognized command (send !help for a list of all commands)'
-            call logger%debug('received invalid command from ' // from)
-            return
-        end if
-
-        call logger%debug('received command ' // command // ' from ' // from)
-
-        select case (c)
-            case (BOT_COMMAND_BEATS)
-                output = bot_handle_beats()
-            case (BOT_COMMAND_DATE)
-                output = bot_handle_date()
-            case (BOT_COMMAND_HELP)
-                output = bot_handle_help()
-            case (BOT_COMMAND_JID)
-                output = bot_handle_jid(bot)
-            case (BOT_COMMAND_LOG)
-                output = bot_handle_log(bot, argument)
-            case (BOT_COMMAND_NODE)
-                output = bot_handle_node(bot)
-            case (BOT_COMMAND_POKE)
-                output = bot_handle_poke(bot)
-            case (BOT_COMMAND_RECONNECT)
-                output = bot_handle_reconnect(bot)
-            case (BOT_COMMAND_UNAME)
-                output = bot_handle_uname()
-            case (BOT_COMMAND_UPTIME)
-                output = bot_handle_uptime()
-            case (BOT_COMMAND_VERSION)
-                output = bot_handle_version()
-        end select
-
-        reply = command // ': ' // output
-    end function bot_dispatch
-
-    logical function bot_is_authorized(group, jid) result(is)
-        !! Returns `.true.` if JID is in group. If the group is empty, all JIDs
-        !! are authorised!
-        character(len=IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
-        character(len=*),               intent(in)    :: jid      !! JIDs to validate.
-
-        integer :: i, j, n
-
-        is = .false.
-
-        ! All JIDs are authorised if the group is empty.
-        if (size(group) == 0) then
-            is = .true.
-            return
-        end if
-
-        n = len_trim(jid)
-        if (n == 0) return
-        j = index(jid, '/') - 1
-        if (j < 1) j = n
-
-        do i = 1, size(group)
-            if (jid(:j) == group(i)) then
-                is = .true.
-                exit
-            end if
-        end do
-    end function bot_is_authorized
-
-    integer function bot_parse_message(message, command, argument) result(c)
-        !! Return bot command parsed from string or `BOT_COMMAND_NONE` on error.
-        !! Optionally returns the command string in `command` and the argument
-        !! string in `argument`.
-        character(len=*),              intent(in)            :: message  !! Message to parse.
-        character(len=:), allocatable, intent(out), optional :: command  !! Command string.
-        character(len=:), allocatable, intent(out), optional :: argument !! Argument string.
-
-        character(len=BOT_COMMAND_NAME_LEN) :: name
-        integer                             :: i, j, n
-
-        c = BOT_COMMAND_NONE
-
-        parse_block: block
-            ! Split message into command and argument.
-            i = index(message, BOT_COMMAND_PREFIX)
-            j = index(message, ' ')
-            n = len(message)
-
-            if (j == 0) j = n
-            if (i == 0 .or. i >= j .or. i == n) exit parse_block
-
-            name = dm_to_lower(message(i + 1:j))
-            if (present(command)) command = trim(name)
-            if (present(argument) .and. j < n) argument = adjustl(trim(message(j:)))
-
-            ! Search for command name.
-            do i = 1, BOT_NCOMMANDS
-                if (name == BOT_COMMAND_NAMES(i)) then
-                    c = i
-                    exit parse_block
-                end if
-            end do
-        end block parse_block
-
-        if (present(command)) then
-            if (.not. allocated(command)) command = ''
-        end if
-
-        if (present(argument)) then
-            if (.not. allocated(argument)) argument = ''
-        end if
-    end function bot_parse_message
-
-    ! ******************************************************************
-    ! BOT COMMAND HANDLING FUNCTIONS.
-    ! ******************************************************************
-    function bot_handle_beats() result(output)
-        !! Returns current time in Swatch Internet Time (.beats).
-        character(len=:), allocatable :: output !! Response string.
-
-        character(len=TIME_BEATS_LEN) :: beats
-        integer                       :: rc
-
-        rc = dm_time_to_beats(dm_time_now(), beats)
-        output = trim(beats)
-    end function bot_handle_beats
-
-    function bot_handle_date() result(output)
-        !! Returns current date and time in ISO 8601.
-        character(len=:), allocatable :: output !! Response string.
-
-        output = dm_time_now()
-    end function bot_handle_date
-
-    function bot_handle_help() result(output)
-        !! Returns help text.
-        character(len=:), allocatable :: output !! Response string.
-
-        output = 'you may enter one of the following commands'      // ASCII_LF // &
-                 '!beats     - return time in Swatch Internet Time' // ASCII_LF // &
-                 '!date      - return date and time in ISO 8601'    // ASCII_LF // &
-                 '!help      - return this help text'               // ASCII_LF // &
-                 '!jid       - return bot JID'                      // ASCII_LF // &
-                 '!log       - send log message to logger'          // ASCII_LF // &
-                 '!node      - return node id'                      // ASCII_LF // &
-                 '!poke      - return message if bot is online'     // ASCII_LF // &
-                 '!reconnect - reconnect to server'                 // ASCII_LF // &
-                 '!uname     - return system name'                  // ASCII_LF // &
-                 '!uptime    - return system uptime'                // ASCII_LF // &
-                 '!version   - return bot version'
-    end function bot_handle_help
-
-    function bot_handle_jid(bot) result(output)
-        !! Returns full JID of bot.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
-
-        output = '<' // trim(bot%im%jid_full) // '>'
-    end function bot_handle_jid
-
-    function bot_handle_log(bot, argument) result(output)
-        !! Sends log message to logger.
-        type(bot_type),   intent(inout) :: bot      !! Bot type.
-        character(len=*), intent(in)    :: argument !! Command arguments.
-        character(len=:), allocatable   :: output   !! Response string.
-
-        character(len=LOG_LEVEL_NAME_LEN) :: level
-        character(len=LOG_MESSAGE_LEN)    :: message
-
-        integer :: lvl, stat
-
-        read (argument, *, iostat=stat) level, message
-
-        if (stat /= 0) then
-            output = 'missing arguments <level> "<message>"'
-            return
-        end if
-
-        lvl = dm_log_level_from_string(level)
-
-        if (.not. dm_log_is_valid(lvl)) then
-            output = 'invalid level'
-            return
-        end if
-
-        call logger%log(lvl, message, source=bot%name)
-        output = 'sent ' // trim(LOG_LEVEL_NAMES_LOWER(lvl)) // ' message to ' // logger%get_name()
-    end function bot_handle_log
-
-    function bot_handle_node(bot) result(output)
-        !! Returns node id.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
-
-        if (len_trim(bot%node_id) > 0) then
-            output = trim(bot%node_id)
-        else
-            output = 'n/a'
-        end if
-    end function bot_handle_node
-
-    function bot_handle_poke(bot) result(output)
-        !! Returns awake message.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
-
-        if (len_trim(bot%name) > 0) then
-            output = trim(bot%name)
-        else
-            output = APP_NAME
-        end if
-
-        output = output // ' is online'
-    end function bot_handle_poke
-
-    function bot_handle_reconnect(bot) result(output)
-        !! Reconnects bot.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
-
-        bot%reconnect = .true.
-        call xmpp_timed_handler_add(bot%im%connection, disconnect_callback, 500_c_long, c_null_ptr)
-        output = 'bye'
-   end function bot_handle_reconnect
-
-    function bot_handle_uname() result(output)
-        !! Returns Unix name.
-        character(len=:), allocatable :: output !! Response string.
-
-        type(uname_type) :: uname
-
-        call dm_system_uname(uname)
-        output = trim(uname%system_name) // ' ' // &
-                 trim(uname%node_name)   // ' ' // &
-                 trim(uname%release)     // ' ' // &
-                 trim(uname%version)     // ' ' // &
-                 trim(uname%machine)
-    end function bot_handle_uname
-
-    function bot_handle_uptime() result(output)
-        !! Returns system uptime.
-        character(len=:), allocatable :: output !! Response string.
-
-        integer(kind=r8)      :: seconds
-        type(time_delta_type) :: uptime
-
-        call dm_system_uptime(seconds)
-        call dm_time_delta_from_seconds(uptime, seconds)
-        output = dm_time_delta_to_string(uptime)
-    end function bot_handle_uptime
-
-    function bot_handle_version() result(output)
-        !! Returns bot version.
-        character(len=:), allocatable :: output !! Response string.
-
-        output = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-    end function bot_handle_version
 end program dmbot

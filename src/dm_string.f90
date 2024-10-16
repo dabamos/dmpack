@@ -88,9 +88,9 @@ module dm_string
     private :: string_to_real32
     private :: string_to_real64
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental integer function dm_string_count_char(str, a, quote) result(n)
         !! Counts occurences of character `a` in `str`, with optional quoting
         !! (`a` in between quote characters is not counted).
@@ -213,9 +213,9 @@ contains
         end do
     end function dm_string_to_upper
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental subroutine dm_string_allocate(string, n)
         !! Allocates string type to empty character of length 0 or `n`, if not
         !! allocated already.
@@ -306,9 +306,9 @@ contains
         end do
     end subroutine dm_string_upper
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure subroutine string_from_int32(i, str, error)
         !! Returns string representation of given 4-byte integer.
         integer(kind=i4),              intent(in)            :: i     !! Input.

@@ -74,9 +74,9 @@ module dm_atom
     private :: atom_link
     private :: atom_style_sheet
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_atom_from_logs(atom, logs, xml)
         !! Returns log messages in Atom Syndication Format (RFC 4287).
         !!
@@ -163,9 +163,9 @@ contains
         xml = xml // A_FEED_END
     end subroutine dm_atom_from_logs
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure function atom_link(href, rel, type) result(xml)
         !! Returns an Atom link, for example:
         !!

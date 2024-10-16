@@ -32,9 +32,9 @@ module dm_env
     private :: env_get_real64
     private :: env_get_string
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function dm_env_has(name) result(has)
         !! Returns `.true.` if the environment variable of the given name
         !! exists and has a value.
@@ -47,9 +47,9 @@ contains
         has = (stat == 0 .and. n > 0)
     end function dm_env_has
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function env_get_allocatable(name, value, default, exists) result(rc)
         !! Returns environment variable as allocatable string in `value`, with
         !! optional default value from `default` if the variable does not exist.

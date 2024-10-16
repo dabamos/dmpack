@@ -133,9 +133,9 @@ module dm_csv
     private :: csv_write_target
     private :: csv_write_targets
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function dm_csv_header_beat(separator) result(header)
         !! Returns header string of CSV representation of the beat type as
         !! allocatable string.
@@ -349,9 +349,9 @@ contains
                  'alt'
     end function dm_csv_header_target
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     function csv_from_beat(beat, separator) result(csv)
         !! Returns allocatable string of beat in CSV format.
         use :: dm_beat

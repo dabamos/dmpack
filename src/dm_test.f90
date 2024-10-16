@@ -65,9 +65,9 @@ module dm_test
     public :: dm_test_run
     public :: dm_test_skip
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     logical function dm_test_skip(env_var) result(skip)
         !! Returns `.true.` and outputs a debug message if environment variable
         !! of name `env_var` is set to 1.
@@ -395,9 +395,9 @@ contains
         if (nfail > 0) call dm_stop(STOP_FAILURE)
     end subroutine dm_test_run
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
         character(len=*), parameter :: FMT_STATE = '("[TEST ",i2,"/",i2,"] ", a, 20x, a)'

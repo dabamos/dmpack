@@ -77,16 +77,11 @@ contains
 
         ! Perform database operation.
         select case (app%operation)
-            case (OP_CREATE)
-                rc = db_create(db, app)
-            case (OP_READ)
-                rc = db_read(db, app)
-            case (OP_UPDATE)
-                rc = db_update(db, app)
-            case (OP_DELETE)
-                rc = db_delete(db, app)
-            case default
-                rc = E_INVALID
+            case (OP_CREATE); rc = db_create(db, app)
+            case (OP_READ);   rc = db_read  (db, app)
+            case (OP_UPDATE); rc = db_update(db, app)
+            case (OP_DELETE); rc = db_delete(db, app)
+            case default;     rc = E_INVALID
         end select
 
         ! Close database.

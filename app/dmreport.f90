@@ -250,12 +250,12 @@ contains
 
         ! Validate log settings.
         if (.not. log%disabled) then
-            if (.not. dm_log_is_valid(log%min_level)) then
+            if (.not. dm_log_level_is_valid(log%min_level)) then
                 call dm_error_out(rc, 'invalid minimum log level')
                 return
             end if
 
-            if (.not. dm_log_is_valid(log%max_level)) then
+            if (.not. dm_log_level_is_valid(log%max_level)) then
                 call dm_error_out(rc, 'invalid maximum log level')
                 return
             end if

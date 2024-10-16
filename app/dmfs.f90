@@ -386,8 +386,7 @@ contains
         select case (format)
             case (FORMAT_CSV)
                 ! CSV format.
-                rc = dm_csv_write(observ, unit=unit, header=.false., &
-                                  separator=APP_CSV_SEPARATOR)
+                rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL)
                 ! JSON Lines format.
                 rc = dm_json_write(observ, unit=unit)

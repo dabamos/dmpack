@@ -83,9 +83,9 @@ module dm_la
     private :: la_same
     private :: la_ws_gels
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_la_dgels(a, b, trans, info)
         !! LA_GELS computes the minimum-norm least squares solution to one or
         !! more real or complex linear systems of the form A*x = b, A^T*x = b or
@@ -422,9 +422,9 @@ contains
         100 call la_erinfo(linfo, SRNAME, info, istat)
     end subroutine dm_la_dgelsd1
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental logical function la_same(ca, cb) result(same)
         !! LAPACK95 auxility routine thats tests if `ca` is the same letter as
         !! `cb` regardless of case.

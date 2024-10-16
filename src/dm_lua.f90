@@ -177,9 +177,9 @@ module dm_lua
     private :: lua_to_report
     private :: lua_to_request
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_lua_call(lua, nargs, nresults) result(rc)
         !! Calls Lua function on top of stack.
         type(lua_state_type), intent(inout) :: lua      !! Lua type.
@@ -519,9 +519,9 @@ contains
         end if
     end function dm_lua_version
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_lua_destroy(lua)
         !! Closes Lua.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
@@ -597,9 +597,9 @@ contains
         minor   = floor(version - (major * 100))
     end subroutine dm_lua_version_number
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function lua_field_array_int32(lua, name, values) result(rc)
         !! Returns allocatable 4-byte integer array from table field `name` in
         !! `values`.
@@ -1624,9 +1624,9 @@ contains
         call dm_lua_pop(lua) ! table
     end function lua_to_request
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine lua_from_observ(lua, observ)
         !! Pushes observation on Lua stack.
         use :: dm_observ

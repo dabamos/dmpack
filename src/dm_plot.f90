@@ -90,9 +90,9 @@ module dm_plot
     private :: plot_set_yaxis
     private :: plot_write
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer(kind=i8) function dm_plot_error(plot, bytes) result(n)
         !! Returns Gnuplot's standard error output in allocatable character
         !! string `bytes`. The result is allocated but empty if no output to
@@ -243,9 +243,9 @@ contains
         end if
     end function dm_plot_version
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function plot_output(plot, dps) result(rc)
         !! Plots array of dp data in X, Y format by calling the Gnuplot
         !! `plot` command and appending the values line by line.

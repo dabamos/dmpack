@@ -125,9 +125,9 @@ module dm_modbus
     public :: dm_modbus_write_register
     public :: dm_modbus_write_registers
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_modbus_byte_order_from_name(name, byte_order) result(rc)
         !! Returns byte order named parameter associated with given string.
         !! Sets argument `byte_order` to `MODBUS_REAL_ACBD` if `string` is
@@ -559,9 +559,9 @@ contains
         rc = E_NONE
     end function dm_modbus_write_registers
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_modbus_close(modbus)
         !! Closes the Modbus RTU/TCP connection.
         class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCPtype.

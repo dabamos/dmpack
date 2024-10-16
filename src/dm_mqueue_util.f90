@@ -20,9 +20,9 @@ module dm_mqueue_util
     ! Private procedures.
     private :: mqueue_forward_observ
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function mqueue_forward_observ(observ, name, blocking, allow_self, verbose) result(rc)
         !! Forwards given observation to next receiver. This function creates
         !! log messages, unless `verbose` is passed and `.false.`.

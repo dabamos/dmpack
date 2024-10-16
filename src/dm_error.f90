@@ -7,11 +7,11 @@ module dm_error
     implicit none (type, external)
     private
 
-    ! ************************************************************************
+    ! ********************************************************************************
     !                                ATTENTION
     ! Any additional error code must be exported in `dm_lua_api_register()`
     ! of module `dm_lua_api`.
-    ! ************************************************************************
+    ! ********************************************************************************
 
     ! Generic errors.
     integer, parameter, public :: E_NONE           =   0 !! No error.
@@ -42,7 +42,6 @@ module dm_error
     integer, parameter, public :: E_CORRUPT        =  25 !! Data corrupted.
     integer, parameter, public :: E_CONFIG         =  26 !! Invalid configuration error.
     integer, parameter, public :: E_GEOCOM         =  28 !! GeoCOM error.
-
     ! Database errors.
     integer, parameter, public :: E_DB             =  30 !! Generic database error.
     integer, parameter, public :: E_DB_ID          =  31 !! Invalid database application id.
@@ -62,7 +61,6 @@ module dm_error
     integer, parameter, public :: E_DB_ATTACH      =  45 !! Attach failed.
     integer, parameter, public :: E_DB_DETACH      =  46 !! Detach error.
     integer, parameter, public :: E_DB_VERSION     =  47 !! Incompatible version.
-
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -71,21 +69,17 @@ module dm_error
     integer, parameter, public :: E_ARG_TYPE       =  54 !! Type mismatch.
     integer, parameter, public :: E_ARG_LENGTH     =  55 !! Wrong value length.
     integer, parameter, public :: E_ARG_UNKNOWN    =  56 !! Unknown argument passed.
-
     ! Message queue errors.
     integer, parameter, public :: E_MQUEUE         =  60 !! Generic message queue error.
     integer, parameter, public :: E_MQUEUE_EMPTY   =  61 !! Empty message.
-
     ! Matching errors.
     integer, parameter, public :: E_REGEX          =  70 !! Generic regular expression error.
     integer, parameter, public :: E_REGEX_COMPILE  =  71 !! Failed to compile regular expression.
     integer, parameter, public :: E_REGEX_EXCEEDED =  72 !! Number of matches exceeds array size.
     integer, parameter, public :: E_REGEX_NO_MATCH =  73 !! No match.
     integer, parameter, public :: E_REGEX_NO_GROUP =  74 !! No group.
-
     ! Sensor errors.
     integer, parameter, public :: E_SENSOR         =  80 !! Generic sensor error.
-
     ! RPC errors.
     integer, parameter, public :: E_RPC            =  90 !! Generic RPC error.
     integer, parameter, public :: E_RPC_CONNECT    =  91 !! RPC connection error.
@@ -94,16 +88,13 @@ module dm_error
     integer, parameter, public :: E_RPC_AUTH       =  94 !! Unauthorised.
     integer, parameter, public :: E_RPC_CONFLICT   =  95 !! Resource exists.
     integer, parameter, public :: E_RPC_SERVER     =  96 !! Internal server error.
-
     ! Mail errors.
     integer, parameter, public :: E_MAIL           = 100 !! Generic mail error.
     integer, parameter, public :: E_MAIL_CONNECT   = 101 !! Mail connection error.
     integer, parameter, public :: E_MAIL_SSL       = 102 !! Mail SSL/TLS error.
     integer, parameter, public :: E_MAIL_AUTH      = 103 !! Unauthorised.
-
     ! MQTT errors.
     integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
-
     ! Lua errors.
     integer, parameter, public :: E_LUA            = 120 !! Generic Lua error.
     integer, parameter, public :: E_LUA_YIELD      = 121 !! Lua thread (coroutine) yields (not an error).
@@ -112,7 +103,6 @@ module dm_error
     integer, parameter, public :: E_LUA_MEM        = 124 !! Lua memory allocation error.
     integer, parameter, public :: E_LUA_ERROR      = 125 !! Lua message handling error.
     integer, parameter, public :: E_LUA_FILE       = 126 !! Lua file I/O error.
-
     ! Additional errors.
     integer, parameter, public :: E_LIB            = 130 !! Generic library error.
     integer, parameter, public :: E_MODBUS         = 131 !! Modbus error.

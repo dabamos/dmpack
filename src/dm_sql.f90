@@ -32,9 +32,9 @@ module dm_sql
         'sync_sensors', 'sync_targets', 'sync_observs', 'sync_logs', 'sync_images' &
     ] !! SQL table names.
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! UTILITY QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Drop table.
     character(len=*), parameter, public :: SQL_DROP_TABLE = 'DROP TABLE IF EXISTS ?'
 
@@ -50,9 +50,9 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_TABLE = &
         'SELECT name FROM sqlite_master WHERE type = ''table'' AND name = ?'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! TABLE CREATION QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Beats schema.
     character(len=*), parameter, public :: SQL_CREATE_BEATS = &
         'CREATE TABLE IF NOT EXISTS beats(' // NL // &
@@ -195,9 +195,9 @@ module dm_sql
         'FOREIGN KEY (request_id) REFERENCES requests(request_id),' // NL // &
         'UNIQUE      (request_id, idx) ON CONFLICT REPLACE) STRICT'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! SYNC TABLE CREATION QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Synchronised logs schema.
     character(len=*), parameter, public :: SQL_CREATE_SYNC_LOGS = &
         'CREATE TABLE IF NOT EXISTS sync_logs(' // NL // &
@@ -248,9 +248,9 @@ module dm_sql
         'attempts       INTEGER NOT NULL DEFAULT 0,' // NL // &
         'FOREIGN KEY (target_id) REFERENCES targets(target_id)) STRICT'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! CREATE INDEX QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     character(len=*), parameter, public :: SQL_CREATE_BEATS_INDICES(1) = [ character(len=64) :: &
         'CREATE INDEX IF NOT EXISTS idx_node_id ON beats(node_id)' &
     ]
@@ -281,9 +281,9 @@ module dm_sql
         'CREATE INDEX IF NOT EXISTS idx_responses_name       ON responses(name)' &
     ]
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! TRIGGERS.
-    ! ******************************************************************
+    ! **************************************************************************
     ! SQL trigger that removes any receivers, requests, and responses
     ! associated with an observation.
     character(len=*), parameter, public :: SQL_DELETE_OBSERV_TRIGGER = &
@@ -304,9 +304,9 @@ module dm_sql
         '    DELETE FROM requests WHERE observ_id = OLD.observ_id;' // NL // &
         'END'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! DELETE QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to delete beats.
     ! Arguments: beats.node_id
     character(len=*), parameter, public :: SQL_DELETE_BEAT = &
@@ -363,9 +363,9 @@ module dm_sql
         'INNER JOIN observs ON observs.observ_id = requests.observ_id ' // &
         'WHERE observs.id = ?)'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! INSERT QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to upsert beat.
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
     !            beats.time_recv, beats.interval, beats.error
@@ -453,9 +453,9 @@ module dm_sql
         'INNER JOIN observs ON observs.observ_id = requests.observ_id ' // &
         'WHERE observs.id = ? AND requests.idx = ?), ?, ?, ?, ?, ?, ?)'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! UPDATE QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z
     !            nodes.lon, nodes.lat, nodes.alt, nodes.id
@@ -477,9 +477,9 @@ module dm_sql
         'UPDATE OR FAIL targets SET name = ?, meta = ?, state = ?, x = ?, y = ?, z = ?, ' // &
         'lon = ?, lat = ?, alt = ? WHERE id = ?'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! SELECT EXISTS QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to check if log exists.
     ! Arguments: logs.id
     character(len=*), parameter, public :: SQL_EXISTS_LOG = &
@@ -505,9 +505,9 @@ module dm_sql
     character(len=*), parameter, public :: SQL_EXISTS_TARGET = &
         'SELECT EXISTS(SELECT 1 FROM targets WHERE targets.id = ? LIMIT 1)'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! SELECT QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to select beat by node id.
     ! Arguments: beats.node_id
     character(len=*), parameter, public :: SQL_SELECT_BEAT = &
@@ -965,9 +965,9 @@ module dm_sql
         'targets.alt ' // &
         'FROM targets ORDER BY targets.id ASC'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! SYNC QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to upsert sync_logs data.
     ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
@@ -1109,9 +1109,9 @@ module dm_sql
         'LEFT JOIN sync_targets ON sync_targets.target_id = targets.target_id ' // &
         'WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)'
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! JSON SELECT QUERIES.
-    ! ******************************************************************
+    ! **************************************************************************
     ! Query to select all beats in JSON format.
     character(len=*), parameter, public :: SQL_SELECT_JSON_BEATS = &
         'SELECT ' // &

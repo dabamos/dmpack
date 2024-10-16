@@ -106,9 +106,9 @@ contains
         !! Writes HTTP header. A sane HTTP server converts the status code in
         !! the header to a real HTTP status code, as we cannot return it in any
         !! other way with FastCGI. The default HTTP status code is 200.
-        use :: dm_ascii
-        use :: dm_http
-        use :: dm_util
+        use :: dm_ascii, only: CR_LF
+        use :: dm_http,  only: HTTP_OK, dm_http_status_string
+        use :: dm_util,  only: dm_itoa
 
         character(len=*), intent(in)           :: content_type !! MIME type.
         integer,          intent(in), optional :: http_status  !! HTTP status code.

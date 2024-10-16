@@ -80,9 +80,9 @@ module dm_z
     private :: z_uncompress_sensor
     private :: z_uncompress_target
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_z_compress_type(type, z, output, output_len, context) result(rc)
         !! Serialises derived `type` to namelist format and compresses it
         !! depending on compression type `z`. The serialised and compressed
@@ -229,9 +229,9 @@ contains
         end select
     end function dm_z_type_to_encoding
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function z_compress(input, z, output, input_len, output_len, context) result(rc)
         !! Compresses given input and returns the result in allocatable string
         !! `output`. The actual length may be smaller than the string length

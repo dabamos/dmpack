@@ -40,9 +40,9 @@ module dm_cgi_router
     public :: dm_cgi_router_get
     public :: dm_cgi_router_set
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_cgi_router_add(router, route) result(rc)
         !! Adds route to router.
         type(cgi_router_type),        intent(inout) :: router !! Router type.

@@ -439,9 +439,9 @@ module dm_db
     private :: db_select_targets_array
     private :: db_select_targets_iter
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_db_attach(db, path, name) result(rc)
         !! Attaches the database at `path` to the current connection. If no name
         !! is passed for the attached database, the name will be set to
@@ -1335,18 +1335,12 @@ contains
         stat = sqlite3_finalize(stmt)
 
         select case (str)
-            case ('delete')
-                mode = DB_JOURNAL_DELETE
-            case ('truncate')
-                mode = DB_JOURNAL_TRUNCATE
-            case ('persist')
-                mode = DB_JOURNAL_PERSIST
-            case ('memory')
-                mode = DB_JOURNAL_MEMORY
-            case ('wal')
-                mode = DB_JOURNAL_WAL
-            case default
-                mode = DB_JOURNAL_OFF
+            case ('delete');   mode = DB_JOURNAL_DELETE
+            case ('truncate'); mode = DB_JOURNAL_TRUNCATE
+            case ('persist');  mode = DB_JOURNAL_PERSIST
+            case ('memory');   mode = DB_JOURNAL_MEMORY
+            case ('wal');      mode = DB_JOURNAL_WAL
+            case default;      mode = DB_JOURNAL_OFF
         end select
 
         if (present(name)) name = str
@@ -4173,9 +4167,9 @@ contains
         end if
     end function dm_db_version
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to
         !! be set through `dm_db_set_log_callback()` initially.
@@ -4194,9 +4188,9 @@ contains
         n = sqlite3_sleep(msec)
     end subroutine dm_db_sleep
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE FUNCTIONS.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function db_begin(db, mode) result(rc)
         !! Starts a transactions in IMMEDIATE mode. Mode shall be either
         !! `DB_TRANS_DEFERRED`, `DB_TRANS_IMMEDIATE`, or `DB_TRANS_EXLCUSIVE`.
@@ -6275,20 +6269,20 @@ contains
         !!
         use :: dm_log
 
-        type(db_type),               intent(inout)        :: db        !! Database type.
-        type(db_stmt_type),          intent(inout)        :: db_stmt   !! Database statement type.
-        type(log_type),              intent(out)          :: log       !! Returned log type.
-        character(len=*),            intent(in), optional :: node_id   !! Node id.
-        character(len=*),            intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),            intent(in), optional :: target_id !! Target id.
-        character(len=*),            intent(in), optional :: source    !! Source name.
-        character(len=*),            intent(in), optional :: from      !! Begin of time range.
-        character(len=*),            intent(in), optional :: to        !! End of time range.
-        integer,                     intent(in), optional :: min_level !! Minimum log level.
-        integer,                     intent(in), optional :: max_level !! Maximum log level.
-        integer,                     intent(in), optional :: error     !! Error code.
-        logical,                     intent(in), optional :: desc      !! Descending order.
-        integer(kind=i8),            intent(in), optional :: limit     !! Max. numbers of logs.
+        type(db_type),      intent(inout)        :: db        !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt   !! Database statement type.
+        type(log_type),     intent(out)          :: log       !! Returned log type.
+        character(len=*),   intent(in), optional :: node_id   !! Node id.
+        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*),   intent(in), optional :: target_id !! Target id.
+        character(len=*),   intent(in), optional :: source    !! Source name.
+        character(len=*),   intent(in), optional :: from      !! Begin of time range.
+        character(len=*),   intent(in), optional :: to        !! End of time range.
+        integer,            intent(in), optional :: min_level !! Minimum log level.
+        integer,            intent(in), optional :: max_level !! Maximum log level.
+        integer,            intent(in), optional :: error     !! Error code.
+        logical,            intent(in), optional :: desc      !! Descending order.
+        integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of logs.
 
         character(len=:), allocatable :: query
         integer                       :: k
@@ -7622,9 +7616,9 @@ contains
         rc = db_next_row(db_stmt%ctx, target)
     end function db_select_targets_iter
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE SUBROUTINES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure subroutine db_query_where(query, part, more)
         !! Sub-query builder for `WHERE` clauses that appends `part` to query
         !! string `query`. If `query` is not allocated or of length 0, or if

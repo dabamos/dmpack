@@ -54,9 +54,9 @@ module dm_response
     public :: dm_response_type_is_valid
     public :: dm_response_type_to_name
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     pure elemental logical function dm_response_equals(response1, response2) result(equals)
         !! Returns `.true.` if given responses are equal.
         type(response_type), intent(in) :: response1 !! The first response.

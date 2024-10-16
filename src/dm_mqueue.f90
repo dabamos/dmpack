@@ -66,9 +66,9 @@ module dm_mqueue
     private :: mqueue_write_observ
     private :: mqueue_write_raw
 contains
-    ! ******************************************************************
+    ! **************************************************************************
     ! PUBLIC PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function dm_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
         !! Returns message queue attributes.
         !!
@@ -138,9 +138,9 @@ contains
         rc = E_NONE
     end function dm_mqueue_unlink
 
-    ! ******************************************************************
+    ! **************************************************************************
     ! PRIVATE PROCEDURES.
-    ! ******************************************************************
+    ! **************************************************************************
     integer function mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, create, exclusive, blocking) result(rc)
         !! Opens POSIX message queue of given name.
         !!
