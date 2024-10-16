@@ -146,17 +146,13 @@ contains
         name_ = dm_to_upper(name)
 
         select case (name_)
-            case ('ABCD')
-                byte_order = MODBUS_REAL_ABCD
-            case ('BADC')
-                byte_order = MODBUS_REAL_BADC
-            case ('CDAB')
-                byte_order = MODBUS_REAL_CDAB
-            case ('DCBA')
-                byte_order = MODBUS_REAL_DCBA
+            case ('ABCD'); byte_order = MODBUS_REAL_ABCD
+            case ('BADC'); byte_order = MODBUS_REAL_BADC
+            case ('CDAB'); byte_order = MODBUS_REAL_CDAB
+            case ('DCBA'); byte_order = MODBUS_REAL_DCBA
             case default
-                byte_order = MODBUS_REAL_ABCD
                 rc = E_INVALID
+                byte_order = MODBUS_REAL_ABCD
         end select
     end function dm_modbus_byte_order_from_name
 
@@ -207,32 +203,23 @@ contains
 
         ! Byte size: 5, 6, 7, 8 (start bits).
         select case (byte_size)
-            case (TTY_BYTE_SIZE5)
-                byte_size_ = 5
-            case (TTY_BYTE_SIZE6)
-                byte_size_ = 6
-            case (TTY_BYTE_SIZE7)
-                byte_size_ = 7
-            case (TTY_BYTE_SIZE8)
-                byte_size_ = 8
+            case (TTY_BYTE_SIZE5); byte_size_ = 5
+            case (TTY_BYTE_SIZE6); byte_size_ = 6
+            case (TTY_BYTE_SIZE7); byte_size_ = 7
+            case (TTY_BYTE_SIZE8); byte_size_ = 8
         end select
 
         ! Parity: none, odd, even.
         select case (parity)
-            case (TTY_PARITY_NONE)
-                parity_ = PARITY_NONE
-            case (TTY_PARITY_ODD)
-                parity_ = PARITY_ODD
-            case (TTY_PARITY_EVEN)
-                parity_ = PARITY_EVEN
+            case (TTY_PARITY_NONE); parity_ = PARITY_NONE
+            case (TTY_PARITY_ODD);  parity_ = PARITY_ODD
+            case (TTY_PARITY_EVEN); parity_ = PARITY_EVEN
         end select
 
         ! Stop bits: 1, 2.
         select case (stop_bits)
-            case (TTY_STOP_BITS1)
-                stop_bits_ = 1
-            case (TTY_STOP_BITS2)
-                stop_bits_ = 2
+            case (TTY_STOP_BITS1); stop_bits_ = 1
+            case (TTY_STOP_BITS2); stop_bits_ = 2
         end select
 
         rc = E_MODBUS
@@ -309,17 +296,13 @@ contains
         if (present(error)) error = E_NONE
 
         select case (byte_order)
-            case (MODBUS_REAL_ABCD)
-                value = modbus_get_float_abcd(registers)
-            case (MODBUS_REAL_BADC)
-                value = modbus_get_float_badc(registers)
-            case (MODBUS_REAL_CDAB)
-                value = modbus_get_float_cdab(registers)
-            case (MODBUS_REAL_DCBA)
-                value = modbus_get_float_dcba(registers)
+            case (MODBUS_REAL_ABCD); value = modbus_get_float_abcd(registers)
+            case (MODBUS_REAL_BADC); value = modbus_get_float_badc(registers)
+            case (MODBUS_REAL_CDAB); value = modbus_get_float_cdab(registers)
+            case (MODBUS_REAL_DCBA); value = modbus_get_float_dcba(registers)
             case default
-                value = 0.0
                 if (present(error)) error = E_INVALID
+                value = 0.0
         end select
     end function dm_modbus_get_real
 
@@ -613,17 +596,13 @@ contains
         if (present(error)) error = E_NONE
 
         select case (byte_order)
-            case (MODBUS_REAL_ABCD)
-                call modbus_set_float_abcd(value, registers)
-            case (MODBUS_REAL_BADC)
-                call modbus_set_float_badc(value, registers)
-            case (MODBUS_REAL_CDAB)
-                call modbus_set_float_cdab(value, registers)
-            case (MODBUS_REAL_DCBA)
-                call modbus_set_float_dcba(value, registers)
+            case (MODBUS_REAL_ABCD); call modbus_set_float_abcd(value, registers)
+            case (MODBUS_REAL_BADC); call modbus_set_float_badc(value, registers)
+            case (MODBUS_REAL_CDAB); call modbus_set_float_cdab(value, registers)
+            case (MODBUS_REAL_DCBA); call modbus_set_float_dcba(value, registers)
             case default
-                registers = 0
                 if (present(error)) error = E_INVALID
+                registers = 0
         end select
     end subroutine dm_modbus_set_real
 

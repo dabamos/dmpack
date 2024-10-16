@@ -55,19 +55,19 @@ program dmbot
 
     type :: bot_type
         !! User data to be passed to libstrophe callbacks.
-        type(im_type)                          :: im                        !! IM context type.
-        character(len=ID_LEN)                  :: name           = APP_NAME !! Bot name.
-        character(len=NODE_ID_LEN)             :: node_id        = ' '      !! Node id.
-        character(len=IM_JID_LEN)              :: jid            = ' '      !! JID of bot account.
-        character(len=IM_PASSWORD_LEN)         :: password       = ' '      !! Password of bot account.
-        character(len=IM_HOST_LEN)             :: host           = ' '      !! Domain of XMPP server.
-        integer                                :: port           = IM_PORT  !! Port of XMPP server.
-        logical                                :: tls            = .true.   !! Force TLS encryption.
-        logical                                :: reconnect      = .false.  !! Reconnect on error.
-        character(len=IM_ID_LEN)               :: ping_id        = ' '      !! XMPP ping id (XEP-0199).
-        character(len=FILE_PATH_LEN)           :: db_path_log    = ' '      !! Path to log database.
-        character(len=FILE_PATH_LEN)           :: db_path_observ = ' '      !! Path to observ database.
-        character(len=IM_JID_LEN), allocatable :: group(:)                  !! Authorised JIDs.
+        type(im_type)                               :: im                        !! IM context type.
+        character(len=ID_LEN)                       :: name           = APP_NAME !! Bot name.
+        character(len=NODE_ID_LEN)                  :: node_id        = ' '      !! Node id.
+        character(len=IM_JID_LEN)                   :: jid            = ' '      !! JID of bot account.
+        character(len=IM_PASSWORD_LEN)              :: password       = ' '      !! Password of bot account.
+        character(len=IM_HOST_LEN)                  :: host           = ' '      !! Domain of XMPP server.
+        integer                                     :: port           = IM_PORT  !! Port of XMPP server.
+        logical                                     :: tls            = .true.   !! Force TLS encryption.
+        logical                                     :: reconnect      = .false.  !! Reconnect on error.
+        character(len=IM_ID_LEN)                    :: ping_id        = ' '      !! XMPP ping id (XEP-0199).
+        character(len=FILE_PATH_LEN)                :: db_path_log    = ' '      !! Path to log database.
+        character(len=FILE_PATH_LEN)                :: db_path_observ = ' '      !! Path to observ database.
+        character(len=IM_JID_FULL_LEN), allocatable :: group(:)                  !! Authorised JIDs.
     end type bot_type
 
     class(logger_class), pointer :: logger ! Logger object.
