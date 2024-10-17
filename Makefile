@@ -230,6 +230,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_beat.f90 \
       $(SRCDIR)/dm_block.f90 \
       $(SRCDIR)/dm_c.f90 \
+      $(SRCDIR)/dm_camera.f90 \
       $(SRCDIR)/dm_cgi.f90 \
       $(SRCDIR)/dm_cgi_router.f90 \
       $(SRCDIR)/dm_config.f90 \
@@ -324,6 +325,7 @@ OBJ = dm_ansi.o \
       dm_beat.o \
       dm_block.o \
       dm_c.o \
+      dm_camera.o \
       dm_cgi.o \
       dm_cgi_router.o \
       dm_config.o \
@@ -638,6 +640,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_image.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_camera.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.

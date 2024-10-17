@@ -5,6 +5,7 @@ module dm_plot
     use, intrinsic :: iso_c_binding
     use :: dm_dp
     use :: dm_error
+    use :: dm_file
     use :: dm_kind
     use :: dm_pipe
     use :: dm_string
@@ -46,30 +47,30 @@ module dm_plot
     character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
 
     type, public :: plot_type
-        !! Plot type of plot settings.
-        integer                  :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
-        integer                  :: style      = PLOT_STYLE_LINES   !! Plot line style.
-        integer                  :: width      = 800                !! Plot width.
-        integer                  :: height     = 300                !! Plot height.
-        character(len=1024)      :: output     = ' '                !! Output file name.
-        character(len=8)         :: background = ' '                !! Background colour (optional).
-        character(len=8)         :: foreground = '#3b4cc0'          !! Foreground colour (optional).
-        character(len=8)         :: graph      = '#ffffff'          !! Graph background colour.
-        character(len=1024)      :: font       = ' '                !! Font name or file path (optional).
-        character(len=128)       :: title      = ' '                !! Plot title (optional).
-        character(len=128)       :: xlabel     = ' '                !! X label (optional).
-        character(len=128)       :: ylabel     = ' '                !! Y label (optional).
-        character(len=TIME_LEN)  :: xrange(2)  = ' '                !! X axis range.
-        real(kind=r8)            :: yrange(2)  = 0.0_r8             !! Y axis range.
-        logical                  :: bidirect   = .false.            !! Bi-directional anonymous pipe.
-        logical                  :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
-        logical                  :: xautoscale = .true.             !! Auto-scale X axis.
-        logical                  :: yautoscale = .true.             !! Auto-scale Y axis.
-        logical                  :: grid       = .true.             !! Show grid.
-        logical                  :: legend     = .false.            !! Show legend.
-        type(pipe_type), private :: stdin                           !! Gnuplot’s standard input.
-        type(pipe_type), private :: stdout                          !! Gnuplot’s standard output.
-        type(pipe_type), private :: stderr                          !! Gnuplot’s standard error.
+        !! Plot context type.
+        integer                      :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
+        integer                      :: style      = PLOT_STYLE_LINES   !! Plot line style.
+        integer                      :: width      = 800                !! Plot width.
+        integer                      :: height     = 300                !! Plot height.
+        character(len=FILE_PATH_LEN) :: output     = ' '                !! Output file name.
+        character(len=8)             :: background = ' '                !! Background colour (optional).
+        character(len=8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
+        character(len=8)             :: graph      = '#ffffff'          !! Graph background colour.
+        character(len=FILE_PATH_LEN) :: font       = ' '                !! Font name or file path (optional).
+        character(len=128)           :: title      = ' '                !! Plot title (optional).
+        character(len=128)           :: xlabel     = ' '                !! X label (optional).
+        character(len=128)           :: ylabel     = ' '                !! Y label (optional).
+        character(len=TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
+        real(kind=r8)                :: yrange(2)  = 0.0_r8             !! Y axis range.
+        logical                      :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                      :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
+        logical                      :: xautoscale = .true.             !! Auto-scale X axis.
+        logical                      :: yautoscale = .true.             !! Auto-scale Y axis.
+        logical                      :: grid       = .true.             !! Show grid.
+        logical                      :: legend     = .false.            !! Show legend.
+        type(pipe_type), private     :: stdin                           !! Gnuplot’s standard input.
+        type(pipe_type), private     :: stdout                          !! Gnuplot’s standard output.
+        type(pipe_type), private     :: stderr                          !! Gnuplot’s standard error.
     end type plot_type
 
     public :: dm_plot_error
