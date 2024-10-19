@@ -196,6 +196,11 @@ package:
 * link:https://www.zlib.net/[zlib]
 * link:https://facebook.github.io/zstd/[zstd] (≥ 1.5.5)
 
+Optionally, for client-side camera access:
+
+* link:https://www.ffmpeg.org/[FFmpeg]
+* link:http://www.graphicsmagick.org/[GraphicsMagick]
+
 The <<web-applications,web applications>> require a compatible web server, like:
 
 * link:https://www.lighttpd.net/[lighttpd]
@@ -259,15 +264,18 @@ $ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
   curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libmodbus5 \
   libmodbus-dev libhdf5-103-1 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev \
   libpcre2-8-0 libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev libstrophe0 \
-  libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev gnuplot
+  libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev ffmpeg graphicsmagick \
+  gnuplot
 ....
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
-raster graphic formats are not required (essentially, SVG output only). The
-SQLite 3 package version must be ≥ 3.39.0. If the version in the package
-repository is too old, like on Ubuntu 22.04 LTS, you can also
-<<third-party-sqlite,build the library from source>>. Depending on the Linux
-distribution, the names of the HDF5 and Lua packages may differ.
+raster graphic formats are not required (limiting the output formats essentially
+to SVG only). The packages `ffmpeg` and `graphicsmagick` are only required for
+client-side camera access and may be omitted. The SQLite 3 package version must
+be ≥ 3.39.0. If the version in the package repository is too old, like on Ubuntu
+22.04 LTS, you can also <<third-party-sqlite,build the library from source>>.
+Depending on the Linux distribution, the names of the HDF5 and Lua packages may
+differ.
 
 [NOTE]
 ====
@@ -384,8 +392,9 @@ First, install the build and run-time dependencies:
 
 ....
 $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
-  devel/pcre2 devel/pkgconf ftp/curl lang/gcc lang/lua54 math/gnuplot math/lapack \
-  net-im/libstrophe science/hdf5 www/fcgi
+  devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicMagick lang/gcc \
+  lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net-im/libstrophe \
+  science/hdf5 www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`

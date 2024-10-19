@@ -63,6 +63,7 @@ POSIX semaphores.
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API for Fortran
+* camera access (V4L, RTSP)
 * time series plotting
 * Lua scripting
 * MQTT and XMPP connectivity
@@ -96,6 +97,11 @@ this package:
 * SQLite 3
 * zlib
 * zstd
+
+Optionally, for client-side camera access:
+
+* FFmpeg
+* GraphicsMagick
 
 On Linux, additional development headers are required for the build step. To
 generate the [man pages](adoc/README.md), the [user guide](guide/README.md),
