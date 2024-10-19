@@ -54,7 +54,6 @@ module dm_camera
     use :: dm_error
     use :: dm_file
     use :: dm_string
-    use :: dm_time
     implicit none (type, external)
     private
 
