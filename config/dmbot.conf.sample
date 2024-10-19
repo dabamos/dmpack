@@ -5,6 +5,7 @@
 --
 -- Settings:
 --
+--      db        - Paths to log and observation databases (optional).
 --      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
 --      group     - List of authorised JIDs. If empty, all users can send commands!
 --      host      - IP or FQDN of XMPP server.
@@ -29,9 +30,11 @@ dmbot = {
     port = 5222,
     tls = true,
     reconnect = false,
-    log_db = "",
-    observ_db = "",
     group = { "romeo@montague.tld" },
+    db = {
+      log = "",
+      observ = ""
+    },
     debug = false,
     verbose = true
 }

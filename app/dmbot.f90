@@ -24,7 +24,7 @@ program dmbot
     integer, parameter :: BOT_COMMAND_BEATS     = 1    !! Return time in Swatch Internet Time (.beats).
     integer, parameter :: BOT_COMMAND_DATE      = 2    !! Return date and time.
     integer, parameter :: BOT_COMMAND_HELP      = 3    !! Return help text.
-    integer, parameter :: BOT_COMMAND_JID       = 4    !! Return log message to logger.
+    integer, parameter :: BOT_COMMAND_JID       = 4    !! Return JID of bot.
     integer, parameter :: BOT_COMMAND_LOG       = 5    !! Return log message to logger.
     integer, parameter :: BOT_COMMAND_NODE      = 6    !! Return node id.
     integer, parameter :: BOT_COMMAND_POKE      = 7    !! Return bot response if online.
@@ -55,19 +55,19 @@ program dmbot
 
     type :: bot_type
         !! User data to be passed to libstrophe callbacks.
-        type(im_type)                               :: im                        !! IM context type.
-        character(len=ID_LEN)                       :: name           = APP_NAME !! Bot name.
-        character(len=NODE_ID_LEN)                  :: node_id        = ' '      !! Node id.
-        character(len=IM_JID_LEN)                   :: jid            = ' '      !! JID of bot account.
-        character(len=IM_PASSWORD_LEN)              :: password       = ' '      !! Password of bot account.
-        character(len=IM_HOST_LEN)                  :: host           = ' '      !! Domain of XMPP server.
-        integer                                     :: port           = IM_PORT  !! Port of XMPP server.
-        logical                                     :: tls            = .true.   !! Force TLS encryption.
-        logical                                     :: reconnect      = .false.  !! Reconnect on error.
-        character(len=IM_ID_LEN)                    :: ping_id        = ' '      !! XMPP ping id (XEP-0199).
-        character(len=FILE_PATH_LEN)                :: db_path_log    = ' '      !! Path to log database.
-        character(len=FILE_PATH_LEN)                :: db_path_observ = ' '      !! Path to observ database.
-        character(len=IM_JID_FULL_LEN), allocatable :: group(:)                  !! Authorised JIDs.
+        type(im_type)                               :: im                         !! IM context type.
+        character(len=ID_LEN)                       :: name            = APP_NAME !! Bot name.
+        character(len=NODE_ID_LEN)                  :: node_id         = ' '      !! Node id.
+        character(len=IM_JID_LEN)                   :: jid             = ' '      !! JID of bot account.
+        character(len=IM_PASSWORD_LEN)              :: password        = ' '      !! Password of bot account.
+        character(len=IM_HOST_LEN)                  :: host            = ' '      !! Domain of XMPP server.
+        integer                                     :: port            = IM_PORT  !! Port of XMPP server.
+        logical                                     :: tls             = .true.   !! Force TLS encryption.
+        logical                                     :: reconnect       = .false.  !! Reconnect on error.
+        character(len=IM_ID_LEN)                    :: ping_id         = ' '      !! XMPP ping id (XEP-0199).
+        character(len=FILE_PATH_LEN)                :: database_log    = ' '      !! Path to log database.
+        character(len=FILE_PATH_LEN)                :: database_observ = ' '      !! Path to observation database.
+        character(len=IM_JID_FULL_LEN), allocatable :: group(:)                   !! Authorised JIDs.
     end type bot_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -157,7 +157,7 @@ contains
         type(bot_type), intent(out) :: bot !! Bot type.
 
         character(len=:), allocatable :: version
-        type(arg_type)                :: args(14)
+        type(arg_type)                :: args(12)
 
         args = [ &
             arg_type('name',      short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
@@ -170,8 +170,6 @@ contains
             arg_type('port',      short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
             arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
             arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL),  & ! -R, --reconnect
-            arg_type('log-db',    short='L', type=ARG_TYPE_DATABASE), & ! -L, --log-db <path>
-            arg_type('observ-db', short='O', type=ARG_TYPE_DATABASE), & ! -O, --observ-db <path>
             arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
             arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
         ]
@@ -197,10 +195,8 @@ contains
         call dm_arg_get(args( 8), bot%port)
         call dm_arg_get(args( 9), bot%tls)
         call dm_arg_get(args(10), bot%reconnect)
-        call dm_arg_get(args(11), bot%db_path_log)
-        call dm_arg_get(args(12), bot%db_path_observ)
-        call dm_arg_get(args(13), app%debug)
-        call dm_arg_get(args(14), app%verbose)
+        call dm_arg_get(args(11), app%debug)
+        call dm_arg_get(args(12), app%verbose)
 
         ! Validate passed options.
         rc = E_INVALID
@@ -230,12 +226,12 @@ contains
             return
         end if
 
-        if (len_trim(bot%db_path_log) > 0 .and. .not. dm_file_exists(bot%db_path_log)) then
+        if (len_trim(bot%database_log) > 0 .and. .not. dm_file_exists(bot%database_log)) then
             call dm_error_out(rc, 'log database does not exist')
             return
         end if
 
-        if (len_trim(bot%db_path_observ) > 0 .and. .not. dm_file_exists(bot%db_path_observ)) then
+        if (len_trim(bot%database_observ) > 0 .and. .not. dm_file_exists(bot%database_observ)) then
             call dm_error_out(rc, 'observ database does not exist')
             return
         end if
@@ -269,11 +265,15 @@ contains
             call dm_config_get(config, 'port',      bot%port)
             call dm_config_get(config, 'tls',       bot%tls)
             call dm_config_get(config, 'reconnect', bot%reconnect)
-            call dm_config_get(config, 'log_db',    bot%db_path_log)
-            call dm_config_get(config, 'observ_db', bot%db_path_observ)
             call dm_config_get(config, 'group',     bot%group)
             call dm_config_get(config, 'debug',     app%debug)
             call dm_config_get(config, 'verbose',   app%verbose)
+
+            if (dm_is_ok(dm_config_field(config, 'db'))) then
+                call dm_config_get(config, 'log',    bot%database_log)
+                call dm_config_get(config, 'observ', bot%database_observ)
+                call dm_config_remove(config)
+            end if
         end if
 
         call dm_config_close(config)
