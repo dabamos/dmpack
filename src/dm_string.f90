@@ -70,6 +70,7 @@ module dm_string
     public :: dm_string_lower
     public :: dm_string_replace
     public :: dm_string_split
+    public :: dm_string_starts_with
     public :: dm_string_to_lower
     public :: dm_string_to_upper
     public :: dm_string_upper
@@ -292,6 +293,22 @@ contains
 
         if (present(n)) n = i
     end subroutine dm_string_split
+
+    pure elemental logical function dm_string_starts_with(a, b) result(starts)
+        !! Returns `.true.` if string `a` starts with string `b`.
+        character(len=*), intent(in) :: a !! First string.
+        character(len=*), intent(in) :: b !! Second string.
+
+        integer :: na, nb
+
+        na = len_trim(a)
+        nb = len_trim(b)
+
+        starts = .false.
+        if (na == 0 .or. nb == 0 .or. na < nb) return
+
+        starts = (a(:nb) == b)
+    end function dm_string_starts_with
 
     pure elemental subroutine dm_string_upper(str)
         !! Converts given string to upper case.
