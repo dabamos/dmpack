@@ -5,8 +5,38 @@ module dm_path
     implicit none (type, external)
     private
 
+    public :: dm_path_join
     public :: dm_path_parsed
 contains
+    pure function dm_path_join(path1, path2) result(path)
+        !! Joins paths and adds `/` between them.
+        character(len=*), intent(in)  :: path1 !! First path.
+        character(len=*), intent(in)  :: path2 !! Second path.
+        character(len=:), allocatable :: path  !! Joined path.
+
+        integer :: n1, n2
+
+        n1 = len_trim(path1)
+        n2 = len_trim(path2)
+
+        if (n1 == 0 .and. n2 == 0) then
+            path = ''
+            return
+        else if (n1 == 0) then
+            path = path2(:n2)
+            return
+        else if (n2 == 0) then
+            path = path1(:n1)
+            return
+        end if
+
+        if (path1(n1:n1) /= '/' .and. path2(1:1) /= '/') then
+            path = path1(:n1) // '/' // path2(:n2)
+        else
+            path = path1(:n1) // path2(:n2)
+        end if
+    end function dm_path_join
+
     function dm_path_parsed(path) result(parsed)
         !! Returns a parsed path or an empty string on error. The following
         !! format descriptors are allowed:
