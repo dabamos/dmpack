@@ -7,7 +7,7 @@ program dmteststring
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmteststring'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -15,7 +15,8 @@ program dmteststring
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
     ]
 
     call dm_init()
@@ -109,4 +110,19 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        stat = TEST_FAILED
+
+        print *, 'Testing starts-with function ...'
+
+        if (.not. dm_string_starts_with('aaa', 'a'))   return
+        if (.not. dm_string_starts_with('aaa', 'aaa')) return
+        if (dm_string_starts_with('', ''))             return
+        if (dm_string_starts_with('aaa', ''))          return
+        if (dm_string_starts_with('', 'aaa'))          return
+        if (dm_string_starts_with('a', 'aaa'))         return
+
+        stat = TEST_PASSED
+    end function test04
 end program dmteststring
