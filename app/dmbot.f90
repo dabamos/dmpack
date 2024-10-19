@@ -35,7 +35,7 @@ program dmbot
     integer, parameter :: BOT_NCOMMANDS         = 11   !! Number of commands.
 
     integer, parameter :: BOT_COMMAND_NAME_LEN  = 9                        !! Max. command name length.
-    integer, parameter :: BOT_COMMAND_LEN       = 1 + BOT_COMMAND_NAME_LEN !! Max. command length with prefix `!`.
+    integer, parameter :: BOT_COMMAND_LEN       = 1 + BOT_COMMAND_NAME_LEN !! Max. command length with prefix.
 
     character,                           parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
     character(len=BOT_COMMAND_NAME_LEN), parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
@@ -98,6 +98,9 @@ program dmbot
         call logger%info('started ' // APP_NAME)
 
         do
+            ! Register signal handler.
+            call dm_signal_register(signal_callback)
+
             ! Create libstrophe context.
             rc = dm_im_create(bot%im)
 
@@ -124,9 +127,6 @@ program dmbot
                                   dm_itoa(bot%port), error=rc)
                 exit init_block
             end if
-
-            ! Register signal handler.
-            call dm_signal_register(signal_callback)
 
             ! Check if authorisation is enabled.
             if (size(bot%group) == 0) then

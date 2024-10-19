@@ -322,6 +322,7 @@ module dm_gm
     public :: dm_gm_get_directory
     public :: dm_gm_get_file_extension
     public :: dm_gm_get_file_format
+    public :: dm_gm_get_file_name
     public :: dm_gm_get_mime
 
     private :: gm_identify
@@ -469,11 +470,30 @@ contains
         character(len=*),              intent(in)  :: path        !! Image file path.
         character(len=:), allocatable, intent(out) :: file_format !! Image file format.
 
-        character(len=32) :: buffer
+        character(len=16) :: buffer
 
         rc = gm_identify(path, '%m', buffer)
         file_format = trim(buffer)
     end function dm_gm_get_file_format
+
+    integer function dm_gm_get_file_name(path, file_name) result(rc)
+        !! Uses GraphicsMagick to return the file name part of the image path.
+        !! On error, the string `file_name` is allocated but empty.
+        !!
+        !! The function returns the followin error codes:
+        !!
+        !! * `E_NOT_FOUND` if image does not exist.
+        !! * `E_READ` if reading dimensions failed.
+        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
+        !!
+        character(len=*),              intent(in)  :: path      !! Image file path.
+        character(len=:), allocatable, intent(out) :: file_name !! Image file name.
+
+        character(len=512) :: buffer
+
+        rc = gm_identify(path, '%f', buffer)
+        file_name = trim(buffer)
+    end function dm_gm_get_file_name
 
     integer function dm_gm_get_mime(path, mime) result(rc)
         !! Determines the MIME type of the image through file format. The
@@ -507,11 +527,13 @@ contains
     ! **************************************************************************
     integer function gm_identify(path, format, output) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
+        !!
+        !! * [GraphicMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         use :: dm_kind
         use :: dm_pipe
 
         character(len=*), intent(in)    :: path   !! Image file path.
-        character(len=*), intent(in)    :: format !! GraphicsMagick identify format attributes.
+        character(len=*), intent(in)    :: format !! GraphicsMagick format attributes.
         character(len=*), intent(inout) :: output !! Output string.
 
         integer(kind=i8) :: n
@@ -545,6 +567,8 @@ contains
     subroutine gm_prepare_add_text_box(command, path, text, text_box)
         !! Prepares GraphicsMagick command to add text to image. The string
         !! `text` must not contain the quote characters `'` and `"`.
+        !!
+        !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
         character(len=GM_COMMAND_LEN), intent(out)          :: command  !! Prepared command string.
         character(len=*),              intent(in)           :: path     !! Image file path.
         character(len=*),              intent(in)           :: text     !! Text to add.
