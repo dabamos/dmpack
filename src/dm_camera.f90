@@ -21,12 +21,12 @@ module dm_camera
     !! ```
     !!
     !! The following example captures an image from an attached USB webcam at
-    !! `/dev/video0` and adds a timestamp in ISO 8601 format to it:
+    !! `/dev/video0` and adds a timestamp in ISO 8601 format to it using
+    !! GraphicMagick:
     !!
     !! ```fortran
     !! character(len=*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
-    !! integer           :: width, height
     !! integer           :: rc
     !! type(camera_type) :: camera
     !!
@@ -35,13 +35,8 @@ module dm_camera
     !! rc = dm_camera_capture(camera, IMAGE_PATH)
     !! if (dm_is_error(rc)) call dm_error_out(rc)
     !!
-    !! rc = dm_image_add_text_box(IMAGE_PATH, text=dm_time_now())
+    !! rc = dm_gm_add_text_box(IMAGE_PATH, text=dm_time_now())
     !! if (dm_is_error(rc)) call dm_error_out(rc)
-    !!
-    !! rc = dm_image_get_dimensions(IMAGE_PATH, width, height)
-    !! if (dm_is_error(rc)) call dm_error_out(rc)
-    !!
-    !! print '("image dimensions: ", i0, "x", i0)', width, height
     !! ```
     !!
     !! Change the camera type to capture an RTSP stream instead:
@@ -50,7 +45,7 @@ module dm_camera
     !! camera = camera_type(input='rtsp://10.10.10.15:8554/camera1', device=CAMERA_DEVICE_RTSP)
     !! ```
     !!
-    !! The attribute `input` must be the URL of the stream.
+    !! The attribute `input` must be set to the stream URL.
     use :: dm_error
     use :: dm_file
     use :: dm_string
@@ -63,9 +58,14 @@ module dm_camera
     integer, parameter, public :: CAMERA_DEVICE_V4L  = 2 !! USB webcam via Video4Linux2.
     integer, parameter, public :: CAMERA_DEVICE_LAST = 2 !! Never use this.
 
-    integer, parameter, public :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
+    integer, parameter, public :: CAMERA_DEVICE_NAME_LEN = 4
 
-    character(len=*), parameter :: CAMERA_FFMPEG = 'ffmpeg' !! FFmpeg binary name.
+    character(len=*), parameter, public :: CAMERA_DEVICE_NAMES(CAMERA_DEVICE_NONE:CAMERA_DEVICE_LAST) = [ &
+        character(len=CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l' &
+    ] !! Camera device names.
+
+    character(len=*), parameter :: CAMERA_BINARY      = 'ffmpeg'      !! FFmpeg binary name.
+    integer,          parameter :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
 
     type, public :: camera_type
         !! Camera settings type.
@@ -76,10 +76,14 @@ module dm_camera
     end type camera_type
 
     public :: dm_camera_capture
+    public :: dm_camera_device_from_name
     public :: dm_camera_device_is_valid
 
     private :: camera_prepare_capture
 contains
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES.
+    ! **************************************************************************
     integer function dm_camera_capture(camera, output, command) result(rc)
         !! Captures a single frame from a V4L device or RTSP stream with
         !! FFmpeg, and optionally adds a timestamp with GraphicsMagick. If the
@@ -119,7 +123,24 @@ contains
         if (present(command)) command = trim(command_)
     end function dm_camera_capture
 
-    logical function dm_camera_device_is_valid(device) result(is)
+    pure elemental integer function dm_camera_device_from_name(name) result(device)
+        !! Returns device enumerator from name. On error, the result is
+        !! `CAMERA_DEVICE_NONE`.
+        character(len=*), intent(in) :: name !! Device name.
+
+        character(len=CAMERA_DEVICE_NAME_LEN) :: name_
+
+        ! Normalise name.
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case (CAMERA_DEVICE_NAMES(CAMERA_DEVICE_RTSP)); device = CAMERA_DEVICE_RTSP
+            case (CAMERA_DEVICE_NAMES(CAMERA_DEVICE_V4L));  device = CAMERA_DEVICE_V4L
+            case default;                                   device = CAMERA_DEVICE_NONE
+        end select
+    end function dm_camera_device_from_name
+
+    pure elemental logical function dm_camera_device_is_valid(device) result(is)
         !! Returns `.true.` if device enumerator is valid. The device
         !! `CAMERA_DEVICE_NONE` is invalid.
         integer, intent(in) :: device !! Camera device enumerator.
@@ -127,6 +148,9 @@ contains
         is = (device > CAMERA_DEVICE_NONE .and. device <= CAMERA_DEVICE_LAST)
     end function dm_camera_device_is_valid
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES.
+    ! **************************************************************************
     subroutine camera_prepare_capture(command, camera, output)
         !! Creates FFmpeg command to capture a single camera frame through V4L
         !! or RTSP. The function returns `E_INVALID` on error.
@@ -137,7 +161,7 @@ contains
         character(len=32) :: video_size
 
         ! Disable logging and set output file.
-        command = ' -hide_banner -loglevel fatal -nostats -y ' // output
+        command = ' -hide_banner -loglevel quiet -nostats -y ' // output
 
         select case (camera%device)
             case (CAMERA_DEVICE_RTSP)
@@ -157,6 +181,6 @@ contains
         end select
 
         ! Concatenate command string.
-        command = CAMERA_FFMPEG // trim(command)
+        command = CAMERA_BINARY // trim(command)
     end subroutine camera_prepare_capture
 end module dm_camera

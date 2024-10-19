@@ -13,8 +13,6 @@ module dm_plot
     implicit none (type, external)
     private
 
-    integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 512 !! Line buffer length.
-
     ! Line styles.
     integer, parameter, public :: PLOT_STYLE_NONE         = 0 !! Invalid style.
     integer, parameter, public :: PLOT_STYLE_LINES        = 1 !! Lines.
@@ -38,13 +36,14 @@ module dm_plot
 
     integer, parameter, public :: PLOT_TERMINAL_NAME_LEN  = 8 !! Max. terminal name length.
 
+    character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
     character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
         character(len=PLOT_TERMINAL_NAME_LEN) :: &
         'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
-    character(len=*), parameter, public :: PLOT_GNUPLOT     = 'gnuplot'           !! Gnuplot binary.
-    character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
+    character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
+    integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 512       !! Line buffer length.
 
     type, public :: plot_type
         !! Plot context type.
@@ -127,9 +126,9 @@ contains
         if (plot%terminal <= PLOT_TERMINAL_NONE .or. plot%terminal > PLOT_TERMINAL_LAST) return
 
         if (.not. plot%bidirect) then
-            rc = dm_pipe_open(plot%stdin, PLOT_GNUPLOT, PIPE_WRONLY)
+            rc = dm_pipe_open(plot%stdin, PLOT_BINARY, PIPE_WRONLY)
         else
-            rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, PLOT_GNUPLOT)
+            rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, PLOT_BINARY)
         end if
 
         if (dm_is_error(rc)) return
@@ -226,7 +225,7 @@ contains
         if (present(name))  name_ = name
         if (present(found)) found = .false.
 
-        rc = dm_pipe_open(pipe, PLOT_GNUPLOT // ' --version', PIPE_RDONLY)
+        rc = dm_pipe_open(pipe, PLOT_BINARY // ' --version', PIPE_RDONLY)
         v  = '0.0'
 
         if (dm_is_ok(rc)) then

@@ -250,6 +250,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_geocom_error.f90 \
       $(SRCDIR)/dm_geocom_type.f90 \
       $(SRCDIR)/dm_geojson.f90 \
+      $(SRCDIR)/dm_gm.f90 \
       $(SRCDIR)/dm_hash.f90 \
       $(SRCDIR)/dm_hash_table.f90 \
       $(SRCDIR)/dm_hdf5.f90 \
@@ -345,6 +346,7 @@ OBJ = dm_ansi.o \
       dm_geocom_error.o \
       dm_geocom_type.o \
       dm_geojson.o \
+      dm_gm.o \
       dm_hash.o \
       dm_hash_table.o \
       dm_hdf5.o \
@@ -638,9 +640,10 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_image.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_gm.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_camera.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.

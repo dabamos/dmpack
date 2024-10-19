@@ -56,6 +56,7 @@ module dmpack
     use :: dm_geocom_error
     use :: dm_geocom_type
     use :: dm_geojson
+    use :: dm_gm
     use :: dm_hash
     use :: dm_hash_table
     use :: dm_hdf5

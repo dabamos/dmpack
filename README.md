@@ -86,25 +86,25 @@ Third-party dependencies have to be present to build and run the software of
 this package:
 
 * FastCGI
-* Gnuplot
 * HDF5
 * LAPACK
-* libcurl
-* libmodbus
-* libstrophe
 * Lua 5.4
 * PCRE2
 * SQLite 3
+* libcurl
+* libmodbus
+* libstrophe
 * zlib
 * zstd
 
-Optionally, for client-side camera access:
+On Linux, development headers are required for compilation. It is recommended
+to additionally install:
 
 * FFmpeg
+* Gnuplot
 * GraphicsMagick
 
-On Linux, additional development headers are required for the build step. To
-generate the [man pages](adoc/README.md), the [user guide](guide/README.md),
+To generate the [man pages](adoc/README.md), the [user guide](guide/README.md),
 and the source code documentation, you will need furthermore:
 
 * [AsciiDoctor](https://asciidoctor.org/), [Pygments](https://pygments.org/), and
@@ -217,6 +217,14 @@ containing the **DMPACK** module files is passed through argument `-I`.
 | `dm_z`          | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
 | `dm_zlib`       | zlib                | `pkg-config --libs zlib`                          |
 | `dm_zstd`       | zstd                | `pkg-config --libs libzstd`                       |
+
+Some modules use standard input/output to communicate with the following external programs:
+
+| Module          | Program             | Default Binary Name                               |
+|-----------------|---------------------|---------------------------------------------------|
+| `dm_camera`     | FFmpeg              | `ffmpeg`                                          |
+| `dm_gm`         | GraphicsMagick      | `gm`                                              |
+| `dm_plot`       | Gnuplot             | `gnuplot`                                         |
 
 ## Source Code Structure
 

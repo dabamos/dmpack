@@ -737,17 +737,10 @@ contains
                         header_name = xmpp_stanza_get_attribute(header_stanza, IM_STANZA_ATTR_NAME)
 
                         select case (header_name)
-                            case (IM_STANZA_HEADER_AUTHORIZATION)
-                                upload%auth = xmpp_stanza_get_text(header_stanza)
-
-                            case (IM_STANZA_HEADER_COOKIE)
-                                upload%cookie = xmpp_stanza_get_text(header_stanza)
-
-                            case (IM_STANZA_HEADER_EXPIRES)
-                                upload%expires = xmpp_stanza_get_text(header_stanza)
-
-                            case default
-                                upload%error = E_TYPE
+                            case (IM_STANZA_HEADER_AUTHORIZATION); upload%auth    = xmpp_stanza_get_text(header_stanza)
+                            case (IM_STANZA_HEADER_COOKIE);        upload%cookie  = xmpp_stanza_get_text(header_stanza)
+                            case (IM_STANZA_HEADER_EXPIRES);       upload%expires = xmpp_stanza_get_text(header_stanza)
+                            case default;                          upload%error   = E_TYPE
                         end select
                     end if
 
