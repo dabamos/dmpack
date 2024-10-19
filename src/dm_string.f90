@@ -76,8 +76,8 @@ module dm_string
     public :: dm_string_upper
 
     ! Public string type procedures.
-    public :: dm_string_allocate
-    public :: dm_string_destroy
+    public :: dm_string_type_allocate
+    public :: dm_string_type_destroy
 
     ! Private procedures.
     private :: string_from_int32
@@ -215,9 +215,9 @@ contains
     end function dm_string_to_upper
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! STRING TYPE SUBROUTINES.
     ! **************************************************************************
-    pure elemental subroutine dm_string_allocate(string, n)
+    pure elemental subroutine dm_string_type_allocate(string, n)
         !! Allocates string type to empty character of length 0 or `n`, if not
         !! allocated already.
         type(string_type), intent(inout)        :: string !! String type.
@@ -229,15 +229,18 @@ contains
         if (present(n)) n_ = max(0, n)
 
         if (.not. allocated(string%data)) allocate (character(len=n_) :: string%data)
-    end subroutine dm_string_allocate
+    end subroutine dm_string_type_allocate
 
-    pure elemental subroutine dm_string_destroy(string)
+    pure elemental subroutine dm_string_type_destroy(string)
         !! Deallocates allocatable character inside of string type.
         type(string_type), intent(inout) :: string !! String type.
 
         if (allocated(string%data)) deallocate (string%data)
-    end subroutine dm_string_destroy
+    end subroutine dm_string_type_destroy
 
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
     pure elemental subroutine dm_string_lower(str)
         !! Converts given string to lower case.
         character(len=*), intent(inout) :: str !! Input/output string.
