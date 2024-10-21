@@ -58,7 +58,7 @@ contains
             arg_type('target',  short='T', type=ARG_TYPE_ID),      & ! -T, --target <id>
             arg_type('observ',  short='O', type=ARG_TYPE_UUID),    & ! -O, --observ <uuid>
             arg_type('source',  short='Z', type=ARG_TYPE_ID,     max_len=LOG_SOURCE_LEN), & ! -Z, --source <id>
-            arg_type('message', short='m', type=ARG_TYPE_STRING, max_len=LOG_MESSAGE_LEN, required=.true.) &  ! -m, --message <string>
+            arg_type('message', short='m', type=ARG_TYPE_STRING, max_len=LOG_MESSAGE_LEN, required=.true.) & ! -m, --message <string>
         ]
 
         ! Read all command-line arguments.

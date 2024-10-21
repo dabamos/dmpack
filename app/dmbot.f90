@@ -709,7 +709,7 @@ contains
         type = xmpp_stanza_get_type(stanza)
 
         if (type == IM_STANZA_TYPE_ERROR) then
-            call logger%warning('received error message', error=E_IO)
+            call logger%warning('received error stanza', error=E_IO)
             return
         end if
 
