@@ -69,7 +69,7 @@ module dm_camera
 
     type, public :: camera_type
         !! Camera settings type.
-        character(len=FILE_PATH_LEN) :: input  = ' '                !! Input device path (`/dev/video0` or `rtsp://10.0.0.1`).
+        character(len=FILE_PATH_LEN) :: input  = ' '                !! Input device path (`/dev/video0` or `rtsp://10.0.0.1/`).
         integer                      :: device = CAMERA_DEVICE_NONE !! Input device.
         integer                      :: width  = 0                  !! Camera stream width in pixels (optional).
         integer                      :: height = 0                  !! Camera stream height in pixels (optional).
@@ -109,8 +109,11 @@ contains
             if (len_trim(camera%input) == 0 .or. len_trim(output) == 0) exit io_block
 
             rc = E_INVALID
-            if (.not. dm_camera_device_is_valid(camera%device)) return
-            if (camera%device == CAMERA_DEVICE_RTSP .and. .not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
+            if (.not. dm_camera_device_is_valid(camera%device)) exit io_block
+
+            if (camera%device == CAMERA_DEVICE_RTSP) then
+                if (.not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
+            end if
 
             rc = E_IO
             call camera_prepare_capture(command_, camera, output)
@@ -151,7 +154,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    subroutine camera_prepare_capture(command, camera, output)
+    pure elemental subroutine camera_prepare_capture(command, camera, output)
         !! Creates FFmpeg command to capture a single camera frame through V4L
         !! or RTSP. The function returns `E_INVALID` on error.
         character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.

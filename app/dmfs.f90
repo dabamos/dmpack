@@ -49,12 +49,12 @@ program dmfs
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &
-                          node_id = app%node_id, &
-                          source  = app%name, &
-                          debug   = app%debug, &
-                          ipc     = (len_trim(app%logger) > 0), &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger,                 & ! Name of logger process.
+                          node_id = app%node_id,                & ! Node id.
+                          source  = app%name,                   & ! Log source.
+                          debug   = app%debug,                  & ! Forward debug messages via IPC.
+                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
+                          verbose = app%verbose)                  ! Print logs to standard error.
 
     ! Run main loop.
     call dm_signal_register(signal_callback)

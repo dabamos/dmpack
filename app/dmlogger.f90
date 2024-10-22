@@ -11,20 +11,20 @@ program dmlogger
     character(len=*), parameter :: APP_NAME  = 'dmlogger'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 2
+    integer,          parameter :: APP_PATCH = 3
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name     = APP_NAME   !! Name of logger instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN) :: config   = ' '        !! Path to configuration file.
-        character(len=FILE_PATH_LEN) :: database = ' '        !! Path to SQLite database file.
-        character(len=NODE_ID_LEN)   :: node_id  = ' '        !! Node id.
-        integer                      :: minlevel = LL_WARNING !! Minimum level for a log to be stored in the database.
-        logical                      :: ipc      = .false.    !! Use POSIX semaphore for process synchronisation.
-        logical                      :: verbose  = .false.    !! Print debug messages to stderr.
+        character(len=ID_LEN)        :: name      = APP_NAME !! Name of logger instance and POSIX semaphore.
+        character(len=FILE_PATH_LEN) :: config    = ' '      !! Path to configuration file.
+        character(len=FILE_PATH_LEN) :: database  = ' '      !! Path to SQLite database file.
+        character(len=NODE_ID_LEN)   :: node_id   = ' '      !! Node id.
+        integer                      :: min_level = LL_INFO  !! Minimum level for a log to be stored in the database.
+        logical                      :: ipc       = .false.  !! Use POSIX semaphore for process synchronisation.
+        logical                      :: verbose   = .false.  !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -45,10 +45,10 @@ program dmlogger
     init_block: block
         ! Initialise logger.
         logger => dm_logger_get_default()
-        call logger%configure(name    = app%name, &    ! Name of global logger.
+        call logger%configure(name    = app%name,    & ! Name of global logger.
                               node_id = app%node_id, & ! Sensor node id.
-                              source  = app%name, &    ! Application name.
-                              ipc     = .false., &     ! Don't send logs via IPC.
+                              source  = app%name,    & ! Application name.
+                              ipc     = .false.,     & ! Don't send logs via IPC.
                               verbose = app%verbose)   ! Prints logs to terminal.
 
         ! Open SQLite database.
@@ -60,10 +60,10 @@ program dmlogger
         end if
 
         ! Open log message queue for reading.
-        rc = dm_mqueue_open(mqueue = mqueue, &
-                            type   = TYPE_LOG, &
-                            name   = app%name, &
-                            access = MQUEUE_RDONLY)
+        rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
+                            type   = TYPE_LOG, &    ! Log type.
+                            name   = app%name, &    ! Name of message queue.
+                            access = MQUEUE_RDONLY) ! Read-only access.
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
@@ -121,7 +121,7 @@ contains
         ! Overwrite settings.
         call dm_arg_get(args(3), app%database)
         call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%minlevel)
+        call dm_arg_get(args(5), app%min_level)
         call dm_arg_get(args(6), app%ipc)
         call dm_arg_get(args(7), app%verbose)
 
@@ -146,7 +146,7 @@ contains
             return
         end if
 
-        if (.not. dm_log_level_is_valid(app%minlevel)) then
+        if (.not. dm_log_level_is_valid(app%min_level)) then
             call dm_error_out(rc, 'invalid log level')
             return
         end if
@@ -167,7 +167,7 @@ contains
         if (dm_is_ok(rc)) then
             call dm_config_get(config, 'database', app%database)
             call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'minlevel', app%minlevel)
+            call dm_config_get(config, 'minlevel', app%min_level)
             call dm_config_get(config, 'ipc',      app%ipc)
             call dm_config_get(config, 'verbose',  app%verbose)
         end if
@@ -211,7 +211,7 @@ contains
 
         call logger%info('started ' // APP_NAME)
         call logger%debug('waiting for log on mqueue /' // trim(app%name) // ' (minimum log level is ' // &
-                          trim(LOG_LEVEL_NAMES(app%minlevel)) // ')')
+                          trim(LOG_LEVEL_NAMES(app%min_level)) // ')')
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)
@@ -229,7 +229,7 @@ contains
             if (app%verbose) call logger%out(log)
 
             ! Skip if log level is lower than minimum level.
-            if (log%level < app%minlevel) cycle ipc_loop
+            if (log%level < app%min_level) cycle ipc_loop
 
             ! Skip if log already exists.
             if (dm_db_has_log(db, log%id)) then

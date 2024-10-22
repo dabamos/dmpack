@@ -48,7 +48,7 @@ contains
         rc = dm_db_open(db, app%database)
 
         if (dm_is_error(rc)) then
-            call dm_error_out(rc, 'failed to open database')
+            call dm_error_out(rc, 'failed to open database ' // app%database)
             return
         end if
 

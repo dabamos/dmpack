@@ -90,16 +90,11 @@ contains
 
                 ! Check for appropriate database table.
                 select case (app%type)
-                    case (TYPE_NODE)
-                        has = dm_db_has_table(db, SQL_TABLE_NODES)
-                    case (TYPE_SENSOR)
-                        has = dm_db_has_table(db, SQL_TABLE_SENSORS)
-                    case (TYPE_TARGET)
-                        has = dm_db_has_table(db, SQL_TABLE_TARGETS)
-                    case (TYPE_OBSERV)
-                        has = dm_db_has_table(db, SQL_TABLE_OBSERVS)
-                    case (TYPE_LOG)
-                        has = dm_db_has_table(db, SQL_TABLE_LOGS)
+                    case (TYPE_NODE);   has = dm_db_has_table(db, SQL_TABLE_NODES)
+                    case (TYPE_SENSOR); has = dm_db_has_table(db, SQL_TABLE_SENSORS)
+                    case (TYPE_TARGET); has = dm_db_has_table(db, SQL_TABLE_TARGETS)
+                    case (TYPE_OBSERV); has = dm_db_has_table(db, SQL_TABLE_OBSERVS)
+                    case (TYPE_LOG);    has = dm_db_has_table(db, SQL_TABLE_LOGS)
                 end select
 
                 if (.not. has) then
@@ -131,16 +126,11 @@ contains
 
                 ! Read record from file.
                 select case (app%type)
-                    case (TYPE_NODE)
-                        rc = dm_csv_read(node, unit, app%separator, app%quote)
-                    case (TYPE_SENSOR)
-                        rc = dm_csv_read(sensor, unit, app%separator, app%quote)
-                    case (TYPE_TARGET)
-                        rc = dm_csv_read(target, unit, app%separator, app%quote)
-                    case (TYPE_OBSERV)
-                        rc = dm_csv_read(observ, unit, app%separator, app%quote)
-                    case (TYPE_LOG)
-                        rc = dm_csv_read(log, unit, app%separator, app%quote)
+                    case (TYPE_NODE);   rc = dm_csv_read(node,   unit, app%separator, app%quote)
+                    case (TYPE_SENSOR); rc = dm_csv_read(sensor, unit, app%separator, app%quote)
+                    case (TYPE_TARGET); rc = dm_csv_read(target, unit, app%separator, app%quote)
+                    case (TYPE_OBSERV); rc = dm_csv_read(observ, unit, app%separator, app%quote)
+                    case (TYPE_LOG);    rc = dm_csv_read(log,    unit, app%separator, app%quote)
                 end select
 
                 ! Ignore comments and empty rows.
@@ -161,16 +151,11 @@ contains
                 ! Validate record but skip database insert on dry run.
                 if (app%dry) then
                     select case (app%type)
-                        case (TYPE_NODE)
-                            valid = dm_node_is_valid(node)
-                        case (TYPE_SENSOR)
-                            valid = dm_sensor_is_valid(sensor)
-                        case (TYPE_TARGET)
-                            valid = dm_target_is_valid(target)
-                        case (TYPE_OBSERV)
-                            valid = dm_observ_is_valid(observ)
-                        case (TYPE_LOG)
-                            valid = dm_log_is_valid(log)
+                        case (TYPE_NODE);   valid = dm_node_is_valid(node)
+                        case (TYPE_SENSOR); valid = dm_sensor_is_valid(sensor)
+                        case (TYPE_TARGET); valid = dm_target_is_valid(target)
+                        case (TYPE_OBSERV); valid = dm_observ_is_valid(observ)
+                        case (TYPE_LOG);    valid = dm_log_is_valid(log)
                     end select
 
                     if (.not. valid) then
@@ -184,16 +169,11 @@ contains
 
                 ! Validate and insert record.
                 select case (app%type)
-                    case (TYPE_NODE)
-                        rc = dm_db_insert(db, node)
-                    case (TYPE_SENSOR)
-                        rc = dm_db_insert(db, sensor)
-                    case (TYPE_TARGET)
-                        rc = dm_db_insert(db, target)
-                    case (TYPE_OBSERV)
-                        rc = dm_db_insert(db, observ)
-                    case (TYPE_LOG)
-                        rc = dm_db_insert(db, log)
+                    case (TYPE_NODE);   rc = dm_db_insert(db, node)
+                    case (TYPE_SENSOR); rc = dm_db_insert(db, sensor)
+                    case (TYPE_TARGET); rc = dm_db_insert(db, target)
+                    case (TYPE_OBSERV); rc = dm_db_insert(db, observ)
+                    case (TYPE_LOG);    rc = dm_db_insert(db, log)
                 end select
 
                 ! Handle database result.

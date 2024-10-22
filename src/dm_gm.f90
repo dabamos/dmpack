@@ -105,17 +105,11 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GHOST_WHITE             = 'ghostwhite'
     character(len=*), parameter, public :: GM_COLOR_GOLD                    = 'gold'
     character(len=*), parameter, public :: GM_COLOR_GOLDE_NROD              = 'goldenrod'
+    character(len=*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
     character(len=*), parameter, public :: GM_COLOR_GRAY0                   = 'gray0'
     character(len=*), parameter, public :: GM_COLOR_GRAY1                   = 'gray1'
-    character(len=*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
-    character(len=*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
-    character(len=*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
-    character(len=*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
-    character(len=*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
-    character(len=*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
-    character(len=*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
-    character(len=*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
     character(len=*), parameter, public :: GM_COLOR_GRAY10                  = 'gray10'
+    character(len=*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
     character(len=*), parameter, public :: GM_COLOR_GRAY11                  = 'gray11'
     character(len=*), parameter, public :: GM_COLOR_GRAY12                  = 'gray12'
     character(len=*), parameter, public :: GM_COLOR_GRAY13                  = 'gray13'
@@ -125,6 +119,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY17                  = 'gray17'
     character(len=*), parameter, public :: GM_COLOR_GRAY18                  = 'gray18'
     character(len=*), parameter, public :: GM_COLOR_GRAY19                  = 'gray19'
+    character(len=*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
     character(len=*), parameter, public :: GM_COLOR_GRAY20                  = 'gray20'
     character(len=*), parameter, public :: GM_COLOR_GRAY21                  = 'gray21'
     character(len=*), parameter, public :: GM_COLOR_GRAY22                  = 'gray22'
@@ -135,6 +130,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY27                  = 'gray27'
     character(len=*), parameter, public :: GM_COLOR_GRAY28                  = 'gray28'
     character(len=*), parameter, public :: GM_COLOR_GRAY29                  = 'gray29'
+    character(len=*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
     character(len=*), parameter, public :: GM_COLOR_GRAY30                  = 'gray30'
     character(len=*), parameter, public :: GM_COLOR_GRAY31                  = 'gray31'
     character(len=*), parameter, public :: GM_COLOR_GRAY32                  = 'gray32'
@@ -145,6 +141,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY37                  = 'gray37'
     character(len=*), parameter, public :: GM_COLOR_GRAY38                  = 'gray38'
     character(len=*), parameter, public :: GM_COLOR_GRAY39                  = 'gray39'
+    character(len=*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
     character(len=*), parameter, public :: GM_COLOR_GRAY40                  = 'gray40'
     character(len=*), parameter, public :: GM_COLOR_GRAY41                  = 'gray41'
     character(len=*), parameter, public :: GM_COLOR_GRAY42                  = 'gray42'
@@ -155,6 +152,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY47                  = 'gray47'
     character(len=*), parameter, public :: GM_COLOR_GRAY48                  = 'gray48'
     character(len=*), parameter, public :: GM_COLOR_GRAY49                  = 'gray49'
+    character(len=*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
     character(len=*), parameter, public :: GM_COLOR_GRAY50                  = 'gray50'
     character(len=*), parameter, public :: GM_COLOR_GRAY51                  = 'gray51'
     character(len=*), parameter, public :: GM_COLOR_GRAY52                  = 'gray52'
@@ -165,6 +163,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY57                  = 'gray57'
     character(len=*), parameter, public :: GM_COLOR_GRAY58                  = 'gray58'
     character(len=*), parameter, public :: GM_COLOR_GRAY59                  = 'gray59'
+    character(len=*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
     character(len=*), parameter, public :: GM_COLOR_GRAY60                  = 'gray60'
     character(len=*), parameter, public :: GM_COLOR_GRAY61                  = 'gray61'
     character(len=*), parameter, public :: GM_COLOR_GRAY62                  = 'gray62'
@@ -175,6 +174,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY67                  = 'gray67'
     character(len=*), parameter, public :: GM_COLOR_GRAY68                  = 'gray68'
     character(len=*), parameter, public :: GM_COLOR_GRAY69                  = 'gray69'
+    character(len=*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
     character(len=*), parameter, public :: GM_COLOR_GRAY70                  = 'gray70'
     character(len=*), parameter, public :: GM_COLOR_GRAY71                  = 'gray71'
     character(len=*), parameter, public :: GM_COLOR_GRAY72                  = 'gray72'
@@ -185,6 +185,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY77                  = 'gray77'
     character(len=*), parameter, public :: GM_COLOR_GRAY78                  = 'gray78'
     character(len=*), parameter, public :: GM_COLOR_GRAY79                  = 'gray79'
+    character(len=*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
     character(len=*), parameter, public :: GM_COLOR_GRAY80                  = 'gray80'
     character(len=*), parameter, public :: GM_COLOR_GRAY81                  = 'gray81'
     character(len=*), parameter, public :: GM_COLOR_GRAY82                  = 'gray82'
@@ -195,6 +196,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY87                  = 'gray87'
     character(len=*), parameter, public :: GM_COLOR_GRAY88                  = 'gray88'
     character(len=*), parameter, public :: GM_COLOR_GRAY89                  = 'gray89'
+    character(len=*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
     character(len=*), parameter, public :: GM_COLOR_GRAY90                  = 'gray90'
     character(len=*), parameter, public :: GM_COLOR_GRAY91                  = 'gray91'
     character(len=*), parameter, public :: GM_COLOR_GRAY92                  = 'gray92'
@@ -205,8 +207,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY97                  = 'gray97'
     character(len=*), parameter, public :: GM_COLOR_GRAY98                  = 'gray98'
     character(len=*), parameter, public :: GM_COLOR_GRAY99                  = 'gray99'
-    character(len=*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
-    character(len=*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
     character(len=*), parameter, public :: GM_COLOR_GREEN                   = 'green'
     character(len=*), parameter, public :: GM_COLOR_GREEN_YELLOW            = 'greenyellow'
     character(len=*), parameter, public :: GM_COLOR_GREY                    = 'grey'
@@ -550,14 +550,13 @@ contains
         rc = dm_pipe_open(pipe, 'gm identify -format "' // trim(format) // '" ' // trim(path), PIPE_RDONLY)
         if (dm_is_error(rc)) return
 
-        rc = E_READ
         n  = dm_pipe_read(pipe, output)
         call dm_pipe_close(pipe)
 
         ! Remove null character.
         if (n == 0) then
             output(1:1) = ' '
-            return
+            rc = E_READ
         else
             output(n:n) = ' '
             rc = E_NONE
@@ -574,7 +573,7 @@ contains
         character(len=*),              intent(in)           :: text     !! Text to add.
         type(gm_text_box_type),        intent(in), optional :: text_box !! Image text box type.
 
-        character(len=32)         :: point_size
+        character(len=32)      :: point_size
         type(gm_text_box_type) :: box
 
         if (present(text_box)) box = text_box

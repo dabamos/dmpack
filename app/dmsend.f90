@@ -46,12 +46,12 @@ program dmsend
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &
-                          node_id = app%node_id, &
-                          source  = app%name, &
-                          debug   = app%debug, &
-                          ipc     = (len_trim(app%logger) > 0), &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger,                 & ! Name of logger process.
+                          node_id = app%node_id,                & ! Node id.
+                          source  = app%name,                   & ! Log source.
+                          debug   = app%debug,                  & ! Forward debug messages via IPC.
+                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
+                          verbose = app%verbose)                  ! Print logs to standard error.
 
     ! Read and send data.
     rc = run(app)
@@ -192,10 +192,10 @@ contains
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then
             call logger%debug('opening mqueue /' // app%receiver)
-            rc = dm_mqueue_open(mqueue   = mqueue, &
-                                type     = app%type, &
-                                name     = app%receiver, &
-                                access   = MQUEUE_WRONLY, &
+            rc = dm_mqueue_open(mqueue   = mqueue,        & ! Message queue type.
+                                type     = app%type,      & ! Observation or log type.
+                                name     = app%receiver,  & ! Name of message queue.
+                                access   = MQUEUE_WRONLY, & ! Write-only access.
                                 blocking = .true.)
 
             if (dm_is_error(rc)) then
