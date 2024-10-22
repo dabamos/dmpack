@@ -550,14 +550,13 @@ contains
         rc = dm_pipe_open(pipe, 'gm identify -format "' // trim(format) // '" ' // trim(path), PIPE_RDONLY)
         if (dm_is_error(rc)) return
 
-        rc = E_READ
         n  = dm_pipe_read(pipe, output)
         call dm_pipe_close(pipe)
 
         ! Remove null character.
         if (n == 0) then
             output(1:1) = ' '
-            return
+            rc = E_READ
         else
             output(n:n) = ' '
             rc = E_NONE

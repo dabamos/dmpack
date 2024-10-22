@@ -154,7 +154,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    subroutine camera_prepare_capture(command, camera, output)
+    pure elemental subroutine camera_prepare_capture(command, camera, output)
         !! Creates FFmpeg command to capture a single camera frame through V4L
         !! or RTSP. The function returns `E_INVALID` on error.
         character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
