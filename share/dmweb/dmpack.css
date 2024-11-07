@@ -1792,7 +1792,7 @@ select[multiple] {
 @media (min-width: 768px)  { .autodensity { --density: 2; } }
 @media (min-width: 1024px) { .autodensity { --density: 3; } }
 
-.row                { display: flex; margin:  0.5rem -0.6rem; align-items: stretch; }
+.row                { display: flex; margin: 0.5rem -0.6rem; align-items: stretch; }
 .row [class*="col"] { padding: 0  0.6rem; }
 .row .col           { flex: 1 1 100%; }
 

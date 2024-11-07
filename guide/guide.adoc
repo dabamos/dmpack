@@ -167,6 +167,14 @@ Python, by University of Alabama in Huntsville and NASA. Includes a sensor
 client for data logging, uplink and control, as well as a server component to
 store, serve/display, and monitor data from remote sensors. Further development
 of the software has been stopped. (MIT)
+link:https://github.com/ingv-oe-dev/tsdsystem[TSDSystem]:: The Time Series
+Database management System (TSDSystem) is a framework to collect, archive and
+share time series of volcanological observatories from sensor networks at
+Istituto Nazionale di Geofisica e Vulcanologia, Osservatorio Etneo (Italy). It
+provides a web service to perform writing and reading data via standard web
+communication protocols. Basic web applications are supplied for joint and
+synchronised time series data visualisation as well as representation of
+stations on a geographical map. (MIT)
 link:http://www.agt.bme.hu/ulyxes/[Ulyxes]:: An open source project in Python to
 control robotic total stations (RTS) and other sensors, and to publish
 observation results on web based maps. Developed at the Department of Geodesy
