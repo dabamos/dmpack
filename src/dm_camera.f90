@@ -27,25 +27,39 @@ module dm_camera
     !! ```fortran
     !! character(len=*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
-    !! integer           :: rc
-    !! type(camera_type) :: camera
+    !! integer                :: rc
+    !! type(camera_type)      :: camera
+    !! type(gm_text_box_type) :: text_box
     !!
-    !! camera = camera_type(input='/dev/video0', device=CAMERA_DEVICE_V4L)
+    !! camera = camera_type(input  = '/dev/video0', &
+    !!                      device = CAMERA_DEVICE_V4L2, &
+    !!                      width  = 1280, &
+    !!                      height = 720)
     !!
     !! rc = dm_camera_capture(camera, IMAGE_PATH)
     !! if (dm_is_error(rc)) call dm_error_out(rc)
     !!
-    !! rc = dm_gm_add_text_box(IMAGE_PATH, text=dm_time_now())
+    !! text_box = gm_text_box_type(font='DroidSansMono', font_size=16)
+    !! rc = dm_gm_add_text_box(IMAGE_PATH, text=dm_time_now(), text_box=text_box)
     !! if (dm_is_error(rc)) call dm_error_out(rc)
     !! ```
     !!
-    !! Change the camera type to capture an RTSP stream instead:
+    !! The camera must support the resolution of 1280×720 in this case. If no
+    !! resolution is specified, the camera default is used. Run _ffmpeg(1)_ to
+    !! list the supported output dimensions:
+    !!
+    !! ```
+    !! $ ffmpeg -f v4l2 -list_formats all -i /dev/video0
+    !! ```
+    !!
+    !! RTSP streams are always captured in the stream resolution:
     !!
     !! ```fortran
     !! camera = camera_type(input='rtsp://10.10.10.15:8554/camera1', device=CAMERA_DEVICE_RTSP)
     !! ```
     !!
-    !! The attribute `input` must be set to the stream URL.
+    !! The attribute `input` must be set to the stream URL and may include user
+    !! name and password.
     use :: dm_error
     use :: dm_file
     use :: dm_string
@@ -55,13 +69,13 @@ module dm_camera
     ! FFmpeg devices/formats.
     integer, parameter, public :: CAMERA_DEVICE_NONE = 0 !! No device selected.
     integer, parameter, public :: CAMERA_DEVICE_RTSP = 1 !! RTSP stream.
-    integer, parameter, public :: CAMERA_DEVICE_V4L  = 2 !! USB webcam via Video4Linux2.
+    integer, parameter, public :: CAMERA_DEVICE_V4L2 = 2 !! USB webcam via Video4Linux2.
     integer, parameter, public :: CAMERA_DEVICE_LAST = 2 !! Never use this.
 
     integer, parameter, public :: CAMERA_DEVICE_NAME_LEN = 4
 
     character(len=*), parameter, public :: CAMERA_DEVICE_NAMES(CAMERA_DEVICE_NONE:CAMERA_DEVICE_LAST) = [ &
-        character(len=CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l' &
+        character(len=CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l2' &
     ] !! Camera device names.
 
     character(len=*), parameter :: CAMERA_BINARY      = 'ffmpeg'      !! FFmpeg binary name.
@@ -85,7 +99,7 @@ contains
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
     integer function dm_camera_capture(camera, output, command) result(rc)
-        !! Captures a single frame from a V4L device or RTSP stream with
+        !! Captures a single frame from a V4L2 device or RTSP stream with
         !! FFmpeg, and optionally adds a timestamp with GraphicsMagick. If the
         !! input is an RTSP stream, the URL must start with `rtsp://`.
         !!
@@ -138,7 +152,7 @@ contains
 
         select case (name_)
             case (CAMERA_DEVICE_NAMES(CAMERA_DEVICE_RTSP)); device = CAMERA_DEVICE_RTSP
-            case (CAMERA_DEVICE_NAMES(CAMERA_DEVICE_V4L));  device = CAMERA_DEVICE_V4L
+            case (CAMERA_DEVICE_NAMES(CAMERA_DEVICE_V4L2)); device = CAMERA_DEVICE_V4L2
             case default;                                   device = CAMERA_DEVICE_NONE
         end select
     end function dm_camera_device_from_name
@@ -155,7 +169,7 @@ contains
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
     pure elemental subroutine camera_prepare_capture(command, camera, output)
-        !! Creates FFmpeg command to capture a single camera frame through V4L
+        !! Creates FFmpeg command to capture a single camera frame through V4L2
         !! or RTSP. The function returns `E_INVALID` on error.
         character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
         type(camera_type),                 intent(in)  :: camera  !! Camera type.
@@ -172,15 +186,17 @@ contains
                 ! overwrite output file.
                 command = ' -i ' // trim(camera%input) // ' -f image2 -update 1 -t 0.5' // command
 
-            case (CAMERA_DEVICE_V4L)
-                ! Capture single frame from V4L device.
+            case (CAMERA_DEVICE_V4L2)
+                ! Capture single frame from V4L2 device.
+                command = ' -i ' // trim(camera%input) // ' -frames:v 1' // command
+
                 if (camera%width > 0 .and. camera%height > 0) then
                     write (video_size, '(" -video_size ", i0, "x", i0)') camera%width, camera%height
                     command = trim(video_size) // command
                 end if
 
                 ! Format argument `-f` must be before input argument `-i`.
-                command = ' -f v4l2 -i ' // trim(camera%input) // ' -frames:v 1' // command
+                command = ' -f v4l2' // trim(command)
         end select
 
         ! Concatenate command string.

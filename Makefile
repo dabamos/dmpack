@@ -815,7 +815,7 @@ $(DMBEAT): app/dmbeat.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
 
 $(DMBOT): app/dmbot.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
 
 $(DMDB): app/dmdb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)

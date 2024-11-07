@@ -8,6 +8,33 @@ module dm_gm
     !! $ sudo apt-get install graphicsmagick
     !! ```
     !!
+    !! For a list of all fonts supported by GraphicsMagick, run:
+    !!
+    !! ```
+    !! $ gm convert -list font
+    !! Path: /usr/local/lib/GraphicsMagick/config/type-windows.mgk
+    !!
+    !! Name                             Family                  Style   Stretch  Weight
+    !! --------------------------------------------------------------------------------
+    !! Arial                            Arial                   normal  normal    400
+    !! Arial-Black                      Arial                   normal  normal    900
+    !! Arial-Bold                       Arial                   normal  normal    700
+    !! Arial-Bold-Italic                Arial                   italic  normal    700
+    !! Arial-Italic                     Arial                   italic  normal    400
+    !! ...
+    !! ```
+    !!
+    !! Edit `/usr/local/lib/GraphicsMagick/config/type.mgk` to set a custom
+    !! font configuration. Use the Perl script `imagick_type_gen.pl` to
+    !! generate a type file `type-custom.mgk`, for example:
+    !!
+    !! ```
+    !! $ find /usr/local/share/fonts/ -type f -name "*.*" | perl ./imagick_type_gen.pl -f - > type-custom.mgk
+    !! ```
+    !!
+    !! Copy the type file to the `config/` directory of GraphicsMagick and
+    !! modify the path to the include file in `type.mgk` accordingly.
+    !!
     !! Example to read meta data of image `/tmp/image.jpg`:
     !!
     !! ```fortran
@@ -31,7 +58,6 @@ module dm_gm
     !! ```
     use :: dm_error
     use :: dm_file
-    use :: dm_mime
     implicit none (type, external)
     private
 
@@ -108,8 +134,15 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
     character(len=*), parameter, public :: GM_COLOR_GRAY0                   = 'gray0'
     character(len=*), parameter, public :: GM_COLOR_GRAY1                   = 'gray1'
+    character(len=*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
+    character(len=*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
+    character(len=*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
+    character(len=*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
+    character(len=*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
+    character(len=*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
+    character(len=*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
+    character(len=*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
     character(len=*), parameter, public :: GM_COLOR_GRAY10                  = 'gray10'
-    character(len=*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
     character(len=*), parameter, public :: GM_COLOR_GRAY11                  = 'gray11'
     character(len=*), parameter, public :: GM_COLOR_GRAY12                  = 'gray12'
     character(len=*), parameter, public :: GM_COLOR_GRAY13                  = 'gray13'
@@ -119,7 +152,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY17                  = 'gray17'
     character(len=*), parameter, public :: GM_COLOR_GRAY18                  = 'gray18'
     character(len=*), parameter, public :: GM_COLOR_GRAY19                  = 'gray19'
-    character(len=*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
     character(len=*), parameter, public :: GM_COLOR_GRAY20                  = 'gray20'
     character(len=*), parameter, public :: GM_COLOR_GRAY21                  = 'gray21'
     character(len=*), parameter, public :: GM_COLOR_GRAY22                  = 'gray22'
@@ -130,7 +162,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY27                  = 'gray27'
     character(len=*), parameter, public :: GM_COLOR_GRAY28                  = 'gray28'
     character(len=*), parameter, public :: GM_COLOR_GRAY29                  = 'gray29'
-    character(len=*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
     character(len=*), parameter, public :: GM_COLOR_GRAY30                  = 'gray30'
     character(len=*), parameter, public :: GM_COLOR_GRAY31                  = 'gray31'
     character(len=*), parameter, public :: GM_COLOR_GRAY32                  = 'gray32'
@@ -141,7 +172,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY37                  = 'gray37'
     character(len=*), parameter, public :: GM_COLOR_GRAY38                  = 'gray38'
     character(len=*), parameter, public :: GM_COLOR_GRAY39                  = 'gray39'
-    character(len=*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
     character(len=*), parameter, public :: GM_COLOR_GRAY40                  = 'gray40'
     character(len=*), parameter, public :: GM_COLOR_GRAY41                  = 'gray41'
     character(len=*), parameter, public :: GM_COLOR_GRAY42                  = 'gray42'
@@ -152,7 +182,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY47                  = 'gray47'
     character(len=*), parameter, public :: GM_COLOR_GRAY48                  = 'gray48'
     character(len=*), parameter, public :: GM_COLOR_GRAY49                  = 'gray49'
-    character(len=*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
     character(len=*), parameter, public :: GM_COLOR_GRAY50                  = 'gray50'
     character(len=*), parameter, public :: GM_COLOR_GRAY51                  = 'gray51'
     character(len=*), parameter, public :: GM_COLOR_GRAY52                  = 'gray52'
@@ -163,7 +192,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY57                  = 'gray57'
     character(len=*), parameter, public :: GM_COLOR_GRAY58                  = 'gray58'
     character(len=*), parameter, public :: GM_COLOR_GRAY59                  = 'gray59'
-    character(len=*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
     character(len=*), parameter, public :: GM_COLOR_GRAY60                  = 'gray60'
     character(len=*), parameter, public :: GM_COLOR_GRAY61                  = 'gray61'
     character(len=*), parameter, public :: GM_COLOR_GRAY62                  = 'gray62'
@@ -174,7 +202,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY67                  = 'gray67'
     character(len=*), parameter, public :: GM_COLOR_GRAY68                  = 'gray68'
     character(len=*), parameter, public :: GM_COLOR_GRAY69                  = 'gray69'
-    character(len=*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
     character(len=*), parameter, public :: GM_COLOR_GRAY70                  = 'gray70'
     character(len=*), parameter, public :: GM_COLOR_GRAY71                  = 'gray71'
     character(len=*), parameter, public :: GM_COLOR_GRAY72                  = 'gray72'
@@ -185,7 +212,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY77                  = 'gray77'
     character(len=*), parameter, public :: GM_COLOR_GRAY78                  = 'gray78'
     character(len=*), parameter, public :: GM_COLOR_GRAY79                  = 'gray79'
-    character(len=*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
     character(len=*), parameter, public :: GM_COLOR_GRAY80                  = 'gray80'
     character(len=*), parameter, public :: GM_COLOR_GRAY81                  = 'gray81'
     character(len=*), parameter, public :: GM_COLOR_GRAY82                  = 'gray82'
@@ -196,7 +222,6 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY87                  = 'gray87'
     character(len=*), parameter, public :: GM_COLOR_GRAY88                  = 'gray88'
     character(len=*), parameter, public :: GM_COLOR_GRAY89                  = 'gray89'
-    character(len=*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
     character(len=*), parameter, public :: GM_COLOR_GRAY90                  = 'gray90'
     character(len=*), parameter, public :: GM_COLOR_GRAY91                  = 'gray91'
     character(len=*), parameter, public :: GM_COLOR_GRAY92                  = 'gray92'
@@ -207,6 +232,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GRAY97                  = 'gray97'
     character(len=*), parameter, public :: GM_COLOR_GRAY98                  = 'gray98'
     character(len=*), parameter, public :: GM_COLOR_GRAY99                  = 'gray99'
+    character(len=*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
     character(len=*), parameter, public :: GM_COLOR_GREEN                   = 'green'
     character(len=*), parameter, public :: GM_COLOR_GREEN_YELLOW            = 'greenyellow'
     character(len=*), parameter, public :: GM_COLOR_GREY                    = 'grey'
@@ -305,7 +331,7 @@ module dm_gm
     character(len=*), parameter :: GM_BINARY = 'gm' !! GraphicsMagick binary name.
 
     type, public :: gm_text_box_type
-        !! Text box settings for drawing text onto camera frame image.
+        !! Text box settings for drawing text on image.
         !!
         !! You can tag a font to specify whether it is a PostScript, TrueType,
         !! or X11 font. For example, `Arial.ttf` is a TrueType font,
@@ -313,7 +339,7 @@ module dm_gm
         character(len=GM_GRAVITY_LEN) :: gravity    = GM_GRAVITY_SW    !! Text position (GM).
         character(len=GM_COLOR_LEN)   :: background = GM_COLOR_BLACK   !! Box colour (GM).
         character(len=GM_COLOR_LEN)   :: foreground = GM_COLOR_WHITE   !! Text colour (GM).
-        character(len=GM_FONT_LEN)    :: font       = 'Arial'          !! Font name (GM).
+        character(len=GM_FONT_LEN)    :: font       = 'DejaVuSansMono' !! Font name (GM).
         integer                       :: font_size  = 12               !! Font size in points.
     end type gm_text_box_type
 
@@ -333,26 +359,8 @@ contains
     ! **************************************************************************
     integer function dm_gm_add_text_box(path, text, text_box, command) result(rc)
         !! Draws text camera image file, using GraphicsMagick. By default, the
-        !! text box is drawn to the bottom-left corner of the image.
-        !!
-        !! For a list of all supported font names, run:
-        !!
-        !! ```
-        !! $ gm convert -list font
-        !! Path: /usr/local/lib/GraphicsMagick/config/type-windows.mgk
-        !!
-        !! Name                             Family                  Style   Stretch  Weight
-        !! --------------------------------------------------------------------------------
-        !! Arial                            Arial                   normal  normal    400
-        !! Arial-Black                      Arial                   normal  normal    900
-        !! Arial-Bold                       Arial                   normal  normal    700
-        !! Arial-Bold-Italic                Arial                   italic  normal    700
-        !! Arial-Italic                     Arial                   italic  normal    400
-        !! ...
-        !! ```
-        !!
-        !! If no text box is passed, the default values of the derived type are
-        !! used.
+        !! text box is drawn to the bottom-left corner of the image. If no text
+        !! box is passed, the default values of the derived type are used.
         !!
         !! The function returns the following error codes:
         !!
@@ -506,6 +514,8 @@ contains
         !! * `E_READ` if reading dimensions failed.
         !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
+        use :: dm_mime
+
         character(len=*),              intent(in)  :: path !! Image file path.
         character(len=:), allocatable, intent(out) :: mime !! MIME type.
 

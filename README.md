@@ -218,13 +218,13 @@ containing the **DMPACK** module files is passed through argument `-I`.
 | `dm_zlib`       | zlib                | `pkg-config --libs zlib`                          |
 | `dm_zstd`       | zstd                | `pkg-config --libs libzstd`                       |
 
-Some modules use standard input/output to communicate with the following external programs:
+Some modules use standard input/output to communicate with external programs:
 
-| Module          | Program             | Default Binary Name                               |
-|-----------------|---------------------|---------------------------------------------------|
-| `dm_camera`     | FFmpeg              | `ffmpeg`                                          |
-| `dm_gm`         | GraphicsMagick      | `gm`                                              |
-| `dm_plot`       | Gnuplot             | `gnuplot`                                         |
+| Module          | Program             | Default Binary Name |
+|-----------------|---------------------|---------------------|
+| `dm_camera`     | FFmpeg              | `ffmpeg`            |
+| `dm_gm`         | GraphicsMagick      | `gm`                |
+| `dm_plot`       | Gnuplot             | `gnuplot`           |
 
 ## Source Code Structure
 

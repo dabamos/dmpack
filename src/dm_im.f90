@@ -72,8 +72,6 @@ module dm_im
     use :: dm_id
     use :: dm_kind
     use :: dm_mime
-    use :: dm_sem
-    use :: dm_uuid
     implicit none (type, external)
     private
 
@@ -284,21 +282,6 @@ module dm_im
         character(len=IM_PASSWORD_LEN) :: password   = ' '        !! XMPP password of account.
     end type im_type
 
-    type, public :: im_upload_type
-        !! IM HTTP upload context type
-        character(len=FILE_PATH_LEN) :: file_path     = ' '
-        character(len=FILE_PATH_LEN) :: file_name     = ' '
-        integer(kind=i8)             :: file_size     = 0_i8
-        character(len=IM_URL_LEN)    :: url_get       = ' '
-        character(len=IM_URL_LEN)    :: url_put       = ' '
-        character(len=MIME_LEN)      :: content_type  = ' '
-        character(len=32)            :: auth          = ' '
-        character(len=1024)          :: cookie        = ' '
-        character(len=32)            :: expires       = ' '
-        integer                      :: error         = E_NONE
-        character(len=512)           :: error_message = ' '
-    end type im_upload_type
-
     ! Imported abstract interfaces.
     public :: dm_im_callback
     public :: dm_im_certfail_callback
@@ -328,9 +311,6 @@ module dm_im
 
     ! Private procedures.
     private :: im_stanza_get_error_message
-
-    ! Private callbacks.
-    private :: im_http_upload_response_callback
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -346,17 +326,17 @@ contains
         !! * `E_NULL` if the XMPP context is not associated.
         !! * `E_XMPP` if a connection context could not be created.
         !!
-        type(im_type), intent(inout)            :: im           !! IM context type.
-        character(len=*),  intent(in)           :: host         !! XMPP server (IP address or FQDN).
-        integer,           intent(in)           :: port         !! XMPP server port.
-        character(len=*),  intent(in)           :: jid          !! IM ID (JID).
-        character(len=*),  intent(in)           :: password     !! JID account password.
-        procedure(dm_im_connection_callback)    :: callback     !! IM connection handler.
-        type(c_ptr),       intent(in), optional :: user_data    !! C pointer to user data.
-        character(len=*),  intent(in), optional :: resource     !! Optional resource (`<jid>@<domain>/<resource>`).
-        logical,           intent(in), optional :: keep_alive   !! Enable TCP Keep Alive.
-        logical,           intent(in), optional :: tls_required !! TLS is mandatory.
-        logical,           intent(in), optional :: tls_trusted  !! Trust TLS certificate.
+        type(im_type),    intent(inout)        :: im           !! IM context type.
+        character(len=*), intent(in)           :: host         !! XMPP server (IP address or FQDN).
+        integer,          intent(in)           :: port         !! XMPP server port.
+        character(len=*), intent(in)           :: jid          !! IM ID (JID).
+        character(len=*), intent(in)           :: password     !! JID account password.
+        procedure(dm_im_connection_callback)   :: callback     !! IM connection handler.
+        type(c_ptr),      intent(in), optional :: user_data    !! C pointer to user data.
+        character(len=*), intent(in), optional :: resource     !! Optional resource (`<jid>@<domain>/<resource>`).
+        logical,          intent(in), optional :: keep_alive   !! Enable TCP Keep Alive.
+        logical,          intent(in), optional :: tls_required !! TLS is mandatory.
+        logical,          intent(in), optional :: tls_trusted  !! Trust TLS certificate.
 
         integer              :: stat
         integer(kind=c_long) :: flags
@@ -691,67 +671,4 @@ contains
 
         if (.not. allocated(message)) message = 'unknown'
     end function im_stanza_get_error_message
-
-    ! **************************************************************************
-    ! PRIVATE CALLBACKS.
-    ! **************************************************************************
-    function im_http_upload_response_callback(stanza, user_data) bind(c)
-        !! C-interoperable HTTP upload response callback.
-        type(c_ptr), intent(in), value :: stanza                           !! xmpp_stanza_t *
-        type(c_ptr), intent(in), value :: user_data                        !! void *
-        integer(kind=c_int)            :: im_http_upload_response_callback !! int
-
-        character(len=:), allocatable :: from, header_name, type
-        type(c_ptr)                   :: get_stanza, header_stanza, put_stanza, slot_stanza
-        type(im_upload_type), pointer :: upload
-
-        im_http_upload_response_callback = 0
-
-        if (.not. c_associated(user_data)) return
-        call c_f_pointer(user_data, upload)
-
-        from = xmpp_stanza_get_from(stanza)
-        type = xmpp_stanza_get_type(stanza)
-
-        if (type == IM_STANZA_TYPE_ERROR) then
-            upload%error         = E_IO
-            upload%error_message = im_stanza_get_error_message(stanza)
-            return
-        end if
-
-        slot_stanza = xmpp_stanza_get_child_by_name(stanza, IM_STANZA_NAME_SLOT)
-
-        if (xmpp_stanza_get_ns(slot_stanza) == IM_STANZA_NS_HTTP_UPLOAD) then
-            get_stanza = xmpp_stanza_get_child_by_name(slot_stanza, IM_STANZA_NAME_GET)
-            put_stanza = xmpp_stanza_get_child_by_name(slot_stanza, IM_STANZA_NAME_PUT)
-
-            if (c_associated(get_stanza) .and. c_associated(put_stanza)) then
-                upload%url_get = xmpp_stanza_get_attribute(get_stanza, IM_STANZA_ATTR_URL)
-                upload%url_put = xmpp_stanza_get_attribute(put_stanza, IM_STANZA_ATTR_URL)
-
-                header_stanza = xmpp_stanza_get_children(put_stanza)
-                header_stanza = xmpp_stanza_get_next(header_stanza)
-
-                do while (c_associated(header_stanza))
-                    if (xmpp_stanza_get_name(header_stanza) == IM_STANZA_NAME_HEADER) then
-                        header_name = xmpp_stanza_get_attribute(header_stanza, IM_STANZA_ATTR_NAME)
-
-                        select case (header_name)
-                            case (IM_STANZA_HEADER_AUTHORIZATION); upload%auth    = xmpp_stanza_get_text(header_stanza)
-                            case (IM_STANZA_HEADER_COOKIE);        upload%cookie  = xmpp_stanza_get_text(header_stanza)
-                            case (IM_STANZA_HEADER_EXPIRES);       upload%expires = xmpp_stanza_get_text(header_stanza)
-                            case default;                          upload%error   = E_TYPE
-                        end select
-                    end if
-
-                    header_stanza = xmpp_stanza_get_next(header_stanza)
-                end do
-
-                ! start HTTP upload here ...
-            else
-                upload%error = E_INVALID
-                im_http_upload_response_callback = 1
-            end if
-        end if
-    end function im_http_upload_response_callback
 end module dm_im

@@ -22,17 +22,18 @@ program dmbot
     ! Bot commands.
     integer, parameter :: BOT_COMMAND_NONE      = 0    !! Invalid command.
     integer, parameter :: BOT_COMMAND_BEATS     = 1    !! Return time in Swatch Internet Time (.beats).
-    integer, parameter :: BOT_COMMAND_DATE      = 2    !! Return date and time.
-    integer, parameter :: BOT_COMMAND_HELP      = 3    !! Return help text.
-    integer, parameter :: BOT_COMMAND_JID       = 4    !! Return JID of bot.
-    integer, parameter :: BOT_COMMAND_LOG       = 5    !! Return log message to logger.
-    integer, parameter :: BOT_COMMAND_NODE      = 6    !! Return node id.
-    integer, parameter :: BOT_COMMAND_POKE      = 7    !! Return bot response if online.
-    integer, parameter :: BOT_COMMAND_RECONNECT = 8    !! Reconnect.
-    integer, parameter :: BOT_COMMAND_UNAME     = 9    !! Return system name and version.
-    integer, parameter :: BOT_COMMAND_UPTIME    = 10   !! Return system uptime.
-    integer, parameter :: BOT_COMMAND_VERSION   = 11   !! Return bot version.
-    integer, parameter :: BOT_NCOMMANDS         = 11   !! Number of commands.
+    integer, parameter :: BOT_COMMAND_CAMERA    = 2    !! Send camera image.
+    integer, parameter :: BOT_COMMAND_DATE      = 3    !! Return date and time.
+    integer, parameter :: BOT_COMMAND_HELP      = 4    !! Return help text.
+    integer, parameter :: BOT_COMMAND_JID       = 5    !! Return JID of bot.
+    integer, parameter :: BOT_COMMAND_LOG       = 6    !! Return log message to logger.
+    integer, parameter :: BOT_COMMAND_NODE      = 7    !! Return node id.
+    integer, parameter :: BOT_COMMAND_POKE      = 8    !! Return bot response if online.
+    integer, parameter :: BOT_COMMAND_RECONNECT = 9    !! Reconnect.
+    integer, parameter :: BOT_COMMAND_UNAME     = 10   !! Return system name and version.
+    integer, parameter :: BOT_COMMAND_UPTIME    = 11   !! Return system uptime.
+    integer, parameter :: BOT_COMMAND_VERSION   = 12   !! Return bot version.
+    integer, parameter :: BOT_NCOMMANDS         = 12   !! Number of commands.
 
     integer, parameter :: BOT_COMMAND_NAME_LEN  = 9                        !! Max. command name length.
     integer, parameter :: BOT_COMMAND_LEN       = 1 + BOT_COMMAND_NAME_LEN !! Max. command length with prefix.
@@ -40,7 +41,8 @@ program dmbot
     character,                           parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
     character(len=BOT_COMMAND_NAME_LEN), parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
         character(len=BOT_COMMAND_NAME_LEN) :: &
-        'beats', 'date', 'help', 'jid', 'log', 'node', 'poke', 'reconnect', 'uname', 'uptime', 'version' &
+        'beats', 'camera', 'date', 'help', 'jid', 'log', 'node', 'poke', 'reconnect', &
+        'uname', 'uptime', 'version' &
     ] !! Command names.
 
     type :: app_type
@@ -69,6 +71,19 @@ program dmbot
         character(len=FILE_PATH_LEN)                :: database_observ = ' '      !! Path to observation database.
         character(len=IM_JID_FULL_LEN), allocatable :: group(:)                   !! Authorised JIDs.
     end type bot_type
+
+    type, public :: bot_upload_type
+        !! HTTP upload type
+        character(len=FILE_PATH_LEN) :: file_path    = ' '
+        character(len=FILE_PATH_LEN) :: file_name    = ' '
+        integer(kind=i8)             :: file_size    = 0_i8
+        character(len=IM_URL_LEN)    :: url_get      = ' '
+        character(len=IM_URL_LEN)    :: url_put      = ' '
+        character(len=MIME_LEN)      :: content_type = ' '
+        character(len=32)            :: auth         = ' '
+        character(len=1024)          :: cookie       = ' '
+        character(len=32)            :: expires      = ' '
+    end type bot_upload_type
 
     class(logger_class), pointer :: logger ! Logger object.
 
@@ -334,17 +349,18 @@ contains
         call logger%debug('received command ' // command // ' from ' // from)
 
         select case (c)
-            case (BOT_COMMAND_BEATS);     output = bot_handle_beats()
-            case (BOT_COMMAND_DATE);      output = bot_handle_date()
-            case (BOT_COMMAND_HELP);      output = bot_handle_help()
-            case (BOT_COMMAND_JID);       output = bot_handle_jid(bot)
-            case (BOT_COMMAND_LOG);       output = bot_handle_log(bot, argument)
-            case (BOT_COMMAND_NODE);      output = bot_handle_node(bot)
-            case (BOT_COMMAND_POKE);      output = bot_handle_poke(bot)
-            case (BOT_COMMAND_RECONNECT); output = bot_handle_reconnect(bot)
-            case (BOT_COMMAND_UNAME);     output = bot_handle_uname()
-            case (BOT_COMMAND_UPTIME);    output = bot_handle_uptime()
-            case (BOT_COMMAND_VERSION);   output = bot_handle_version()
+            case (BOT_COMMAND_BEATS);     output = bot_response_beats()
+            case (BOT_COMMAND_CAMERA);    output = bot_response_camera()
+            case (BOT_COMMAND_DATE);      output = bot_response_date()
+            case (BOT_COMMAND_HELP);      output = bot_response_help()
+            case (BOT_COMMAND_JID);       output = bot_response_jid(bot)
+            case (BOT_COMMAND_LOG);       output = bot_response_log(bot, argument)
+            case (BOT_COMMAND_NODE);      output = bot_response_node(bot)
+            case (BOT_COMMAND_POKE);      output = bot_response_poke(bot)
+            case (BOT_COMMAND_RECONNECT); output = bot_response_reconnect(bot)
+            case (BOT_COMMAND_UNAME);     output = bot_response_uname()
+            case (BOT_COMMAND_UPTIME);    output = bot_response_uptime()
+            case (BOT_COMMAND_VERSION);   output = bot_response_version()
         end select
 
         reply = command // ': ' // output
@@ -426,7 +442,7 @@ contains
     ! **************************************************************************
     ! BOT COMMAND HANDLING FUNCTIONS.
     ! **************************************************************************
-    function bot_handle_beats() result(output)
+    function bot_response_beats() result(output)
         !! Returns current time in Swatch Internet Time (.beats).
         character(len=:), allocatable :: output !! Response string.
 
@@ -435,16 +451,33 @@ contains
 
         rc = dm_time_to_beats(dm_time_now(), beats)
         output = trim(beats)
-    end function bot_handle_beats
+    end function bot_response_beats
 
-    function bot_handle_date() result(output)
+    function bot_response_camera(bot) result(output)
+        !! Sends camera image.
+        type(bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable :: output !! Response string.
+
+        character(len=:), allocatable :: content_type, file_name
+        character(len=ID_LEN)         :: id
+        integer(kind=i8)              :: file_size
+        type(c_ptr)                   :: iq_stanza
+
+        output = ''
+
+        id = dm_uuid4()
+        iq_stanza = dm_im_create_iq_http_upload(bot%im, id, file_name, file_size, content_type)
+
+    end function bot_response_camera
+
+    function bot_response_date() result(output)
         !! Returns current date and time in ISO 8601.
         character(len=:), allocatable :: output !! Response string.
 
         output = dm_time_now()
-    end function bot_handle_date
+    end function bot_response_date
 
-    function bot_handle_help() result(output)
+    function bot_response_help() result(output)
         !! Returns help text.
         character(len=:), allocatable :: output !! Response string.
 
@@ -460,17 +493,17 @@ contains
                  '!uname     - return system name'                  // ASCII_LF // &
                  '!uptime    - return system uptime'                // ASCII_LF // &
                  '!version   - return bot version'
-    end function bot_handle_help
+    end function bot_response_help
 
-    function bot_handle_jid(bot) result(output)
+    function bot_response_jid(bot) result(output)
         !! Returns full JID of bot.
         type(bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
 
         output = '<' // trim(bot%im%jid_full) // '>'
-    end function bot_handle_jid
+    end function bot_response_jid
 
-    function bot_handle_log(bot, argument) result(output)
+    function bot_response_log(bot, argument) result(output)
         !! Sends log message to logger.
         type(bot_type),   intent(inout) :: bot      !! Bot type.
         character(len=*), intent(in)    :: argument !! Command arguments.
@@ -497,9 +530,9 @@ contains
 
         call logger%log(lvl, message, source=bot%name)
         output = 'sent ' // trim(LOG_LEVEL_NAMES_LOWER(lvl)) // ' message to ' // logger%get_name()
-    end function bot_handle_log
+    end function bot_response_log
 
-    function bot_handle_node(bot) result(output)
+    function bot_response_node(bot) result(output)
         !! Returns node id.
         type(bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
@@ -513,9 +546,9 @@ contains
         else
             output = 'n/a'
         end if
-    end function bot_handle_node
+    end function bot_response_node
 
-    function bot_handle_poke(bot) result(output)
+    function bot_response_poke(bot) result(output)
         !! Returns awake message.
         type(bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
@@ -531,9 +564,9 @@ contains
         end if
 
         output = output // ' is online'
-    end function bot_handle_poke
+    end function bot_response_poke
 
-    function bot_handle_reconnect(bot) result(output)
+    function bot_response_reconnect(bot) result(output)
         !! Reconnects bot.
         type(bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
@@ -541,9 +574,9 @@ contains
         bot%reconnect = .true.
         call xmpp_timed_handler_add(bot%im%connection, disconnect_callback, 500_c_long, c_null_ptr)
         output = 'bye'
-   end function bot_handle_reconnect
+   end function bot_response_reconnect
 
-    function bot_handle_uname() result(output)
+    function bot_response_uname() result(output)
         !! Returns Unix name.
         character(len=:), allocatable :: output !! Response string.
 
@@ -555,9 +588,9 @@ contains
                  trim(uname%release)     // ' ' // &
                  trim(uname%version)     // ' ' // &
                  trim(uname%machine)
-    end function bot_handle_uname
+    end function bot_response_uname
 
-    function bot_handle_uptime() result(output)
+    function bot_response_uptime() result(output)
         !! Returns system uptime.
         character(len=:), allocatable :: output !! Response string.
 
@@ -567,14 +600,67 @@ contains
         call dm_system_uptime(seconds)
         call dm_time_delta_from_seconds(uptime, seconds)
         output = dm_time_delta_to_string(uptime)
-    end function bot_handle_uptime
+    end function bot_response_uptime
 
-    function bot_handle_version() result(output)
+    function bot_response_version() result(output)
         !! Returns bot version.
         character(len=:), allocatable :: output !! Response string.
 
         output = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-    end function bot_handle_version
+    end function bot_response_version
+
+
+    subroutine http_upload(upload)
+        use :: curl
+        use :: unix
+
+        type(bot_upload_type), intent(inout) :: upload
+
+        integer     :: stat
+        type(c_ptr) :: curl_ctx, list_ctx
+        type(c_ptr) :: fh
+
+        fh = c_fopen(trim(upload%file_path) // c_null_char, 'rb' // c_null_char)
+        if (.not. c_associated(fh)) return
+
+        stat = curl_global_init(CURL_GLOBAL_ALL)
+
+        curl_ctx = curl_easy_init()
+        list_ctx = c_null_ptr
+
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_URL,              trim(upload%url_put))
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_CUSTOMREQUEST,    'PUT')
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD,           1)
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_READDATA,         fh)
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_INFILESIZE_LARGE, upload%file_size)
+
+        list_ctx = curl_slist_append(list_ctx, 'Content-Type: ' // trim(upload%content_type))
+
+        if (len_trim(upload%auth) > 0) then
+            list_ctx = curl_slist_append(list_ctx, 'Authorization: ' // trim(upload%auth))
+        end if
+
+        if (len_trim(upload%cookie) > 0) then
+            list_ctx = curl_slist_append(list_ctx, 'Cookie: ' // trim(upload%cookie))
+        end if
+
+        if (len_trim(upload%expires) > 0) then
+            list_ctx = curl_slist_append(list_ctx, 'Expires: ' // trim(upload%expires))
+        end if
+
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_HTTPHEADER, list_ctx)
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL,   1)
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE,    0)
+        stat = curl_easy_setopt(curl_ctx, CURLOPT_USERAGENT,  dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.))
+
+        stat = curl_easy_perform(curl_ctx)
+
+        call curl_slist_free_all(list_ctx)
+        call curl_easy_cleanup(curl_ctx)
+        call curl_global_cleanup()
+
+        if (c_associated(fh)) stat = c_fclose(fh)
+    end subroutine http_upload
 
     ! **************************************************************************
     ! CALLBACK PROCEDURES.
@@ -602,8 +688,8 @@ contains
                               trim(im%host) // ':' // dm_itoa(im%port))
 
             ! Add handlers.
-            call xmpp_handler_add(connection, iq_callback,      '', 'iq',      '', user_data)
-            call xmpp_handler_add(connection, message_callback, '', 'message', '', user_data)
+            call xmpp_handler_add(connection, ping_response_callback, IM_STANZA_NS_PING, IM_STANZA_NAME_IQ,      '', user_data)
+            call xmpp_handler_add(connection, message_callback,       '',                IM_STANZA_NAME_MESSAGE, '', user_data)
 
             ! Add timed handlers.
             call xmpp_timed_handler_add(connection, ping_callback, int(APP_PING_INTERVAL * 1000, kind=c_long), user_data)
@@ -630,58 +716,59 @@ contains
         call xmpp_disconnect(connection)
     end function disconnect_callback
 
-    function iq_callback(connection, iq_stanza, user_data) bind(c)
-        !! C-interoperable iq stanza handler for ping processing.
-        type(c_ptr), intent(in), value :: connection  !! xmpp_conn_t *
-        type(c_ptr), intent(in), value :: iq_stanza   !! xmpp_stanza_t *
-        type(c_ptr), intent(in), value :: user_data   !! void *
-        integer(kind=c_int)            :: iq_callback !! int
+    function http_upload_response_callback(stanza, user_data) bind(c)
+        !! C-interoperable HTTP upload response callback.
+        type(c_ptr), intent(in), value :: stanza               !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data            !! void *
+        integer(kind=c_int)            :: http_upload_callback !! int
 
-        character(len=:), allocatable :: from, id, type
-        integer                       :: stat
-        type(c_ptr)                   :: ping_stanza, result_stanza
-        type(bot_type), pointer       :: bot
+        character(len=:), allocatable  :: from, header_name, type
+        type(c_ptr)                    :: get_stanza, header_stanza, put_stanza, slot_stanza
+        type(bot_upload_type), pointer :: upload
 
-        iq_callback = 0
+        im_http_upload_response_callback = 0
 
         if (.not. c_associated(user_data)) return
-        call c_f_pointer(user_data, bot)
+        call c_f_pointer(user_data, upload)
 
-        ! Get stanza attributes.
-        from = xmpp_stanza_get_from(iq_stanza)
-        id   = xmpp_stanza_get_id(iq_stanza)
-        type = xmpp_stanza_get_type(iq_stanza)
+        from = xmpp_stanza_get_from(stanza)
+        type = xmpp_stanza_get_type(stanza)
 
-        if (len(type) == 0 .or. len(id) == 0) return
+        if (type == IM_STANZA_TYPE_ERROR) return
 
-        select case (type)
-            case (IM_STANZA_TYPE_RESULT)
-                if (id == bot%ping_id) bot%ping_id = ' '
+        slot_stanza = xmpp_stanza_get_child_by_name(stanza, IM_STANZA_NAME_SLOT)
 
-            case (IM_STANZA_TYPE_GET)
-                ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, IM_STANZA_NS_PING)
+        if (xmpp_stanza_get_ns(slot_stanza) == IM_STANZA_NS_HTTP_UPLOAD) then
+            get_stanza = xmpp_stanza_get_child_by_name(slot_stanza, IM_STANZA_NAME_GET)
+            put_stanza = xmpp_stanza_get_child_by_name(slot_stanza, IM_STANZA_NAME_PUT)
 
-                if (c_associated(ping_stanza)) then
-                    call logger%debug('received ping from ' // from)
-                    result_stanza = dm_im_create_iq_result(bot%im, id=id)
-                else
-                    result_stanza = dm_im_create_iq_error(bot%im, id=id, type=IM_STANZA_TYPE_CANCEL, &
-                                                          condition=IM_STANZA_NAME_SERVICE_UNAVAILABLE)
-                end if
+            if (c_associated(get_stanza) .and. c_associated(put_stanza)) then
+                upload%url_get = xmpp_stanza_get_attribute(get_stanza, IM_STANZA_ATTR_URL)
+                upload%url_put = xmpp_stanza_get_attribute(put_stanza, IM_STANZA_ATTR_URL)
 
-                stat = xmpp_stanza_set_to(result_stanza, from)
-                call xmpp_send(connection, result_stanza)
-                stat = xmpp_stanza_release(result_stanza)
+                header_stanza = xmpp_stanza_get_children(put_stanza)
+                header_stanza = xmpp_stanza_get_next(header_stanza)
 
-            case (IM_STANZA_TYPE_ERROR)
-                ping_stanza = xmpp_stanza_get_child_by_ns(iq_stanza, IM_STANZA_NS_PING)
+                do while (c_associated(header_stanza))
+                    if (xmpp_stanza_get_name(header_stanza) == IM_STANZA_NAME_HEADER) then
+                        header_name = xmpp_stanza_get_attribute(header_stanza, IM_STANZA_ATTR_NAME)
 
-                if (c_associated(ping_stanza) .and. id == bot%ping_id) then
-                    call xmpp_timed_handler_delete(connection, ping_callback)
-                    bot%ping_id = ' '
-                end if
-        end select
-    end function iq_callback
+                        select case (header_name)
+                            case (IM_STANZA_HEADER_AUTHORIZATION); upload%auth    = xmpp_stanza_get_text(header_stanza)
+                            case (IM_STANZA_HEADER_COOKIE);        upload%cookie  = xmpp_stanza_get_text(header_stanza)
+                            case (IM_STANZA_HEADER_EXPIRES);       upload%expires = xmpp_stanza_get_text(header_stanza)
+                        end select
+                    end if
+
+                    header_stanza = xmpp_stanza_get_next(header_stanza)
+                end do
+
+                ! start HTTP upload here ...
+            else
+                im_http_upload_response_callback = 1
+            end if
+        end if
+    end function http_upload_response_callback
 
     function message_callback(connection, stanza, user_data) bind(c)
         !! C-interoperable message handler. Must be registered in
@@ -768,6 +855,50 @@ contains
         call xmpp_send(connection, iq_stanza)
         stat = xmpp_stanza_release(iq_stanza)
     end function ping_callback
+
+    function ping_response_callback(connection, iq_stanza, user_data) bind(c)
+        !! C-interoperable iq stanza handler for ping processing.
+        type(c_ptr), intent(in), value :: connection  !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: iq_stanza   !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data   !! void *
+        integer(kind=c_int)            :: iq_callback !! int
+
+        character(len=:), allocatable :: from, id, type
+        integer                       :: stat
+        type(c_ptr)                   :: ping_stanza, result_stanza
+        type(bot_type), pointer       :: bot
+
+        iq_callback = 0
+
+        if (.not. c_associated(user_data)) return
+        call c_f_pointer(user_data, bot)
+
+        ! Get stanza attributes.
+        from = xmpp_stanza_get_from(iq_stanza)
+        id   = xmpp_stanza_get_id(iq_stanza)
+        type = xmpp_stanza_get_type(iq_stanza)
+
+        if (len(type) == 0 .or. len(id) == 0) return
+
+        select case (type)
+            case (IM_STANZA_TYPE_RESULT)
+                if (id == bot%ping_id) bot%ping_id = ' '
+
+            case (IM_STANZA_TYPE_GET)
+                call logger%debug('received ping from ' // from)
+                result_stanza = dm_im_create_iq_result(bot%im, id=id)
+
+                stat = xmpp_stanza_set_to(result_stanza, from)
+                call xmpp_send(connection, result_stanza)
+                stat = xmpp_stanza_release(result_stanza)
+
+            case (IM_STANZA_TYPE_ERROR)
+                if (id == bot%ping_id) then
+                    call xmpp_timed_handler_delete(connection, ping_callback)
+                    bot%ping_id = ' '
+                end if
+        end select
+    end function ping_response_callback
 
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
