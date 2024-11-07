@@ -72,7 +72,7 @@ program dmbot
         character(len=IM_JID_FULL_LEN), allocatable :: group(:)                   !! Authorised JIDs.
     end type bot_type
 
-    type, public :: bot_upload_type
+    type :: bot_upload_type
         !! HTTP upload type
         character(len=FILE_PATH_LEN) :: file_path    = ' '
         character(len=FILE_PATH_LEN) :: file_name    = ' '
@@ -350,7 +350,7 @@ contains
 
         select case (c)
             case (BOT_COMMAND_BEATS);     output = bot_response_beats()
-            case (BOT_COMMAND_CAMERA);    output = bot_response_camera()
+            case (BOT_COMMAND_CAMERA);    output = bot_response_camera(bot)
             case (BOT_COMMAND_DATE);      output = bot_response_date()
             case (BOT_COMMAND_HELP);      output = bot_response_help()
             case (BOT_COMMAND_JID);       output = bot_response_jid(bot)
@@ -458,16 +458,15 @@ contains
         type(bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
 
-        character(len=:), allocatable :: content_type, file_name
-        character(len=ID_LEN)         :: id
-        integer(kind=i8)              :: file_size
-        type(c_ptr)                   :: iq_stanza
+        ! character(len=:), allocatable :: content_type, file_name
+        ! character(len=ID_LEN)         :: id
+        ! integer(kind=i8)              :: file_size
+        ! type(c_ptr)                   :: iq_stanza
 
         output = ''
 
-        id = dm_uuid4()
-        iq_stanza = dm_im_create_iq_http_upload(bot%im, id, file_name, file_size, content_type)
-
+        ! id = dm_uuid4()
+        ! iq_stanza = dm_im_create_iq_http_upload(bot%im, id, file_name, file_size, content_type)
     end function bot_response_camera
 
     function bot_response_date() result(output)
@@ -702,7 +701,7 @@ contains
             call logger%debug('disconnected from ' // trim(im%host) // ':' // dm_itoa(im%port))
             call xmpp_timed_handler_delete(connection, ping_callback)
             call xmpp_handler_delete(connection, message_callback)
-            call xmpp_handler_delete(connection, iq_callback)
+            call xmpp_handler_delete(connection, ping_response_callback)
             call dm_im_stop(im)
         end if
     end subroutine connection_callback
@@ -718,15 +717,15 @@ contains
 
     function http_upload_response_callback(stanza, user_data) bind(c)
         !! C-interoperable HTTP upload response callback.
-        type(c_ptr), intent(in), value :: stanza               !! xmpp_stanza_t *
-        type(c_ptr), intent(in), value :: user_data            !! void *
-        integer(kind=c_int)            :: http_upload_callback !! int
+        type(c_ptr), intent(in), value :: stanza                        !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data                     !! void *
+        integer(kind=c_int)            :: http_upload_response_callback !! int
 
         character(len=:), allocatable  :: from, header_name, type
         type(c_ptr)                    :: get_stanza, header_stanza, put_stanza, slot_stanza
         type(bot_upload_type), pointer :: upload
 
-        im_http_upload_response_callback = 0
+        http_upload_response_callback = 0
 
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, upload)
@@ -765,7 +764,7 @@ contains
 
                 ! start HTTP upload here ...
             else
-                im_http_upload_response_callback = 1
+                http_upload_response_callback = 1
             end if
         end if
     end function http_upload_response_callback
@@ -858,17 +857,17 @@ contains
 
     function ping_response_callback(connection, iq_stanza, user_data) bind(c)
         !! C-interoperable iq stanza handler for ping processing.
-        type(c_ptr), intent(in), value :: connection  !! xmpp_conn_t *
-        type(c_ptr), intent(in), value :: iq_stanza   !! xmpp_stanza_t *
-        type(c_ptr), intent(in), value :: user_data   !! void *
-        integer(kind=c_int)            :: iq_callback !! int
+        type(c_ptr), intent(in), value :: connection             !! xmpp_conn_t *
+        type(c_ptr), intent(in), value :: iq_stanza              !! xmpp_stanza_t *
+        type(c_ptr), intent(in), value :: user_data              !! void *
+        integer(kind=c_int)            :: ping_response_callback !! int
 
         character(len=:), allocatable :: from, id, type
         integer                       :: stat
-        type(c_ptr)                   :: ping_stanza, result_stanza
+        type(c_ptr)                   :: result_stanza
         type(bot_type), pointer       :: bot
 
-        iq_callback = 0
+        ping_response_callback = 0
 
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
