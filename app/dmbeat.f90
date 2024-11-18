@@ -79,8 +79,7 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=:), allocatable :: version
-        type(arg_type)                :: args(14)
+        type(arg_type) :: args(14)
 
         args = [ &
             arg_type('name',        short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
@@ -100,8 +99,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_rpc_version() // ' ' // dm_lua_version(.true.) // ' ' // dm_zstd_version(.true.)
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -344,4 +342,9 @@ contains
                 call dm_stop(STOP_SUCCESS)
         end select
     end subroutine signal_callback
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a, 2(1x, a))', dm_rpc_version(), dm_lua_version(.true.), dm_zstd_version(.true.)
+    end subroutine version_callback
 end program dmbeat

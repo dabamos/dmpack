@@ -419,7 +419,7 @@ contains
         ]
 
         ! Read command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         ! CRUD operation.
@@ -553,4 +553,9 @@ contains
         ! Validation passed.
         rc = E_NONE
     end function read_args
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a)', dm_db_version(.true.)
+    end subroutine version_callback
 end program dmdbctl

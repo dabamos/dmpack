@@ -54,6 +54,11 @@ module dm_arg
     integer, parameter, public :: ARG_NAME_LEN  = 32            !! Maximum length of argument name.
     integer, parameter, public :: ARG_VALUE_LEN = FILE_PATH_LEN !! Maximum length of argument value.
 
+    abstract interface
+        subroutine dm_arg_version_callback()
+        end subroutine dm_arg_version_callback
+    end interface
+
     type, public :: arg_type
         !! Argument description type.
         character(len=ARG_NAME_LEN)  :: name     = ' '              !! Identifier of the argument (without leading --).
@@ -83,6 +88,7 @@ module dm_arg
     public :: dm_arg_read
     public :: dm_arg_type_is_valid
     public :: dm_arg_validate
+    public :: dm_arg_version_callback
 
     private :: arg_get_int32
     private :: arg_get_logical
@@ -220,7 +226,7 @@ contains
         rc = E_NONE
     end function dm_arg_parse
 
-    integer function dm_arg_read(args, app, major, minor, patch, version) result(rc)
+    integer function dm_arg_read(args, callback) result(rc)
         !! Reads all arguments from command-line and prints error message if one
         !! is missing. Returns the error code of the first invalid argument.
         !!
@@ -230,8 +236,8 @@ contains
         !! arguments. If one of these arguments is passed, `dm_stop(0)` is
         !! called afterwards.
         !!
-        !! Optional argument `version` may be a string of third-party library
-        !! names and version numbers.
+        !! Optional argument `callback` is a routine that outputs the
+        !! version information.
         !!
         !! The function returns the following error codes:
         !!
@@ -244,39 +250,21 @@ contains
         !!
         use :: dm_version
 
-        type(arg_type),   intent(inout)        :: args(:) !! Arguments to match.
-        character(len=*), intent(in), optional :: app     !! App name (for `-v`).
-        integer,          intent(in), optional :: major   !! Major version number (for `-v`).
-        integer,          intent(in), optional :: minor   !! Minor version number (for `-v`).
-        integer,          intent(in), optional :: patch   !! Patch level (for `-v`).
-        character(len=*), intent(in), optional :: version !! Additional version string.
+        type(arg_type),                     intent(inout) :: args(:)  !! Arguments to match.
+        procedure(dm_arg_version_callback), optional      :: callback !! Version callback.
 
         integer :: i, n
-        integer :: major_, minor_, patch_
         integer :: max_len, min_len
 
         rc = E_NONE
 
-        major_ = 0
-        minor_ = 0
-        patch_ = 0
-
-        if (present(major)) major_ = major
-        if (present(minor)) minor_ = minor
-        if (present(patch)) patch_ = patch
-
-        ! Print program and library version, then stop.
+        ! Call version callback, then stop.
         if (dm_arg_has('version', 'v')) then
-            if (present(app)) then
-                call dm_version_out(app, major_, minor_, patch_)
+            if (present(callback)) then
+                call callback()
             else
                 write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
             end if
-
-            if (present(version)) then
-                write (stdout, '(a)') trim(version)
-            end if
-
             call dm_stop(STOP_SUCCESS)
         end if
 
@@ -298,7 +286,8 @@ contains
         ! Validate passed arguments.
         rc = E_EMPTY
 
-        validate_loop: do i = 1, size(args)
+        validate_loop: &
+        do i = 1, size(args)
             if (.not. dm_arg_type_is_valid(args(i)%type)) then
                 call dm_error_out(E_TYPE, 'argument --' // trim(args(i)%name) // ' has no valid type')
                 cycle

@@ -155,7 +155,6 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), target, intent(out) :: app !! App type.
 
-        character(len=:), allocatable   :: version
         integer                         :: format, i, n
         type(arg_type)                  :: args(7)
         type(report_log_type),  pointer :: log
@@ -172,8 +171,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_plot_version(.true.) // ' ' // dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -528,4 +526,9 @@ contains
         if (is_file) close (unit)
         if (present(error)) error = rc
     end subroutine create_report
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a, 2(1x, a))', dm_plot_version(.true.), dm_lua_version(.true.), dm_db_version(.true.)
+    end subroutine version_callback
 end program dmreport

@@ -40,7 +40,7 @@ contains
             arg_type(name='database', short='d', type=ARG_TYPE_DATABASE) & ! -d, --database <path>
         ]
 
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_db_version(.true.))
+        rc = dm_arg_read(args, version_callback)
         call dm_arg_get(args(1), app%database)
         rc = E_NONE
     end function read_args
@@ -145,4 +145,9 @@ contains
         print '("system.time.zone: ", a)',  dm_time_zone()
         print '("system.version: ", a)',    trim(uname%version)
     end function output_info
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a)', dm_db_version(.true.)
+    end subroutine version_callback
 end program dminfo

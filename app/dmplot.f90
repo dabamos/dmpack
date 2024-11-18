@@ -120,8 +120,6 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
-        character(len=:), allocatable         :: version
-        logical                               :: found
         type(arg_type)                        :: args(17)
 
         args = [ &
@@ -144,19 +142,8 @@ contains
             arg_type('height',     short='H', type=ARG_TYPE_INTEGER)   & ! -H, --height <n>
         ]
 
-        ! Create version string and search for Gnuplot.
-        version = dm_plot_version(.true., found) // ' ' // &
-                  dm_lua_version(.true.)         // ' ' // &
-                  dm_db_version(.true.)
-
-        if (.not. found) then
-            rc = E_NOT_FOUND
-            call dm_error_out(rc, 'Gnuplot not found')
-            return
-        end if
-
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -310,4 +297,12 @@ contains
 
         rc = max(dm_db_close(db), rc)
     end function read_data_points
+
+    subroutine version_callback()
+        logical :: found
+
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a, 2(1x, a))', dm_plot_version(.true., found), dm_lua_version(.true.), dm_db_version(.true.)
+        if (.not. found) call dm_error_out(E_NOT_FOUND, 'Gnuplot binary not found')
+    end subroutine version_callback
 end program dmplot

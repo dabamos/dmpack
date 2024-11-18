@@ -77,8 +77,7 @@ contains
         !! `--config` is passed).
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=:), allocatable :: version
-        type(arg_type)                :: args(16)
+        type(arg_type) :: args(16)
 
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
@@ -100,8 +99,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -274,4 +272,9 @@ contains
         if (present(error)) error = rc
         rc = dm_db_close(db)
     end subroutine create_feed
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a, 1x, a)', dm_lua_version(.true.), dm_db_version(.true.)
+    end subroutine version_callback
 end program dmfeed

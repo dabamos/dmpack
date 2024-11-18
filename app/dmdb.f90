@@ -96,8 +96,7 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        character(len=:), allocatable :: version
-        type(arg_type)                :: args(8)
+        type(arg_type) :: args(8)
 
         ! Required and optional command-line arguments.
         args = [ &
@@ -112,8 +111,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        version = dm_lua_version(.true.) // ' ' // dm_db_version(.true.)
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, version)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -295,4 +293,9 @@ contains
                 call halt(E_NONE)
         end select
     end subroutine signal_callback
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a, 1x, a)', dm_lua_version(.true.), dm_db_version(.true.)
+    end subroutine version_callback
 end program dmdb

@@ -212,7 +212,7 @@ contains
 
         logical, intent(in),  optional :: name  !! Add prefix `gnuplot/`.
         logical, intent(out), optional :: found !! Returns `.true.` if Gnuplot has been found.
-        character(len=:), allocatable :: version
+        character(len=:), allocatable  :: version
 
         character(len=3)  :: v
         character(len=32) :: buffer

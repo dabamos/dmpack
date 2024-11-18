@@ -62,7 +62,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args( 1), app%logger)
@@ -85,4 +85,8 @@ contains
 
         rc = E_NONE
     end function read_args
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+    end subroutine version_callback
 end program dmlog

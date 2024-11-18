@@ -78,7 +78,7 @@ contains
         ]
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, dm_lua_version(.true.))
+        rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
         call dm_arg_get(args(1), app%name)
@@ -323,4 +323,9 @@ contains
 
         call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
     end function run
+
+    subroutine version_callback()
+        call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a)', dm_lua_version(.true.)
+    end subroutine version_callback
 end program dmsend
