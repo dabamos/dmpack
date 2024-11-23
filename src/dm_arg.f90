@@ -17,7 +17,7 @@ module dm_arg
     !!     arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL) &
     !! ]
     !!
-    !! rc = dm_arg_read(args, app='myapp', major=1, minor=0, patch=0)
+    !! rc = dm_arg_read(args)
     !! call dm_error_out(rc)
     !!
     !! call dm_arg_get(args(1), input)
@@ -28,6 +28,9 @@ module dm_arg
     !! Each argument requires name and type. The default type is
     !! `ARG_TYPE_LOGICAL`. The command-line arguments `--help`/-`h` and
     !! `--version`/`-v` are processed automatically by function `dm_arg_read()`.
+    !!
+    !! Additionally, you can pass a callback routine that outputs the version
+    !! string to `dm_arg_read()`.
     use :: dm_ascii
     use :: dm_error
     use :: dm_file

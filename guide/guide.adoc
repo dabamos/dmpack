@@ -4672,8 +4672,8 @@ Make sure that the instrument is configured to 115,200 baud. Invalid parameters
 passed to the GeoCOM methods will be replaced with their default values, and an
 error message is printed in verbose mode.
 
-If the DMPACK library and module files are installed to `/opt/`, build, link,
-and run the example program with:
+If the DMPACK library and module files are installed to `/opt`, build, link, and
+run the example program with:
 
 ....
 $ gfortran -I/opt/include/dmpack -o geocom geocom.f90 /opt/lib/libdmpack.a -lpcre2-8
