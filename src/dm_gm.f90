@@ -538,7 +538,7 @@ contains
     integer function gm_identify(path, format, output) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
         !!
-        !! * [GraphicMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
+        !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         use :: dm_kind
         use :: dm_pipe
 

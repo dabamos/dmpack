@@ -63,7 +63,7 @@ POSIX semaphores.
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API for Fortran
-* camera access (V4L, RTSP)
+* camera access (V4L2, RTSP)
 * time series plotting
 * Lua scripting
 * MQTT and XMPP connectivity

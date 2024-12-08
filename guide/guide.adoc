@@ -268,12 +268,11 @@ $ sudo apt-get install gcc gfortran git make pkg-config
 The third-party dependencies have to be installed with development headers:
 
 ....
-$ sudo apt-get install --no-install-recommends libblas-dev liblapack-dev \
-  curl libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libmodbus5 \
-  libmodbus-dev libhdf5-103-1 libhdf5-dev lua5.4 liblua5.4 liblua5.4-dev \
-  libpcre2-8-0 libpcre2-dev sqlite3 libsqlite3-0 libsqlite3-dev libstrophe0 \
-  libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev ffmpeg graphicsmagick \
-  gnuplot
+$ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot graphicsmagick \
+  libblas-dev libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 \
+  libhdf5-dev liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev \
+  libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+  libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
 ....
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
@@ -337,7 +336,7 @@ Or, to install to directory `/opt`, run:
 $ sudo make install PREFIX=/opt
 ....
 
-Path `/opt/bin` must be added to the global `PATH` environment variable to run
+Path `/opt/bin/` must be added to the global `PATH` environment variable to run
 DMPACK programs from the command-line.
 
 [NOTE]
@@ -400,7 +399,7 @@ First, install the build and run-time dependencies:
 
 ....
 $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
-  devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicMagick lang/gcc \
+  devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
   lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net-im/libstrophe \
   science/hdf5 www/fcgi
 ....
@@ -2776,6 +2775,9 @@ for MariaDB, MySQL, MS SQL Server, PostgreSQL, and SQLite. For Windows only.
 (GPLv2)
 link:https://www.phpliteadmin.org/[phpLiteAdmin]:: A web front-end for SQLite
 database administration written in PHP. (GPLv3)
+link:https://sqlitestudio.pl/[SQLiteStudio]:: A free, open source, and
+multi-platform SQLite database manager written in C++ that is based on the Qt
+framework. (GPLv3)
 link:https://github.com/coleifer/sqlite-web[SQLite Web]:: A web-based SQLite
 database browser in Python. (MIT)
 
@@ -3223,7 +3225,7 @@ target_id = "target-1"
 observs = {
   -- List of sensor commands to be send to the DKRF400.
   {
-    -- 1) Start the sensor by sending a single carriage return.
+    -- (1) Start the sensor by sending a single carriage return.
     name = "start",             -- Observation name (required).
     target_id = target_id,      -- Target id (required).
     receivers = { },            -- List of receivers (up to 16).
@@ -3238,9 +3240,9 @@ observs = {
     }
   },
   {
-    -- 2) Stop "Meter Mode". The sensor response will be ignored if no delimiter
-    --    is set (as the DKRF400 does not always return a response to the
-    --    command).
+    -- (2) Stop "Meter Mode". The sensor response will be ignored if no delimiter
+    --     is set (as the DKRF400 does not always return a response to the
+    --     command).
     name = "stop",              -- Observation name (required).
     target_id = target_id,      -- Target id (required).
     receivers = { },            -- List of receivers (up to 16).
@@ -3255,7 +3257,7 @@ observs = {
     }
   },
   {
-    -- 3) Perform single measurement.
+    -- (3) Perform single measurement.
     name = "meter",             -- Observation name (required).
     target_id = target_id,      -- Target id (required).
     receivers = { "dmdb" },     -- List of receivers (up to 16).
@@ -3296,21 +3298,21 @@ dmserial = {
   rts = true,            -- TTY Request To Send (RTS) enabled.
   jobs = {               -- List of jobs to perform.
     {
-      -- 1) Start sensor.
+      -- (1) Start sensor.
       disabled = false,         -- Skip job.
       onetime = true,           -- Run job only once.
       observation = observs[1], -- Observation to perform.
       delay = 2000              -- Delay in msec to wait afterwards.
     },
     {
-      -- 2) Stop "Meter Mode".
+      -- (2) Stop "Meter Mode".
       disabled = false,         -- Skip job.
       onetime = true,           -- Run job only once.
       observation = observs[2], -- Observation to perform.
       delay = 2000              -- Delay in msec to wait afterwards.
     },
     {
-      -- 3) Measure values.
+      -- (3) Measure values.
       disabled = false,         -- Skip job.
       onetime = false,          -- Run job only once.
       observation = observs[3], -- Observation to perform.

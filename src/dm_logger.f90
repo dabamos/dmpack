@@ -53,10 +53,10 @@ module dm_logger
     contains
         private
         ! Private methods.
-        procedure :: fail     => logger_fail
-        procedure :: log_args => logger_log_args
-        procedure :: log_type => logger_log_type
-        procedure :: send     => logger_send
+        procedure         :: fail      => logger_fail
+        procedure         :: log_args  => logger_log_args
+        procedure         :: log_type  => logger_log_type
+        procedure         :: send      => logger_send
         ! Public methods.
         procedure, public :: configure => logger_configure
         procedure, public :: get_name  => logger_get_name

@@ -223,8 +223,9 @@ contains
         character, intent(in), optional :: separator !! CSV separator.
         character(len=:), allocatable   :: header    !! CSV header string.
 
-        character :: s
-        integer   :: i, j
+        character                     :: s
+        character(len=:), allocatable :: ai, aj
+        integer                       :: i, j
 
         s = CSV_SEPARATOR
         if (present(separator)) s = separator
@@ -248,28 +249,30 @@ contains
         end do
 
         do i = 1, OBSERV_MAX_NREQUESTS
+            ai = dm_itoa(i)
             header = header // s // &
-                     'requests(' // dm_itoa(i) // ').name'       // s // &
-                     'requests(' // dm_itoa(i) // ').timestamp'  // s // &
-                     'requests(' // dm_itoa(i) // ').request'    // s // &
-                     'requests(' // dm_itoa(i) // ').response'   // s // &
-                     'requests(' // dm_itoa(i) // ').delimiter'  // s // &
-                     'requests(' // dm_itoa(i) // ').pattern'    // s // &
-                     'requests(' // dm_itoa(i) // ').delay'      // s // &
-                     'requests(' // dm_itoa(i) // ').error'      // s // &
-                     'requests(' // dm_itoa(i) // ').mode'       // s // &
-                     'requests(' // dm_itoa(i) // ').retries'    // s // &
-                     'requests(' // dm_itoa(i) // ').state'      // s // &
-                     'requests(' // dm_itoa(i) // ').timeout'    // s // &
-                     'requests(' // dm_itoa(i) // ').nresponses'
+                     'requests(' // ai // ').name'       // s // &
+                     'requests(' // ai // ').timestamp'  // s // &
+                     'requests(' // ai // ').request'    // s // &
+                     'requests(' // ai // ').response'   // s // &
+                     'requests(' // ai // ').delimiter'  // s // &
+                     'requests(' // ai // ').pattern'    // s // &
+                     'requests(' // ai // ').delay'      // s // &
+                     'requests(' // ai // ').error'      // s // &
+                     'requests(' // ai // ').mode'       // s // &
+                     'requests(' // ai // ').retries'    // s // &
+                     'requests(' // ai // ').state'      // s // &
+                     'requests(' // ai // ').timeout'    // s // &
+                     'requests(' // ai // ').nresponses'
 
             do j = 1, REQUEST_MAX_NRESPONSES
+                aj = dm_itoa(j)
                 header = header // s // &
-                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').name'  // s // &
-                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').unit'  // s // &
-                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').type'  // s // &
-                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').error' // s // &
-                         'requests(' // dm_itoa(i) // ').responses(' // dm_itoa(j) // ').value'
+                         'requests(' // ai // ').responses(' // aj // ').name'  // s // &
+                         'requests(' // ai // ').responses(' // aj // ').unit'  // s // &
+                         'requests(' // ai // ').responses(' // aj // ').type'  // s // &
+                         'requests(' // ai // ').responses(' // aj // ').error' // s // &
+                         'requests(' // ai // ').responses(' // aj // ').value'
             end do
         end do
     end function dm_csv_header_observ

@@ -29,8 +29,8 @@ module dm_arg
     !! `ARG_TYPE_LOGICAL`. The command-line arguments `--help`/-`h` and
     !! `--version`/`-v` are processed automatically by function `dm_arg_read()`.
     !!
-    !! Additionally, you can pass a callback routine that outputs the version
-    !! string to `dm_arg_read()`.
+    !! Additionally, you can pass a callback routine to `dm_arg_read()` that
+    !! outputs the version string.
     use :: dm_ascii
     use :: dm_error
     use :: dm_file
@@ -59,6 +59,7 @@ module dm_arg
 
     abstract interface
         subroutine dm_arg_version_callback()
+            !! Callback routine that outputs the version information.
         end subroutine dm_arg_version_callback
     end interface
 

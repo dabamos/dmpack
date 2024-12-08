@@ -1,8 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_camera
-    !! Module for taking still images from RTSP video streams and USB webcams,
-    !! using FFmpeg.
+    !! Module for taking still images from RTSP video streams and USB webcams
+    !! (V4L2), using FFmpeg.
     !!
     !! On Linux, install the packages `ffmpeg` and `v4l-utils`:
     !!
@@ -22,7 +22,7 @@ module dm_camera
     !!
     !! The following example captures an image from an attached USB webcam at
     !! `/dev/video0` and adds a timestamp in ISO 8601 format to it using
-    !! GraphicMagick:
+    !! GraphicsMagick:
     !!
     !! ```fortran
     !! character(len=*), parameter :: IMAGE_PATH = '/tmp/image.jpg'

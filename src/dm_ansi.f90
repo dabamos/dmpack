@@ -9,7 +9,7 @@ module dm_ansi
     !! print '(2a)', ANSI_CLEAR_SCREEN, 'Hello, World!'
     !! ```
     !!
-    !! The foreground colour may be changed through routine
+    !! The foreground colour can be changed through routine
     !! `dm_ansi_color()`.
     !!
     !! You may want to disable ANSI colour output depending on whether
