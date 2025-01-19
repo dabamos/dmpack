@@ -60,20 +60,20 @@ program dmapi
 
     ! Add routes.
     routes = [ &
-        cgi_route_type('',            route_root),    &
-        cgi_route_type('/',           route_root),    &
-        cgi_route_type('/beat',       route_beat),    &
-        cgi_route_type('/beats',      route_beats),   &
-        cgi_route_type('/log',        route_log),     &
-        cgi_route_type('/logs',       route_logs),    &
-        cgi_route_type('/node',       route_node),    &
-        cgi_route_type('/nodes',      route_nodes),   &
-        cgi_route_type('/observ',     route_observ),  &
-        cgi_route_type('/observs',    route_observs), &
-        cgi_route_type('/sensor',     route_sensor),  &
-        cgi_route_type('/sensors',    route_sensors), &
-        cgi_route_type('/target',     route_target),  &
-        cgi_route_type('/targets',    route_targets), &
+        cgi_route_type('',            route_root),      &
+        cgi_route_type('/',           route_root),      &
+        cgi_route_type('/beat',       route_beat),      &
+        cgi_route_type('/beats',      route_beats),     &
+        cgi_route_type('/log',        route_log),       &
+        cgi_route_type('/logs',       route_logs),      &
+        cgi_route_type('/node',       route_node),      &
+        cgi_route_type('/nodes',      route_nodes),     &
+        cgi_route_type('/observ',     route_observ),    &
+        cgi_route_type('/observs',    route_observs),   &
+        cgi_route_type('/sensor',     route_sensor),    &
+        cgi_route_type('/sensors',    route_sensors),   &
+        cgi_route_type('/target',     route_target),    &
+        cgi_route_type('/targets',    route_targets),   &
         cgi_route_type('/timeseries', route_timeseries) &
     ]
 
