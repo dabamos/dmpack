@@ -253,9 +253,19 @@ $ make options PREFIX=/opt
 ....
 
 See section <<sys-conf>> on how to configure the operating system
-after the installation. The shared libraries `libgcc.so`, `libgfortran.so`, and
-`libquadmath.so` must be present on the target system if the DMPACK programs
-have been compiled with GNU Fortran.
+following the installation. You must at least prepare POSIX message queues in
+order to run DMPACK:
+
+* <<sys-conf-mqueue>> – Enable and configure message passing on Linux and
+  FreeBSD.
+* <<sys-conf-tz>> – Set the correct time zone of the sensor node.
+* <<sys-conf-ntp>> – Enable synchronisation with an NTP server.
+* <<sys-conf-power>> – Disable USB power saving.
+* <<sys-conf-cron>> – Add cron jobs to run programs periodically.
+
+The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
+be present on the target system if the DMPACK programs have been compiled with
+GNU Fortran.
 
 === Linux [[linux]]
 
@@ -489,6 +499,236 @@ $ make purge
 $ make [freebsd|linux|linux_aarch64]
 $ sudo make install PREFIX=/opt
 ....
+
+== System Configuration [[sys-conf]]
+
+Additional changes to the system configuration should be considered to prevent
+issues while conducting a long-term monitoring.
+
+=== Message Queues [[sys-conf-mqueue]]
+
+The operating system must have POSIX message queues enabled to run DMPACK
+programs on sensor nodes.
+
+==== Linux [[sys-conf-mqueue-linux]]
+
+The POSIX message queue file system should be already mounted by default.
+Otherwise, run:
+
+....
+# mkdir -p /dev/mqueue
+# mount -t mqueue none /dev/mqueue
+....
+
+Set the maximum number of messages and the maximum message size to some
+reasonable values:
+
+....
+# sysctl fs.mqueue.msg_max=32
+# sysctl fs.mqueue.msgsize_max=16384
+....
+
+The maximum message size has to be at least 16384 bytes. Add the settings to
+`/etc/sysctl.conf` to make them permanent:
+
+[source,text]
+....
+fs.mqueue.msg_max=32
+fs.mqueue.msgsize_max=16384
+....
+
+==== FreeBSD [[sys-conf-mqueue-freebsd]]
+
+On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
+queue file system is mounted:
+
+....
+# kldstat -m mqueuefs
+Id  Refs Name
+522    1 mqueuefs
+....
+
+Otherwise, we can simply load and mount the file system:
+
+....
+# kldload mqueuefs
+# mkdir -p /mnt/mqueue
+# mount -t mqueuefs null /mnt/mqueue
+....
+
+To load messages queues at system start, add the module `mqueuefs` to
+`/etc/rc.conf`, and the file system to `/etc/fstab`:
+
+....
+# sysrc kld_list+="mqueuefs"
+# echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
+....
+
+Additionally, we may increase the system limits of POSIX message queues with
+_sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
+
+....
+# sysctl kern.mqueue.maxmsg
+kern.mqueue.maxmsg: 32
+# sysctl kern.mqueue.maxmsgsize
+kern.mqueue.maxmsgsize: 16384
+....
+
+The maximum message size has to be at least 16384 bytes.
+
+=== Time Zone [[sys-conf-tz]]
+
+The local time zone of the sensor client should be set to a zone without summer
+daylight-saving. For instance, time zone `Europe/Berlin` implies Central
+European Summer Time (CEST), which is usually not desired for long-term
+observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
+in this case.
+
+==== Linux [[sys-conf-tz-linux]]
+
+On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
+
+....
+# timedatectl list-timezones
+# timedatectl set-timezone Etc/GMT+1
+....
+
+==== FreeBSD [[sys-conf-tz-freebsd]]
+
+On FreeBSD, configure the time zone using:
+
+....
+# tzsetup
+....
+
+=== Time Synchronisation [[sys-conf-ntp]]
+
+The system time should be updated periodically by synchronising it with network
+time servers. A Network Time Protocol (NTP) client has to be installed and
+configured to enable the synchronisation.
+
+==== Linux [[sys-conf-ntp-linux]]
+
+On Debian Linux, install the NTP package:
+
+....
+# apt-get install ntp
+....
+
+Query the NTP servers to synchronise with:
+
+....
+# ntpq -p
+....
+
+The system time should be updated now:
+
+....
+# date -R
+....
+
+On error, try to reconfigure the NTP service:
+
+....
+# dpkg-reconfigure ntp
+....
+
+==== FreeBSD [[sys-conf-ntp-freebsd]]
+
+Set the current date and time intially by passing the IP or FQDN of the NTP
+server to _ntpdate(1)_:
+
+....
+# ntpdate -b ptbtime1.ptb.de
+....
+
+The NTP daemon _ntpd(8)_ is configured through file `/etc/ntp.conf`. If
+favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
+with a single server, for example:
+
+[source,text]
+....
+server ptbtime1.ptb.de iburst
+....
+
+Add the following entries to `/etc/rc.conf`:
+
+[source,text]
+....
+ntpd_enable="YES"
+ntpd_sync_on_start="YES"
+ntpd_flags="-g"
+....
+
+Start the _ntpd(8)_ service:
+
+....
+# service ntpd start
+....
+
+=== Power Saving [[sys-conf-power]]
+
+On Linux, power saving for USB devices may be enabled by default. This can cause
+issues if sensors are attached through an USB adapter. USB power saving is
+enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
+
+....
+# cat /sys/module/usbcore/parameters/autosuspend
+2
+....
+
+We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
+and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
+
+[source,text]
+....
+GRUB_CMDLINE_LINUX_DEFAULT="quiet usbcore.autosuspend=-1"
+....
+
+Then, update the boot loader:
+
+....
+# update-grub
+....
+
+The system has to be rebooted for the changes to take effect.
+
+=== Cron [[sys-conf-cron]]
+
+On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
+usually used to run jobs periodically. For instance, in order to update an XML
+feed or to generate HTML reports at regular intervals, add a schedule of the
+task to perform to the _crontab(5)_ file of a local user. For example, to edit
+the cron jobs of user `www` with _crontab(1)_ run:
+
+....
+# crontab -u www -e
+....
+
+The following _crontab(5)_ entry adds a job to generate reports every hour,
+using utility script `mkreport.sh`:
+
+[source,crontab]
+....
+SHELL=/bin/sh
+MAILTO=/dev/null
+# Create reports every hour, suppress logging.
+@hourly -q /usr/local/share/dmpack/dmreport/mkreport.sh
+....
+
+Alter script `mkreport.sh` to your set-up. Status mails and logging are
+disabled. The shell script `mkreport.sh` must have the execution bits set.
+Modify the script according to your set-up. The parameter `-q` disables syslog
+messages. Additionally, we may update an Atom XML feed of logs by running
+<<dmfeed>> every five minutes:
+
+[source,crontab]
+....
+*/5 * * * * -q /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
+....
+
+The feed is updated only if new logs have arrived in the meantime, unless option
+`--force` is passed as an additional argument.
 
 == Deformation Monitoring Entities [[entities]]
 
@@ -2816,236 +3056,6 @@ Dump only table `logs` of a log database:
 $ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
 ....
 
-== System Configuration [[sys-conf]]
-
-Additional changes to the system configuration should be considered to prevent
-issues while conducting a long-term monitoring.
-
-=== Time Zone [[sys-conf-tz]]
-
-The local time zone of the sensor client should be set to a zone without summer
-daylight-saving. For instance, time zone `Europe/Berlin` implies Central
-European Summer Time (CEST), which is usually not desired for long-term
-observations, as it leads to time jumps. Instead, use time zone `GMT+1` or `UTC`
-in this case.
-
-==== Linux [[sys-conf-tz-linux]]
-
-On Linux, list all time zones and set the preferred one with _timedatectl(1)_:
-
-....
-# timedatectl list-timezones
-# timedatectl set-timezone Etc/GMT+1
-....
-
-==== FreeBSD [[sys-conf-tz-freebsd]]
-
-On FreeBSD, configure the time zone using:
-
-....
-# tzsetup
-....
-
-=== Time Synchronisation [[sys-conf-ntp]]
-
-The system time should be updated periodically by synchronising it with network
-time servers. A Network Time Protocol (NTP) client has to be installed and
-configured to enable the synchronisation.
-
-==== Linux [[sys-conf-ntp-linux]]
-
-On Debian Linux, install the NTP package:
-
-....
-# apt-get install ntp
-....
-
-Query the NTP servers to synchronise with:
-
-....
-# ntpq -p
-....
-
-The system time should be updated now:
-
-....
-# date -R
-....
-
-On error, try to reconfigure the NTP service:
-
-....
-# dpkg-reconfigure ntp
-....
-
-==== FreeBSD [[sys-conf-ntp-freebsd]]
-
-Set the current date and time intially by passing the IP or FQDN of the NTP
-server to _ntpdate(1)_:
-
-....
-# ntpdate -b ptbtime1.ptb.de
-....
-
-The NTP daemon _ntpd(8)_ is configured through file `/etc/ntp.conf`. If
-favoured, we can replace the existing NTP server pool `0.freebsd.pool.ntp.org`
-with a single server, for example:
-
-[source,text]
-....
-server ptbtime1.ptb.de iburst
-....
-
-Add the following entries to `/etc/rc.conf`:
-
-[source,text]
-....
-ntpd_enable="YES"
-ntpd_sync_on_start="YES"
-ntpd_flags="-g"
-....
-
-Start the _ntpd(8)_ service:
-
-....
-# service ntpd start
-....
-
-=== Power Saving [[sys-conf-power-saving]]
-
-On Linux, power saving for USB devices may be enabled by default. This can cause
-issues if sensors are attached through an USB adapter. USB power saving is
-enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
-
-....
-# cat /sys/module/usbcore/parameters/autosuspend
-2
-....
-
-We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
-and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
-
-[source,text]
-....
-GRUB_CMDLINE_LINUX_DEFAULT="quiet usbcore.autosuspend=-1"
-....
-
-Then, update the boot loader:
-
-....
-# update-grub
-....
-
-The system has to be rebooted for the changes to take effect.
-
-=== Message Queues [[sys-conf-mqueue]]
-
-The operating system must have POSIX message queues enabled to run DMPACK
-programs on sensor nodes.
-
-==== Linux [[sys-conf-mqueue-linux]]
-
-The POSIX message queue file system should be already mounted by default.
-Otherwise, run:
-
-....
-# mkdir -p /dev/mqueue
-# mount -t mqueue none /dev/mqueue
-....
-
-Set the maximum number of messages and the maximum message size to some
-reasonable values:
-
-....
-# sysctl fs.mqueue.msg_max=32
-# sysctl fs.mqueue.msgsize_max=16384
-....
-
-The maximum message size has to be at least 16384 bytes. Add the settings to
-`/etc/sysctl.conf` to make them permanent:
-
-[source,text]
-....
-fs.mqueue.msg_max=32
-fs.mqueue.msgsize_max=16384
-....
-
-==== FreeBSD [[sys-conf-mqueue-freebsd]]
-
-On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the message
-queue file system is mounted:
-
-....
-# kldstat -m mqueuefs
-Id  Refs Name
-522    1 mqueuefs
-....
-
-Otherwise, we can simply load and mount the file system:
-
-....
-# kldload mqueuefs
-# mkdir -p /mnt/mqueue
-# mount -t mqueuefs null /mnt/mqueue
-....
-
-To load messages queues at system start, add the module `mqueuefs` to
-`/etc/rc.conf`, and the file system to `/etc/fstab`:
-
-....
-# sysrc kld_list+="mqueuefs"
-# echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
-....
-
-Additionally, we may increase the system limits of POSIX message queues with
-_sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
-
-....
-# sysctl kern.mqueue.maxmsg
-kern.mqueue.maxmsg: 32
-# sysctl kern.mqueue.maxmsgsize
-kern.mqueue.maxmsgsize: 16384
-....
-
-The maximum message size has to be at least 16384 bytes.
-
-=== Cron [[sys-conf-cron]]
-
-On Unix-like operating system, link:https://en.wikipedia.org/wiki/Cron[cron] is
-usually used to run jobs periodically. For instance, in order to update an XML
-feed or to generate HTML reports at regular intervals, add a schedule of the
-task to perform to the _crontab(5)_ file of a local user. For example, to edit
-the cron jobs of user `www` with _crontab(1)_ run:
-
-....
-# crontab -u www -e
-....
-
-The following _crontab(5)_ entry adds a job to generate reports every hour,
-using utility script `mkreport.sh`:
-
-[source,crontab]
-....
-SHELL=/bin/sh
-MAILTO=/dev/null
-# Create reports every hour, suppress logging.
-@hourly -q /usr/local/share/dmpack/dmreport/mkreport.sh
-....
-
-Alter script `mkreport.sh` to your set-up. Status mails and logging are
-disabled. The shell script `mkreport.sh` must have the execution bits set.
-Modify the script according to your set-up. The parameter `-q` disables syslog
-messages. Additionally, we may update an Atom XML feed of logs by running
-<<dmfeed>> every five minutes:
-
-[source,crontab]
-....
-*/5 * * * * -q /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
-....
-
-The feed is updated only if new logs have arrived in the meantime, unless option
-`--force` is passed as an additional argument.
-
 == Sensor Control [[sensor-control]]
 
 This section covers the configuration and initialisation of DMPACK for sensor
@@ -3357,11 +3367,11 @@ is required:
 * 1-Wire temperature sensor,
 * USB adapter LinkUSB.
 
-Make sure that <<sys-conf-power-saving,USB power saving>> is disabled or the
-LinkUSB adapter may be detached after a while. The sensor data is read with
-*dmfs* and stored to database with *dmdb*. Additionally, the *dmlogger* program
-will capture log messages. The sensor has to be mounted through the virtual
-1-Wire File System (OWFS).
+Make sure that <<sys-conf-power,USB power saving>> is disabled or the LinkUSB
+adapter may be detached after a while. The sensor data is read with *dmfs* and
+stored to database with *dmdb*. Additionally, the *dmlogger* program will
+capture log messages. The sensor has to be mounted through the virtual 1-Wire
+File System (OWFS).
 
 ==== 1-Wire File System
 
