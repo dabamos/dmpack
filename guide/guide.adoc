@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2024-08-22
+:docdate: 2025-01-27
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -1064,7 +1064,7 @@ to the bot. The following commands are supported:
 !poke::
   Return a message if the bot is online.
 !reconnect::
-  Reconnect bot and update local roster list.
+  Reconnect bot to server.
 !uname::
   Return name and version of the operating system.
 !uptime::

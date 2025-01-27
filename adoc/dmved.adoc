@@ -1,0 +1,80 @@
+= dmved(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMVED
+
+== NAME
+
+dmved - reads MPPT status via VE.Direct protocol
+
+== SYNOPSIS
+
+*dmved* --help
+
+*dmved* --version
+
+*dmved* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*logger* _name_] [--*path* _path_] [--*debug*] [--*verbose*]
+
+== DESCRIPTION
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--help*, *-h*::
+  Output available command-line arguments and quit.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmved`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--path*, *-p* _path_::
+  Path to TTY device (for example, `/dev/ttyUSB0`).
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Output version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read status data from MPPT connected via TTL:
+
+....
+$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2025 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

@@ -47,7 +47,7 @@ to the bot. The following commands are supported:
 !poke::
   Return status message if bot is online.
 !reconnect::
-  Reconnect bot and update local roster list.
+  Reconnect bot to server.
 !uname::
   Return name and version of the operating system.
 !uptime::
@@ -134,5 +134,5 @@ without authorisation.
 
 == COPYING
 
-Copyright (C) 2024 {author}. +
+Copyright (C) 2025 {author}. +
 Free use of this software is granted under the terms of the ISC Licence.

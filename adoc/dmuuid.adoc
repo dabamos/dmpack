@@ -78,5 +78,5 @@ $ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid --convert
 
 == COPYING
 
-Copyright (C) 2024 {author}. +
+Copyright (C) 2025 {author}. +
 Free use of this software is granted under the terms of the ISC Licence.

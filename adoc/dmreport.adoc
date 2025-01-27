@@ -90,5 +90,5 @@ $ dmreport --name dmreport --config dmreport.conf \
 
 == COPYING
 
-Copyright (C) 2024 {author}. +
+Copyright (C) 2025 {author}. +
 Free use of this software is granted under the terms of the ISC Licence.
