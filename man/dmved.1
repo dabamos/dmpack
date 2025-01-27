@@ -1,0 +1,128 @@
+'\" t
+.\"     Title: dmved
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-01-27
+.\"    Manual: User Commands
+.\"    Source: DMVED
+.\"  Language: English
+.\"
+.TH "DMVED" "1" "2025-01-27" "DMVED" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmved \- reads MPPT status via VE.Direct protocol
+.SH "SYNOPSIS"
+.sp
+\fBdmved\fP \-\-help
+.sp
+\fBdmved\fP \-\-version
+.sp
+\fBdmved\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBpath\fP \fIpath\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Output available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmved\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-path\fP, \fB\-p\fP \fIpath\fP
+.RS 4
+Path to TTY device (for example, \f(CR/dev/ttyUSB0\fP).
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Output version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Process terminated without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Process failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Read status data from MPPT connected via TTL:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmved \-\-name dmved \-\-config /usr/local/etc/dmpack/dmved.conf \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel
