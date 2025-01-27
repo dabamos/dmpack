@@ -22,6 +22,12 @@ module dm_util
         module procedure :: equals_real64
     end interface dm_equals
 
+    interface dm_hex_to_int
+        !! Converts hexadecimal string to integer.
+        module procedure :: hex_to_int32
+        module procedure :: hex_to_int64
+    end interface
+
     interface dm_inc
         !! Returns increased integer value.
         module procedure :: inc_int32
@@ -66,6 +72,7 @@ module dm_util
 
     public :: dm_array_has
     public :: dm_equals
+    public :: dm_hex_to_int
     public :: dm_inc
     public :: dm_msleep
     public :: dm_sleep
@@ -95,6 +102,8 @@ module dm_util
     private :: array_has_int64
     private :: equals_real32
     private :: equals_real64
+    private :: hex_to_int32
+    private :: hex_to_int64
     private :: inc_int32
     private :: inc_int64
     private :: int32_to_string
@@ -437,4 +446,55 @@ contains
         if (stat /= 0) return
         str = trim(buf)
     end function real64_to_string
+
+    ! **************************************************************************
+    ! PRIVATE HEX STRING TO INTEGER ROUTINES.
+    ! **************************************************************************
+    pure subroutine hex_to_int32(str, value, error)
+        !! Returns hexadecimal values as 4-byte integer. The input string must
+        !! start with `0x`. The function returns the following error codes:
+        !!
+        !! * `E_FORMAT` if string is not in expected format.
+        !! * `E_INVALID` if string does not start with `0x`.
+        !!
+        character(len=*), intent(in)            :: str   !! Hex. string of value.
+        integer(kind=i4), intent(out)           :: value !! Value.
+        integer,          intent(out), optional :: error !! Error.
+
+        character(len=2) :: prefix
+        integer          :: stat
+
+        if (present(error)) error = E_FORMAT
+        read (str, '(a2, z8)', iostat=stat) prefix, value
+        if (stat /= 0) return
+
+        if (present(error)) error = E_INVALID
+        if (prefix /= '0x' .and. prefix /= '0X') return
+
+        if (present(error)) error = E_NONE
+    end subroutine hex_to_int32
+
+    pure subroutine hex_to_int64(str, value, error)
+        !! Returns hexadecimal values as 8-byte integer. The input string must
+        !! start with `0x`. The function returns the following error codes:
+        !!
+        !! * `E_FORMAT` if string is not in expected format.
+        !! * `E_INVALID` if string does not start with `0x`.
+        !!
+        character(len=*), intent(in)            :: str   !! Hex. string of value.
+        integer(kind=i8), intent(out)           :: value !! Value.
+        integer,          intent(out), optional :: error !! Error.
+
+        character(len=2) :: prefix
+        integer          :: stat
+
+        if (present(error)) error = E_FORMAT
+        read (str, '(a2, z16)', iostat=stat) prefix, value
+        if (stat /= 0) return
+
+        if (present(error)) error = E_INVALID
+        if (prefix /= '0x' .and. prefix /= '0X') return
+
+        if (present(error)) error = E_NONE
+    end subroutine hex_to_int64
 end module dm_util
