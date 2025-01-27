@@ -155,6 +155,11 @@ name = "dmuuid"
 main = "dmuuid.f90"
 
 [[executable]]
+name = "dmved"
+main = "dmved.f90"
+link = [ "lua-5.4", "pcre2-8", "rt" ]
+
+[[executable]]
 name = "dmweb"
 main = "dmweb.f90"
 link = [ "sqlite3" ]
@@ -331,6 +336,11 @@ main = "dmtestutil.f90"
 name = "dmtestuuid"
 main = "dmtestuuid.f90"
 
+[[test]]
+name = "dmtestve"
+main = "dmtestve.f90"
+
+[[test]]
 [[test]]
 name = "dmtestversion"
 main = "dmtestversion.f90"

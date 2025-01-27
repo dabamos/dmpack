@@ -116,6 +116,7 @@ module dmpack
     use :: dm_unit
     use :: dm_util
     use :: dm_uuid
+    use :: dm_ve
     use :: dm_version
     use :: dm_z
     use :: dm_zlib

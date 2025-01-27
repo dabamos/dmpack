@@ -40,7 +40,7 @@ dmtesthdf5 dmtesthtml dmtestid dmtestjob dmtestjson dmtestlog dmtestlogger \
 dmtestlua dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml \
 dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
 dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
-dmtestuuid dmtestversion dmtestz dmtestzlib dmtestzstd"
+dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd"
 
 NTEST=`echo ${TESTS} | wc -w`
 NFAIL=0

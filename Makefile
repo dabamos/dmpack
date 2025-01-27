@@ -218,6 +218,7 @@ DMSEND   = $(DISTDIR)/dmsend
 DMSERIAL = $(DISTDIR)/dmserial
 DMSYNC   = $(DISTDIR)/dmsync
 DMUUID   = $(DISTDIR)/dmuuid
+DMVED    = $(DISTDIR)/dmved
 DMWEB    = $(DISTDIR)/dmweb
 
 # Library source files.
@@ -310,6 +311,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_unit.f90 \
       $(SRCDIR)/dm_util.f90 \
       $(SRCDIR)/dm_uuid.f90 \
+      $(SRCDIR)/dm_ve.f90 \
       $(SRCDIR)/dm_version.f90 \
       $(SRCDIR)/dm_z.f90 \
       $(SRCDIR)/dm_zlib.f90 \
@@ -406,6 +408,7 @@ OBJ = dm_ansi.o \
       dm_unit.o \
       dm_util.o \
       dm_uuid.o \
+      dm_ve.o \
       dm_version.o \
       dm_z.o \
       dm_zlib.o \
@@ -450,7 +453,7 @@ test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconf
       dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
       dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
       dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
-      dmtestuuid dmtestversion dmtestz dmtestzlib dmtestzstd
+      dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -644,6 +647,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_gm.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_camera.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ve.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -787,6 +791,9 @@ dmtestutil: test/dmtestutil.f90 $(TARGET)
 dmtestuuid: test/dmtestuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestuuid test/dmtestuuid.f90 $(TARGET) $(LDLIBS)
 
+dmtestve: test/dmtestve.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestve test/dmtestve.f90 $(TARGET) $(LDLIBS)
+
 dmtestversion: test/dmtestversion.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestversion test/dmtestversion.f90 $(TARGET) $(LDLIBS)
 
@@ -879,6 +886,9 @@ $(DMSYNC): app/dmsync.f90 $(TARGET)
 
 $(DMUUID): app/dmuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
+
+$(DMWEB): app/dmved.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
 $(DMWEB): app/dmweb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
@@ -993,6 +1003,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmserial.1 > $(IMANDIR)/dmserial.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmsync.1   > $(IMANDIR)/dmsync.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmuuid.1   > $(IMANDIR)/dmuuid.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmved.1    > $(IMANDIR)/dmved.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmweb.1    > $(IMANDIR)/dmweb.1.gz
 
 deinstall:
@@ -1026,6 +1037,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmserial
 	$(RM) -f $(IBINDIR)/dmsync
 	$(RM) -f $(IBINDIR)/dmuuid
+	$(RM) -f $(IBINDIR)/dmved
 	$(RM) -f $(IBINDIR)/dmweb
 	$(RM) -f $(IMANDIR)/dmapi.1.gz
 	$(RM) -f $(IMANDIR)/dmbackup.1.gz
@@ -1051,6 +1063,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmserial.1.gz
 	$(RM) -f $(IMANDIR)/dmsync.1.gz
 	$(RM) -f $(IMANDIR)/dmuuid.1.gz
+	$(RM) -f $(IMANDIR)/dmved.1.gz
 	$(RM) -f $(IMANDIR)/dmweb.1.gz
 	@echo
 	@echo "You may need to manually remove $(IETCDIR) if it is no longer needed."
