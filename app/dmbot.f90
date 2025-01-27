@@ -606,7 +606,6 @@ contains
         output = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
     end function bot_response_version
 
-
     subroutine http_upload(upload)
         use :: curl
         use :: unix

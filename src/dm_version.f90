@@ -5,7 +5,7 @@ module dm_version
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: DM_COPYRIGHT = 'Copyright (c) 2024, Philipp Engel' !! DMPACK copyright string.
+    character(len=*), parameter, public :: DM_COPYRIGHT = 'Copyright (c) 2025, Philipp Engel' !! DMPACK copyright string.
 
     integer, parameter, public :: DM_VERSION_MAJOR = 0 !! DMPACK major version, from 0 to 9.
     integer, parameter, public :: DM_VERSION_MINOR = 9 !! DMPACK minor version, from 0 to 9.
