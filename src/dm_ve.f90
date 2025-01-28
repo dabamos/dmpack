@@ -2,14 +2,16 @@
 ! Licence: ISC
 module dm_ve
     !! VE.Direct protocol abstraction layer, for Maximum Power Point Tracking
-    !! (MPPT) devices made by Victron Energy.
+    !! (MPPT) chargers made by Victron Energy.
     !!
     !! The following MPPT series are compatible:
     !!
     !! * BlueSolar MPPT
     !! * SmartSolar MPPT
     !!
-    !! The MPPT-specific fields supported by this module:
+    !! The module has been tested with SmartSolar MPPT 250/60.
+    !!
+    !! The following MPPT-specific fields are supported by this module:
     !!
     !! | Name    | Description                            |
     !! |---------|----------------------------------------|
@@ -24,16 +26,16 @@ module dm_ve
     !! | `HSDS`  | Day sequence number (0 to 364).        |
     !! | `I`     | Main or channel 1 battery current.     |
     !! | `IL`    | Load current.                          |
-    !! | `LOAD`  | Load output state (ON/OFF).            |
+    !! | `LOAD`  | Load output state (`ON`/`OFF`).        |
     !! | `MPPT`  | Tracker operation mode.                |
     !! | `OR`    | Off reason (hexadecimal).              |
     !! | `PID`   | Product ID (hexadecimal).              |
     !! | `PPV`   | Panel power.                           |
-    !! | `Relay` | Relay state (ON/OFF).                  |
+    !! | `Relay` | Relay state (`ON`/`OFF`).              |
     !! | `V`     | Main or channel 1 (battery) voltage.   |
     !! | `VPV`   | Panel voltage.                         |
     !!
-    !! The TTY has to be configured to the following serial port parameters:
+    !! The TTY has to be configured to these serial port parameters:
     !!
     !! | Parameter    | Value |
     !! |--------------|-------|
@@ -98,28 +100,28 @@ module dm_ve
     !! during start-up or shutdown of the MPPT charger. Since version 1.16 this
     !! warning will no longer be reported when it is not persistent.
     !!
-    !! | Code | Description                                          |
-    !! |------|------------------------------------------------------|
-    !! | 0    | no error                                             |
-    !! | 2    | battery voltage too high                             |
-    !! | 17   | charger temperature too high                         |
-    !! | 18   | charger over current                                 |
-    !! | 19   | charger current reversed                             |
-    !! | 20   | bulk time limit exceeded                             |
-    !! | 21   | current sensor issue (sensor bias/sensor broken)     |
-    !! | 26   | terminals overheated                                 |
-    !! | 28   | converter issue (dual converter models only)         |
-    !! | 33   | input voltage too high (solar panel)                 |
-    !! | 34   | input current too high (solar panel)                 |
-    !! | 38   | input shutdown (due to excessive battery voltage)    |
-    !! | 39   | input shutdown (due to current flow during off mode) |
-    !! | 65   | lost communication with one of devices               |
-    !! | 66   | synchronised charging device configuration issue     |
-    !! | 67   | BMS connection lost                                  |
-    !! | 68   | network misconfigured                                |
-    !! | 116  | factory calibration data lost                        |
-    !! | 117  | invalid/incompatible firmware                        |
-    !! | 119  | user settings invalid                                |
+    !! | Value | Description                                           |
+    !! |-------|-------------------------------------------------------|
+    !! | 0     | No error.                                             |
+    !! | 2     | Battery voltage too high.                             |
+    !! | 17    | Charger temperature too high.                         |
+    !! | 18    | Charger over current.                                 |
+    !! | 19    | Charger current reversed.                             |
+    !! | 20    | Bulk time limit exceeded.                             |
+    !! | 21    | Current sensor issue (sensor bias/sensor broken).     |
+    !! | 26    | Terminals overheated.                                 |
+    !! | 28    | Converter issue (dual converter models only).         |
+    !! | 33    | Input voltage too high (solar panel).                 |
+    !! | 34    | Input current too high (solar panel).                 |
+    !! | 38    | Input shutdown (due to excessive battery voltage).    |
+    !! | 39    | Input shutdown (due to current flow during off mode). |
+    !! | 65    | Lost communication with one of devices.               |
+    !! | 66    | Synchronised charging device configuration issue.     |
+    !! | 67    | BMS connection lost.                                  |
+    !! | 68    | Network misconfigured.                                |
+    !! | 116   | Factory calibration data lost.                        |
+    !! | 117   | Invalid/incompatible firmware.                        |
+    !! | 119   | User settings invalid.                                |
     !!
     !! ### FW
     !!
@@ -143,7 +145,7 @@ module dm_ve
     !!
     !! ### OR
     !!
-    !! The off reason of the charger. This field described why a unit is
+    !! The off reason of the charger. This field describes why a unit is
     !! switched off.
     !!
     !! | Value      | Description                         |
@@ -392,7 +394,8 @@ contains
     end function dm_ve_is_error
 
     pure elemental logical function dm_ve_is_valid_field_type(type) result(is)
-        !! Returns `.true.` if given type is a valid field enumerator (`VE_FIELD_*`).
+        !! Returns `.true.` if given type is a valid field enumerator
+        !! (`VE_FIELD_*`). The enumerator `VE_FIELD_NONE` is invalid.
         integer, intent(in) :: type !! Field type.
 
         is = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
@@ -401,7 +404,7 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    pure subroutine dm_ve_frame_next(frame, byte, eor, finished, valid)
+    pure elemental subroutine dm_ve_frame_next(frame, byte, eor, finished, valid)
         !! State machine to read VE.Direct text protocol frame. Argument `eor`
         !! is `.true.` if a single record has been read. Argument `finished`
         !! is `.true.` if a block has been read. Argument `valid` is `.true.`
@@ -497,7 +500,7 @@ contains
         finished = frame%finished
     end subroutine dm_ve_frame_next
 
-    pure subroutine dm_ve_frame_read(frame, response, field_type, error)
+    pure elemental subroutine dm_ve_frame_read(frame, response, field_type, error)
         !! Parses frame field label and returns the field as a response. The
         !! frame label and value is expected to be in upper-case. Checksum
         !! frames are ignored.
@@ -540,13 +543,14 @@ contains
                                      type  = field%type, &
                                      error = E_INCOMPLETE)
 
+            ! Check for frame value.
+            rc = E_EMPTY
+            if (len_trim(frame%value) == 0) exit read_block
+
             ! Convert string to real.
             rc = E_TYPE
             select case (field%type)
                 case (RESPONSE_TYPE_INT32)
-                    rc = E_EMPTY
-                    if (len_trim(frame%value) == 0) exit read_block
-
                     if (frame%value(1:2) == '0X') then
                         ! Convert hex string to integer.
                         call dm_hex_to_int(frame%value, i, rc)
@@ -557,10 +561,6 @@ contains
                     end if
 
                 case (RESPONSE_TYPE_LOGICAL)
-                    rc = E_EMPTY
-                    if (len_trim(frame%value) == 0) exit read_block
-
-                    rc = TYPE
                     if (frame%value == 'OFF') then
                         rc = E_NONE
                         response%value = dm_to_real64(.false.)
@@ -576,7 +576,7 @@ contains
         if (present(error)) error = rc
     end subroutine dm_ve_frame_read
 
-    pure subroutine dm_ve_frame_reset(frame)
+    pure elemental subroutine dm_ve_frame_reset(frame)
         !! Resets the frame to be used for the next block.
         type(ve_frame_type), intent(inout) :: frame !! VE.Direct frame.
 

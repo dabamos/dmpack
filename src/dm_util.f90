@@ -233,7 +233,8 @@ contains
     end function dm_int64_to_real64
 
     pure elemental function dm_logical_to_real64(l) result(r)
-        !! Converts logical to 8-byte real (`0.0` for `.false.` and `1.0` for `.true.`).
+        !! Converts logical to 8-byte real (`0.0` for `.false.` and `1.0` for
+        !! `.true.`).
         logical, intent(in) :: l !! Logical value.
         real(kind=r8)       :: r !! Value as 8-byte real.
 
@@ -452,7 +453,8 @@ contains
     ! **************************************************************************
     pure subroutine hex_to_int32(str, value, error)
         !! Returns hexadecimal values as 4-byte integer. The input string must
-        !! start with `0x`. The function returns the following error codes:
+        !! start with `0x` or `0X`. The routine returns the following error
+        !! codes in `error`:
         !!
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
@@ -476,7 +478,8 @@ contains
 
     pure subroutine hex_to_int64(str, value, error)
         !! Returns hexadecimal values as 8-byte integer. The input string must
-        !! start with `0x`. The function returns the following error codes:
+        !! start with `0x` or `0X`. The routine returns the following error
+        !! codes in `error`:
         !!
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
