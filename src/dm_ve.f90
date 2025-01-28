@@ -1,8 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_ve
-    !! VE.Direct protocol abstraction layer, for MPPT devices made by Victron
-    !! Energy.
+    !! VE.Direct protocol abstraction layer, for Maximum Power Point Tracking
+    !! (MPPT) devices made by Victron Energy.
     !!
     !! The following MPPT series are compatible:
     !!
@@ -60,15 +60,16 @@ module dm_ve
     !! | `<Field-Value>` | The ASCII formatted value of this field.                    |
     !!
     !! The statistics are grouped in blocks with a checksum appended. The last
-    !! field in a block will always be `CHECKSUM`. The value is a single byte,
+    !! field in a block will always be `Checksum`. The value is a single byte,
     !! and will not necessarily be a printable ASCII character. The modulo 256
     !! sum of all bytes in a block will equal 0 if there were no transmission
     !! errors. Multiple blocks are sent containing different fields.
     !!
     !! ## Example
     !!
-    !! The snipped reads a single VE.Direct block from passed character `byte`
-    !! and converts it to a response type:
+    !! The snipped reads a single VE.Direct block from sequentially passed
+    !! character `byte`, adds them to a frame, and converts the frame to a
+    !! response type once finished:
     !!
     !! ```fortran
     !! integer             :: rc
@@ -76,25 +77,23 @@ module dm_ve
     !! type(ve_frame_type) :: frame
     !! type(response_type) :: response
     !!
-    !! do
-    !!     call dm_ve_frame_next(frame, byte, eor, finished, valid)
+    !! call dm_ve_frame_next(frame, byte, eor, finished, valid)
     !!
-    !!     if (finished) then
-    !!         if (valid) then
-    !!             print '("record is valid")'
-    !!         else
-    !!             print '("record is invalid")'
-    !!         end if
-    !!
-    !!         exit
+    !! if (finished) then
+    !!     if (valid) then
+    !!         print '("Record is valid")'
+    !!     else
+    !!         print '("Record is invalid")'
     !!     end if
     !!
-    !!     if (eor) then
-    !!         rc = dm_ve_frame_read(frame, response)
-    !!         print '("Label: ", a, " Value: ", a)',    frame%label, trim(frame%value)
-    !!         print '("Name:  ", a, " Value: ", f8.1)', response%name, response%value
-    !!     end if
-    !! end do
+    !!     return
+    !! end if
+    !!
+    !! if (eor) then
+    !!     call dm_ve_frame_read(frame, response)
+    !!     print '("Label: ", a, " Value: ", a)',    frame%label, trim(frame%value)
+    !!     print '("Name:  ", a, " Value: ", f8.1)', response%name, response%value
+    !! end if
     !!
     !! call dm_ve_frame_reset(frame)
     !! ```
@@ -271,77 +270,6 @@ contains
         end do
     end function dm_ve_field_type
 
-    integer function dm_ve_frame_read(frame, response, field_type) result(rc)
-        !! Parses frame field label and returns the field as a response.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the field value is empty.
-        !! * `E_EOR` if the field is a checksum.
-        !! * `E_INVALID` if the field label is unsupported.
-        !! * `E_TYPE` if the field value type is invalid.
-        !!
-        use :: dm_string, only: dm_string_to
-        use :: dm_util,   only: dm_hex_to_int, dm_to_real64
-
-        type(ve_frame_type), intent(inout)         :: frame      !! Field frame.
-        type(response_type), intent(out)           :: response   !! Parsed response.
-        integer,             intent(out), optional :: field_type !! VE.Direct field type (`VE_FIELD_*`).
-
-        integer             :: i, type
-        type(ve_field_type) :: field
-
-        ! Ignore checksum frame.
-        rc = E_EOR
-        if (present(field_type)) field_type = VE_FIELD_NONE
-        if (frame%label == 'CHECKSUM') return
-
-        ! Find field type by label.
-        rc = E_INVALID
-        type = dm_ve_field_type(frame%label)
-        if (present(field_type)) field_type = type
-        if (type == VE_FIELD_NONE) return
-
-        ! Initialise response.
-        field = VE_FIELDS(type)
-        response = response_type(name  = field%name, &
-                                 unit  = field%unit, &
-                                 type  = field%type, &
-                                 error = E_INCOMPLETE)
-
-        ! Convert string to real.
-        rc = E_TYPE
-        select case (field%type)
-            case (RESPONSE_TYPE_INT32)
-                rc = E_EMPTY
-                if (len_trim(frame%value) == 0) return
-
-                if (frame%value(1:2) == '0X') then
-                    ! Convert hex string to integer.
-                    call dm_hex_to_int(frame%value, i, rc)
-                    response%value = dm_to_real64(i)
-                else
-                    ! Convert string to integer.
-                    call dm_string_to(frame%value, response%value, rc)
-                end if
-
-            case (RESPONSE_TYPE_LOGICAL)
-                rc = E_EMPTY
-                if (len_trim(frame%value) == 0) return
-
-                rc = TYPE
-                if (frame%value == 'OFF') then
-                    rc = E_NONE
-                    response%value = dm_to_real64(.false.)
-                else if (frame%value == 'ON') then
-                    rc = E_NONE
-                    response%value = dm_to_real64(.true.)
-                end if
-        end select
-
-        response%error = rc
-    end function dm_ve_frame_read
-
     pure elemental logical function dm_ve_is_error(code) result(is)
         !! Returns `.true.` if given code is a valid VE.Direct error code.
         integer, intent(in) :: code !! VE.Direct error code.
@@ -367,18 +295,21 @@ contains
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
     pure subroutine dm_ve_frame_next(frame, byte, eor, finished, valid)
-        !! State machine to read VE.Direct Text protocol frame. Argument `eor`
-        !! is `.true.`, if a single record has been read. Argument `finished`
-        !! is `.true.`, if a block has been read. Argument `valid` is `.true.`
+        !! State machine to read VE.Direct text protocol frame. Argument `eor`
+        !! is `.true.` if a single record has been read. Argument `finished`
+        !! is `.true.` if a block has been read. Argument `valid` is `.true.`
         !! if the checksum of a finished block is valid.
         !!
         !! If `eor` is `.true.`, read the frame with `dm_ve_frame_read()`
         !! afterwards. If `finished` is `.true.`, reset the frame before
         !! reading the next block.
         !!
+        !! The routine converts frame labels and values to upper-case.
+        !!
         !! ## References
         !!
         !! * [VE.Direct Protocol FAQ](https://www.victronenergy.com/live/vedirect_protocol:faq)
+        !!
         use :: dm_ascii
         use :: dm_string, only: dm_to_upper
 
@@ -396,7 +327,7 @@ contains
 
         if (finished) return
 
-        frame%checksum = modulo(frame%checksum + iachar(byte), 256)
+        frame%checksum = modulo(frame%checksum + ichar(byte), 256)
         a = dm_to_upper(byte)
 
         select case (frame%state)
@@ -458,6 +389,85 @@ contains
 
         finished = frame%finished
     end subroutine dm_ve_frame_next
+
+    pure subroutine dm_ve_frame_read(frame, response, field_type, error)
+        !! Parses frame field label and returns the field as a response. The
+        !! frame label and value is expected to be in upper-case. Checksum
+        !! frames are ignored.
+        !!
+        !! The routine returns the following error codes in `error`:
+        !!
+        !! * `E_EMPTY` if the field value is empty.
+        !! * `E_EOR` if the field is a checksum.
+        !! * `E_INVALID` if the field label is unsupported.
+        !! * `E_TYPE` if the field value type is invalid.
+        !!
+        use :: dm_string, only: dm_string_to
+        use :: dm_util,   only: dm_hex_to_int, dm_to_real64
+
+        type(ve_frame_type), intent(inout)         :: frame      !! Field frame.
+        type(response_type), intent(out)           :: response   !! Response of field data.
+        integer,             intent(out), optional :: field_type !! VE.Direct field type (`VE_FIELD_*`).
+        integer,             intent(out), optional :: error      !! Error code.
+
+        integer             :: i, rc, type
+        type(ve_field_type) :: field
+
+        if (present(field_type)) field_type = VE_FIELD_NONE
+
+        read_block: block
+            ! Ignore checksum frame.
+            rc = E_EOR
+            if (frame%label == 'CHECKSUM') exit read_block
+
+            ! Find field type by label.
+            rc = E_INVALID
+            type = dm_ve_field_type(frame%label)
+            if (present(field_type)) field_type = type
+            if (type == VE_FIELD_NONE) exit read_block
+
+            ! Initialise response.
+            field = VE_FIELDS(type)
+            response = response_type(name  = field%name, &
+                                     unit  = field%unit, &
+                                     type  = field%type, &
+                                     error = E_INCOMPLETE)
+
+            ! Convert string to real.
+            rc = E_TYPE
+            select case (field%type)
+                case (RESPONSE_TYPE_INT32)
+                    rc = E_EMPTY
+                    if (len_trim(frame%value) == 0) exit read_block
+
+                    if (frame%value(1:2) == '0X') then
+                        ! Convert hex string to integer.
+                        call dm_hex_to_int(frame%value, i, rc)
+                        response%value = dm_to_real64(i)
+                    else
+                        ! Convert string to integer.
+                        call dm_string_to(frame%value, response%value, rc)
+                    end if
+
+                case (RESPONSE_TYPE_LOGICAL)
+                    rc = E_EMPTY
+                    if (len_trim(frame%value) == 0) exit read_block
+
+                    rc = TYPE
+                    if (frame%value == 'OFF') then
+                        rc = E_NONE
+                        response%value = dm_to_real64(.false.)
+                    else if (frame%value == 'ON') then
+                        rc = E_NONE
+                        response%value = dm_to_real64(.true.)
+                    end if
+            end select
+
+            response%error = rc
+        end block read_block
+
+        if (present(error)) error = rc
+    end subroutine dm_ve_frame_read
 
     pure subroutine dm_ve_frame_reset(frame)
         !! Resets the frame to be used for the next block.
