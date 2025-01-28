@@ -444,7 +444,7 @@ build: $(TARGET) $(SHARED) test app
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
      $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
-     $(DMSYNC) $(DMUUID) $(DMWEB)
+     $(DMSYNC) $(DMUUID) $(DMVED) $(DMWEB)
 
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconfig \
@@ -887,8 +887,8 @@ $(DMSYNC): app/dmsync.f90 $(TARGET)
 $(DMUUID): app/dmuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
 
-$(DMWEB): app/dmved.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMVED): app/dmved.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMVED) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
 $(DMWEB): app/dmweb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
@@ -963,6 +963,7 @@ install:
 	install -m 755 $(DMSERIAL) $(IBINDIR)/
 	install -m 755 $(DMSYNC)   $(IBINDIR)/
 	install -m 755 $(DMUUID)   $(IBINDIR)/
+	install -m 755 $(DMVED)    $(IBINDIR)/
 	install -m 755 $(DMWEB)    $(IBINDIR)/
 	install -m 644 $(INCDIR)/*.mod $(IINCDIR)/
 	install -m 644 $(TARGET) $(ILIBDIR)/
