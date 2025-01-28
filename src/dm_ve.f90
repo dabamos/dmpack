@@ -65,6 +65,112 @@ module dm_ve
     !! sum of all bytes in a block will equal 0 if there were no transmission
     !! errors. Multiple blocks are sent containing different fields.
     !!
+    !! ## Fields
+    !!
+    !! Description of fields returned by MPPT chargers.
+    !!
+    !! ## CS
+    !!
+    !! The state of the MPPT operation.
+    !!
+    !! | Value | Description               |
+    !! |-------|---------------------------|
+    !! | 0     | off                       |
+    !! | 2     | fault                     |
+    !! | 3     | bulk                      |
+    !! | 4     | absorption                |
+    !! | 5     | float                     |
+    !! | 7     | equalise (manual)         |
+    !! | 245   | starting-up               |
+    !! | 247   | auto-equalise/recondition |
+    !! | 252   | external control          |
+    !!
+    !! ### ERR
+    !!
+    !! The error code of the device, relevant when the device is in fault
+    !! state.
+    !!
+    !! Error 19 can be ignored, this condition regularly occurs during start-up
+    !! or shutdown of the MPPT charger. Since version 1.15 this error will no
+    !! longer be reported.
+    !!
+    !! Error 21 can be ignored for 5 minutes, this condition regularly occurs
+    !! during start-up or shutdown of the MPPT charger. Since version 1.16 this
+    !! warning will no longer be reported when it is not persistent.
+    !!
+    !! | Code | Description                                          |
+    !! |------|------------------------------------------------------|
+    !! | 0    | no error                                             |
+    !! | 2    | battery voltage too high                             |
+    !! | 17   | charger temperature too high                         |
+    !! | 18   | charger over current                                 |
+    !! | 19   | charger current reversed                             |
+    !! | 20   | bulk time limit exceeded                             |
+    !! | 21   | current sensor issue (sensor bias/sensor broken)     |
+    !! | 26   | terminals overheated                                 |
+    !! | 28   | converter issue (dual converter models only)         |
+    !! | 33   | input voltage too high (solar panel)                 |
+    !! | 34   | input current too high (solar panel)                 |
+    !! | 38   | input shutdown (due to excessive battery voltage)    |
+    !! | 39   | input shutdown (due to current flow during off mode) |
+    !! | 65   | lost communication with one of devices               |
+    !! | 66   | synchronised charging device configuration issue     |
+    !! | 67   | BMS connection lost                                  |
+    !! | 68   | network misconfigured                                |
+    !! | 116  | factory calibration data lost                        |
+    !! | 117  | invalid/incompatible firmware                        |
+    !! | 119  | user settings invalid                                |
+    !!
+    !! ### FW
+    !!
+    !! The firmware version of the device. The version is reported as a whole
+    !! number, e.g. 208 for firmware version 2.08.
+    !!
+    !! ### HSDS
+    !!
+    !! The day sequence number in range 0 to 364. A change in this number
+    !! indicates a new day. This implies that the historical data has changed.
+    !!
+    !! ### MPPT
+    !!
+    !! The tracker operation mode.
+    !!
+    !! | Value | Description                |
+    !! |-------|----------------------------|
+    !! | 0     | off                        |
+    !! | 1     | voltage or current limited |
+    !! | 2     | MPPT active                |
+    !!
+    !! ### OR
+    !!
+    !! The off reason of the charger. This field described why a unit is
+    !! switched off.
+    !!
+    !! | Value      | Description                         |
+    !! |------------|-------------------------------------|
+    !! | 0x00000001 | no input power                      |
+    !! | 0x00000002 | switched off (power switch)         |
+    !! | 0x00000004 | switched off (device mode register) |
+    !! | 0x00000008 | remote input                        |
+    !! | 0x00000010 | protection active                   |
+    !! | 0x00000020 | pay-as-you-go (PAYGo)               |
+    !! | 0x00000040 | BMS                                 |
+    !! | 0x00000080 | engine shutdown detection           |
+    !! | 0x00000100 | analysing input voltage             |
+    !!
+    !! ### Relay
+    !!
+    !! During normal operation of the MPPT charger, the relay is `OFF`. If
+    !! there is a battery low voltage condition, the value will change to `ON`.
+    !!
+    !! ### SER#
+    !!
+    !! The serial number of the device. The notation is `LLYYMMSSSSS`, where
+    !! `LL` is the location code, `YYWW` is the production date stamp (year,
+    !! week), and `SSSSS` is a unique part of the serial number.
+    !!
+    !! The field is not supported by DMPACK and should be ignored.
+    !!
     !! ## Example
     !!
     !! The snipped reads a single VE.Direct block from sequentially passed
@@ -232,6 +338,7 @@ contains
             case (68);    message = 'network misconfigured'
             case (116);   message = 'factory calibration data lost'
             case (117);   message = 'invalid/incompatible firmware'
+            case (119);   message = 'user settings invalid'
             case default; message = 'unknown VE.Direct code (' // dm_itoa(code) // ')'
         end select
     end function dm_ve_error_message
@@ -277,7 +384,7 @@ contains
         is = .false.
 
         select case (code)
-            case (2, 17, 18, 19, 20, 21, 26, 28, 33, 34, 38, 39, 65, 66, 67, 68, 116, 117)
+            case (2, 17, 18, 19, 20, 21, 26, 28, 33, 34, 38, 39, 65, 66, 67, 68, 116, 117, 119)
                 is = .true.
             case default
                 return
