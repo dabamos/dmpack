@@ -504,7 +504,7 @@ contains
         call logger%info('started ' // APP_NAME)
 
         ! Try to open TTY/PTY.
-        call logger%debug('opening TTY '  // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
+        call logger%debug('opening TTY ' // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
                           ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
                           dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
