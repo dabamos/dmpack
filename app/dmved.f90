@@ -230,7 +230,7 @@ contains
                     call logger%debug('received valid VE.Direct block from TTY ' // app%path)
 
                     ! Check if time has reached.
-                    epoch_now = dm_time_mseconds()
+                    epoch_now = dm_time_seconds()
                     if (epoch_last + app%interval > epoch_now) cycle tty_loop
                     epoch_last = epoch_now
 
