@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmved - reads MPPT status via VE.Direct protocol
+dmved - reads status of connected Victron Energy MPPT charger
 
 == SYNOPSIS
 
@@ -16,9 +16,35 @@ dmved - reads MPPT status via VE.Direct protocol
 *dmved* --version
 
 *dmved* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*path* _path_] [--*debug*] [--*verbose*]
+[--*target* _id_] [--*logger* _name_] [--*path* _path_] [--*receiver* _name_]
+[--*interval* _seconds_] [--*debug*] [--*verbose*]
 
 == DESCRIPTION
+
+This program captures status data received from a connected Maximum Power Point
+Tracking (MPPT) charger by Victron Energy, using the VE.Direct protocol. Only
+the BlueSolar and SmartSolar MPPT series are currently supported. The serial
+port will be configured to 19200 baud (8N1). Observations are sent to the
+receiver via message queue in the specified interval.
+
+The following 16 VE.Direct fields are captured:
+
+CS::   State of operation.
+ERR::  Error code.
+H19::  Yield total (kWh/100).
+H20::  Yield today (kWh/100).
+H21::  Maximum power today (W).
+H22::  Yield yesterday (kWh/100).
+H23::  Maximum power yesterday (W).
+HSDS:: Day sequence number (0 to 364).
+I::    Main or channel 1 battery current (mA).
+IL::   Load current (mA).
+LOAD:: Load output state (on or off).
+MPPT:: Tracker operation mode.
+OR::   Off-state reason.
+PPV::  Panel power (W).
+V::    Main or channel 1 (battery) voltage (mV).
+VPV::  Panel voltage (mV).
 
 == OPTIONS
 
@@ -31,6 +57,9 @@ dmved - reads MPPT status via VE.Direct protocol
 *--help*, *-h*::
   Output available command-line arguments and quit.
 
+*--interval*, *-I* _seconds_::
+  Observation emit interval in seconds (default is 60 seconds).
+
 *--logger*, *-l* _name_::
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
 
@@ -40,11 +69,17 @@ dmved - reads MPPT status via VE.Direct protocol
 *--node*, *-N* _id_::
   Node id.
 
+*--path*, *-p* _path_::
+  Path to TTY device (for example, `/dev/ttyUSB0`).
+
+*--receiver*, *-r* _name_::
+  Name of the observation receiver, without leading `/`.
+
 *--sensor*, *-S* _id_::
   Sensor id.
 
-*--path*, *-p* _path_::
-  Path to TTY device (for example, `/dev/ttyUSB0`).
+*--target*, *-T* _id_::
+  Target id.
 
 *--verbose*, *-V*::
   Print log messages to _stderr_.

@@ -1,0 +1,33 @@
+--
+-- Example configuration file for dmved to read the MPPT status from Victron
+-- Energy chargers, using the VE.Direct protocol.
+--
+-- A valid receiver is required in order to forward observations via message
+-- queue.
+--
+-- Rename table "dmved" to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      interval - Emit interval in seconds.
+--      logger   - Name of logger instance (implies log forwarding).
+--      node     - Node id (required).
+--      sensor   - Sensor id (required).
+--      path     - Path of TTY/PTY device (for example, `/dev/ttyUSB0`).
+--      receiver - Receiver of the observation.
+--      target   - Target id (required).
+--      verbose  - Print logs to standard error.
+--
+
+dmved = {
+    logger = "",
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    target = "dummy-target",
+    path = "/dev/ttyUSB0",
+    receiver = "",
+    interval = 600,
+    debug = false,
+    verbose = true
+}

@@ -25,7 +25,7 @@
 --      sensor   - Sensor id.
 --      stopbits - Number of stop bits (1 or 2).
 --      timeout  - Read timeout in seconds.
---      path     - Path of TTY/PTY device (for example, `/dev/ttyU0`).
+--      path     - Path of TTY/PTY device (for example, `/dev/ttyUSB0`).
 --      verbose  - Print logs to standard error.
 --
 -- Optionally, import an additional Lua file `myfile.lua` by adding the

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmved
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-01-27
+.\" Generator: Asciidoctor 2.0.16
+.\"      Date: 2025-01-29
 .\"    Manual: User Commands
 .\"    Source: DMVED
 .\"  Language: English
 .\"
-.TH "DMVED" "1" "2025-01-27" "DMVED" "User Commands"
+.TH "DMVED" "1" "2025-01-29" "DMVED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmved \- reads MPPT status via VE.Direct protocol
+dmved \- reads status of connected Victron Energy MPPT charger
 .SH "SYNOPSIS"
 .sp
 \fBdmved\fP \-\-help
@@ -36,9 +36,97 @@ dmved \- reads MPPT status via VE.Direct protocol
 \fBdmved\fP \-\-version
 .sp
 \fBdmved\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBpath\fP \fIpath\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+[\-\-\fBtarget\fP \fIid\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBpath\fP \fIpath\fP] [\-\-\fBreceiver\fP \fIname\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
-
+.sp
+This program captures status data received from a connected Maximum Power Point
+Tracking (MPPT) charger by Victron Energy, using the VE.Direct protocol. Only
+the BlueSolar and SmartSolar MPPT series are currently supported. The serial
+port will be configured to 19200 baud (8N1). Observations are sent to the
+receiver via message queue in the specified interval.
+.sp
+The following 16 VE.Direct fields are captured:
+.sp
+CS
+.RS 4
+State of operation.
+.RE
+.sp
+ERR
+.RS 4
+Error code.
+.RE
+.sp
+H19
+.RS 4
+Yield total (kWh/100).
+.RE
+.sp
+H20
+.RS 4
+Yield today (kWh/100).
+.RE
+.sp
+H21
+.RS 4
+Maximum power today (W).
+.RE
+.sp
+H22
+.RS 4
+Yield yesterday (kWh/100).
+.RE
+.sp
+H23
+.RS 4
+Maximum power yesterday (W).
+.RE
+.sp
+HSDS
+.RS 4
+Day sequence number (0 to 364).
+.RE
+.sp
+I
+.RS 4
+Main or channel 1 battery current (mA).
+.RE
+.sp
+IL
+.RS 4
+Load current (mA).
+.RE
+.sp
+LOAD
+.RS 4
+Load output state (on or off).
+.RE
+.sp
+MPPT
+.RS 4
+Tracker operation mode.
+.RE
+.sp
+OR
+.RS 4
+Off\-state reason.
+.RE
+.sp
+PPV
+.RS 4
+Panel power (W).
+.RE
+.sp
+V
+.RS 4
+Main or channel 1 (battery) voltage (mV).
+.RE
+.sp
+VPV
+.RS 4
+Panel voltage (mV).
+.RE
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -56,6 +144,11 @@ Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
 Output available command\-line arguments and quit.
 .RE
 .sp
+\fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
+.RS 4
+Observation emit interval in seconds (default is 60 seconds).
+.RE
+.sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP
 .RS 4
 Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
@@ -71,14 +164,24 @@ Name of program instance and configuration (default is \f(CRdmved\fP).
 Node id.
 .RE
 .sp
+\fB\-\-path\fP, \fB\-p\fP \fIpath\fP
+.RS 4
+Path to TTY device (for example, \f(CR/dev/ttyUSB0\fP).
+.RE
+.sp
+\fB\-\-receiver\fP, \fB\-r\fP \fIname\fP
+.RS 4
+Name of the observation receiver, without leading \f(CR/\fP.
+.RE
+.sp
 \fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
 .RS 4
 Sensor id.
 .RE
 .sp
-\fB\-\-path\fP, \fB\-p\fP \fIpath\fP
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
 .RS 4
-Path to TTY device (for example, \f(CR/dev/ttyUSB0\fP).
+Target id.
 .RE
 .sp
 \fB\-\-verbose\fP, \fB\-V\fP

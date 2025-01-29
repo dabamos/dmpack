@@ -11,7 +11,7 @@ module dm_ve
     !!
     !! The module has been tested with SmartSolar MPPT 250/60.
     !!
-    !! The following MPPT-specific fields are supported by this module:
+    !! Only MPPT-specific fields are supported by this module:
     !!
     !! | Name    | Description                            |
     !! |---------|----------------------------------------|
@@ -176,7 +176,7 @@ module dm_ve
     !! ## Example
     !!
     !! The snipped reads a single VE.Direct block from sequentially passed
-    !! character `byte`, adds them to a frame, and converts the frame to a
+    !! character `byte`, adds it to a frame, and converts the frame to a
     !! response type once finished:
     !!
     !! ```fortran
@@ -223,6 +223,7 @@ module dm_ve
     integer, parameter, public :: VE_VALUE_LEN = 32                !! Max. field value length (minus tab).
 
     ! TTY parameters.
+    integer, parameter, public :: VE_TTY_ACCESS    = TTY_RDONLY      !! Default TTY access mode.
     integer, parameter, public :: VE_TTY_BAUD_RATE = TTY_B19200      !! Default TTY baud rate.
     integer, parameter, public :: VE_TTY_BYTE_SIZE = TTY_BYTE_SIZE8  !! Default TTY byte size.
     integer, parameter, public :: VE_TTY_PARITY    = TTY_PARITY_NONE !! Default TTY parity.
@@ -552,11 +553,11 @@ contains
             select case (field%type)
                 case (RESPONSE_TYPE_INT32)
                     if (frame%value(1:2) == '0X') then
-                        ! Convert hex string to integer.
+                        ! Convert hex string to real.
                         call dm_hex_to_int(frame%value, i, rc)
                         response%value = dm_to_real64(i)
                     else
-                        ! Convert string to integer.
+                        ! Convert string to real.
                         call dm_string_to(frame%value, response%value, rc)
                     end if
 
