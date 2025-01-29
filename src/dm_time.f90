@@ -45,6 +45,7 @@ module dm_time
     public :: dm_time_mseconds
     public :: dm_time_now
     public :: dm_time_rfc2822
+    public :: dm_time_seconds
     public :: dm_time_strings
     public :: dm_time_strip_useconds
     public :: dm_time_to_beats
@@ -53,8 +54,8 @@ module dm_time
     public :: dm_time_zone
     public :: dm_time_zone_iso
 
-    private:: time_from_unix_integer
-    private:: time_from_unix_string
+    private :: time_from_unix_integer
+    private :: time_from_unix_string
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -285,6 +286,18 @@ contains
         d = 1 + modulo(dt(1) + ((dt(1) - 1) / 4) - ((dt(1) - 1) / 100) + ((dt(1) - 1) / 400), 7_i8)
         write (str, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
+
+    integer(kind=i8) function dm_time_seconds() result(seconds)
+        !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
+        !! error, the result is 0.
+        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
+
+        type(c_timespec) :: tp
+
+        seconds = 0_i8
+        if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
+        seconds = tp%tv_sec
+    end function dm_time_seconds
 
     pure elemental character(len=25) function dm_time_strip_useconds(time) result(str)
         !! Strips the microseconds part of the given ISO 8601 time stamp and

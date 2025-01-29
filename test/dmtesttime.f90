@@ -46,12 +46,10 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        integer(kind=i8) :: mseconds
-
         stat = TEST_FAILED
 
-        mseconds = dm_time_mseconds()
-        print '(" mseconds: ", i0)', mseconds
+        print '(" seconds: ", i0)',  dm_time_seconds()
+        print '(" mseconds: ", i0)', dm_time_mseconds()
 
         stat = TEST_PASSED
     end function test02
