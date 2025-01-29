@@ -50,6 +50,6 @@ contains
 
         if (.not. c_associated(arg)) return
         call c_f_pointer(arg, i)
-        print *, '>>> client data:', i
+        print *, 'Client data:', i
     end subroutine thread_callback
 end program dmtestthread

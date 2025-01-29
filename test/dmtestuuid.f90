@@ -29,18 +29,18 @@ contains
 
         stat = TEST_FAILED
 
-        print *, 'Generating and validating ', NUUIDS, ' UUID4s ...'
+        print '(" Generating and validating ", i0, " UUIDs ...")', NUUIDS
 
         do i = 1, NUUIDS
             uuids(i) = dm_uuid4()
             if (.not. dm_uuid4_is_valid(uuids(i))) then
-                print *, 'Error: ', uuids(i), ' is invalid'
+                print '(" Error: UUID ", a, " is invalid")', uuids(i)
                 return
             end if
 
             do j = 1, i - 1
                 if (uuids(j) == uuids(i)) then
-                    print *, 'Error: duplicate UUIDs ', i, ' and ', j, ' (', uuids(i), ', ', uuids(j), ')'
+                    print '(" Error: duplicate UUID ", a)', uuids(i)
                     return
                 end if
             end do
@@ -54,7 +54,7 @@ contains
 
         stat = TEST_FAILED
 
-        print *, 'Adding hyphens to UUID4 ...'
+        print *, 'Adding hyphens to UUID ...'
         uuid = dm_uuid4_hyphenize(UUID_DEFAULT)
         if (uuid /= '00000000-0000-0000-0000-000000000000') return
 

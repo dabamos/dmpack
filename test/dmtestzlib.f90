@@ -31,15 +31,15 @@ contains
         call dm_test_dummy(observ1)
         rc = dm_nml_from(observ1, input)
 
-        print *, 'compressing ...'
+        print *, 'Compressing ...'
         rc = dm_zlib_compress(input, output1)
         if (dm_is_error(rc)) return
 
-        print *, 'uncompressing ...'
+        print *, 'Uncompressing ...'
         rc = dm_zlib_uncompress(output1, output2)
         if (dm_is_error(rc)) return
 
-        print *, 'matching ...'
+        print *, 'Matching ...'
         rc = dm_nml_to(output2, observ2)
         if (.not. (observ2 == observ1)) return
 
