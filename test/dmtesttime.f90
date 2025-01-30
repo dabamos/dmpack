@@ -48,8 +48,8 @@ contains
     logical function test02() result(stat)
         stat = TEST_FAILED
 
-        print '(" seconds: ", i0)',  dm_time_seconds()
-        print '(" mseconds: ", i0)', dm_time_mseconds()
+        print '(" seconds: ", i0)',  dm_time_unix()
+        print '(" mseconds: ", i0)', dm_time_unix_msec()
 
         stat = TEST_PASSED
     end function test02

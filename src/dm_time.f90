@@ -42,15 +42,15 @@ module dm_time
     public :: dm_time_diff
     public :: dm_time_from_unix
     public :: dm_time_is_valid
-    public :: dm_time_mseconds
     public :: dm_time_now
     public :: dm_time_rfc2822
-    public :: dm_time_seconds
     public :: dm_time_strings
     public :: dm_time_strip_useconds
     public :: dm_time_to_beats
     public :: dm_time_to_human
     public :: dm_time_to_unix
+    public :: dm_time_unix
+    public :: dm_time_unix_msec
     public :: dm_time_zone
     public :: dm_time_zone_iso
 
@@ -224,18 +224,6 @@ contains
         valid = .true.
     end function dm_time_is_valid
 
-    integer(kind=i8) function dm_time_mseconds() result(mseconds)
-        !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
-        !! error, the result is 0.
-        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
-
-        type(c_timespec) :: tp
-
-        mseconds = 0_i8
-        if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
-        mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
-    end function dm_time_mseconds
-
     impure elemental character(len=TIME_LEN) function dm_time_now() result(str)
         !! Returns current date and time as 32-characters long string in ISO
         !! 8601/RFC 3339 format (`1970-01-01T00:00:00.000000+00:00`), and
@@ -286,18 +274,6 @@ contains
         d = 1 + modulo(dt(1) + ((dt(1) - 1) / 4) - ((dt(1) - 1) / 100) + ((dt(1) - 1) / 400), 7_i8)
         write (str, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
-
-    integer(kind=i8) function dm_time_seconds() result(seconds)
-        !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
-        !! error, the result is 0.
-        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
-
-        type(c_timespec) :: tp
-
-        seconds = 0_i8
-        if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
-        seconds = tp%tv_sec
-    end function dm_time_seconds
 
     pure elemental character(len=25) function dm_time_strip_useconds(time) result(str)
         !! Strips the microseconds part of the given ISO 8601 time stamp and
@@ -397,6 +373,30 @@ contains
         if (present(useconds)) useconds = tm_usec
         rc = E_NONE
     end function dm_time_to_unix
+
+    integer(kind=i8) function dm_time_unix() result(seconds)
+        !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
+        !! error, the result is 0.
+        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
+
+        type(c_timespec) :: tp
+
+        seconds = 0_i8
+        if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
+        seconds = tp%tv_sec
+    end function dm_time_unix
+
+    integer(kind=i8) function dm_time_unix_msec() result(mseconds)
+        !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
+        !! error, the result is 0.
+        use :: unix, only: CLOCK_REALTIME, c_clock_gettime, c_timespec
+
+        type(c_timespec) :: tp
+
+        mseconds = 0_i8
+        if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
+        mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
+    end function dm_time_unix_msec
 
     character(len=5) function dm_time_zone() result(zone)
         !! Returns current time zone as five characters long string, for
