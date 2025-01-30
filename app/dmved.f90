@@ -187,7 +187,6 @@ contains
         type(response_type) :: responses(VE_NFIELDS)
 
         rc = E_NONE
-
         call logger%info('started ' // APP_NAME)
 
         epoch_last   = 0_i8
@@ -217,41 +216,34 @@ contains
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read byte from TTY ' // app%path, error=rc)
-                exit
+                exit tty_loop
             end if
 
             ! Fill VE.Direct protocol frame.
             call dm_ve_frame_next(frame, byte, eor, finished, valid)
 
-            ! Block is complete.
             if (finished) then
                 if (valid) then
-                    ! Checksum is valid.
-                    call logger%debug('received valid VE.Direct block from TTY ' // app%path)
+                    epoch_now = dm_time_unix()
 
-                    ! Check if time has reached.
-                    epoch_now = dm_time_seconds()
-                    if (epoch_last + app%interval > epoch_now) cycle tty_loop
-                    epoch_last = epoch_now
+                    if (epoch_last + app%interval <= epoch_now) then
+                        epoch_last = epoch_now
 
-                    if (has_receiver) then
-                        ! Create observation and forward it via POSIX message queue,.
-                        call create_observ(observ, app, responses)
-                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                    else
-                        call logger%debug('no receiver specified, skipping observation forwarding')
+                        if (has_receiver) then
+                            call create_observ(observ, app, responses)
+                            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                        else
+                            call logger%debug('no receiver specified, skipping observation forwarding')
+                        end if
                     end if
                 else
-                    ! Checksum is not valid.
-                    call logger%error('received corrupted VE.Direct block from TTY ' // app%path, error=E_CORRUPT)
+                    call logger%debug('checksum error detected for VE.Direct block from TTY ' // app%path, error=E_CORRUPT)
                 end if
 
-                ! Reset frame and read next block.
                 call dm_ve_frame_reset(frame)
                 cycle tty_loop
             end if
 
-            ! Field is complete.
             if (eor) then
                 if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number field.
                 if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Handle device error.
@@ -260,17 +252,14 @@ contains
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
                 end if
 
-                ! Convert VE.Direct frame to response.
                 call dm_ve_frame_read(frame, response, field_type, error=rc)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
+                    call logger%debug('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
                     cycle tty_loop
                 end if
 
-                call logger%debug('received VE.Direct field ' // trim(frame%label) // ' with value ' // frame%value)
-
-                ! Keep the response.
+                call logger%debug('received VE.Direct field ' // trim(frame%label) // ': ' // frame%value)
                 responses(field_type) = response
             end if
         end do tty_loop
