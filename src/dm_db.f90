@@ -39,6 +39,7 @@ module dm_db
     !! successful.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
+    use :: dm_db_query
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -2749,72 +2750,27 @@ contains
         integer(kind=i8),                   intent(in),  optional :: limit     !! Max. number of observations.
         integer(kind=i8),                   intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
 
-        character(len=:), allocatable :: query
-        integer                       :: k, nbytes, stat
-        integer(kind=i8)              :: i, n
-        type(c_ptr)                   :: stmt
-
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id
-        logical :: has_from, has_to, has_limit
-        logical :: desc_order, more
+        integer             :: nbytes, stat
+        integer(kind=i8)    :: i, n
+        type(c_ptr)         :: stmt
+        type(db_query_type) :: query
 
         if (present(nids)) nids = 0_i8
 
-        has_param     = .false.; has_node_id = .false.; has_sensor_id = .false.
-        has_target_id = .false.; has_from    = .false.; has_to        = .false.
-        has_limit     = .false.; desc_order  = .false.
-
-        if (dm_string_is_present(node_id)) then
-            has_param = .true.
-            has_node_id = .true.
-        end if
-
-        if (dm_string_is_present(sensor_id)) then
-            has_param = .true.
-            has_sensor_id = .true.
-        end if
-
-        if (dm_string_is_present(target_id)) then
-            has_param = .true.
-            has_target_id = .true.
-        end if
-
-        if (dm_string_is_present(from)) then
-            has_param = .true.
-            has_from = .true.
-        end if
-
-        if (dm_string_is_present(to)) then
-            has_param = .true.
-            has_to = .true.
-        end if
-
-        if (present(limit)) has_limit  = .true.
-        if (present(desc))  desc_order = desc
-
         ! Build SQL query.
-        allocate (character(len=0) :: query)
-
-        if (has_param) then
-            more = .false.
-            if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
-            if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
-            if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
-            if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
-        end if
+        rc = dm_db_query_add_text(query, 'nodes.id = ?',           node_id)
+        rc = dm_db_query_add_text(query, 'sensors.id = ?',         sensor_id)
+        rc = dm_db_query_add_text(query, 'targets.id = ?',         target_id)
+        rc = dm_db_query_add_text(query, 'observs.timestamp >= ?', from)
+        rc = dm_db_query_add_text(query, 'observs.timestamp < ?',  to)
 
         sql_block: block
-            if (has_param) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+            rc = E_DB_PREPARE
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_generate(query, SQL_SELECT_NOBSERVS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-                rc = db_bind_observs(k)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -2823,8 +2779,8 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (present(nids)) nids = n
-            if (has_limit) n = min(n, limit)
+            if (present(nids))  nids = n
+            if (present(limit)) n    = min(n, limit)
 
             rc = E_ALLOC
             allocate (ids(n), stat=stat)
@@ -2833,23 +2789,15 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            query = query // ' ORDER BY observs.timestamp'
-            if (desc_order) query = query // ' DESC'
-            if (has_limit)  query = query // ' LIMIT ?'
+            call dm_db_query_order(query, 'observs.timestamp', desc)
+            call dm_db_query_limit(query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERV_IDS // query, stmt) /= SQLITE_OK) exit sql_block
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_generate(query, SQL_SELECT_OBSERV_IDS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                if (dm_is_error(db_bind_observs(k))) exit sql_block
-            end if
-
-            if (has_limit) then
-                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
@@ -2859,44 +2807,13 @@ contains
                 rc = E_INVALID
                 if (nbytes /= OBSERV_ID_LEN) exit sql_block
             end do
-        end block sql_block
-
-        stat = sqlite3_finalize(stmt)
-        if (.not. allocated(ids)) allocate (ids(0))
-    contains
-        integer function db_bind_observs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
 
             rc = E_NONE
-        end function db_bind_observs
+        end block sql_block
+
+        call dm_db_query_destroy(query)
+        stat = sqlite3_finalize(stmt)
+        if (.not. allocated(ids)) allocate (ids(0))
     end function dm_db_select_observ_ids
 
     integer function dm_db_select_observ_views(db, views, node_id, sensor_id, target_id, response_name, &

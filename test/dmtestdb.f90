@@ -341,9 +341,10 @@ contains
 
     logical function test05() result(stat)
         !! Tests writing/reading of observation.
-        integer           :: rc
-        type(db_type)     :: db
-        type(observ_type) :: observ1, observ2
+        character(len=ID_LEN), allocatable :: ids(:)
+        integer                            :: i, rc
+        type(db_type)                      :: db
+        type(observ_type)                  :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -365,6 +366,11 @@ contains
             rc = dm_db_select_observ(db, observ2, observ1%id)
             if (dm_is_error(rc)) exit test_block
 
+            print *, 'Reading observation ids ...'
+            rc = dm_db_select_observ_ids(db, ids, 'dummy-node', 'dummy-sensor', 'dummy-target', &
+                                         desc=.true., limit=10_i8)
+            if (dm_is_error(rc)) exit test_block
+
             print *, 'Deleting observation ...'
             rc = dm_db_delete_observ(db, observ1%id)
             if (dm_is_error(rc)) exit test_block
@@ -379,6 +385,14 @@ contains
 
         print *, 'Matching observations ...'
         if (.not. (observ1 == observ2)) return
+
+        print *, 'Validating id ...'
+        do i = 1, size(ids)
+            print *, ids(i)
+        end do
+
+        if (size(ids) == 0) return
+        if (ids(1) /= observ1%id) return
 
         stat = TEST_PASSED
     end function test05
