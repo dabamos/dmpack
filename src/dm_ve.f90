@@ -69,7 +69,18 @@ module dm_ve
     !!
     !! ## Fields
     !!
-    !! Description of fields returned by MPPT chargers.
+    !! Description of fields returned by MPPT chargers and SmartShunt.
+    !!
+    !! ## Alarm
+    !!
+    !! This shows the buzzer alarm state of the BMV. During normal operation,
+    !! this will be `OFF`. When a buzzer alarm occurs the value will change to
+    !! `ON`.
+    !!
+    !! This refers to the value of the alarm condition, and not the buzzer
+    !! itself. This means that once a condition has occurred, the value will be
+    !! `ON` until all alarm conditions have cleared; regardless of whether or
+    !! not a button has been pressed to silence the buzzer.
     !!
     !! ## CS
     !!
@@ -211,10 +222,15 @@ module dm_ve
     !! * [VE.Direct Protocol v.3.33](https://www.victronenergy.com/upload/documents/VE.Direct-Protocol-3.33.pdf) (6 June 2023)
     !!
     use :: dm_error
+    use :: dm_kind
     use :: dm_response
     use :: dm_tty
     implicit none (type, external)
     private
+
+    integer, parameter, public :: VE_DEVICE_NONE  = 0 !! No device (invalid).
+    integer, parameter, public :: VE_DEVICE_MPPT  = 1 !! MPPT.
+    integer, parameter, public :: VE_DEVICE_SHUNT = 2 !! SmartShunt (SS).
 
     ! Character lenghts.
     integer, parameter, public :: VE_LABEL_LEN = 8                 !! Max. field label length (minus newline).
@@ -257,34 +273,81 @@ module dm_ve
 
     ! Supported VE.Direct field types.
     integer, parameter, public :: VE_FIELD_NONE  = 0  !! None (invalid).
-    integer, parameter, public :: VE_FIELD_CS    = 1  !! State of operation.
-    integer, parameter, public :: VE_FIELD_ERR   = 2  !! Error code.
-    integer, parameter, public :: VE_FIELD_FW    = 3  !! Firmware version (16 bit).
-    integer, parameter, public :: VE_FIELD_H19   = 4  !! Yield total (user resettable counter).
-    integer, parameter, public :: VE_FIELD_H20   = 5  !! Yield today.
-    integer, parameter, public :: VE_FIELD_H21   = 6  !! Maximum power today.
-    integer, parameter, public :: VE_FIELD_H22   = 7  !! Yield yesterday.
-    integer, parameter, public :: VE_FIELD_H23   = 8  !! Maximum power yesterday.
-    integer, parameter, public :: VE_FIELD_HSDS  = 9  !! Day sequence number (0 to 364).
-    integer, parameter, public :: VE_FIELD_I     = 10 !! Main or channel 1 battery current.
-    integer, parameter, public :: VE_FIELD_IL    = 11 !! Load current.
-    integer, parameter, public :: VE_FIELD_LOAD  = 12 !! Load output state (ON/OFF).
-    integer, parameter, public :: VE_FIELD_MPPT  = 13 !! Tracker operation mode.
-    integer, parameter, public :: VE_FIELD_OR    = 14 !! Off reason (hexadecimal).
-    integer, parameter, public :: VE_FIELD_PID   = 15 !! Product ID (hexadecimal).
-    integer, parameter, public :: VE_FIELD_PPV   = 16 !! Panel power.
-    integer, parameter, public :: VE_FIELD_RELAY = 17 !! Relay state (ON/OFF).
-    integer, parameter, public :: VE_FIELD_V     = 18 !! Main or channel 1 (battery) voltage.
-    integer, parameter, public :: VE_FIELD_VPV   = 19 !! Panel voltage.
-    integer, parameter, public :: VE_FIELD_LAST  = 19 !! Never use this.
+    integer, parameter, public :: VE_FIELD_ALARM = 1  !! [     SS] Alarm condition active (ON/OFF).
+    integer, parameter, public :: VE_FIELD_AR    = 2  !! [     SS] Alarm reason (decimal).
+    integer, parameter, public :: VE_FIELD_CE    = 3  !! [     SS] Consumed amp hours.
+    integer, parameter, public :: VE_FIELD_CS    = 4  !! [MPPT   ] State of operation.
+    integer, parameter, public :: VE_FIELD_DM    = 5  !! [     SS] Mid-point deviation of the battery bank.
+    integer, parameter, public :: VE_FIELD_ERR   = 6  !! [MPPT   ] Error code.
+    integer, parameter, public :: VE_FIELD_FW    = 7  !! [MPPT SS] Firmware version (16 bit).
+    integer, parameter, public :: VE_FIELD_H1    = 8  !! [     SS] Depth of the deepest discharge.
+    integer, parameter, public :: VE_FIELD_H2    = 9  !! [     SS] Depth of the last discharge.
+    integer, parameter, public :: VE_FIELD_H3    = 10 !! [     SS] Depth of the average discharge.
+    integer, parameter, public :: VE_FIELD_H4    = 11 !! [     SS] Number of charge cycles.
+    integer, parameter, public :: VE_FIELD_H5    = 12 !! [     SS] Number of full discharges.
+    integer, parameter, public :: VE_FIELD_H6    = 13 !! [     SS] Cumulative amp hours drawn
+    integer, parameter, public :: VE_FIELD_H7    = 14 !! [     SS] Minimum main (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H8    = 15 !! [     SS] Maximum main (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H9    = 16 !! [     SS] Number of seconds since last full charge.
+    integer, parameter, public :: VE_FIELD_H10   = 17 !! [     SS] Number of automatic synchronisations.
+    integer, parameter, public :: VE_FIELD_H11   = 18 !! [     SS] Number of low main voltage alarms.
+    integer, parameter, public :: VE_FIELD_H12   = 19 !! [     SS] Number of high main voltage alarms.
+    integer, parameter, public :: VE_FIELD_H15   = 20 !! [     SS] Minimum auxiliary (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H16   = 21 !! [     SS] Maximum auxiliary (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H17   = 22 !! [     SS] Amount of produced energy.
+    integer, parameter, public :: VE_FIELD_H18   = 23 !! [     SS] Amount of consumed energy.
+    integer, parameter, public :: VE_FIELD_H19   = 24 !! [MPPT   ] Yield total (user resettable counter).
+    integer, parameter, public :: VE_FIELD_H20   = 25 !! [MPPT   ] Yield today.
+    integer, parameter, public :: VE_FIELD_H21   = 26 !! [MPPT   ] Maximum power today.
+    integer, parameter, public :: VE_FIELD_H22   = 27 !! [MPPT   ] Yield yesterday.
+    integer, parameter, public :: VE_FIELD_H23   = 28 !! [MPPT   ] Maximum power yesterday.
+    integer, parameter, public :: VE_FIELD_HSDS  = 29 !! [MPPT   ] Day sequence number (0 to 364).
+    integer, parameter, public :: VE_FIELD_I     = 30 !! [MPPT SS] Main or channel 1 battery current.
+    integer, parameter, public :: VE_FIELD_IL    = 31 !! [MPPT   ] Load current.
+    integer, parameter, public :: VE_FIELD_LOAD  = 32 !! [MPPT   ] Load output state (ON/OFF).
+    integer, parameter, public :: VE_FIELD_MON   = 33 !! [     SS] DC monitor mode.
+    integer, parameter, public :: VE_FIELD_MPPT  = 34 !! [MPPT   ] Tracker operation mode.
+    integer, parameter, public :: VE_FIELD_OR    = 35 !! [MPPT   ] Off reason (hexadecimal).
+    integer, parameter, public :: VE_FIELD_P     = 36 !! [     SS] Instantaneous power.
+    integer, parameter, public :: VE_FIELD_PID   = 37 !! [MPPT SS] Product ID (hexadecimal).
+    integer, parameter, public :: VE_FIELD_PPV   = 38 !! [MPPT   ] Panel power.
+    integer, parameter, public :: VE_FIELD_RELAY = 39 !! [MPPT   ] Relay state (ON/OFF).
+    integer, parameter, public :: VE_FIELD_SOC   = 40 !! [     SS] State-of-charge.
+    integer, parameter, public :: VE_FIELD_T     = 41 !! [     SS] Battery temperature.
+    integer, parameter, public :: VE_FIELD_TTG   = 42 !! [     SS] Time-to-go.
+    integer, parameter, public :: VE_FIELD_V     = 43 !! [MPPT SS] Main or channel 1 (battery) voltage.
+    integer, parameter, public :: VE_FIELD_VM    = 44 !! [     SS] Mid-point voltage of the battery bank.
+    integer, parameter, public :: VE_FIELD_VPV   = 45 !! [MPPT   ] Panel voltage.
+    integer, parameter, public :: VE_FIELD_VS    = 46 !! [     SS] Auxiliary (starter) voltage.
+    integer, parameter, public :: VE_FIELD_LAST  = 46 !! Never use this.
 
     ! VE.Direct default fields (MPPT only).
     integer, parameter, public :: VE_NFIELDS = VE_FIELD_LAST !! Number of supported fields.
 
     type(ve_field_type), parameter, public :: VE_FIELDS(VE_NFIELDS) = [    &
+        ve_field_type('ALARM', 'alarm', 'none',    RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('AR',    'ar',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('CE',    'ce',    'mAh',     RESPONSE_TYPE_INT32),   &
         ve_field_type('CS',    'cs',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('DM',    'dm',    '%/10',    RESPONSE_TYPE_INT32),   &
         ve_field_type('ERR',   'err',   'none',    RESPONSE_TYPE_INT32),   &
         ve_field_type('FW',    'fw',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H1',    'h1',    'mAh',     RESPONSE_TYPE_INT32),   &
+        ve_field_type('H2',    'h2',    'mAh',     RESPONSE_TYPE_INT32),   &
+        ve_field_type('H3',    'h3',    'mAh',     RESPONSE_TYPE_INT32),   &
+        ve_field_type('H4',    'h4',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H5',    'h5',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H6',    'h6',    'mAh',     RESPONSE_TYPE_INT32),   &
+        ve_field_type('H7',    'h7',    'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('H8',    'h8',    'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('H9',    'h9',    'sec',     RESPONSE_TYPE_INT32),   &
+        ve_field_type('H10',   'h10',   'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H11',   'h11',   'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H12',   'h12',   'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('H15',   'h15',   'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('H16',   'h16',   'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('H17',   'h17',   'kWh/100', RESPONSE_TYPE_INT32),   &
+        ve_field_type('H18',   'h18',   'kWh/100', RESPONSE_TYPE_INT32),   &
         ve_field_type('H19',   'h19',   'kWh/100', RESPONSE_TYPE_INT32),   &
         ve_field_type('H20',   'h20',   'kWh/100', RESPONSE_TYPE_INT32),   &
         ve_field_type('H21',   'h21',   'W',       RESPONSE_TYPE_INT32),   &
@@ -294,13 +357,20 @@ module dm_ve
         ve_field_type('I',     'i',     'mA',      RESPONSE_TYPE_INT32),   &
         ve_field_type('IL',    'il',    'mA',      RESPONSE_TYPE_INT32),   &
         ve_field_type('LOAD',  'load',  'none',    RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('MON',   'mon',   'none',    RESPONSE_TYPE_INT32),   &
         ve_field_type('MPPT',  'mppt',  'none',    RESPONSE_TYPE_INT32),   &
         ve_field_type('OR',    'or',    'none',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('P',     'p',     'W',       RESPONSE_TYPE_INT32),   &
         ve_field_type('PID',   'pid',   'none',    RESPONSE_TYPE_INT32),   &
         ve_field_type('PPV',   'ppv',   'W',       RESPONSE_TYPE_INT32),   &
         ve_field_type('RELAY', 'relay', 'none',    RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('SOC',   'soc',   '%/10',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('T',     't',     'degC',    RESPONSE_TYPE_INT32),   &
+        ve_field_type('TTG',   'ttg',   'min',     RESPONSE_TYPE_INT32),   &
         ve_field_type('V',     'v',     'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('VPV',   'vpv',   'mV',      RESPONSE_TYPE_INT32)    &
+        ve_field_type('VM',    'vm',    'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('VPV',   'vpv',   'mV',      RESPONSE_TYPE_INT32),   &
+        ve_field_type('VS',    'vs',    'mV',      RESPONSE_TYPE_INT32)    &
     ] !! Predefined fields.
 
     public :: dm_ve_error_message
@@ -552,7 +622,11 @@ contains
             rc = E_TYPE
             select case (field%type)
                 case (RESPONSE_TYPE_INT32)
-                    if (frame%value(1:2) == '0X') then
+                    if (frame%value(1:3) == '---') then
+                        ! No value.
+                        rc = E_NONE
+                        response%value = 0.0_r8
+                    else if (frame%value(1:2) == '0X') then
                         ! Convert hex string to real.
                         call dm_hex_to_int(frame%value, i, rc)
                         response%value = dm_to_real64(i)
@@ -562,12 +636,11 @@ contains
                     end if
 
                 case (RESPONSE_TYPE_LOGICAL)
-                    if (frame%value == 'OFF') then
-                        rc = E_NONE
-                        response%value = dm_to_real64(.false.)
-                    else if (frame%value == 'ON') then
-                        rc = E_NONE
+                    rc = E_NONE
+                    if (frame%value == 'ON') then
                         response%value = dm_to_real64(.true.)
+                    else
+                        response%value = dm_to_real64(.false.)
                     end if
             end select
 
