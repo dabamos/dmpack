@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_db_query
     !! SQL query builder.
-    use, intrinsic :: iso_c_binding
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
@@ -130,6 +129,7 @@ contains
     integer function dm_db_query_bind(query, stmt) result(rc)
         !! Binds query parameters to SQLite statement. Returns `E_DB_BIND` on
         !! binding error.
+        use, intrinsic :: iso_c_binding
         use :: sqlite3
 
         type(db_query_type), intent(inout) :: query !! Database query type.
