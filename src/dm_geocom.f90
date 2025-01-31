@@ -880,7 +880,7 @@ contains
         end if
 
         tty_block: block
-            ! Verify that TTY is not connected yet.
+            ! Verify that TTY is connected.
             rc = E_IO
             if (.not. dm_tty_is_connected(this%tty)) then
                 call this%output(rc, 'TTY not connected')

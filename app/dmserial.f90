@@ -343,9 +343,10 @@ contains
         character(len=*),          intent(in)           :: source    !! Source of observation.
         logical,                   intent(in), optional :: debug     !! Output debug messages.
 
-        integer                      :: delay
-        integer                      :: i, j, n
-        logical                      :: debug_   ! Create debug messages only if necessary.
+        integer :: delay
+        integer :: i, j, n
+        logical :: debug_
+
         type(request_type),  pointer :: request  ! Next request to execute.
         type(response_type), pointer :: response ! Single response in request.
 
@@ -578,9 +579,9 @@ contains
 
     integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
-        type(observ_type), intent(inout) :: observ
-        integer,           intent(in)    :: unit
-        integer,           intent(in)    :: format
+        type(observ_type), intent(inout) :: observ !! Observation type.
+        integer,           intent(in)    :: unit   !! File unit.
+        integer,           intent(in)    :: format !! Format enumerator (`FORMAT_*`).
 
         rc = E_INVALID
 

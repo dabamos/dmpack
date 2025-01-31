@@ -16,7 +16,7 @@ program dmrecv
     !! ```
     !!
     !! Another DMPACK process has to send observations to message queue
-    !! "/dmrecv".  Only responses of name `tz0` will be converted to ASCII
+    !! `/dmrecv`.  Only responses of name `tz0` will be converted to ASCII
     !! block format and printed to standard output.
     use :: dmpack
     implicit none (type, external)

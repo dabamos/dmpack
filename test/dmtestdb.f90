@@ -694,8 +694,7 @@ contains
         test_block: block
             print *, 'Selecting log messages ...'
             call dm_timer_start(t)
-            rc = dm_db_select_logs(db, logs, node_id='', sensor_id='', target_id='', &
-                                   source='', from='', to='', limit=int(NLOGS, i8), nlogs=n)
+            rc = dm_db_select_logs(db, logs, limit=int(NLOGS, i8), nlogs=n)
             call dm_timer_stop(t, dt)
             print '(1x, a, i0, a, f0.3, a)', 'Selected ', n, ' logs in ', dt, ' sec'
         end block test_block

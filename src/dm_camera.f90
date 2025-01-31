@@ -91,7 +91,7 @@ module dm_camera
 
     public :: dm_camera_capture
     public :: dm_camera_device_from_name
-    public :: dm_camera_device_is_valid
+    public :: dm_camera_is_valid_device
 
     private :: camera_prepare_capture
 contains
@@ -123,7 +123,7 @@ contains
             if (len_trim(camera%input) == 0 .or. len_trim(output) == 0) exit io_block
 
             rc = E_INVALID
-            if (.not. dm_camera_device_is_valid(camera%device)) exit io_block
+            if (.not. dm_camera_is_valid_device(camera%device)) exit io_block
 
             if (camera%device == CAMERA_DEVICE_RTSP) then
                 if (.not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
@@ -157,13 +157,13 @@ contains
         end select
     end function dm_camera_device_from_name
 
-    pure elemental logical function dm_camera_device_is_valid(device) result(is)
+    pure elemental logical function dm_camera_is_valid_device(device) result(is)
         !! Returns `.true.` if device enumerator is valid. The device
         !! `CAMERA_DEVICE_NONE` is invalid.
         integer, intent(in) :: device !! Camera device enumerator.
 
         is = (device > CAMERA_DEVICE_NONE .and. device <= CAMERA_DEVICE_LAST)
-    end function dm_camera_device_is_valid
+    end function dm_camera_is_valid_device
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.

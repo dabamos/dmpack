@@ -93,7 +93,7 @@ contains
             CR_LF // 'Checksum' // ASCII_TAB // char(229)
 
         character           :: byte
-        integer             :: code, i
+        integer             :: code, i, j
         logical             :: eor, finished, valid
         type(ve_frame_type) :: frame
         type(response_type) :: response
@@ -103,8 +103,10 @@ contains
 
         print *, 'Converting VE.Direct frames to responses ...'
 
-        do i = 1, len(BYTES)
-            byte = BYTES(i:i)
+        do i = 1, len(BYTES) * 2
+            j    = 1 + modulo(i - 1, len(BYTES))
+            byte = BYTES(j:j)
+
             call dm_ve_frame_next(frame, byte, eor, finished, valid)
 
             if (finished) then
@@ -115,7 +117,7 @@ contains
                     print '(" Record is invalid")'
                 end if
 
-                exit
+                call dm_ve_frame_reset(frame)
             end if
 
             if (eor) then
@@ -128,9 +130,7 @@ contains
             end if
         end do
 
-        call dm_ve_frame_reset(frame)
         print '(" Associated error message: ", a, " (", i0, ")")', dm_ve_error_message(code), code
-
         stat = TEST_PASSED
     end function test02
 end program dmtestve

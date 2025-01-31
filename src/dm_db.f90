@@ -406,7 +406,6 @@ module dm_db
     private :: db_next_row_sensor
     private :: db_next_row_string
     private :: db_next_row_target
-    private :: db_query_where
     private :: db_release
     private :: db_rollback
     private :: db_save_point
@@ -1135,36 +1134,23 @@ contains
         if (present(sqlite_error)) sqlite_error = error
 
         select case (error)
-            case (SQLITE_OK, SQLITE_DONE, SQLITE_ROW)
-                rc = E_NONE
-            case (SQLITE_BUSY)
-                rc = E_DB_BUSY
-            case (SQLITE_LOCKED)
-                rc = E_DB_LOCKED
-            case (SQLITE_NOMEM)
-                rc = E_MEMORY
-            case (SQLITE_READONLY)
-                rc = E_READ_ONLY
-            case (SQLITE_IOERR)
-                rc = E_IO
-            case (SQLITE_CORRUPT)
-                rc = E_CORRUPT
-            case (SQLITE_FULL)
-                rc = E_FULL
-            case (SQLITE_EMPTY)
-                rc = E_EMPTY
-            case (SQLITE_TOOBIG)
-                rc = E_LIMIT
-            case (SQLITE_CONSTRAINT)
-                rc = E_DB_CONSTRAINT
-            case (SQLITE_MISMATCH)
-                rc = E_DB_TYPE
-            case (SQLITE_FORMAT)
-                rc = E_FORMAT
-            case (SQLITE_RANGE)
-                rc = E_DB_BIND
-            case default
-                rc = E_DB
+            case (SQLITE_OK);         rc = E_NONE
+            case (SQLITE_DONE);       rc = E_NONE
+            case (SQLITE_ROW);        rc = E_NONE
+            case (SQLITE_BUSY);       rc = E_DB_BUSY
+            case (SQLITE_LOCKED);     rc = E_DB_LOCKED
+            case (SQLITE_NOMEM);      rc = E_MEMORY
+            case (SQLITE_READONLY);   rc = E_READ_ONLY
+            case (SQLITE_IOERR);      rc = E_IO
+            case (SQLITE_CORRUPT);    rc = E_CORRUPT
+            case (SQLITE_FULL);       rc = E_FULL
+            case (SQLITE_EMPTY);      rc = E_EMPTY
+            case (SQLITE_TOOBIG);     rc = E_LIMIT
+            case (SQLITE_CONSTRAINT); rc = E_DB_CONSTRAINT
+            case (SQLITE_MISMATCH);   rc = E_DB_TYPE
+            case (SQLITE_FORMAT);     rc = E_FORMAT
+            case (SQLITE_RANGE);      rc = E_DB_BIND
+            case default;             rc = E_DB
         end select
     end function dm_db_error
 
@@ -1983,18 +1969,12 @@ contains
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
         select case (sync%type)
-            case (SYNC_TYPE_LOG)
-                rc = dm_db_insert_sync_log(db, sync)
-            case (SYNC_TYPE_NODE)
-                rc = dm_db_insert_sync_node(db, sync)
-            case (SYNC_TYPE_OBSERV)
-                rc = dm_db_insert_sync_observ(db, sync)
-            case (SYNC_TYPE_SENSOR)
-                rc = dm_db_insert_sync_sensor(db, sync)
-            case (SYNC_TYPE_TARGET)
-                rc = dm_db_insert_sync_target(db, sync)
-            case default
-                rc = E_INVALID
+            case (SYNC_TYPE_LOG);    rc = dm_db_insert_sync_log   (db, sync)
+            case (SYNC_TYPE_NODE);   rc = dm_db_insert_sync_node  (db, sync)
+            case (SYNC_TYPE_OBSERV); rc = dm_db_insert_sync_observ(db, sync)
+            case (SYNC_TYPE_SENSOR); rc = dm_db_insert_sync_sensor(db, sync)
+            case (SYNC_TYPE_TARGET); rc = dm_db_insert_sync_target(db, sync)
+            case default;            rc = E_INVALID
         end select
     end function dm_db_insert_sync
 
@@ -2348,8 +2328,10 @@ contains
         sql_block: block
             rc = E_DB_PREPARE
             if (sqlite3_prepare_v2(db%ctx, 'PRAGMA optimize', stmt) /= SQLITE_OK) exit sql_block
+
             rc = E_DB_STEP
             if (sqlite3_step(stmt) /= SQLITE_DONE) exit sql_block
+
             rc = E_NONE
         end block sql_block
 
@@ -2481,7 +2463,7 @@ contains
     end function dm_db_select_json_log
 
     integer function dm_db_select_json_node(db, json, node_id) result(rc)
-        !! Returns nodes associated with given node id as allocatable character
+        !! Returns node associated with given node id as allocatable character
         !! `json` in JSON format.
         !!
         !! The function returns the following error codes:
@@ -2591,6 +2573,8 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
+            if (present(nlogs)) nlogs = n
+
             rc = E_ALLOC
             allocate (logs(n), stat=stat)
             if (stat /= 0) exit sql_block
@@ -2607,11 +2591,10 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
-
-            if (present(nlogs)) nlogs = n
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2753,23 +2736,23 @@ contains
         integer             :: nbytes, stat
         integer(kind=i8)    :: i, n
         type(c_ptr)         :: stmt
-        type(db_query_type) :: query
+        type(db_query_type) :: db_query
 
         if (present(nids)) nids = 0_i8
 
         ! Build SQL query.
-        rc = dm_db_query_add_text(query, 'nodes.id = ?',           node_id)
-        rc = dm_db_query_add_text(query, 'sensors.id = ?',         sensor_id)
-        rc = dm_db_query_add_text(query, 'targets.id = ?',         target_id)
-        rc = dm_db_query_add_text(query, 'observs.timestamp >= ?', from)
-        rc = dm_db_query_add_text(query, 'observs.timestamp < ?',  to)
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+        rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+        rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
             rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_generate(query, SQL_SELECT_NOBSERVS), stmt)
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS), stmt)
             if (stat /= SQLITE_OK) exit sql_block
 
-            rc = dm_db_query_bind(query, stmt)
+            rc = dm_db_query_bind(db_query, stmt)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2789,21 +2772,23 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(query, 'observs.timestamp', desc)
-            call dm_db_query_limit(query, limit)
+            call dm_db_query_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_generate(query, SQL_SELECT_OBSERV_IDS), stmt)
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS), stmt)
             if (stat /= SQLITE_OK) exit sql_block
 
-            rc = dm_db_query_bind(query, stmt)
+            rc = dm_db_query_bind(db_query, stmt)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, ids(i), nbytes, (i == 1))
                 if (dm_is_error(rc)) exit sql_block
+
                 rc = E_INVALID
                 if (nbytes /= OBSERV_ID_LEN) exit sql_block
             end do
@@ -2811,7 +2796,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_db_query_destroy(query)
+        call dm_db_query_destroy(db_query)
         stat = sqlite3_finalize(stmt)
         if (.not. allocated(ids)) allocate (ids(0))
     end function dm_db_select_observ_ids
@@ -2867,8 +2852,9 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_ALLOC
             if (present(limit)) n = min(n, limit)
+
+            rc = E_ALLOC
             allocate (views(n), stat=stat)
             if (stat /= 0) exit sql_block
 
@@ -2897,6 +2883,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, views(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
@@ -2979,8 +2966,9 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_ALLOC
             if (present(limit)) nobs = min(nobs, limit)
+
+            rc = E_ALLOC
             allocate (observs(nobs), stat=stat)
             if (stat /= 0) exit sql_block
 
@@ -3012,6 +3000,7 @@ contains
             do i = 1, nobs
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
@@ -3083,8 +3072,9 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_ALLOC
             if (present(limit)) nobs = min(nobs, limit)
+
+            rc = E_ALLOC
             allocate (observs(nobs), stat=stat)
             if (stat /= 0) exit sql_block
 
@@ -3112,6 +3102,7 @@ contains
             do i = 1, nobs
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
@@ -3200,7 +3191,8 @@ contains
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
-        integer(kind=i8)                                    :: n
+
+        integer(kind=i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_LOG, SQL_SELECT_NSYNC_LOGS, SQL_SELECT_SYNC_LOGS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -3239,7 +3231,8 @@ contains
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
-        integer(kind=i8)                                    :: n
+
+        integer(kind=i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_NODE, SQL_SELECT_NSYNC_NODES, SQL_SELECT_SYNC_NODES, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -3279,7 +3272,8 @@ contains
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
-        integer(kind=i8)                                    :: n
+
+        integer(kind=i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_OBSERV, SQL_SELECT_NSYNC_OBSERVS, SQL_SELECT_SYNC_OBSERVS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -3318,7 +3312,8 @@ contains
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
-        integer(kind=i8)                                    :: n
+
+        integer(kind=i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_SENSOR, SQL_SELECT_NSYNC_SENSORS, SQL_SELECT_SYNC_SENSORS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -3357,7 +3352,8 @@ contains
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
         integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
-        integer(kind=i8)                                    :: n
+
+        integer(kind=i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -3395,7 +3391,7 @@ contains
                 if (i == 1) then
                     rc = E_DB_TYPE
                     if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit
-                    if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT) exit
+                    if (sqlite3_column_type(stmt, 1) /= SQLITE_TEXT)    exit
                 end if
 
                 n     = sqlite3_column_int (stmt, 0)
@@ -3659,22 +3655,14 @@ contains
 
         sql_block: block
             rc = E_DB_PREPARE
-
             select case (mode)
-                case (DB_JOURNAL_OFF)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'OFF', stmt)
-                case (DB_JOURNAL_DELETE)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'DELETE', stmt)
-                case (DB_JOURNAL_TRUNCATE)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'TRUNCATE', stmt)
-                case (DB_JOURNAL_PERSIST)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'PERSIST', stmt)
-                case (DB_JOURNAL_MEMORY)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'MEMORY', stmt)
-                case (DB_JOURNAL_WAL)
-                    stat = sqlite3_prepare_v2(db%ctx, QUERY // 'WAL', stmt)
+                case (DB_JOURNAL_OFF);      stat = sqlite3_prepare_v2(db%ctx, QUERY // 'OFF',      stmt)
+                case (DB_JOURNAL_DELETE);   stat = sqlite3_prepare_v2(db%ctx, QUERY // 'DELETE',   stmt)
+                case (DB_JOURNAL_TRUNCATE); stat = sqlite3_prepare_v2(db%ctx, QUERY // 'TRUNCATE', stmt)
+                case (DB_JOURNAL_PERSIST);  stat = sqlite3_prepare_v2(db%ctx, QUERY // 'PERSIST',  stmt)
+                case (DB_JOURNAL_MEMORY);   stat = sqlite3_prepare_v2(db%ctx, QUERY // 'MEMORY',   stmt)
+                case (DB_JOURNAL_WAL);      stat = sqlite3_prepare_v2(db%ctx, QUERY // 'WAL',      stmt)
             end select
-
             if (stat /= SQLITE_OK) exit sql_block
 
             rc = E_DB_STEP
@@ -3689,7 +3677,7 @@ contains
     integer function dm_db_set_log_callback(callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine. The function returns `E_DB` on error.
-        procedure(dm_db_log_callback)      :: callback    !! Callback routine.
+        procedure(dm_db_log_callback)     :: callback    !! Callback routine.
         type(c_ptr), intent(in), optional :: client_data !! C pointer to client data.
 
         rc = E_DB
@@ -4069,8 +4057,8 @@ contains
 
     function dm_db_version(name) result(version)
         !! Returns SQLite 3 library version as allocatable string.
-        logical, intent(in), optional :: name !! Add prefix `libsqlite/'.
-        character(len=:), allocatable :: version
+        logical, intent(in), optional :: name    !! Add prefix `libsqlite/'.
+        character(len=:), allocatable :: version !! Version string.
 
         logical :: name_
 
@@ -4180,9 +4168,9 @@ contains
 
             rc = E_DB_TYPE
             if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
 
             rc = E_NONE
+            n = sqlite3_column_int64(stmt, 0)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -4296,7 +4284,6 @@ contains
 
         rc = E_DB_EXEC
         stat = sqlite3_exec(db%ctx, query, c_null_funptr, c_null_ptr, err_msg)
-
         if (stat /= SQLITE_OK) return
         rc = E_NONE
     end function db_exec
@@ -4323,24 +4310,18 @@ contains
 
         sql_block: block
             select case (table)
-                case (SQL_TABLE_LOGS)
-                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_LOG, stmt)
-                case (SQL_TABLE_NODES)
-                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_NODE, stmt)
-                case (SQL_TABLE_OBSERVS)
-                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_OBSERV, stmt)
-                case (SQL_TABLE_SENSORS)
-                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_SENSOR, stmt)
-                case (SQL_TABLE_TARGETS)
-                    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_TARGET, stmt)
-                case default
-                    return
+                case (SQL_TABLE_LOGS);    rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_LOG,    stmt)
+                case (SQL_TABLE_NODES);   rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_NODE,   stmt)
+                case (SQL_TABLE_OBSERVS); rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_OBSERV, stmt)
+                case (SQL_TABLE_SENSORS); rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_SENSOR, stmt)
+                case (SQL_TABLE_TARGETS); rc = sqlite3_prepare_v2(db%ctx, SQL_EXISTS_TARGET, stmt)
+                case default;             return
             end select
 
-            if (rc /= SQLITE_OK) exit sql_block
+            if (rc /= SQLITE_OK)                                   exit sql_block
             if (sqlite3_bind_text(stmt, 1, trim(id)) /= SQLITE_OK) exit sql_block
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
+            if (sqlite3_step(stmt) /= SQLITE_ROW)                  exit sql_block
+            if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER)    exit sql_block
 
             has = (sqlite3_column_int(stmt, 0) == 1)
         end block sql_block
@@ -4604,7 +4585,7 @@ contains
         end if
 
         nbytes = sqlite3_column_bytes(stmt, 0)
-        str    = sqlite3_column_text(stmt, 0)
+        str    = sqlite3_column_text (stmt, 0)
 
         rc = E_NONE
     end function db_next_row_character
@@ -5085,6 +5066,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                     rc = db_next_row(stmt, beats(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
@@ -5194,8 +5176,9 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            rc = E_ALLOC
             if (present(limit)) n = min(n, limit)
+
+            rc = E_ALLOC
             allocate (dps(n), stat=stat)
             if (stat /= 0) exit sql_block
 
@@ -5225,6 +5208,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, dps(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
@@ -5353,6 +5337,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                     rc = db_next_row(stmt, strings(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
@@ -5440,96 +5425,31 @@ contains
         integer(kind=i8),               intent(in),  optional :: limit      !! Max. numbers of logs.
         integer(kind=i8),               intent(out), optional :: nlogs      !! Number of logs.
 
-        character(len=:), allocatable :: query
-        integer                       :: k, stat
-        integer(kind=i8)              :: i, n
-        type(c_ptr)                   :: stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(c_ptr)         :: stmt
+        type(db_query_type) :: db_query
 
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
-        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
-        logical :: desc_order, more
-
-        has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
-        has_target_id = .false.; has_source    = .false.; has_from      = .false.
-        has_to        = .false.; has_min_level = .false.; has_max_level = .false.
-        has_error     = .false.; has_limit     = .false.; desc_order    = .false.
-
-        if (dm_string_is_present(node_id)) then
-            has_param = .true.
-            has_node_id = .true.
-        end if
-
-        if (dm_string_is_present(sensor_id)) then
-            has_param = .true.
-            has_sensor_id = .true.
-        end if
-
-        if (dm_string_is_present(target_id)) then
-            has_param = .true.
-            has_target_id = .true.
-        end if
-
-        if (dm_string_is_present(source)) then
-            has_param = .true.
-            has_source = .true.
-        end if
-
-        if (dm_string_is_present(from)) then
-            has_param = .true.
-            has_from = .true.
-        end if
-
-        if (dm_string_is_present(to)) then
-            has_param = .true.
-            has_to = .true.
-        end if
-
-        if (present(min_level)) then
-            has_param = .true.
-            has_min_level = .true.
-        end if
-
-        if (present(max_level)) then
-            has_param = .true.
-            has_max_level = .true.
-        end if
-
-        if (present(error)) then
-            has_param = .true.
-            has_error = .true.
-        end if
-
-        if (present(desc)) desc_order = desc
-        if (present(limit)) has_limit = .true.
         if (present(nlogs)) nlogs = 0_i8
 
         ! Build SQL query.
-        allocate (character(len=0) :: query)
-
-        if (has_param) then
-            more = .false.
-            if (has_min_level) call db_query_where(query, 'level >= ?',     more)
-            if (has_max_level) call db_query_where(query, 'level <= ?',     more)
-            if (has_error)     call db_query_where(query, 'error = ?',      more)
-            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
-            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-            if (has_source)    call db_query_where(query, 'source = ?',     more)
-        end if
+        rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+        rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+        rc = dm_db_query_add_int (db_query, 'error = ?',      error)
+        rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+        rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+        rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+        rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+        rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
-            if (has_param) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            rc = E_DB_PREPARE
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NLOGS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-                rc = db_bind_logs(k)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -5538,7 +5458,8 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (has_limit) n = min(n, limit)
+            if (present(nlogs)) nlogs = n
+            if (present(limit)) n     = min(n, limit)
 
             rc = E_ALLOC
             allocate (strings(n), stat=stat)
@@ -5547,97 +5468,28 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (desc_order) then
-                query = query // ' ORDER BY timestamp DESC'
-            else
-                query = query // ' ORDER BY timestamp ASC'
-            end if
-
-            if (has_limit) query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                ! Bind query parameters.
-                if (dm_is_error(db_bind_logs(k))) exit sql_block
-            end if
-
-            if (has_limit) then
-                ! Bind limit.
-                if (sqlite3_bind_int64(stmt, k, n) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
-
-            if (present(nlogs)) nlogs = n
-            rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = sqlite3_finalize(stmt)
         if (.not. allocated(strings)) allocate (strings(0))
-    contains
-        integer function db_bind_logs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_min_level) then
-                if (sqlite3_bind_int(stmt, i, min_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_max_level) then
-                if (sqlite3_bind_int(stmt, i, max_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_error) then
-                if (sqlite3_bind_int(stmt, i, error) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_source) then
-                if (sqlite3_bind_text(stmt, i, trim(source)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_logs
     end function db_select_json_logs_array
 
     integer function db_select_json_logs_iter(db, db_stmt, json, node_id, sensor_id, target_id, source, &
@@ -5671,166 +5523,36 @@ contains
         logical,                       intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
 
-        character(len=:), allocatable :: query
-        integer                       :: k
-
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
-        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
-        logical :: desc_order, more
+        integer             :: stat
+        type(db_query_type) :: db_query
 
         if (.not. dm_db_prepared(db_stmt)) then
-            has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
-            has_target_id = .false.; has_source    = .false.; has_from      = .false.
-            has_to        = .false.; has_min_level = .false.; has_max_level = .false.
-            has_error     = .false.; has_limit     = .false.; desc_order    = .false.
-
-            if (dm_string_is_present(node_id)) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
-
-            if (dm_string_is_present(sensor_id)) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
-
-            if (dm_string_is_present(target_id)) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
-
-            if (dm_string_is_present(source)) then
-                has_param = .true.
-                has_source = .true.
-            end if
-
-            if (dm_string_is_present(from)) then
-                has_param = .true.
-                has_from = .true.
-            end if
-
-            if (dm_string_is_present(to)) then
-                has_param = .true.
-                has_to = .true.
-            end if
-
-            if (present(min_level)) then
-                has_param = .true.
-                has_min_level = .true.
-            end if
-
-            if (present(max_level)) then
-                has_param = .true.
-                has_max_level = .true.
-            end if
-
-            if (present(error)) then
-                has_param = .true.
-                has_error = .true.
-            end if
-
-            if (present(desc)) desc_order = desc
-            if (present(limit)) has_limit = .true.
-
             ! Build SQL query.
-            allocate (character(len=0) :: query)
+            rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+            rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+            rc = dm_db_query_add_int (db_query, 'error = ?',      error)
+            rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+            rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+            rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+            rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+            rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+            rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            if (has_param) then
-                more = .false.
-                if (has_min_level) call db_query_where(query, 'level >= ?',     more)
-                if (has_max_level) call db_query_where(query, 'level <= ?',     more)
-                if (has_error)     call db_query_where(query, 'error = ?',      more)
-                if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-                if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
-                if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-                if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-                if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-                if (has_source)    call db_query_where(query, 'source = ?',     more)
-            end if
-
-            if (desc_order) then
-                query = query // ' ORDER BY timestamp DESC'
-            else
-                query = query // ' ORDER BY timestamp ASC'
-            end if
-
-            if (has_limit) query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_LOGS // query, db_stmt%ctx) /= SQLITE_OK) return
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS), db_stmt%ctx)
+            if (stat /= SQLITE_OK) return
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                ! Bind query parameters.
-                if (dm_is_error(db_bind_logs(k))) return
-            end if
-
-            if (has_limit) then
-                ! Bind limit.
-                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
-            end if
+            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            if (dm_is_error(rc)) return
         end if
 
         rc = E_DB_NO_ROWS
         if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
         rc = db_next_row(db_stmt%ctx, json)
-    contains
-        integer function db_bind_logs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_min_level) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, min_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_max_level) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, max_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_error) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, error) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_source) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(source)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_logs
     end function db_select_json_logs_iter
 
     integer function db_select_json_nodes_array(db, strings, limit, nnodes) result(rc)
@@ -5891,6 +5613,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                     rc = db_next_row(stmt, strings(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
@@ -5976,200 +5699,72 @@ contains
         integer(kind=i8),            intent(in),  optional :: limit     !! Max. numbers of logs.
         integer(kind=i8),            intent(out), optional :: nlogs     !! Total number of logs.
 
-        character(len=:), allocatable :: query
-        integer                       :: k, stat
-        integer(kind=i8)              :: i, n
-        type(c_ptr)                   :: stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(c_ptr)         :: stmt
+        type(db_query_type) :: db_query
 
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
-        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
-        logical :: desc_order, more
-
-        has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
-        has_target_id = .false.; has_source    = .false.; has_from      = .false.
-        has_to        = .false.; has_min_level = .false.; has_max_level = .false.
-        has_error     = .false.; has_limit     = .false.; desc_order    = .false.
-
-        if (dm_string_is_present(node_id)) then
-            has_param = .true.
-            has_node_id = .true.
-        end if
-
-        if (dm_string_is_present(sensor_id)) then
-            has_param = .true.
-            has_sensor_id = .true.
-        end if
-
-        if (dm_string_is_present(target_id)) then
-            has_param = .true.
-            has_target_id = .true.
-        end if
-
-        if (dm_string_is_present(source)) then
-            has_param = .true.
-            has_source = .true.
-        end if
-
-        if (dm_string_is_present(from)) then
-            has_param = .true.
-            has_from = .true.
-        end if
-
-        if (dm_string_is_present(to)) then
-            has_param = .true.
-            has_to = .true.
-        end if
-
-        if (present(min_level)) then
-            has_param = .true.
-            has_min_level = .true.
-        end if
-
-        if (present(max_level)) then
-            has_param = .true.
-            has_max_level = .true.
-        end if
-
-        if (present(error)) then
-            has_param = .true.
-            has_error = .true.
-        end if
-
-        if (present(desc)) desc_order = desc
-        if (present(limit)) has_limit = .true.
         if (present(nlogs)) nlogs = 0_i8
 
         ! Build SQL query.
-        allocate (character(len=0) :: query)
-
-        if (has_param) then
-            more = .false.
-            if (has_min_level) call db_query_where(query, 'level >= ?',     more)
-            if (has_max_level) call db_query_where(query, 'level <= ?',     more)
-            if (has_error)     call db_query_where(query, 'error = ?',      more)
-            if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
-            if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-            if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-            if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-            if (has_source)    call db_query_where(query, 'source = ?',     more)
-        end if
+        rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+        rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+        rc = dm_db_query_add_int (db_query, 'error = ?',      error)
+        rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+        rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+        rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+        rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+        rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
-            if (has_param) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            rc = E_DB_PREPARE
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NLOGS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-                rc = db_bind_logs(k)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NLOGS, stmt) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
             n = sqlite3_column_int64(stmt, 0)
 
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
+            if (present(nlogs)) nlogs = n
+            if (present(limit)) n     = min(n, limit)
+
             rc = E_ALLOC
-            if (has_limit) n = min(n, limit)
             allocate (logs(n), stat=stat)
             if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (desc_order) then
-                query = query // ' ORDER BY timestamp DESC'
-            else
-                query = query // ' ORDER BY timestamp ASC'
-            end if
-
-            if (has_limit) query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOGS // query, stmt) /= SQLITE_OK) exit sql_block
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_LOGS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                if (dm_is_error(db_bind_logs(k))) exit sql_block
-            end if
-
-            if (has_limit) then
-                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
-
-            if (present(nlogs)) nlogs = n
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = sqlite3_finalize(stmt)
         if (.not. allocated(logs)) allocate (logs(0))
-    contains
-        integer function db_bind_logs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_min_level) then
-                if (sqlite3_bind_int(stmt, i, min_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_max_level) then
-                if (sqlite3_bind_int(stmt, i, max_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_error) then
-                if (sqlite3_bind_int(stmt, i, error) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_source) then
-                if (sqlite3_bind_text(stmt, i, trim(source)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_logs
     end function db_select_logs_array
 
     integer function db_select_logs_iter(db, db_stmt, log, node_id, sensor_id, target_id, source, from, to, &
@@ -6201,164 +5796,36 @@ contains
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of logs.
 
-        character(len=:), allocatable :: query
-        integer                       :: k
-
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id, has_source
-        logical :: has_from, has_to, has_min_level, has_max_level, has_error, has_limit
-        logical :: desc_order, more
+        integer             :: stat
+        type(db_query_type) :: db_query
 
         if (.not. dm_db_prepared(db_stmt)) then
-            has_param     = .false.; has_node_id   = .false.; has_sensor_id = .false.
-            has_target_id = .false.; has_source    = .false.; has_from      = .false.
-            has_to        = .false.; has_min_level = .false.; has_max_level = .false.
-            has_error     = .false.; has_limit     = .false.; desc_order    = .false.
-
-            if (dm_string_is_present(node_id)) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
-
-            if (dm_string_is_present(sensor_id)) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
-
-            if (dm_string_is_present(target_id)) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
-
-            if (dm_string_is_present(source)) then
-                has_param = .true.
-                has_source = .true.
-            end if
-
-            if (dm_string_is_present(from)) then
-                has_param = .true.
-                has_from = .true.
-            end if
-
-            if (dm_string_is_present(to)) then
-                has_param = .true.
-                has_to = .true.
-            end if
-
-            if (present(min_level)) then
-                has_param = .true.
-                has_min_level = .true.
-            end if
-
-            if (present(max_level)) then
-                has_param = .true.
-                has_max_level = .true.
-            end if
-
-            if (present(error)) then
-                has_param = .true.
-                has_error = .true.
-            end if
-
-            if (present(desc)) desc_order = desc
-            if (present(limit)) has_limit = .true.
-
             ! Build SQL query.
-            allocate (character(len=0) :: query)
+            rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+            rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+            rc = dm_db_query_add_int (db_query, 'error = ?',      error)
+            rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+            rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+            rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+            rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+            rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+            rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            if (has_param) then
-                more = .false.
-                if (has_min_level) call db_query_where(query, 'level >= ?',     more)
-                if (has_max_level) call db_query_where(query, 'level <= ?',     more)
-                if (has_error)     call db_query_where(query, 'error = ?',      more)
-                if (has_from)      call db_query_where(query, 'timestamp >= ?', more)
-                if (has_to)        call db_query_where(query, 'timestamp < ?',  more)
-                if (has_node_id)   call db_query_where(query, 'node_id = ?',    more)
-                if (has_sensor_id) call db_query_where(query, 'sensor_id = ?',  more)
-                if (has_target_id) call db_query_where(query, 'target_id = ?',  more)
-                if (has_source)    call db_query_where(query, 'source = ?',     more)
-            end if
-
-            if (desc_order) then
-                query = query // ' ORDER BY timestamp DESC'
-            else
-                query = query // ' ORDER BY timestamp ASC'
-            end if
-
-            if (has_limit) query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_LOGS // query, db_stmt%ctx) /= SQLITE_OK) return
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_LOGS), db_stmt%ctx)
+            if (stat /= SQLITE_OK) return
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                if (dm_is_error(db_bind_logs(k))) return
-            end if
-
-            if (has_limit) then
-                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
-            end if
+            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            if (dm_is_error(rc)) return
         end if
 
         rc = E_DB_NO_ROWS
         if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
 
         rc = db_next_row(db_stmt%ctx, log)
-    contains
-        integer function db_bind_logs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_min_level) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, min_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_max_level) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, max_level) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_error) then
-                if (sqlite3_bind_int(db_stmt%ctx, i, error) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_source) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(source)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_logs
     end function db_select_logs_iter
 
     integer function db_select_nodes_array(db, nodes, nnodes) result(rc)
@@ -6401,6 +5868,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                     rc = db_next_row(stmt, nodes(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
@@ -6469,9 +5937,9 @@ contains
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
 
             rc = E_NONE
+            n = sqlite3_column_int64(stmt, 0)
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -6516,73 +5984,30 @@ contains
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
         integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
 
-        character(len=:), allocatable :: query
-        integer                       :: k, stat
-        integer(kind=i8)              :: i, n
-        type(c_ptr)                   :: stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        logical             :: stub_
+        type(c_ptr)         :: stmt
+        type(db_query_type) :: db_query
 
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id
-        logical :: has_from, has_to, has_limit
-        logical :: desc_order, more, stub_view
+        if (present(nobservs)) nobservs  = 0_i8
 
-        if (present(nobservs)) nobservs = 0_i8
-
-        has_param     = .false.; has_node_id = .false.; has_sensor_id = .false.
-        has_target_id = .false.; has_from    = .false.; has_to        = .false.
-        has_limit     = .false.; desc_order  = .false.; stub_view     = .false.
-
-        if (dm_string_is_present(node_id)) then
-            has_param = .true.
-            has_node_id = .true.
-        end if
-
-        if (dm_string_is_present(sensor_id)) then
-            has_param = .true.
-            has_sensor_id = .true.
-        end if
-
-        if (dm_string_is_present(target_id)) then
-            has_param = .true.
-            has_target_id = .true.
-        end if
-
-        if (dm_string_is_present(from)) then
-            has_param = .true.
-            has_from = .true.
-        end if
-
-        if (dm_string_is_present(to)) then
-            has_param = .true.
-            has_to = .true.
-        end if
-
-        if (present(limit)) has_limit  = .true.
-        if (present(desc))  desc_order = desc
-        if (present(stub))  stub_view  = stub
+        stub_ = .false.
+        if (present(stub)) stub_ = stub
 
         ! Build SQL query.
-        allocate (character(len=0) :: query)
-
-        if (has_param) then
-            more = .false.
-            if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
-            if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
-            if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
-            if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
-            if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
-        end if
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+        rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+        rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
-            if (has_param) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+            rc = E_DB_PREPARE
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS), stmt)
 
-                rc = db_bind_observs(k)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NOBSERVS, stmt) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
@@ -6591,7 +6016,8 @@ contains
             rc = E_DB_FINALIZE
             if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
 
-            if (has_limit) n = min(n, limit)
+            if (present(nobservs)) nobservs = n
+            if (present(limit))    n        = min(n, limit)
 
             rc = E_ALLOC
             allocate (observs(n), stat=stat)
@@ -6600,76 +6026,34 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            query = query // ' ORDER BY observs.timestamp'
-            if (desc_order) query = query // ' DESC'
-            if (has_limit)  query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS // query, stmt) /= SQLITE_OK) exit sql_block
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERVS), stmt)
+            if (stat /= SQLITE_OK) exit sql_block
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                if (dm_is_error(db_bind_observs(k))) exit sql_block
-            end if
-
-            if (has_limit) then
-                if (sqlite3_bind_int64(stmt, k, limit) /= SQLITE_OK) exit sql_block
-            end if
+            rc = dm_db_query_bind(db_query, stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
-
-            if (present(nobservs)) nobservs = n
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = sqlite3_finalize(stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
-        if (stub_view) return
+        if (stub_) return
         if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
-    contains
-        integer function db_bind_observs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(stmt, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(stmt, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(stmt, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(stmt, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(stmt, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_observs
     end function db_select_observs_array
 
     integer function db_select_observs_iter(db, db_stmt, observ, node_id, sensor_id, target_id, from, to, &
@@ -6705,76 +6089,30 @@ contains
         integer(kind=i8),   intent(in), optional :: limit     !! Max. number of observations.
         logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
 
-        character(len=:), allocatable :: query
-        integer                       :: i, k, n
+        integer             :: i, n, stat
+        logical             :: stub_
+        type(db_query_type) :: db_query
 
-        logical :: has_param, has_node_id, has_sensor_id, has_target_id
-        logical :: has_from, has_to, has_limit
-        logical :: desc_order, more, stub_view
+        stub_ = .false.
+        if (present(stub)) stub_ = stub
 
         if (.not. dm_db_prepared(db_stmt)) then
-            has_param     = .false.; has_node_id = .false.; has_sensor_id = .false.
-            has_target_id = .false.; has_from    = .false.; has_to        = .false.
-            has_limit     = .false.; desc_order  = .false.; stub_view     = .false.
-
-            if (dm_string_is_present(node_id)) then
-                has_param = .true.
-                has_node_id = .true.
-            end if
-
-            if (dm_string_is_present(sensor_id)) then
-                has_param = .true.
-                has_sensor_id = .true.
-            end if
-
-            if (dm_string_is_present(target_id)) then
-                has_param = .true.
-                has_target_id = .true.
-            end if
-
-            if (dm_string_is_present(from)) then
-                has_param = .true.
-                has_from = .true.
-            end if
-
-            if (dm_string_is_present(to)) then
-                has_param = .true.
-                has_to = .true.
-            end if
-
-            if (present(limit)) has_limit  = .true.
-            if (present(desc))  desc_order = desc
-            if (present(stub))  stub_view  = stub
-
             ! Build SQL query.
-            allocate (character(len=0) :: query)
+            rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+            rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+            rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+            rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+            rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
-            if (has_param) then
-                more = .false.
-                if (has_node_id)   call db_query_where(query, 'nodes.id = ?',           more)
-                if (has_sensor_id) call db_query_where(query, 'sensors.id = ?',         more)
-                if (has_target_id) call db_query_where(query, 'targets.id = ?',         more)
-                if (has_from)      call db_query_where(query, 'observs.timestamp >= ?', more)
-                if (has_to)        call db_query_where(query, 'observs.timestamp < ?',  more)
-            end if
-
-            query = query // ' ORDER BY observs.timestamp'
-            if (desc_order) query = query // ' DESC'
-            if (has_limit)  query = query // ' LIMIT ?'
+            call dm_db_query_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_limit(db_query, limit)
 
             rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_OBSERVS // query, db_stmt%ctx) /= SQLITE_OK) return
+            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERVS), db_stmt%ctx)
+            if (stat /= SQLITE_OK) return
 
-            rc = E_DB_BIND
-            k  = 1
-
-            if (has_param) then
-                if (dm_is_error(db_bind_observs(k))) return
-            end if
-
-            if (has_limit) then
-                if (sqlite3_bind_int64(db_stmt%ctx, k, limit) /= SQLITE_OK) return
-            end if
+            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            if (dm_is_error(rc)) return
         end if
 
         rc = E_DB_NO_ROWS
@@ -6782,7 +6120,7 @@ contains
 
         rc = db_next_row(db_stmt%ctx, observ)
         if (dm_is_error(rc)) return
-        if (stub_view) return
+        if (stub_) return
 
         ! Get receivers.
         if (observ%nreceivers > 0) then
@@ -6804,40 +6142,6 @@ contains
             rc = db_select_responses(db, observ%requests(i)%responses, observ%id, i)
             if (dm_is_error(rc)) exit
         end do
-    contains
-        integer function db_bind_observs(i) result(rc)
-            integer, intent(out) :: i
-
-            rc = E_DB_BIND
-            i = 1
-
-            if (has_node_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(node_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_sensor_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(sensor_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_target_id) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(target_id)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_from) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(from)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            if (has_to) then
-                if (sqlite3_bind_text(db_stmt%ctx, i, trim(to)) /= SQLITE_OK) return
-                i = i + 1
-            end if
-
-            rc = E_NONE
-        end function db_bind_observs
     end function db_select_observs_iter
 
     integer function db_select_observs_data(db, observs) result(rc)
@@ -6933,7 +6237,7 @@ contains
         type(c_ptr) :: stmt
 
         stmt = c_null_ptr
-        if (present(statement)) stmt = statement
+        if (present(statement))  stmt       = statement
         if (present(nreceivers)) nreceivers = 0
 
         sql_block: block
@@ -7003,7 +6307,7 @@ contains
         type(c_ptr) :: stmt
 
         stmt = c_null_ptr
-        if (present(statement)) stmt = statement
+        if (present(statement)) stmt      = statement
         if (present(nrequests)) nrequests = 0
 
         sql_block: block
@@ -7099,7 +6403,7 @@ contains
         type(c_ptr) :: stmt
 
         stmt = c_null_ptr
-        if (present(statement)) stmt = statement
+        if (present(statement))  stmt       = statement
         if (present(nresponses)) nresponses = 0
 
         sql_block: block
@@ -7191,6 +6495,7 @@ contains
                 row_loop: do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit row_loop
+
                     rc = db_next_row(stmt, sensors(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do row_loop
@@ -7290,6 +6595,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, sensors(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
@@ -7442,6 +6748,7 @@ contains
             do i = 1, n
                 rc = E_DB_NO_ROWS
                 if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                 rc = db_next_row(stmt, syncs(i))
                 syncs(i)%type = type
                 if (dm_is_error(rc)) exit
@@ -7493,6 +6800,7 @@ contains
                 do i = 1, n
                     rc = E_DB_NO_ROWS
                     if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+
                     rc = db_next_row(stmt, targets(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
                 end do
@@ -7532,40 +6840,4 @@ contains
 
         rc = db_next_row(db_stmt%ctx, target)
     end function db_select_targets_iter
-
-    ! **************************************************************************
-    ! PRIVATE SUBROUTINES.
-    ! **************************************************************************
-    pure subroutine db_query_where(query, part, more)
-        !! Sub-query builder for `WHERE` clauses that appends `part` to query
-        !! string `query`. If `query` is not allocated or of length 0, or if
-        !! `more` is `.false.`, `query` will start with ` WHERE` on exit.
-        !!
-        !! This routine may be called multiple times on succession to add more
-        !! parameters to the query.
-        !!
-        !! On first call, argument `more` must be `.false.`, as it will be set
-        !! to `.true.` on exit to indicate an SQL `AND` operation on the next
-        !! call.
-        character(len=:), allocatable, intent(inout) :: query !! Query input/output string.
-        character(len=*),              intent(in)    :: part  !! Part to add to query string.
-        logical,                       intent(inout) :: more  !! Append `AND` to query first if `.true.`.
-
-        integer :: n
-        logical :: alloc
-
-        n = 0
-        alloc = allocated(query)
-        if (alloc) n = len(query)
-
-        if (.not. alloc .or. n == 0 .or. .not. more) then
-            ! On first call just add the part.
-            query = ' WHERE ' // trim(part)
-        else
-            ! On successive calls append `AND` first.
-            query = query // ' AND ' // trim(part)
-        end if
-
-        more = .true.
-    end subroutine db_query_where
 end module dm_db

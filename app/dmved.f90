@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmved
-    !! VE.Direct protocol logger for MPPT chargers by Victron Energy.
+    !! VE.Direct protocol logger for MPPT solar chargers by Victron Energy.
     use :: dmpack
     implicit none (type, external)
 
@@ -16,17 +16,17 @@ program dmved
 
     type :: app_type
         !! Command-line arguments.
-        character(len=ID_LEN)              :: name       = APP_NAME !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)       :: config     = ' '      !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)     :: logger     = ' '      !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node_id    = ' '      !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor_id  = ' '      !! Sensor id (required).
-        character(len=TARGET_ID_LEN)       :: target_id  = ' '      !! Target id (required).
-        character(len=FILE_PATH_LEN)       :: path       = ' '      !! Path of TTY/PTY device (required).
-        character(len=OBSERV_RECEIVER_LEN) :: receiver   = ' '      !! Name of receiver's message queue (without leading `/`).
-        integer                            :: interval   = 60       !! Emit interval in seconds (>= 0).
-        logical                            :: debug      = .false.  !! Forward debug messages via IPC.
-        logical                            :: verbose    = .false.  !! Print debug messages to stderr (optional).
+        character(len=ID_LEN)              :: name      = APP_NAME !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)       :: config    = ' '      !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN)     :: logger    = ' '      !! Name of logger.
+        character(len=NODE_ID_LEN)         :: node_id   = ' '      !! Node id (required).
+        character(len=SENSOR_ID_LEN)       :: sensor_id = ' '      !! Sensor id (required).
+        character(len=TARGET_ID_LEN)       :: target_id = ' '      !! Target id (required).
+        character(len=FILE_PATH_LEN)       :: path      = ' '      !! Path of TTY/PTY device (required).
+        character(len=OBSERV_RECEIVER_LEN) :: receiver  = ' '      !! Name of receiver's message queue (without leading `/`).
+        integer                            :: interval  = 60       !! Emit interval in seconds (>= 0).
+        logical                            :: debug     = .false.  !! Forward debug messages via IPC.
+        logical                            :: verbose   = .false.  !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -334,5 +334,6 @@ contains
 
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
+        print '(a)', dm_lua_version(.true.)
     end subroutine version_callback
 end program dmved

@@ -77,7 +77,7 @@ module dm_modbus
     type, private :: modbus_type
         !! Opaque Modbus RTU/TCP context type.
         private
-        type(c_ptr) :: ctx  = c_null_ptr !! C pointer to Modbus RTU/TCP context.
+        type(c_ptr) :: ctx = c_null_ptr !! C pointer to Modbus RTU/TCP context.
     end type modbus_type
 
     type, extends(modbus_type), public :: modbus_rtu_type
