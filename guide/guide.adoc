@@ -260,7 +260,7 @@ order to run DMPACK:
   FreeBSD.
 * <<sys-conf-tz>> – Set the correct time zone of the sensor node.
 * <<sys-conf-ntp>> – Enable synchronisation with an NTP server.
-* <<sys-conf-power>> – Disable USB power saving.
+* <<sys-conf-power>> – Disable USB power saving on Linux.
 * <<sys-conf-cron>> – Add cron jobs to run programs periodically.
 
 The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
@@ -851,6 +851,8 @@ are written to file or _stdout_.
 program sends requests to a connected sensor to receive responses. The program
 pre-processes the response data using regular expressions and forwards
 observations via POSIX message queue.
+<<dmved>>:: Reads status information of a connected Victron Energy MPPT solar
+charge controller or SmartShunt battery monitor, using the VE.Direct protocol.
 
 === Utilities
 
@@ -2614,6 +2616,138 @@ Add hyphens to a hexadecimal UUID:
 ....
 $ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid --convert
 3d3eee7a-e1fb-4259-b5df-72f854aaa369
+....
+
+=== dmved [[dmved]]
+
+The *dmved* program captures VE.Direct status data received from a connected
+Victron Energy Maximum Power Point Tracking (MPPT) solar charge controller or
+battery monitor, either:
+
+* BlueSolar MPPT series,
+* SmartSolar MPPT series,
+* SmartShunt.
+
+An official Victron Energy USB cable or TTL adapter with JST PH connector is
+required for data link. The TTY will be configured to 19200 baud (8N1). The
+following VE.Direct fields are supported, depending on the device:
+
+[cols="1,1,5,1,1"]
+|===
+| Name    | Unit    | Description                               | MPPT | Shunt
+
+| `Alarm` | –       | Alarm condition active (on/off).          |      |   ✓
+| `AR`    | –       | Alarm reason.                             |      |   ✓
+| `CE`    | mAh     | Consumed amp hours.                       |      |   ✓
+| `CS`    | –       | State of operation.                       |  ✓   |
+| `DM`    | ‰       | Mid-point deviation of the battery bank.  |      |   ✓
+| `ERR`   | –       | Error code.                               |  ✓   |
+| `FW`    | –       | Firmware version (16 bit).                |  ✓   |   ✓
+| `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓
+| `H2`    | mAh     | Depth of the last discharge.              |      |   ✓
+| `H3`    | mAh     | Depth of the average discharge.           |      |   ✓
+| `H4`    | –       | Number of charge cycles.                  |      |   ✓
+| `H5`    | –       | Number of full discharges.                |      |   ✓
+| `H6`    | mAh     | Cumulative amp hours drawn.               |      |   ✓
+| `H7`    | mV      | Minimum main (battery) voltage.           |      |   ✓
+| `H8`    | mV      | Maximum main (battery) voltage.           |      |   ✓
+| `H9`    | sec     | Number of seconds since last full charge. |      |   ✓
+| `H10`   | –       | Number of automatic synchronisations.     |      |   ✓
+| `H11`   | –       | Number of low main voltage alarms.        |      |   ✓
+| `H12`   | –       | Number of high main voltage alarms.       |      |   ✓
+| `H15`   | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓
+| `H16`   | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓
+| `H17`   | kWh/100 | Amount of produced energy.                |      |   ✓
+| `H18`   | kWh/100 | Amount of consumed energy.                |      |   ✓
+| `H19`   | kWh/100 | Yield total (user resettable counter).    |  ✓   |
+| `H20`   | kWh/100 | Yield today.                              |  ✓   |
+| `H21`   | W       | Maximum power today.                      |  ✓   |
+| `H22`   | kWh/100 | Yield yesterday.                          |  ✓   |
+| `H23`   | W       | Maximum power yesterday.                  |  ✓   |
+| `HSDS`  | –       | Day sequence number (0 to 364).           |  ✓   |
+| `I`     | mA      | Main or channel 1 battery current.        |  ✓   |   ✓
+| `IL`    | mA      | Load current.                             |  ✓   |
+| `LOAD`  | –       | Load output state (on/off).               |  ✓   |
+| `MON`   | –       | DC monitor mode.                          |      |   ✓
+| `MPPT`  | –       | Tracker operation mode.                   |  ✓   |
+| `OR`    | –       | Off reason.                               |  ✓   |
+| `P`     | W       | Instantaneous power.                      |      |   ✓
+| `PID`   | –       | Product ID.                               |  ✓   |   ✓
+| `PPV`   | W       | Panel power.                              |  ✓   |
+| `Relay` | –       | Relay state (on/off).                     |  ✓   |   ✓
+| `SOC`   | ‰       | State-of-charge.                          |      |   ✓
+| `T`     | °C      | Battery temperature.                      |      |   ✓
+| `TTG`   | min     | Time-to-go.                               |      |   ✓
+| `V`     | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓
+| `VM`    | mV      | Mid-point voltage of the battery bank.    |      |   ✓
+| `VPV`   | mV      | Panel voltage.                            |  ✓   |
+| `VS`    | mV      | Auxiliary (starter) voltage.              |      |   ✓
+|===
+
+The response names of the created observations equal the field names in
+lower-case. Observations are sent to the receiver via message queue in the
+specified interval.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,5"]
+|===
+| Option                 | Short | Default | Description
+
+| `--config _file_`      | `-c`  | –       | Path to configuration file.
+| `--debug`              | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
+| `--device _name_`      | `-d`  | –       | Type of connected device (`mppt`, `shunt`).
+| `--help`               | `-h`  | –       | Output available command-line arguments and quit.
+| `--interval _seconds_` | `-I`  | 60      | Observation emit interval in seconds.
+| `--logger _name_`      | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`        | `-n`  | `dmved` | Name of instance and table in configuration.
+| `--node _id_`          | `-N`  | –       | Optional node id.
+| `--path _path_`        | `-p`  | –       | Path to TTY device (for example, `/dev/ttyUSB0`).
+| `--receiver _name_`    | `-r`  | –       | Name of receiver/message queue.
+| `--sensor _id_`        | `-S`  | –       | Sensor id.
+| `--target _id_`        | `-T`  | –       | Target id.
+| `--verbose`            | `-V`  | off     | Print log messages to _stderr_.
+| `--version`            | `-v`  | –       | Output version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+For a connected SmartSolar MPPT charger, create a configuration file
+`dmved.conf`, set the device to `mppt` and the path to the TTY path, for
+example `/dev/ttyUSB0` if a Victron Energy USB adapter cable is used. Change
+node id, sensor id, and target id according to your set-up:
+
+[source,lua]
+....
+-- dmved.conf
+dmved = {
+  logger = "",
+  device = "mppt",
+  node = "dummy-node",
+  sensor = "dummy-sensor",
+  target = "dummy-target",
+  path = "/dev/ttyUSB0",
+  receiver = "dmrecv",
+  interval = 60 * 10,
+  debug = false,
+  verbose = true
+}
+....
+
+Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
+format:
+
+....
+$ dmrecv --name dmrecv --type observ --format jsonl --output -
+....
+
+Start *dmved* to read and forward status data from the connected MPPT every 60
+seconds:
+
+....
+$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
 ....
 
 === dmweb [[dmweb]]

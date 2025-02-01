@@ -52,7 +52,8 @@ POSIX semaphores.
 
 **DMPACK** includes modules for:
 
-* sensor control (RS-232/422/485, Modbus RTU/TCP, 1-Wire, sub-process, file system)
+* sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
+  sub-process, file system)
 * SQLite database access
 * message passing via POSIX message queues
 * process synchronisation via POSIX semaphores
@@ -63,6 +64,7 @@ POSIX semaphores.
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API for Fortran
+* MPPT and solar battery monitoring (VE.Direct)
 * camera access (V4L2, RTSP)
 * time series plotting
 * Lua scripting
@@ -141,7 +143,7 @@ The following programs are based on the **DMPACK** library.
 | [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
 | [dmuuid](adoc/dmuuid.adoc)     | Generates UUIDv4 identifiers.                                       |
-| [dmved](adoc/dmved.adoc)       | Reads status of connected Victron Energy MPPT charger.              |
+| [dmved](adoc/dmved.adoc)       | Reads status of MPPT charger or battery monitor (VE.Direct).        |
 | [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |
 
 ## Installation
