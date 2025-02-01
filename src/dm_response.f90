@@ -76,10 +76,13 @@ contains
         !! Returns `.true.` if given response is valid. A response is valid if
         !! attribute _name_ is a valid id, attribute _type_ is a valid response
         !! value type, and attribute _error_ is a valid error code.
+        use :: dm_string, only: dm_string_is_printable
+
         type(response_type), intent(in) :: response !! Response type.
 
         valid = .false.
         if (.not. dm_id_is_valid(response%name))            return
+        if (.not. dm_string_is_printable(response%unit))    return
         if (.not. dm_response_type_is_valid(response%type)) return
         if (.not. dm_error_is_valid(response%error))        return
         valid = .true.

@@ -6,7 +6,6 @@ module dm_request
     use :: dm_id
     use :: dm_kind
     use :: dm_response
-    use :: dm_string
     use :: dm_time
     use :: dm_util
     implicit none (type, external)
@@ -194,6 +193,8 @@ contains
         !!   _responses_.
         !! * All responses are valid.
         !!
+        use :: dm_string, only: dm_string_is_printable
+
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
@@ -210,7 +211,10 @@ contains
             if (.not. dm_time_is_valid(request%timestamp, strict=.true.)) return
         end if
 
-        if (.not. dm_string_is_printable(request%request)) return
+        if (.not. dm_string_is_printable(request%request))   return
+        if (.not. dm_string_is_printable(request%response))  return
+        if (.not. dm_string_is_printable(request%delimiter)) return
+        if (.not. dm_string_is_printable(request%pattern))   return
 
         if (request%delay < 0) return
         if (.not. dm_error_is_valid(request%error)) return

@@ -221,6 +221,8 @@ contains
         !!   white spaces).
         !! * The attribute _timestamp_ is set and in ISO 8601 format, unless
         !!   argument `timestamp` is passed and `.false.`.
+        !! * The attribute _source_ is a valid id.
+        !! * The attribute _device_ contains only printable characters.
         !! * The attributes _priority_ is not negative.
         !! * The attribute _error_ is a valid error code.
         !! * The attributes _next_ and _nreceivers_ are within the bounds of
@@ -230,6 +232,8 @@ contains
         !! * All receiver names are valid ids.
         !! * All requests and responses are valid.
         !!
+        use :: dm_string, only: dm_string_is_printable
+
         type(observ_type), intent(in)           :: observ    !! Observation type.
         logical,           intent(in), optional :: id        !! Enable id validation (on by default).
         logical,           intent(in), optional :: timestamp !! Enable timestamp validation (on by default).
@@ -261,6 +265,10 @@ contains
 
         if (len_trim(observ%source) > 0) then
             if (.not. dm_id_is_valid(observ%source)) return
+        end if
+
+        if (len_trim(observ%device) > 0) then
+            if (.not. dm_string_is_printable(observ%device)) return
         end if
 
         if (observ%priority < 0) return
@@ -364,59 +372,4 @@ contains
             end do
         end do
     end subroutine dm_observ_out
-
-!   subroutine observ_write_formatted(observ, unit, iotype, vlist, iostat, iomsg)
-!       !! User-defined derived type I/O.
-!       class(observ_type), intent(in)    :: observ
-!       integer,            intent(in)    :: unit
-!       character(len=*),   intent(in)    :: iotype
-!       integer,            intent(in)    :: vlist(:)
-!       integer,            intent(out)   :: iostat
-!       character(len=*),   intent(inout) :: iomsg
-!       integer                           :: i, j
-!
-!       write (unit, '("observ%id=", a, /)')          trim(observ%id)
-!       write (unit, '("observ%node_id=", a, /)')     trim(observ%node_id)
-!       write (unit, '("observ%sensor_id=", a, /)')   trim(observ%sensor_id)
-!       write (unit, '("observ%target_id=", a, /)')   trim(observ%target_id)
-!       write (unit, '("observ%name=", a, /)')        trim(observ%name)
-!       write (unit, '("observ%timestamp=", a, /)')   observ%timestamp
-!       write (unit, '("observ%device=", a, /)')      trim(observ%device)
-!       write (unit, '("observ%priority=", i0, /)')   observ%priority
-!       write (unit, '("observ%error=", i0, /)')      observ%error
-!       write (unit, '("observ%next=", i0, /)')       observ%next
-!       write (unit, '("observ%nreceivers=", i0, /)') observ%nreceivers
-!       write (unit, '("observ%nrequests=", i0, /)')  observ%nrequests
-!
-!       do i = 1, observ%nreceivers
-!           write (unit, '("observ%receivers(", i0, ")=", a, /)') i, trim(observ%receivers(i))
-!       end do
-!
-!       do i = 1, observ%nrequests
-!           write (unit, '("observ%requests(", i0, ")%timestamp=", a, /)')   i, trim(observ%requests(i)%timestamp)
-!           write (unit, '("observ%requests(", i0, ")%request=", a, /)')     i, trim(observ%requests(i)%request)
-!           write (unit, '("observ%requests(", i0, ")%response=", a, /)')    i, trim(observ%requests(i)%response)
-!           write (unit, '("observ%requests(", i0, ")%delimiter=", a, /)')   i, trim(observ%requests(i)%delimiter)
-!           write (unit, '("observ%requests(", i0, ")%pattern=", a, /)')     i, trim(observ%requests(i)%pattern)
-!           write (unit, '("observ%requests(", i0, ")%delay=", i0, /)')      i, observ%requests(i)%delay
-!           write (unit, '("observ%requests(", i0, ")%error=", i0, /)')      i, observ%requests(i)%error
-!           write (unit, '("observ%requests(", i0, ")%retries=", i0, /)')    i, observ%requests(i)%retries
-!           write (unit, '("observ%requests(", i0, ")%state=", i0, /)')      i, observ%requests(i)%state
-!           write (unit, '("observ%requests(", i0, ")%timeout=", i0, /)')    i, observ%requests(i)%timeout
-!           write (unit, '("observ%requests(", i0, ")%nresponses=", i0, /)') i, observ%requests(i)%nresponses
-!
-!           do j = 1, observ%requests(i)%nresponses
-!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%name=", a, /)') &
-!                   i, j, trim(observ%requests(i)%responses(j)%name)
-!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%value=", 1pg0.12, /)') &
-!                   i, j, observ%requests(i)%responses(j)%value
-!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%unit=", a, /)') &
-!                   i, j, trim(observ%requests(i)%responses(j)%unit)
-!               write (unit, '("observ%requests(", i0, ")%responses(", i0, ")%error=", i0, /)') &
-!                   i, j, observ%requests(i)%responses(j)%error
-!           end do
-!       end do
-!
-!       iostat = 0
-!   end subroutine observ_write_formatted
 end module dm_observ
