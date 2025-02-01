@@ -40,6 +40,7 @@ module dm_db
     use, intrinsic :: iso_c_binding
     use :: sqlite3
     use :: dm_db_query
+    use :: dm_db_stmt
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -52,22 +53,22 @@ module dm_db
     private
 
     ! SQLite 3 journal modes.
-    integer, parameter, public :: DB_JOURNAL_OFF      = 0 !! No rollback journals.
-    integer, parameter, public :: DB_JOURNAL_DELETE   = 1 !! Delete journal (default).
-    integer, parameter, public :: DB_JOURNAL_TRUNCATE = 2 !! Delete journal by truncating (may be faster than `DB_JOURNAL_DELETE`).
-    integer, parameter, public :: DB_JOURNAL_PERSIST  = 3 !! Overwrite journal instead of deleting (may be faster than deleting or truncating).
-    integer, parameter, public :: DB_JOURNAL_MEMORY   = 4 !! Store journal in memory (fast, volatile).
-    integer, parameter, public :: DB_JOURNAL_WAL      = 5 !! Use Write-Ahead Log (WAL) journal.
+    integer, parameter, public :: DB_JOURNAL_OFF      = 0             !! No rollback journals.
+    integer, parameter, public :: DB_JOURNAL_DELETE   = 1             !! Delete journal (default).
+    integer, parameter, public :: DB_JOURNAL_TRUNCATE = 2             !! Delete journal by truncating (may be faster than `DB_JOURNAL_DELETE`).
+    integer, parameter, public :: DB_JOURNAL_PERSIST  = 3             !! Overwrite journal instead of deleting (may be faster than deleting or truncating).
+    integer, parameter, public :: DB_JOURNAL_MEMORY   = 4             !! Store journal in memory (fast, volatile).
+    integer, parameter, public :: DB_JOURNAL_WAL      = 5             !! Use Write-Ahead Log (WAL) journal.
 
     ! SQLite 3 auto vacuum modes.
-    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0 !! No auto-vacuum (default).
-    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1 !! Enable auto-vacuum.
-    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2 !! Vacuum requires additional PRAGMA.
+    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0      !! No auto-vacuum (default).
+    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1      !! Enable auto-vacuum.
+    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2      !! Vacuum requires additional PRAGMA.
 
     ! SQLite 3 transactions.
-    integer, parameter, public :: DB_TRANS_DEFERRED  = 0 !! Deferred transaction (default).
-    integer, parameter, public :: DB_TRANS_IMMEDIATE = 1 !! Start a new write immediately (may fail with `E_DB_BUSY`).
-    integer, parameter, public :: DB_TRANS_EXCLUSIVE = 2 !! No reading while transactions are underway.
+    integer, parameter, public :: DB_TRANS_DEFERRED  = 0              !! Deferred transaction (default).
+    integer, parameter, public :: DB_TRANS_IMMEDIATE = 1              !! Start a new write immediately (may fail with `E_DB_BUSY`).
+    integer, parameter, public :: DB_TRANS_EXCLUSIVE = 2              !! No reading while transactions are underway.
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
@@ -84,12 +85,6 @@ module dm_db
         type(c_ptr) :: ctx       = c_null_ptr !! C pointer to SQLite 3 database.
         logical     :: read_only = .false.    !! Read-only flag.
     end type db_type
-
-    type, public :: db_stmt_type
-        !! Opaque SQLite database statement type.
-        private
-        type(c_ptr) :: ctx = c_null_ptr !! C pointer to SQLite 3 statement.
-    end type db_stmt_type
 
     abstract interface
         function dm_db_busy_callback(client_data, n) bind(c)
@@ -324,7 +319,6 @@ module dm_db
     public :: dm_db_log
     public :: dm_db_open
     public :: dm_db_optimize
-    public :: dm_db_prepared
     public :: dm_db_rollback
     public :: dm_db_select
     public :: dm_db_select_beat
@@ -406,6 +400,7 @@ module dm_db
     private :: db_next_row_sensor
     private :: db_next_row_string
     private :: db_next_row_target
+    private :: db_prepare
     private :: db_release
     private :: db_rollback
     private :: db_save_point
@@ -438,6 +433,7 @@ module dm_db
     private :: db_select_syncs
     private :: db_select_targets_array
     private :: db_select_targets_iter
+    private :: db_step
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -794,40 +790,20 @@ contains
         if (present(sync)) sync_ = sync
 
         ! Create tables.
-        rc = db_exec(db, SQL_CREATE_NODES)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_SENSORS)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_TARGETS)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_OBSERVS)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_RECEIVERS)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_REQUESTS)
-        if (dm_is_error(rc)) return
-
-        rc = db_exec(db, SQL_CREATE_RESPONSES)
-        if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_NODES);     if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_SENSORS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_RECEIVERS); if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_REQUESTS);  if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
 
         ! Create sync tables.
         if (sync_) then
-            rc = db_exec(db, SQL_CREATE_SYNC_NODES)
-            if (dm_is_error(rc)) return
-
-            rc = db_exec(db, SQL_CREATE_SYNC_OBSERVS)
-            if (dm_is_error(rc)) return
-
-            rc = db_exec(db, SQL_CREATE_SYNC_SENSORS)
-            if (dm_is_error(rc)) return
-
-            rc = db_exec(db, SQL_CREATE_SYNC_TARGETS)
-            if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
         end if
 
         ! Add additional indices.
@@ -2338,13 +2314,6 @@ contains
         stat = sqlite3_finalize(stmt)
     end function dm_db_optimize
 
-    logical function dm_db_prepared(db_stmt) result(prepared)
-        !! Returns `.true.` if given statement has been prepared.
-        type(db_stmt_type), intent(inout) :: db_stmt
-
-        prepared = c_associated(db_stmt%ctx)
-    end function dm_db_prepared
-
     integer function dm_db_rollback(db) result(rc)
         !! Rolls a transaction back. Returns `E_DB_ROLLBACK` on error.
         type(db_type), intent(inout) :: db !! Database type.
@@ -2595,6 +2564,8 @@ contains
                 rc = db_next_row(stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -2735,8 +2706,8 @@ contains
 
         integer             :: nbytes, stat
         integer(kind=i8)    :: i, n
-        type(c_ptr)         :: stmt
         type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nids)) nids = 0_i8
 
@@ -2748,19 +2719,19 @@ contains
         rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
-
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
+            rc = dm_db_query_bind(db_query, db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_FINALIZE
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            n = sqlite3_column_int64(db_stmt%ctx, 0)
+
+            rc = dm_db_finalize(db_stmt)
+            if (dm_is_error(rc)) return
 
             if (present(nids))  nids = n
             if (present(limit)) n    = min(n, limit)
@@ -2775,18 +2746,17 @@ contains
             call dm_db_query_order(db_query, 'observs.timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS))
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
-                rc = db_next_row(stmt, ids(i), nbytes, (i == 1))
+                rc = db_next_row(db_stmt%ctx, ids(i), nbytes, (i == 1))
                 if (dm_is_error(rc)) exit sql_block
 
                 rc = E_INVALID
@@ -2797,7 +2767,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = sqlite3_finalize(stmt)
+        stat = dm_db_finalize(db_stmt)
         if (.not. allocated(ids)) allocate (ids(0))
     end function dm_db_select_observ_ids
 
@@ -2889,6 +2859,7 @@ contains
             end do
 
             if (present(nviews)) nviews = n
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3006,6 +2977,7 @@ contains
             end do
 
             if (present(nobservs)) nobservs = nobs
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3108,6 +3080,7 @@ contains
             end do
 
             if (present(nobservs)) nobservs = nobs
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -3408,7 +3381,6 @@ contains
                 tables(i) = table
 
                 rc = E_NONE
-
                 i = i + 1
                 if (i > n) exit
             end do
@@ -4114,16 +4086,12 @@ contains
         mode_ = DB_TRANS_IMMEDIATE
         if (present(mode)) mode_ = mode
 
+        rc = E_INVALID
         select case (mode_)
-            case (DB_TRANS_DEFERRED)
-                rc = db_exec(db, 'BEGIN')
-            case (DB_TRANS_IMMEDIATE)
-                rc = db_exec(db, 'BEGIN IMMEDIATE')
-            case (DB_TRANS_EXCLUSIVE)
-                rc = db_exec(db, 'BEGIN EXCLUSIVE')
-            case default
-                rc = E_INVALID
-                return
+            case (DB_TRANS_DEFERRED);  rc = db_exec(db, 'BEGIN')
+            case (DB_TRANS_IMMEDIATE); rc = db_exec(db, 'BEGIN IMMEDIATE')
+            case (DB_TRANS_EXCLUSIVE); rc = db_exec(db, 'BEGIN EXCLUSIVE')
+            case default;              return
         end select
 
         if (dm_is_error(rc)) rc = E_DB_TRANSACTION
@@ -4169,8 +4137,8 @@ contains
             rc = E_DB_TYPE
             if (sqlite3_column_type(stmt, 0) /= SQLITE_INTEGER) exit sql_block
 
-            rc = E_NONE
             n = sqlite3_column_int64(stmt, 0)
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -4982,6 +4950,17 @@ contains
         rc = E_NONE
     end function db_next_row_target
 
+    integer function db_prepare(db, db_stmt, sql) result(rc)
+        !! Prepares database statement. Returns `E_DB_PREPARE` on error.
+        type(db_type),      intent(inout) :: db      !! Database type.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        character(len=*),   intent(in)    :: sql     !! SQL query.
+
+        rc = E_DB_PREPARE
+        if (sqlite3_prepare_v2(db%ctx, sql, db_stmt%ctx) /= SQLITE_OK) return
+        rc = E_NONE
+    end function db_prepare
+
     integer function db_release(db, name) result(rc)
         !! Jumps back to a save point. Returns `E_DB_EXEC` on error.
         type(db_type),    intent(inout) :: db   !! Database type.
@@ -5072,6 +5051,7 @@ contains
                 end do
 
                 if (present(nbeats)) nbeats = n
+                rc = E_NONE
             end block sql_block
 
             stat = sqlite3_finalize(stmt)
@@ -5099,21 +5079,21 @@ contains
         type(beat_type),    intent(out)          :: beat    !! Returned beat type.
         integer(kind=i8),   intent(in), optional :: limit   !! Max. number of beats.
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             if (present(limit)) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS // ' LIMIT ?')
+                if (dm_is_error(rc)) return
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_BEATS, db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS)
+                if (dm_is_error(rc)) return
             end if
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, beat)
     end function db_select_beats_iter
@@ -5214,6 +5194,7 @@ contains
             end do
 
             if (present(npoints)) npoints = n
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -5253,12 +5234,13 @@ contains
         error_ = E_NONE
         if (present(error)) error_ = error
 
-        if (.not. dm_db_prepared(db_stmt)) then
-            rc = E_DB_PREPARE
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             if (present(limit)) then
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS // ' LIMIT ?')
+                if (dm_is_error(rc)) return
             else
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_DATA_POINTS, db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS)
+                if (dm_is_error(rc)) return
             end if
 
             rc = E_DB_BIND
@@ -5275,8 +5257,8 @@ contains
             end if
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, dp)
     end function db_select_data_points_iter
@@ -5372,21 +5354,21 @@ contains
         character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
         integer(kind=i8),              intent(in), optional :: limit   !! Max. number of beats.
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             if (present(limit)) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS // ' LIMIT ?')
+                if (dm_is_error(rc)) return
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_BEATS, db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS)
+                if (dm_is_error(rc)) return
             end if
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, json)
     end function db_select_json_beats_iter
@@ -5427,8 +5409,8 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        type(c_ptr)         :: stmt
         type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nlogs)) nlogs = 0_i8
 
@@ -5444,19 +5426,19 @@ contains
         rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NLOGS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
-
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
+            rc = dm_db_query_bind(db_query, db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_FINALIZE
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            n = sqlite3_column_int64(db_stmt%ctx, 0)
+
+            rc = dm_db_finalize(db_stmt)
+            if (dm_is_error(rc)) return
 
             if (present(nlogs)) nlogs = n
             if (present(limit)) n     = min(n, limit)
@@ -5471,24 +5453,25 @@ contains
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
-                rc = db_next_row(stmt, strings(i), (i == 1))
+                rc = db_next_row(db_stmt%ctx, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            rc = E_NONE
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = sqlite3_finalize(stmt)
+        stat = dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_logs_array
 
@@ -5523,10 +5506,9 @@ contains
         logical,                       intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
 
-        integer             :: stat
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             ! Build SQL query.
             rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
             rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
@@ -5541,16 +5523,15 @@ contains
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS), db_stmt%ctx)
-            if (stat /= SQLITE_OK) return
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
+            if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, json)
     end function db_select_json_logs_iter
@@ -5650,21 +5631,21 @@ contains
         character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
         integer(kind=i8),              intent(in), optional :: limit   !! Max. number of nodes.
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             if (present(limit)) then
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?', db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?')
+                if (dm_is_error(rc)) return
 
                 rc = E_DB_BIND
                 if (sqlite3_bind_int64(db_stmt%ctx, 1, limit) /= SQLITE_OK) return
             else
-                rc = E_DB_PREPARE
-                if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_JSON_NODES // QUERY, db_stmt%ctx) /= SQLITE_OK) return
+                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY)
+                if (dm_is_error(rc)) return
             end if
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, json)
     end function db_select_json_nodes_iter
@@ -5701,8 +5682,8 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        type(c_ptr)         :: stmt
         type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nlogs)) nlogs = 0_i8
 
@@ -5718,20 +5699,19 @@ contains
         rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NLOGS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
-
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+            rc = dm_db_query_bind(db_query, db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
-            n = sqlite3_column_int64(stmt, 0)
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_FINALIZE
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+            n = sqlite3_column_int64(db_stmt%ctx, 0)
+
+            rc = dm_db_finalize(db_stmt)
+            if (dm_is_error(rc)) return
 
             if (present(nlogs)) nlogs = n
             if (present(limit)) n     = min(n, limit)
@@ -5746,24 +5726,25 @@ contains
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_LOGS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
-                rc = db_next_row(stmt, logs(i), (i == 1))
+                rc = db_next_row(db_stmt%ctx, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            rc = E_NONE
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = sqlite3_finalize(stmt)
+        stat = dm_db_finalize(db_stmt)
         if (.not. allocated(logs)) allocate (logs(0))
     end function db_select_logs_array
 
@@ -5796,10 +5777,9 @@ contains
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of logs.
 
-        integer             :: stat
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             ! Build SQL query.
             rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
             rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
@@ -5814,16 +5794,15 @@ contains
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_LOGS), db_stmt%ctx)
-            if (stat /= SQLITE_OK) return
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
+            if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, log)
     end function db_select_logs_iter
@@ -5874,6 +5853,7 @@ contains
                 end do
 
                 if (present(nnodes)) nnodes = n
+                rc = E_NONE
             end block sql_block
 
             stat = sqlite3_finalize(stmt)
@@ -5898,13 +5878,13 @@ contains
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
         type(node_type),    intent(out)   :: node    !! Returned node data.
 
-        if (.not. dm_db_prepared(db_stmt)) then
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_NODES, db_stmt%ctx) /= SQLITE_OK) return
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            rc = db_prepare(db, db_stmt, SQL_SELECT_NODES)
+            if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, node)
     end function db_select_nodes_iter
@@ -5938,8 +5918,8 @@ contains
             rc = E_DB_NO_ROWS
             if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
 
-            rc = E_NONE
             n = sqlite3_column_int64(stmt, 0)
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -5987,8 +5967,8 @@ contains
         integer             :: stat
         integer(kind=i8)    :: i, n
         logical             :: stub_
-        type(c_ptr)         :: stmt
         type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nobservs)) nobservs  = 0_i8
 
@@ -6003,18 +5983,19 @@ contains
         rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS), stmt)
-
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
-            n = sqlite3_column_int64(stmt, 0)
+            rc = dm_db_query_bind(db_query, db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_FINALIZE
-            if (sqlite3_finalize(stmt) /= SQLITE_OK) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            n = sqlite3_column_int64(db_stmt%ctx, 0)
+
+            rc = dm_db_finalize(db_stmt)
+            if (dm_is_error(rc)) return
 
             if (present(nobservs)) nobservs = n
             if (present(limit))    n        = min(n, limit)
@@ -6029,24 +6010,25 @@ contains
             call dm_db_query_order(db_query, 'observs.timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERVS), stmt)
-            if (stat /= SQLITE_OK) exit sql_block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
+            if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, stmt)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (sqlite3_step(stmt) /= SQLITE_ROW) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
-                rc = db_next_row(stmt, observs(i), (i == 1))
+                rc = db_next_row(db_stmt%ctx, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
             end do
+
+            rc = E_NONE
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = sqlite3_finalize(stmt)
+        stat = dm_db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
@@ -6089,14 +6071,14 @@ contains
         integer(kind=i8),   intent(in), optional :: limit     !! Max. number of observations.
         logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
 
-        integer             :: i, n, stat
+        integer             :: i, n
         logical             :: stub_
         type(db_query_type) :: db_query
 
         stub_ = .false.
         if (present(stub)) stub_ = stub
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             ! Build SQL query.
             rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
             rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
@@ -6107,16 +6089,15 @@ contains
             call dm_db_query_order(db_query, 'observs.timestamp', desc)
             call dm_db_query_limit(db_query, limit)
 
-            rc = E_DB_PREPARE
-            stat = sqlite3_prepare_v2(db%ctx, dm_db_query_build(db_query, SQL_SELECT_OBSERVS), db_stmt%ctx)
-            if (stat /= SQLITE_OK) return
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
+            if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt%ctx)
+            rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, observ)
         if (dm_is_error(rc)) return
@@ -6501,6 +6482,7 @@ contains
                 end do row_loop
 
                 if (present(nsensors)) nsensors = n
+                rc = E_NONE
             end block sql_block
 
             stat = sqlite3_finalize(stmt)
@@ -6525,13 +6507,13 @@ contains
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
         type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
 
-        if (.not. dm_db_prepared(db_stmt)) then
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS, db_stmt%ctx) /= SQLITE_OK) return
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS)
+            if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, sensor)
     end function db_select_sensors_iter
@@ -6601,6 +6583,7 @@ contains
             end do
 
             if (present(nsensors)) nsensors = n
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -6626,19 +6609,19 @@ contains
         character(len=*),   intent(in)    :: node_id !! Node id.
         type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
 
-        if (.not. dm_db_prepared(db_stmt)) then
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             rc = E_INVALID
             if (len_trim(node_id) == 0) return
 
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_SENSORS_BY_NODE, db_stmt%ctx) /= SQLITE_OK) return
+            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS_BY_NODE)
+            if (dm_is_error(rc)) return
 
             rc = E_DB_BIND
             if (sqlite3_bind_text(db_stmt%ctx, 1, trim(node_id)) /= SQLITE_OK) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, sensor)
     end function db_select_sensors_by_node_iter
@@ -6753,6 +6736,8 @@ contains
                 syncs(i)%type = type
                 if (dm_is_error(rc)) exit
             end do
+
+            rc = E_NONE
         end block sql_block
 
         stat = sqlite3_finalize(stmt)
@@ -6806,6 +6791,7 @@ contains
                 end do
 
                 if (present(ntargets)) ntargets = n
+                rc = E_NONE
             end block sql_block
 
             stat = sqlite3_finalize(stmt)
@@ -6830,14 +6816,23 @@ contains
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
         type(target_type),  intent(out)   :: target  !! Target data.
 
-        if (.not. dm_db_prepared(db_stmt)) then
-            rc = E_DB_PREPARE
-            if (sqlite3_prepare_v2(db%ctx, SQL_SELECT_TARGETS, db_stmt%ctx) /= SQLITE_OK) return
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            rc = db_prepare(db, db_stmt, SQL_SELECT_TARGETS)
+            if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = db_step(db_stmt)
+        if (dm_is_error(rc)) return
 
         rc = db_next_row(db_stmt%ctx, target)
     end function db_select_targets_iter
+
+    integer function db_step(db_stmt) result(rc)
+        !! Steps rows. Returns `E_DB_NO_ROWS` on error.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+
+        rc = E_DB_NO_ROWS
+        if (sqlite3_step(db_stmt%ctx) /= SQLITE_ROW) return
+        rc = E_NONE
+    end function db_step
 end module dm_db

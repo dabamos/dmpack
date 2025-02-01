@@ -240,6 +240,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_csv.f90 \
       $(SRCDIR)/dm_db.f90 \
       $(SRCDIR)/dm_db_query.f90 \
+      $(SRCDIR)/dm_db_stmt.f90 \
       $(SRCDIR)/dm_dp.f90 \
       $(SRCDIR)/dm_env.f90 \
       $(SRCDIR)/dm_error.f90 \
@@ -338,6 +339,7 @@ OBJ = dm_ansi.o \
       dm_csv.o \
       dm_db.o \
       dm_db_query.o \
+      dm_db_stmt.o \
       dm_dp.o \
       dm_env.o \
       dm_error.o \
@@ -609,6 +611,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_stmt.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_query.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zlib.f90
@@ -1185,20 +1188,21 @@ options:
 	@echo "LDFLAGS    = $(LDFLAGS)"
 	@echo "LDLIBS     = $(LDLIBS)"
 	@echo "INCHDF5    = $(INCHDF5)"
-	@echo "LIBCURL    = $(LIBCURL)"
 	@echo "LIBCRYPTO  = $(LIBCRYPTO)"
+	@echo "LIBCURL    = $(LIBCURL)"
 	@echo "LIBFASTCGI = $(LIBFASTCGI)"
 	@echo "LIBHDF5    = $(LIBHDF5)"
 	@echo "LIBLAPACK  = $(LIBLAPACK)"
 	@echo "LIBLUA54   = $(LIBLUA54)"
+	@echo "LIBMODBUS  = $(LIBMODBUS)"
 	@echo "LIBPCRE2   = $(LIBPCRE2)"
 	@echo "LIBPTHREAD = $(LIBPTHREAD)"
 	@echo "LIBRT      = $(LIBRT)"
-	@echo "LIBSTROPHE = $(LIBSTROPHE)"
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
+	@echo "LIBSTROPHE = $(LIBSTROPHE)"
+	@echo "LIBZ       = $(LIBZ)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
-	@echo "LIBZ       = $(LIBZ)"
 
 # ******************************************************************************
 #
