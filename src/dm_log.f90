@@ -5,15 +5,15 @@ module dm_log
     !!
     !! The following log levels are supported:
     !!
-    !! | Level | String     | Description                                  |
-    !! |-------|------------|----------------------------------------------|
-    !! | 0     | `none`     | Invalid log level (unused).                  |
-    !! | 1     | `debug`    | Debug messages.                              |
-    !! | 2     | `info`     | Hint message.                                |
-    !! | 3     | `warning`  | Warning message.                             |
-    !! | 4     | `error`    | Non-critical error message.                  |
-    !! | 5     | `critical` | Critical error message (not used by DMPACK). |
-    !! | 6     | `user`     | User-defined level (not used by DMPACK).     |
+    !! | Level | String     | Description                               |
+    !! |-------|------------|-------------------------------------------|
+    !! | 0     | `none`     | invalid log level (unused)                |
+    !! | 1     | `debug`    | debug level                               |
+    !! | 2     | `info`     | hint level                                |
+    !! | 3     | `warning`  | warning level                             |
+    !! | 4     | `error`    | non-critical error level                  |
+    !! | 5     | `critical` | critical error level (not used by DMPACK) |
+    !! | 6     | `user`     | user-defined level (not used by DMPACK)   |
     !!
     !! Log level _critical_ is reserved for monitoring events and not used by
     !! DMPACK internally. Level _user_ is reserved for user-defined events and

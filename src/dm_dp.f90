@@ -9,6 +9,8 @@ module dm_dp
     implicit none (type, external)
     private
 
+    character(len=*), parameter :: FMT_XY = '(a32, 1x, f25.8)'
+
     type, public :: dp_type
         !! Data point type that contains a timestamp and an associated value,
         !! like a single response of an observation or a single data point of
@@ -70,6 +72,6 @@ contains
         !! and `y` are separated by white space.
         type(dp_type), intent(in) :: dp !! Data point type.
 
-        write (str, '(a32, 1x, f25.8)') dp%x, dp%y
+        write (str, FMT_XY) dp%x, dp%y
     end function dm_dp_to_string
 end module dm_dp

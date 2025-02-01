@@ -119,39 +119,39 @@ contains
         rc = dm_mqueue_open(mqueue1, TYPE_OBSERV, MQ_NAME, MQUEUE_WRONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'WRITER: Created message queue "' // MQ_NAME // '"'
+        print *, '[WRITER] Created message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_open(mqueue2, TYPE_OBSERV, MQ_NAME, MQUEUE_RDONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'READER: Created message queue "' // MQ_NAME // '"'
+        print *, '[READER] Created message queue "' // MQ_NAME // '"'
 
         call dm_test_dummy(observ1)
 
         rc = dm_mqueue_write(mqueue1, observ1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'WRITER: Sent message to queue "' // MQ_NAME // '"'
+        print *, '[WRITER] Sent message to queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_read(mqueue2, observ2)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'READER: Received message from queue "' // MQ_NAME // '"'
+        print *, '[READER] Received message from queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_close(mqueue1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'WRITER: Closed message queue "' // MQ_NAME // '"'
+        print *, '[WRITER] Closed message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_close(mqueue2)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'READER: Closed message queue "' // MQ_NAME // '"'
+        print *, '[READER] Closed message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_unlink(mqueue1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, 'WRITER: Unlinked message queue "' // MQ_NAME // '"'
+        print *, '[WRITER] Unlinked message queue "' // MQ_NAME // '"'
 
         print *, 'Validating observation data ...'
         if (.not. (observ1 == observ2)) return

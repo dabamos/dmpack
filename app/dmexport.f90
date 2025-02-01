@@ -59,8 +59,7 @@ contains
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
 
-        is_file = .false.
-        if (len_trim(app%output) > 0 .and. app%output /= '-') is_file = .true.
+        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
 
         rc = dm_db_open(db, app%database, read_only=.true., validate=.true.)
 
