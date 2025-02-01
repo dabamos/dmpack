@@ -1,39 +1,64 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_ve
-    !! VE.Direct protocol abstraction layer, for Maximum Power Point Tracking
-    !! (MPPT) chargers made by Victron Energy.
+    !! VE.Direct (TTL) protocol abstraction layer, for Maximum Power Point
+    !! Tracking (MPPT) solar charge controllers and battery monitors made by
+    !! Victron Energy. This module supports:
     !!
-    !! The following MPPT series are compatible:
+    !! * BlueSolar MPPT series,
+    !! * SmartSolar MPPT series,
+    !! * SmartShunt.
     !!
-    !! * BlueSolar MPPT
-    !! * SmartSolar MPPT
+    !! The following VE.Direct fields are captured:
     !!
-    !! The module has been tested with SmartSolar MPPT 250/60.
-    !!
-    !! Only MPPT-specific fields are supported by this module:
-    !!
-    !! | Name    | Description                            |
-    !! |---------|----------------------------------------|
-    !! | `CS`    | State of operation.                    |
-    !! | `ERR`   | Error code.                            |
-    !! | `FW`    | Firmware version (16 bit).             |
-    !! | `H19`   | Yield total (user resettable counter). |
-    !! | `H20`   | Yield today.                           |
-    !! | `H21`   | Maximum power today.                   |
-    !! | `H22`   | Yield yesterday.                       |
-    !! | `H23`   | Maximum power yesterday.               |
-    !! | `HSDS`  | Day sequence number (0 to 364).        |
-    !! | `I`     | Main or channel 1 battery current.     |
-    !! | `IL`    | Load current.                          |
-    !! | `LOAD`  | Load output state (`ON`/`OFF`).        |
-    !! | `MPPT`  | Tracker operation mode.                |
-    !! | `OR`    | Off reason (hexadecimal).              |
-    !! | `PID`   | Product ID (hexadecimal).              |
-    !! | `PPV`   | Panel power.                           |
-    !! | `Relay` | Relay state (`ON`/`OFF`).              |
-    !! | `V`     | Main or channel 1 (battery) voltage.   |
-    !! | `VPV`   | Panel voltage.                         |
+    !! | Name    | Unit    | Description                               | MPPT | Shunt |
+    !! |---------|---------|-------------------------------------------|------|-------|
+    !! | `Alarm` | –       | Alarm condition active (ON/OFF).          |      |   ✓   |
+    !! | `AR`    | –       | Alarm reason (decimal).                   |      |   ✓   |
+    !! | `CE`    | mAh     | Consumed amp hours.                       |      |   ✓   |
+    !! | `CS`    | –       | State of operation.                       |  ✓   |       |
+    !! | `DM`    | %/10    | Mid-point deviation of the battery bank.  |      |   ✓   |
+    !! | `ERR`   | –       | Error code.                               |  ✓   |       |
+    !! | `FW`    | –       | Firmware version (16 bit).                |  ✓   |   ✓   |
+    !! | `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓   |
+    !! | `H2`    | mAh     | Depth of the last discharge.              |      |   ✓   |
+    !! | `H3`    | mAh     | Depth of the average discharge.           |      |   ✓   |
+    !! | `H4`    | –       | Number of charge cycles.                  |      |   ✓   |
+    !! | `H5`    | –       | Number of full discharges.                |      |   ✓   |
+    !! | `H6`    | mAh     | Cumulative amp hours drawn.               |      |   ✓   |
+    !! | `H7`    | mV      | Minimum main (battery) voltage.           |      |   ✓   |
+    !! | `H8`    | mV      | Maximum main (battery) voltage.           |      |   ✓   |
+    !! | `H9`    | sec     | Number of seconds since last full charge. |      |   ✓   |
+    !! | `H10`   | –       | Number of automatic synchronisations.     |      |   ✓   |
+    !! | `H11`   | –       | Number of low main voltage alarms.        |      |   ✓   |
+    !! | `H12`   | –       | Number of high main voltage alarms.       |      |   ✓   |
+    !! | `H15`   | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `H16`   | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `H17`   | kWh/100 | Amount of produced energy.                |      |   ✓   |
+    !! | `H18`   | kWh/100 | Amount of consumed energy.                |      |   ✓   |
+    !! | `H19`   | kWh/100 | Yield total (user resettable counter).    |  ✓   |       |
+    !! | `H20`   | kWh/100 | Yield today.                              |  ✓   |       |
+    !! | `H21`   | W       | Maximum power today.                      |  ✓   |       |
+    !! | `H22`   | kWh/100 | Yield yesterday.                          |  ✓   |       |
+    !! | `H23`   | W       | Maximum power yesterday.                  |  ✓   |       |
+    !! | `HSDS`  | –       | Day sequence number (0 to 364).           |  ✓   |       |
+    !! | `I`     | mA      | Main or channel 1 battery current.        |  ✓   |   ✓   |
+    !! | `IL`    | mA      | Load current.                             |  ✓   |       |
+    !! | `LOAD`  | –       | Load output state (ON/OFF).               |  ✓   |       |
+    !! | `MON`   | –       | DC monitor mode.                          |      |   ✓   |
+    !! | `MPPT`  | –       | Tracker operation mode.                   |  ✓   |       |
+    !! | `OR`    | –       | Off reason (hexadecimal).                 |  ✓   |       |
+    !! | `P`     | W       | Instantaneous power.                      |      |   ✓   |
+    !! | `PID`   | –       | Product ID (hexadecimal).                 |  ✓   |   ✓   |
+    !! | `PPV`   | W       | Panel power.                              |  ✓   |       |
+    !! | `Relay` | –       | Relay state (ON/OFF).                     |  ✓   |   ✓   |
+    !! | `SOC`   | %/10    | State-of-charge.                          |      |   ✓   |
+    !! | `T`     | degC    | Battery temperature.                      |      |   ✓   |
+    !! | `TTG`   | min     | Time-to-go.                               |      |   ✓   |
+    !! | `V`     | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
+    !! | `VM`    | mV      | Mid-point voltage of the battery bank.    |      |   ✓   |
+    !! | `VPV`   | mV      | Panel voltage.                            |  ✓   |       |
+    !! | `VS`    | mV      | Auxiliary (starter) voltage.              |      |   ✓   |
     !!
     !! The TTY has to be configured to these serial port parameters:
     !!
@@ -41,9 +66,9 @@ module dm_ve
     !! |--------------|-------|
     !! | Baud rate    | 19200 |
     !! | Data bits    | 8     |
-    !! | Parity       | none  |
+    !! | Parity       | –     |
     !! | Stop bits    | 1     |
-    !! | Flow control | none  |
+    !! | Flow control | –     |
     !!
     !! The device transmits blocks of data at 1 second intervals. Each field is
     !! sent using the following format:
@@ -81,6 +106,24 @@ module dm_ve
     !! itself. This means that once a condition has occurred, the value will be
     !! `ON` until all alarm conditions have cleared; regardless of whether or
     !! not a button has been pressed to silence the buzzer.
+    !!
+    !! ## AR
+    !!
+    !! Alarm reason; this field describes the cause of the alarm. Since
+    !! multiple alarm conditions can be present at the same time the values of
+    !! the separate alarm conditions are added. The value total is sent in
+    !! decimal notation.
+    !!
+    !! | Value | Description          |
+    !! |-------|----------------------|
+    !! | 1     | low voltage          |
+    !! | 2     | high voltage         |
+    !! | 4     | low SOC              |
+    !! | 8     | low starter voltage  |
+    !! | 16    | high starter voltage |
+    !! | 32    | low temperature      |
+    !! | 64    | high temperature     |
+    !! | 128   | mid voltage          |
     !!
     !! ## CS
     !!
@@ -228,9 +271,17 @@ module dm_ve
     implicit none (type, external)
     private
 
+    ! Supported Victron Energy devices.
     integer, parameter, public :: VE_DEVICE_NONE  = 0 !! No device (invalid).
-    integer, parameter, public :: VE_DEVICE_MPPT  = 1 !! MPPT.
+    integer, parameter, public :: VE_DEVICE_MPPT  = 1 !! BlueSolar and SmartSolar MPPT.
     integer, parameter, public :: VE_DEVICE_SHUNT = 2 !! SmartShunt (SS).
+    integer, parameter, public :: VE_DEVICE_LAST  = 2 !! Never use this
+
+    integer, parameter, public :: VE_DEVICE_NAME_LEN = 5 !! Max. device name length.
+
+    character(len=*), parameter, public :: VE_DEVICE_NAMES(VE_DEVICE_NONE:VE_DEVICE_LAST) = [ &
+        character(len=VE_DEVICE_NAME_LEN) :: 'none', 'mppt', 'shunt' &
+    ] !! Device names.
 
     ! Character lenghts.
     integer, parameter, public :: VE_LABEL_LEN = 8                 !! Max. field label length (minus newline).
@@ -273,52 +324,52 @@ module dm_ve
 
     ! Supported VE.Direct field types.
     integer, parameter, public :: VE_FIELD_NONE  = 0  !! None (invalid).
-    integer, parameter, public :: VE_FIELD_ALARM = 1  !! [     SS] Alarm condition active (ON/OFF).
-    integer, parameter, public :: VE_FIELD_AR    = 2  !! [     SS] Alarm reason (decimal).
-    integer, parameter, public :: VE_FIELD_CE    = 3  !! [     SS] Consumed amp hours.
-    integer, parameter, public :: VE_FIELD_CS    = 4  !! [MPPT   ] State of operation.
-    integer, parameter, public :: VE_FIELD_DM    = 5  !! [     SS] Mid-point deviation of the battery bank.
-    integer, parameter, public :: VE_FIELD_ERR   = 6  !! [MPPT   ] Error code.
-    integer, parameter, public :: VE_FIELD_FW    = 7  !! [MPPT SS] Firmware version (16 bit).
-    integer, parameter, public :: VE_FIELD_H1    = 8  !! [     SS] Depth of the deepest discharge.
-    integer, parameter, public :: VE_FIELD_H2    = 9  !! [     SS] Depth of the last discharge.
-    integer, parameter, public :: VE_FIELD_H3    = 10 !! [     SS] Depth of the average discharge.
-    integer, parameter, public :: VE_FIELD_H4    = 11 !! [     SS] Number of charge cycles.
-    integer, parameter, public :: VE_FIELD_H5    = 12 !! [     SS] Number of full discharges.
-    integer, parameter, public :: VE_FIELD_H6    = 13 !! [     SS] Cumulative amp hours drawn
-    integer, parameter, public :: VE_FIELD_H7    = 14 !! [     SS] Minimum main (battery) voltage.
-    integer, parameter, public :: VE_FIELD_H8    = 15 !! [     SS] Maximum main (battery) voltage.
-    integer, parameter, public :: VE_FIELD_H9    = 16 !! [     SS] Number of seconds since last full charge.
-    integer, parameter, public :: VE_FIELD_H10   = 17 !! [     SS] Number of automatic synchronisations.
-    integer, parameter, public :: VE_FIELD_H11   = 18 !! [     SS] Number of low main voltage alarms.
-    integer, parameter, public :: VE_FIELD_H12   = 19 !! [     SS] Number of high main voltage alarms.
-    integer, parameter, public :: VE_FIELD_H15   = 20 !! [     SS] Minimum auxiliary (battery) voltage.
-    integer, parameter, public :: VE_FIELD_H16   = 21 !! [     SS] Maximum auxiliary (battery) voltage.
-    integer, parameter, public :: VE_FIELD_H17   = 22 !! [     SS] Amount of produced energy.
-    integer, parameter, public :: VE_FIELD_H18   = 23 !! [     SS] Amount of consumed energy.
-    integer, parameter, public :: VE_FIELD_H19   = 24 !! [MPPT   ] Yield total (user resettable counter).
-    integer, parameter, public :: VE_FIELD_H20   = 25 !! [MPPT   ] Yield today.
-    integer, parameter, public :: VE_FIELD_H21   = 26 !! [MPPT   ] Maximum power today.
-    integer, parameter, public :: VE_FIELD_H22   = 27 !! [MPPT   ] Yield yesterday.
-    integer, parameter, public :: VE_FIELD_H23   = 28 !! [MPPT   ] Maximum power yesterday.
-    integer, parameter, public :: VE_FIELD_HSDS  = 29 !! [MPPT   ] Day sequence number (0 to 364).
-    integer, parameter, public :: VE_FIELD_I     = 30 !! [MPPT SS] Main or channel 1 battery current.
-    integer, parameter, public :: VE_FIELD_IL    = 31 !! [MPPT   ] Load current.
-    integer, parameter, public :: VE_FIELD_LOAD  = 32 !! [MPPT   ] Load output state (ON/OFF).
-    integer, parameter, public :: VE_FIELD_MON   = 33 !! [     SS] DC monitor mode.
-    integer, parameter, public :: VE_FIELD_MPPT  = 34 !! [MPPT   ] Tracker operation mode.
-    integer, parameter, public :: VE_FIELD_OR    = 35 !! [MPPT   ] Off reason (hexadecimal).
-    integer, parameter, public :: VE_FIELD_P     = 36 !! [     SS] Instantaneous power.
-    integer, parameter, public :: VE_FIELD_PID   = 37 !! [MPPT SS] Product ID (hexadecimal).
-    integer, parameter, public :: VE_FIELD_PPV   = 38 !! [MPPT   ] Panel power.
-    integer, parameter, public :: VE_FIELD_RELAY = 39 !! [MPPT   ] Relay state (ON/OFF).
-    integer, parameter, public :: VE_FIELD_SOC   = 40 !! [     SS] State-of-charge.
-    integer, parameter, public :: VE_FIELD_T     = 41 !! [     SS] Battery temperature.
-    integer, parameter, public :: VE_FIELD_TTG   = 42 !! [     SS] Time-to-go.
-    integer, parameter, public :: VE_FIELD_V     = 43 !! [MPPT SS] Main or channel 1 (battery) voltage.
-    integer, parameter, public :: VE_FIELD_VM    = 44 !! [     SS] Mid-point voltage of the battery bank.
-    integer, parameter, public :: VE_FIELD_VPV   = 45 !! [MPPT   ] Panel voltage.
-    integer, parameter, public :: VE_FIELD_VS    = 46 !! [     SS] Auxiliary (starter) voltage.
+    integer, parameter, public :: VE_FIELD_ALARM = 1  !! [      SS ] Alarm condition active (ON/OFF).
+    integer, parameter, public :: VE_FIELD_AR    = 2  !! [      SS ] Alarm reason (decimal).
+    integer, parameter, public :: VE_FIELD_CE    = 3  !! [      SS ] Consumed amp hours.
+    integer, parameter, public :: VE_FIELD_CS    = 4  !! [ MPPT    ] State of operation.
+    integer, parameter, public :: VE_FIELD_DM    = 5  !! [      SS ] Mid-point deviation of the battery bank.
+    integer, parameter, public :: VE_FIELD_ERR   = 6  !! [ MPPT    ] Error code.
+    integer, parameter, public :: VE_FIELD_FW    = 7  !! [ MPPT SS ] Firmware version (16 bit).
+    integer, parameter, public :: VE_FIELD_H1    = 8  !! [      SS ] Depth of the deepest discharge.
+    integer, parameter, public :: VE_FIELD_H2    = 9  !! [      SS ] Depth of the last discharge.
+    integer, parameter, public :: VE_FIELD_H3    = 10 !! [      SS ] Depth of the average discharge.
+    integer, parameter, public :: VE_FIELD_H4    = 11 !! [      SS ] Number of charge cycles.
+    integer, parameter, public :: VE_FIELD_H5    = 12 !! [      SS ] Number of full discharges.
+    integer, parameter, public :: VE_FIELD_H6    = 13 !! [      SS ] Cumulative amp hours drawn
+    integer, parameter, public :: VE_FIELD_H7    = 14 !! [      SS ] Minimum main (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H8    = 15 !! [      SS ] Maximum main (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H9    = 16 !! [      SS ] Number of seconds since last full charge.
+    integer, parameter, public :: VE_FIELD_H10   = 17 !! [      SS ] Number of automatic synchronisations.
+    integer, parameter, public :: VE_FIELD_H11   = 18 !! [      SS ] Number of low main voltage alarms.
+    integer, parameter, public :: VE_FIELD_H12   = 19 !! [      SS ] Number of high main voltage alarms.
+    integer, parameter, public :: VE_FIELD_H15   = 20 !! [      SS ] Minimum auxiliary (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H16   = 21 !! [      SS ] Maximum auxiliary (battery) voltage.
+    integer, parameter, public :: VE_FIELD_H17   = 22 !! [      SS ] Amount of produced energy.
+    integer, parameter, public :: VE_FIELD_H18   = 23 !! [      SS ] Amount of consumed energy.
+    integer, parameter, public :: VE_FIELD_H19   = 24 !! [ MPPT    ] Yield total (user resettable counter).
+    integer, parameter, public :: VE_FIELD_H20   = 25 !! [ MPPT    ] Yield today.
+    integer, parameter, public :: VE_FIELD_H21   = 26 !! [ MPPT    ] Maximum power today.
+    integer, parameter, public :: VE_FIELD_H22   = 27 !! [ MPPT    ] Yield yesterday.
+    integer, parameter, public :: VE_FIELD_H23   = 28 !! [ MPPT    ] Maximum power yesterday.
+    integer, parameter, public :: VE_FIELD_HSDS  = 29 !! [ MPPT    ] Day sequence number (0 to 364).
+    integer, parameter, public :: VE_FIELD_I     = 30 !! [ MPPT SS ] Main or channel 1 battery current.
+    integer, parameter, public :: VE_FIELD_IL    = 31 !! [ MPPT    ] Load current.
+    integer, parameter, public :: VE_FIELD_LOAD  = 32 !! [ MPPT    ] Load output state (ON/OFF).
+    integer, parameter, public :: VE_FIELD_MON   = 33 !! [      SS ] DC monitor mode.
+    integer, parameter, public :: VE_FIELD_MPPT  = 34 !! [ MPPT    ] Tracker operation mode.
+    integer, parameter, public :: VE_FIELD_OR    = 35 !! [ MPPT    ] Off reason (hexadecimal).
+    integer, parameter, public :: VE_FIELD_P     = 36 !! [      SS ] Instantaneous power.
+    integer, parameter, public :: VE_FIELD_PID   = 37 !! [ MPPT SS ] Product ID (hexadecimal).
+    integer, parameter, public :: VE_FIELD_PPV   = 38 !! [ MPPT    ] Panel power.
+    integer, parameter, public :: VE_FIELD_RELAY = 39 !! [ MPPT SS ] Relay state (ON/OFF).
+    integer, parameter, public :: VE_FIELD_SOC   = 40 !! [      SS ] State-of-charge.
+    integer, parameter, public :: VE_FIELD_T     = 41 !! [      SS ] Battery temperature.
+    integer, parameter, public :: VE_FIELD_TTG   = 42 !! [      SS ] Time-to-go.
+    integer, parameter, public :: VE_FIELD_V     = 43 !! [ MPPT SS ] Main or channel 1 (battery) voltage.
+    integer, parameter, public :: VE_FIELD_VM    = 44 !! [      SS ] Mid-point voltage of the battery bank.
+    integer, parameter, public :: VE_FIELD_VPV   = 45 !! [ MPPT    ] Panel voltage.
+    integer, parameter, public :: VE_FIELD_VS    = 46 !! [      SS ] Auxiliary (starter) voltage.
     integer, parameter, public :: VE_FIELD_LAST  = 46 !! Never use this.
 
     ! VE.Direct default fields (MPPT only).
@@ -373,6 +424,8 @@ module dm_ve
         ve_field_type('VS',    'vs',    'mV',      RESPONSE_TYPE_INT32)    &
     ] !! Predefined fields.
 
+    public :: dm_ve_device_from_name
+    public :: dm_ve_device_is_valid
     public :: dm_ve_error_message
     public :: dm_ve_field_label
     public :: dm_ve_field_type
@@ -384,6 +437,31 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    pure elemental integer function dm_ve_device_from_name(name) result(device)
+        !! Returns device enumerator from given name. If the argument is not a
+        !! valid device, the function returns `VE_DEVICE_NONE`.
+        use :: dm_string, only: dm_to_lower
+
+        character(len=*), intent(in)      :: name !! Device name.
+        character(len=VE_DEVICE_NAME_LEN) :: name_
+
+        ! Normalise name.
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case (VE_DEVICE_NAMES(VE_DEVICE_MPPT));  device = VE_DEVICE_MPPT
+            case (VE_DEVICE_NAMES(VE_DEVICE_SHUNT)); device = VE_DEVICE_SHUNT
+            case default;                            device = VE_DEVICE_NONE
+        end select
+    end function dm_ve_device_from_name
+
+    pure elemental logical function dm_ve_device_is_valid(device) result(is)
+        !! Returns `.true.` if given VE device enumerator is valid.
+        integer, intent(in) :: device !! Device enumerator.
+
+        is = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
+    end function dm_ve_device_is_valid
+
     pure function dm_ve_error_message(code) result(message)
         !! Returns message associated with given VE.Direct error code.
         use :: dm_util, only: dm_itoa
@@ -392,23 +470,23 @@ contains
         character(len=:), allocatable :: message !! VE.Direct error code message.
 
         select case (code)
-            case (0);     message = 'no error'
-            case (2);     message = 'battery voltage too high'
-            case (17);    message = 'charger temperature too high'
-            case (18);    message = 'charger over current'
-            case (19);    message = 'charger current reversed'
-            case (20);    message = 'bulk time limit exceeded'
-            case (21);    message = 'current sensor issue (sensor bias/sensor broken)'
-            case (26);    message = 'terminals overheated'
-            case (28);    message = 'converter issue (dual converter models only)'
-            case (33);    message = 'input voltage too high (solar panel)'
-            case (34);    message = 'input current too high (solar panel)'
-            case (38);    message = 'input shutdown (due to excessive battery voltage)'
-            case (39);    message = 'input shutdown (due to current flow during off mode)'
-            case (65);    message = 'lost communication with one of devices'
-            case (66);    message = 'synchronised charging device configuration issue'
-            case (67);    message = 'BMS connection lost'
-            case (68);    message = 'network misconfigured'
+            case (  0);   message = 'no error'
+            case (  2);   message = 'battery voltage too high'
+            case ( 17);   message = 'charger temperature too high'
+            case ( 18);   message = 'charger over current'
+            case ( 19);   message = 'charger current reversed'
+            case ( 20);   message = 'bulk time limit exceeded'
+            case ( 21);   message = 'current sensor issue (sensor bias/sensor broken)'
+            case ( 26);   message = 'terminals overheated'
+            case ( 28);   message = 'converter issue (dual converter models only)'
+            case ( 33);   message = 'input voltage too high (solar panel)'
+            case ( 34);   message = 'input current too high (solar panel)'
+            case ( 38);   message = 'input shutdown (due to excessive battery voltage)'
+            case ( 39);   message = 'input shutdown (due to current flow during off mode)'
+            case ( 65);   message = 'lost communication with one of devices'
+            case ( 66);   message = 'synchronised charging device configuration issue'
+            case ( 67);   message = 'BMS connection lost'
+            case ( 68);   message = 'network misconfigured'
             case (116);   message = 'factory calibration data lost'
             case (117);   message = 'invalid/incompatible firmware'
             case (119);   message = 'user settings invalid'

@@ -2,12 +2,12 @@
 .\"     Title: dmved
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-01-29
+.\"      Date: 2025-02-01
 .\"    Manual: User Commands
 .\"    Source: DMVED
 .\"  Language: English
 .\"
-.TH "DMVED" "1" "2025-01-29" "DMVED" "User Commands"
+.TH "DMVED" "1" "2025-02-01" "DMVED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -41,21 +41,127 @@ dmved \- reads status of connected Victron Energy MPPT charger
 .SH "DESCRIPTION"
 .sp
 This program captures status data received from a connected Maximum Power Point
-Tracking (MPPT) charger by Victron Energy, using the VE.Direct protocol. Only
-the BlueSolar and SmartSolar MPPT series are currently supported. The serial
-port will be configured to 19200 baud (8N1). Observations are sent to the
-receiver via message queue in the specified interval.
+Tracking (MPPT) solar charge controller or SmartShunt battery monitor by
+Victron Energy, using the VE.Direct protocol. Only the BlueSolar/SmartSolar
+MPPT series and the SmartShunt monitor are supported. The serial port will be
+configured to 19200 baud (8N1). Observations are sent to the receiver via
+message queue in the specified interval.
 .sp
-The following 16 VE.Direct fields are captured:
+The following VE.Direct fields are captured, depending on the device:
+.sp
+Alarm
+.RS 4
+Alarm condition active (on/off).
+.RE
+.sp
+AR
+.RS 4
+Alarm reason.
+.RE
+.sp
+CE
+.RS 4
+Consumed amp hours (mAh).
+.RE
 .sp
 CS
 .RS 4
 State of operation.
 .RE
 .sp
+DM
+.RS 4
+Mid\-point deviation of the battery bank (%/10).
+.RE
+.sp
 ERR
 .RS 4
 Error code.
+.RE
+.sp
+FW
+.RS 4
+Firmware version (16 bit).
+.RE
+.sp
+H1
+.RS 4
+Depth of the deepest discharge (mAh).
+.RE
+.sp
+H2
+.RS 4
+Depth of the last discharge (mAh).
+.RE
+.sp
+H3
+.RS 4
+Depth of the average discharge (mAh).
+.RE
+.sp
+H4
+.RS 4
+Number of charge cycles.
+.RE
+.sp
+H5
+.RS 4
+Number of full discharges.
+.RE
+.sp
+H6
+.RS 4
+Cumulative amp hours drawn (mAh).
+.RE
+.sp
+H7
+.RS 4
+Minimum main (battery) voltage (mV).
+.RE
+.sp
+H8
+.RS 4
+Maximum main (battery) voltage (mV).
+.RE
+.sp
+H9
+.RS 4
+Number of seconds since last full charge (sec).
+.RE
+.sp
+H10
+.RS 4
+Number of automatic synchronisations.
+.RE
+.sp
+H11
+.RS 4
+Number of low main voltage alarms.
+.RE
+.sp
+H12
+.RS 4
+Number of high main voltage alarms.
+.RE
+.sp
+H15
+.RS 4
+Minimum auxiliary (battery) voltage (mV).
+.RE
+.sp
+H16
+.RS 4
+Maximum auxiliary (battery) voltage (mV).
+.RE
+.sp
+H17
+.RS 4
+Amount of produced energy (kWh/100).
+.RE
+.sp
+H18
+.RS 4
+Amount of consumed energy (kWh/100).
 .RE
 .sp
 H19
@@ -100,7 +206,12 @@ Load current (mA).
 .sp
 LOAD
 .RS 4
-Load output state (on or off).
+Load output state (on/off).
+.RE
+.sp
+MON
+.RS 4
+DC monitor mode.
 .RE
 .sp
 MPPT
@@ -110,7 +221,17 @@ Tracker operation mode.
 .sp
 OR
 .RS 4
-Off\-state reason.
+Off reason.
+.RE
+.sp
+P
+.RS 4
+Instantaneous power (W).
+.RE
+.sp
+PID
+.RS 4
+Product ID.
 .RE
 .sp
 PPV
@@ -118,15 +239,47 @@ PPV
 Panel power (W).
 .RE
 .sp
+Relay
+.RS 4
+Relay state (on/off).
+.RE
+.sp
+SOC
+.RS 4
+State\-of\-charge (%/10).
+.RE
+.sp
+T
+.RS 4
+Battery temperature (degrees Celsius).
+.RE
+.sp
+TTG
+.RS 4
+Time\-to\-go (min).
+.RE
+.sp
 V
 .RS 4
 Main or channel 1 (battery) voltage (mV).
+.RE
+.sp
+VM
+.RS 4
+Mid\-point voltage of the battery bank (mV).
 .RE
 .sp
 VPV
 .RS 4
 Panel voltage (mV).
 .RE
+.sp
+VS
+.RS 4
+Auxiliary (starter) voltage (mV).
+.RE
+.sp
+The response names equal the field names in lower\-case.
 .SH "OPTIONS"
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -137,6 +290,11 @@ File path to the configuration file.
 \fB\-\-debug\fP, \fB\-D\fP
 .RS 4
 Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-device\fP, \fB\-d\fP [mppt|shunt]
+.RS 4
+Connected device, either MPPT or SmartShunt.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

@@ -3,7 +3,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmved
-    !! VE.Direct protocol logger for MPPT solar chargers by Victron Energy.
+    !! VE.Direct protocol logger for MPPT solar chargers and SmartShunt battery
+    !! monitors by Victron Energy.
     use :: dmpack
     implicit none (type, external)
 
@@ -16,17 +17,19 @@ program dmved
 
     type :: app_type
         !! Command-line arguments.
-        character(len=ID_LEN)              :: name      = APP_NAME !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)       :: config    = ' '      !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)     :: logger    = ' '      !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node_id   = ' '      !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor_id = ' '      !! Sensor id (required).
-        character(len=TARGET_ID_LEN)       :: target_id = ' '      !! Target id (required).
-        character(len=FILE_PATH_LEN)       :: path      = ' '      !! Path of TTY/PTY device (required).
-        character(len=OBSERV_RECEIVER_LEN) :: receiver  = ' '      !! Name of receiver's message queue (without leading `/`).
-        integer                            :: interval  = 60       !! Emit interval in seconds (>= 0).
-        logical                            :: debug     = .false.  !! Forward debug messages via IPC.
-        logical                            :: verbose   = .false.  !! Print debug messages to stderr (optional).
+        character(len=ID_LEN)              :: name        = APP_NAME       !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)       :: config      = ' '            !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN)     :: logger      = ' '            !! Name of logger.
+        character(len=NODE_ID_LEN)         :: node_id     = ' '            !! Node id (required).
+        character(len=SENSOR_ID_LEN)       :: sensor_id   = ' '            !! Sensor id (required).
+        character(len=TARGET_ID_LEN)       :: target_id   = ' '            !! Target id (required).
+        character(len=FILE_PATH_LEN)       :: path        = ' '            !! Path of TTY/PTY device (required).
+        character(len=OBSERV_RECEIVER_LEN) :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
+        character(len=VE_DEVICE_NAME_LEN)  :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
+        integer                            :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
+        integer                            :: interval    = 60             !! Emit interval in seconds (>= 0).
+        logical                            :: debug       = .false.        !! Forward debug messages via IPC.
+        logical                            :: verbose     = .false.        !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -61,7 +64,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(11)
+        type(arg_type)              :: args(12)
 
         ! Required and optional command-line arguments.
         args = [ &
@@ -72,7 +75,8 @@ contains
             arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
             arg_type('target',   short='T', type=ARG_TYPE_ID),      & ! -T, --target <string>
             arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
-            arg_type('receiver', short='r', type=ARG_TYPE_ID, max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
+            arg_type('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
+            arg_type('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN),  & ! -r, --receiver <string>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
             arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
             arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
@@ -96,14 +100,22 @@ contains
         call dm_arg_get(args( 6), app%target_id)
         call dm_arg_get(args( 7), app%path)
         call dm_arg_get(args( 8), app%receiver)
-        call dm_arg_get(args( 9), app%interval)
-        call dm_arg_get(args(10), app%debug)
-        call dm_arg_get(args(11), app%verbose)
+        call dm_arg_get(args( 9), app%device_name)
+        call dm_arg_get(args(10), app%interval)
+        call dm_arg_get(args(11), app%debug)
+        call dm_arg_get(args(12), app%verbose)
+
+        app%device = dm_ve_device_from_name(app%device_name)
 
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
             return
         end if
 
@@ -132,8 +144,8 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
+        if (.not. dm_ve_device_is_valid(app%device)) then
+            call dm_error_out(rc, 'invalid device')
             return
         end if
 
@@ -162,6 +174,7 @@ contains
             call dm_config_get(config, 'target',   app%target_id)
             call dm_config_get(config, 'path',     app%path)
             call dm_config_get(config, 'receiver', app%receiver)
+            call dm_config_get(config, 'device',   app%device_name)
             call dm_config_get(config, 'interval', app%interval)
             call dm_config_get(config, 'debug',    app%debug)
             call dm_config_get(config, 'verbose',  app%verbose)
@@ -206,6 +219,7 @@ contains
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
+
             call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 5 sec', error=rc)
             call dm_sleep(5)
         end do
@@ -237,7 +251,7 @@ contains
                         end if
                     end if
                 else
-                    call logger%debug('checksum error detected for VE.Direct block from TTY ' // app%path, error=E_CORRUPT)
+                    call logger%warning('checksum error detected, discarding block', error=E_CORRUPT)
                 end if
 
                 call dm_ve_frame_reset(frame)
@@ -245,8 +259,9 @@ contains
             end if
 
             if (eor) then
+                if (frame%label == 'BMV')  cycle tty_loop              ! Ignore deprecated model description.
                 if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number field.
-                if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Handle device error.
+                if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Save device error.
 
                 if (dm_ve_is_error(code)) then
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
@@ -255,7 +270,7 @@ contains
                 call dm_ve_frame_read(frame, response, field_type, error=rc)
 
                 if (dm_is_error(rc)) then
-                    call logger%debug('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
+                    call logger%warning('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
                     cycle tty_loop
                 end if
 
@@ -276,43 +291,93 @@ contains
         type(app_type),      intent(inout) :: app
         type(response_type), intent(inout) :: responses(:)
 
-        integer            :: rc
-        type(request_type) :: request
+        character(len=TIME_LEN) :: timestamp
+        integer                 :: rc
+        type(request_type)      :: request(2)
 
-        ! Prepare request.
-        request%name      = 'values'
-        request%timestamp = dm_time_now()
-        request%delay     = app%interval
-
-        rc = dm_request_add(request, responses(VE_FIELD_CS))
-        rc = dm_request_add(request, responses(VE_FIELD_ERR))
-        rc = dm_request_add(request, responses(VE_FIELD_H19))
-        rc = dm_request_add(request, responses(VE_FIELD_H20))
-        rc = dm_request_add(request, responses(VE_FIELD_H21))
-        rc = dm_request_add(request, responses(VE_FIELD_H22))
-        rc = dm_request_add(request, responses(VE_FIELD_H23))
-        rc = dm_request_add(request, responses(VE_FIELD_HSDS))
-        rc = dm_request_add(request, responses(VE_FIELD_I))
-        rc = dm_request_add(request, responses(VE_FIELD_IL))
-        rc = dm_request_add(request, responses(VE_FIELD_LOAD))
-        rc = dm_request_add(request, responses(VE_FIELD_MPPT))
-        rc = dm_request_add(request, responses(VE_FIELD_OR))
-        rc = dm_request_add(request, responses(VE_FIELD_PPV))
-        rc = dm_request_add(request, responses(VE_FIELD_V))
-        rc = dm_request_add(request, responses(VE_FIELD_VPV))
+        timestamp = dm_time_now()
 
         ! Prepare observation.
-        rc = dm_observ_add_request(observ, request)
-        rc = dm_observ_add_receiver(observ, app%receiver)
-
         observ%id        = dm_uuid4()
         observ%node_id   = app%node_id
         observ%sensor_id = app%sensor_id
         observ%target_id = app%target_id
-        observ%name      = 've_direct'
-        observ%timestamp = request%timestamp
+        observ%timestamp = timestamp
         observ%source    = app%name
         observ%device    = trim(app%path)
+
+        rc = dm_observ_add_receiver(observ, app%receiver)
+
+        ! Prepare requests.
+        request(:)%name      = 'fields'
+        request(:)%timestamp = timestamp
+        request(:)%delay     = app%interval
+
+        select case (app%device)
+            case (VE_DEVICE_MPPT)
+                ! BlueSolar/SmartSolar MPPT.
+                observ%name = 'ved_mppt'
+
+                rc = dm_request_add(request(1), responses(VE_FIELD_CS))
+                rc = dm_request_add(request(1), responses(VE_FIELD_ERR))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H19))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H20))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H21))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H22))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H23))
+                rc = dm_request_add(request(1), responses(VE_FIELD_HSDS))
+                rc = dm_request_add(request(1), responses(VE_FIELD_I))
+                rc = dm_request_add(request(1), responses(VE_FIELD_IL))
+                rc = dm_request_add(request(1), responses(VE_FIELD_LOAD))
+                rc = dm_request_add(request(1), responses(VE_FIELD_MPPT))
+                rc = dm_request_add(request(1), responses(VE_FIELD_OR))
+                rc = dm_request_add(request(1), responses(VE_FIELD_PPV))
+                rc = dm_request_add(request(1), responses(VE_FIELD_V))
+                rc = dm_request_add(request(1), responses(VE_FIELD_VPV))
+
+                rc = dm_observ_add_request(observ, request(1))
+
+            case (VE_DEVICE_SHUNT)
+                ! SmartShunt battery monitor.
+                observ%name = 'ved_shunt'
+
+                rc = dm_request_add(request(1), responses(VE_FIELD_ALARM))
+                rc = dm_request_add(request(1), responses(VE_FIELD_AR))
+                rc = dm_request_add(request(1), responses(VE_FIELD_CE))
+                rc = dm_request_add(request(1), responses(VE_FIELD_DM))
+                rc = dm_request_add(request(1), responses(VE_FIELD_FW))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H1))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H2))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H3))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H4))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H5))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H6))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H7))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H8))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H9))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H10))
+                rc = dm_request_add(request(1), responses(VE_FIELD_H11))
+
+                rc = dm_request_add(request(2), responses(VE_FIELD_H12))
+                rc = dm_request_add(request(2), responses(VE_FIELD_H15))
+                rc = dm_request_add(request(2), responses(VE_FIELD_H16))
+                rc = dm_request_add(request(2), responses(VE_FIELD_H17))
+                rc = dm_request_add(request(2), responses(VE_FIELD_H18))
+                rc = dm_request_add(request(2), responses(VE_FIELD_I))
+                rc = dm_request_add(request(2), responses(VE_FIELD_MON))
+                rc = dm_request_add(request(2), responses(VE_FIELD_P))
+                rc = dm_request_add(request(2), responses(VE_FIELD_PID))
+                rc = dm_request_add(request(2), responses(VE_FIELD_RELAY))
+                rc = dm_request_add(request(2), responses(VE_FIELD_SOC))
+                rc = dm_request_add(request(2), responses(VE_FIELD_T))
+                rc = dm_request_add(request(2), responses(VE_FIELD_TTG))
+                rc = dm_request_add(request(2), responses(VE_FIELD_V))
+                rc = dm_request_add(request(2), responses(VE_FIELD_VM))
+                rc = dm_request_add(request(2), responses(VE_FIELD_VS))
+
+                rc = dm_observ_add_request(observ, request(1))
+                rc = dm_observ_add_request(observ, request(2))
+        end select
     end subroutine create_observ
 
     subroutine signal_callback(signum) bind(c)

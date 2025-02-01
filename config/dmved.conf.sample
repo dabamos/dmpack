@@ -1,15 +1,16 @@
 --
--- Example configuration file for dmved to read the MPPT status from Victron
--- Energy chargers, using the VE.Direct protocol.
---
--- A valid receiver is required in order to forward observations via message
--- queue.
+-- Example configuration file for dmved to read the status of a Victron
+-- Energy MPPT charger or SmartShunt battery monitor, using the VE.Direct
+-- protocol. A valid receiver is required in order to forward observations via
+-- message queue. Set the device to either `mppt` or `shunt`, depending on the
+-- connected device.
 --
 -- Rename table "dmved" to the instance name (parameter `--name`).
 --
 -- Settings:
 --
 --      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      device   - Connected device, either MPPT or SmartShunt (`mppt`, `shunt`).
 --      interval - Emit interval in seconds.
 --      logger   - Name of logger instance (implies log forwarding).
 --      node     - Node id (required).
@@ -22,6 +23,7 @@
 
 dmved = {
     logger = "",
+    device = "mppt",
     node = "dummy-node",
     sensor = "dummy-sensor",
     target = "dummy-target",

@@ -91,6 +91,7 @@ contains
             CR_LF // 'H23'      // ASCII_TAB // '29'          // &
             CR_LF // 'HSDS'     // ASCII_TAB // '25'          // &
             CR_LF // 'Checksum' // ASCII_TAB // char(229)
+        integer, parameter :: NBLOCKS = 5
 
         character           :: byte
         integer             :: code, i, j
@@ -103,31 +104,32 @@ contains
 
         print *, 'Converting VE.Direct frames to responses ...'
 
-        do i = 1, len(BYTES) * 2
-            j    = 1 + modulo(i - 1, len(BYTES))
-            byte = BYTES(j:j)
+        do i = 1, NBLOCKS
+            do j = 1, len(BYTES)
+                byte = BYTES(j:j)
 
-            call dm_ve_frame_next(frame, byte, eor, finished, valid)
+                call dm_ve_frame_next(frame, byte, eor, finished, valid)
 
-            if (finished) then
-                if (valid) then
-                    stat = TEST_PASSED
-                    print '(" Record is valid")'
-                else
-                    print '(" Record is invalid")'
+                if (finished) then
+                    if (valid) then
+                        stat = TEST_PASSED
+                        print '(" Record is valid")'
+                    else
+                        print '(" Record is invalid")'
+                    end if
+
+                    call dm_ve_frame_reset(frame)
                 end if
 
-                call dm_ve_frame_reset(frame)
-            end if
+                if (i == 1 .and. eor) then
+                    ! Ignore serial number field.
+                    if (frame%label == 'SER#') cycle
+                    if (frame%label == 'ERR') code = dm_atoi(frame%value)
 
-            if (eor) then
-                ! Ignore serial number field.
-                if (frame%label == 'SER#') cycle
-                if (frame%label == 'ERR') code = dm_atoi(frame%value)
-
-                call dm_ve_frame_read(frame, response)
-                print '(" Name: ", a, " Value: ", f8.1)', response%name, response%value
-            end if
+                    call dm_ve_frame_read(frame, response)
+                    print '(" Name: ", a, " Value: ", f8.1)', response%name, response%value
+                end if
+            end do
         end do
 
         print '(" Associated error message: ", a, " (", i0, ")")', dm_ve_error_message(code), code
