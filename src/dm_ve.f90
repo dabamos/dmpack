@@ -13,11 +13,11 @@ module dm_ve
     !!
     !! | Name    | Unit    | Description                               | MPPT | Shunt |
     !! |---------|---------|-------------------------------------------|------|-------|
-    !! | `Alarm` | –       | Alarm condition active (ON/OFF).          |      |   ✓   |
+    !! | `Alarm` | –       | Alarm condition active (on/off).          |      |   ✓   |
     !! | `AR`    | –       | Alarm reason (decimal).                   |      |   ✓   |
     !! | `CE`    | mAh     | Consumed amp hours.                       |      |   ✓   |
     !! | `CS`    | –       | State of operation.                       |  ✓   |       |
-    !! | `DM`    | %/10    | Mid-point deviation of the battery bank.  |      |   ✓   |
+    !! | `DM`    | ‰       | Mid-point deviation of the battery bank.  |      |   ✓   |
     !! | `ERR`   | –       | Error code.                               |  ✓   |       |
     !! | `FW`    | –       | Firmware version (16 bit).                |  ✓   |   ✓   |
     !! | `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓   |
@@ -44,16 +44,16 @@ module dm_ve
     !! | `HSDS`  | –       | Day sequence number (0 to 364).           |  ✓   |       |
     !! | `I`     | mA      | Main or channel 1 battery current.        |  ✓   |   ✓   |
     !! | `IL`    | mA      | Load current.                             |  ✓   |       |
-    !! | `LOAD`  | –       | Load output state (ON/OFF).               |  ✓   |       |
+    !! | `LOAD`  | –       | Load output state (on/off).               |  ✓   |       |
     !! | `MON`   | –       | DC monitor mode.                          |      |   ✓   |
     !! | `MPPT`  | –       | Tracker operation mode.                   |  ✓   |       |
-    !! | `OR`    | –       | Off reason (hexadecimal).                 |  ✓   |       |
+    !! | `OR`    | –       | Off reason.                               |  ✓   |       |
     !! | `P`     | W       | Instantaneous power.                      |      |   ✓   |
-    !! | `PID`   | –       | Product ID (hexadecimal).                 |  ✓   |   ✓   |
+    !! | `PID`   | –       | Product ID.                               |  ✓   |   ✓   |
     !! | `PPV`   | W       | Panel power.                              |  ✓   |       |
-    !! | `Relay` | –       | Relay state (ON/OFF).                     |  ✓   |   ✓   |
-    !! | `SOC`   | %/10    | State-of-charge.                          |      |   ✓   |
-    !! | `T`     | degC    | Battery temperature.                      |      |   ✓   |
+    !! | `Relay` | –       | Relay state (on/off).                     |  ✓   |   ✓   |
+    !! | `SOC`   | ‰       | State-of-charge.                          |      |   ✓   |
+    !! | `T`     | °C      | Battery temperature.                      |      |   ✓   |
     !! | `TTG`   | min     | Time-to-go.                               |      |   ✓   |
     !! | `V`     | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
     !! | `VM`    | mV      | Mid-point voltage of the battery bank.    |      |   ✓   |
