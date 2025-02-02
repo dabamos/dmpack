@@ -156,7 +156,8 @@ contains
             print *, 'Deleting ...'
             do i = 1, size(out)
                 print *, 'Deleting "' // trim(in(i)%id) // '" ...'
-                if (dm_db_delete_node(db, in(i)%id) /= E_NONE) exit test_block
+                rc = dm_db_delete_node(db, in(i)%id)
+                if (dm_is_error(rc)) exit test_block
             end do
             rc = E_NONE
         end block test_block

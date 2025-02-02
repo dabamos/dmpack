@@ -134,6 +134,8 @@ contains
             rc = dm_lua_set(lua, 'E_DB_TRANSACTION', E_DB_TRANSACTION); if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_ROLLBACK',    E_DB_ROLLBACK);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_PREPARE',     E_DB_PREPARE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROW',         E_DB_ROW);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DONE',        E_DB_DONE);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_FINALIZE',    E_DB_FINALIZE);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_BIND',        E_DB_BIND);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_TYPE',        E_DB_TYPE);        if (dm_is_error(rc)) return

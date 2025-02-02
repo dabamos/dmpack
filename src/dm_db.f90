@@ -1132,8 +1132,8 @@ contains
 
         select case (error)
             case (SQLITE_OK);         rc = E_NONE
-            case (SQLITE_DONE);       rc = E_NONE
-            case (SQLITE_ROW);        rc = E_NONE
+            case (SQLITE_DONE);       rc = E_DB_DONE
+            case (SQLITE_ROW);        rc = E_DB_ROW
             case (SQLITE_BUSY);       rc = E_DB_BUSY
             case (SQLITE_LOCKED);     rc = E_DB_LOCKED
             case (SQLITE_NOMEM);      rc = E_MEMORY
@@ -2562,8 +2562,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2760,8 +2760,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, ids(i), nbytes, (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2859,8 +2859,8 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, views(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2980,8 +2980,8 @@ contains
             end if
 
             do i = 1, nobs
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -3085,7 +3085,8 @@ contains
             end if
 
             do i = 1, nobs
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -3370,7 +3371,6 @@ contains
             i = 1
 
             do
-                rc = E_DB_NO_ROWS
                 if (dm_is_error(db_step(db_stmt))) exit
 
                 if (i == 1) then
@@ -4577,7 +4577,6 @@ contains
         integer,            intent(out)          :: nbytes   !! Size of string in bytes.
         logical,            intent(in), optional :: validate !! Validate column types.
 
-        integer :: n
         logical :: validate_
 
         nbytes = 0
@@ -4593,8 +4592,7 @@ contains
             end if
         end if
 
-        call db_column(db_stmt, 0, str, n)
-        nbytes = n
+        call db_column(db_stmt, 0, str, nbytes)
 
         rc = E_NONE
     end function db_next_row_character
@@ -5104,8 +5102,8 @@ contains
                 end if
 
                 do i = 1, n
-                    rc = E_DB_NO_ROWS
-                    if (dm_is_error(db_step(db_stmt))) exit sql_block
+                    rc = db_step(db_stmt)
+                    if (dm_is_error(rc)) exit sql_block
 
                     rc = db_next_row(db_stmt, beats(i), (i == 1))
                     if (dm_is_error(rc)) exit sql_block
@@ -5248,8 +5246,8 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, dps(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5377,8 +5375,8 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5489,8 +5487,8 @@ contains
             rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(db_step(db_stmt))) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             call db_column(db_stmt, 0, n)
 
@@ -5517,8 +5515,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5649,8 +5647,8 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, strings(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5759,8 +5757,8 @@ contains
             rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(db_step(db_stmt))) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             call db_column(db_stmt, 0, n)
 
@@ -5787,8 +5785,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5898,8 +5896,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, nodes(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -6043,8 +6041,8 @@ contains
             rc = dm_db_query_bind(db_query, db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(db_step(db_stmt))) exit sql_block
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
 
             call db_column(db_stmt, 0, n)
 
@@ -6071,8 +6069,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -6251,6 +6249,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -6264,7 +6263,7 @@ contains
         integer,                            intent(out),   optional :: nreceivers !! Number of receivers.
         type(db_stmt_type),                 intent(inout), optional :: db_stmt    !! Database statement type.
 
-        integer            :: i, n, nrec, stat
+        integer            :: i, n, stat
         type(db_stmt_type) :: db_stmt_
 
         if (present(db_stmt))    db_stmt_   = db_stmt
@@ -6279,11 +6278,13 @@ contains
             rc = db_bind(db_stmt_, 1, observ_id)
             if (dm_is_error(rc)) exit sql_block
 
-            nrec = 0
+            i = 0
 
-            row_loop: do i = 1, OBSERV_MAX_NRECEIVERS
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt_))) exit row_loop
+            do while (db_step(db_stmt_) == E_DB_ROW)
+                rc = E_BOUNDS
+                if (i >= OBSERV_MAX_NRECEIVERS) exit
+
+                i = i + 1
 
                 if (i == 1) then
                     rc = E_DB_TYPE
@@ -6291,10 +6292,9 @@ contains
                 end if
 
                 call db_column(db_stmt_, 0, receivers(i), n)
-                nrec = nrec + 1
-            end do row_loop
+            end do
 
-            if (present(nreceivers)) nreceivers = nrec
+            if (present(nreceivers)) nreceivers = i
             rc = db_reset(db_stmt_)
         end block sql_block
 
@@ -6315,6 +6315,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -6329,7 +6330,7 @@ contains
         integer,            intent(out),   optional :: nrequests !! Number of requests.
         type(db_stmt_type), intent(inout), optional :: db_stmt   !! Database statement type.
 
-        integer            :: i, n, nreq, stat
+        integer            :: i, n, stat
         type(db_stmt_type) :: db_stmt_
 
         if (present(db_stmt))   db_stmt_  = db_stmt
@@ -6344,11 +6345,13 @@ contains
             rc = db_bind(db_stmt_, 1, observ_id)
             if (dm_is_error(rc)) exit sql_block
 
-            nreq = 0
+            i = 0
 
-            row_loop: do i = 1, OBSERV_MAX_NREQUESTS
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt_))) exit row_loop
+            do while (db_step(db_stmt_) == E_DB_ROW)
+                rc = E_BOUNDS
+                if (i >= OBSERV_MAX_NREQUESTS) exit
+
+                i = i + 1
 
                 if (i == 1) then
                     rc = E_DB_TYPE
@@ -6380,11 +6383,9 @@ contains
                 call db_column(db_stmt_, 10, requests(i)%state)
                 call db_column(db_stmt_, 11, requests(i)%timeout)
                 call db_column(db_stmt_, 12, requests(i)%nresponses)
+            end do
 
-                nreq = nreq + 1
-            end do row_loop
-
-            if (present(nrequests)) nrequests = nreq
+            if (present(nrequests)) nrequests = i
 
             rc = db_reset(db_stmt_)
         end block sql_block
@@ -6406,6 +6407,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
@@ -6422,7 +6424,7 @@ contains
         integer,             intent(out),   optional :: nresponses  !! Number of responses.
         type(db_stmt_type),  intent(inout), optional :: db_stmt     !! Database statement type.
 
-        integer            :: i, n, nres
+        integer            :: i, n
         type(db_stmt_type) :: db_stmt_
 
         if (present(db_stmt))    db_stmt_   = db_stmt
@@ -6437,11 +6439,13 @@ contains
             rc = db_bind(db_stmt_, 1, observ_id);   if (dm_is_error(rc)) exit sql_block
             rc = db_bind(db_stmt_, 2, request_idx); if (dm_is_error(rc)) exit sql_block
 
-            nres = 0
+            i = 0
 
-            row_loop: do i = 1, REQUEST_MAX_NRESPONSES
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt_))) exit sql_block
+            do while (db_step(db_stmt_) == E_DB_ROW)
+                rc = E_BOUNDS
+                if (i >= REQUEST_MAX_NRESPONSES) exit
+
+                i = i + 1
 
                 if (i == 1) then
                     rc = E_DB_TYPE
@@ -6457,12 +6461,9 @@ contains
                 call db_column(db_stmt_, 2, responses(i)%type)
                 call db_column(db_stmt_, 3, responses(i)%error)
                 call db_column(db_stmt_, 4, responses(i)%value)
+            end do
 
-                nres = nres + 1
-            end do row_loop
-
-            if (present(nresponses)) nresponses = nres
-
+            if (present(nresponses)) nresponses = i
             rc = db_reset(db_stmt_)
         end block sql_block
 
@@ -6511,8 +6512,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             row_loop: do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, sensors(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -6612,8 +6613,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, sensors(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -6767,8 +6768,8 @@ contains
             end if
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, syncs(i))
                 syncs(i)%type = type
@@ -6820,8 +6821,8 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
-                rc = E_DB_NO_ROWS
-                if (dm_is_error(db_step(db_stmt))) exit sql_block
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
                 rc = db_next_row(db_stmt, targets(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -6868,14 +6869,14 @@ contains
 
         integer :: stat
 
-        rc = E_DB_STEP
         stat = sqlite3_step(db_stmt%ctx)
 
-        if (stat /= SQLITE_OK   .and. &
-            stat /= SQLITE_DONE .and. &
-            stat /= SQLITE_ROW) return
-
-        rc = E_NONE
+        select case (stat)
+            case (SQLITE_ROW);  rc = E_DB_ROW
+            case (SQLITE_DONE); rc = E_DB_DONE
+            case (SQLITE_OK);   rc = E_NONE
+            case default;       rc = E_DB_STEP
+        end select
     end function db_step
 
     ! **************************************************************************

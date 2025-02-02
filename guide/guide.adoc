@@ -1045,7 +1045,7 @@ JID of the bot account is `bot@example.com`, the full JID will be set to
 `bot@example.com/dmbot` if the bot name is `dmbot`.
 
 All commands start with prefix `!`. For an overview, send chat command `!help`
-to the bot. The following commands are supported:
+to the bot. The bot understands the following commands:
 
 !beats::
   Return current time of the sensor node in
@@ -8096,15 +8096,17 @@ $ /usr/local/bin/zstd --version
 | 36   | `E_DB_TRANSACTION`  | Database transaction failed.
 | 37   | `E_DB_ROLLBACK`     | Database rollback failed.
 | 38   | `E_DB_PREPARE`      | Database prepare failed.
-| 39   | `E_DB_FINALIZE`     | Database statement finalisation error.
-| 40   | `E_DB_BIND`         | Database binding failed.
-| 41   | `E_DB_TYPE`         | Database type mismatch.
-| 42   | `E_DB_STEP`         | Database step failed or no write permission.
-| 43   | `E_DB_NO_ROWS`      | Database returned no rows.
-| 44   | `E_DB_BACKUP`       | Database backup error.
-| 45   | `E_DB_ATTACH`       | Database attach failed.
-| 46   | `E_DB_DETACH`       | Database detach failed.
-| 47   | `E_DB_VERSION`      | Database version incompatible.
+| 39   | `E_DB_ROW`          | Database statement row (not an error).
+| 40   | `E_DB_DONE`         | Database statement done (not an error).
+| 41   | `E_DB_FINALIZE`     | Database statement finalisation error.
+| 42   | `E_DB_BIND`         | Database binding failed.
+| 43   | `E_DB_TYPE`         | Database type mismatch.
+| 44   | `E_DB_STEP`         | Database step failed or no write permission.
+| 45   | `E_DB_NO_ROWS`      | Database returned no rows.
+| 46   | `E_DB_BACKUP`       | Database backup error.
+| 47   | `E_DB_ATTACH`       | Database attach failed.
+| 48   | `E_DB_DETACH`       | Database detach failed.
+| 49   | `E_DB_VERSION`      | Database version incompatible.
 | 50   | `E_ARG`             | Generic command-line error.
 | 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
 | 52   | `E_ARG_INVALID`     | Argument invalid or missing.

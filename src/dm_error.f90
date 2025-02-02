@@ -52,15 +52,17 @@ module dm_error
     integer, parameter, public :: E_DB_TRANSACTION =  36 !! Transaction failed.
     integer, parameter, public :: E_DB_ROLLBACK    =  37 !! Transaction rollback error.
     integer, parameter, public :: E_DB_PREPARE     =  38 !! Prepare failed.
-    integer, parameter, public :: E_DB_FINALIZE    =  39 !! Statement error.
-    integer, parameter, public :: E_DB_BIND        =  40 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        =  41 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        =  42 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     =  43 !! No rows returned.
-    integer, parameter, public :: E_DB_BACKUP      =  44 !! Backup error.
-    integer, parameter, public :: E_DB_ATTACH      =  45 !! Attach failed.
-    integer, parameter, public :: E_DB_DETACH      =  46 !! Detach error.
-    integer, parameter, public :: E_DB_VERSION     =  47 !! Incompatible version.
+    integer, parameter, public :: E_DB_ROW         =  39 !! Statement row (not an error).
+    integer, parameter, public :: E_DB_DONE        =  40 !! Statement done (not an error).
+    integer, parameter, public :: E_DB_FINALIZE    =  41 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        =  42 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        =  43 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        =  44 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     =  45 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      =  46 !! Backup error.
+    integer, parameter, public :: E_DB_ATTACH      =  47 !! Attach failed.
+    integer, parameter, public :: E_DB_DETACH      =  48 !! Detach error.
+    integer, parameter, public :: E_DB_VERSION     =  49 !! Incompatible version.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -181,6 +183,8 @@ contains
             case (E_DB_TRANSACTION); message = 'database transaction failed'
             case (E_DB_ROLLBACK);    message = 'database rollback failed'
             case (E_DB_PREPARE);     message = 'database statement preparation failed'
+            case (E_DB_ROW);         message = 'database statement row (not an error)'
+            case (E_DB_DONE);        message = 'database statement done (not an error)'
             case (E_DB_FINALIZE);    message = 'database statement finalization failed'
             case (E_DB_BIND);        message = 'database bind failed'
             case (E_DB_TYPE);        message = 'database type mismatch'
@@ -248,14 +252,14 @@ contains
         !! Returns `.true.` if given code is an error (not `E_NONE`).
         integer, intent(in) :: error !! Error code.
 
-        is_error = (error /= E_NONE)
+        is_error = (error /= E_NONE .and. error /= E_DB_ROW .and. error /= E_DB_DONE)
     end function dm_is_error
 
     pure elemental logical function dm_is_ok(error) result(is_ok)
         !! Returns `.true.` if given code is not an error (`E_NONE`).
         integer, intent(in) :: error !! Error code.
 
-        is_ok = (error == E_NONE)
+        is_ok = (error == E_NONE .or. error == E_DB_ROW .or. error == E_DB_DONE)
     end function dm_is_ok
 
     subroutine dm_error_out(error, message, verbose, extra, fatal)
