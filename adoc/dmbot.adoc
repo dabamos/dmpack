@@ -28,7 +28,7 @@ from clients whose JID is not in the table will be rejected. If table `group` is
 empty, all clients are allowed to send commands to the bot.
 
 All commands start with prefix `!`. For an overview, send chat command `!help`
-to the bot. The following commands are supported:
+to the bot. The bot understands the following commands:
 
 !beats::
   Return current time of the sensor node in Swatch Internet Time.

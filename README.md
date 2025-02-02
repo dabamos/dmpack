@@ -10,8 +10,8 @@ geodesy and geotechnics. The project is the successor of
 [OpenADMS](https://www.dabamos.de/openadms.html), and in active development.
 
 The library and the accompanying programs are written in Fortran 2018, with
-some smaller parts in Lua. At the moment, **DMPACK** runs on 64-bit Linux and
-FreeBSD only.
+some smaller parts in Lua 5.4. At the moment, **DMPACK** runs on 64-bit Linux
+and FreeBSD only.
 
 * [Project Website](https://www.dabamos.de/dmpack.html)
 * [User Guide](https://www.dabamos.de/dmpack/guide/)
