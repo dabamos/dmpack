@@ -2642,7 +2642,6 @@ following VE.Direct fields are supported, depending on the device:
 | `CS`    | –       | State of operation.                       |  ✓   |
 | `DM`    | ‰       | Mid-point deviation of the battery bank.  |      |   ✓
 | `ERR`   | –       | Error code.                               |  ✓   |
-| `FW`    | –       | Firmware version (16 bit).                |  ✓   |   ✓
 | `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓
 | `H2`    | mAh     | Depth of the last discharge.              |      |   ✓
 | `H3`    | mAh     | Depth of the average discharge.           |      |   ✓
@@ -2672,7 +2671,6 @@ following VE.Direct fields are supported, depending on the device:
 | `MPPT`  | –       | Tracker operation mode.                   |  ✓   |
 | `OR`    | –       | Off reason.                               |  ✓   |
 | `P`     | W       | Instantaneous power.                      |      |   ✓
-| `PID`   | –       | Product ID.                               |  ✓   |   ✓
 | `PPV`   | W       | Panel power.                              |  ✓   |
 | `Relay` | –       | Relay state (on/off).                     |  ✓   |   ✓
 | `SOC`   | ‰       | State-of-charge.                          |      |   ✓

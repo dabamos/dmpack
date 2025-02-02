@@ -36,7 +36,6 @@ CE::    Consumed amp hours (mAh).
 CS::    State of operation.
 DM::    Mid-point deviation of the battery bank (%/10).
 ERR::   Error code.
-FW::    Firmware version (16 bit).
 H1::    Depth of the deepest discharge (mAh).
 H2::    Depth of the last discharge (mAh).
 H3::    Depth of the average discharge (mAh).
@@ -66,7 +65,6 @@ MON::   DC monitor mode.
 MPPT::  Tracker operation mode.
 OR::    Off reason.
 P::     Instantaneous power (W).
-PID::   Product ID.
 PPV::   Panel power (W).
 Relay:: Relay state (on/off).
 SOC::   State-of-charge (%/10).

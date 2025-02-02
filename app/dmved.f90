@@ -366,7 +366,6 @@ contains
                 rc = dm_request_add(request(2), responses(VE_FIELD_I))
                 rc = dm_request_add(request(2), responses(VE_FIELD_MON))
                 rc = dm_request_add(request(2), responses(VE_FIELD_P))
-                rc = dm_request_add(request(2), responses(VE_FIELD_PID))
                 rc = dm_request_add(request(2), responses(VE_FIELD_RELAY))
                 rc = dm_request_add(request(2), responses(VE_FIELD_SOC))
                 rc = dm_request_add(request(2), responses(VE_FIELD_T))
