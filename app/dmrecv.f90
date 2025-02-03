@@ -88,6 +88,29 @@ program dmrecv
 
     call halt(rc)
 contains
+    integer function open_file(path, replace, unit) result(rc)
+        character(len=*), intent(in)  :: path
+        logical,          intent(in)  :: replace
+        integer,          intent(out) :: unit
+
+        integer :: stat
+
+        rc = E_IO
+
+        if (replace) then
+            ! Replace file.
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
+                  position='rewind', status='replace')
+        else
+            ! Append data.
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
+                  position='append', status='unknown')
+        end if
+
+        if (stat /= 0) return
+        rc = E_NONE
+    end function open_file
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
@@ -218,44 +241,6 @@ contains
 
         call dm_config_close(config)
     end function read_config
-
-    subroutine halt(error)
-        !! Cleans up and stops program.
-        integer, intent(in) :: error !! DMPACK error code.
-
-        integer :: rc, stat
-
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
-
-        rc = dm_mqueue_close(mqueue)
-        rc = dm_mqueue_unlink(mqueue)
-
-        call dm_stop(stat)
-    end subroutine halt
-
-    integer function open_file(path, replace, unit) result(rc)
-        character(len=*), intent(in)  :: path
-        logical,          intent(in)  :: replace
-        integer,          intent(out) :: unit
-
-        integer :: stat
-
-        rc = E_IO
-
-        if (replace) then
-            ! Replace file.
-            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
-                  position='rewind', status='replace')
-        else
-            ! Append data.
-            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
-                  position='append', status='unknown')
-        end if
-
-        if (stat /= 0) return
-        rc = E_NONE
-    end function open_file
 
     integer function recv_log(app, mqueue) result(rc)
         type(app_type),    intent(inout) :: app
@@ -407,6 +392,21 @@ contains
             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
         end if
     end function recv_observ
+
+    subroutine halt(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: rc, stat
+
+        stat = STOP_SUCCESS
+        if (dm_is_error(error)) stat = STOP_FAILURE
+
+        rc = dm_mqueue_close(mqueue)
+        rc = dm_mqueue_unlink(mqueue)
+
+        call dm_stop(stat)
+    end subroutine halt
 
     subroutine run(app, mqueue)
         !! Event loop that receives logs or observations.
