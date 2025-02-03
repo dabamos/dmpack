@@ -343,7 +343,7 @@ contains
         character(len=*),          intent(in)           :: source    !! Source of observation.
         logical,                   intent(in), optional :: debug     !! Output debug messages.
 
-        integer :: delay
+        integer :: delay_msec
         integer :: i, j, n
         logical :: debug_
 
@@ -458,17 +458,17 @@ contains
             if (debug_) call logger%debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
-            delay = max(0, request%delay)
-            if (delay == 0) cycle req_loop
+            delay_msec = max(0, request%delay)
+            if (delay_msec == 0) cycle req_loop
 
             if (debug_ .and. i < n) then
                 call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
-                                  ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                                  ' in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
             else if (debug_) then
-                call logger%debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
             end if
 
-            call dm_msleep(delay)
+            call dm_msleep(delay_msec)
         end do req_loop
     end function read_observ
 
@@ -565,7 +565,7 @@ contains
             ! Wait the set delay time of the job (absolute).
             delay = max(0, job%delay)
             if (delay == 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(delay)) // ' sec', observ=observ)
             call dm_msleep(delay)
         end do job_loop
 

@@ -62,6 +62,18 @@ module dm_util
         module procedure :: dm_real32_to_real64
     end interface dm_to_real64
 
+    interface dm_sec_to_msec
+        !! Generic seconds to milliseconds function.
+        module procedure :: sec_to_msec_int32
+        module procedure :: sec_to_msec_int64
+    end interface dm_sec_to_msec
+
+    interface dm_msec_to_sec
+        !! Generic seconds to milliseconds function.
+        module procedure :: msec_to_sec_int32
+        module procedure :: msec_to_sec_int64
+    end interface dm_msec_to_sec  
+
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
@@ -97,19 +109,32 @@ module dm_util
     public :: dm_real64_to_logical
     public :: dm_real64_to_real32
 
+    public :: dm_msec_to_sec
+    public :: dm_sec_to_msec
+
     ! Private procedures.
     private :: array_has_int32
     private :: array_has_int64
+
     private :: equals_real32
     private :: equals_real64
-    private :: hex_to_int32
-    private :: hex_to_int64
+
     private :: inc_int32
     private :: inc_int64
+
     private :: int32_to_string
     private :: int64_to_string
+
     private :: real32_to_string
     private :: real64_to_string
+
+    private :: hex_to_int32
+    private :: hex_to_int64
+
+    private :: msec_to_sec_int32
+    private :: msec_to_sec_int64
+    private :: sec_to_msec_int32
+    private :: sec_to_msec_int64
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -500,4 +525,39 @@ contains
 
         if (present(error)) error = E_NONE
     end subroutine hex_to_int64
+
+    ! **************************************************************************
+    ! PRIVATE TIME UNIT FUNCTIONS.
+    ! **************************************************************************
+    pure elemental function msec_to_sec_int32(msec) result(sec)
+        !! Converts milliseconds to seconds (4 bytes).
+        integer(kind=i4), intent(in) :: msec !! Milliseconds.
+        integer(kind=i4)             :: sec  !! Seconds.
+
+        sec = msec / 1000_i4
+   end function msec_to_sec_int32
+
+    pure elemental function msec_to_sec_int64(msec) result(sec)
+        !! Converts milliseconds to seconds (8 bytes).
+        integer(kind=i8), intent(in) :: msec !! Milliseconds.
+        integer(kind=i8)             :: sec  !! Seconds.
+
+        sec = msec / 1000_i8
+   end function msec_to_sec_int64
+
+    pure elemental function sec_to_msec_int32(sec) result(msec)
+        !! Converts seconds to milliseconds (4 bytes).
+        integer(kind=i4), intent(in) :: sec  !! Seconds
+        integer(kind=i4)             :: msec !! Milliseconds.
+
+        msec = sec * 1000_i4
+   end function sec_to_msec_int32
+
+    pure elemental function sec_to_msec_int64(sec) result(msec)
+        !! Converts seconds to milliseconds (8 bytes).
+        integer(kind=i8), intent(in) :: sec  !! Seconds
+        integer(kind=i8)             :: msec !! Milliseconds.
+
+        msec = sec * 1000_i8
+   end function sec_to_msec_int64
 end module dm_util

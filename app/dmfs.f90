@@ -230,7 +230,7 @@ contains
         type(request_type),  pointer        :: request  ! Next request to execute.
         type(response_type), pointer        :: response ! Single response in request.
 
-        integer :: delay
+        integer :: delay_msec
         integer :: stat, unit
         integer :: i, j, n
         logical :: debug_
@@ -342,17 +342,17 @@ contains
             if (debug_) call logger%debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
-            delay = max(0, request%delay)
-            if (delay == 0) cycle req_loop
+            delay_msec = max(0, request%delay)
+            if (delay_msec == 0) cycle req_loop
 
             if (debug_ .and. i < n) then
                 call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
-                                  ' in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                                  ' in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
             else if (debug_) then
-                call logger%debug('next observ in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
+                call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
             end if
 
-            call dm_msleep(delay)
+            call dm_msleep(delay_msec)
         end do req_loop
     end function read_observ
 
@@ -399,7 +399,7 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app !! App settings.
 
-        integer                    :: delay, njobs, rc
+        integer                    :: delay_msec, njobs, rc
         logical                    :: debug
         type(job_type),    target  :: job    ! Next job to run.
         type(observ_type), pointer :: observ ! Observation of job.
@@ -450,10 +450,10 @@ contains
             end if
 
             ! Wait delay time of the job if set (absolute).
-            delay = max(0, job%delay)
-            if (delay <= 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(delay / 1000) // ' sec', observ=observ)
-            call dm_msleep(delay)
+            delay_msec = max(0, job%delay)
+            if (delay_msec == 0) cycle job_loop
+            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
+            call dm_msleep(delay_msec)
         end do job_loop
     end subroutine run
 

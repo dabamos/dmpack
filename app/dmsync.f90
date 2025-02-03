@@ -269,7 +269,7 @@ contains
 
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: name, url
-        integer                        :: delay, i, j, n, stat
+        integer                        :: delay_sec, i, j, n, stat
         integer(kind=i8)               :: limit, nsyncs
         real(kind=r8)                  :: dt
         type(timer_type)               :: sync_timer
@@ -318,7 +318,6 @@ contains
                 ! Fail-safe, should never occur.
                 rc = E_TYPE
                 call logger%error('invalid sync type', error=rc)
-                return
         end select
 
         rc = E_CORRUPT
@@ -327,13 +326,8 @@ contains
         rc = E_ALLOC
         if (stat /= 0) return
 
-        ! Allocate request array.
-        allocate (requests(APP_SYNC_LIMIT), stat=stat)
-        if (stat /= 0) return
-
-        ! Allocate id array.
-        allocate (ids(APP_SYNC_LIMIT), stat=stat)
-        if (stat /= 0) return
+        allocate (requests(APP_SYNC_LIMIT), stat=stat); if (stat /= 0) return
+        allocate (ids(APP_SYNC_LIMIT),      stat=stat); if (stat /= 0) return
 
         ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
@@ -371,16 +365,11 @@ contains
             if (allocated(syncs)) deallocate (syncs)
 
             select case (app%type)
-                case (SYNC_TYPE_LOG)
-                    rc = dm_db_select_sync_logs(db, syncs, nsyncs, limit)
-                case (SYNC_TYPE_NODE)
-                    rc = dm_db_select_sync_nodes(db, syncs, nsyncs, limit)
-                case (SYNC_TYPE_OBSERV)
-                    rc = dm_db_select_sync_observs(db, syncs, nsyncs, limit)
-                case (SYNC_TYPE_SENSOR)
-                    rc = dm_db_select_sync_sensors(db, syncs, nsyncs, limit)
-                case (SYNC_TYPE_TARGET)
-                    rc = dm_db_select_sync_targets(db, syncs, nsyncs, limit)
+                case (SYNC_TYPE_LOG);    rc = dm_db_select_sync_logs   (db, syncs, nsyncs, limit)
+                case (SYNC_TYPE_NODE);   rc = dm_db_select_sync_nodes  (db, syncs, nsyncs, limit)
+                case (SYNC_TYPE_OBSERV); rc = dm_db_select_sync_observs(db, syncs, nsyncs, limit)
+                case (SYNC_TYPE_SENSOR); rc = dm_db_select_sync_sensors(db, syncs, nsyncs, limit)
+                case (SYNC_TYPE_TARGET); rc = dm_db_select_sync_targets(db, syncs, nsyncs, limit)
             end select
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -440,16 +429,11 @@ contains
 
                 ! Send log to HTTP-RPC API. Reuse the RPC request.
                 select case (app%type)
-                    case (SYNC_TYPE_LOG)
-                        rc = dm_rpc_post(requests(1:n), responses, logs(1:n))
-                    case (SYNC_TYPE_NODE)
-                        rc = dm_rpc_post(requests(1:n), responses, nodes(1:n))
-                    case (SYNC_TYPE_OBSERV)
-                        rc = dm_rpc_post(requests(1:n), responses, observs(1:n))
-                    case (SYNC_TYPE_SENSOR)
-                        rc = dm_rpc_post(requests(1:n), responses, sensors(1:n))
-                    case (SYNC_TYPE_TARGET)
-                        rc = dm_rpc_post(requests(1:n), responses, targets(1:n))
+                    case (SYNC_TYPE_LOG);    rc = dm_rpc_post(requests(1:n), responses, logs   (1:n))
+                    case (SYNC_TYPE_NODE);   rc = dm_rpc_post(requests(1:n), responses, nodes  (1:n))
+                    case (SYNC_TYPE_OBSERV); rc = dm_rpc_post(requests(1:n), responses, observs(1:n))
+                    case (SYNC_TYPE_SENSOR); rc = dm_rpc_post(requests(1:n), responses, sensors(1:n))
+                    case (SYNC_TYPE_TARGET); rc = dm_rpc_post(requests(1:n), responses, targets(1:n))
                 end select
 
                 call dm_timer_stop(rpc_timer, dt)
@@ -574,9 +558,9 @@ contains
             if (.not. app%ipc) then
                 if (app%interval <= 0) exit sync_loop
                 call dm_timer_stop(sync_timer)
-                delay = max(1, nint(app%interval - dm_timer_result(sync_timer)))
-                call logger%debug('next sync in ' // dm_itoa(delay) // ' sec')
-                call dm_sleep(delay)
+                delay_sec = max(1, nint(app%interval - dm_timer_result(sync_timer)))
+                call logger%debug('next sync in ' // dm_itoa(delay_sec) // ' sec')
+                call dm_sleep(delay_sec)
             end if
         end do sync_loop
 
