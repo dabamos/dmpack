@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_db_query
-    !! SQL query builder.
+    !! Basic SQL query builder.
     use :: dm_db_stmt
     use :: dm_error
     use :: dm_kind
@@ -17,8 +17,7 @@ module dm_db_query
     integer, parameter :: DB_QUERY_NPARAMS = 16 !! Max. number of parameters in query type.
 
     type, public :: db_query_param_type
-        !! Opaque database query parameter.
-        private
+        !! Database query parameter.
         integer                       :: type         = DB_QUERY_TYPE_NONE !! Value type.
         real(kind=r8)                 :: value_double = 0.0_r8             !! Double value.
         integer                       :: value_int    = 0                  !! Integer value.
@@ -28,20 +27,18 @@ module dm_db_query
     end type db_query_param_type
 
     type, public :: db_query_type
-        !! Opaque database query.
-        private
+        !! Database query.
         character(len=:), allocatable :: order_by                 !! ORDER BY clause.
-        logical                       :: order_desc = .false.     !! Descending order.
-        integer(kind=i8)              :: limit      = 0_i8        !! Limit value.
-        integer                       :: index      = 0           !! Parameter array index.
-        type(db_query_param_type)     :: params(DB_QUERY_NPARAMS) !! Parameters.
+        logical                       :: order_desc = .false.     !! DESC order.
+        integer(kind=i8)              :: limit      = 0_i8        !! Row limit.
+        integer                       :: nparams    = 0           !! Current parameter array size.
+        type(db_query_param_type)     :: params(DB_QUERY_NPARAMS) !! Parameter array.
     end type db_query_type
 
     public :: dm_db_query_add_double
     public :: dm_db_query_add_int
     public :: dm_db_query_add_int64
     public :: dm_db_query_add_text
-    public :: dm_db_query_bind
     public :: dm_db_query_build
     public :: dm_db_query_destroy
     public :: dm_db_query_limit
@@ -55,16 +52,16 @@ contains
         real(kind=r8),       intent(in), optional :: value !! Query parameter value.
 
         rc = E_LIMIT
-        if (db_query%index >= size(db_query%params)) return
+        if (db_query%nparams >= size(db_query%params)) return
 
         rc = E_NONE
         if (.not. present(value)) return
 
-        db_query%index = db_query%index + 1
+        db_query%nparams = db_query%nparams + 1
 
-        db_query%params(db_query%index)%type         = DB_QUERY_TYPE_DOUBLE
-        db_query%params(db_query%index)%sql          = trim(param)
-        db_query%params(db_query%index)%value_double = value
+        db_query%params(db_query%nparams)%type         = DB_QUERY_TYPE_DOUBLE
+        db_query%params(db_query%nparams)%sql          = trim(param)
+        db_query%params(db_query%nparams)%value_double = value
     end function dm_db_query_add_double
 
     integer function dm_db_query_add_int(db_query, param, value) result(rc)
@@ -75,16 +72,16 @@ contains
         integer(kind=i4),    intent(in), optional :: value !! Query parameter value.
 
         rc = E_LIMIT
-        if (db_query%index >= size(db_query%params)) return
+        if (db_query%nparams >= size(db_query%params)) return
 
         rc = E_NONE
         if (.not. present(value)) return
 
-        db_query%index = db_query%index + 1
+        db_query%nparams = db_query%nparams + 1
 
-        db_query%params(db_query%index)%type      = DB_QUERY_TYPE_INT
-        db_query%params(db_query%index)%sql       = trim(param)
-        db_query%params(db_query%index)%value_int = value
+        db_query%params(db_query%nparams)%type      = DB_QUERY_TYPE_INT
+        db_query%params(db_query%nparams)%sql       = trim(param)
+        db_query%params(db_query%nparams)%value_int = value
     end function dm_db_query_add_int
 
     integer function dm_db_query_add_int64(db_query, param, value) result(rc)
@@ -95,16 +92,16 @@ contains
         integer(kind=i8),    intent(in), optional :: value !! Query parameter value.
 
         rc = E_LIMIT
-        if (db_query%index >= size(db_query%params)) return
+        if (db_query%nparams >= size(db_query%params)) return
 
         rc = E_NONE
         if (.not. present(value)) return
 
-        db_query%index = db_query%index + 1
+        db_query%nparams = db_query%nparams + 1
 
-        db_query%params(db_query%index)%type        = DB_QUERY_TYPE_INT64
-        db_query%params(db_query%index)%sql         = trim(param)
-        db_query%params(db_query%index)%value_int64 = value
+        db_query%params(db_query%nparams)%type        = DB_QUERY_TYPE_INT64
+        db_query%params(db_query%nparams)%sql         = trim(param)
+        db_query%params(db_query%nparams)%value_int64 = value
     end function dm_db_query_add_int64
 
     integer function dm_db_query_add_text(db_query, param, value) result(rc)
@@ -115,50 +112,17 @@ contains
         character(len=*),    intent(in), optional :: value !! Query parameter value.
 
         rc = E_LIMIT
-        if (db_query%index >= size(db_query%params)) return
+        if (db_query%nparams >= size(db_query%params)) return
 
         rc = E_NONE
         if (.not. present(value)) return
 
-        db_query%index = db_query%index + 1
+        db_query%nparams = db_query%nparams + 1
 
-        db_query%params(db_query%index)%type       = DB_QUERY_TYPE_TEXT
-        db_query%params(db_query%index)%sql        = trim(param)
-        db_query%params(db_query%index)%value_text = trim(value)
+        db_query%params(db_query%nparams)%type       = DB_QUERY_TYPE_TEXT
+        db_query%params(db_query%nparams)%sql        = trim(param)
+        db_query%params(db_query%nparams)%value_text = trim(value)
     end function dm_db_query_add_text
-
-    integer function dm_db_query_bind(db_query, db_stmt) result(rc)
-        !! Binds query parameters to SQLite statement. Returns `E_DB_BIND` on
-        !! binding error.
-        use :: sqlite3
-
-        type(db_query_type), intent(inout) :: db_query !! Database query type.
-        type(db_stmt_type),  intent(inout) :: db_stmt  !! Database statement type.
-
-        integer :: i, stat
-
-        stat = SQLITE_OK
-
-        do i = 1, db_query%index
-            select case (db_query%params(i)%type)
-                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%params(i)%value_double)
-                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, i, db_query%params(i)%value_int)
-                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, i, db_query%params(i)%value_int64)
-                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%params(i)%value_text)
-                case default;                stat = SQLITE_ERROR
-            end select
-        end do
-
-        rc = E_DB_BIND
-        if (stat /= SQLITE_OK) return
-
-        if (db_query%limit > 0) then
-            stat = sqlite3_bind_int64(db_stmt%ctx, i, db_query%limit)
-            if (stat /= SQLITE_OK) return
-        end if
-
-        rc = E_NONE
-    end function dm_db_query_bind
 
     function dm_db_query_build(db_query, base) result(sql)
         !! Returns SQL string from query.
@@ -174,7 +138,7 @@ contains
             sql = ''
         end if
 
-        do i = 1, db_query%index
+        do i = 1, db_query%nparams
             if (i == 1) then
                 sql = sql // ' WHERE ' // db_query%params(i)%sql
             else
@@ -201,7 +165,7 @@ contains
 
         if (allocated(db_query%order_by)) deallocate (db_query%order_by)
 
-        do i = 1, db_query%index
+        do i = 1, db_query%nparams
             if (allocated(db_query%params(i)%value_text)) deallocate (db_query%params(i)%value_text)
             if (allocated(db_query%params(i)%sql))        deallocate (db_query%params(i)%sql)
         end do

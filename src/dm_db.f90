@@ -132,6 +132,7 @@ module dm_db
         module procedure :: db_bind_double
         module procedure :: db_bind_int
         module procedure :: db_bind_int64
+        module procedure :: db_bind_query
         module procedure :: db_bind_text
     end interface db_bind
 
@@ -406,6 +407,7 @@ module dm_db
     private :: db_bind_double
     private :: db_bind_int
     private :: db_bind_int64
+    private :: db_bind_query
     private :: db_bind_text
     private :: db_column
     private :: db_column_bytes
@@ -1391,27 +1393,35 @@ contains
 
     logical function dm_db_has_log(db, log_id) result(has)
         !! Returns `.true.` if log id exists.
-        type(db_type),     intent(inout) :: db     !! Database type.
-        character(len=*),  intent(in)    :: log_id !! Log id (UUID).
+        type(db_type),    intent(inout) :: db     !! Database type.
+        character(len=*), intent(in)    :: log_id !! Log id (UUID).
 
         has = db_has(db, SQL_TABLE_LOGS, log_id)
     end function dm_db_has_log
 
     logical function dm_db_has_node(db, node_id) result(has)
         !! Returns `.true.` if node id exists.
-        type(db_type),     intent(inout) :: db      !! Database type.
-        character(len=*),  intent(in)    :: node_id !! Node id.
+        type(db_type),    intent(inout) :: db      !! Database type.
+        character(len=*), intent(in)    :: node_id !! Node id.
 
         has = db_has(db, SQL_TABLE_NODES, node_id)
     end function dm_db_has_node
 
     logical function dm_db_has_observ(db, observ_id) result(has)
         !! Returns `.true.` if observation id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
+        type(db_type),    intent(inout) :: db        !! Database type.
+        character(len=*), intent(in)    :: observ_id !! Observation id (UUID).
 
         has = db_has(db, SQL_TABLE_OBSERVS, observ_id)
     end function dm_db_has_observ
+
+    logical function dm_db_has_sensor(db, sensor_id) result(exists)
+        !! Returns `.true.` if sensor id exists.
+        type(db_type),    intent(inout) :: db        !! Database type.
+        character(len=*), intent(in)    :: sensor_id !! Sensor id.
+
+        exists = db_has(db, SQL_TABLE_SENSORS, sensor_id)
+    end function dm_db_has_sensor
 
     logical function dm_db_has_table(db, table) result(has)
         !! Returns `.true.` if given table exists in database.
@@ -1437,8 +1447,8 @@ contains
 
     logical function dm_db_has_target(db, target_id) result(has)
         !! Returns `.true.` if target id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: target_id !! Target id.
+        type(db_type),    intent(inout) :: db        !! Database type.
+        character(len=*), intent(in)    :: target_id !! Target id.
 
         has = db_has(db, SQL_TABLE_TARGETS, target_id)
     end function dm_db_has_target
@@ -2730,7 +2740,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -2757,7 +2767,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -3442,14 +3452,6 @@ contains
         stat = db_finalize(db_stmt)
     end function dm_db_select_target
 
-    logical function dm_db_has_sensor(db, sensor_id) result(exists)
-        !! Returns `.true.` if sensor id exists.
-        type(db_type),     intent(inout) :: db        !! Database type.
-        character(len=*),  intent(in)    :: sensor_id !! Sensor id.
-
-        exists = db_has(db, SQL_TABLE_SENSORS, sensor_id)
-    end function dm_db_has_sensor
-
     integer function dm_db_set_application_id(db, id) result(rc)
         !! Set the 32-bit signed big-endian “Application ID” integer located at
         !! offset 68 into the database header.
@@ -4115,6 +4117,37 @@ contains
         rc = E_NONE
     end function db_bind_int64
 
+    integer function db_bind_query(db_stmt, db_query) result(rc)
+        !! Binds query parameters to SQLite statement. Returns `E_DB_BIND` on
+        !! binding error.
+        type(db_stmt_type),  intent(inout) :: db_stmt  !! Database statement type.
+        type(db_query_type), intent(inout) :: db_query !! Database query type.
+
+        integer :: i, stat
+
+        stat = SQLITE_OK
+
+        do i = 1, db_query%nparams
+            select case (db_query%params(i)%type)
+                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%params(i)%value_double)
+                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, i, db_query%params(i)%value_int)
+                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, i, db_query%params(i)%value_int64)
+                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%params(i)%value_text)
+                case default;                stat = SQLITE_ERROR
+            end select
+        end do
+
+        rc = E_DB_BIND
+        if (stat /= SQLITE_OK) return
+
+        if (db_query%limit > 0) then
+            stat = sqlite3_bind_int64(db_stmt%ctx, i, db_query%limit)
+            if (stat /= SQLITE_OK) return
+        end if
+
+        rc = E_NONE
+    end function db_bind_query
+
     integer function db_bind_text(db_stmt, index, value) result(rc)
         !! Binds string value to statement. The value will be trimmed before
         !! binding. Returns `E_DB_BIND` on error.
@@ -4322,9 +4355,9 @@ contains
         !! * `SQL_TABLE_TARGETS`
         !!
         !! This function returns no error code.
-        type(db_type),     intent(inout) :: db    !! Database type.
-        integer,           intent(in)    :: table !! Enumerator of table to search.
-        character(len=*),  intent(in)    :: id    !! Record id.
+        type(db_type),    intent(inout) :: db    !! Database type.
+        integer,          intent(in)    :: table !! Enumerator of table to search.
+        character(len=*), intent(in)    :: id    !! Record id.
 
         integer            :: i, rc
         type(db_stmt_type) :: db_stmt
@@ -5485,7 +5518,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -5512,7 +5545,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -5582,7 +5615,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
         end if
 
@@ -5755,7 +5788,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -5782,7 +5815,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -5850,7 +5883,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
         end if
 
@@ -6039,7 +6072,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -6066,7 +6099,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -6145,7 +6178,7 @@ contains
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_query_bind(db_query, db_stmt)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
         end if
 
