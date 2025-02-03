@@ -234,157 +234,202 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
-    subroutine run(app, mqueue)
-        !! Waits from incoming messages in the message queue.
+    integer function open_file(path, replace, unit) result(rc)
+        character(len=*), intent(in)  :: path
+        logical,          intent(in)  :: replace
+        integer,          intent(out) :: unit
+
+        integer :: stat
+
+        rc = E_IO
+
+        if (replace) then
+            ! Replace file.
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
+                  position='rewind', status='replace')
+        else
+            ! Append data.
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
+                  position='append', status='unknown')
+        end if
+
+        if (stat /= 0) return
+        rc = E_NONE
+    end function open_file
+
+    integer function recv_log(app, mqueue) result(rc)
         type(app_type),    intent(inout) :: app
         type(mqueue_type), intent(inout) :: mqueue
 
-        character(len=NML_LOG_LEN)    :: log_nml
+        character(len=NML_LOG_LEN) :: log_nml
+        integer                    :: unit, stat
+        type(log_type)             :: log
+
+        unit = stdout
+
+        call logger%debug('waiting for log on mqueue /' // app%name)
+
+        ! Read log from POSIX message queue (blocking).
+        rc = dm_mqueue_read(mqueue, log)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to read log from mqueue /' // app%name, error=rc)
+            return
+        end if
+
+        if (.not. dm_log_is_valid(log)) then
+            call logger%warning('invalid log received', error=E_INVALID)
+        else
+            call logger%debug('received log ' // trim(log%id))
+        end if
+
+        ! Open output file.
+        if (app%file) then
+            rc = open_file(app%output, app%replace, unit)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open file ' // app%output, error=rc)
+                return
+            end if
+        end if
+
+        ! Write serialised log to file/stdout.
+        select case (app%format)
+            case (FORMAT_CSV)
+                ! CSV format.
+                rc = dm_csv_write(log, unit=unit)
+
+            case (FORMAT_JSONL)
+                ! JSON Lines format.
+                rc = dm_json_write(log, unit=unit)
+
+            case (FORMAT_NML)
+                ! Namelist format. Write Namelist to a string first, to
+                ! avoid newline characters.
+                rc = dm_nml_from(log, log_nml)
+                write (unit, '(a)', iostat=stat) trim(log_nml)
+                if (stat /= 0) rc = E_WRITE
+        end select
+
+        ! Close output file.
+        if (app%file) close (unit)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to write log ' // log%id, error=rc)
+            return
+        end if
+
+        call logger%debug('log ' // trim(log%id) // ' written to ' // app%output)
+    end function recv_log
+
+    integer function recv_observ(app, mqueue) result(rc)
+        type(app_type),    intent(inout) :: app
+        type(mqueue_type), intent(inout) :: mqueue
+
         character(len=NML_OBSERV_LEN) :: observ_nml
+        integer                       :: unit
+        integer                       :: i, j, stat
+        type(dp_type)                 :: dp
+        type(observ_type)             :: observ
 
-        integer :: file_unit
-        integer :: i, j, rc, stat
+        unit = stdout
 
-        type(dp_type)     :: dp
-        type(log_type)    :: log
-        type(observ_type) :: observ
+        call logger%debug('waiting for observ on mqueue /' // app%name)
 
-        file_unit = stdout
+        ! Read observation from POSIX message queue (blocking).
+        rc = dm_mqueue_read(mqueue, observ)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+            return
+        end if
+
+        if (.not. dm_observ_is_valid(observ)) then
+            call logger%warning('invalid observ received', error=E_INVALID)
+        else
+            call logger%debug('received observ ' // trim(observ%id))
+        end if
+
+        ! Open output file.
+        if (app%file) then
+            rc = open_file(app%output, app%replace, unit)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open file ' // app%output, error=rc)
+                return
+            end if
+        end if
+
+        ! Write serialised observation to file/stdout.
+        select case (app%format)
+            case (FORMAT_BLOCK)
+                ! ASCII block format. Search for response of configured
+                ! name and convert the observation's response into a
+                ! data point type.
+                stat = dm_observ_index(observ, app%response, i, j)
+
+                if (dm_is_ok(stat)) then
+                    dp = dp_type(x = observ%requests(i)%timestamp, &
+                                 y = observ%requests(i)%responses(j)%value)
+                    rc = dm_block_write(dp, unit=unit)
+                else
+                    call logger%debug('no response of name ' // app%response, error=E_NOT_FOUND)
+                end if
+
+            case (FORMAT_CSV)
+                ! CSV format.
+                rc = dm_csv_write(observ, unit=unit)
+
+            case (FORMAT_JSONL)
+                ! JSON Lines format.
+                rc = dm_json_write(observ, unit=unit)
+
+            case (FORMAT_NML)
+                ! Namelist format. Write Namelist to a string first, to
+                ! avoid newline characters.
+                rc = dm_nml_from(observ, observ_nml)
+                write (unit, '(a)', iostat=stat) trim(observ_nml)
+                if (stat /= 0) rc = E_WRITE
+        end select
+
+        ! Close output file.
+        if (app%file) close (unit)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to write observ ' // observ%id, error=rc)
+            return
+        end if
+
+        call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
+
+        ! Forward observation to next receiver.
+        if (app%forward) then
+            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+        end if
+    end function recv_observ
+
+    subroutine run(app, mqueue)
+        !! Event loop that receives logs or observations.
+        type(app_type),    intent(inout) :: app
+        type(mqueue_type), intent(inout) :: mqueue
+
+        integer :: rc
 
         call logger%info('started ' // APP_NAME)
 
         ipc_loop: do
-            ! Read observation or log from POSIX message queue (blocking).
-            if (app%type == TYPE_OBSERV) then
-                ! Observation.
-                call logger%debug('waiting for observ on mqueue /' // app%name)
-                rc = dm_mqueue_read(mqueue, observ)
-            else if (app%type == TYPE_LOG) then
-                ! Log.
-                call logger%debug('waiting for log on mqueue /' // app%name)
-                rc = dm_mqueue_read(mqueue, log)
-            end if
+            select case (app%type)
+                case (TYPE_OBSERV); rc = recv_observ(app, mqueue)
+                case (TYPE_LOG);    rc = recv_log(app, mqueue)
+            end select
 
-            ! Handle message queue error.
-            if (dm_is_error(rc)) then
-                call logger%error('failed to read from mqueue /' // app%name, error=rc)
-                call dm_sleep(5)
-                cycle ipc_loop
-            end if
-
-            ! Validate observation or log.
-            if (app%type == TYPE_OBSERV) then
-                ! Observation.
-                if (.not. dm_observ_is_valid(observ)) then
-                    call logger%error('invalid observ received', error=E_INVALID)
-                    cycle ipc_loop
-                end if
-
-                call logger%debug('received observ ' // trim(observ%id))
-            else if (app%type == TYPE_LOG) then
-                ! Log.
-                if (.not. dm_log_is_valid(log)) then
-                    call logger%error('invalid log received', error=E_INVALID)
-                    cycle ipc_loop
-                end if
-
-                call logger%debug('received log ' // trim(log%id))
-            end if
-
-            ! Open output file.
-            if (app%file) then
-                if (app%replace) then
-                    ! Replace file.
-                    open (action='write', file=trim(app%output), iostat=stat, &
-                          newunit=file_unit, position='rewind', status='replace')
-                else
-                    ! Append data.
-                    open (action='write', file=trim(app%output), iostat=stat, &
-                          newunit=file_unit, position='append', status='unknown')
-                end if
-
-                if (stat /= 0) then
-                    call logger%error('failed to open file ' // app%output, error=E_IO)
+            select case (rc)
+                case (E_IO)
                     exit ipc_loop
-                end if
-            end if
-
-            ! Write serialised observation or log to file/stdout.
-            if (app%type == TYPE_OBSERV) then
-                select case (app%format)
-                    case (FORMAT_BLOCK)
-                        ! ASCII block format. Search for response of configured
-                        ! name and convert the observation's response into a
-                        ! data point type.
-                        if (dm_is_ok(dm_observ_index(observ, app%response, i, j))) then
-                            dp = dp_type(x = observ%requests(i)%timestamp, &
-                                         y = observ%requests(i)%responses(j)%value)
-                            rc = dm_block_write(dp, unit=file_unit)
-                        else
-                            call logger%debug('no response of name ' // app%response, error=E_NOT_FOUND)
-                        end if
-                    case (FORMAT_CSV)
-                        ! CSV format.
-                        rc = dm_csv_write(observ, unit=file_unit)
-                    case (FORMAT_JSONL)
-                        ! JSON Lines format.
-                        rc = dm_json_write(observ, unit=file_unit)
-                    case (FORMAT_NML)
-                        ! Namelist format. Write Namelist to a string first, to
-                        ! avoid newline characters.
-                        rc = dm_nml_from(observ, observ_nml)
-
-                        if (dm_is_ok(rc)) then
-                            write (file_unit, '(a)', iostat=stat) trim(observ_nml)
-                            if (stat /= 0) rc = E_WRITE
-                        end if
-                end select
-            else if (app%type == TYPE_LOG) then
-                select case (app%format)
-                    case (FORMAT_CSV)
-                        ! CSV format.
-                        rc = dm_csv_write(log, unit=file_unit)
-                    case (FORMAT_JSONL)
-                        ! JSON Lines format.
-                        rc = dm_json_write(log, unit=file_unit)
-                    case (FORMAT_NML)
-                        ! Namelist format. Write Namelist to a string first, to
-                        ! avoid newline characters.
-                        rc = dm_nml_from(log, log_nml)
-
-                        if (dm_is_ok(rc)) then
-                            write (file_unit, '(a)', iostat=stat) trim(log_nml)
-                            if (stat /= 0) rc = E_WRITE
-                        end if
-                end select
-            end if
-
-            ! Handle write errors.
-            if (dm_is_error(rc)) then
-                if (app%type == TYPE_OBSERV) then
-                    ! Observation.
-                    call logger%error('failed to write observ ' // observ%id, error=rc)
-                else if (app%type == TYPE_LOG) then
-                    ! Log.
-                    call logger%error('failed to write log ' // log%id, error=rc)
-                end if
-            end if
-
-            ! Close file.
-            if (app%file) then
-                if (app%type == TYPE_OBSERV) then
-                    ! Observation.
-                    call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
-                else if (app%type == TYPE_LOG) then
-                    ! Log.
-                    call logger%debug('log ' // trim(log%id) // ' written to ' // app%output)
-                end if
-
-                close (file_unit)
-            end if
-
-            ! Forward observation to next receiver.
-            if (app%forward) rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                case (E_MQUEUE)
+                    call dm_sleep(5)
+                    cycle ipc_loop
+            end select
         end do ipc_loop
     end subroutine run
 

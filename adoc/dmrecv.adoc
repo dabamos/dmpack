@@ -34,11 +34,11 @@ argument `--forward` is set. If no receivers are defined or left, the
 observation will be discarded after output.
 
 The output format `block` is available for observation data only, and requires
-a valid response name. Received observation will be searched for this response
-and converted to data point type if found. The data point is printed in
-ASCII block format.
+a valid response name. Received observations will be searched for this response
+and converted to data point type if found. The data point is printed in ASCII
+block format.
 
-If JSON Lines output format is selected, observations and logs are written
+If output format JSON Lines is selected, observations and logs are written
 sequentially as JSON objects to file or _stdout_, separated by new line. Use
 _jq(1)_ to convert a file `input.jsonl` of JSON objects to a JSON array in
 `output.json`:
@@ -78,7 +78,7 @@ configuration file. The arguments overwrite settings from file.
   Optional node id.
 
 *--output*, *-o* _file_::
-  Path of output file. Prints serialised data to _stdout_ if not set.
+  Path of output file. Prints serialised data to _stdout_ if `-` or not set.
 
 *--replace*, *-r*::
   Replace output file instead of appending data.
