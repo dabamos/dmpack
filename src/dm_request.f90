@@ -216,10 +216,11 @@ contains
         if (.not. dm_string_is_printable(request%delimiter)) return
         if (.not. dm_string_is_printable(request%pattern))   return
 
-        if (request%delay < 0) return
         if (.not. dm_error_is_valid(request%error)) return
+
+        if (request%delay < 0)   return
         if (request%retries < 0) return
-        if (request%state < 0) return
+        if (request%state < 0)   return
         if (request%timeout < 0) return
 
         if (request%nresponses < 0 .or. request%nresponses > REQUEST_MAX_NRESPONSES) return

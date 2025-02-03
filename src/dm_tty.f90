@@ -721,8 +721,8 @@ contains
         use :: dm_ascii, only: dm_ascii_unescape
         use :: dm_request
 
-        type(tty_type),     intent(inout)        :: tty     !! TTY type.
-        type(request_type), intent(inout)        :: request !! Request type
+        type(tty_type),     intent(inout) :: tty     !! TTY type.
+        type(request_type), intent(inout) :: request !! Request type
 
         character(len=REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
 

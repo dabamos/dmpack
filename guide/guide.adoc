@@ -2738,7 +2738,7 @@ Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
 format:
 
 ....
-$ dmrecv --name dmrecv --type observ --format jsonl --output -
+$ dmrecv --name dmrecv --type observ --format jsonl
 ....
 
 Start *dmved* to read and forward status data from the connected MPPT every 60

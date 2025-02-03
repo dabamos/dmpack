@@ -294,6 +294,7 @@ contains
             ! Fill VE.Direct protocol frame.
             call dm_ve_frame_next(frame, byte, eor, finished, valid)
 
+            ! VE.Direct block finished.
             if (finished) then
                 if (valid) then
                     epoch_now = dm_time_unix()
@@ -316,6 +317,7 @@ contains
                 cycle tty_loop
             end if
 
+            ! VE.Direct frame finished.
             if (eor) then
                 if (frame%label == 'BMV')  cycle tty_loop              ! Ignore deprecated model description.
                 if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number field.
@@ -325,6 +327,7 @@ contains
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
                 end if
 
+                ! VE.Direct frame to response.
                 call dm_ve_frame_read(frame, response, field_type, error=rc)
 
                 if (dm_is_error(rc)) then
