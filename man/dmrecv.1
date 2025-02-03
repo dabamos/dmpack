@@ -2,12 +2,12 @@
 .\"     Title: dmrecv
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-01-27
+.\"      Date: 2025-02-03
 .\"    Manual: User Commands
 .\"    Source: DMRECV
 .\"  Language: English
 .\"
-.TH "DMRECV" "1" "2025-01-27" "DMRECV" "User Commands"
+.TH "DMRECV" "1" "2025-02-03" "DMRECV" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -53,11 +53,11 @@ argument \f(CR\-\-forward\fP is set. If no receivers are defined or left, the
 observation will be discarded after output.
 .sp
 The output format \f(CRblock\fP is available for observation data only, and requires
-a valid response name. Received observation will be searched for this response
-and converted to data point type if found. The data point is printed in
-ASCII block format.
+a valid response name. Received observations will be searched for this response
+and converted to data point type if found. The data point is printed in ASCII
+block format.
 .sp
-If JSON Lines output format is selected, observations and logs are written
+If output format JSON Lines is selected, observations and logs are written
 sequentially as JSON objects to file or \fIstdout\fP, separated by new line. Use
 \fIjq(1)\fP to convert a file \f(CRinput.jsonl\fP of JSON objects to a JSON array in
 \f(CRoutput.json\fP:
@@ -117,7 +117,7 @@ Optional node id.
 .sp
 \fB\-\-output\fP, \fB\-o\fP \fIfile\fP
 .RS 4
-Path of output file. Prints serialised data to \fIstdout\fP if not set.
+Path of output file. Prints serialised data to \fIstdout\fP if \f(CR\-\fP or not set.
 .RE
 .sp
 \fB\-\-replace\fP, \fB\-r\fP
