@@ -702,7 +702,7 @@ contains
                 case (RESPONSE_TYPE_INT32)
                     if (frame%value(1:3) == '---') then
                         ! No value.
-                        rc = E_NONE
+                        rc = E_EMPTY
                         response%value = 0.0_r8
                     else if (frame%value(1:2) == '0X') then
                         ! Convert hex string to real.

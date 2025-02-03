@@ -28,6 +28,7 @@ module dm_db
     !!
     !! do while (dm_is_ok(rc))
     !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
+    !!     if (rc == E_DB_DONE) exit
     !!     if (dm_is_ok(rc)) print '(a)', trim(observ%name)
     !! end do
     !!

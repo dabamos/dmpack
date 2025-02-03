@@ -192,7 +192,7 @@ contains
         integer          :: field_type
         integer(kind=i8) :: epoch_last, epoch_now
         logical          :: eor, finished, valid
-        logical          :: has_receiver
+        logical          :: debug, has_receiver
 
         type(ve_frame_type) :: frame
         type(observ_type)   :: observ
@@ -200,6 +200,8 @@ contains
         type(response_type) :: responses(VE_NFIELDS)
 
         rc = E_NONE
+        debug = (app%debug .or. app%verbose)
+
         call logger%info('started ' // APP_NAME)
 
         epoch_last   = 0_i8
@@ -214,7 +216,7 @@ contains
         tty%stop_bits = VE_TTY_STOP_BITS
 
         ! Try to open TTY.
-        call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
+        if (debug) call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
 
         do
             rc = dm_tty_open(tty)
@@ -247,7 +249,7 @@ contains
                             call create_observ(observ, app, responses)
                             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                         else
-                            call logger%debug('no receiver specified, skipping observation forwarding')
+                            if (debug) call logger%debug('no receiver specified, skipping observation forwarding')
                         end if
                     end if
                 else
@@ -274,7 +276,7 @@ contains
                     cycle tty_loop
                 end if
 
-                call logger%debug('received VE.Direct field ' // trim(frame%label) // ': ' // frame%value)
+                if (debug) call logger%debug('received VE.Direct field ' // trim(frame%label) // ': ' // frame%value)
                 responses(field_type) = response
             end if
         end do tty_loop
@@ -318,22 +320,22 @@ contains
                 ! BlueSolar/SmartSolar MPPT.
                 observ%name = 'ved_mppt'
 
-                rc = dm_request_add(request(1), responses(VE_FIELD_CS))
-                rc = dm_request_add(request(1), responses(VE_FIELD_ERR))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H19))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H20))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H21))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H22))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H23))
-                rc = dm_request_add(request(1), responses(VE_FIELD_HSDS))
-                rc = dm_request_add(request(1), responses(VE_FIELD_I))
-                rc = dm_request_add(request(1), responses(VE_FIELD_IL))
-                rc = dm_request_add(request(1), responses(VE_FIELD_LOAD))
-                rc = dm_request_add(request(1), responses(VE_FIELD_MPPT))
-                rc = dm_request_add(request(1), responses(VE_FIELD_OR))
-                rc = dm_request_add(request(1), responses(VE_FIELD_PPV))
-                rc = dm_request_add(request(1), responses(VE_FIELD_V))
-                rc = dm_request_add(request(1), responses(VE_FIELD_VPV))
+                rc = dm_request_add(request(1), responses(VE_FIELD_CS))    ! 1
+                rc = dm_request_add(request(1), responses(VE_FIELD_ERR))   ! 2
+                rc = dm_request_add(request(1), responses(VE_FIELD_H19))   ! 3
+                rc = dm_request_add(request(1), responses(VE_FIELD_H20))   ! 4
+                rc = dm_request_add(request(1), responses(VE_FIELD_H21))   ! 5
+                rc = dm_request_add(request(1), responses(VE_FIELD_H22))   ! 6
+                rc = dm_request_add(request(1), responses(VE_FIELD_H23))   ! 7
+                rc = dm_request_add(request(1), responses(VE_FIELD_HSDS))  ! 8
+                rc = dm_request_add(request(1), responses(VE_FIELD_I))     ! 9
+                rc = dm_request_add(request(1), responses(VE_FIELD_IL))    ! 10
+                rc = dm_request_add(request(1), responses(VE_FIELD_LOAD))  ! 11
+                rc = dm_request_add(request(1), responses(VE_FIELD_MPPT))  ! 12
+                rc = dm_request_add(request(1), responses(VE_FIELD_OR))    ! 13
+                rc = dm_request_add(request(1), responses(VE_FIELD_PPV))   ! 14
+                rc = dm_request_add(request(1), responses(VE_FIELD_V))     ! 15
+                rc = dm_request_add(request(1), responses(VE_FIELD_VPV))   ! 16
 
                 rc = dm_observ_add_request(observ, request(1))
 
@@ -341,38 +343,37 @@ contains
                 ! SmartShunt battery monitor.
                 observ%name = 'ved_shunt'
 
-                rc = dm_request_add(request(1), responses(VE_FIELD_ALARM))
-                rc = dm_request_add(request(1), responses(VE_FIELD_AR))
-                rc = dm_request_add(request(1), responses(VE_FIELD_CE))
-                rc = dm_request_add(request(1), responses(VE_FIELD_DM))
-                rc = dm_request_add(request(1), responses(VE_FIELD_FW))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H1))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H2))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H3))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H4))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H5))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H6))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H7))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H8))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H9))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H10))
-                rc = dm_request_add(request(1), responses(VE_FIELD_H11))
+                rc = dm_request_add(request(1), responses(VE_FIELD_ALARM)) ! 1
+                rc = dm_request_add(request(1), responses(VE_FIELD_AR))    ! 2
+                rc = dm_request_add(request(1), responses(VE_FIELD_CE))    ! 3
+                rc = dm_request_add(request(1), responses(VE_FIELD_DM))    ! 4
+                rc = dm_request_add(request(1), responses(VE_FIELD_H1))    ! 5
+                rc = dm_request_add(request(1), responses(VE_FIELD_H2))    ! 6
+                rc = dm_request_add(request(1), responses(VE_FIELD_H3))    ! 7
+                rc = dm_request_add(request(1), responses(VE_FIELD_H4))    ! 8
+                rc = dm_request_add(request(1), responses(VE_FIELD_H5))    ! 9
+                rc = dm_request_add(request(1), responses(VE_FIELD_H6))    ! 10
+                rc = dm_request_add(request(1), responses(VE_FIELD_H7))    ! 11
+                rc = dm_request_add(request(1), responses(VE_FIELD_H8))    ! 12
+                rc = dm_request_add(request(1), responses(VE_FIELD_H9))    ! 13
+                rc = dm_request_add(request(1), responses(VE_FIELD_H10))   ! 14
+                rc = dm_request_add(request(1), responses(VE_FIELD_H11))   ! 15
+                rc = dm_request_add(request(1), responses(VE_FIELD_H12))   ! 16
 
-                rc = dm_request_add(request(2), responses(VE_FIELD_H12))
-                rc = dm_request_add(request(2), responses(VE_FIELD_H15))
-                rc = dm_request_add(request(2), responses(VE_FIELD_H16))
-                rc = dm_request_add(request(2), responses(VE_FIELD_H17))
-                rc = dm_request_add(request(2), responses(VE_FIELD_H18))
-                rc = dm_request_add(request(2), responses(VE_FIELD_I))
-                rc = dm_request_add(request(2), responses(VE_FIELD_MON))
-                rc = dm_request_add(request(2), responses(VE_FIELD_P))
-                rc = dm_request_add(request(2), responses(VE_FIELD_RELAY))
-                rc = dm_request_add(request(2), responses(VE_FIELD_SOC))
-                rc = dm_request_add(request(2), responses(VE_FIELD_T))
-                rc = dm_request_add(request(2), responses(VE_FIELD_TTG))
-                rc = dm_request_add(request(2), responses(VE_FIELD_V))
-                rc = dm_request_add(request(2), responses(VE_FIELD_VM))
-                rc = dm_request_add(request(2), responses(VE_FIELD_VS))
+                rc = dm_request_add(request(2), responses(VE_FIELD_H15))   ! 1
+                rc = dm_request_add(request(2), responses(VE_FIELD_H16))   ! 2
+                rc = dm_request_add(request(2), responses(VE_FIELD_H17))   ! 3
+                rc = dm_request_add(request(2), responses(VE_FIELD_H18))   ! 4
+                rc = dm_request_add(request(2), responses(VE_FIELD_I))     ! 5
+                rc = dm_request_add(request(2), responses(VE_FIELD_MON))   ! 6
+                rc = dm_request_add(request(2), responses(VE_FIELD_P))     ! 7
+                rc = dm_request_add(request(2), responses(VE_FIELD_RELAY)) ! 8
+                rc = dm_request_add(request(2), responses(VE_FIELD_SOC))   ! 9
+                rc = dm_request_add(request(2), responses(VE_FIELD_T))     ! 10
+                rc = dm_request_add(request(2), responses(VE_FIELD_TTG))   ! 11
+                rc = dm_request_add(request(2), responses(VE_FIELD_V))     ! 12
+                rc = dm_request_add(request(2), responses(VE_FIELD_VM))    ! 13
+                rc = dm_request_add(request(2), responses(VE_FIELD_VS))    ! 14
 
                 rc = dm_observ_add_request(observ, request(1))
                 rc = dm_observ_add_request(observ, request(2))
