@@ -5,6 +5,60 @@
 program dmved
     !! VE.Direct protocol logger for MPPT solar chargers and SmartShunt battery
     !! monitors by Victron Energy.
+    !!
+    !! The following VE.Direct fields are captured:
+    !!
+    !! | Response | Unit    | Description                               | MPPT | Shunt |
+    !! |----------|---------|-------------------------------------------|------|-------|
+    !! | `alarm`  | –       | Alarm condition active (on/off).          |      |   ✓   |
+    !! | `ar`     | –       | Alarm reason (decimal).                   |      |   ✓   |
+    !! | `ce`     | mAh     | Consumed amp hours.                       |      |   ✓   |
+    !! | `cs`     | –       | State of operation.                       |  ✓   |       |
+    !! | `dm`     | ‰       | Mid-point deviation of the battery bank.  |      |   ✓   |
+    !! | `err`    | –       | Error code.                               |  ✓   |       |
+    !! | `h1`     | mAh     | Depth of the deepest discharge.           |      |   ✓   |
+    !! | `h2`     | mAh     | Depth of the last discharge.              |      |   ✓   |
+    !! | `h3`     | mAh     | Depth of the average discharge.           |      |   ✓   |
+    !! | `h4`     | –       | Number of charge cycles.                  |      |   ✓   |
+    !! | `h5`     | –       | Number of full discharges.                |      |   ✓   |
+    !! | `h6`     | mAh     | Cumulative amp hours drawn.               |      |   ✓   |
+    !! | `h7`     | mV      | Minimum main (battery) voltage.           |      |   ✓   |
+    !! | `h8`     | mV      | Maximum main (battery) voltage.           |      |   ✓   |
+    !! | `h9`     | sec     | Number of seconds since last full charge. |      |   ✓   |
+    !! | `h10`    | –       | Number of automatic synchronisations.     |      |   ✓   |
+    !! | `h11`    | –       | Number of low main voltage alarms.        |      |   ✓   |
+    !! | `h12`    | –       | Number of high main voltage alarms.       |      |   ✓   |
+    !! | `h15`    | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `h16`    | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `h17`    | kWh/100 | Amount of produced energy.                |      |   ✓   |
+    !! | `h18`    | kWh/100 | Amount of consumed energy.                |      |   ✓   |
+    !! | `h19`    | kWh/100 | Yield total (user resettable counter).    |  ✓   |       |
+    !! | `h20`    | kWh/100 | Yield today.                              |  ✓   |       |
+    !! | `h21`    | W       | Maximum power today.                      |  ✓   |       |
+    !! | `h22`    | kWh/100 | Yield yesterday.                          |  ✓   |       |
+    !! | `h23`    | W       | Maximum power yesterday.                  |  ✓   |       |
+    !! | `hsds`   | –       | Day sequence number (0 to 364).           |  ✓   |       |
+    !! | `i`      | mA      | Main or channel 1 battery current.        |  ✓   |   ✓   |
+    !! | `il`     | mA      | Load current.                             |  ✓   |       |
+    !! | `load`   | –       | Load output state (on/off).               |  ✓   |       |
+    !! | `mon`    | –       | DC monitor mode.                          |      |   ✓   |
+    !! | `mppt`   | –       | Tracker operation mode.                   |  ✓   |       |
+    !! | `or`     | –       | Off reason.                               |  ✓   |       |
+    !! | `p`      | W       | Instantaneous power.                      |      |   ✓   |
+    !! | `ppv`    | W       | Panel power.                              |  ✓   |       |
+    !! | `relay`  | –       | Relay state (on/off).                     |  ✓   |   ✓   |
+    !! | `soc`    | ‰       | State-of-charge.                          |      |   ✓   |
+    !! | `t`      | °C      | Battery temperature.                      |      |   ✓   |
+    !! | `ttg`    | min     | Time-to-go.                               |      |   ✓   |
+    !! | `v`      | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
+    !! | `vm`     | mV      | Mid-point voltage of the battery bank.    |      |   ✓   |
+    !! | `vpv`    | mV      | Panel voltage.                            |  ✓   |       |
+    !! | `vs`     | mV      | Auxiliary (starter) voltage.              |      |   ✓   |
+    !!
+    !! The MPPT observation will contain one request with 16 responses and the
+    !! shunt observation two requests with 30 responses.
+    !!
+    !! The TTY is always configured to 19200 baud (8N1).
     use :: dmpack
     implicit none (type, external)
 
@@ -107,6 +161,7 @@ contains
 
         app%device = dm_ve_device_from_name(app%device_name)
 
+        ! Validate options.
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -184,6 +239,9 @@ contains
     end function read_config
 
     integer function run(app, tty) result(rc)
+        !! Connects to TTY and runs an event loop to read VE.Direct frames to
+        !! responses. The observation is then forwarded via message queue to
+        !! the specified receiver.
         type(app_type), intent(inout) :: app !! App settings.
         type(tty_type), intent(inout) :: tty !! TTY settings.
 
@@ -199,9 +257,7 @@ contains
         type(response_type) :: response
         type(response_type) :: responses(VE_NFIELDS)
 
-        rc = E_NONE
         debug = (app%debug .or. app%verbose)
-
         call logger%info('started ' // APP_NAME)
 
         epoch_last   = 0_i8
@@ -289,9 +345,10 @@ contains
     end function run
 
     subroutine create_observ(observ, app, responses)
-        type(observ_type),   intent(out)   :: observ
-        type(app_type),      intent(inout) :: app
-        type(response_type), intent(inout) :: responses(:)
+        !! Creates new observation from VE.Direct responses.
+        type(observ_type),   intent(out)   :: observ       !! Created observation.
+        type(app_type),      intent(inout) :: app          !! App settings.
+        type(response_type), intent(inout) :: responses(:) !! All VE.Direct responses.
 
         character(len=TIME_LEN) :: timestamp
         integer                 :: rc
@@ -311,9 +368,9 @@ contains
         rc = dm_observ_add_receiver(observ, app%receiver)
 
         ! Prepare requests.
-        request(:)%name      = 'fields'
+        request(:)%name      = 'ved'
         request(:)%timestamp = timestamp
-        request(:)%delay     = app%interval
+        request(:)%delay     = dm_sec_to_msec(app%interval)
 
         select case (app%device)
             case (VE_DEVICE_MPPT)
