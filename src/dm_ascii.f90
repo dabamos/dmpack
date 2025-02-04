@@ -40,9 +40,6 @@ module dm_ascii
 
     character(len=*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! Carriage return + line feed (`\r\n`).
 
-    public :: dm_ascii_escape
-    public :: dm_ascii_unescape
-
     public :: dm_ascii_is_alpha
     public :: dm_ascii_is_alpha_numeric
     public :: dm_ascii_is_blank
@@ -54,50 +51,10 @@ module dm_ascii
     public :: dm_ascii_is_octal_digit
     public :: dm_ascii_is_upper
     public :: dm_ascii_is_white_space
+
+    public :: dm_ascii_escape
+    public :: dm_ascii_unescape
 contains
-    pure function dm_ascii_escape(str) result(res)
-        !! Escapes given character string by replacing ASCII control characters
-        !! by an escape string. For instance, character `ASCII_LF` (new line)
-        !! is turned into literal `\n`. Non-printable characters without common
-        !! literal are replaced with `\x` plus ASCII character code in
-        !! hexadecimal, from `\x00` to `\x1F`.
-        character(len=*), intent(in)  :: str !! Input string.
-        character(len=:), allocatable :: res !! Output string.
-
-        character(len=4) :: a
-        integer          :: i, stat
-
-        res = ''
-
-        do i = 1, len_trim(str)
-            select case (str(i:i))
-                case (ASCII_NUL:ASCII_ACK, ASCII_SO:ASCII_SUB, ASCII_FS:ASCII_US) ! 0:6, 14:26, 28:31
-                    write (a, '("\x", z2.2)', iostat=stat) iachar(str(i:i))
-                    if (stat == 0) res = res // a
-                case (ASCII_BEL) ! 7
-                    res = res // '\a'
-                case (ASCII_BS)  ! 8
-                    res = res // '\b'
-                case (ASCII_TAB) ! 9
-                    res = res // '\t'
-                case (ASCII_LF)  ! 10
-                    res = res // '\n'
-                case (ASCII_VT)  ! 11
-                    res = res // '\v'
-                case (ASCII_FF)  ! 12
-                    res = res // '\f'
-                case (ASCII_CR)  ! 13
-                    res = res // '\r'
-                case (ASCII_ESC) ! 27
-                    res = res // '\e'
-                case (achar(92)) ! \
-                    res = res // '\\'
-                case default
-                    res = res // str(i:i)
-            end select
-        end do
-    end function dm_ascii_escape
-
     pure elemental logical function dm_ascii_is_alpha(a) result(is)
         !! Returns whether character is alpha letter.
         character, intent(in) :: a !! Character to check.
@@ -190,11 +147,54 @@ contains
         is = ((a == ' ') .or. (ia >= int(z'09') .and. ia <= int(z'0D')))
     end function dm_ascii_is_white_space
 
-    pure function dm_ascii_unescape(str) result(res)
+    pure function dm_ascii_escape(string) result(res)
+        !! Escapes given character string by replacing ASCII control characters
+        !! by an escape string. For instance, character `ASCII_LF` (new line)
+        !! is turned into literal `\n`. Non-printable characters without common
+        !! literal are replaced with `\x` plus ASCII character code in
+        !! hexadecimal, from `\x00` to `\x1F`.
+        character(len=*), intent(in)  :: string !! Input string.
+        character(len=:), allocatable :: res    !! Output string.
+
+        character(len=4) :: a
+        integer          :: i, stat
+
+        res = ''
+
+        do i = 1, len_trim(string)
+            select case (string(i:i))
+                case (ASCII_NUL:ASCII_ACK, ASCII_SO:ASCII_SUB, ASCII_FS:ASCII_US) ! 0:6, 14:26, 28:31
+                    write (a, '("\x", z2.2)', iostat=stat) iachar(string(i:i))
+                    if (stat == 0) res = res // a
+                case (ASCII_BEL) ! 7
+                    res = res // '\a'
+                case (ASCII_BS)  ! 8
+                    res = res // '\b'
+                case (ASCII_TAB) ! 9
+                    res = res // '\t'
+                case (ASCII_LF)  ! 10
+                    res = res // '\n'
+                case (ASCII_VT)  ! 11
+                    res = res // '\v'
+                case (ASCII_FF)  ! 12
+                    res = res // '\f'
+                case (ASCII_CR)  ! 13
+                    res = res // '\r'
+                case (ASCII_ESC) ! 27
+                    res = res // '\e'
+                case (achar(92)) ! \
+                    res = res // '\\'
+                case default
+                    res = res // string(i:i)
+            end select
+        end do
+    end function dm_ascii_escape
+
+    pure function dm_ascii_unescape(string) result(res)
         !! Returns unescaped string of given string with escaped ASCII
         !! characters.
-        character(len=*), intent(in)  :: str !! Input string.
-        character(len=:), allocatable :: res !! Output string.
+        character(len=*), intent(in)  :: string !! Input string.
+        character(len=:), allocatable :: res    !! Output string.
 
         integer   :: i, k, n, stat
         logical   :: esc, npc
@@ -204,14 +204,14 @@ contains
         npc = .false. ! Non-printable character flag.
 
         i = 1
-        n = len_trim(str)
+        n = len_trim(string)
 
         do while (i <= n)
             if (esc) then
                 ! Escaped character literals.
                 esc = .false.
 
-                select case (str(i:i))
+                select case (string(i:i))
                     case ('a'); res = res // ASCII_BEL
                     case ('b'); res = res // ASCII_BS
                     case ('t'); res = res // ASCII_TAB
@@ -221,32 +221,32 @@ contains
                     case ('r'); res = res // ASCII_CR
                     case ('e'); res = res // ASCII_ESC
                     case ('x'); npc = .true.
-                    case (achar(92)); res = res // str(i:i)
+                    case (achar(92)); res = res // string(i:i)
                 end select
             else if (npc) then
                 ! Escaped non-printable characters, from `\x00` to `\xFF`.
                 npc = .false.
 
                 if (i + 1 <= n) then
-                    read (str(i:i + 1), '(z2)', iostat=stat) k
+                    read (string(i:i + 1), '(z2)', iostat=stat) k
 
                     if (stat == 0) then
                         res = res // achar(k)
                     else
-                        res = res // '\x' // str(i:i + 1)
+                        res = res // '\x' // string(i:i + 1)
                     end if
 
                     i = i + 1
                 else
-                    res = res // '\x' // str(i:i)
+                    res = res // '\x' // string(i:i)
                 end if
             else
-                if (str(i:i) == '\') then
+                if (string(i:i) == '\') then
                     ! Found escape character.
                     esc = .true.
                 else
                     ! All other characters.
-                    res = res // str(i:i)
+                    res = res // string(i:i)
                 end if
             end if
 

@@ -58,6 +58,7 @@ module dm_config
         module procedure :: config_get_int64
         module procedure :: config_get_job_list
         module procedure :: config_get_logical
+        module procedure :: config_get_modbus_registers
         module procedure :: config_get_real32
         module procedure :: config_get_real64
         module procedure :: config_get_report
@@ -79,6 +80,7 @@ module dm_config
     private :: config_get_int64
     private :: config_get_job_list
     private :: config_get_logical
+    private :: config_get_modbus_registers
     private :: config_get_real32
     private :: config_get_real64
     private :: config_get_report
@@ -318,6 +320,54 @@ contains
         rc = config_error(rc, param=name)
         if (present(error)) error = rc
     end subroutine config_get_logical
+
+    subroutine config_get_modbus_registers(config, name, values, error, field)
+        !! Returns configuration value as array of Modbus register types in
+        !! `values`.
+        use :: dm_modbus_type
+
+        type(config_type),                       intent(inout)         :: config    !! Config type.
+        character(len=*),                        intent(in)            :: name      !! Setting name.
+        type(modbus_register_type), allocatable, intent(out)           :: values(:) !! Setting value.
+        integer,                                 intent(out), optional :: error     !! Error code.
+        logical,                                 intent(in),  optional :: field     !! Read from table field.
+
+        integer :: i, rc, stat, sz
+        logical :: field_
+
+        field_ = .true.
+        if (present(field)) field_ = field
+        if (field_) rc = dm_lua_field(config%lua, name)
+
+        lua_block: block
+            rc = E_TYPE
+            if (.not. dm_lua_is_table(config%lua)) exit lua_block
+
+            rc = E_ALLOC
+            sz = dm_lua_table_size(config%lua)
+            allocate (values(sz), stat=stat)
+            if (stat /= 0) exit lua_block
+
+            rc = E_EMPTY
+            if (sz == 0) exit lua_block
+
+            do i = 1, sz
+                ! Load element.
+                rc = dm_lua_get(config%lua, i)
+                if (dm_is_error(rc)) exit lua_block
+                ! Read element.
+                rc = dm_lua_to(config%lua, values(i))
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call dm_lua_pop(config%lua)
+
+        rc = config_error(rc, param=name)
+        if (present(error)) error = rc
+    end subroutine config_get_modbus_registers
 
     subroutine config_get_real32(config, name, value, error)
         !! Returns configuration value as 4-byte real in `value`.

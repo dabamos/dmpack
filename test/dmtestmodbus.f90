@@ -8,14 +8,15 @@ program dmtestmodbus
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestmodbus'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -65,4 +66,52 @@ contains
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(len=*), parameter :: STRING1 = 'action=read,slave=10,address=50,order=abcd'
+        character(len=*), parameter :: STRING2 = 'ACTION = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10'
+        character(len=*), parameter :: STRING3 = 'action=none,slave=10,address=50,value=10,order=none'
+        character(len=*), parameter :: STRING4 = 'action=write,slave=10,address=50,value=123456789,order=none'
+        character(len=*), parameter :: STRING5 = 'action-read.slave-10.address-50'
+
+        type(modbus_register_type) :: register
+        integer                    :: rc
+
+        stat = TEST_FAILED
+
+        print *, 'Parsing strings ...'
+
+        print *, STRING1
+        call dm_modbus_parse(STRING1, register, error=rc)
+        call dm_error_out(rc); if (dm_is_error(rc)) return
+
+        if (register%action /= MODBUS_ACTION_READ)   return
+        if (register%slave /= 10)                    return
+        if (register%address /= 50)                  return
+        if (register%byte_order /= MODBUS_REAL_ABCD) return
+
+        print *, STRING2
+        call dm_modbus_parse(STRING2, register, error=rc)
+        call dm_error_out(rc); if (dm_is_error(rc)) return
+
+        if (register%action /= MODBUS_ACTION_WRITE)  return
+        if (register%slave /= 9)                     return
+        if (register%address /= 1)                   return
+        if (register%value /= 10_u2)                 return
+        if (register%byte_order /= MODBUS_REAL_NONE) return
+
+        print *, STRING3
+        call dm_modbus_parse(STRING3, register, error=rc)
+        if (rc /= E_TYPE) return
+
+        print *, STRING4
+        call dm_modbus_parse(STRING4, register, error=rc)
+        if (rc /= E_TYPE) return
+
+        print *, STRING5
+        call dm_modbus_parse(STRING5, register, error=rc)
+        if (rc /= E_FORMAT) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestmodbus

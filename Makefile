@@ -276,6 +276,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_mail.f90 \
       $(SRCDIR)/dm_mime.f90 \
       $(SRCDIR)/dm_modbus.f90 \
+      $(SRCDIR)/dm_modbus_type.f90 \
       $(SRCDIR)/dm_mqtt.f90 \
       $(SRCDIR)/dm_mqueue.f90 \
       $(SRCDIR)/dm_mqueue_util.f90 \
@@ -375,6 +376,7 @@ OBJ = dm_ansi.o \
       dm_mail.o \
       dm_mime.o \
       dm_modbus.o \
+      dm_modbus_type.o \
       dm_mqtt.o \
       dm_mqueue.o \
       dm_mqueue_util.o \
@@ -607,6 +609,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_beat.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_logger.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
@@ -640,14 +643,14 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_type.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus_type.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_geocom.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_lib.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_config.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_rts.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_crypto.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_image.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_gm.f90

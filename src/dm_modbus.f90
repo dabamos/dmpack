@@ -54,14 +54,9 @@ module dm_modbus
     use :: dm_c
     use :: dm_error
     use :: dm_kind
+    use :: dm_modbus_type
     implicit none (type, external)
     private
-
-    ! Byte orders of 4-byte real values.
-    integer, parameter, public :: MODBUS_REAL_ABCD = 0 !! ABCD byte order.
-    integer, parameter, public :: MODBUS_REAL_BADC = 1 !! BADC byte order.
-    integer, parameter, public :: MODBUS_REAL_CDAB = 2 !! CDBA byte order.
-    integer, parameter, public :: MODBUS_REAL_DCBA = 3 !! DCBA byte order.
 
     character, parameter :: PARITY_NONE = 'N'
     character, parameter :: PARITY_EVEN = 'E'
@@ -96,7 +91,6 @@ module dm_modbus
         module procedure :: dm_modbus_create_tcp
     end interface dm_modbus_create
 
-    public :: dm_modbus_byte_order_from_name
     public :: dm_modbus_close
     public :: dm_modbus_connect
     public :: dm_modbus_create
@@ -128,34 +122,6 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_modbus_byte_order_from_name(name, byte_order) result(rc)
-        !! Returns byte order named parameter associated with given string.
-        !! Sets argument `byte_order` to `MODBUS_REAL_ACBD` if `string` is
-        !! `ABCD` (case insensitive). Returns `E_INVALID` and sets `byte_order`
-        !! to `MODBUS_REAL_ABCD` if the string is invalid.
-        use :: dm_string, only: dm_to_upper
-
-        character(len=*), intent(in)  :: name       !! Input string.
-        integer,          intent(out) :: byte_order !! Byte order of real values.
-
-        character(len=4) :: name_
-
-        rc = E_NONE
-
-        ! Normalise name.
-        name_ = dm_to_upper(name)
-
-        select case (name_)
-            case ('ABCD'); byte_order = MODBUS_REAL_ABCD
-            case ('BADC'); byte_order = MODBUS_REAL_BADC
-            case ('CDAB'); byte_order = MODBUS_REAL_CDAB
-            case ('DCBA'); byte_order = MODBUS_REAL_DCBA
-            case default
-                rc = E_INVALID
-                byte_order = MODBUS_REAL_ABCD
-        end select
-    end function dm_modbus_byte_order_from_name
-
     integer function dm_modbus_connect(modbus) result(rc)
         !! Connects to Modbus RTU/TCP device.
         !!
@@ -293,17 +259,18 @@ contains
         integer,          intent(in)            :: byte_order   !! Byte order.
         integer,          intent(out), optional :: error        !! Error code.
 
-        if (present(error)) error = E_NONE
+        value = 0.0
+        if (present(error)) error = E_INVALID
 
         select case (byte_order)
             case (MODBUS_REAL_ABCD); value = modbus_get_float_abcd(registers)
             case (MODBUS_REAL_BADC); value = modbus_get_float_badc(registers)
             case (MODBUS_REAL_CDAB); value = modbus_get_float_cdab(registers)
             case (MODBUS_REAL_DCBA); value = modbus_get_float_dcba(registers)
-            case default
-                if (present(error)) error = E_INVALID
-                value = 0.0
+            case default;            return
         end select
+
+        if (present(error)) error = E_NONE
     end function dm_modbus_get_real
 
     real function dm_modbus_get_real_abcd(registers) result(value)
@@ -398,7 +365,7 @@ contains
 
         integer :: nregisters, stat
 
-        registers = 0_u2
+        registers(:) = 0_u2
 
         nregisters = size(registers)
         if (present(n)) nregisters = n
@@ -593,17 +560,18 @@ contains
         integer,          intent(in)            :: byte_order   !! Byte order.
         integer,          intent(out), optional :: error        !! Error code.
 
-        if (present(error)) error = E_NONE
+        registers(:) = 0_u2
+        if (present(error)) error = E_INVALID
 
         select case (byte_order)
             case (MODBUS_REAL_ABCD); call modbus_set_float_abcd(value, registers)
             case (MODBUS_REAL_BADC); call modbus_set_float_badc(value, registers)
             case (MODBUS_REAL_CDAB); call modbus_set_float_cdab(value, registers)
             case (MODBUS_REAL_DCBA); call modbus_set_float_dcba(value, registers)
-            case default
-                if (present(error)) error = E_INVALID
-                registers = 0
+            case default;            return
         end select
+
+        if (present(error)) error = E_NONE
     end subroutine dm_modbus_set_real
 
     subroutine dm_modbus_set_real_abcd(value, registers)

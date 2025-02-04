@@ -38,8 +38,13 @@ contains
     integer function dm_api_status_from_string(string, api) result(rc)
         !! Reads API status type from given string. Only keys found in the
         !! string are overwritten in the derived type. No error is returned if
-        !! the string does not contain any of the keys. The function returns
-        !! `E_EMPTY` if the passed string is empty.
+        !! the string does not contain any of the keys.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the string is empty.
+        !! * `E_FORMAT` if the string format is invalid.
+        !!
         use :: dm_string
 
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
@@ -49,11 +54,12 @@ contains
 
         integer                       :: i, n, nlines
         character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
-        character(len=API_STATUS_LEN) :: pair(2)
+        character(len=API_STATUS_LEN) :: pair(2), key, value
 
         rc = E_EMPTY
         if (len_trim(string) == 0) return
 
+        rc = E_FORMAT
         call dm_string_split(string, lines, del=NL, n=nlines)
         if (nlines == 0) return
 
@@ -61,23 +67,20 @@ contains
             call dm_string_split(lines(i), pair, del='=', n=n)
             if (n /= 2) exit
 
-            select case (pair(1))
-                case ('version')
-                    api%version = dm_ascii_escape(pair(2))
-                case ('dmpack')
-                    api%dmpack = dm_ascii_escape(pair(2))
-                case ('host')
-                    api%host = dm_ascii_escape(pair(2))
-                case ('server')
-                    api%server = dm_ascii_escape(pair(2))
-                case ('timestamp')
-                    api%timestamp = dm_ascii_escape(pair(2))
-                case ('message')
-                    api%message= dm_ascii_escape(pair(2))
-                case ('error')
-                    api%error = dm_atoi(pair(2))
-                case default
-                    cycle
+            call dm_lower(pair(1))
+
+            key   = adjustl(pair(1))
+            value = adjustl(pair(2))
+
+            select case (key)
+                case ('version');   api%version   = dm_ascii_escape(value)
+                case ('dmpack');    api%dmpack    = dm_ascii_escape(value)
+                case ('host');      api%host      = dm_ascii_escape(value)
+                case ('server');    api%server    = dm_ascii_escape(value)
+                case ('timestamp'); api%timestamp = dm_ascii_escape(value)
+                case ('message');   api%message   = dm_ascii_escape(value)
+                case ('error');     api%error     = dm_atoi(value)
+                case default;       cycle
             end select
         end do
 
@@ -100,22 +103,22 @@ contains
         equals = .true.
     end function dm_api_status_equals
 
-    function dm_api_status_to_string(api) result(str)
+    function dm_api_status_to_string(api) result(string)
         !! Returns string representation of given API status type. The string
         !! contains new-line characters.
-        type(api_status_type), intent(inout) :: api !! API status type.
-        character(len=:), allocatable        :: str !! String representation.
+        type(api_status_type), intent(inout) :: api    !! API status type.
+        character(len=:), allocatable        :: string !! String representation.
 
-        str = 'version='   // trim(api%version) // NL // &
-              'dmpack='    // trim(api%dmpack)  // NL // &
-              'host='      // trim(api%host)    // NL // &
-              'server='    // trim(api%server)  // NL // &
-              'timestamp=' // trim(api%timestamp)
+        string = 'version='   // trim(api%version) // NL // &
+                 'dmpack='    // trim(api%dmpack)  // NL // &
+                 'host='      // trim(api%host)    // NL // &
+                 'server='    // trim(api%server)  // NL // &
+                 'timestamp=' // trim(api%timestamp)
 
         if (len_trim(api%message) > 0) then
-            str = str // NL // 'message=' // trim(api%message)
+            string = string // NL // 'message=' // trim(api%message)
         end if
 
-        str = str // NL // 'error=' // dm_itoa(api%error)
+        string = string // NL // 'error=' // dm_itoa(api%error)
     end function dm_api_status_to_string
 end module dm_api_status

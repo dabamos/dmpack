@@ -108,7 +108,21 @@ dmtestconfig = {
     string = "a\\r\\n",
     integer = 420,
     logical = true,
-    real = 1.0
+    real = 1.0,
+    registers = {
+        {
+            action = "read",
+            slave = 10,
+            address = 50,
+            order = "abcd"
+        },
+        {
+            action = "write",
+            slave = 99,
+            address = 10,
+            value = 16
+        }
+    }
 }
 
 function process(table)

@@ -48,6 +48,7 @@ module dm_lua
         module procedure :: lua_field_array_int32
         module procedure :: lua_field_array_int64
         module procedure :: lua_field_array_string
+        module procedure :: lua_field_int16
         module procedure :: lua_field_int32
         module procedure :: lua_field_int64
         module procedure :: lua_field_logical
@@ -93,6 +94,7 @@ module dm_lua
         module procedure :: lua_to_job
         module procedure :: lua_to_job_list
         module procedure :: lua_to_jobs
+        module procedure :: lua_to_modbus_register
         module procedure :: lua_to_observ
         module procedure :: lua_to_observs
         module procedure :: lua_to_report
@@ -172,6 +174,7 @@ module dm_lua
     private :: lua_to_job
     private :: lua_to_job_list
     private :: lua_to_jobs
+    private :: lua_to_modbus_register
     private :: lua_to_observ
     private :: lua_to_observs
     private :: lua_to_report
@@ -717,6 +720,33 @@ contains
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_string
 
+    integer function lua_field_int16(lua, name, value) result(rc)
+        !! Returns 2-byte integer from table field `name` in `value`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !! * `E_TYPE` if the field is not of type integer.
+        !!
+        !! On error, `value` will not be overwritten.
+        type(lua_state_type), intent(inout) :: lua   !! Lua type.
+        character(len=*),     intent(in)    :: name  !! Table field name.
+        integer(kind=i2),     intent(inout) :: value !! Table field value.
+
+        lua_block: block
+            rc = E_EMPTY
+            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+
+            rc = E_TYPE
+            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+
+            rc = E_NONE
+            value = int(lua_tointeger(lua%ctx, -1), kind=i2)
+        end block lua_block
+
+        call lua_pop(lua%ctx, 1)
+    end function lua_field_int16
+
     integer function lua_field_int32(lua, name, value) result(rc)
         !! Returns 4-byte integer from table field `name` in `value`.
         !!
@@ -1049,13 +1079,14 @@ contains
         character(len=*),     intent(inout)        :: value    !! Variable value.
         logical,              intent(in), optional :: unescape !! Unescape string.
 
-        character(len=:), allocatable :: str
-        logical                       :: unescape_
+        logical :: unescape_
 
         unescape_ = .false.
         if (present(unescape)) unescape_ = unescape
 
         lua_block: block
+            character(len=:), allocatable :: str
+
             rc = E_INVALID
             if (lua_istable(lua%ctx, -1) == 0) return
 
@@ -1283,10 +1314,10 @@ contains
         type(lua_state_type), intent(inout) :: lua      !! Lua type.
         type(job_list_type),  intent(out)   :: job_list !! Job list type.
 
-        integer        :: i, sz
-        type(job_type) :: job
-
         lua_block: block
+            integer        :: i, sz
+            type(job_type) :: job
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
@@ -1325,9 +1356,9 @@ contains
         type(lua_state_type),        intent(inout) :: lua     !! Lua type.
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
-        integer :: i, stat, sz
-
         lua_block: block
+            integer :: i, stat, sz
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
@@ -1351,6 +1382,36 @@ contains
         call dm_lua_pop(lua)
     end function lua_to_jobs
 
+    integer function lua_to_modbus_register(lua, register) result(rc)
+        !! Reads Lua table into Fortran Modbus register type. The table has to
+        !! be on top of the stack and will be removed once finished.
+        use :: dm_modbus_type
+
+        type(lua_state_type),       intent(inout) :: lua      !! Lua type.
+        type(modbus_register_type), intent(out)   :: register !! Modbus register type.
+
+        lua_block: block
+            character(len=MODBUS_ACTION_NAME_LEN) :: action
+            character(len=MODBUS_ORDER_NAME_LEN)  :: order
+
+            rc = E_TYPE
+            if (.not. dm_lua_is_table(lua)) exit lua_block
+
+            ! Ignore error codes, just assume defaults if missing.
+            rc = dm_lua_field(lua, 'action',  action)
+            rc = dm_lua_field(lua, 'slave',   register%slave)
+            rc = dm_lua_field(lua, 'address', register%address)
+            rc = dm_lua_field(lua, 'value',   register%value)
+            rc = dm_lua_field(lua, 'order',   order)
+
+            register%action     = dm_modbus_action_from_name(action)
+            register%byte_order = dm_modbus_byte_order_from_name(order)
+        end block lua_block
+
+        call dm_lua_pop(lua)
+        rc = E_NONE
+    end function lua_to_modbus_register
+
     integer function lua_to_observ(lua, observ) result(rc)
         !! Reads Lua table into Fortran observation type. The table has to be on
         !! top of the stack and will be removed once finished.
@@ -1359,9 +1420,9 @@ contains
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(observ_type),    intent(out)   :: observ !! Observation type.
 
-        integer :: i, nrec, nreq, sz
-
         observ_block: block
+            integer :: i, nrec, nreq, sz
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit observ_block
 
@@ -1424,9 +1485,9 @@ contains
         type(lua_state_type),           intent(inout) :: lua        !! Lua type.
         type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation type array.
 
-        integer :: i, stat, sz
-
         lua_block: block
+            integer :: i, stat, sz
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
@@ -1461,9 +1522,9 @@ contains
         type(lua_state_type), intent(inout) :: lua    !! Lua type.
         type(report_type),    intent(out)   :: report !! Report type.
 
-        integer :: i, sz, stat
-
         lua_block: block
+            integer :: i, sz, stat
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
@@ -1564,9 +1625,9 @@ contains
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
         type(request_type),   intent(out)   :: request !! Request type.
 
-        integer :: i, n, sz
-
         request_block: block
+            integer :: i, n, sz
+
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit request_block
 

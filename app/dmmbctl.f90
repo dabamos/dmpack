@@ -65,7 +65,6 @@ contains
         type(app_type), intent(out) :: app
 
         character(len=4) :: byte_order, parity
-        integer          :: stat
         integer          :: read_address, write_address
         logical          :: has_baud_rate, has_byte_size, has_path, has_parity, has_stop_bits
         logical          :: has_address, has_port, has_registers
@@ -269,9 +268,9 @@ contains
 
         ! Floating-point number.
         if (app%float) then
-            stat = dm_modbus_byte_order_from_name(byte_order, app%byte_order)
+            app%byte_order = dm_modbus_byte_order_from_name(byte_order)
 
-            if (dm_is_error(stat)) then
+            if (.not. dm_modbus_is_valid_byte_order(app%byte_order)) then
                 call dm_error_out(rc, 'argument --float is not a valid byte order')
                 return
             end if

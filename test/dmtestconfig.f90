@@ -9,13 +9,14 @@ program dmtestconfig
 
     character(len=*), parameter :: TEST_NAME   = 'dmtestconfig'
     character(len=*), parameter :: CONFIG_FILE = 'test/test.lua'
-    integer,          parameter :: NTESTS      = 1
+    integer,          parameter :: NTESTS      = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
@@ -61,4 +62,43 @@ contains
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        integer                                 :: rc
+        type(config_type)                       :: config
+        type(modbus_register_type), allocatable :: registers(:)
+
+        stat = TEST_FAILED
+
+        print *, 'Loading ' // CONFIG_FILE // ' ...'
+        rc = dm_config_open(config, CONFIG_FILE, 'dmtestconfig')
+
+        print *, 'Reading Modbus configuration ...'
+        if (dm_is_ok(rc)) call dm_config_get(config, 'registers', registers, error=rc)
+        call dm_config_close(config)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating ...'
+
+        if (.not. allocated(registers)) return
+        if (size(registers) /= 2)       return
+
+        print *, 'Modbus register 1 ...'
+        call dm_modbus_register_out(registers(1))
+        if (registers(1)%action /= MODBUS_ACTION_READ)   return
+        if (registers(1)%slave /= 10)                    return
+        if (registers(1)%address /= 50)                  return
+        if (registers(1)%byte_order /= MODBUS_REAL_ABCD) return
+
+        print *, 'Modbus register 2 ...'
+        call dm_modbus_register_out(registers(2))
+        if (registers(2)%action /= MODBUS_ACTION_WRITE) return
+        if (registers(2)%slave /= 99)                   return
+        if (registers(2)%address /= 10)                 return
+        if (registers(2)%value /= 16_u2)                return
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestconfig

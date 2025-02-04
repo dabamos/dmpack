@@ -25,10 +25,13 @@ Breaking API changes have to be expected until version 1.0.0.
 
 **DMPACK** is a scientific monitoring system and sensor network middleware
 developed for automated control measurements of buildings, infrastructure,
-terrain, geodetic nets, and other objects. The software runs on sensor nodes,
-usually IoT gateways, industrial embedded systems, or single-board computers,
-and obtains observation data from arbitrary sensors, like robotic total
-stations, digital levels, inclinometers, weather stations, or GNSS receivers.
+terrain, geodetic nets, and other objects.
+
+The software runs on sensor nodes, usually IoT gateways, industrial embedded
+systems, or single-board computers, and obtains observation data from arbitrary
+sensors, like robotic total stations, digital levels, inclinometers, weather
+stations, or GNSS receivers.
+
 The raw sensor data is then processed, stored, and optionally transmitted to a
 server. The software package may be used to monitor objects like:
 
