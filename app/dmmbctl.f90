@@ -12,8 +12,8 @@ program dmmbctl
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: ACTION_READ  = 0 !! Read values.
-    integer, parameter :: ACTION_WRITE = 1 !! Write values.
+    integer, parameter :: ACCESS_READ  = 0 !! Read values.
+    integer, parameter :: ACCESS_WRITE = 1 !! Write values.
 
     integer, parameter :: MODE_NONE = 0    !! Unset mode.
     integer, parameter :: MODE_RTU  = 1    !! Modbus RTU mode.
@@ -36,14 +36,13 @@ program dmmbctl
 
     type :: app_type
         !! Application settings.
-        integer        :: action     = ACTION_READ      !! Modbus read or write operation.
-        integer        :: address    = 0                !! Modbus address.
-        integer        :: mode       = MODE_NONE        !! Modbus mode (RTU, TCP).
-        integer        :: byte_order = MODBUS_REAL_ABCD !! Modbus byte order of float values.
-        integer        :: registers  = 1                !! Modbus register count to read or write.
-        integer        :: slave      = 1                !! Modbus slave id.
-        logical        :: float      = .false.          !! Read or write float value.
-        logical        :: verbose    = .false.          !! Print debug messages to stderr.
+        integer        :: access    = ACCESS_READ       !! Read or write operation.
+        integer        :: address   = 0                 !! Modbus address.
+        integer        :: mode      = MODE_NONE         !! Modbus mode (RTU, TCP).
+        integer        :: float     = MODBUS_FLOAT_NONE !! Number type and byte order.
+        integer        :: registers = 1                 !! Modbus register count to read or write.
+        integer        :: slave     = 1                 !! Modbus slave id.
+        logical        :: verbose   = .false.           !! Print debug messages to stderr.
         type(rtu_type) :: rtu                           !! Modbus RTU settings.
         type(tcp_type) :: tcp                           !! Modbus TCP settings.
     end type app_type
@@ -64,9 +63,9 @@ contains
 
         type(app_type), intent(out) :: app
 
-        character(len=4) :: byte_order, parity
+        character(len=4) :: float, parity
         integer          :: read_address, write_address
-        logical          :: has_baud_rate, has_byte_size, has_path, has_parity, has_stop_bits
+        logical          :: has_baud_rate, has_byte_size, has_float, has_path, has_parity, has_stop_bits
         logical          :: has_address, has_port, has_registers
         logical          :: has_read, has_write
         type(arg_type)   :: args(13)
@@ -102,7 +101,7 @@ contains
         call dm_arg_get(args( 9), app%registers,     passed=has_registers)
         call dm_arg_get(args(10), read_address,      passed=has_read)
         call dm_arg_get(args(11), write_address,     passed=has_write)
-        call dm_arg_get(args(12), byte_order,        passed=app%float)
+        call dm_arg_get(args(12), float,             passed=has_float)
         call dm_arg_get(args(13), app%verbose)
 
         ! Modbus RTU or TCP mode.
@@ -254,7 +253,7 @@ contains
                 return
             end if
 
-            app%action  = ACTION_READ
+            app%access  = ACCESS_READ
             app%address = read_address
         else if (has_write) then
             if (write_address < 0) then
@@ -262,15 +261,15 @@ contains
                 return
             end if
 
-            app%action  = ACTION_WRITE
+            app%access  = ACCESS_WRITE
             app%address = write_address
         end if
 
         ! Floating-point number.
-        if (app%float) then
-            app%byte_order = dm_modbus_byte_order_from_name(byte_order)
+        if (has_float) then
+            app%float = dm_modbus_float_from_name(float)
 
-            if (.not. dm_modbus_is_valid_byte_order(app%byte_order)) then
+            if (.not. dm_modbus_is_valid_float(app%float)) then
                 call dm_error_out(rc, 'argument --float is not a valid byte order')
                 return
             end if

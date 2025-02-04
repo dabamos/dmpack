@@ -60,7 +60,7 @@ contains
         regs = 0_u2
 
         print *, 'Converting registers to real ...'
-        r = dm_modbus_get_real_abcd(regs)
+        r = dm_modbus_get_float_abcd(regs)
         print '(" Value: ", f5.3)', r
         if (.not. dm_equals(r, 0.0)) return
 
@@ -68,11 +68,11 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STRING1 = 'action=read,slave=10,address=50,order=abcd'
-        character(len=*), parameter :: STRING2 = 'ACTION = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10'
-        character(len=*), parameter :: STRING3 = 'action=none,slave=10,address=50,value=10,order=none'
-        character(len=*), parameter :: STRING4 = 'action=write,slave=10,address=50,value=123456789,order=none'
-        character(len=*), parameter :: STRING5 = 'action-read.slave-10.address-50'
+        character(len=*), parameter :: STRING1 = 'access=read,slave=10,address=50,float=abcd'
+        character(len=*), parameter :: STRING2 = 'ACCESS = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10'
+        character(len=*), parameter :: STRING3 = 'access=none,slave=10,address=50,value=10,float=none'
+        character(len=*), parameter :: STRING4 = 'access=write,slave=10,address=50,value=123456789,float=none'
+        character(len=*), parameter :: STRING5 = 'access-read.slave-10.address-50'
 
         type(modbus_register_type) :: register
         integer                    :: rc
@@ -85,20 +85,20 @@ contains
         call dm_modbus_parse(STRING1, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
-        if (register%action /= MODBUS_ACTION_READ)   return
-        if (register%slave /= 10)                    return
-        if (register%address /= 50)                  return
-        if (register%byte_order /= MODBUS_REAL_ABCD) return
+        if (register%access /= MODBUS_ACCESS_READ) return
+        if (register%slave /= 10)                  return
+        if (register%address /= 50)                return
+        if (register%float /= MODBUS_FLOAT_ABCD)   return
 
         print *, STRING2
         call dm_modbus_parse(STRING2, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
-        if (register%action /= MODBUS_ACTION_WRITE)  return
-        if (register%slave /= 9)                     return
-        if (register%address /= 1)                   return
-        if (register%value /= 10_u2)                 return
-        if (register%byte_order /= MODBUS_REAL_NONE) return
+        if (register%access /= MODBUS_ACCESS_WRITE) return
+        if (register%slave /= 9)                    return
+        if (register%address /= 1)                  return
+        if (register%value /= 10_u2)                return
+        if (register%float /= MODBUS_FLOAT_NONE)    return
 
         print *, STRING3
         call dm_modbus_parse(STRING3, register, error=rc)

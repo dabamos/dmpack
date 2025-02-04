@@ -87,17 +87,19 @@ contains
 
         print *, 'Modbus register 1 ...'
         call dm_modbus_register_out(registers(1))
-        if (registers(1)%action /= MODBUS_ACTION_READ)   return
-        if (registers(1)%slave /= 10)                    return
-        if (registers(1)%address /= 50)                  return
-        if (registers(1)%byte_order /= MODBUS_REAL_ABCD) return
+        if (registers(1)%access /= MODBUS_ACCESS_READ) return
+        if (registers(1)%slave /= 10)                  return
+        if (registers(1)%address /= 50)                return
+        if (registers(1)%float /= MODBUS_FLOAT_ABCD)   return
 
         print *, 'Modbus register 2 ...'
         call dm_modbus_register_out(registers(2))
-        if (registers(2)%action /= MODBUS_ACTION_WRITE) return
+        if (registers(2)%access /= MODBUS_ACCESS_WRITE) return
         if (registers(2)%slave /= 99)                   return
         if (registers(2)%address /= 10)                 return
         if (registers(2)%value /= 16_u2)                return
+        if (registers(2)%name /= 'test')                return
+        if (registers(2)%unit /= 'none')                return
 
         stat = TEST_PASSED
     end function test02

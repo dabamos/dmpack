@@ -111,16 +111,18 @@ dmtestconfig = {
     real = 1.0,
     registers = {
         {
-            action = "read",
+            access = "read",
             slave = 10,
             address = 50,
-            order = "abcd"
+            float = "abcd"
         },
         {
-            action = "write",
+            access = "write",
             slave = 99,
             address = 10,
-            value = 16
+            value = 16,
+            name = "test",
+            unit = "none"
         }
     }
 }

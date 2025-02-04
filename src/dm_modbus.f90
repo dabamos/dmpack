@@ -34,7 +34,7 @@ module dm_modbus
     !! end do
     !!
     !! ! Print the two registers as real in ABCD byte order.
-    !! print '(f12.8)', dm_modbus_get_real_abcd(regs)
+    !! print '(f12.8)', dm_modbus_get_float_abcd(regs)
     !!
     !! ! Disconnect and clean-up.
     !! call dm_modbus_close(modbus)
@@ -99,20 +99,20 @@ module dm_modbus
     public :: dm_modbus_destroy
     public :: dm_modbus_error_message
     public :: dm_modbus_flush
-    public :: dm_modbus_get_real
-    public :: dm_modbus_get_real_abcd
-    public :: dm_modbus_get_real_badc
-    public :: dm_modbus_get_real_cdab
-    public :: dm_modbus_get_real_dcba
+    public :: dm_modbus_get_float
+    public :: dm_modbus_get_float_abcd
+    public :: dm_modbus_get_float_badc
+    public :: dm_modbus_get_float_cdab
+    public :: dm_modbus_get_float_dcba
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
     public :: dm_modbus_read_registers
     public :: dm_modbus_set_debug
-    public :: dm_modbus_set_real
-    public :: dm_modbus_set_real_abcd
-    public :: dm_modbus_set_real_badc
-    public :: dm_modbus_set_real_cdab
-    public :: dm_modbus_set_real_dcba
+    public :: dm_modbus_set_float
+    public :: dm_modbus_set_float_abcd
+    public :: dm_modbus_set_float_badc
+    public :: dm_modbus_set_float_cdab
+    public :: dm_modbus_set_float_dcba
     public :: dm_modbus_set_serial_mode
     public :: dm_modbus_set_slave
     public :: dm_modbus_version
@@ -245,14 +245,14 @@ contains
         rc = E_NONE
     end function dm_modbus_flush
 
-    real function dm_modbus_get_real(registers, byte_order, error) result(value)
+    real function dm_modbus_get_float(registers, byte_order, error) result(value)
         !! Returns real value from two registers of given byte order in argument
         !! `value`. The argument byte order must be one of the following:
         !!
-        !! * `MODBUS_REAL_ABCD`
-        !! * `MODBUS_REAL_BADC`
-        !! * `MODBUS_REAL_CDAB`
-        !! * `MODBUS_REAL_DCBA`
+        !! * `MODBUS_FLOAT_ABCD`
+        !! * `MODBUS_FLOAT_BADC`
+        !! * `MODBUS_FLOAT_CDAB`
+        !! * `MODBUS_FLOAT_DCBA`
         !!
         !! The function sets argument `error' to `E_INVALID` on any other value.
         integer(kind=u2), intent(inout)         :: registers(2) !! Registers to convert.
@@ -263,43 +263,43 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_REAL_ABCD); value = modbus_get_float_abcd(registers)
-            case (MODBUS_REAL_BADC); value = modbus_get_float_badc(registers)
-            case (MODBUS_REAL_CDAB); value = modbus_get_float_cdab(registers)
-            case (MODBUS_REAL_DCBA); value = modbus_get_float_dcba(registers)
-            case default;            return
+            case (MODBUS_FLOAT_ABCD); value = modbus_get_float_abcd(registers)
+            case (MODBUS_FLOAT_BADC); value = modbus_get_float_badc(registers)
+            case (MODBUS_FLOAT_CDAB); value = modbus_get_float_cdab(registers)
+            case (MODBUS_FLOAT_DCBA); value = modbus_get_float_dcba(registers)
+            case default;             return
         end select
 
         if (present(error)) error = E_NONE
-    end function dm_modbus_get_real
+    end function dm_modbus_get_float
 
-    real function dm_modbus_get_real_abcd(registers) result(value)
+    real function dm_modbus_get_float_abcd(registers) result(value)
         !! Returns real value from two registers in ABCD byte order.
         integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
 
         value = modbus_get_float_abcd(registers)
-    end function dm_modbus_get_real_abcd
+    end function dm_modbus_get_float_abcd
 
-    real function dm_modbus_get_real_badc(registers) result(value)
+    real function dm_modbus_get_float_badc(registers) result(value)
         !! Returns real value from two registers in BADC byte order.
         integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
 
         value = modbus_get_float_badc(registers)
-    end function dm_modbus_get_real_badc
+    end function dm_modbus_get_float_badc
 
-    real function dm_modbus_get_real_cdab(registers) result(value)
+    real function dm_modbus_get_float_cdab(registers) result(value)
         !! Returns real value from two registers in CDAB byte order.
         integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
 
         value = modbus_get_float_cdab(registers)
-    end function dm_modbus_get_real_cdab
+    end function dm_modbus_get_float_cdab
 
-    real function dm_modbus_get_real_dcba(registers) result(value)
+    real function dm_modbus_get_float_dcba(registers) result(value)
         !! Returns real value from two registers in DCBA byte order.
         integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
 
         value = modbus_get_float_dcba(registers)
-    end function dm_modbus_get_real_dcba
+    end function dm_modbus_get_float_dcba
 
     integer function dm_modbus_get_serial_mode(modbus, mode) result(rc)
         !! Gets the current Modbus RTU serial mode (RS-232 or RS-485).
@@ -545,14 +545,14 @@ contains
         call modbus_free(modbus%ctx)
     end subroutine dm_modbus_destroy
 
-    subroutine dm_modbus_set_real(value, registers, byte_order, error)
+    subroutine dm_modbus_set_float(value, registers, byte_order, error)
         !! Sets real value to registers of given byte order. The argument
-        !! byte order must be one of the following:
+        !! `byte_order` must be one of the following:
         !!
-        !! * `MODBUS_REAL_ABCD`
-        !! * `MODBUS_REAL_BADC`
-        !! * `MODBUS_REAL_CDAB`
-        !! * `MODBUS_REAL_DCBA`
+        !! * `MODBUS_FLOAT_ABCD`
+        !! * `MODBUS_FLOAT_BADC`
+        !! * `MODBUS_FLOAT_CDAB`
+        !! * `MODBUS_FLOAT_DCBA`
         !!
         !! The routine sets argument `error' to `E_INVALID` on any other value.
         real,             intent(in)            :: value        !! Real value to set.
@@ -564,45 +564,45 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_REAL_ABCD); call modbus_set_float_abcd(value, registers)
-            case (MODBUS_REAL_BADC); call modbus_set_float_badc(value, registers)
-            case (MODBUS_REAL_CDAB); call modbus_set_float_cdab(value, registers)
-            case (MODBUS_REAL_DCBA); call modbus_set_float_dcba(value, registers)
-            case default;            return
+            case (MODBUS_FLOAT_ABCD); call modbus_set_float_abcd(value, registers)
+            case (MODBUS_FLOAT_BADC); call modbus_set_float_badc(value, registers)
+            case (MODBUS_FLOAT_CDAB); call modbus_set_float_cdab(value, registers)
+            case (MODBUS_FLOAT_DCBA); call modbus_set_float_dcba(value, registers)
+            case default;             return
         end select
 
         if (present(error)) error = E_NONE
-    end subroutine dm_modbus_set_real
+    end subroutine dm_modbus_set_float
 
-    subroutine dm_modbus_set_real_abcd(value, registers)
+    subroutine dm_modbus_set_float_abcd(value, registers)
         !! Returns real value to registers in ABCD byte order.
         real,             intent(in)  :: value        !! Real value to set.
         integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
 
         call modbus_set_float_abcd(value, registers)
-    end subroutine dm_modbus_set_real_abcd
+    end subroutine dm_modbus_set_float_abcd
 
-    subroutine dm_modbus_set_real_badc(value, registers)
+    subroutine dm_modbus_set_float_badc(value, registers)
         !! Returns real value to registers in BADC byte order.
         real,             intent(in)  :: value        !! Real value to set.
         integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
 
         call modbus_set_float_badc(value, registers)
-    end subroutine dm_modbus_set_real_badc
+    end subroutine dm_modbus_set_float_badc
 
-    subroutine dm_modbus_set_real_cdab(value, registers)
+    subroutine dm_modbus_set_float_cdab(value, registers)
         !! Sets real value to registers in CDAB byte order.
         real,             intent(in)  :: value        !! Real value to set.
         integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
 
         call modbus_set_float_cdab(value, registers)
-    end subroutine dm_modbus_set_real_cdab
+    end subroutine dm_modbus_set_float_cdab
 
-    subroutine dm_modbus_set_real_dcba(value, registers)
+    subroutine dm_modbus_set_float_dcba(value, registers)
         !! Sets real value to registers in DCBA byte order.
         real,             intent(in)  :: value        !! Real value to set.
         integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
 
         call modbus_set_float_dcba(value, registers)
-    end subroutine dm_modbus_set_real_dcba
+    end subroutine dm_modbus_set_float_dcba
 end module dm_modbus
