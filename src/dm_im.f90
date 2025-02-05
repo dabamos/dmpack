@@ -528,12 +528,12 @@ contains
         iq_stanza = xmpp_iq_new(im%ctx, IM_STANZA_TYPE_RESULT, id)
     end function dm_im_create_iq_result
 
-    logical function dm_im_is_connected(im) result(is)
+    logical function dm_im_is_connected(im) result(connected)
         !! Returns `.true.` if connection is open.
         type(im_type), intent(inout) :: im !! IM context type.
 
-        is = c_associated(im%connection)
-        if (is) is = (xmpp_conn_is_connected(im%connection) == 1)
+        connected = c_associated(im%connection)
+        if (connected) connected = (xmpp_conn_is_connected(im%connection) == 1)
     end function dm_im_is_connected
 
     ! **************************************************************************

@@ -455,11 +455,11 @@ contains
         end select
     end function dm_ve_device_from_name
 
-    pure elemental logical function dm_ve_device_is_valid(device) result(is)
+    pure elemental logical function dm_ve_device_is_valid(device) result(valid)
         !! Returns `.true.` if given VE device enumerator is valid.
         integer, intent(in) :: device !! Device enumerator.
 
-        is = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
+        valid = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
     end function dm_ve_device_is_valid
 
     pure function dm_ve_error_message(code) result(message)
@@ -528,26 +528,26 @@ contains
         end do
     end function dm_ve_field_type
 
-    pure elemental logical function dm_ve_is_error(code) result(is)
+    pure elemental logical function dm_ve_is_error(code) result(error)
         !! Returns `.true.` if given code is a valid VE.Direct error code.
         integer, intent(in) :: code !! VE.Direct error code.
 
-        is = .false.
+        error = .false.
 
         select case (code)
             case (2, 17, 18, 19, 20, 21, 26, 28, 33, 34, 38, 39, 65, 66, 67, 68, 116, 117, 119)
-                is = .true.
+                error = .true.
             case default
                 return
         end select
     end function dm_ve_is_error
 
-    pure elemental logical function dm_ve_is_valid_field_type(type) result(is)
+    pure elemental logical function dm_ve_is_valid_field_type(type) result(valid)
         !! Returns `.true.` if given type is a valid field enumerator
         !! (`VE_FIELD_*`). The enumerator `VE_FIELD_NONE` is invalid.
         integer, intent(in) :: type !! Field type.
 
-        is = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
+        valid = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
     end function dm_ve_is_valid_field_type
 
     ! **************************************************************************

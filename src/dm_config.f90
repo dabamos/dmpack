@@ -46,7 +46,7 @@ module dm_config
     type, public :: config_type
         !! Opaque file configuration type.
         private
-        type(lua_state_type) :: lua !! Lua type.
+        type(lua_state_type) :: lua !! Lua context type.
     end type config_type
 
     interface dm_config_get

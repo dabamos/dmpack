@@ -202,17 +202,17 @@ contains
         valid = (z >= Z_TYPE_NONE .and. z <= Z_TYPE_LAST)
     end function dm_z_type_is_valid
 
-    pure function dm_z_type_name(z) result(str)
+    pure function dm_z_type_name(z) result(name)
         !! Returns compression type name as allocatable string.
-        integer, intent(in)           :: z   !! Compression enumerator.
-        character(len=:), allocatable :: str !! Compression type name.
+        integer, intent(in)           :: z    !! Compression enumerator.
+        character(len=:), allocatable :: name !! Compression type name.
 
         if (.not. dm_z_is_valid(z)) then
-            str = 'invalid'
+            name = 'invalid'
             return
         end if
 
-        str = trim(Z_TYPE_NAMES(z))
+        name = trim(Z_TYPE_NAMES(z))
     end function dm_z_type_name
 
     pure function dm_z_type_to_encoding(z) result(encoding)

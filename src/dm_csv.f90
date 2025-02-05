@@ -942,10 +942,10 @@ contains
         if (quoted) call csv_unquote(output, quote)
     end function csv_next_string
 
-    integer function csv_parse(str, separator, limit, pos, quote) result(rc)
+    integer function csv_parse(string, separator, limit, pos, quote) result(rc)
         !! Returns position of next separator character in `pos`. If no
         !! separator was found, `pos` is set to `limit`.
-        character(len=*), intent(inout)        :: str       !! Input string.
+        character(len=*), intent(inout)        :: string    !! Input string.
         character,        intent(in)           :: separator !! Separator character.
         integer,          intent(in)           :: limit     !! Length of complete string.
         integer,          intent(inout)        :: pos       !! Position of last/next separator.
@@ -969,8 +969,8 @@ contains
         do i = pos + 1, limit + 1
             pos = i
             if (i > limit) exit
-            if (q .and. str(i:i) == a) f = .not. f
-            if (.not. f .and. str(i:i) == separator) exit
+            if (q .and. string(i:i) == a) f = .not. f
+            if (.not. f .and. string(i:i) == separator) exit
         end do
 
         rc = E_NONE
@@ -1861,21 +1861,21 @@ contains
         end do
     end function csv_write_targets
 
-    subroutine csv_unquote(str, quote)
+    subroutine csv_unquote(string, quote)
         !! Removes given quote character at start and end from string.
-        character(len=*), intent(inout) :: str   !! String to unquote on input, unquoted string on output.
-        character,        intent(in)    :: quote !! Quote character.
+        character(len=*), intent(inout) :: string !! String to unquote on input, unquoted string on output.
+        character,        intent(in)    :: quote  !! Quote character.
 
         integer :: i
 
-        str = adjustl(str)
-        if (str(1:1) /= quote) return
-        i = index(str, quote, back=.true.)
+        string = adjustl(string)
+        if (string(1:1) /= quote) return
+        i = index(string, quote, back=.true.)
         if (i == 1) return
         if (i == 2) then
-            str = ''
+            string = ''
             return
         end if
-        str = str(2:i - 1)
+        string = string(2:i - 1)
     end subroutine csv_unquote
 end module dm_csv

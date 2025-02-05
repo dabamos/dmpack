@@ -42,7 +42,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure function dm_version_to_string_app(name, major, minor, patch, library) result(str)
+    pure function dm_version_to_string_app(name, major, minor, patch, library) result(string)
         !! Returns allocatable string of application version, with optional
         !! DMPACK library version appended if `library` is `.true.`.
         character(len=*), intent(in)           :: name    !! App name.
@@ -50,36 +50,36 @@ contains
         integer,          intent(in)           :: minor   !! App minor version.
         integer,          intent(in)           :: patch   !! App patch version.
         logical,          intent(in), optional :: library !! Append DMPACK library version.
-        character(len=:), allocatable          :: str     !! App and library version string.
+        character(len=:), allocatable          :: string  !! App and library version string.
 
         logical :: library_
 
         library_ = .false.
         if (present(library)) library_ = library
 
-        str = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
-        if (library_) str = str // ' (DMPACK ' // DM_VERSION_STRING // ')'
+        string = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
+        if (library_) string = string // ' (DMPACK ' // DM_VERSION_STRING // ')'
     end function dm_version_to_string_app
 
-    pure elemental function dm_version_to_string_long(major, minor, patch) result(str)
+    pure elemental function dm_version_to_string_long(major, minor, patch) result(string)
         !! Utility function that returns a five characters long version string
         !! with patch level, for example, `1.0.0`.
-        integer, intent(in) :: major !! Major version number.
-        integer, intent(in) :: minor !! Minor version number.
-        integer, intent(in) :: patch !! Patch level.
-        character(len=5)    :: str   !! Output string.
+        integer, intent(in) :: major  !! Major version number.
+        integer, intent(in) :: minor  !! Minor version number.
+        integer, intent(in) :: patch  !! Patch level.
+        character(len=5)    :: string !! Output string.
 
-        write (str, '(i1, 2(".", i1))') major, minor, patch
+        write (string, '(i1, 2(".", i1))') major, minor, patch
     end function dm_version_to_string_long
 
-    pure elemental function dm_version_to_string_short(major, minor) result(str)
+    pure elemental function dm_version_to_string_short(major, minor) result(string)
         !! Utility function that returns a three characters long version
         !! string, for example, `1.0`.
-        integer, intent(in) :: major !! Major version number.
-        integer, intent(in) :: minor !! Minor version number.
-        character(len=3)    :: str   !! Output string.
+        integer, intent(in) :: major  !! Major version number.
+        integer, intent(in) :: minor  !! Minor version number.
+        character(len=3)    :: string !! Output string.
 
-        write (str, '(i1, ".", i1)') major, minor
+        write (string, '(i1, ".", i1)') major, minor
     end function dm_version_to_string_short
 
     subroutine dm_version_out_app(name, major, minor, patch)

@@ -47,21 +47,21 @@ contains
         uuid = dm_uuid4_hyphenize(dm_uuid4())
     end function dm_uuid4_hyphens
 
-    pure elemental function dm_uuid4_hyphenize(uuid) result(string)
+    pure elemental function dm_uuid4_hyphenize(uuid) result(full)
         !! Returns given UUID with hyphens, i.e., turns string
         !! `00000000000000000000000000000000` into
         !! `00000000-0000-0000-0000-000000000000`. The function does not
         !! validate the passed indentifier.
         character(len=UUID_LEN), intent(in) :: uuid
-        character(len=UUID_FULL_LEN)        :: string
+        character(len=UUID_FULL_LEN)        :: full
 
         integer :: stat
 
-        write (string, '(a8, "-", 3(a4, "-"), a12)', iostat=stat) &
+        write (full, '(a8, "-", 3(a4, "-"), a12)', iostat=stat) &
             uuid(1:8), uuid(9:12), uuid(13:16), uuid(17:20), uuid(21:32)
     end function dm_uuid4_hyphenize
 
-    pure elemental logical function dm_uuid4_is_valid(uuid) result(is)
+    pure elemental logical function dm_uuid4_is_valid(uuid) result(valid)
         !! Returns `.true.` if given UUID in hex format is a valid UUIDv4. Only
         !! lower-case letters are valid.
         character(len=*), intent(in) :: uuid !! UUIDv4 to validate.
@@ -69,7 +69,7 @@ contains
         character :: a
         integer   :: i
 
-        is = .false.
+        valid = .false.
 
         if (len_trim(uuid) /= UUID_LEN) return
 
@@ -91,6 +91,6 @@ contains
             end select
         end do
 
-        is = .true.
+        valid = .true.
     end function dm_uuid4_is_valid
 end module dm_uuid

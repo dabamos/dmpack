@@ -13,10 +13,10 @@ module dm_db_stmt
 
     public :: dm_db_stmt_is_prepared
 contains
-    logical function dm_db_stmt_is_prepared(db_stmt) result(is)
+    logical function dm_db_stmt_is_prepared(db_stmt) result(prepared)
         !! Returns `.true.` if given statement has been prepared.
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
 
-        is = c_associated(db_stmt%ctx)
+        prepared = c_associated(db_stmt%ctx)
     end function dm_db_stmt_is_prepared
 end module dm_db_stmt

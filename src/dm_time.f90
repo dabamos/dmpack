@@ -175,7 +175,7 @@ contains
         seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
     end function dm_time_diff
 
-    pure elemental logical function dm_time_is_valid(time, strict) result(is)
+    pure elemental logical function dm_time_is_valid(time, strict) result(valid)
         !! Returns `.true.` if given time stamp follows the form of ISO 8601. The
         !! time stamp does not have to be complete to be valid, unless `strict`
         !! is `.true.`. Then, argument `time` must be 32-characters long.
@@ -190,10 +190,10 @@ contains
         integer   :: i, n
         logical   :: strict_
 
+        valid = .false.
+
         strict_ = .false.
         if (present(strict)) strict_ = strict
-
-        is = .false.
 
         n = len_trim(time)
 
@@ -222,7 +222,7 @@ contains
             end select
         end do
 
-        is = .true.
+        valid = .true.
     end function dm_time_is_valid
 
     impure elemental character(len=TIME_LEN) function dm_time_now() result(string)

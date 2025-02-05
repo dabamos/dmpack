@@ -94,8 +94,6 @@ module dm_observ
     public :: dm_observ_is_valid
     public :: dm_observ_out
     public :: dm_observ_view_equals
-
-    ! private :: observ_write_formatted
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.

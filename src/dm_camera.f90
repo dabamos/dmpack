@@ -157,12 +157,12 @@ contains
         end select
     end function dm_camera_device_from_name
 
-    pure elemental logical function dm_camera_device_is_valid(device) result(is)
+    pure elemental logical function dm_camera_device_is_valid(device) result(valid)
         !! Returns `.true.` if device enumerator is valid. The device
         !! `CAMERA_DEVICE_NONE` is invalid.
         integer, intent(in) :: device !! Camera device enumerator.
 
-        is = (device > CAMERA_DEVICE_NONE .and. device <= CAMERA_DEVICE_LAST)
+        valid = (device > CAMERA_DEVICE_NONE .and. device <= CAMERA_DEVICE_LAST)
     end function dm_camera_device_is_valid
 
     ! **************************************************************************

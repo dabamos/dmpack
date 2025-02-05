@@ -457,13 +457,13 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_cgi_env
 
-    pure function dm_html_comment(str) result(html)
+    pure function dm_html_comment(string) result(html)
         !! Returns HTML comment. The given string is enclosed by `<!-- ` and
         !! ` //-->`. This function does not encode the argument.
-        character(len=*), intent(in)  :: str  !! Comment string.
-        character(len=:), allocatable :: html !! Generated HTML.
+        character(len=*), intent(in)  :: string !! Comment string.
+        character(len=:), allocatable :: html   !! Generated HTML.
 
-        html = H_COMMENT // str // H_COMMENT_END
+        html = H_COMMENT // string // H_COMMENT_END
     end function dm_html_comment
 
     function dm_html_data_uri(data, mime) result(uri)
@@ -646,17 +646,17 @@ contains
         html = html // H_HEADER_END // H_DIV // H_MAIN
     end function dm_html_header
 
-    pure function dm_html_heading(level, str, small) result(html)
+    pure function dm_html_heading(level, string, small) result(html)
         !! Returns HTML heading of given level `level` and string `str`, with
         !! optional `<small>` child in `small`.
         !!
         !! Valid levels are 1, 2, 3, and 4. Any other is replaced by level 1.
         !!
         !! All input data will be trimmed and encoded.
-        integer,          intent(in)           :: level !! Heading level.
-        character(len=*), intent(in)           :: str   !! Heading string.
-        character(len=*), intent(in), optional :: small !! Sub-heading string.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        integer,          intent(in)           :: level  !! Heading level.
+        character(len=*), intent(in)           :: string !! Heading string.
+        character(len=*), intent(in), optional :: small  !! Sub-heading string.
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
         logical :: has_small
 
@@ -667,30 +667,30 @@ contains
             case (2)
                 ! H2
                 if (has_small) then
-                    html = H_H2 // dm_html_encode(str) // dm_html_small(small) // H_H2_END
+                    html = H_H2 // dm_html_encode(string) // dm_html_small(small) // H_H2_END
                 else
-                    html = H_H2 // dm_html_encode(str) // H_H2_END
+                    html = H_H2 // dm_html_encode(string) // H_H2_END
                 end if
             case (3)
                 ! H3
                 if (has_small) then
-                    html = H_H3 // dm_html_encode(str) // dm_html_small(small) // H_H3_END
+                    html = H_H3 // dm_html_encode(string) // dm_html_small(small) // H_H3_END
                 else
-                    html = H_H3 // dm_html_encode(str) // H_H3_END
+                    html = H_H3 // dm_html_encode(string) // H_H3_END
                 end if
             case (4)
                 ! H4
                 if (has_small) then
-                    html = H_H4 // dm_html_encode(str) // dm_html_small(small) // H_H4_END
+                    html = H_H4 // dm_html_encode(string) // dm_html_small(small) // H_H4_END
                 else
-                    html = H_H4 // dm_html_encode(str) // H_H4_END
+                    html = H_H4 // dm_html_encode(string) // H_H4_END
                 end if
             case default
                 ! H1
                 if (has_small) then
-                    html = H_H1 // dm_html_encode(str) // dm_html_small(small) // H_H1_END
+                    html = H_H1 // dm_html_encode(string) // dm_html_small(small) // H_H1_END
                 else
-                    html = H_H1 // dm_html_encode(str) // H_H1_END
+                    html = H_H1 // dm_html_encode(string) // H_H1_END
                 end if
         end select
     end function dm_html_heading
@@ -799,17 +799,17 @@ contains
         html = html // '>' // NL
     end function dm_html_input
 
-    pure function dm_html_label(str, for) result(html)
+    pure function dm_html_label(string, for) result(html)
         !! Returns HTML label element. This function does not encode the
         !! arguments.
-        character(len=*), intent(in)           :: str  !! Label string.
-        character(len=*), intent(in), optional :: for  !! Label for attribute.
-        character(len=:), allocatable          :: html !! Generated HTML.
+        character(len=*), intent(in)           :: string !! Label string.
+        character(len=*), intent(in), optional :: for    !! Label for attribute.
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
         if (present(for)) then
-            html = '<label for="' // trim(for) // '">' // trim(str) // '</label>' // NL
+            html = '<label for="' // trim(for) // '">' // trim(string) // '</label>' // NL
         else
-            html = '<label>' // trim(str) // '</label>' // NL
+            html = '<label>' // trim(string) // '</label>' // NL
         end if
     end function dm_html_label
 
@@ -977,17 +977,17 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_logs
 
-    pure function dm_html_mark(str, class) result(html)
+    pure function dm_html_mark(string, class) result(html)
         !! Returns `<mark>` element of optional class, with encoded `str`
         !! enclosed. This function encodes the passed string.
-        character(len=*), intent(in)           :: str   !! Element content.
-        character(len=*), intent(in), optional :: class !! Element class.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        character(len=*), intent(in)           :: string !! Element content.
+        character(len=*), intent(in), optional :: class  !! Element class.
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
         if (present(class)) then
-            html = '<mark class="' // trim(class) // '">' // dm_html_encode(str) // H_MARK_END
+            html = '<mark class="' // trim(class) // '">' // dm_html_encode(string) // H_MARK_END
         else
-            html = H_MARK // dm_html_encode(str) // H_MARK_END
+            html = H_MARK // dm_html_encode(string) // H_MARK_END
         end if
     end function dm_html_mark
 
@@ -1283,10 +1283,10 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_observs
 
-    pure function dm_html_p(str, encode) result(html)
+    pure function dm_html_p(string, encode) result(html)
         !! Returns HTML paragraph. This function does not encode the argument
         !! `str` unless `encode` is `.true.`.
-        character(len=*), intent(in)           :: str    !! Paragraph string.
+        character(len=*), intent(in)           :: string !! Paragraph string.
         logical,          intent(in), optional :: encode !! HTML-encode string.
         character(len=:), allocatable          :: html   !! Generated HTML.
 
@@ -1296,18 +1296,18 @@ contains
         if (present(encode)) encode_ = encode
 
         if (encode_) then
-            html = H_P // dm_html_encode(str) // H_P_END
+            html = H_P // dm_html_encode(string) // H_P_END
         else
-            html = H_P // str // H_P_END
+            html = H_P // string // H_P_END
         end if
     end function dm_html_p
 
-    pure function dm_html_pre(str, code) result(html)
+    pure function dm_html_pre(string, code) result(html)
         !! Returns HTML preformatted text, with optional `<code>` tag.
         !! This function does not encode the argument `str`.
-        character(len=*), intent(in)           :: str  !! Content string.
-        logical,          intent(in), optional :: code !! Additional code tag?
-        character(len=:), allocatable          :: html !! Generated HTML.
+        character(len=*), intent(in)           :: string !! Content string.
+        logical,          intent(in), optional :: code   !! Additional code tag?
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
         logical :: code_
 
@@ -1315,9 +1315,9 @@ contains
         if (present(code)) code_ = code
 
         if (code_) then
-            html = H_PRE // H_CODE // str // H_CODE_END // H_PRE_END
+            html = H_PRE // H_CODE // string // H_CODE_END // H_PRE_END
         else
-            html = H_PRE // str // H_PRE_END
+            html = H_PRE // string // H_PRE_END
         end if
     end function dm_html_pre
 
@@ -1524,25 +1524,25 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_sensors
 
-    pure function dm_html_small(str) result(html)
+    pure function dm_html_small(string) result(html)
         !! Returns `<small>` element with encoded `str` enclosed.
-        character(len=*), intent(in)  :: str  !! Element content.
-        character(len=:), allocatable :: html !! Generated HTML.
+        character(len=*), intent(in)  :: string !! Element content.
+        character(len=:), allocatable :: html   !! Generated HTML.
 
-        html = H_SMALL // dm_html_encode(str) // H_SMALL_END
+        html = H_SMALL // dm_html_encode(string) // H_SMALL_END
     end function dm_html_small
 
-    pure function dm_html_span(str, class) result(html)
+    pure function dm_html_span(string, class) result(html)
         !! Returns `<span>` element of optional class, with encoded `str`
         !! enclosed.
-        character(len=*), intent(in)           :: str   !! Element content.
-        character(len=*), intent(in), optional :: class !! Element CSS class.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        character(len=*), intent(in)           :: string !! Element content.
+        character(len=*), intent(in), optional :: class  !! Element CSS class.
+        character(len=:), allocatable          :: html   !! Generated HTML.
 
         if (present(class)) then
-            html = '<span class="' // trim(class) // '">' // dm_html_encode(str) // H_SPAN_END
+            html = '<span class="' // trim(class) // '">' // dm_html_encode(string) // H_SPAN_END
         else
-            html = H_SPAN // dm_html_encode(str) // H_SPAN_END
+            html = H_SPAN // dm_html_encode(string) // H_SPAN_END
         end if
     end function dm_html_span
 
@@ -1627,10 +1627,10 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_targets
 
-    pure function dm_html_td(str, col_span, row_span) result(html)
+    pure function dm_html_td(string, col_span, row_span) result(html)
         !! Returns `str` enclosed by `<td>` tag, with optional column or row
         !! span. The passed string will not be encoded or trimmed.
-        character(len=*), intent(in)           :: str      !! Input string.
+        character(len=*), intent(in)           :: string   !! Input string.
         integer,          intent(in), optional :: col_span !! Column span.
         integer,          intent(in), optional :: row_span !! Row span.
         character(len=:), allocatable          :: html     !! Generated HTML.
@@ -1638,13 +1638,13 @@ contains
         html = '<td'
         if (present(col_span)) html = html // ' colspan="' // dm_itoa(col_span) // '"'
         if (present(row_span)) html = html // ' rowspan="' // dm_itoa(row_span) // '"'
-        html = html // '>' // str // H_TD_END
+        html = html // '>' // string // H_TD_END
     end function dm_html_td
 
-    pure function dm_html_th(str, col_span, row_span) result(html)
+    pure function dm_html_th(string, col_span, row_span) result(html)
         !! Returns `str` enclosed by `<th>` tag, with optional column or row
         !! span. The passed string will not be encoded or trimmed.
-        character(len=*), intent(in)           :: str      !! Input string.
+        character(len=*), intent(in)           :: string   !! Input string.
         integer,          intent(in), optional :: col_span !! Column span.
         integer,          intent(in), optional :: row_span !! Row span.
         character(len=:), allocatable          :: html     !! Generated HTML.
@@ -1652,7 +1652,7 @@ contains
         html = '<th'
         if (present(col_span)) html = html // ' colspan="' // dm_itoa(col_span) // '"'
         if (present(row_span)) html = html // ' rowspan="' // dm_itoa(row_span) // '"'
-        html = html // '>' // str // H_TH_END
+        html = html // '>' // string // H_TH_END
     end function dm_html_th
 
     pure function dm_html_time(time, human) result(html)

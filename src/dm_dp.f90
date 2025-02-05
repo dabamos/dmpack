@@ -67,11 +67,11 @@ contains
 !       close (fu)
 !   end function dm_dp_from_file
 
-    pure elemental character(len=58) function dm_dp_to_string(dp) result(str)
+    pure elemental character(len=58) function dm_dp_to_string(dp) result(string)
         !! Returns data point as 58 characters long string. The attributes `x`
         !! and `y` are separated by white space.
         type(dp_type), intent(in) :: dp !! Data point type.
 
-        write (str, FMT_XY) dp%x, dp%y
+        write (string, FMT_XY) dp%x, dp%y
     end function dm_dp_to_string
 end module dm_dp

@@ -223,18 +223,18 @@ contains
         has = .true.
     end function dm_cgi_has_value
 
-    function dm_cgi_key(param, loc) result(str)
+    function dm_cgi_key(param, loc) result(key)
         !! Returns key at index `loc` in keys array of `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         integer,              intent(in)    :: loc   !! Array index.
-        character(len=:), allocatable       :: str   !! Key or empty.
+        character(len=:), allocatable       :: key   !! Key or empty.
 
         if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
-            allocate (character(len=0) :: str)
+            allocate (character(len=0) :: key)
             return
         end if
 
-        str = trim(param%keys(loc))
+        key = trim(param%keys(loc))
     end function dm_cgi_key
 
     integer function dm_cgi_size(param) result(sz)
@@ -245,18 +245,18 @@ contains
         sz = param%size
     end function dm_cgi_size
 
-    function dm_cgi_value(param, loc) result(str)
+    function dm_cgi_value(param, loc) result(value)
         !! Returns value at index `loc` in values array of `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         integer,              intent(in)    :: loc   !! Array index.
-        character(len=:), allocatable       :: str   !! Value or empty.
+        character(len=:), allocatable       :: value !! Value or empty.
 
         if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
-            allocate (character(len=0) :: str)
+            allocate (character(len=0) :: value)
             return
         end if
 
-        str = trim(param%values(loc))
+        value = trim(param%values(loc))
     end function dm_cgi_value
 
     subroutine dm_cgi_env(env)
@@ -319,13 +319,13 @@ contains
         integer,          intent(in), optional :: http_status  !! HTTP status code.
         character(len=*), intent(in), optional :: location     !! Optional redirect.
 
-        integer :: code ! HTTP code.
+        integer :: status ! HTTP code.
 
-        code = HTTP_OK
-        if (present(http_status)) code = http_status
+        status = HTTP_OK
+        if (present(http_status)) status = http_status
 
         write (stdout, '("Content-Type: ", 2a)',   advance='no') content_type, CR_LF
-        write (stdout, '("Status: ", i3, 1x, 2a)', advance='no') code, dm_http_status_string(code), CR_LF
+        write (stdout, '("Status: ", i3, 1x, 2a)', advance='no') status, dm_http_status_string(status), CR_LF
 
         if (present(location)) then
             write (stdout, '("Location: ", 2a)', advance='no') location, CR_LF
@@ -341,19 +341,19 @@ contains
         write (stdout, '(a)') content
     end subroutine dm_cgi_out
 
-    subroutine dm_cgi_parse(str, param)
+    subroutine dm_cgi_parse(input, param)
         !! Decodes and parses given character string containing new-line
         !! separated key-values pairs, and returns CGI parameters in `param`.
-        character(len=*),     intent(in)  :: str   !! Input string.
+        character(len=*),     intent(in)  :: input !! Input string.
         type(cgi_param_type), intent(out) :: param !! CGI parameter type.
 
         character(len=CGI_PARAM_LEN) :: pair(2)
         character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_PARAMS)
-        character(len=len(str))      :: content
+        character(len=len(input))    :: content
         integer                      :: i, j, n
 
-        if (len_trim(str) == 0) return
-        if (dm_cgi_decode(str, content) /= E_NONE) return
+        if (len_trim(input) == 0) return
+        if (dm_cgi_decode(input, content) /= E_NONE) return
 
         n = dm_string_count_char(content, '&') + 1
         n = min(n, CGI_MAX_PARAMS)

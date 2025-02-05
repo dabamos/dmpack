@@ -80,21 +80,23 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure function dm_json_escape(str) result(esc)
+    pure function dm_json_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
-        character(len=*), intent(in)  :: str !! String to escape.
-        character(len=:), allocatable :: esc !! Escaped string.
-        integer                       :: i
+        character(len=*), intent(in)  :: string  !! String to escape.
+        character(len=:), allocatable :: escaped !! Escaped string.
 
-        esc = ''
+        integer :: i
 
-        do i = 1, len_trim(str)
-            if (str(i:i) == '\') then
-                esc = esc // '\\'
+        escaped = ''
+
+        do i = 1, len_trim(string)
+            if (string(i:i) == '\') then
+                escaped = escaped // '\\'
                 cycle
             end if
-            esc = esc // str(i:i)
+
+            escaped = escaped // string(i:i)
         end do
     end function dm_json_escape
 

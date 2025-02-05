@@ -38,20 +38,20 @@ contains
         rc = E_NONE
     end function dm_mutex_destroy
 
-    logical function dm_mutex_is_locked(mutex) result(is)
+    logical function dm_mutex_is_locked(mutex) result(locked)
         !! Returns `.true.` if mutex is locked.
         type(mutex_type), intent(inout) :: mutex !! Mutex type.
 
         integer :: stat
 
-        is = .false.
+        locked = .false.
 
         if (c_pthread_mutex_trylock(mutex%ctx) == 0) then
             stat = c_pthread_mutex_unlock(mutex%ctx)
             return
         end if
 
-        is = .true.
+        locked = .true.
     end function dm_mutex_is_locked
 
     integer function dm_mutex_lock(mutex) result(rc)

@@ -145,129 +145,129 @@ module dm_crypto
     public :: dm_crypto_sha384
     public :: dm_crypto_sha512
 contains
-    function dm_crypto_md4(str) result(hash)
+    function dm_crypto_md4(input) result(hash)
         !! MD4 cryptographic hash function with a 128 bit output.
-        character(len=*), intent(in)       :: str  !! Input string.
-        character(len=CRYPTO_MD4_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)       :: input !! Input string.
+        character(len=CRYPTO_MD4_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_MD4_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_md4(str, len(str, kind=c_size_t), raw)
+        ptr  = c_md4(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_md4
 
-    function dm_crypto_md5(str) result(hash)
+    function dm_crypto_md5(input) result(hash)
         !! MD5 cryptographic hash function with a 128 bit output.
-        character(len=*), intent(in)       :: str  !! Input string.
-        character(len=CRYPTO_MD5_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)       :: input !! Input string.
+        character(len=CRYPTO_MD5_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_MD5_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_md5(str, len(str, kind=c_size_t), raw)
+        ptr  = c_md5(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_md5
 
-    function dm_crypto_ripemd160(str) result(hash)
+    function dm_crypto_ripemd160(input) result(hash)
         !! RIPEMD-160 cryptographic hash function with a 160 bit output.
-        character(len=*), intent(in)             :: str  !! Input string.
-        character(len=CRYPTO_RIPEMD160_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)             :: input !! Input string.
+        character(len=CRYPTO_RIPEMD160_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_RIPEMD160_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_ripemd160(str, len(str, kind=c_size_t), raw)
+        ptr  = c_ripemd160(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_ripemd160
 
-    function dm_crypto_sha1(str) result(hash)
+    function dm_crypto_sha1(input) result(hash)
         !! SHA-1 cryptographic hash function with a 160 bit output.
-        character(len=*), intent(in)        :: str  !! Input string.
-        character(len=CRYPTO_SHA1_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)        :: input !! Input string.
+        character(len=CRYPTO_SHA1_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_SHA1_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_sha1(str, len(str, kind=c_size_t), raw)
+        ptr  = c_sha1(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_sha1
 
-    function dm_crypto_sha224(str) result(hash)
+    function dm_crypto_sha224(input) result(hash)
         !! SHA-2 cryptographic hash function with a 224 bit output.
-        character(len=*), intent(in)          :: str  !! Input string.
-        character(len=CRYPTO_SHA224_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)          :: input !! Input string.
+        character(len=CRYPTO_SHA224_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_SHA224_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_sha224(str, len(str, kind=c_size_t), raw)
+        ptr  = c_sha224(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_sha224
 
-    function dm_crypto_sha256(str) result(hash)
+    function dm_crypto_sha256(input) result(hash)
         !! SHA-2 cryptographic hash function with a 256 bit output.
-        character(len=*), intent(in)          :: str  !! Input string.
-        character(len=CRYPTO_SHA256_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)          :: input !! Input string.
+        character(len=CRYPTO_SHA256_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_SHA256_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_sha256(str, len(str, kind=c_size_t), raw)
+        ptr  = c_sha256(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_sha256
 
-    function dm_crypto_sha384(str) result(hash)
+    function dm_crypto_sha384(input) result(hash)
         !! SHA-2 cryptographic hash function with a 384 bit output.
-        character(len=*), intent(in)          :: str  !! Input string.
-        character(len=CRYPTO_SHA384_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)          :: input !! Input string.
+        character(len=CRYPTO_SHA384_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_SHA384_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_sha384(str, len(str, kind=c_size_t), raw)
+        ptr  = c_sha384(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)
     end function dm_crypto_sha384
 
-    function dm_crypto_sha512(str) result(hash)
+    function dm_crypto_sha512(input) result(hash)
         !! SHA-2 cryptographic hash function with a 512 bit output.
-        character(len=*), intent(in)          :: str  !! Input string.
-        character(len=CRYPTO_SHA512_HASH_LEN) :: hash !! Output hash.
+        character(len=*), intent(in)          :: input !! Input string.
+        character(len=CRYPTO_SHA512_HASH_LEN) :: hash  !! Output hash.
 
         integer(kind=c_unsigned_char) :: raw(CRYPTO_SHA512_DIGEST_LEN)
         integer                       :: i
         type(c_ptr)                   :: ptr
 
         hash = ' '
-        ptr  = c_sha512(str, len(str, kind=c_size_t), raw)
+        ptr  = c_sha512(input, len(input, kind=c_size_t), raw)
         if (.not. c_associated(ptr)) return
         write (hash, FMT_HASH) (raw(i), i = 1, size(raw))
         call dm_lower(hash)

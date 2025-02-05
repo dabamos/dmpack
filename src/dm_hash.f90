@@ -16,44 +16,44 @@ module dm_hash
     public :: dm_hash_fnv1
     public :: dm_hash_fnv1a
 contains
-    pure elemental integer(kind=i8) function dm_hash_djb2(str) result(hash)
+    pure elemental integer(kind=i8) function dm_hash_djb2(input) result(hash)
         !! Dan Bernstein’s DJB2 non-cryptographic hash algorithm.
-        character(len=*), intent(in) :: str !! Input string.
+        character(len=*), intent(in) :: input !! Input string.
 
         integer :: i
 
         hash = DJB2_OFFSET
 
-        do i = 1, len(str)
-            hash = (ishftc(hash, 5) + hash) + iachar(str(i:i))
+        do i = 1, len(input)
+            hash = (ishftc(hash, 5) + hash) + iachar(input(i:i))
         end do
     end function dm_hash_djb2
 
-    pure elemental integer(kind=i8) function dm_hash_djb2a(str) result(hash)
+    pure elemental integer(kind=i8) function dm_hash_djb2a(input) result(hash)
         !! Dan Bernstein’s DJB2a (XOR) non-cryptographic hash algorithm.
-        character(len=*), intent(in) :: str !! Input string.
+        character(len=*), intent(in) :: input !! Input string.
 
         integer :: i
 
         hash = DJB2_OFFSET
 
-        do i = 1, len(str)
-            hash = ieor((ishftc(hash, 5) + hash), iachar(str(i:i), kind=i8))
+        do i = 1, len(input)
+            hash = ieor((ishftc(hash, 5) + hash), iachar(input(i:i), kind=i8))
         end do
     end function dm_hash_djb2a
 
-    pure elemental integer(kind=i8) function dm_hash_fnv1(str) result(hash)
+    pure elemental integer(kind=i8) function dm_hash_fnv1(input) result(hash)
         !! 32-bit Fowler–Noll–Vo hash function (FNV-1). Uses a 64-bit signed
         !! integer to store the unsigned 32-bit hash.
-        character(len=*), intent(in) :: str !! Input string.
+        character(len=*), intent(in) :: input !! Input string.
 
         integer          :: i, k
         integer(kind=i8) :: c
 
         hash = FNV1_OFFSET
 
-        do i = 1, len(str)
-            k = iachar(str(i:i))
+        do i = 1, len(input)
+            k = iachar(input(i:i))
 
             if (LITTLE_ENDIAN) then
                 c = transfer([ k, 0 ], 0)
@@ -67,20 +67,20 @@ contains
         end do
     end function dm_hash_fnv1
 
-    pure elemental integer(kind=i8) function dm_hash_fnv1a(str) result(hash)
+    pure elemental integer(kind=i8) function dm_hash_fnv1a(input) result(hash)
         !! 32-bit Fowler–Noll–Vo hash function (FNV-1a). Uses a 64-bit signed
         !! integer to store the unsigned 32-bit hash.
         !!
         !! Adapted from: http://www.isthe.com/chongo/tech/comp/fnv/fnv32.f
-        character(len=*), intent(in) :: str !! Input string.
+        character(len=*), intent(in) :: input !! Input string.
 
         integer          :: i, k
         integer(kind=i8) :: c
 
         hash = FNV1_OFFSET
 
-        do i = 1, len(str)
-            k = iachar(str(i:i))
+        do i = 1, len(input)
+            k = iachar(input(i:i))
 
             if (LITTLE_ENDIAN) then
                 c = transfer([ k, 0 ], 0)

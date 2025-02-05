@@ -183,7 +183,7 @@ contains
         rc = E_NONE
     end function dm_hdf5_file_free
 
-    logical function dm_hdf5_file_is_valid(path) result(is)
+    logical function dm_hdf5_file_is_valid(path) result(valid)
         !! Returns `.true.` if file at given path is a valid HDF5 file.
         use :: dm_file, only: dm_file_exists
 
@@ -191,9 +191,9 @@ contains
 
         integer :: stat
 
-        is = .false.
+        valid = .false.
         if (.not. dm_file_exists(path)) return
-        call h5fis_hdf5_f(trim(path), is, stat)
+        call h5fis_hdf5_f(trim(path), valid, stat)
     end function dm_hdf5_file_is_valid
 
     integer function dm_hdf5_file_path(file, path, n) result(rc)

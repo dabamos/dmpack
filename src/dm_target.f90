@@ -100,18 +100,18 @@ contains
         valid = (state >= TARGET_STATE_NONE .and. state <= TARGET_STATE_LAST)
     end function dm_target_state_is_valid
 
-    pure function dm_target_state_name(state) result(str)
+    pure function dm_target_state_name(state) result(name)
         !! Returns the name of the known target state as an allocatable
         !! character string, or `unknown` if the state is not known.
         integer, intent(in)           :: state !! Target state.
-        character(len=:), allocatable :: str !! Target state name.
+        character(len=:), allocatable :: name  !! Target state name.
 
         if (.not. dm_target_state_is_valid(state)) then
-            str = 'invalid'
+            name = 'invalid'
             return
         end if
 
-        str = trim(TARGET_STATE_NAMES(state))
+        name = trim(TARGET_STATE_NAMES(state))
     end function dm_target_state_name
 
     subroutine dm_target_out(target, unit)

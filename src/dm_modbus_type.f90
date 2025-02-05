@@ -60,12 +60,12 @@ contains
         end select
     end function dm_modbus_access_from_name
 
-    pure elemental logical function dm_modbus_access_is_valid(access) result(is)
+    pure elemental logical function dm_modbus_access_is_valid(access) result(valid)
         !! Returns `.true.` if access is a valid enumerator.
         !! `MODBUS_ACCESS_NONE` is invalid.
         integer, intent(in) :: access !! Modbus access enumerator.
 
-        is = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
+        valid = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
     end function dm_modbus_access_is_valid
 
     pure integer function dm_modbus_float_from_name(name) result(float)
@@ -89,15 +89,15 @@ contains
         end select
     end function dm_modbus_float_from_name
 
-    pure elemental logical function dm_modbus_float_is_valid(float) result(is)
+    pure elemental logical function dm_modbus_float_is_valid(float) result(valid)
         !! Returns `.true.` if byte order is a valid enumerator.
         !! `MODBUS_FLOAT_NONE` is invalid.
         integer, intent(in) :: float !! Modbus float enumerator.
 
-        is = (float == MODBUS_FLOAT_ABCD .or. &
-              float == MODBUS_FLOAT_BADC .or. &
-              float == MODBUS_FLOAT_CDAB .or. &
-              float == MODBUS_FLOAT_DCBA)
+        valid = (float == MODBUS_FLOAT_ABCD .or. &
+                 float == MODBUS_FLOAT_BADC .or. &
+                 float == MODBUS_FLOAT_CDAB .or. &
+                 float == MODBUS_FLOAT_DCBA)
     end function dm_modbus_float_is_valid
 
     pure elemental subroutine dm_modbus_parse(string, register, error)

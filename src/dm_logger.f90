@@ -190,11 +190,11 @@ contains
         name = trim(this%name)
     end function logger_get_name
 
-    logical function logger_is_ipc(this) result(is)
+    logical function logger_is_ipc(this) result(ipc)
         !! Returns `.true.` if IPC is enabled.
         class(logger_class), intent(inout) :: this !! Logger object.
 
-        is = this%ipc
+        ipc = this%ipc
     end function logger_is_ipc
 
     subroutine logger_log_args(this, level, message, source, observ, timestamp, error, escape, verbose)

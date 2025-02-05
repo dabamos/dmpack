@@ -152,7 +152,7 @@ contains
     end subroutine dm_test_dummy_node
 
     impure elemental subroutine dm_test_dummy_observ(observ, id, node_id, sensor_id, target_id, &
-                                                name, timestamp, nrequests, response_value)
+                                                     name, timestamp, nrequests, response_value)
         !! Generates dummy observation data type.
         use :: dm_observ
         use :: dm_request

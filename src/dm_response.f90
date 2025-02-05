@@ -95,18 +95,18 @@ contains
         valid = (type >= RESPONSE_TYPE_REAL64 .and. type <= RESPONSE_TYPE_LAST)
     end function dm_response_type_is_valid
 
-    pure function dm_response_type_to_name(type) result(str)
+    pure function dm_response_type_to_name(type) result(name)
         !! Returns allocatable string of response value type name, or `invalid`
         !! if the type is invalid.
         integer, intent(in)           :: type !! Response value type.
-        character(len=:), allocatable :: str  !! Response value type name.
+        character(len=:), allocatable :: name !! Response value type name.
 
         if (.not. dm_response_type_is_valid(type)) then
-            str = 'invalid'
+            name = 'invalid'
             return
         end if
 
-        str = trim(RESPONSE_TYPE_NAMES(type))
+        name = trim(RESPONSE_TYPE_NAMES(type))
     end function dm_response_type_to_name
 
     subroutine dm_response_out(response, unit)

@@ -44,11 +44,11 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    logical function dm_file_exists(path) result(file_exists)
+    logical function dm_file_exists(path) result(exists)
         !! Returns `.true.` if file at given file path exists.
         character(len=*), intent(in) :: path !! File path.
 
-        inquire (exist=file_exists, file=trim(path))
+        inquire (exist=exists, file=trim(path))
     end function dm_file_exists
 
     integer(kind=i8) function dm_file_line_count(path, error) result(n)
@@ -80,7 +80,7 @@ contains
         if (present(error)) error = rc
     end function dm_file_line_count
 
-    integer(kind=i8) function dm_file_size(path, error) result(sz)
+    integer(kind=i8) function dm_file_size(path, error) result(nbytes)
         !! Returns file size in file storage units (usually, bytes). On error,
         !! size is 0 and the error code `E_NOT_FOUND` is returned in dummy
         !! argument `error`.
@@ -90,8 +90,8 @@ contains
         logical :: file_exists
 
         if (present(error)) error = E_NOT_FOUND
-        sz = 0_i8
-        inquire (exist=file_exists, file=trim(path), size=sz)
+        nbytes = 0_i8
+        inquire (exist=file_exists, file=trim(path), size=nbytes)
         if (.not. file_exists) return
         if (present(error)) error = E_NONE
     end function dm_file_size
@@ -181,11 +181,11 @@ contains
         integer(kind=i8),              intent(out), optional :: size    !! Content size.
         integer,                       intent(out), optional :: error   !! Error code.
 
-        integer          :: fu, rc, stat
-        integer(kind=i8) :: sz
+        integer          :: rc, stat, unit
+        integer(kind=i8) :: size_
 
-        fu = -1
-        sz = -1
+        unit  = -1
+        size_ = -1
 
         read_block: block
             ! Open file for reading.
@@ -195,31 +195,31 @@ contains
                   file    = trim(path), &
                   form    = 'unformatted', &
                   iostat  = stat, &
-                  newunit = fu)
+                  newunit = unit)
             if (stat /= 0) exit read_block
 
             ! Get content size.
-            inquire (unit=fu, size=sz)
-            if (sz < 0) exit read_block
+            inquire (unit=unit, size=size_)
+            if (size_ < 0) exit read_block
 
             ! Allocate memory.
             rc = E_ALLOC
-            allocate (character(len=sz) :: content, stat=stat)
+            allocate (character(len=size_) :: content, stat=stat)
             if (stat /= 0) exit read_block
 
             ! Read bytes.
-            if (sz > 0) then
+            if (size_ > 0) then
                 rc = E_READ
-                read (fu, iostat=stat) content
+                read (unit, iostat=stat) content
                 if (stat /= 0) exit read_block
             end if
 
             rc = E_NONE
         end block read_block
 
-        if (fu > -1) close (fu)
+        if (unit > -1) close (unit)
         if (.not. allocated(content)) content = ''
-        if (present(size)) size = sz
+        if (present(size)) size = size_
         if (present(error)) error = rc
     end subroutine dm_file_read
 
@@ -236,14 +236,14 @@ contains
         logical,          intent(in),  optional :: raw     !! Unformatted output if true.
         integer,          intent(out), optional :: error   !! Error code.
 
-        integer :: fu, rc, stat
+        integer :: rc, stat, unit
         logical :: raw_
 
         raw_ = .false.
         if (present(raw)) raw_ = raw
 
-        fu = -1
         rc = E_IO
+        unit = -1
 
         write_block: block
             if (raw_) then
@@ -253,31 +253,31 @@ contains
                       file    = trim(path), &
                       form    = 'unformatted', &
                       iostat  = stat, &
-                      newunit = fu, &
+                      newunit = unit, &
                       status  = 'replace')
                 if (stat /= 0) exit write_block
 
                 rc = E_WRITE
-                write (fu, iostat=stat) content
+                write (unit, iostat=stat) content
                 if (stat /= 0) exit write_block
             else
                 ! Formatted output.
                 open (action  = 'write', &
                       file    = trim(path), &
                       iostat  = stat, &
-                      newunit = fu, &
+                      newunit = unit, &
                       status  = 'replace')
                 if (stat /= 0) exit write_block
 
                 rc = E_WRITE
-                write (fu, '(a)', iostat=stat) content
+                write (unit, '(a)', iostat=stat) content
                 if (stat /= 0) exit write_block
             end if
 
             rc = E_NONE
         end block write_block
 
-        if (fu > -1) close (fu)
+        if (unit > -1) close (unit)
         if (present(error)) error = rc
     end subroutine dm_file_write
 end module dm_file

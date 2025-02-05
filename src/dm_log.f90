@@ -160,21 +160,21 @@ contains
         end select
     end function dm_log_level_from_name
 
-    pure elemental integer function dm_log_level_from_string(str) result(level)
+    pure elemental integer function dm_log_level_from_string(string) result(level)
         !! Return log level from string, either level name or numeric level.
         use :: dm_string, only: dm_string_to
 
-        character(len=*), intent(in) :: str !! Log level name or numeric level.
+        character(len=*), intent(in) :: string !! Log level name or numeric level.
 
         integer :: rc
 
         ! Convert string to integer.
-        call dm_string_to(str, level, error=rc)
+        call dm_string_to(string, level, error=rc)
         if (dm_is_ok(rc)) return
 
         ! On error, try to read level from level name. An invalid log level name
         ! is turned into `LL_NONE`.
-        level = dm_log_level_from_name(str)
+        level = dm_log_level_from_name(string)
     end function dm_log_level_from_string
 
     pure elemental logical function dm_log_level_is_valid(level) result(valid)

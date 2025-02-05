@@ -552,38 +552,38 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure function mail_address_person(person) result(str)
+    pure function mail_address_person(person) result(string)
         !! Returns e-mail address as allocatable string in the form `<address>`
         !! or `"name" <address>`, depending on whether the person has a name.
         type(person_type), intent(in) :: person !! Person type.
-        character(len=:), allocatable :: str    !! Address string.
+        character(len=:), allocatable :: string !! Address string.
 
         if (dm_person_has_name(person)) then
-            str = '"' // trim(person%name) // '" <' // trim(person%mail) // '>'
+            string = '"' // trim(person%name) // '" <' // trim(person%mail) // '>'
         else
-            str = '<' // trim(person%mail) // '>'
+            string = '<' // trim(person%mail) // '>'
         end if
     end function mail_address_person
 
-    pure function mail_address_persons(persons) result(str)
+    pure function mail_address_persons(persons) result(string)
         !! Returns list of e-mail addresses in allocatable string.
         type(person_type), intent(in) :: persons(:) !! Array of person types.
-        character(len=:), allocatable :: str        !! List of addresses.
+        character(len=:), allocatable :: string     !! List of addresses.
 
         integer :: i, n
 
         n = size(persons)
 
         if (n == 0) then
-            str = ''
+            string = ''
             return
         end if
 
-        str = dm_mail_address(persons(1))
+        string = dm_mail_address(persons(1))
         if (n == 1) return
 
         do i = 2, n
-            str = str // ', ' // dm_mail_address(persons(i))
+            string = string // ', ' // dm_mail_address(persons(i))
         end do
     end function mail_address_persons
 

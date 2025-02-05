@@ -1288,7 +1288,7 @@ contains
         integer,                       intent(out)           :: mode !! Journal mode.
         character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        character(len=:), allocatable :: str
+        character(len=:), allocatable :: string
         integer                       :: stat
         type(db_stmt_type)            :: db_stmt
 
@@ -1305,12 +1305,12 @@ contains
             if (.not. db_column_is_text(db_stmt, 0)) exit sql_block
 
             rc = E_NONE
-            call db_column(db_stmt, 0, str)
+            call db_column(db_stmt, 0, string)
         end block sql_block
 
         stat = db_finalize(db_stmt)
 
-        select case (str)
+        select case (string)
             case ('delete');   mode = DB_JOURNAL_DELETE
             case ('truncate'); mode = DB_JOURNAL_TRUNCATE
             case ('persist');  mode = DB_JOURNAL_PERSIST
@@ -1319,7 +1319,7 @@ contains
             case default;      mode = DB_JOURNAL_OFF
         end select
 
-        if (present(name)) name = str
+        if (present(name)) name = string
     end function dm_db_get_journal_mode
 
     integer function dm_db_get_query_only(db, enabled) result(rc)
@@ -4576,12 +4576,12 @@ contains
         stat = db_finalize(db_stmt)
     end function db_insert_sync
 
-    integer function db_next_row_allocatable(db_stmt, str, validate) result(rc)
+    integer function db_next_row_allocatable(db_stmt, string, validate) result(rc)
         !! Reads string from table row and returns it as allocatable character
         !! string. Column types are validated by default. Returns `E_DB_TYPE`
         !! if the validation failed.
         type(db_stmt_type),            intent(inout)        :: db_stmt  !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: str      !! Allocatable character string.
+        character(len=:), allocatable, intent(out)          :: string   !! Allocatable character string.
         logical,                       intent(in), optional :: validate !! Validate column types.
 
         logical :: validate_
@@ -4592,22 +4592,22 @@ contains
         if (validate_) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text(db_stmt, 0)) then
-                str = ''
+                string = ''
                 return
             end if
         end if
 
-        call db_column(db_stmt, 0, str)
+        call db_column(db_stmt, 0, string)
 
         rc = E_NONE
     end function db_next_row_allocatable
 
-    integer function db_next_row_character(db_stmt, str, nbytes, validate) result(rc)
+    integer function db_next_row_character(db_stmt, string, nbytes, validate) result(rc)
         !! Reads string from table row. The passed argument `str` must be
         !! allocated! Column types are validated by default. Returns
         !! `E_DB_TYPE` if the validation failed.
         type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
-        character(len=*),   intent(inout)        :: str      !! Character string.
+        character(len=*),   intent(inout)        :: string   !! Character string.
         integer,            intent(out)          :: nbytes   !! Size of string in bytes.
         logical,            intent(in), optional :: validate !! Validate column types.
 
@@ -4621,12 +4621,12 @@ contains
         if (validate_) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text(db_stmt, 0)) then
-                str = ''
+                string = ''
                 return
             end if
         end if
 
-        call db_column(db_stmt, 0, str, nbytes)
+        call db_column(db_stmt, 0, string, nbytes)
 
         rc = E_NONE
     end function db_next_row_character

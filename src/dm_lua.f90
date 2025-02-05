@@ -210,38 +210,39 @@ contains
         end select
     end function dm_lua_error
 
-    function dm_lua_error_string(lua) result(str)
+    function dm_lua_error_string(lua) result(string)
         !! Returns last error message as allocatable character string or an
         !! empty string if no message is available.
-        type(lua_state_type), intent(inout) :: lua !! Lua type.
-        character(len=:), allocatable       :: str !! Last error message.
+        type(lua_state_type), intent(inout) :: lua    !! Lua type.
+        character(len=:), allocatable       :: string !! Last error message.
 
         lua_block: block
             if (.not. c_associated(lua%ctx))    exit lua_block
             if (lua_isstring(lua%ctx, -1) == 0) exit lua_block
-            str = lua_tostring(lua%ctx, -1)
+            string = lua_tostring(lua%ctx, -1)
             return
         end block lua_block
 
-        if (.not. allocated(str)) str = ''
+        if (.not. allocated(string)) string = ''
     end function dm_lua_error_string
 
-    function dm_lua_escape(str) result(res)
+    function dm_lua_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
-        character(len=*), intent(in)  :: str !! String to escape.
-        character(len=:), allocatable :: res !! Escaped string.
+        character(len=*), intent(in)  :: string  !! String to escape.
+        character(len=:), allocatable :: escaped !! Escaped string.
 
         integer :: i
 
-        res = ''
+        escaped = ''
 
-        do i = 1, len_trim(str)
-            if (str(i:i) == '\') then
-                res = res // '\\'
+        do i = 1, len_trim(string)
+            if (string(i:i) == '\') then
+                escaped = escaped // '\\'
                 cycle
             end if
-            res = res // str(i:i)
+
+            escaped = escaped // string(i:i)
         end do
     end function dm_lua_escape
 
@@ -456,29 +457,29 @@ contains
         value = lua_tostring(lua%ctx, idx)
     end function dm_lua_to_string
 
-    function dm_lua_unescape(str) result(res)
+    function dm_lua_unescape(string) result(unescaped)
         !! Unescapes passed character string by replacing each occurance of
         !! `\\` with `\`.
-        character(len=*), intent(in)  :: str !! String to escape.
-        character(len=:), allocatable :: res !! Unescaped string.
+        character(len=*), intent(in)  :: string    !! String to escape.
+        character(len=:), allocatable :: unescaped !! Unescaped string.
 
         integer :: i, n
 
-        res = ''
+        unescaped = ''
 
         i = 1
-        n = len_trim(str)
+        n = len_trim(string)
 
         do
             if (i > n) exit
             if (i < n) then
-                if (str(i:i + 1) == '\\') then
-                    res = res // '\'
+                if (string(i:i + 1) == '\\') then
+                    unescaped = unescaped // '\'
                     i = i + 2
                     cycle
                 end if
             end if
-            res = res // str(i:i)
+            unescaped = unescaped // string(i:i)
             i = i + 1
         end do
     end function dm_lua_unescape
@@ -888,29 +889,30 @@ contains
         character(len=*),     intent(inout)        :: value    !! Table field value.
         logical,              intent(in), optional :: unescape !! Unescape the string.
 
-        character(len=:), allocatable :: str
-        logical                       :: unescape_
+        logical :: unescape_
 
         unescape_ = .false.
         if (present(unescape)) unescape_ = unescape
 
         lua_block: block
+            character(len=:), allocatable :: string
+
             rc = E_EMPTY
             if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isstring(lua%ctx, -1) /= 1) exit lua_block
 
-            str = lua_tostring(lua%ctx, -1)
+            string = lua_tostring(lua%ctx, -1)
 
             if (unescape_) then
-                value = dm_lua_unescape(str)
+                value = dm_lua_unescape(string)
             else
-                value = str
+                value = string
             end if
 
             rc = E_BOUNDS
-            if (len(str) > len(value)) exit lua_block
+            if (len(string) > len(value)) exit lua_block
 
             rc = E_NONE
         end block lua_block
@@ -1085,7 +1087,7 @@ contains
         if (present(unescape)) unescape_ = unescape
 
         lua_block: block
-            character(len=:), allocatable :: str
+            character(len=:), allocatable :: string
 
             rc = E_INVALID
             if (lua_istable(lua%ctx, -1) == 0) return
@@ -1096,16 +1098,16 @@ contains
             rc = E_TYPE
             if (lua_isstring(lua%ctx, -1) /= 1) exit lua_block
 
-            str = lua_tostring(lua%ctx, -1)
+            string = lua_tostring(lua%ctx, -1)
 
             if (unescape_) then
-                value = dm_lua_unescape(str)
+                value = dm_lua_unescape(string)
             else
-                value = str
+                value = string
             end if
 
             rc = E_BOUNDS
-            if (len(str) > len(value)) exit lua_block
+            if (len(string) > len(value)) exit lua_block
 
             rc = E_NONE
         end block lua_block
