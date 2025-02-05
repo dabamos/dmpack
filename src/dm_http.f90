@@ -33,40 +33,40 @@ module dm_http
 
     public :: dm_http_status_string
 contains
-    pure function dm_http_status_string(http_status) result(str)
+    pure function dm_http_status_string(status) result(string)
         !! Returns allocatable string of HTTP status. Returns an empty string
         !! if the passed status is unknown.
-        integer, intent(in)           :: http_status !! HTTP code.
-        character(len=:), allocatable :: str         !! Status string.
+        integer, intent(in)           :: status !! HTTP code.
+        character(len=:), allocatable :: string !! Status string.
 
-        select case (http_status)
+        select case (status)
             ! 20X
-            case (HTTP_OK);                            str = 'OK'
-            case (HTTP_CREATED);                       str = 'Created'
-            case (HTTP_ACCEPTED);                      str = 'Accepted'
-            case (HTTP_NO_CONTENT);                    str = 'No Content'
-            case (HTTP_RESET_CONTENT);                 str = 'Reset Content'
+            case (HTTP_OK);                            string = 'OK'
+            case (HTTP_CREATED);                       string = 'Created'
+            case (HTTP_ACCEPTED);                      string = 'Accepted'
+            case (HTTP_NO_CONTENT);                    string = 'No Content'
+            case (HTTP_RESET_CONTENT);                 string = 'Reset Content'
             ! 4XX
-            case (HTTP_BAD_REQUEST);                   str = 'Bad Request'
-            case (HTTP_UNAUTHORIZED);                  str = 'Unauthorized'
-            case (HTTP_PAYMENT_REQUIRED);              str = 'Payment Required'
-            case (HTTP_FORBIDDEN);                     str = 'Forbidden'
-            case (HTTP_NOT_FOUND);                     str = 'Not Found'
-            case (HTTP_METHOD_NOT_ALLOWED);            str = 'Method Not Allowed'
-            case (HTTP_NOT_ACCEPTABLE);                str = 'Not Acceptable'
-            case (HTTP_PROXY_AUTHENTICATION_REQUIRED); str = 'Proxy Authentication Required'
-            case (HTTP_REQUEST_TIMEOUT);               str = 'Request Timeout'
-            case (HTTP_CONFLICT);                      str = 'Conflict'
-            case (HTTP_GONE);                          str = 'Gone'
-            case (HTTP_LENGTH_REQUIRED);               str = 'Length Required'
-            case (HTTP_UNSUPPORTED_MEDIA_TYPE);        str = 'Unsupported Media Type'
+            case (HTTP_BAD_REQUEST);                   string = 'Bad Request'
+            case (HTTP_UNAUTHORIZED);                  string = 'Unauthorized'
+            case (HTTP_PAYMENT_REQUIRED);              string = 'Payment Required'
+            case (HTTP_FORBIDDEN);                     string = 'Forbidden'
+            case (HTTP_NOT_FOUND);                     string = 'Not Found'
+            case (HTTP_METHOD_NOT_ALLOWED);            string = 'Method Not Allowed'
+            case (HTTP_NOT_ACCEPTABLE);                string = 'Not Acceptable'
+            case (HTTP_PROXY_AUTHENTICATION_REQUIRED); string = 'Proxy Authentication Required'
+            case (HTTP_REQUEST_TIMEOUT);               string = 'Request Timeout'
+            case (HTTP_CONFLICT);                      string = 'Conflict'
+            case (HTTP_GONE);                          string = 'Gone'
+            case (HTTP_LENGTH_REQUIRED);               string = 'Length Required'
+            case (HTTP_UNSUPPORTED_MEDIA_TYPE);        string = 'Unsupported Media Type'
             ! 50X
-            case (HTTP_INTERNAL_SERVER_ERROR);         str = 'Internal Server Error'
-            case (HTTP_NOT_IMPLEMENTED);               str = 'Not Implemented'
-            case (HTTP_BAD_GATEWAY);                   str = 'Bad Gateway'
-            case (HTTP_SERVICE_UNAVAILABLE);           str = 'Service Unavailable'
+            case (HTTP_INTERNAL_SERVER_ERROR);         string = 'Internal Server Error'
+            case (HTTP_NOT_IMPLEMENTED);               string = 'Not Implemented'
+            case (HTTP_BAD_GATEWAY);                   string = 'Bad Gateway'
+            case (HTTP_SERVICE_UNAVAILABLE);           string = 'Service Unavailable'
             ! NIY
-            case default;                              str = ''
+            case default;                              string = ''
         end select
     end function dm_http_status_string
 end module dm_http

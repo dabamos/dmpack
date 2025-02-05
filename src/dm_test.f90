@@ -341,7 +341,7 @@ contains
         call dm_ansi_reset(no_color_)
 
         print '("Name....: ", a)', trim(name)
-        print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
+        print '("Time....: ", a)', dm_time_strip_usec(dm_time_now())
         print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
                                                         trim(uname%release), &
                                                         trim(uname%machine)

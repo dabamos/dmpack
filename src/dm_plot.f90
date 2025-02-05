@@ -434,19 +434,19 @@ contains
         if (plot%yautoscale) rc = plot_write(plot, 'set autoscale y')
     end function plot_set_yaxis
 
-    integer function plot_write(plot, str) result(rc)
-        type(plot_type),  intent(inout) :: plot !! Plot settings.
-        character(len=*), intent(in)    :: str  !! Bytes to send through pipe.
+    integer function plot_write(plot, bytes) result(rc)
+        type(plot_type),  intent(inout) :: plot  !! Plot settings.
+        character(len=*), intent(in)    :: bytes !! Bytes to send through pipe.
 
         integer(kind=i8) :: sz
 
         if (plot%bidirect) then
             rc = E_IO
-            sz = dm_pipe_write2(plot%stdin, str // c_new_line)
-            if (sz == len(str, kind=i8) + 1) rc = E_NONE
+            sz = dm_pipe_write2(plot%stdin, bytes // c_new_line)
+            if (sz == len(bytes, kind=i8) + 1) rc = E_NONE
             return
         end if
 
-        rc = dm_pipe_write(plot%stdin, str)
+        rc = dm_pipe_write(plot%stdin, trim(bytes))
     end function plot_write
 end module dm_plot

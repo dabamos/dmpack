@@ -72,7 +72,7 @@ module dm_util
         !! Generic seconds to milliseconds function.
         module procedure :: msec_to_sec_int32
         module procedure :: msec_to_sec_int64
-    end interface dm_msec_to_sec  
+    end interface dm_msec_to_sec
 
     ! Public procedures.
     public :: dm_atof
@@ -103,7 +103,6 @@ module dm_util
     public :: dm_int32_to_real64
     public :: dm_int64_to_real64
     public :: dm_logical_to_real64
-    public :: dm_real32_to_real64
     public :: dm_real64_to_int32
     public :: dm_real64_to_int64
     public :: dm_real64_to_logical
@@ -139,52 +138,55 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure elemental function dm_atof(str) result(f)
+    pure elemental function dm_atof(a) result(f)
         !! Converts string to 8-byte real.
-        character(len=*),intent(in) :: str !! Number string.
-        real(kind=r8)               :: f   !! Value.
+        character(len=*),intent(in) :: a !! Number string.
+        real(kind=r8)               :: f !! Value.
 
         integer :: stat
 
         f = 0.0_r8
-        read (str, *, iostat=stat) f
+        read (a, *, iostat=stat) f
     end function dm_atof
 
-    pure elemental function dm_atoi(str) result(i)
+    pure elemental function dm_atoi(a) result(i)
         !! Converts string to 4-byte integer.
-        character(len=*),intent(in) :: str !! Number string.
-        integer                     :: i   !! Value.
+        character(len=*),intent(in) :: a !! Number string.
+        integer(kind=i4)            :: i !! Value.
 
         integer :: stat
 
         i = 0
-        read (str, *, iostat=stat) i
+        read (a, *, iostat=stat) i
     end function dm_atoi
 
-    pure function dm_btoa(l, true, false) result(str)
+    pure function dm_btoa(b, true, false) result(a)
         !! Returns either argument `true` or `false` as allocatable character,
-        !! depending on the value of logical value `l`. The result is trimmed.
-        logical,          intent(in)  :: l     !! Logical value.
+        !! depending on the value of logical value `b`. The result is trimmed.
+        logical,          intent(in)  :: b     !! Logical value.
         character(len=*), intent(in)  :: true  !! Return value on `.true.`.
         character(len=*), intent(in)  :: false !! Return value on `.false.`.
-        character(len=:), allocatable :: str   !! Returned string.
+        character(len=:), allocatable :: a     !! Returned string.
 
-        if (l) then
-            str = trim(true)
+        if (b) then
+            a = trim(true)
         else
-            str = trim(false)
+            a = trim(false)
         end if
     end function dm_btoa
 
-    pure elemental function dm_btoi(l) result(i)
+    pure elemental function dm_btoi(b) result(i)
         !! Converts logical (boolean) to 4-byte integer.
-        logical, intent(in) :: l !! Logical value.
+        logical, intent(in) :: b !! Logical value.
         integer             :: i !! `0` or `1`.
 
         i = 0
-        if (l) i = 1
+        if (b) i = 1
     end function dm_btoi
 
+    ! **************************************************************************
+    ! PUBLIC ANGLE FUNCTIONS.
+    ! **************************************************************************
     pure elemental function dm_deg_to_gon(a) result(b)
         !! Converts angle from degrees to gon.
         real(kind=r8), intent(in) :: a !! Angle [deg].
@@ -241,51 +243,101 @@ contains
         b = a * (200.0_r8 / PI)
     end function dm_rad_to_gon
 
-    pure elemental function dm_int32_to_real64(i) result(r)
+    ! **************************************************************************
+    ! PUBLIC INTRINSIC TYPE TO REAL FUNCTIONS.
+    ! **************************************************************************
+    pure elemental function dm_int32_to_real64(i32) result(r64)
         !! Converts 4-byte integer to 8-byte real.
-        integer(kind=i4), intent(in) :: i !! 4-byte integer value.
-        real(kind=r8)                :: r !! Value as 8-byte real.
+        integer(kind=i4), intent(in) :: i32 !! 4-byte integer value.
+        real(kind=r8)                :: r64 !! Value as 8-byte real.
 
-        r = real(i, kind=r8)
+        r64 = real(i32, kind=r8)
     end function dm_int32_to_real64
 
-    pure elemental function dm_int64_to_real64(i) result(r)
+    pure elemental function dm_int64_to_real64(i64) result(r64)
         !! Converts 8-byte integer to 8-byte real.
-        integer(kind=i8), intent(in) :: i !! 8-byte integer value.
-        real(kind=r8)                :: r !! Value as 8-byte real.
+        integer(kind=i8), intent(in) :: i64 !! 8-byte integer value.
+        real(kind=r8)                :: r64 !! Value as 8-byte real.
 
-        r = real(i, kind=r8)
+        r64 = real(i64, kind=r8)
     end function dm_int64_to_real64
 
-    pure elemental function dm_logical_to_real64(l) result(r)
+    pure elemental function dm_logical_to_real64(l) result(r64)
         !! Converts logical to 8-byte real (`0.0` for `.false.` and `1.0` for
         !! `.true.`).
-        logical, intent(in) :: l !! Logical value.
-        real(kind=r8)       :: r !! Value as 8-byte real.
+        logical, intent(in) :: l   !! Logical value.
+        real(kind=r8)       :: r64 !! Value as 8-byte real.
 
         if (l) then
-            r = 1.0_r8
+            r64 = 1.0_r8
         else
-            r = 0.0_r8
+            r64 = 0.0_r8
         end if
     end function dm_logical_to_real64
 
-    subroutine dm_msleep(sec)
+    pure elemental function dm_real32_to_real64(r32) result(r64)
+        !! Converts 8-byte integer to 8-byte real.
+        real(kind=r4), intent(in) :: r32 !! 4-byte real value.
+        real(kind=r8)             :: r64 !! Value as 8-byte real.
+
+        r64 = real(r32, kind=r8)
+    end function dm_real32_to_real64
+
+    ! **************************************************************************
+    ! PUBLIC REAL TO INTRINSIC TYPE FUNCTIONS.
+    ! **************************************************************************
+    pure elemental subroutine dm_real64_to_int32(from, to)
+        !! Converts 8-byte real to 4-byte integer.
+        real(kind=r8),    intent(in)  :: from !! 8-byte real value.
+        integer(kind=i4), intent(out) :: to   !! 4-byte integer value.
+
+        to = int(from, kind=i4)
+    end subroutine dm_real64_to_int32
+
+    pure elemental subroutine dm_real64_to_int64(from, to)
+        !! Converts 8-byte real to 8-byte integer.
+        real(kind=r8),    intent(in)  :: from !! 8-byte real value.
+        integer(kind=i8), intent(out) :: to   !! 8-byte integer value.
+
+        to = int(from, kind=i8)
+    end subroutine dm_real64_to_int64
+
+    pure elemental subroutine dm_real64_to_logical(from, to)
+        !! Converts 8-byte real to logical. If `f` equals `0.0`, the result is
+        !! `.false.`, else `.true.`.
+        real(kind=r8), intent(in)  :: from !! 8-byte real value.
+        logical,       intent(out) :: to   !! Logical value.
+
+        to = (.not. dm_equals(from, 0.0_r8))
+    end subroutine dm_real64_to_logical
+
+    pure elemental subroutine dm_real64_to_real32(from, to)
+        !! Converts 8-byte real to 4-byte real
+        real(kind=r8), intent(in)  :: from !! 8-byte real value.
+        real(kind=r4), intent(out) :: to   !! 4-byte real value.
+
+        to = real(from, kind=r4)
+    end subroutine dm_real64_to_real32
+
+    ! **************************************************************************
+    ! PUBLIC SLEEP ROUTINES.
+    ! **************************************************************************
+    subroutine dm_msleep(msec)
         !! Pauses program execution for given time in mseconds.
         use :: unix, only: c_useconds_t, c_usleep
 
-        integer, intent(in) :: sec !! Delay in seconds [msec].
+        integer, intent(in) :: msec !! Delay [msec].
 
         integer :: rc
 
-        rc = c_usleep(int(sec * 1000, kind=c_useconds_t))
+        rc = c_usleep(int(msec * 1000, kind=c_useconds_t))
     end subroutine dm_msleep
 
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
         use :: unix, only: c_useconds_t, c_usleep
 
-        integer, intent(in) :: sec !! Delay in seconds [sec].
+        integer, intent(in) :: sec !! Delay [sec].
 
         integer :: rc
 
@@ -296,56 +348,12 @@ contains
         !! Pauses program execution for given time in useconds.
         use :: unix, only: c_useconds_t, c_usleep
 
-        integer, intent(in) :: usec !! Delay in useconds [usec].
+        integer, intent(in) :: usec !! Delay [usec].
 
         integer :: rc
 
         rc = c_usleep(int(usec, kind=c_useconds_t))
     end subroutine dm_usleep
-
-    ! **************************************************************************
-    ! PUBLIC REAL TO INTRINSIC TYPE FUNCTIONS.
-    ! **************************************************************************
-    pure elemental function dm_real32_to_real64(f) result(r)
-        !! Converts 4-byte real to 8-byte real.
-        real(kind=r4), intent(in) :: f !! 4-byte real value.
-        real(kind=r8)             :: r !! Value as 8-byte real.
-
-        r = real(f, kind=r8)
-    end function dm_real32_to_real64
-
-    pure elemental subroutine dm_real64_to_int32(f, i)
-        !! Converts 8-byte real to 4-byte integer.
-        real(kind=r8),    intent(in)  :: f !! 8-byte real value.
-        integer(kind=i4), intent(out) :: i !! 4-byte integer value.
-
-        i = int(f, kind=i4)
-    end subroutine dm_real64_to_int32
-
-    pure elemental subroutine dm_real64_to_int64(f, i)
-        !! Converts 8-byte real to 8-byte integer.
-        real(kind=r8),    intent(in)  :: f !! 8-byte real value.
-        integer(kind=i8), intent(out) :: i !! 8-byte integer value.
-
-        i = int(f, kind=i8)
-    end subroutine dm_real64_to_int64
-
-    pure elemental subroutine dm_real64_to_logical(f, l)
-        !! Converts 8-byte real to logical. If `f` equals `0.0`, the result is
-        !! `.false.`, else `.true.`.
-        real(kind=r8), intent(in)  :: f !! 8-byte real value.
-        logical,       intent(out) :: l !! Logical value.
-
-        l = (.not. dm_equals(f, 0.0_r8))
-    end subroutine dm_real64_to_logical
-
-    pure elemental subroutine dm_real64_to_real32(f, r)
-        !! Converts 8-byte real to 4-byte real
-        real(kind=r8), intent(in)  :: f !! 8-byte real value.
-        real(kind=r4), intent(out) :: r !! 4-byte real value.
-
-        r = real(f, kind=r4)
-    end subroutine dm_real64_to_real32
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
@@ -409,74 +417,82 @@ contains
     ! **************************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS.
     ! **************************************************************************
-    pure function int32_to_string(i) result(str)
+    pure function int32_to_string(value) result(string)
         !! Converts 4-byte integer to allocatable string of length > 0.
-        integer, intent(in)           :: i   !! Value.
-        character(len=:), allocatable :: str !! String of value.
+        integer(kind=i4), intent(in)  :: value  !! Value.
+        character(len=:), allocatable :: string !! String of value.
 
         integer :: n, stat
 
-        if (i == 0) then
+        if (value == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
-            if (i < 0) n = n + 1
+            n = floor(log10(real(abs(value))) + 1)
+            if (value < 0) n = n + 1
         end if
 
-        allocate (character(len=n) :: str)
-        write (str, FMT_INTEGER, iostat=stat) i
+        allocate (character(len=n) :: string)
+        write (string, FMT_INTEGER, iostat=stat) value
     end function int32_to_string
 
-    pure function int64_to_string(i) result(str)
+    pure function int64_to_string(value) result(string)
         !! Converts 8-byte integer to allocatable string of length > 0.
-        integer(kind=i8), intent(in)  :: i   !! Value.
-        character(len=:), allocatable :: str !! String of value.
+        integer(kind=i8), intent(in)  :: value  !! Value.
+        character(len=:), allocatable :: string !! String of value.
 
         integer :: n, stat
 
-        if (i == 0) then
+        if (value == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
-            if (i < 0) n = n + 1
+            n = floor(log10(real(abs(value))) + 1)
+            if (value < 0) n = n + 1
         end if
 
-        allocate (character(len=n) :: str)
-        write (str, FMT_INTEGER, iostat=stat) i
+        allocate (character(len=n) :: string)
+        write (string, FMT_INTEGER, iostat=stat) value
     end function int64_to_string
 
-    pure function real32_to_string(f) result(str)
+    pure function real32_to_string(value) result(string)
         !! Converts 4-byte real to allocatable string of length > 1.
-        real(kind=r4), intent(in)     :: f   !! Value.
-        character(len=:), allocatable :: str !! String of value.
+        real(kind=r4), intent(in)     :: value  !! Value.
+        character(len=:), allocatable :: string !! String of value.
 
-        character(len=20) :: buf
+        character(len=20) :: buffer
         integer           :: stat
 
-        str = ''
-        write (buf, FMT_REAL, iostat=stat) f
-        if (stat /= 0) return
-        str = trim(buf)
+        write (buffer, FMT_REAL, iostat=stat) value
+
+        if (stat == 0) then
+            string = trim(buffer)
+            return
+        end if
+
+        string = ''
     end function real32_to_string
 
-    pure function real64_to_string(f) result(str)
+    pure function real64_to_string(value) result(string)
         !! Converts 8-byte real to allocatable string of length > 1.
-        real(kind=r8), intent(in)     :: f   !! Value.
-        character(len=:), allocatable :: str !! String of value.
+        real(kind=r8), intent(in)     :: value  !! Value.
+        character(len=:), allocatable :: string !! String of value.
 
-        character(len=20) :: buf
+        character(len=20) :: buffer
         integer           :: stat
 
-        str = ''
-        write (buf, FMT_REAL, iostat=stat) f
-        if (stat /= 0) return
-        str = trim(buf)
+        write (buffer, FMT_REAL, iostat=stat) value
+
+        if (stat == 0) then
+            string = trim(buffer)
+            return
+        end if
+
+        string = ''
     end function real64_to_string
 
     ! **************************************************************************
     ! PRIVATE HEX STRING TO INTEGER ROUTINES.
     ! **************************************************************************
-    pure subroutine hex_to_int32(str, value, error)
+    pure subroutine hex_to_int32(string, value, error)
         !! Returns hexadecimal values as 4-byte integer. The input string must
         !! start with `0x` or `0X`. The routine returns the following error
         !! codes in `error`:
@@ -484,15 +500,15 @@ contains
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
         !!
-        character(len=*), intent(in)            :: str   !! Hex. string of value.
-        integer(kind=i4), intent(out)           :: value !! Value.
-        integer,          intent(out), optional :: error !! Error.
+        character(len=*), intent(in)            :: string !! Hex. string of value.
+        integer(kind=i4), intent(out)           :: value  !! Value.
+        integer,          intent(out), optional :: error  !! Error.
 
         character(len=2) :: prefix
         integer          :: stat
 
         if (present(error)) error = E_FORMAT
-        read (str, '(a2, z8)', iostat=stat) prefix, value
+        read (string, '(a2, z8)', iostat=stat) prefix, value
         if (stat /= 0) return
 
         if (present(error)) error = E_INVALID
@@ -501,7 +517,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine hex_to_int32
 
-    pure subroutine hex_to_int64(str, value, error)
+    pure subroutine hex_to_int64(string, value, error)
         !! Returns hexadecimal values as 8-byte integer. The input string must
         !! start with `0x` or `0X`. The routine returns the following error
         !! codes in `error`:
@@ -509,15 +525,15 @@ contains
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
         !!
-        character(len=*), intent(in)            :: str   !! Hex. string of value.
-        integer(kind=i8), intent(out)           :: value !! Value.
-        integer,          intent(out), optional :: error !! Error.
+        character(len=*), intent(in)            :: string !! Hex. string of value.
+        integer(kind=i8), intent(out)           :: value  !! Value.
+        integer,          intent(out), optional :: error  !! Error.
 
         character(len=2) :: prefix
         integer          :: stat
 
         if (present(error)) error = E_FORMAT
-        read (str, '(a2, z16)', iostat=stat) prefix, value
+        read (string, '(a2, z16)', iostat=stat) prefix, value
         if (stat /= 0) return
 
         if (present(error)) error = E_INVALID

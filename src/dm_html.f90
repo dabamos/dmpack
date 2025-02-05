@@ -1665,7 +1665,7 @@ contains
         !! If optional argument `human` is passed and `.true.`, the output
         !! format of the time stamp will be changed to the slightly more
         !! human-readable format `1970-01-01 00:00:00 +00:00`.
-        use :: dm_time, only: dm_time_strip_useconds, dm_time_to_human
+        use :: dm_time, only: dm_time_strip_usec, dm_time_to_human
 
         character(len=*), intent(in)           :: time  !! ISO 8601 time stamp.
         logical,          intent(in), optional :: human !! Turn time stamp into human-readable format.
@@ -1677,9 +1677,9 @@ contains
         if (present(human)) human_ = human
 
         if (human_) then
-            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // dm_time_to_human(time) // H_TIME_END
+            html = '<time datetime="' // dm_time_strip_usec(time) // '">' // dm_time_to_human(time) // H_TIME_END
         else
-            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
+            html = '<time datetime="' // dm_time_strip_usec(time) // '">' // trim(time) // H_TIME_END
         end if
     end function dm_html_time
 

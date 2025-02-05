@@ -225,7 +225,7 @@ contains
         print *, 'Stripping useconds ...'
 
         time1 = '2023-09-10T20:30:30.123456+00:00'
-        time2 = dm_time_strip_useconds(time1)
+        time2 = dm_time_strip_usec(time1)
 
         print *, 'Full:  ', time1
         print *, 'Short: ', time2

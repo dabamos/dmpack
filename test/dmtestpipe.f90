@@ -48,9 +48,9 @@ contains
         rc = dm_pipe_open2(stdin, stdout, stderr, COMMAND)
         if (rc /= E_NONE) return
 
-        if (.not. dm_pipe_connected(stdin) .or. &
-            .not. dm_pipe_connected(stdout) .or. &
-            .not. dm_pipe_connected(stderr)) return
+        if (.not. dm_pipe_is_connected(stdin) .or. &
+            .not. dm_pipe_is_connected(stdout) .or. &
+            .not. dm_pipe_is_connected(stderr)) return
 
         message = 'TEST'
         print '(" Parent: ", a)', trim(message)

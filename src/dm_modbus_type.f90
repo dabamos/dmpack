@@ -38,9 +38,9 @@ module dm_modbus_type
     end type modbus_register_type
 
     public :: dm_modbus_access_from_name
+    public :: dm_modbus_access_is_valid
     public :: dm_modbus_float_from_name
-    public :: dm_modbus_is_valid_access
-    public :: dm_modbus_is_valid_float
+    public :: dm_modbus_float_is_valid
     public :: dm_modbus_parse
     public :: dm_modbus_register_out
 contains
@@ -59,6 +59,14 @@ contains
             case default;   access = MODBUS_ACCESS_NONE
         end select
     end function dm_modbus_access_from_name
+
+    pure elemental logical function dm_modbus_access_is_valid(access) result(is)
+        !! Returns `.true.` if access is a valid enumerator.
+        !! `MODBUS_ACCESS_NONE` is invalid.
+        integer, intent(in) :: access !! Modbus access enumerator.
+
+        is = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
+    end function dm_modbus_access_is_valid
 
     pure integer function dm_modbus_float_from_name(name) result(float)
         !! Returns byte order named parameter associated with given string.
@@ -81,15 +89,7 @@ contains
         end select
     end function dm_modbus_float_from_name
 
-    pure elemental logical function dm_modbus_is_valid_access(access) result(is)
-        !! Returns `.true.` if access is a valid enumerator.
-        !! `MODBUS_ACCESS_NONE` is invalid.
-        integer, intent(in) :: access !! Modbus access enumerator.
-
-        is = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
-    end function dm_modbus_is_valid_access
-
-    pure elemental logical function dm_modbus_is_valid_float(float) result(is)
+    pure elemental logical function dm_modbus_float_is_valid(float) result(is)
         !! Returns `.true.` if byte order is a valid enumerator.
         !! `MODBUS_FLOAT_NONE` is invalid.
         integer, intent(in) :: float !! Modbus float enumerator.
@@ -98,7 +98,7 @@ contains
               float == MODBUS_FLOAT_BADC .or. &
               float == MODBUS_FLOAT_CDAB .or. &
               float == MODBUS_FLOAT_DCBA)
-    end function dm_modbus_is_valid_float
+    end function dm_modbus_float_is_valid
 
     pure elemental subroutine dm_modbus_parse(string, register, error)
         !! Parses string for the following Modbus parameters and returns the
@@ -170,7 +170,7 @@ contains
                 select case (key)
                     case ('access')
                         register%access = dm_modbus_access_from_name(value)
-                        if (.not. dm_modbus_is_valid_access(register%access)) exit parse_block
+                        if (.not. dm_modbus_access_is_valid(register%access)) exit parse_block
 
                     case ('slave')
                         call dm_string_to(value, register%slave, error=rc)

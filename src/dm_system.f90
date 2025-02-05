@@ -64,11 +64,11 @@ contains
         rc = E_NONE
     end function dm_system_daemonize
 
-    function dm_system_error_message(error) result(str)
+    function dm_system_error_message(error) result(string)
         !! Returns system error string from _strerror(3)_. If `error` is not
         !! passed, this function used _errno(2)_ as error code.
-        integer, intent(in), optional :: error !! System error code.
-        character(len=:), allocatable :: str   !! Error message.
+        integer, intent(in), optional :: error  !! System error code.
+        character(len=:), allocatable :: string !! Error message.
 
         type(c_ptr) :: ptr
 
@@ -78,7 +78,7 @@ contains
             ptr = c_strerror(c_errno())
         end if
 
-        call c_f_str_ptr(ptr, str)
+        call c_f_str_ptr(ptr, string)
     end function dm_system_error_message
 
     integer function dm_system_fork() result(pid)

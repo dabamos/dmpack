@@ -20,21 +20,21 @@ module dm_pipe
         type(c_ptr) :: ctx    = c_null_ptr !! Pointer of pipe.
     end type pipe_type
 
-    public :: dm_pipe_connected
     public :: dm_pipe_close
     public :: dm_pipe_close2
+    public :: dm_pipe_is_connected
     public :: dm_pipe_open
     public :: dm_pipe_open2
     public :: dm_pipe_read
     public :: dm_pipe_write
     public :: dm_pipe_write2
 contains
-    logical function dm_pipe_connected(pipe) result(connected)
+    logical function dm_pipe_is_connected(pipe) result(is)
         !! Returns `.true.` if pipe is connected.
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
 
-        connected = c_associated(pipe%ctx)
-    end function dm_pipe_connected
+        is = c_associated(pipe%ctx)
+    end function dm_pipe_is_connected
 
     integer function dm_pipe_open(pipe, command, access) result(rc)
         !! Opens a process by creating a pipe, forking, and invoking the shell.
@@ -53,7 +53,7 @@ contains
         character(len=2) :: a
 
         rc = E_EXIST
-        if (dm_pipe_connected(pipe)) return
+        if (dm_pipe_is_connected(pipe)) return
 
         rc = E_INVALID
         select case (access)
@@ -87,9 +87,9 @@ contains
         integer :: p1(2), p2(2), p3(2), pid, stat
 
         rc = E_EXIST
-        if (dm_pipe_connected(stdin))  return
-        if (dm_pipe_connected(stdout)) return
-        if (dm_pipe_connected(stderr)) return
+        if (dm_pipe_is_connected(stdin))  return
+        if (dm_pipe_is_connected(stdout)) return
+        if (dm_pipe_is_connected(stderr)) return
 
         rc = E_SYSTEM
 
@@ -116,9 +116,9 @@ contains
             stdout%ctx = c_fdopen(p2(1), 'r' // c_null_char)
             stderr%ctx = c_fdopen(p3(1), 'r' // c_null_char)
 
-            if (.not. dm_pipe_connected(stdin))  return
-            if (.not. dm_pipe_connected(stdout)) return
-            if (.not. dm_pipe_connected(stderr)) return
+            if (.not. dm_pipe_is_connected(stdin))  return
+            if (.not. dm_pipe_is_connected(stdout)) return
+            if (.not. dm_pipe_is_connected(stderr)) return
 
             rc = E_NONE
             return
@@ -142,48 +142,48 @@ contains
         end if
     end function dm_pipe_open2
 
-    integer(kind=i8) function dm_pipe_read(pipe, bytes) result(sz)
+    integer(kind=i8) function dm_pipe_read(pipe, bytes) result(nbytes)
         !! Reads from pipe to buffer `bytes` (binary) and returns number of
         !! bytes written to buffer.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(inout) :: bytes !! Output buffer.
 
-        sz = 0_i8
-        bytes = ' '
+        nbytes = 0_i8
+        bytes  = ' '
+
         if (pipe%access == PIPE_WRONLY) return
-        sz = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
+        nbytes = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_read
 
-    integer function dm_pipe_write(pipe, str) result(rc)
-        !! Writes to pipe. Trims the string, adds new line and
-        !! null-termination.
+    integer function dm_pipe_write(pipe, bytes) result(rc)
+        !! Writes bytes to pipe, adds new line and null-termination.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if pipe is not associated or access mode is not `PIPE_RDONLY`.
         !! * `E_SYSTEM` if system call failed.
         !!
-        type(pipe_type),  intent(inout) :: pipe !! Pipe type.
-        character(len=*), intent(in)    :: str  !! String to write to the pipe.
+        type(pipe_type),  intent(inout) :: pipe  !! Pipe type.
+        character(len=*), intent(in)    :: bytes !! Bytes to write to the pipe.
 
         rc = E_INVALID
         if (pipe%access == PIPE_RDONLY) return
-        if (.not. dm_pipe_connected(pipe)) return
+        if (.not. dm_pipe_is_connected(pipe)) return
 
         rc = E_SYSTEM
-        if (c_fputs(trim(str) // c_new_line // c_null_char, pipe%ctx) < 0) return
+        if (c_fputs(bytes // c_new_line // c_null_char, pipe%ctx) < 0) return
 
         rc = E_NONE
     end function dm_pipe_write
 
-    integer(kind=i8) function dm_pipe_write2(pipe, bytes) result(sz)
+    integer(kind=i8) function dm_pipe_write2(pipe, bytes) result(nbytes)
         !! Writes to pipe (binary) and returns the number of bytes written.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(in)    :: bytes !! Bytes to write to the pipe.
 
-        sz = 0_i8
+        nbytes = 0_i8
         if (pipe%access == PIPE_RDONLY) return
-        sz = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
+        nbytes = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_write2
 
     subroutine dm_pipe_close(pipe)
@@ -192,17 +192,15 @@ contains
 
         integer :: stat
 
-        if (dm_pipe_connected(pipe)) stat = c_pclose(pipe%ctx)
-        if (stat == 0) pipe%ctx = c_null_ptr
+        if (.not. dm_pipe_is_connected(pipe)) return
+        if (c_pclose(pipe%ctx) == 0) pipe%ctx = c_null_ptr
     end subroutine dm_pipe_close
 
     subroutine dm_pipe_close2(pipe)
         !! Closes pipe to process (binary).
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
 
-        integer :: stat
-
-        if (dm_pipe_connected(pipe)) stat = c_fclose(pipe%ctx)
-        if (stat == 0) pipe%ctx = c_null_ptr
+        if (.not. dm_pipe_is_connected(pipe)) return
+        if (c_fclose(pipe%ctx) == 0) pipe%ctx = c_null_ptr
     end subroutine dm_pipe_close2
 end module dm_pipe

@@ -12,7 +12,7 @@ module dm_string
 
     type, public :: string_type
         !! Derived type of allocatable character to be stored in an array.
-        character(len=:), allocatable :: data
+        character(len=:), allocatable :: data !! String data.
     end type string_type
 
     interface dm_lower
@@ -273,10 +273,10 @@ contains
 
     pure subroutine dm_string_split(string, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.
-        character(len=*), intent(in)            :: string
-        character(len=*), intent(inout)         :: array(:)
-        character(len=*), intent(in)            :: del
-        integer,          intent(out), optional :: n
+        character(len=*), intent(in)            :: string   !! String to split.
+        character(len=*), intent(inout)         :: array(:) !! Splitted components.
+        character(len=*), intent(in)            :: del      !! Delimiter.
+        integer,          intent(out), optional :: n        !! Number of array elements.
 
         integer :: i, pos1, pos2
 
@@ -333,159 +333,159 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure subroutine string_from_int32(i, string, error)
+    pure subroutine string_from_int32(value, string, error)
         !! Returns string representation of given 4-byte integer.
-        integer(kind=i4),              intent(in)            :: i      !! Input.
+        integer(kind=i4),              intent(in)            :: value  !! Input.
         character(len=:), allocatable, intent(out)           :: string !! Output.
         integer,                       intent(out), optional :: error  !! Error code.
 
         integer :: n, stat
 
-        if (i == 0) then
+        if (value == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
-            if (i < 0) n = n + 1
+            n = floor(log10(real(abs(value))) + 1)
+            if (value < 0) n = n + 1
         end if
 
         if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: string)
-        write (string, FMT_INTEGER, iostat=stat) i
+        write (string, FMT_INTEGER, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_from_int32
 
-    pure subroutine string_from_int64(i, string, error)
+    pure subroutine string_from_int64(value, string, error)
         !! Returns string representation of given 8-byte integer.
-        integer(kind=i8),              intent(in)            :: i      !! Input.
+        integer(kind=i8),              intent(in)            :: value  !! Input.
         character(len=:), allocatable, intent(out)           :: string !! Output.
         integer,                       intent(out), optional :: error  !! Error code.
 
         integer :: n, stat
 
-        if (i == 0) then
+        if (value == 0) then
             n = 1
         else
-            n = floor(log10(real(abs(i))) + 1)
-            if (i < 0) n = n + 1
+            n = floor(log10(real(abs(value))) + 1)
+            if (value < 0) n = n + 1
         end if
 
         if (present(error)) error = E_FORMAT
         allocate (character(len=n) :: string)
-        write (string, FMT_INTEGER, iostat=stat) i
+        write (string, FMT_INTEGER, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_from_int64
 
-    pure subroutine string_from_real32(f, string, error)
+    pure subroutine string_from_real32(value, string, error)
         !! Returns string representation of given 4-byte real.
-        real(kind=r4),                 intent(in)            :: f      !! Input.
+        real(kind=r4),                 intent(in)            :: value  !! Input.
         character(len=:), allocatable, intent(out)           :: string !! Output.
         integer,                       intent(out), optional :: error  !! Error code.
 
+        character(len=20) :: buffer
         integer           :: stat
-        character(len=20) :: buf
 
         if (present(error)) error = E_FORMAT
-        write (buf, FMT_REAL, iostat=stat) f
+        write (buffer, FMT_REAL, iostat=stat) value
         if (stat /= 0) then
             string = ''
             return
         end if
         if (present(error)) error = E_NONE
-        string = trim(buf)
+        string = trim(buffer)
     end subroutine string_from_real32
 
-    pure subroutine string_from_real64(f, string, error)
+    pure subroutine string_from_real64(value, string, error)
         !! Returns string representation of given 8-byte real.
-        real(kind=r8),                 intent(in)            :: f      !! Input.
+        real(kind=r8),                 intent(in)            :: value  !! Input.
         character(len=:), allocatable, intent(out)           :: string !! Output.
         integer,                       intent(out), optional :: error  !! Error code.
 
+        character(len=20) :: buffer
         integer           :: stat
-        character(len=20) :: buf
 
         if (present(error)) error = E_FORMAT
-        write (buf, FMT_REAL, iostat=stat) f
+        write (buffer, FMT_REAL, iostat=stat) value
         if (stat /= 0) then
             string = ''
             return
         end if
         if (present(error)) error = E_NONE
-        string = trim(buf)
+        string = trim(buffer)
     end subroutine string_from_real64
 
-    pure elemental subroutine string_to_int16(string, i, error)
+    pure elemental subroutine string_to_int16(string, value, error)
         !! Converts string to 2-byte integer.
         character(len=*), intent(in)            :: string !! Input.
-        integer(kind=i2), intent(out)           :: i      !! Output.
+        integer(kind=i2), intent(out)           :: value  !! Output.
         integer,          intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
-        i = 0_i2
+        value = 0_i2
         if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) i
+        read (string, *, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_to_int16
 
-    pure elemental subroutine string_to_int32(string, i, error)
+    pure elemental subroutine string_to_int32(string, value, error)
         !! Converts string to 4-byte integer.
         character(len=*), intent(in)            :: string !! Input.
-        integer(kind=i4), intent(out)           :: i      !! Output.
+        integer(kind=i4), intent(out)           :: value  !! Output.
         integer,          intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
-        i = 0_i4
+        value = 0_i4
         if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) i
+        read (string, *, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_to_int32
 
-    pure elemental subroutine string_to_int64(string, i, error)
+    pure elemental subroutine string_to_int64(string, value, error)
         !! Converts string to 8-byte integer.
-        character(len=*), intent(in)            :: string   !! Input.
-        integer(kind=i8), intent(out)           :: i     !! Output.
-        integer,          intent(out), optional :: error !! Error code.
-
-        integer :: stat
-
-        i = 0_i8
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) i
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
-    end subroutine string_to_int64
-
-    pure elemental subroutine string_to_real32(string, f, error)
-        !! Converts string to 4-byte real.
-        character(len=*), intent(in)            :: string   !! Input.
-        real(kind=r4),    intent(out)           :: f     !! Output.
-        integer,          intent(out), optional :: error !! Error code.
-
-        integer :: stat
-
-        f = 0.0_r4
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) f
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
-    end subroutine string_to_real32
-
-    pure elemental subroutine string_to_real64(string, f, error)
-        !! Converts string to 8-byte real.
         character(len=*), intent(in)            :: string !! Input.
-        real(kind=r8),    intent(out)           :: f      !! Output.
+        integer(kind=i8), intent(out)           :: value  !! Output.
         integer,          intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
-        f = 0.0_r8
+        value = 0_i8
         if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) f
+        read (string, *, iostat=stat) value
+        if (stat /= 0) return
+        if (present(error)) error = E_NONE
+    end subroutine string_to_int64
+
+    pure elemental subroutine string_to_real32(string, value, error)
+        !! Converts string to 4-byte real.
+        character(len=*), intent(in)            :: string !! Input.
+        real(kind=r4),    intent(out)           :: value  !! Output.
+        integer,          intent(out), optional :: error  !! Error code.
+
+        integer :: stat
+
+        value = 0.0_r4
+        if (present(error)) error = E_TYPE
+        read (string, *, iostat=stat) value
+        if (stat /= 0) return
+        if (present(error)) error = E_NONE
+    end subroutine string_to_real32
+
+    pure elemental subroutine string_to_real64(string, value, error)
+        !! Converts string to 8-byte real.
+        character(len=*), intent(in)            :: string !! Input.
+        real(kind=r8),    intent(out)           :: value  !! Output.
+        integer,          intent(out), optional :: error  !! Error code.
+
+        integer :: stat
+
+        value = 0.0_r8
+        if (present(error)) error = E_TYPE
+        read (string, *, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
     end subroutine string_to_real64
