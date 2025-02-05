@@ -52,9 +52,9 @@ contains
         character(len=*),      intent(in)  :: string !! String representation of API status.
         type(api_status_type), intent(out) :: api    !! Result.
 
-        integer                       :: i, n, nlines
+        integer                       :: i, nlines, npairs
         character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
-        character(len=API_STATUS_LEN) :: pair(2), key, value
+        character(len=API_STATUS_LEN) :: pairs(2), key, value
 
         rc = E_EMPTY
         if (len_trim(string) == 0) return
@@ -64,13 +64,13 @@ contains
         if (nlines == 0) return
 
         do i = 1, nlines
-            call dm_string_split(lines(i), pair, del='=', n=n)
-            if (n /= 2) exit
+            call dm_string_split(lines(i), pairs, del='=', n=npairs)
+            if (npairs /= 2) exit
 
-            call dm_lower(pair(1))
+            key   = adjustl(pairs(1))
+            value = adjustl(pairs(2))
 
-            key   = adjustl(pair(1))
-            value = adjustl(pair(2))
+            call dm_lower(key)
 
             select case (key)
                 case ('version');   api%version   = dm_ascii_escape(value)

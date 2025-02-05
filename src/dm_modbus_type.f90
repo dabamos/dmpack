@@ -144,7 +144,7 @@ contains
         type(modbus_register_type), intent(out)           :: register !! Modbus I/O type.
         integer,                    intent(out), optional :: error    !! Error code.
 
-        character(len=32) :: fields(6), pair(2)
+        character(len=32) :: fields(6), pairs(2)
         character(len=32) :: key, value
         integer           :: i, nfields, npairs, rc
 
@@ -158,13 +158,13 @@ contains
 
             do i = 1, nfields
                 rc = E_FORMAT
-                call dm_string_split(fields(i), pair, del='=', n=npairs)
+                call dm_string_split(fields(i), pairs, del='=', n=npairs)
                 if (npairs /= 2) exit parse_block
 
-                call dm_lower(pair)
+                call dm_lower(pairs)
 
-                key   = adjustl(pair(1))
-                value = adjustl(pair(2))
+                key   = adjustl(pairs(1))
+                value = adjustl(pairs(2))
 
                 rc = E_TYPE
                 select case (key)
