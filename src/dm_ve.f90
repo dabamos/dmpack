@@ -284,10 +284,11 @@ module dm_ve
     ] !! Device names.
 
     ! Character lenghts.
-    integer, parameter, public :: VE_LABEL_LEN = 8                 !! Max. field label length (minus newline).
-    integer, parameter, public :: VE_NAME_LEN  = RESPONSE_NAME_LEN !! Max. response name length.
-    integer, parameter, public :: VE_UNIT_LEN  = RESPONSE_UNIT_LEN !! Max. field unit length.
-    integer, parameter, public :: VE_VALUE_LEN = 32                !! Max. field value length (minus tab).
+    integer, parameter, public :: VE_LABEL_LEN        = 8                 !! Max. field label length (minus newline).
+    integer, parameter, public :: VE_NAME_LEN         = RESPONSE_NAME_LEN !! Max. response name length.
+    integer, parameter, public :: VE_UNIT_LEN         = RESPONSE_UNIT_LEN !! Max. field unit length.
+    integer, parameter, public :: VE_VALUE_LEN        = 32                !! Max. field value length (minus tab).
+    integer, parameter, public :: VE_PRODUCT_NAME_LEN = 38                !! Max. product name length.
 
     ! TTY parameters.
     integer, parameter, public :: VE_TTY_ACCESS    = TTY_RDONLY      !! Default TTY access mode.
@@ -321,6 +322,12 @@ module dm_ve
         integer                     :: type   = RESPONSE_TYPE_INT32 !! Field value type.
         character(len=VE_VALUE_LEN) :: value  = ' '                 !! Field value.
     end type ve_field_type
+
+    type, public :: ve_product_type
+        !! Victron product id and name.
+        integer                            :: pid  = 0   !! Product id.
+        character(len=VE_PRODUCT_NAME_LEN) :: name = ' ' !! Product name.
+    end type ve_product_type
 
     ! Supported VE.Direct field types.
     integer, parameter, public :: VE_FIELD_NONE  = 0  !! None (invalid).
@@ -372,7 +379,7 @@ module dm_ve
     integer, parameter, public :: VE_FIELD_VS    = 46 !! [      SS ] Auxiliary (starter) voltage.
     integer, parameter, public :: VE_FIELD_LAST  = 46 !! Never use this.
 
-    ! VE.Direct default fields (MPPT only).
+    ! VE.Direct default fields (MPPT and SmartShunt only).
     integer, parameter, public :: VE_NFIELDS = VE_FIELD_LAST !! Number of supported fields.
 
     type(ve_field_type), parameter, public :: VE_FIELDS(VE_NFIELDS) = [    &
@@ -424,6 +431,162 @@ module dm_ve
         ve_field_type('VS',    'vs',    'mV',      RESPONSE_TYPE_INT32)    &
     ] !! Predefined fields.
 
+    ! VE.Direct default products.
+    integer, parameter, public :: VE_NPRODUCTS = 150 !! Number of VE products.
+
+    type(ve_product_type), parameter, public :: VE_PRODUCTS(VE_NPRODUCTS) = [    &
+        ve_product_type(int(z'0203'), 'BMV-700'),                                &
+        ve_product_type(int(z'0204'), 'BMV-702'),                                &
+        ve_product_type(int(z'0205'), 'BMV-700H'),                               &
+        ve_product_type(int(z'0300'), 'BlueSolar MPPT 70|15'),                   &
+        ve_product_type(int(z'A040'), 'BlueSolar MPPT 75|50'),                   &
+        ve_product_type(int(z'A041'), 'BlueSolar MPPT 150|35'),                  &
+        ve_product_type(int(z'A042'), 'BlueSolar MPPT 75|15'),                   &
+        ve_product_type(int(z'A043'), 'BlueSolar MPPT 100|15'),                  &
+        ve_product_type(int(z'A044'), 'BlueSolar MPPT 100|30'),                  &
+        ve_product_type(int(z'A045'), 'BlueSolar MPPT 100|50'),                  &
+        ve_product_type(int(z'A046'), 'BlueSolar MPPT 150|70'),                  &
+        ve_product_type(int(z'A047'), 'BlueSolar MPPT 150|100'),                 &
+        ve_product_type(int(z'A049'), 'BlueSolar MPPT 100|50 rev2'),             &
+        ve_product_type(int(z'A04A'), 'BlueSolar MPPT 100|30 rev2'),             &
+        ve_product_type(int(z'A04B'), 'BlueSolar MPPT 150|35 rev2'),             &
+        ve_product_type(int(z'A04C'), 'BlueSolar MPPT 75|10'),                   &
+        ve_product_type(int(z'A04D'), 'BlueSolar MPPT 150|45'),                  &
+        ve_product_type(int(z'A04E'), 'BlueSolar MPPT 150|60'),                  &
+        ve_product_type(int(z'A04F'), 'BlueSolar MPPT 150|85'),                  &
+        ve_product_type(int(z'A050'), 'SmartSolar MPPT 250|100'),                &
+        ve_product_type(int(z'A051'), 'SmartSolar MPPT 150|100'),                &
+        ve_product_type(int(z'A052'), 'SmartSolar MPPT 150|85'),                 &
+        ve_product_type(int(z'A053'), 'SmartSolar MPPT 75|15'),                  &
+        ve_product_type(int(z'A054'), 'SmartSolar MPPT 75|10'),                  &
+        ve_product_type(int(z'A055'), 'SmartSolar MPPT 100|15'),                 &
+        ve_product_type(int(z'A056'), 'SmartSolar MPPT 100|30'),                 &
+        ve_product_type(int(z'A057'), 'SmartSolar MPPT 100|50'),                 &
+        ve_product_type(int(z'A058'), 'SmartSolar MPPT 150|35'),                 &
+        ve_product_type(int(z'A059'), 'SmartSolar MPPT 150|100 rev2'),           &
+        ve_product_type(int(z'A05A'), 'SmartSolar MPPT 150|85 rev2'),            &
+        ve_product_type(int(z'A05B'), 'SmartSolar MPPT 250|70'),                 &
+        ve_product_type(int(z'A05C'), 'SmartSolar MPPT 250|85'),                 &
+        ve_product_type(int(z'A05D'), 'SmartSolar MPPT 250|60'),                 &
+        ve_product_type(int(z'A05E'), 'SmartSolar MPPT 250|45'),                 &
+        ve_product_type(int(z'A05F'), 'SmartSolar MPPT 100|20'),                 &
+        ve_product_type(int(z'A060'), 'SmartSolar MPPT 100|20 48V'),             &
+        ve_product_type(int(z'A061'), 'SmartSolar MPPT 150|45'),                 &
+        ve_product_type(int(z'A062'), 'SmartSolar MPPT 150|60'),                 &
+        ve_product_type(int(z'A063'), 'SmartSolar MPPT 150|70'),                 &
+        ve_product_type(int(z'A064'), 'SmartSolar MPPT 250|85 rev2'),            &
+        ve_product_type(int(z'A065'), 'SmartSolar MPPT 250|100 rev2'),           &
+        ve_product_type(int(z'A066'), 'BlueSolar MPPT 100|20'),                  &
+        ve_product_type(int(z'A067'), 'BlueSolar MPPT 100|20 48V'),              &
+        ve_product_type(int(z'A068'), 'SmartSolar MPPT 250|60 rev2'),            &
+        ve_product_type(int(z'A069'), 'SmartSolar MPPT 250|70 rev2'),            &
+        ve_product_type(int(z'A06A'), 'SmartSolar MPPT 150|45 rev2'),            &
+        ve_product_type(int(z'A06B'), 'SmartSolar MPPT 150|60 rev2'),            &
+        ve_product_type(int(z'A06C'), 'SmartSolar MPPT 150|70 rev2'),            &
+        ve_product_type(int(z'A06D'), 'SmartSolar MPPT 150|85 rev3'),            &
+        ve_product_type(int(z'A06E'), 'SmartSolar MPPT 150|100 rev3'),           &
+        ve_product_type(int(z'A06F'), 'BlueSolar MPPT 150|45 rev2'),             &
+        ve_product_type(int(z'A070'), 'BlueSolar MPPT 150|60 rev2'),             &
+        ve_product_type(int(z'A071'), 'BlueSolar MPPT 150|70 rev2'),             &
+        ve_product_type(int(z'A072'), 'BlueSolar MPPT 150/45 rev3'),             &
+        ve_product_type(int(z'A073'), 'SmartSolar MPPT 150/45 rev3'),            &
+        ve_product_type(int(z'A074'), 'SmartSolar MPPT 75/10 rev2'),             &
+        ve_product_type(int(z'A075'), 'SmartSolar MPPT 75/15 rev2'),             &
+        ve_product_type(int(z'A076'), 'BlueSolar MPPT 100/30 rev3'),             &
+        ve_product_type(int(z'A077'), 'BlueSolar MPPT 100/50 rev3'),             &
+        ve_product_type(int(z'A078'), 'BlueSolar MPPT 150/35 rev3'),             &
+        ve_product_type(int(z'A079'), 'BlueSolar MPPT 75/10 rev2'),              &
+        ve_product_type(int(z'A07A'), 'BlueSolar MPPT 75/15 rev2'),              &
+        ve_product_type(int(z'A07B'), 'BlueSolar MPPT 100/15 rev2'),             &
+        ve_product_type(int(z'A07C'), 'BlueSolar MPPT 75/10 rev3'),              &
+        ve_product_type(int(z'A07D'), 'BlueSolar MPPT 75/15 rev3'),              &
+        ve_product_type(int(z'A07E'), 'SmartSolar MPPT 100/30 12V'),             &
+        ve_product_type(int(z'A07F'), 'All-In-1 SmartSolar MPPT 75/15 12V'),     &
+        ve_product_type(int(z'A102'), 'SmartSolar MPPT VE.Can 150/70'),          &
+        ve_product_type(int(z'A103'), 'SmartSolar MPPT VE.Can 150/45'),          &
+        ve_product_type(int(z'A104'), 'SmartSolar MPPT VE.Can 150/60'),          &
+        ve_product_type(int(z'A105'), 'SmartSolar MPPT VE.Can 150/85'),          &
+        ve_product_type(int(z'A106'), 'SmartSolar MPPT VE.Can 150/100'),         &
+        ve_product_type(int(z'A107'), 'SmartSolar MPPT VE.Can 250/45'),          &
+        ve_product_type(int(z'A108'), 'SmartSolar MPPT VE.Can 250/60'),          &
+        ve_product_type(int(z'A109'), 'SmartSolar MPPT VE.Can 250/70'),          &
+        ve_product_type(int(z'A10A'), 'SmartSolar MPPT VE.Can 250/85'),          &
+        ve_product_type(int(z'A10B'), 'SmartSolar MPPT VE.Can 250/100'),         &
+        ve_product_type(int(z'A10C'), 'SmartSolar MPPT VE.Can 150/70 rev2'),     &
+        ve_product_type(int(z'A10D'), 'SmartSolar MPPT VE.Can 150/85 rev2'),     &
+        ve_product_type(int(z'A10E'), 'SmartSolar MPPT VE.Can 150/100 rev2'),    &
+        ve_product_type(int(z'A10F'), 'BlueSolar MPPT VE.Can 150/100'),          &
+        ve_product_type(int(z'A112'), 'BlueSolar MPPT VE.Can 250/70'),           &
+        ve_product_type(int(z'A113'), 'BlueSolar MPPT VE.Can 250/100'),          &
+        ve_product_type(int(z'A114'), 'SmartSolar MPPT VE.Can 250/70 rev2'),     &
+        ve_product_type(int(z'A115'), 'SmartSolar MPPT VE.Can 250/100 rev2'),    &
+        ve_product_type(int(z'A116'), 'SmartSolar MPPT VE.Can 250/85 rev2'),     &
+        ve_product_type(int(z'A117'), 'BlueSolar MPPT VE.Can 150/100 rev2'),     &
+        ve_product_type(int(z'A201'), 'Phoenix Inverter 12V 250VA 230V'),        &
+        ve_product_type(int(z'A202'), 'Phoenix Inverter 24V 250VA 230V'),        &
+        ve_product_type(int(z'A204'), 'Phoenix Inverter 48V 250VA 230V'),        &
+        ve_product_type(int(z'A211'), 'Phoenix Inverter 12V 375VA 230V'),        &
+        ve_product_type(int(z'A212'), 'Phoenix Inverter 24V 375VA 230V'),        &
+        ve_product_type(int(z'A214'), 'Phoenix Inverter 48V 375VA 230V'),        &
+        ve_product_type(int(z'A221'), 'Phoenix Inverter 12V 500VA 230V'),        &
+        ve_product_type(int(z'A222'), 'Phoenix Inverter 24V 500VA 230V'),        &
+        ve_product_type(int(z'A224'), 'Phoenix Inverter 48V 500VA 230V'),        &
+        ve_product_type(int(z'A231'), 'Phoenix Inverter 12V 250VA 230V'),        &
+        ve_product_type(int(z'A232'), 'Phoenix Inverter 24V 250VA 230V'),        &
+        ve_product_type(int(z'A234'), 'Phoenix Inverter 48V 250VA 230V'),        &
+        ve_product_type(int(z'A239'), 'Phoenix Inverter 12V 250VA 120V'),        &
+        ve_product_type(int(z'A23A'), 'Phoenix Inverter 24V 250VA 120V'),        &
+        ve_product_type(int(z'A23C'), 'Phoenix Inverter 48V 250VA 120V'),        &
+        ve_product_type(int(z'A241'), 'Phoenix Inverter 12V 375VA 230V'),        &
+        ve_product_type(int(z'A242'), 'Phoenix Inverter 24V 375VA 230V'),        &
+        ve_product_type(int(z'A244'), 'Phoenix Inverter 48V 375VA 230V'),        &
+        ve_product_type(int(z'A249'), 'Phoenix Inverter 12V 375VA 120V'),        &
+        ve_product_type(int(z'A24A'), 'Phoenix Inverter 24V 375VA 120V'),        &
+        ve_product_type(int(z'A24C'), 'Phoenix Inverter 48V 375VA 120V'),        &
+        ve_product_type(int(z'A251'), 'Phoenix Inverter 12V 500VA 230V'),        &
+        ve_product_type(int(z'A252'), 'Phoenix Inverter 24V 500VA 230V'),        &
+        ve_product_type(int(z'A254'), 'Phoenix Inverter 48V 500VA 230V'),        &
+        ve_product_type(int(z'A259'), 'Phoenix Inverter 12V 500VA 120V'),        &
+        ve_product_type(int(z'A25A'), 'Phoenix Inverter 24V 500VA 120V'),        &
+        ve_product_type(int(z'A25C'), 'Phoenix Inverter 48V 500VA 120V'),        &
+        ve_product_type(int(z'A261'), 'Phoenix Inverter 12V 800VA 230V'),        &
+        ve_product_type(int(z'A262'), 'Phoenix Inverter 24V 800VA 230V'),        &
+        ve_product_type(int(z'A264'), 'Phoenix Inverter 48V 800VA 230V'),        &
+        ve_product_type(int(z'A269'), 'Phoenix Inverter 12V 800VA 120V'),        &
+        ve_product_type(int(z'A26A'), 'Phoenix Inverter 24V 800VA 120V'),        &
+        ve_product_type(int(z'A26C'), 'Phoenix Inverter 48V 800VA 120V'),        &
+        ve_product_type(int(z'A271'), 'Phoenix Inverter 12V 1200VA 230V'),       &
+        ve_product_type(int(z'A272'), 'Phoenix Inverter 24V 1200VA 230V'),       &
+        ve_product_type(int(z'A274'), 'Phoenix Inverter 48V 1200VA 230V'),       &
+        ve_product_type(int(z'A279'), 'Phoenix Inverter 12V 1200VA 120V'),       &
+        ve_product_type(int(z'A27A'), 'Phoenix Inverter 24V 1200VA 120V'),       &
+        ve_product_type(int(z'A27C'), 'Phoenix Inverter 48V 1200VA 120V'),       &
+        ve_product_type(int(z'A281'), 'Phoenix Inverter 12V 1600VA 230V'),       &
+        ve_product_type(int(z'A282'), 'Phoenix Inverter 24V 1600VA 230V'),       &
+        ve_product_type(int(z'A284'), 'Phoenix Inverter 48V 1600VA 230V'),       &
+        ve_product_type(int(z'A291'), 'Phoenix Inverter 12V 2000VA 230V'),       &
+        ve_product_type(int(z'A292'), 'Phoenix Inverter 24V 2000VA 230V'),       &
+        ve_product_type(int(z'A294'), 'Phoenix Inverter 48V 2000VA 230V'),       &
+        ve_product_type(int(z'A2A1'), 'Phoenix Inverter 12V 3000VA 230V'),       &
+        ve_product_type(int(z'A2A2'), 'Phoenix Inverter 24V 3000VA 230V'),       &
+        ve_product_type(int(z'A2A4'), 'Phoenix Inverter 48V 3000VA 230V'),       &
+        ve_product_type(int(z'A340'), 'Phoenix Smart IP43 Charger 12|50 (1+1)'), &
+        ve_product_type(int(z'A341'), 'Phoenix Smart IP43 Charger 12|50 (3)'),   &
+        ve_product_type(int(z'A342'), 'Phoenix Smart IP43 Charger 24|25 (1+1)'), &
+        ve_product_type(int(z'A343'), 'Phoenix Smart IP43 Charger 24|25 (3)'),   &
+        ve_product_type(int(z'A344'), 'Phoenix Smart IP43 Charger 12|30 (1+1)'), &
+        ve_product_type(int(z'A345'), 'Phoenix Smart IP43 Charger 12|30 (3)'),   &
+        ve_product_type(int(z'A346'), 'Phoenix Smart IP43 Charger 24|16 (1+1)'), &
+        ve_product_type(int(z'A347'), 'Phoenix Smart IP43 Charger 24|16 (3)'),   &
+        ve_product_type(int(z'A381'), 'BMV-712 Smart'),                          &
+        ve_product_type(int(z'A382'), 'BMV-710H Smart'),                         &
+        ve_product_type(int(z'A383'), 'BMV-712 Smart rev2'),                     &
+        ve_product_type(int(z'A389'), 'SmartShunt 500A/50mV'),                   &
+        ve_product_type(int(z'A38A'), 'SmartShunt 1000A/50mV'),                  &
+        ve_product_type(int(z'A38B'), 'SmartShunt 2000A/50mV'),                  &
+        ve_product_type(int(z'A3F0'), 'Smart BuckBoost 12V/12V-50A')             &
+    ] !! Predefined products.
+
     public :: dm_ve_device_from_name
     public :: dm_ve_device_is_valid
     public :: dm_ve_error_message
@@ -433,6 +596,7 @@ module dm_ve
     public :: dm_ve_frame_read
     public :: dm_ve_frame_reset
     public :: dm_ve_is_error
+    public :: dm_ve_product_name
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -549,6 +713,27 @@ contains
 
         valid = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
     end function dm_ve_is_valid_field_type
+
+    integer function dm_ve_product_name(pid, name) result(rc)
+        !! Returns name of Victron Energy product associated with given PID in
+        !! dummy argument `name`. Returns `E_NOT_FOUND` and sets name to `N/A`
+        !! on error.
+        integer,                            intent(in)  :: pid  !! Product ID.
+        character(len=VE_PRODUCT_NAME_LEN), intent(out) :: name !! Product name.
+
+        integer :: i
+
+        rc   = E_NOT_FOUND
+        name = 'N/A'
+
+        do i = 1, VE_NPRODUCTS
+            if (pid == VE_PRODUCTS(i)%pid) then
+                rc   = E_NONE
+                name = VE_PRODUCTS(i)%name
+                return
+            end if
+        end do
+    end function dm_ve_product_name
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.

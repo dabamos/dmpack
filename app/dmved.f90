@@ -242,12 +242,13 @@ contains
         !! Connects to TTY and runs an event loop to read VE.Direct frames to
         !! responses. The observation is then forwarded via message queue to
         !! the specified receiver.
-        type(app_type), intent(inout) :: app !! App settings.
-        type(tty_type), intent(inout) :: tty !! TTY settings.
+        type(app_type), intent(inout) :: app !! App type.
+        type(tty_type), intent(inout) :: tty !! TTY type.
+
+        character(len=VE_PRODUCT_NAME_LEN) :: product_name
 
         character        :: byte
-        integer          :: code
-        integer          :: field_type
+        integer          :: code, field_type, pid
         integer(kind=i8) :: epoch_last, epoch_now
         logical          :: eor, finished, valid
         logical          :: debug, has_receiver
@@ -260,6 +261,7 @@ contains
         debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)
 
+        product_name = ' '
         epoch_last   = 0_i8
         has_receiver = (len_trim(app%receiver) > 0)
 
@@ -323,8 +325,21 @@ contains
                 if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number field.
                 if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Save device error.
 
+                ! Log device error.
                 if (dm_ve_is_error(code)) then
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
+                end if
+
+                ! Find product name of connected VE device.
+                if (frame%label == 'PID' .and. product_name == ' ') then
+                    call dm_hex_to_int(frame%value, pid)
+                    rc = dm_ve_product_name(pid, product_name)
+
+                    if (dm_is_error(rc)) then
+                        call logger%warning('connected to unknown Victron Energy device', error=rc)
+                    else
+                        call logger%info('connected to Victron Energy ' // product_name)
+                    end if
                 end if
 
                 ! VE.Direct frame to response.
@@ -350,8 +365,8 @@ contains
     subroutine create_observ(observ, app, responses)
         !! Creates new observation from VE.Direct responses.
         type(observ_type),   intent(out)   :: observ       !! Created observation.
-        type(app_type),      intent(inout) :: app          !! App settings.
-        type(response_type), intent(inout) :: responses(:) !! All VE.Direct responses.
+        type(app_type),      intent(inout) :: app          !! App type.
+        type(response_type), intent(inout) :: responses(:) !! All captured VE.Direct responses.
 
         character(len=TIME_LEN) :: timestamp
         integer                 :: rc
@@ -442,7 +457,7 @@ contains
 
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
         select case (signum)
             case default
