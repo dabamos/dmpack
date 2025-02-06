@@ -162,7 +162,7 @@ contains
         if (dm_is_ok(rc)) return
 
         if (rc >= E_LUA .and. rc <= E_LUA_FILE) then
-            call dm_error_out(rc, dm_lua_error_string(config%lua))
+            call dm_error_out(rc, dm_lua_error_message(config%lua))
         else if (present(name)) then
             call dm_error_out(rc, 'failed to read configuration ' // trim(name) // ' from file ' // path)
         else

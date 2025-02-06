@@ -269,7 +269,7 @@ contains
         if (has_float) then
             app%float = dm_modbus_float_from_name(float)
 
-            if (.not. dm_modbus_float_is_valid(app%float)) then
+            if (.not. dm_modbus_is_float(app%float)) then
                 call dm_error_out(rc, 'argument --float is not a valid byte order')
                 return
             end if

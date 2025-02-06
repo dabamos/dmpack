@@ -40,7 +40,7 @@ module dm_modbus_type
     public :: dm_modbus_access_from_name
     public :: dm_modbus_access_is_valid
     public :: dm_modbus_float_from_name
-    public :: dm_modbus_float_is_valid
+    public :: dm_modbus_is_float
     public :: dm_modbus_parse
     public :: dm_modbus_register_out
 contains
@@ -89,8 +89,8 @@ contains
         end select
     end function dm_modbus_float_from_name
 
-    pure elemental logical function dm_modbus_float_is_valid(float) result(valid)
-        !! Returns `.true.` if byte order is a valid enumerator.
+    pure elemental logical function dm_modbus_is_float(float) result(valid)
+        !! Returns `.true.` if argument is valid a float byte order enumerator.
         !! `MODBUS_FLOAT_NONE` is invalid.
         integer, intent(in) :: float !! Modbus float enumerator.
 
@@ -98,7 +98,7 @@ contains
                  float == MODBUS_FLOAT_BADC .or. &
                  float == MODBUS_FLOAT_CDAB .or. &
                  float == MODBUS_FLOAT_DCBA)
-    end function dm_modbus_float_is_valid
+    end function dm_modbus_is_float
 
     pure elemental subroutine dm_modbus_parse(string, register, error)
         !! Parses string for the following Modbus parameters and returns the
@@ -202,7 +202,7 @@ contains
         type(modbus_register_type), intent(inout)        :: register !! Modbus register type.
         integer,                    intent(in), optional :: unit     !! File unit.
 
-        integer :: i, unit_
+        integer :: unit_
 
         unit_ = stdout
         if (present(unit)) unit_ = unit

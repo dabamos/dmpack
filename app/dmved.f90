@@ -245,25 +245,29 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        character(len=VE_PRODUCT_NAME_LEN) :: product_name
+        character(len=VE_PRODUCT_NAME_LEN) :: product
+        character(len=VE_VALUE_LEN)        :: serial
 
         character        :: byte
+        integer          :: errors(VE_NFIELDS)
         integer          :: code, field_type, pid
         integer(kind=i8) :: epoch_last, epoch_now
         logical          :: eor, finished, valid
-        logical          :: debug, has_receiver
+        logical          :: debug
+        logical          :: has_product, has_receiver, has_serial
 
-        type(ve_frame_type) :: frame
         type(observ_type)   :: observ
-        type(response_type) :: response
+        type(ve_frame_type) :: frame
+        type(ve_frame_type) :: frames(VE_NFIELDS)
         type(response_type) :: responses(VE_NFIELDS)
 
         debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)
 
-        product_name = ' '
         epoch_last   = 0_i8
+        has_product  = .false.
         has_receiver = (len_trim(app%receiver) > 0)
+        has_serial   = .false.
 
         ! Set serial port parameters.
         tty%path      = app%path
@@ -298,22 +302,32 @@ contains
 
             ! VE.Direct block finished.
             if (finished) then
-                if (valid) then
-                    epoch_now = dm_time_unix()
-
-                    if (epoch_last + app%interval <= epoch_now) then
-                        epoch_last = epoch_now
-
-                        if (has_receiver) then
-                            call create_observ(observ, app, responses)
-                            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                        else
-                            if (debug) call logger%debug('no receiver specified, skipping observation forwarding')
-                        end if
+                mqueue_block: block
+                    ! Check if block is valid.
+                    if (.not. valid) then
+                        call logger%warning('checksum error detected, discarding block', error=E_CORRUPT)
+                        exit mqueue_block
                     end if
-                else
-                    call logger%warning('checksum error detected, discarding block', error=E_CORRUPT)
-                end if
+
+                    ! Check if interval time has been reached.
+                    epoch_now = dm_time_unix()
+                    if (epoch_last + app%interval > epoch_now) exit mqueue_block
+                    epoch_last = epoch_now
+
+                    ! Check if message passing is enabled.
+                    if (.not. has_receiver) then
+                        if (debug) call logger%debug('no receiver specified, skipping observation forwarding')
+                        exit mqueue_block
+                    end if
+
+                    ! Convert all frames to responses.
+                    call dm_ve_frame_read(frames, responses, error=errors)
+                    if (any(dm_is_error(errors))) call logger%error('failed to convert VE.Direct frame', error=maxval(errors))
+
+                    ! Create and forward observation.
+                    call create_observ(observ, app, responses)
+                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                end block mqueue_block
 
                 call dm_ve_frame_reset(frame)
                 cycle tty_loop
@@ -321,37 +335,48 @@ contains
 
             ! VE.Direct frame finished.
             if (eor) then
-                if (frame%label == 'BMV')  cycle tty_loop              ! Ignore deprecated model description.
-                if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number field.
-                if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Save device error.
+                if (frame%label == 'BMV') cycle tty_loop              ! Ignore deprecated model description.
+                if (frame%label == 'ERR') code = dm_atoi(frame%value) ! Save device error.
 
-                ! Log device error.
+                ! Save serial number of device.
+                if (frame%label == 'SER#' .and. .not. has_serial) then
+                    serial     = frame%value
+                    has_serial = .true.
+                    cycle tty_loop
+                end if
+
+                ! Log VE.Direct device error.
                 if (dm_ve_is_error(code)) then
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
                 end if
 
-                ! Find product name of connected VE device.
-                if (frame%label == 'PID' .and. product_name == ' ') then
+                ! Output product name and serial number of connected VE device.
+                if (frame%label == 'PID' .and. .not. has_product) then
                     call dm_hex_to_int(frame%value, pid)
-                    rc = dm_ve_product_name(pid, product_name)
+                    rc = dm_ve_product_name(pid, product)
 
                     if (dm_is_error(rc)) then
                         call logger%warning('connected to unknown Victron Energy device', error=rc)
                     else
-                        call logger%info('connected to Victron Energy ' // product_name)
+                        call logger%info('connected to Victron Energy ' // trim(product) // &
+                                         ' (' // trim(serial) // ')')
                     end if
+
+                    has_product = .true.
                 end if
 
-                ! VE.Direct frame to response.
-                call dm_ve_frame_read(frame, response, field_type, error=rc)
+                ! Validate VE.Direct field type.
+                field_type = dm_ve_field_type(frame%label)
 
-                if (dm_is_error(rc)) then
+                if (.not. dm_ve_is_valid_field_type(field_type)) then
                     call logger%warning('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
                     cycle tty_loop
                 end if
 
                 if (debug) call logger%debug('received VE.Direct field ' // trim(frame%label) // ': ' // frame%value)
-                responses(field_type) = response
+
+                ! Save VE.Direct frame.
+                frames(field_type) = frame
             end if
         end do tty_loop
 
@@ -370,7 +395,7 @@ contains
 
         character(len=TIME_LEN) :: timestamp
         integer                 :: rc
-        type(request_type)      :: request(2)
+        type(request_type)      :: requests(2)
 
         timestamp = dm_time_now()
 
@@ -386,72 +411,72 @@ contains
         rc = dm_observ_add_receiver(observ, app%receiver)
 
         ! Prepare requests.
-        request(:)%name      = 'ved'
-        request(:)%timestamp = timestamp
-        request(:)%delay     = dm_sec_to_msec(app%interval)
+        requests(:)%name      = 'ved'
+        requests(:)%timestamp = timestamp
+        requests(:)%delay     = dm_sec_to_msec(app%interval)
 
         select case (app%device)
             case (VE_DEVICE_MPPT)
                 ! BlueSolar/SmartSolar MPPT.
                 observ%name = 'ved_mppt'
 
-                rc = dm_request_add(request(1), responses(VE_FIELD_CS))    ! 1
-                rc = dm_request_add(request(1), responses(VE_FIELD_ERR))   ! 2
-                rc = dm_request_add(request(1), responses(VE_FIELD_H19))   ! 3
-                rc = dm_request_add(request(1), responses(VE_FIELD_H20))   ! 4
-                rc = dm_request_add(request(1), responses(VE_FIELD_H21))   ! 5
-                rc = dm_request_add(request(1), responses(VE_FIELD_H22))   ! 6
-                rc = dm_request_add(request(1), responses(VE_FIELD_H23))   ! 7
-                rc = dm_request_add(request(1), responses(VE_FIELD_HSDS))  ! 8
-                rc = dm_request_add(request(1), responses(VE_FIELD_I))     ! 9
-                rc = dm_request_add(request(1), responses(VE_FIELD_IL))    ! 10
-                rc = dm_request_add(request(1), responses(VE_FIELD_LOAD))  ! 11
-                rc = dm_request_add(request(1), responses(VE_FIELD_MPPT))  ! 12
-                rc = dm_request_add(request(1), responses(VE_FIELD_OR))    ! 13
-                rc = dm_request_add(request(1), responses(VE_FIELD_PPV))   ! 14
-                rc = dm_request_add(request(1), responses(VE_FIELD_V))     ! 15
-                rc = dm_request_add(request(1), responses(VE_FIELD_VPV))   ! 16
+                rc = dm_request_add(requests(1), responses(VE_FIELD_CS))    ! 1
+                rc = dm_request_add(requests(1), responses(VE_FIELD_ERR))   ! 2
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H19))   ! 3
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H20))   ! 4
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H21))   ! 5
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H22))   ! 6
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H23))   ! 7
+                rc = dm_request_add(requests(1), responses(VE_FIELD_HSDS))  ! 8
+                rc = dm_request_add(requests(1), responses(VE_FIELD_I))     ! 9
+                rc = dm_request_add(requests(1), responses(VE_FIELD_IL))    ! 10
+                rc = dm_request_add(requests(1), responses(VE_FIELD_LOAD))  ! 11
+                rc = dm_request_add(requests(1), responses(VE_FIELD_MPPT))  ! 12
+                rc = dm_request_add(requests(1), responses(VE_FIELD_OR))    ! 13
+                rc = dm_request_add(requests(1), responses(VE_FIELD_PPV))   ! 14
+                rc = dm_request_add(requests(1), responses(VE_FIELD_V))     ! 15
+                rc = dm_request_add(requests(1), responses(VE_FIELD_VPV))   ! 16
 
-                rc = dm_observ_add_request(observ, request(1))
+                rc = dm_observ_add_request(observ, requests(1))
 
             case (VE_DEVICE_SHUNT)
                 ! SmartShunt battery monitor.
                 observ%name = 'ved_shunt'
 
-                rc = dm_request_add(request(1), responses(VE_FIELD_ALARM)) ! 1
-                rc = dm_request_add(request(1), responses(VE_FIELD_AR))    ! 2
-                rc = dm_request_add(request(1), responses(VE_FIELD_CE))    ! 3
-                rc = dm_request_add(request(1), responses(VE_FIELD_DM))    ! 4
-                rc = dm_request_add(request(1), responses(VE_FIELD_H1))    ! 5
-                rc = dm_request_add(request(1), responses(VE_FIELD_H2))    ! 6
-                rc = dm_request_add(request(1), responses(VE_FIELD_H3))    ! 7
-                rc = dm_request_add(request(1), responses(VE_FIELD_H4))    ! 8
-                rc = dm_request_add(request(1), responses(VE_FIELD_H5))    ! 9
-                rc = dm_request_add(request(1), responses(VE_FIELD_H6))    ! 10
-                rc = dm_request_add(request(1), responses(VE_FIELD_H7))    ! 11
-                rc = dm_request_add(request(1), responses(VE_FIELD_H8))    ! 12
-                rc = dm_request_add(request(1), responses(VE_FIELD_H9))    ! 13
-                rc = dm_request_add(request(1), responses(VE_FIELD_H10))   ! 14
-                rc = dm_request_add(request(1), responses(VE_FIELD_H11))   ! 15
-                rc = dm_request_add(request(1), responses(VE_FIELD_H12))   ! 16
+                rc = dm_request_add(requests(1), responses(VE_FIELD_ALARM)) ! 1
+                rc = dm_request_add(requests(1), responses(VE_FIELD_AR))    ! 2
+                rc = dm_request_add(requests(1), responses(VE_FIELD_CE))    ! 3
+                rc = dm_request_add(requests(1), responses(VE_FIELD_DM))    ! 4
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H1))    ! 5
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H2))    ! 6
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H3))    ! 7
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H4))    ! 8
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H5))    ! 9
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H6))    ! 10
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H7))    ! 11
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H8))    ! 12
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H9))    ! 13
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H10))   ! 14
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H11))   ! 15
+                rc = dm_request_add(requests(1), responses(VE_FIELD_H12))   ! 16
 
-                rc = dm_request_add(request(2), responses(VE_FIELD_H15))   ! 1
-                rc = dm_request_add(request(2), responses(VE_FIELD_H16))   ! 2
-                rc = dm_request_add(request(2), responses(VE_FIELD_H17))   ! 3
-                rc = dm_request_add(request(2), responses(VE_FIELD_H18))   ! 4
-                rc = dm_request_add(request(2), responses(VE_FIELD_I))     ! 5
-                rc = dm_request_add(request(2), responses(VE_FIELD_MON))   ! 6
-                rc = dm_request_add(request(2), responses(VE_FIELD_P))     ! 7
-                rc = dm_request_add(request(2), responses(VE_FIELD_RELAY)) ! 8
-                rc = dm_request_add(request(2), responses(VE_FIELD_SOC))   ! 9
-                rc = dm_request_add(request(2), responses(VE_FIELD_T))     ! 10
-                rc = dm_request_add(request(2), responses(VE_FIELD_TTG))   ! 11
-                rc = dm_request_add(request(2), responses(VE_FIELD_V))     ! 12
-                rc = dm_request_add(request(2), responses(VE_FIELD_VM))    ! 13
-                rc = dm_request_add(request(2), responses(VE_FIELD_VS))    ! 14
+                rc = dm_request_add(requests(2), responses(VE_FIELD_H15))   ! 1
+                rc = dm_request_add(requests(2), responses(VE_FIELD_H16))   ! 2
+                rc = dm_request_add(requests(2), responses(VE_FIELD_H17))   ! 3
+                rc = dm_request_add(requests(2), responses(VE_FIELD_H18))   ! 4
+                rc = dm_request_add(requests(2), responses(VE_FIELD_I))     ! 5
+                rc = dm_request_add(requests(2), responses(VE_FIELD_MON))   ! 6
+                rc = dm_request_add(requests(2), responses(VE_FIELD_P))     ! 7
+                rc = dm_request_add(requests(2), responses(VE_FIELD_RELAY)) ! 8
+                rc = dm_request_add(requests(2), responses(VE_FIELD_SOC))   ! 9
+                rc = dm_request_add(requests(2), responses(VE_FIELD_T))     ! 10
+                rc = dm_request_add(requests(2), responses(VE_FIELD_TTG))   ! 11
+                rc = dm_request_add(requests(2), responses(VE_FIELD_V))     ! 12
+                rc = dm_request_add(requests(2), responses(VE_FIELD_VM))    ! 13
+                rc = dm_request_add(requests(2), responses(VE_FIELD_VS))    ! 14
 
-                rc = dm_observ_add_request(observ, request(1))
-                rc = dm_observ_add_request(observ, request(2))
+                rc = dm_observ_add_request(observ, requests(1))
+                rc = dm_observ_add_request(observ, requests(2))
         end select
     end subroutine create_observ
 

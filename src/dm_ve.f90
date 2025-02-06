@@ -596,6 +596,7 @@ module dm_ve
     public :: dm_ve_frame_read
     public :: dm_ve_frame_reset
     public :: dm_ve_is_error
+    public :: dm_ve_is_valid_field_type
     public :: dm_ve_product_name
 contains
     ! **************************************************************************

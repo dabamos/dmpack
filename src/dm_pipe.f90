@@ -190,8 +190,6 @@ contains
         !! Closes pipe to process.
         type(pipe_type), intent(inout) :: pipe !! Pipe type.
 
-        integer :: stat
-
         if (.not. dm_pipe_is_connected(pipe)) return
         if (c_pclose(pipe%ctx) == 0) pipe%ctx = c_null_ptr
     end subroutine dm_pipe_close

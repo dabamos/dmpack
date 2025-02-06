@@ -109,7 +109,7 @@ module dm_lua
     public :: dm_lua_destroy
     public :: dm_lua_dump_stack
     public :: dm_lua_error
-    public :: dm_lua_error_string
+    public :: dm_lua_error_message
     public :: dm_lua_escape
     public :: dm_lua_eval
     public :: dm_lua_exec
@@ -210,21 +210,21 @@ contains
         end select
     end function dm_lua_error
 
-    function dm_lua_error_string(lua) result(string)
+    function dm_lua_error_message(lua) result(message)
         !! Returns last error message as allocatable character string or an
         !! empty string if no message is available.
-        type(lua_state_type), intent(inout) :: lua    !! Lua type.
-        character(len=:), allocatable       :: string !! Last error message.
+        type(lua_state_type), intent(inout) :: lua     !! Lua type.
+        character(len=:), allocatable       :: message !! Last error message.
 
         lua_block: block
             if (.not. c_associated(lua%ctx))    exit lua_block
             if (lua_isstring(lua%ctx, -1) == 0) exit lua_block
-            string = lua_tostring(lua%ctx, -1)
+            message = lua_tostring(lua%ctx, -1)
             return
         end block lua_block
 
-        if (.not. allocated(string)) string = ''
-    end function dm_lua_error_string
+        if (.not. allocated(message)) message = ''
+    end function dm_lua_error_message
 
     function dm_lua_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`

@@ -118,17 +118,11 @@ module dm_error
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
     integer, parameter, public :: STOP_FAILURE = 1 !! Exit status 1.
 
-    interface dm_perror
-        !! Alias for `dm_error_out()`, do not use.
-        module procedure :: dm_error_out
-    end interface dm_perror
-
     public :: dm_error_is_valid
     public :: dm_error_message
     public :: dm_error_out
     public :: dm_is_error
     public :: dm_is_ok
-    public :: dm_perror
     public :: dm_stop
 contains
     pure elemental logical function dm_error_is_valid(error) result(valid)
