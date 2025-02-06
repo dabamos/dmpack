@@ -254,8 +254,6 @@ module dm_db
         !! Generic sensors select function.
         module procedure :: db_select_sensors_array
         module procedure :: db_select_sensors_iter
-        module procedure :: db_select_sensors_by_node_array
-        module procedure :: db_select_sensors_by_node_iter
     end interface dm_db_select_sensors
 
     interface dm_db_select_targets
@@ -357,7 +355,6 @@ module dm_db
     public :: dm_db_select_json_nodes
     public :: dm_db_select_log
     public :: dm_db_select_logs
-    public :: dm_db_select_logs_by_observ
     public :: dm_db_select_node
     public :: dm_db_select_nodes
     public :: dm_db_select_observ
@@ -467,8 +464,6 @@ module dm_db
     private :: db_select_requests
     private :: db_select_responses
     private :: db_select_sensors_array
-    private :: db_select_sensors_by_node_array
-    private :: db_select_sensors_by_node_iter
     private :: db_select_sensors_iter
     private :: db_select_sync
     private :: db_select_syncs
@@ -1624,7 +1619,6 @@ contains
             rc = db_prepare(db, db_stmt, SQL_INSERT_LOG)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_BIND
             rc = db_bind(db_stmt,  1, log%id);        if (dm_is_error(rc)) exit sql_block
             rc = db_bind(db_stmt,  2, log%level);     if (dm_is_error(rc)) exit sql_block
             rc = db_bind(db_stmt,  3, log%error);     if (dm_is_error(rc)) exit sql_block
@@ -2330,17 +2324,20 @@ contains
         type(beat_type),  intent(out)   :: beat    !! Returned beat type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'node_id = ?', node_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_BEAT)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2349,6 +2346,7 @@ contains
             rc = db_next_row(db_stmt, beat)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
     end function dm_db_select_beat
 
@@ -2364,23 +2362,24 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        character(len=*), parameter :: QUERY = ' WHERE node_id = ?'
-
         type(db_type),                 intent(inout) :: db      !! Database type.
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'node_id = ?', node_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS // QUERY)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2389,6 +2388,7 @@ contains
             rc = db_next_row(db_stmt, json)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_select_json_beat
@@ -2406,23 +2406,24 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        character(len=*), parameter :: QUERY = ' WHERE id = ?'
-
         type(db_type),                 intent(inout) :: db     !! Database type.
         character(len=:), allocatable, intent(out)   :: json   !! Returned JSON.
         character(len=*),              intent(in)    :: log_id !! Log id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(log_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'id = ?', log_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_LOGS // QUERY)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, log_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2431,6 +2432,7 @@ contains
             rc = db_next_row(db_stmt, json)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_select_json_log
@@ -2447,23 +2449,24 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        character(len=*), parameter :: QUERY = ' WHERE id = ?'
-
         type(db_type),                 intent(inout) :: db      !! Database type.
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'id = ?', node_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2472,6 +2475,7 @@ contains
             rc = db_next_row(db_stmt, json)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_select_json_node
@@ -2493,17 +2497,20 @@ contains
         type(log_type),   intent(out)   :: log    !! Returned log data.
         character(len=*), intent(in)    :: log_id !! Log id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(log_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'id = ?', log_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_LOG)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, log_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2512,79 +2519,9 @@ contains
             rc = db_next_row(db_stmt, log)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
     end function dm_db_select_log
-
-    integer function dm_db_select_logs_by_observ(db, logs, observ_id, nlogs) result(rc)
-        !! Returns logs by observation id in allocatable array `logs`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_FINALIZE` if statement finalisation failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_log
-
-        type(db_type),               intent(inout)         :: db        !! Database type.
-        type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
-        character(len=*),            intent(in)            :: observ_id !! Observation id.
-        integer(kind=i8),            intent(out), optional :: nlogs     !! Number of logs.
-
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
-
-        if (present(nlogs)) nlogs = 0_i8
-
-        sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NLOGS_BY_OBSERV)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = db_bind(db_stmt, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            call db_column(db_stmt, 0, n)
-
-            rc = db_finalize(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            if (present(nlogs)) nlogs = n
-
-            rc = E_ALLOC
-            allocate (logs(n), stat=stat)
-            if (stat /= 0) exit sql_block
-
-            rc = E_DB_NO_ROWS
-            if (n == 0) exit sql_block
-
-            rc = db_prepare(db, db_stmt, SQL_SELECT_LOGS_BY_OBSERV)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = db_bind(db_stmt, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            do i = 1, n
-                rc = db_step(db_stmt)
-                if (dm_is_error(rc)) exit sql_block
-
-                rc = db_next_row(db_stmt, logs(i), (i == 1))
-                if (dm_is_error(rc)) exit sql_block
-            end do
-
-            rc = E_NONE
-        end block sql_block
-
-        stat = db_finalize(db_stmt)
-        if (.not. allocated(logs)) allocate (logs(0))
-    end function dm_db_select_logs_by_observ
 
     integer function dm_db_select_node(db, node, node_id) result(rc)
         !! Returns node data associated with given id in `node`.
@@ -2603,17 +2540,20 @@ contains
         type(node_type),  intent(out)   :: node    !! Returned node data.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NODE)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NODES))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2622,6 +2562,7 @@ contains
             rc = db_next_row(db_stmt, node)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
     end function dm_db_select_node
 
@@ -2643,17 +2584,20 @@ contains
         type(observ_type), intent(out)   :: observ    !! Selected observation.
         character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
 
-        integer            :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(observ_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'observs.id = ?', observ_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERV)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, observ_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -2662,6 +2606,7 @@ contains
             rc = db_next_row(db_stmt, observ)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         rc = db_finalize(db_stmt)
         if (dm_is_error(rc)) return
 
@@ -2728,7 +2673,6 @@ contains
 
         if (present(nids)) nids = 0_i8
 
-        ! Build SQL query.
         rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
         rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
         rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
@@ -2815,22 +2759,26 @@ contains
         integer(kind=i8),                    intent(in),  optional :: limit         !! Max. number of views.
         integer(kind=i8),                    intent(out), optional :: nviews        !! Total number of views (may be greater than limit).
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nviews)) nviews = 0_i8
 
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+        rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+        rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+        rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NOBSERV_VIEWS)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERV_VIEWS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id);       if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, response_name); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, from);          if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 6, to);            if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
             if (dm_is_error(rc)) exit sql_block
@@ -2840,7 +2788,8 @@ contains
             rc = db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit)) n = min(n, limit)
+            if (present(nviews)) nviews = n
+            if (present(limit))  n      = min(n, limit)
 
             rc = E_ALLOC
             allocate (views(n), stat=stat)
@@ -2849,24 +2798,14 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERV_VIEWS // ' LIMIT ?')
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERV_VIEWS)
-            end if
+            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_VIEWS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id);       if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, response_name); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, from);          if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 6, to);            if (dm_is_error(rc)) exit sql_block
-
-            if (present(limit)) then
-                rc = db_bind(db_stmt, 7, limit)
-                if (dm_is_error(rc)) exit sql_block
-            end if
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = db_step(db_stmt)
@@ -2876,10 +2815,10 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end do
 
-            if (present(nviews)) nviews = n
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(views)) allocate (views(0))
     end function dm_db_select_observ_views
@@ -2971,6 +2910,7 @@ contains
             else
                 rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_ID)
             end if
+
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_bind(db_stmt, 1, observ1%node_id);   if (dm_is_error(rc)) exit sql_block
@@ -3081,6 +3021,7 @@ contains
             else
                 rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_TIME)
             end if
+
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_bind(db_stmt, 1, node_id);   if (dm_is_error(rc)) exit sql_block
@@ -3132,17 +3073,20 @@ contains
         type(sensor_type), intent(out)   :: sensor    !! Returned sensor data.
         character(len=*),  intent(in)    :: sensor_id !! Sensor id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(sensor_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'sensors.id = ?', sensor_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSOR)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, sensor_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -3151,6 +3095,7 @@ contains
             rc = db_next_row(db_stmt, sensor)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
     end function dm_db_select_sensor
 
@@ -3429,17 +3374,20 @@ contains
         type(target_type), intent(out)   :: target    !! Returned target data.
         character(len=*),  intent(in)    :: target_id !! Target id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(target_id) == 0) return
 
+        rc = dm_db_query_add_text(db_query, 'targets.id = ?', target_id)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_TARGET)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_TARGETS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, target_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
@@ -3448,6 +3396,7 @@ contains
             rc = db_next_row(db_stmt, target)
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
     end function dm_db_select_target
 
@@ -5102,52 +5051,49 @@ contains
         integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of beats.
         integer(kind=i8),             intent(out), optional :: nbeats   !! Total number of beats in database.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nbeats)) nbeats = 0_i8
 
-        alloc_block: block
-            rc = dm_db_count_beats(db, n)
-            if (dm_is_error(rc)) exit alloc_block
+        sql_block: block
+            rc = db_count(db, SQL_TABLE_BEATS, n)
+            if (dm_is_error(rc)) exit sql_block
 
             if (present(limit))  n      = min(n, limit)
             if (present(nbeats)) nbeats = n
 
             rc = E_ALLOC
             allocate (beats(n), stat=stat)
-            if (stat /= 0) exit alloc_block
+            if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
-            if (n == 0) exit alloc_block
+            if (n == 0) exit sql_block
 
-            sql_block: block
-                if (present(limit)) then
-                    rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS // ' LIMIT ?')
-                    if (dm_is_error(rc)) exit sql_block
+            call dm_db_query_order(db_query, 'node_id', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
 
-                    rc = db_bind(db_stmt, 1, limit)
-                    if (dm_is_error(rc)) exit sql_block
-                else
-                    rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS)
-                    if (dm_is_error(rc)) exit sql_block
-                end if
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
+            if (dm_is_error(rc)) exit sql_block
 
-                do i = 1, n
-                    rc = db_step(db_stmt)
-                    if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
-                    rc = db_next_row(db_stmt, beats(i), (i == 1))
-                    if (dm_is_error(rc)) exit sql_block
-                end do
+            do i = 1, n
+                rc = db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
 
-                rc = E_NONE
-            end block sql_block
+                rc = db_next_row(db_stmt, beats(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
+            end do
 
-            stat = db_finalize(db_stmt)
-        end block alloc_block
+            rc = E_NONE
+        end block sql_block
 
+        call dm_db_query_destroy(db_query)
+        stat = db_finalize(db_stmt)
         if (.not. allocated(beats)) allocate (beats(0))
     end function db_select_beats_array
 
@@ -5170,17 +5116,18 @@ contains
         type(beat_type),    intent(out)          :: beat    !! Returned beat type.
         integer(kind=i8),   intent(in), optional :: limit   !! Max. number of beats.
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS // ' LIMIT ?')
-                if (dm_is_error(rc)) return
+        type(db_query_type) :: db_query
 
-                rc = db_bind(db_stmt, 1, limit)
-                if (dm_is_error(rc)) return
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_BEATS)
-                if (dm_is_error(rc)) return
-            end if
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            call dm_db_query_limit(db_query, limit)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
+            if (dm_is_error(rc)) return
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5219,26 +5166,30 @@ contains
         integer(kind=i8),           intent(in),  optional :: limit         !! Max. number of data points.
         integer(kind=i8),           intent(out), optional :: npoints       !! Number of data points.
 
-        integer            :: error_, stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: error_, stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         error_ = E_NONE
         if (present(error)) error_ = error
 
         if (present(npoints)) npoints = 0_i8
 
-        sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NDATA_POINTS)
-            if (dm_is_error(rc)) exit sql_block
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+        rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+        rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+        rc = dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
+        rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+        rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
 
-            rc = db_bind(db_stmt, 1, node_id);       if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, response_name); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, error_);        if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 6, from);          if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 7, to);            if (dm_is_error(rc)) exit sql_block
+        sql_block: block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NDATA_POINTS))
+            if (dm_is_error(rc)) return
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
 
             rc = db_step(db_stmt)
             if (dm_is_error(rc)) exit sql_block
@@ -5258,25 +5209,14 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS // ' LIMIT ?')
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS)
-            end if
-            if (dm_is_error(rc)) return
+            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
 
-            rc = db_bind(db_stmt, 1, node_id);       if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id);     if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, response_name); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, error_);        if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 6, from);          if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 7, to);            if (dm_is_error(rc)) exit sql_block
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_DATA_POINTS))
+            if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit)) then
-                rc = db_bind(db_stmt, 8, limit)
-                if (dm_is_error(rc)) exit sql_block
-            end if
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = db_step(db_stmt)
@@ -5289,6 +5229,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(dps)) allocate (dps(0))
     end function db_select_data_points_array
@@ -5321,31 +5262,31 @@ contains
         integer,            intent(in), optional :: error         !! Response error code.
         integer(kind=i8),   intent(in), optional :: limit         !! Max. number of data points.
 
-        integer :: error_
+        integer             :: error_
+        type(db_query_type) :: db_query
 
         error_ = E_NONE
         if (present(error)) error_ = error
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS // ' LIMIT ?')
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_DATA_POINTS)
-            end if
+            rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+            rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+            rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+            rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+            rc = dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
+            rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+            rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
+
+            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_DATA_POINTS))
             if (dm_is_error(rc)) return
 
-            rc = db_bind(db_stmt, 1, node_id);       if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 2, sensor_id);     if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 3, target_id);     if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 4, response_name); if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 5, error_);        if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 6, from);          if (dm_is_error(rc)) return
-            rc = db_bind(db_stmt, 7, to);            if (dm_is_error(rc)) return
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
 
-            if (present(limit)) then
-                rc = db_bind(db_stmt, 8, limit)
-                if (dm_is_error(rc)) return
-            end if
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5376,14 +5317,15 @@ contains
         integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of beats.
         integer(kind=i8),               intent(out), optional :: nbeats     !! Number of beats.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nbeats)) nbeats = 0_i8
 
         sql_block: block
-            rc = dm_db_count_beats(db, n)
+            rc = db_count(db, SQL_TABLE_BEATS, n)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(limit))  n      = min(n, limit)
@@ -5396,16 +5338,13 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS // ' LIMIT ?')
-                if (dm_is_error(rc)) exit sql_block
+            call dm_db_query_limit(db_query, limit)
 
-                rc = db_bind(db_stmt, 1, n)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS)
-                if (dm_is_error(rc)) exit sql_block
-            end if
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = db_step(db_stmt)
@@ -5418,6 +5357,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_beats_array
@@ -5442,17 +5382,18 @@ contains
         character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
         integer(kind=i8),              intent(in), optional :: limit   !! Max. number of beats.
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS // ' LIMIT ?')
-                if (dm_is_error(rc)) return
+        type(db_query_type) :: db_query
 
-                rc = db_bind(db_stmt, 1, limit)
-                if (dm_is_error(rc)) return
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_BEATS)
-                if (dm_is_error(rc)) return
-            end if
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            call dm_db_query_limit(db_query, limit)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
+            if (dm_is_error(rc)) return
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5502,7 +5443,6 @@ contains
 
         if (present(nlogs)) nlogs = 0_i8
 
-        ! Build SQL query.
         rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
         rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
         rc = dm_db_query_add_int (db_query, 'error = ?',      error)
@@ -5597,7 +5537,6 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            ! Build SQL query.
             rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
             rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
             rc = dm_db_query_add_int (db_query, 'error = ?',      error)
@@ -5616,6 +5555,8 @@ contains
 
             rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5641,21 +5582,20 @@ contains
         !!
         use :: dm_string, only: string_type
 
-        character(len=*), parameter :: QUERY = ' ORDER BY nodes.row_id ASC'
-
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
         integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of nodes.
         integer(kind=i8),               intent(out), optional :: nnodes     !! Number of nodes.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nnodes)) nnodes = 0_i8
 
         sql_block: block
-            rc = dm_db_count_nodes(db, n)
+            rc = db_count(db, SQL_TABLE_NODES, n)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(limit))  n      = min(n, limit)
@@ -5668,16 +5608,14 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?')
-                if (dm_is_error(rc)) return
+            call dm_db_query_order(db_query, 'nodes.row_id', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
 
-                rc = db_bind(db_stmt, 1, n)
-                if (dm_is_error(rc)) return
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY)
-                if (dm_is_error(rc)) return
-            end if
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = db_step(db_stmt)
@@ -5690,6 +5628,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_nodes_array
@@ -5709,24 +5648,24 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        character(len=*), parameter :: QUERY = ' ORDER BY nodes.row_id ASC'
-
         type(db_type),                 intent(inout)        :: db      !! Database type.
         type(db_stmt_type),            intent(inout)        :: db_stmt !! Database statement type.
         character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
         integer(kind=i8),              intent(in), optional :: limit   !! Max. number of nodes.
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY // ' LIMIT ?')
-                if (dm_is_error(rc)) return
+        type(db_query_type) :: db_query
 
-                rc = db_bind(db_stmt, 1, limit)
-                if (dm_is_error(rc)) return
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_JSON_NODES // QUERY)
-                if (dm_is_error(rc)) return
-            end if
+        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+            call dm_db_query_order(db_query, 'nodes.row_id', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
+            if (dm_is_error(rc)) return
+
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5735,7 +5674,7 @@ contains
         rc = db_next_row(db_stmt, json)
     end function db_select_json_nodes_iter
 
-    integer function db_select_logs_array(db, logs, node_id, sensor_id, target_id, source, from, to, &
+    integer function db_select_logs_array(db, logs, node_id, sensor_id, target_id, observ_id, source, from, to, &
                                           min_level, max_level, error, desc, limit, nlogs) result(rc)
         !! Returns logs in allocatable array `logs`.
         !!
@@ -5755,6 +5694,7 @@ contains
         character(len=*),            intent(in),  optional :: node_id   !! Node id.
         character(len=*),            intent(in),  optional :: sensor_id !! Sensor id.
         character(len=*),            intent(in),  optional :: target_id !! Target id.
+        character(len=*),            intent(in),  optional :: observ_id !! Observation id.
         character(len=*),            intent(in),  optional :: source    !! Source name.
         character(len=*),            intent(in),  optional :: from      !! Begin of time range.
         character(len=*),            intent(in),  optional :: to        !! End of time range.
@@ -5772,7 +5712,6 @@ contains
 
         if (present(nlogs)) nlogs = 0_i8
 
-        ! Build SQL query.
         rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
         rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
         rc = dm_db_query_add_int (db_query, 'error = ?',      error)
@@ -5781,6 +5720,7 @@ contains
         rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
         rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
         rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+        rc = dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
         rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
@@ -5833,7 +5773,7 @@ contains
         if (.not. allocated(logs)) allocate (logs(0))
     end function db_select_logs_array
 
-    integer function db_select_logs_iter(db, db_stmt, log, node_id, sensor_id, target_id, source, from, to, &
+    integer function db_select_logs_iter(db, db_stmt, log, node_id, sensor_id, target_id, observ_id, source, from, to, &
                                          min_level, max_level, error, desc, limit) result(rc)
         !! Iterator function that returns logs in `logs`. The statement
         !! `db_stmt` must be finalised once finished.
@@ -5853,6 +5793,7 @@ contains
         character(len=*),   intent(in), optional :: node_id   !! Node id.
         character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
         character(len=*),   intent(in), optional :: target_id !! Target id.
+        character(len=*),   intent(in), optional :: observ_id !! Observation id.
         character(len=*),   intent(in), optional :: source    !! Source name.
         character(len=*),   intent(in), optional :: from      !! Begin of time range.
         character(len=*),   intent(in), optional :: to        !! End of time range.
@@ -5865,7 +5806,6 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            ! Build SQL query.
             rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
             rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
             rc = dm_db_query_add_int (db_query, 'error = ?',      error)
@@ -5874,6 +5814,7 @@ contains
             rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
             rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
             rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+            rc = dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
             rc = dm_db_query_add_text(db_query, 'source = ?',     source)
 
             call dm_db_query_order(db_query, 'timestamp', desc)
@@ -5884,6 +5825,8 @@ contains
 
             rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -5908,14 +5851,15 @@ contains
         type(node_type), allocatable, intent(out)           :: nodes(:) !! Returned node data array.
         integer(kind=i8),             intent(out), optional :: nnodes   !! Number of nodes.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nnodes)) nnodes = 0_i8
 
         sql_block: block
-            rc = dm_db_count_nodes(db, n)
+            rc = db_count(db, SQL_TABLE_NODES, n)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_ALLOC
@@ -5924,6 +5868,8 @@ contains
 
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
+
+            call dm_db_query_order(db_query, 'nodes.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, SQL_SELECT_NODES)
             if (dm_is_error(rc)) exit sql_block
@@ -5940,6 +5886,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(nodes)) allocate (nodes(0))
     end function db_select_nodes_array
@@ -5960,9 +5907,15 @@ contains
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
         type(node_type),    intent(out)   :: node    !! Returned node data.
 
+        type(db_query_type) :: db_query
+
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NODES)
+            call dm_db_query_order(db_query, 'nodes.id', desc=.false.)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NODES))
             if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -6021,7 +5974,6 @@ contains
         stub_ = .false.
         if (present(stub)) stub_ = stub
 
-        ! Build SQL query.
         rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
         rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
         rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
@@ -6125,7 +6077,6 @@ contains
         if (present(stub)) stub_ = stub
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            ! Build SQL query.
             rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
             rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
             rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
@@ -6140,6 +6091,8 @@ contains
 
             rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
@@ -6427,7 +6380,7 @@ contains
         sql_block: block
             if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
                 rc = db_prepare(db, db_stmt_, SQL_SELECT_RESPONSES)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit sql_block
             end if
 
             rc = db_bind(db_stmt_, 1, observ_id);   if (dm_is_error(rc)) exit sql_block
@@ -6469,8 +6422,9 @@ contains
         db_stmt = db_stmt_
     end function db_select_responses
 
-    integer function db_select_sensors_array(db, sensors, nsensors) result(rc)
-        !! Returns all sensors in allocatable array `sensors`.
+    integer function db_select_sensors_array(db, sensors, node_id, nsensors) result(rc)
+        !! Returns all sensors in allocatable array `sensors`. If argument
+        !! `node_id` is passed, returns only sensors of this node.
         !!
         !! The function returns the following error codes:
         !!
@@ -6478,111 +6432,34 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
+        !! * `E_INVALID` if node id is empty.
         !!
         use :: dm_sensor
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data array.
+        character(len=*),               intent(in),  optional :: node_id    !! Node id.
         integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nsensors)) nsensors = 0_i8
 
-        sql_block: block
-            rc = dm_db_count_sensors(db, n)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_ALLOC
-            allocate (sensors(n), stat=stat)
-            if (stat /= 0) exit sql_block
-
-            rc = E_DB_NO_ROWS
-            if (n == 0) exit sql_block
-
-            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS)
-            if (dm_is_error(rc)) exit sql_block
-
-            row_loop: do i = 1, n
-                rc = db_step(db_stmt)
-                if (dm_is_error(rc)) exit sql_block
-
-                rc = db_next_row(db_stmt, sensors(i), (i == 1))
-                if (dm_is_error(rc)) exit sql_block
-            end do row_loop
-
-            if (present(nsensors)) nsensors = n
-            rc = E_NONE
-        end block sql_block
-
-        stat = db_finalize(db_stmt)
-        if (.not. allocated(sensors)) allocate (sensors(0))
-    end function db_select_sensors_array
-
-    integer function db_select_sensors_iter(db, db_stmt, sensor) result(rc)
-        !! Iterator function that returns all sensors in `sensor`. The
-        !! statement `db_stmt` must be finalised once finished.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_sensor
-
-        type(db_type),      intent(inout) :: db      !! Database type.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-        type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
-
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS)
-            if (dm_is_error(rc)) return
+        if (present(node_id)) then
+            rc = E_INVALID
+            if (len_trim(node_id) == 0) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(db_step(db_stmt))) return
-
-        rc = db_next_row(db_stmt, sensor)
-    end function db_select_sensors_iter
-
-    integer function db_select_sensors_by_node_array(db, node_id, sensors, nsensors) result(rc)
-        !! Returns all sensors of node `node_id` in allocatable array `sensors`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_INVALID` if node id is empty.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_FINALIZE` if statement finalisation failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_sensor
-
-        type(db_type),                  intent(inout)         :: db         !! Database type.
-        character(len=*),               intent(in)            :: node_id    !! Node id.
-        type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data array.
-        integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
-
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
-
-        if (present(nsensors)) nsensors = 0_i8
-
-        rc = E_INVALID
-        if (len_trim(node_id) == 0) return
+        rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
 
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NSENSORS_BY_NODE)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NSENSORS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -6593,6 +6470,8 @@ contains
             rc = db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
+            if (present(nsensors)) nsensors = n
+
             rc = E_ALLOC
             allocate (sensors(n), stat=stat)
             if (stat /= 0) exit sql_block
@@ -6600,10 +6479,12 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS_BY_NODE)
+            call dm_db_query_order(db_query, 'sensors.id', desc=.false.)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -6614,49 +6495,57 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end do
 
-            if (present(nsensors)) nsensors = n
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(sensors)) allocate (sensors(0))
-    end function db_select_sensors_by_node_array
+    end function db_select_sensors_array
 
-    integer function db_select_sensors_by_node_iter(db, db_stmt, node_id, sensor) result(rc)
-        !! Iterator function that returns all sensors of node `node_id` in
-        !! `sensor`. The statement `db_stmt` must be finalised once finished.
+    integer function db_select_sensors_iter(db, db_stmt, sensor, node_id) result(rc)
+        !! Iterator function that returns all sensors in `sensor`. The
+        !! statement `db_stmt` must be finalised once finished.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if node id is empty.
-        !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
+        !! * `E_INVALID` if node id is empty.
         !!
         use :: dm_sensor
 
-        type(db_type),      intent(inout) :: db      !! Database type.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-        character(len=*),   intent(in)    :: node_id !! Node id.
-        type(sensor_type),  intent(out)   :: sensor  !! Returned sensor data.
+        type(db_type),      intent(inout)        :: db      !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt !! Database statement type.
+        type(sensor_type),  intent(out)          :: sensor  !! Returned sensor data.
+        character(len=*),   intent(in), optional :: node_id !! Node id.
+
+        type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = E_INVALID
-            if (len_trim(node_id) == 0) return
+            if (present(node_id)) then
+                rc = E_INVALID
+                if (len_trim(node_id) == 0) return
+            end if
 
-            rc = db_prepare(db, db_stmt, SQL_SELECT_SENSORS_BY_NODE)
+            rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
+            call dm_db_query_order(db_query, 'sensors.id', desc=.false.)
+
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
             if (dm_is_error(rc)) return
 
-            rc = db_bind(db_stmt, 1, node_id)
+            rc = db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
         end if
 
         rc = E_DB_NO_ROWS
         if (dm_is_error(db_step(db_stmt))) return
 
         rc = db_next_row(db_stmt, sensor)
-    end function db_select_sensors_by_node_iter
+    end function db_select_sensors_iter
 
     integer function db_select_sync(db, type, query, sync) result(rc)
         !! Utility function that returns synchronisation data of given query.
@@ -6682,7 +6571,7 @@ contains
 
         sql_block: block
             rc = db_prepare(db, db_stmt, trim(query))
-            if (dm_is_error(rc)) return
+            if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_NO_ROWS
             if (dm_is_error(db_step(db_stmt))) exit sql_block
@@ -6719,9 +6608,10 @@ contains
         integer(kind=i8),             intent(out)          :: nsyncs      !! Total number of sync records.
         integer(kind=i8),             intent(in), optional :: limit       !! Max. number of rows to fetch.
 
-        integer            :: stat
-        integer(kind=i8)   :: i, n
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         nsyncs = 0_i8
 
@@ -6750,16 +6640,10 @@ contains
             rc = E_DB_NO_ROWS
             if (nsyncs == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, trim(query) // ' LIMIT ?')
-                if (dm_is_error(rc)) exit sql_block
+            call dm_db_query_limit(db_query, limit)
 
-                rc = db_bind(db_stmt, 1, limit)
-                if (dm_is_error(rc)) exit sql_block
-            else
-                rc = db_prepare(db, db_stmt, trim(query))
-                if (dm_is_error(rc)) exit sql_block
-            end if
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, trim(query)))
+            if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
                 rc = db_step(db_stmt)
@@ -6773,6 +6657,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
         if (.not. allocated(syncs)) allocate (syncs(0))
     end function db_select_syncs
@@ -6801,7 +6686,7 @@ contains
         if (present(ntargets)) ntargets = 0_i8
 
         sql_block: block
-            rc = dm_db_count_targets(db, n)
+            rc = db_count(db, SQL_TABLE_TARGETS, n)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_ALLOC

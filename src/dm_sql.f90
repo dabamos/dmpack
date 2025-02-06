@@ -305,7 +305,7 @@ module dm_sql
         '    BEFORE DELETE'                                                     // NL // &
         '    ON observs'                                                        // NL // &
         'BEGIN'                                                                 // NL // &
-        '    DELETE FROM receivers WHERE observ_id = OLD.row_id;'               // NL // &
+        '    DELETE FROM receivers WHERE observ_id = old.row_id;'               // NL // &
         '    DELETE FROM responses WHERE request_id IN'                         // NL // &
         '        ('                                                             // NL // &
         '            SELECT'                                                    // NL // &
@@ -313,9 +313,9 @@ module dm_sql
         '            FROM'                                                      // NL // &
         '                requests'                                              // NL // &
         '            INNER JOIN observs ON observs.row_id = requests.observ_id' // NL // &
-        '            WHERE observs.row_id = OLD.row_id'                         // NL // &
+        '            WHERE observs.row_id = old.row_id'                         // NL // &
         '        );'                                                            // NL // &
-        '    DELETE FROM requests WHERE observ_id = OLD.row_id;'                // NL // &
+        '    DELETE FROM requests WHERE observ_id = old.row_id;'                // NL // &
         'END'
 
     ! **************************************************************************
@@ -522,146 +522,20 @@ module dm_sql
     ! **************************************************************************
     ! SELECT QUERIES.
     ! **************************************************************************
-    ! Query to select beat by node id.
-    ! Arguments: beats.node_id
-    character(len=*), parameter, public :: SQL_SELECT_BEAT = &
-        'SELECT node_id, address, client, time_sent, time_recv, error, interval, uptime ' // &
-        'FROM beats WHERE node_id = ?'
-
-    ! Query to select all beats.
-    character(len=*), parameter, public :: SQL_SELECT_BEATS = &
-        'SELECT node_id, address, client, time_sent, time_recv, error, interval, uptime ' // &
-        'FROM beats ORDER BY node_id ASC'
-
-    ! Query to select data points (time series) by response name and time range.
-    ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
-    !            observs.timestamp (start), observs.timestamp (end)
-    character(len=*), parameter, public :: SQL_SELECT_DATA_POINTS = &
-        'SELECT '                                                         // &
-        'requests.timestamp, '                                            // &
-        'responses.value '                                                // &
-        'FROM observs '                                                   // &
-        'INNER JOIN nodes ON nodes.row_id = observs.node_id '             // &
-        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '       // &
-        'INNER JOIN targets ON targets.row_id = observs.target_id '       // &
-        'INNER JOIN requests ON requests.observ_id = observs.row_id '     // &
-        'INNER JOIN responses ON responses.request_id = requests.row_id ' // &
-        'WHERE '                                                          // &
-        'nodes.id = ? AND '                                               // &
-        'sensors.id = ? AND '                                             // &
-        'targets.id = ? AND '                                             // &
-        'responses.name = ? AND '                                         // &
-        'responses.error = ? AND '                                        // &
-        'requests.timestamp >= ? AND '                                    // &
-        'requests.timestamp < ? '                                         // &
-        'ORDER BY requests.timestamp ASC'
-
-    ! Query to select log by id.
-    ! Arguments: logs.id
-    character(len=*), parameter, public :: SQL_SELECT_LOG = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs WHERE id = ?'
-
-    ! Query to select all logs.
-    character(len=*), parameter, public :: SQL_SELECT_LOGS = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs'
-
-    ! Query to select logs by node id.
-    ! Arguments: logs.node_id
-    character(len=*), parameter, public :: SQL_SELECT_LOGS_BY_NODE = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs WHERE node_id = ? ORDER BY timestamp ASC'
-
-    ! Query to select logs by node id and time range.
-    ! Arguments: logs.node_id, logs.timestamp (start), logs.timestamp (end)
-    character(len=*), parameter, public :: SQL_SELECT_LOGS_BY_NODE_TIME = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs WHERE node_id = ? AND timestamp >= ? AND timestamp < ? ORDER BY timestamp ASC'
-
-    ! Query to select logs by observ_id.
-    ! Arguments: logs.observ_id
-    character(len=*), parameter, public :: SQL_SELECT_LOGS_BY_OBSERV = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs WHERE observ_id = ? ORDER BY timestamp ASC'
-
-    ! Query to select logs by time range.
-    ! Arguments: logs.timestamp (start), logs.timestamp (end)
-    character(len=*), parameter, public :: SQL_SELECT_LOGS_BY_TIME = &
-        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
-        'FROM logs WHERE timestamp >= ? AND timestamp < ? ORDER BY timestamp ASC'
-
     character(len=*), parameter, public :: SQL_SELECT_NBEATS = 'SELECT COUNT(row_id) FROM beats'
+
+    ! Query to select number of time series by time range.
+    character(len=*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
+        'SELECT COUNT(observs.row_id) FROM observs '                  // &
+        'INNER JOIN nodes ON nodes.row_id = observs.node_id '         // &
+        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '   // &
+        'INNER JOIN targets ON targets.row_id = observs.target_id '   // &
+        'INNER JOIN requests ON requests.observ_id = observs.row_id ' // &
+        'INNER JOIN responses ON responses.request_id = requests.row_id'
 
     character(len=*), parameter, public :: SQL_SELECT_NLOGS = 'SELECT COUNT(row_id) FROM logs'
 
-    ! Query to select number of logs by node id.
-    ! Arguments: logs.node_id
-    character(len=*), parameter, public :: SQL_SELECT_NLOGS_BY_NODE = &
-        'SELECT COUNT(logs.row_id) FROM logs WHERE node_id = ?'
-
-    ! Query to select number of logs by observation id.
-    ! Arguments: logs.observ_id
-    character(len=*), parameter, public :: SQL_SELECT_NLOGS_BY_OBSERV = &
-        'SELECT COUNT(logs.row_id) FROM logs WHERE observ_id = ?'
-
-    ! Query to select number of sensors by node id.
-    ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_SELECT_NSENSORS_BY_NODE = &
-        'SELECT COUNT(sensors.row_id) FROM sensors '          // &
-        'INNER JOIN nodes ON nodes.row_id = sensors.node_id ' // &
-        'WHERE nodes.id = ?'
-
-    ! Query to select node by id.
-    ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_SELECT_NODE = &
-        'SELECT '      // &
-        'nodes.id, '   // &
-        'nodes.name, ' // &
-        'nodes.meta, ' // &
-        'nodes.x, '    // &
-        'nodes.y, '    // &
-        'nodes.z, '    // &
-        'nodes.lon, '  // &
-        'nodes.lat, '  // &
-        'nodes.alt '   // &
-        'FROM nodes WHERE nodes.id = ?'
-
-    ! Query to select all nodes.
-    character(len=*), parameter, public :: SQL_SELECT_NODES = &
-        'SELECT '      // &
-        'nodes.id, '   // &
-        'nodes.name, ' // &
-        'nodes.meta, ' // &
-        'nodes.x, '    // &
-        'nodes.y, '    // &
-        'nodes.z, '    // &
-        'nodes.lon, '  // &
-        'nodes.lat, '  // &
-        'nodes.alt '   // &
-        'FROM nodes ORDER BY nodes.id ASC'
-
-    ! Query to select number of time series by time range.
-    ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
-    !            observs.timestamp (start), observs.timestamp (end)
-    character(len=*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
-        'SELECT COUNT(observs.row_id) FROM observs '                      // &
-        'INNER JOIN nodes ON nodes.row_id = observs.node_id '             // &
-        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '       // &
-        'INNER JOIN targets ON targets.row_id = observs.target_id '       // &
-        'INNER JOIN requests ON requests.observ_id = observs.row_id '     // &
-        'INNER JOIN responses ON responses.request_id = requests.row_id ' // &
-        'WHERE '                                                          // &
-        'nodes.id = ? AND '                                               // &
-        'sensors.id = ? AND '                                             // &
-        'targets.id = ? AND '                                             // &
-        'responses.name = ? AND '                                         // &
-        'responses.error = ? AND '                                        // &
-        'requests.timestamp >= ? AND '                                    // &
-        'requests.timestamp < ?'
-
     ! Query to select the number of observations.
-    ! Arguments: nodes.id, sensors.id, targets.id
     character(len=*), parameter, public :: SQL_SELECT_NOBSERVS = &
         'SELECT COUNT(observs.row_id) FROM observs '                // &
         'INNER JOIN nodes ON nodes.row_id = observs.node_id '       // &
@@ -683,49 +557,67 @@ module dm_sql
         SQL_SELECT_NOBSERVS // ' WHERE nodes.id = ? AND sensors.id = ? AND targets.id = ? ' // &
         'AND observs.timestamp >= ? AND observs.timestamp < ?'
 
-    ! Query to select number of request responses by timestamp range.
-    ! Arguments: nodes.id, sensors.id, targets.id, responses.name,
-    !            observs.timestamp (start), observs.timestamp (end)
+    ! Query to select number of observations.
     character(len=*), parameter, public :: SQL_SELECT_NOBSERV_VIEWS = &
-        'SELECT COUNT(observs.row_id) FROM observs '                      // &
-        'INNER JOIN nodes ON nodes.row_id = observs.node_id '             // &
-        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '       // &
-        'INNER JOIN targets ON targets.row_id = observs.target_id '       // &
-        'INNER JOIN requests ON requests.observ_id = observs.row_id '     // &
-        'INNER JOIN responses ON responses.request_id = requests.row_id ' // &
-        'WHERE '                                                          // &
-        'nodes.id = ? AND '                                               // &
-        'sensors.id = ? AND '                                             // &
-        'targets.id = ? AND '                                             // &
-        'responses.name = ? AND '                                         // &
-        'requests.timestamp >= ? AND '                                    // &
-        'requests.timestamp < ?'
+        'SELECT COUNT(observs.row_id) FROM observs '                  // &
+        'INNER JOIN nodes ON nodes.row_id = observs.node_id '         // &
+        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '   // &
+        'INNER JOIN targets ON targets.row_id = observs.target_id '   // &
+        'INNER JOIN requests ON requests.observ_id = observs.row_id ' // &
+        'INNER JOIN responses ON responses.request_id = requests.row_id'
 
-    ! Query to select single observation by id.
-    ! Arguments: observs.id
-    character(len=*), parameter, public :: SQL_SELECT_OBSERV = &
-        'SELECT '                                                   // &
-        'observs.id, '                                              // &
-        'nodes.id, '                                                // &
-        'sensors.id, '                                              // &
-        'targets.id, '                                              // &
-        'observs.name, '                                            // &
-        'observs.timestamp, '                                       // &
-        'observs.source, '                                          // &
-        'observs.device, '                                          // &
-        'observs.priority, '                                        // &
-        'observs.error, '                                           // &
-        'observs.next, '                                            // &
-        'observs.nreceivers, '                                      // &
-        'observs.nrequests '                                        // &
-        'FROM observs '                                             // &
-        'INNER JOIN nodes ON nodes.row_id = observs.node_id '       // &
-        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id ' // &
-        'INNER JOIN targets ON targets.row_id = observs.target_id ' // &
-        'WHERE observs.id = ?'
+    ! Query to select number of sensors.
+    character(len=*), parameter, public :: SQL_SELECT_NSENSORS = &
+        'SELECT COUNT(sensors.row_id) FROM sensors ' // &
+        'INNER JOIN nodes ON nodes.row_id = sensors.node_id'
+
+    ! Query to select beats.
+    character(len=*), parameter, public :: SQL_SELECT_BEATS = &
+        'SELECT '     // &
+        'node_id, '   // &
+        'address, '   // &
+        'client, '    // &
+        'time_sent, ' // &
+        'time_recv, ' // &
+        'error, '     // &
+        'interval, '  // &
+        'uptime '     // &
+        'FROM beats'
+
+    ! Query to select data points (time series) by response name and time range.
+    ! Arguments: nodes.id, sensors.id, targets.id, responses.name, responses.error,
+    !            observs.timestamp (start), observs.timestamp (end)
+    character(len=*), parameter, public :: SQL_SELECT_DATA_POINTS = &
+        'SELECT '                                                     // &
+        'requests.timestamp, '                                        // &
+        'responses.value '                                            // &
+        'FROM observs '                                               // &
+        'INNER JOIN nodes ON nodes.row_id = observs.node_id '         // &
+        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '   // &
+        'INNER JOIN targets ON targets.row_id = observs.target_id '   // &
+        'INNER JOIN requests ON requests.observ_id = observs.row_id ' // &
+        'INNER JOIN responses ON responses.request_id = requests.row_id'
+
+    ! Query to select logs.
+    character(len=*), parameter, public :: SQL_SELECT_LOGS = &
+        'SELECT id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message ' // &
+        'FROM logs'
+
+    ! Query to select nodes.
+    character(len=*), parameter, public :: SQL_SELECT_NODES = &
+        'SELECT '      // &
+        'nodes.id, '   // &
+        'nodes.name, ' // &
+        'nodes.meta, ' // &
+        'nodes.x, '    // &
+        'nodes.y, '    // &
+        'nodes.z, '    // &
+        'nodes.lon, '  // &
+        'nodes.lat, '  // &
+        'nodes.alt '   // &
+        'FROM nodes'
 
     ! Query to select of observation ids.
-    ! Arguments: nodes.id, sensors.id, targets.id
     character(len=*), parameter, public :: SQL_SELECT_OBSERV_IDS = &
         'SELECT observs.id FROM observs '                           // &
         'INNER JOIN nodes ON nodes.row_id = observs.node_id '       // &
@@ -733,7 +625,6 @@ module dm_sql
         'INNER JOIN targets ON targets.row_id = observs.target_id'
 
     ! Query to select observations.
-    ! Arguments: nodes.id, sensors.id, targets.id
     character(len=*), parameter, public :: SQL_SELECT_OBSERVS = &
         'SELECT '                                                   // &
         'observs.id, '                                              // &
@@ -775,35 +666,27 @@ module dm_sql
     ! Arguments: nodes.id, sensors.id, targets.id, responses.name,
     !            observs.timestamp (start), observs.timestamp (end)
     character(len=*), parameter, public :: SQL_SELECT_OBSERV_VIEWS = &
-        'SELECT '                                                         // &
-        'observs.id, '                                                    // &
-        'nodes.id, '                                                      // &
-        'sensors.id, '                                                    // &
-        'targets.id, '                                                    // &
-        'observs.name, '                                                  // &
-        'observs.error, '                                                 // &
-        'requests.name, '                                                 // &
-        'requests.timestamp, '                                            // &
-        'requests.error, '                                                // &
-        'responses.name, '                                                // &
-        'responses.unit, '                                                // &
-        'responses.type, '                                                // &
-        'responses.error, '                                               // &
-        'responses.value '                                                // &
-        'FROM observs '                                                   // &
-        'INNER JOIN nodes ON nodes.row_id = observs.node_id '             // &
-        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '       // &
-        'INNER JOIN targets ON targets.row_id = observs.target_id '       // &
-        'INNER JOIN requests ON requests.observ_id = observs.row_id '     // &
-        'INNER JOIN responses ON responses.request_id = requests.row_id ' // &
-        'WHERE '                                                          // &
-        'nodes.id = ? AND '                                               // &
-        'sensors.id = ? AND '                                             // &
-        'targets.id = ? AND '                                             // &
-        'responses.name = ? AND '                                         // &
-        'requests.timestamp >= ? AND '                                    // &
-        'requests.timestamp < ? '                                         // &
-        'ORDER BY requests.timestamp ASC'
+        'SELECT '                                                     // &
+        'observs.id, '                                                // &
+        'nodes.id, '                                                  // &
+        'sensors.id, '                                                // &
+        'targets.id, '                                                // &
+        'observs.name, '                                              // &
+        'observs.error, '                                             // &
+        'requests.name, '                                             // &
+        'requests.timestamp, '                                        // &
+        'requests.error, '                                            // &
+        'responses.name, '                                            // &
+        'responses.unit, '                                            // &
+        'responses.type, '                                            // &
+        'responses.error, '                                           // &
+        'responses.value '                                            // &
+        'FROM observs '                                               // &
+        'INNER JOIN nodes ON nodes.row_id = observs.node_id '         // &
+        'INNER JOIN sensors ON sensors.row_id = observs.sensor_id '   // &
+        'INNER JOIN targets ON targets.row_id = observs.target_id '   // &
+        'INNER JOIN requests ON requests.observ_id = observs.row_id ' // &
+        'INNER JOIN responses ON responses.request_id = requests.row_id'
 
     ! Query to select observation receiver by index.
     ! Arguments: observs.id, receivers.idx
@@ -890,80 +773,23 @@ module dm_sql
         'WHERE observs.id = ? AND requests.idx = ? '                     // &
         'ORDER BY responses.idx ASC'
 
-    ! Query to select sensor by id.
-    ! Arguments: sensors.id
-    character(len=*), parameter, public :: SQL_SELECT_SENSOR = &
-        'SELECT '                                             // &
-        'sensors.id, '                                        // &
-        'nodes.id, '                                          // &
-        'sensors.type, '                                      // &
-        'sensors.name, '                                      // &
-        'sensors.sn, '                                        // &
-        'sensors.meta, '                                      // &
-        'sensors.x, '                                         // &
-        'sensors.y, '                                         // &
-        'sensors.z, '                                         // &
-        'sensors.lon, '                                       // &
-        'sensors.lat, '                                       // &
-        'sensors.alt '                                        // &
-        'FROM sensors '                                       // &
-        'INNER JOIN nodes ON nodes.row_id = sensors.node_id ' // &
-        'WHERE sensors.id = ?'
-
-    ! Query to select all sensors.
+    ! Query to select sensors.
     character(len=*), parameter, public :: SQL_SELECT_SENSORS = &
-        'SELECT '                                             // &
-        'sensors.id, '                                        // &
-        'nodes.id, '                                          // &
-        'sensors.type, '                                      // &
-        'sensors.name, '                                      // &
-        'sensors.sn, '                                        // &
-        'sensors.meta, '                                      // &
-        'sensors.x, '                                         // &
-        'sensors.y, '                                         // &
-        'sensors.z, '                                         // &
-        'sensors.lon, '                                       // &
-        'sensors.lat, '                                       // &
-        'sensors.alt '                                        // &
-        'FROM sensors '                                       // &
-        'INNER JOIN nodes ON nodes.row_id = sensors.node_id ' // &
-        'ORDER BY sensors.id ASC'
-
-    ! Query to select sensors by node.
-    ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_SELECT_SENSORS_BY_NODE = &
-        'SELECT '                                             // &
-        'sensors.id, '                                        // &
-        'nodes.id, '                                          // &
-        'sensors.type, '                                      // &
-        'sensors.name, '                                      // &
-        'sensors.sn, '                                        // &
-        'sensors.meta, '                                      // &
-        'sensors.x, '                                         // &
-        'sensors.y, '                                         // &
-        'sensors.z, '                                         // &
-        'sensors.lon, '                                       // &
-        'sensors.lat, '                                       // &
-        'sensors.alt '                                        // &
-        'FROM sensors '                                       // &
-        'INNER JOIN nodes ON nodes.row_id = sensors.node_id ' // &
-        'WHERE nodes.id = ?'
-
-    ! Query to select a target.
-    ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_SELECT_TARGET = &
-        'SELECT '         // &
-        'targets.id, '    // &
-        'targets.name, '  // &
-        'targets.meta, '  // &
-        'targets.state, ' // &
-        'targets.x, '     // &
-        'targets.y, '     // &
-        'targets.z, '     // &
-        'targets.lon, '   // &
-        'targets.lat, '   // &
-        'targets.alt '    // &
-        'FROM targets WHERE targets.id = ?'
+        'SELECT '        // &
+        'sensors.id, '   // &
+        'nodes.id, '     // &
+        'sensors.type, ' // &
+        'sensors.name, ' // &
+        'sensors.sn, '   // &
+        'sensors.meta, ' // &
+        'sensors.x, '    // &
+        'sensors.y, '    // &
+        'sensors.z, '    // &
+        'sensors.lon, '  // &
+        'sensors.lat, '  // &
+        'sensors.alt '   // &
+        'FROM sensors '  // &
+        'INNER JOIN nodes ON nodes.row_id = sensors.node_id'
 
     ! Query to select all targets.
     character(len=*), parameter, public :: SQL_SELECT_TARGETS = &
@@ -978,7 +804,7 @@ module dm_sql
         'targets.lon, '   // &
         'targets.lat, '   // &
         'targets.alt '    // &
-        'FROM targets ORDER BY targets.id ASC'
+        'FROM targets'
 
     ! **************************************************************************
     ! SYNC QUERIES.
@@ -1164,5 +990,5 @@ module dm_sql
         'SELECT ' // &
         'json_object(''id'', id, ''name'', name, ''meta'', meta, ''state'', state, ''x'', x, ''y'', y, ''z'', z, ' // &
         '''lon'', lon, ''lat'', lat, ''alt'', alt) '                                                               // &
-        'FROM targets ORDER BY id ASC'
+        'FROM targets'
 end module dm_sql

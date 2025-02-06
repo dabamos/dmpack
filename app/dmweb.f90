@@ -1056,7 +1056,7 @@ contains
                 return
             end if
 
-            rc = dm_db_select_logs_by_observ(db, logs, id, nlogs)
+            rc = dm_db_select_logs(db, logs, observ_id=id, nlogs=nlogs)
 
             call html_header(TITLE)
             call dm_cgi_out(dm_html_heading(1, TITLE))

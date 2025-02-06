@@ -48,8 +48,8 @@ contains
         !! Adds double precision parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param !! Query parameter.
-        real(kind=r8),       intent(in), optional :: value !! Query parameter value.
+        character(len=*),    intent(in)           :: param    !! Query parameter.
+        real(kind=r8),       intent(in), optional :: value    !! Query parameter value.
 
         rc = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
@@ -68,8 +68,8 @@ contains
         !! Adds 32-bit integer parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param !! Query parameter.
-        integer(kind=i4),    intent(in), optional :: value !! Query parameter value.
+        character(len=*),    intent(in)           :: param    !! Query parameter.
+        integer(kind=i4),    intent(in), optional :: value    !! Query parameter value.
 
         rc = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
@@ -88,8 +88,8 @@ contains
         !! Adds 64-bit integer parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param !! Query parameter.
-        integer(kind=i8),    intent(in), optional :: value !! Query parameter value.
+        character(len=*),    intent(in)           :: param    !! Query parameter.
+        integer(kind=i8),    intent(in), optional :: value    !! Query parameter value.
 
         rc = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
@@ -108,8 +108,8 @@ contains
         !! Adds text parameter to query. Returns `E_LIMIT` if parameter limit
         !! has been reached.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param !! Query parameter.
-        character(len=*),    intent(in), optional :: value !! Query parameter value.
+        character(len=*),    intent(in)           :: param    !! Query parameter.
+        character(len=*),    intent(in), optional :: value    !! Query parameter value.
 
         rc = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
@@ -185,8 +185,8 @@ contains
     pure elemental subroutine dm_db_query_order(db_query, by, desc)
         !! Sets `ORDER BY` clause of query.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: by    !! Field name.
-        logical,             intent(in), optional :: desc  !! Descending order.
+        character(len=*),    intent(in)           :: by       !! Field name.
+        logical,             intent(in), optional :: desc     !! Descending order.
 
         db_query%order_by = trim(by)
         if (present(desc)) db_query%order_desc = desc
