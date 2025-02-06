@@ -2634,57 +2634,56 @@ following VE.Direct fields are supported, depending on the device:
 
 [cols="1,1,5,1,1"]
 |===
-| Name    | Unit    | Description                               | MPPT | Shunt
+| Response | Unit    | Description                               | MPPT | Shunt
 
-| `Alarm` | –       | Alarm condition active (on/off).          |      |   ✓
-| `AR`    | –       | Alarm reason.                             |      |   ✓
-| `CE`    | mAh     | Consumed amp hours.                       |      |   ✓
-| `CS`    | –       | State of operation.                       |  ✓   |
-| `DM`    | ‰       | Mid-point deviation of the battery bank.  |      |   ✓
-| `ERR`   | –       | Error code.                               |  ✓   |
-| `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓
-| `H2`    | mAh     | Depth of the last discharge.              |      |   ✓
-| `H3`    | mAh     | Depth of the average discharge.           |      |   ✓
-| `H4`    | –       | Number of charge cycles.                  |      |   ✓
-| `H5`    | –       | Number of full discharges.                |      |   ✓
-| `H6`    | mAh     | Cumulative amp hours drawn.               |      |   ✓
-| `H7`    | mV      | Minimum main (battery) voltage.           |      |   ✓
-| `H8`    | mV      | Maximum main (battery) voltage.           |      |   ✓
-| `H9`    | sec     | Number of seconds since last full charge. |      |   ✓
-| `H10`   | –       | Number of automatic synchronisations.     |      |   ✓
-| `H11`   | –       | Number of low main voltage alarms.        |      |   ✓
-| `H12`   | –       | Number of high main voltage alarms.       |      |   ✓
-| `H15`   | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓
-| `H16`   | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓
-| `H17`   | kWh/100 | Amount of produced energy.                |      |   ✓
-| `H18`   | kWh/100 | Amount of consumed energy.                |      |   ✓
-| `H19`   | kWh/100 | Yield total (user resettable counter).    |  ✓   |
-| `H20`   | kWh/100 | Yield today.                              |  ✓   |
-| `H21`   | W       | Maximum power today.                      |  ✓   |
-| `H22`   | kWh/100 | Yield yesterday.                          |  ✓   |
-| `H23`   | W       | Maximum power yesterday.                  |  ✓   |
-| `HSDS`  | –       | Day sequence number (0 to 364).           |  ✓   |
-| `I`     | mA      | Main or channel 1 battery current.        |  ✓   |   ✓
-| `IL`    | mA      | Load current.                             |  ✓   |
-| `LOAD`  | –       | Load output state (on/off).               |  ✓   |
-| `MON`   | –       | DC monitor mode.                          |      |   ✓
-| `MPPT`  | –       | Tracker operation mode.                   |  ✓   |
-| `OR`    | –       | Off reason.                               |  ✓   |
-| `P`     | W       | Instantaneous power.                      |      |   ✓
-| `PPV`   | W       | Panel power.                              |  ✓   |
-| `Relay` | –       | Relay state (on/off).                     |  ✓   |   ✓
-| `SOC`   | ‰       | State-of-charge.                          |      |   ✓
-| `T`     | °C      | Battery temperature.                      |      |   ✓
-| `TTG`   | min     | Time-to-go.                               |      |   ✓
-| `V`     | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓
-| `VM`    | mV      | Mid-point voltage of the battery bank.    |      |   ✓
-| `VPV`   | mV      | Panel voltage.                            |  ✓   |
-| `VS`    | mV      | Auxiliary (starter) voltage.              |      |   ✓
+| `alarm`  | –       | Alarm condition active (on/off).          |      |   ✓
+| `ar`     | –       | Alarm reason.                             |      |   ✓
+| `ce`     | mAh     | Consumed amp hours.                       |      |   ✓
+| `cs`     | –       | State of operation.                       |  ✓   |
+| `dm`     | ‰       | Mid-point deviation of the battery bank.  |      |   ✓
+| `err`    | –       | Error code.                               |  ✓   |
+| `h1`     | mAh     | Depth of the deepest discharge.           |      |   ✓
+| `h2`     | mAh     | Depth of the last discharge.              |      |   ✓
+| `h3`     | mAh     | Depth of the average discharge.           |      |   ✓
+| `h4`     | –       | Number of charge cycles.                  |      |   ✓
+| `h5`     | –       | Number of full discharges.                |      |   ✓
+| `h6`     | mAh     | Cumulative amp hours drawn.               |      |   ✓
+| `h7`     | mV      | Minimum main (battery) voltage.           |      |   ✓
+| `h8`     | mV      | Maximum main (battery) voltage.           |      |   ✓
+| `h9`     | sec     | Number of seconds since last full charge. |      |   ✓
+| `h10`    | –       | Number of automatic synchronisations.     |      |   ✓
+| `h11`    | –       | Number of low main voltage alarms.        |      |   ✓
+| `h12`    | –       | Number of high main voltage alarms.       |      |   ✓
+| `h15`    | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓
+| `h16`    | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓
+| `h17`    | kWh/100 | Amount of produced energy.                |      |   ✓
+| `h18`    | kWh/100 | Amount of consumed energy.                |      |   ✓
+| `h19`    | kWh/100 | Yield total (user resettable counter).    |  ✓   |
+| `h20`    | kWh/100 | Yield today.                              |  ✓   |
+| `h21`    | W       | Maximum power today.                      |  ✓   |
+| `h22`    | kWh/100 | Yield yesterday.                          |  ✓   |
+| `h23`    | W       | Maximum power yesterday.                  |  ✓   |
+| `hsds`   | –       | Day sequence number (0 to 364).           |  ✓   |
+| `i`      | mA      | Main or channel 1 battery current.        |  ✓   |   ✓
+| `il`     | mA      | Load current.                             |  ✓   |
+| `load`   | –       | Load output state (on/off).               |  ✓   |
+| `mon`    | –       | DC monitor mode.                          |      |   ✓
+| `mppt`   | –       | Tracker operation mode.                   |  ✓   |
+| `or`     | –       | Off reason.                               |  ✓   |
+| `p`      | W       | Instantaneous power.                      |      |   ✓
+| `ppv`    | W       | Panel power.                              |  ✓   |
+| `relay`  | –       | Relay state (on/off).                     |  ✓   |   ✓
+| `soc`    | ‰       | State-of-charge.                          |      |   ✓
+| `t`      | °C      | Battery temperature.                      |      |   ✓
+| `ttg`    | min     | Time-to-go.                               |      |   ✓
+| `v`      | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓
+| `vm`     | mV      | Mid-point voltage of the battery bank.    |      |   ✓
+| `vpv`    | mV      | Panel voltage.                            |  ✓   |
+| `vs`     | mV      | Auxiliary (starter) voltage.              |      |   ✓
 |===
 
-The response names of the created observations equal the field names in
-lower-case. Observations are sent to the receiver via message queue in the
-specified interval.
+The values are captured every second. An observation containing the responses of
+the device is sent in the specified interval to the configured receiver.
 
 [discrete]
 ==== Command-Line Options
@@ -2695,14 +2694,14 @@ specified interval.
 
 | `--config _file_`      | `-c`  | –       | Path to configuration file.
 | `--debug`              | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
-| `--device _name_`      | `-d`  | –       | Type of connected device (`mppt`, `shunt`).
+| `--device _name_`      | `-d`  | –       | Type of connected device (`mppt` or `shunt`).
 | `--help`               | `-h`  | –       | Output available command-line arguments and quit.
 | `--interval _seconds_` | `-I`  | 60      | Observation emit interval in seconds.
 | `--logger _name_`      | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmved` | Name of instance and table in configuration.
 | `--node _id_`          | `-N`  | –       | Optional node id.
 | `--path _path_`        | `-p`  | –       | Path to TTY device (for example, `/dev/ttyUSB0`).
-| `--receiver _name_`    | `-r`  | –       | Name of receiver/message queue.
+| `--receiver _name_`    | `-r`  | –       | Name of observation receiver/message queue.
 | `--sensor _id_`        | `-S`  | –       | Sensor id.
 | `--target _id_`        | `-T`  | –       | Target id.
 | `--verbose`            | `-V`  | off     | Print log messages to _stderr_.

@@ -107,8 +107,7 @@ contains
                   position='append', status='unknown')
         end if
 
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function open_file
 
     integer function read_args(app) result(rc)
@@ -243,15 +242,14 @@ contains
     end function read_config
 
     integer function recv_log(app, mqueue) result(rc)
-        type(app_type),    intent(inout) :: app
-        type(mqueue_type), intent(inout) :: mqueue
+        type(app_type),    intent(inout) :: app    !! App type.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         character(len=NML_LOG_LEN) :: log_nml
         integer                    :: unit, stat
         type(log_type)             :: log
 
         unit = stdout
-
         call logger%debug('waiting for log on mqueue /' // app%name)
 
         ! Read log from POSIX message queue (blocking).
@@ -304,12 +302,12 @@ contains
             return
         end if
 
-        call logger%debug('log ' // trim(log%id) // ' written to ' // app%output)
+        if (app%file) call logger%debug('log ' // trim(log%id) // ' written to ' // app%output)
     end function recv_log
 
     integer function recv_observ(app, mqueue) result(rc)
-        type(app_type),    intent(inout) :: app
-        type(mqueue_type), intent(inout) :: mqueue
+        type(app_type),    intent(inout) :: app    !! App type.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         character(len=NML_OBSERV_LEN) :: observ_nml
         integer                       :: unit
@@ -318,7 +316,6 @@ contains
         type(observ_type)             :: observ
 
         unit = stdout
-
         call logger%debug('waiting for observ on mqueue /' // app%name)
 
         ! Read observation from POSIX message queue (blocking).
@@ -385,7 +382,7 @@ contains
             return
         end if
 
-        call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
+        if (app%file) call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
 
         ! Forward observation to next receiver.
         if (app%forward) then
@@ -410,8 +407,8 @@ contains
 
     subroutine run(app, mqueue)
         !! Event loop that receives logs or observations.
-        type(app_type),    intent(inout) :: app
-        type(mqueue_type), intent(inout) :: mqueue
+        type(app_type),    intent(inout) :: app    !! App type.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         integer :: rc
 
@@ -424,11 +421,8 @@ contains
             end select
 
             select case (rc)
-                case (E_IO)
-                    exit ipc_loop
-                case (E_MQUEUE)
-                    call dm_sleep(5)
-                    cycle ipc_loop
+                case (E_IO);     exit ipc_loop
+                case (E_MQUEUE); call dm_sleep(5)
             end select
         end do ipc_loop
     end subroutine run
