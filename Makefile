@@ -897,7 +897,7 @@ $(DMUUID): app/dmuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
 
 $(DMVED): app/dmved.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMVED) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMVED) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
 $(DMWEB): app/dmweb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)

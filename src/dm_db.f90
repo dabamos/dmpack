@@ -73,7 +73,7 @@ module dm_db
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
-    integer, parameter, public :: DB_USER_VERSION    = 1              !! Database schema version, increased on updates.
+    integer, parameter, public :: DB_USER_VERSION    = 2              !! Database schema version, increased on updates.
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     ! Private parameters.
@@ -460,7 +460,6 @@ module dm_db
     private :: db_select_logs_iter
     private :: db_select_nodes_array
     private :: db_select_nodes_iter
-    private :: db_select_nrows
     private :: db_select_observs_array
     private :: db_select_observs_data
     private :: db_select_observs_iter
@@ -2448,7 +2447,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        character(len=*), parameter :: QUERY = ' WHERE node_id = ?'
+        character(len=*), parameter :: QUERY = ' WHERE id = ?'
 
         type(db_type),                 intent(inout) :: db      !! Database type.
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
@@ -4201,7 +4200,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if the table enumerator is invalid.
         !!
-        character(len=*), parameter :: QUERY = 'SELECT COUNT(*) FROM '
+        character(len=*), parameter :: QUERY = 'SELECT COUNT(row_id) FROM '
 
         type(db_type),    intent(inout) :: db    !! Database type.
         integer,          intent(in)    :: table !! Table type from `dm_sql`.
@@ -5110,7 +5109,7 @@ contains
         if (present(nbeats)) nbeats = 0_i8
 
         alloc_block: block
-            rc = db_select_nrows(db, SQL_TABLE_BEATS, n)
+            rc = dm_db_count_beats(db, n)
             if (dm_is_error(rc)) exit alloc_block
 
             if (present(limit))  n      = min(n, limit)
@@ -5384,7 +5383,7 @@ contains
         if (present(nbeats)) nbeats = 0_i8
 
         sql_block: block
-            rc = db_select_nrows(db, SQL_TABLE_BEATS, n)
+            rc = dm_db_count_beats(db, n)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(limit))  n      = min(n, limit)
@@ -5642,7 +5641,7 @@ contains
         !!
         use :: dm_string, only: string_type
 
-        character(len=*), parameter :: QUERY = ' ORDER BY nodes.node_id ASC'
+        character(len=*), parameter :: QUERY = ' ORDER BY nodes.row_id ASC'
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
@@ -5656,7 +5655,7 @@ contains
         if (present(nnodes)) nnodes = 0_i8
 
         sql_block: block
-            rc = db_select_nrows(db, SQL_TABLE_NODES, n)
+            rc = dm_db_count_nodes(db, n)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(limit))  n      = min(n, limit)
@@ -5710,7 +5709,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        character(len=*), parameter :: QUERY = ' ORDER BY nodes.node_id ASC'
+        character(len=*), parameter :: QUERY = ' ORDER BY nodes.row_id ASC'
 
         type(db_type),                 intent(inout)        :: db      !! Database type.
         type(db_stmt_type),            intent(inout)        :: db_stmt !! Database statement type.
@@ -5916,7 +5915,7 @@ contains
         if (present(nnodes)) nnodes = 0_i8
 
         sql_block: block
-            rc = db_select_nrows(db, SQL_TABLE_NODES, n)
+            rc = dm_db_count_nodes(db, n)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_ALLOC
@@ -5971,45 +5970,6 @@ contains
 
         rc = db_next_row(db_stmt, node)
     end function db_select_nodes_iter
-
-    integer function db_select_nrows(db, table, n) result(rc)
-        !! Returns number of rows in table `table` in `n`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_INVALID` if table is invalid.
-        !!
-        character(len=*), parameter :: QUERY = 'SELECT COUNT(*) FROM '
-
-        type(db_type),    intent(inout) :: db    !! Database type.
-        integer,          intent(in)    :: table !! Enumerator of table to count (`SQL_TABLE_*`).
-        integer(kind=i8), intent(out)   :: n     !! Number of rows.
-
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        n = 0_i8
-        rc = E_INVALID
-        if (table < 1 .or. table > SQL_TABLE_LAST) return
-
-        sql_block: block
-            rc = db_prepare(db, db_stmt, QUERY // SQL_TABLE_NAMES(table))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call db_column(db_stmt, 0, n)
-        end block sql_block
-
-        stat = db_finalize(db_stmt)
-    end function db_select_nrows
 
     integer function db_select_observs_array(db, observs, node_id, sensor_id, target_id, from, to, &
                                              desc, limit, stub, nobservs) result(rc)
@@ -6532,7 +6492,7 @@ contains
         if (present(nsensors)) nsensors = 0_i8
 
         sql_block: block
-            rc = db_select_nrows(db, SQL_TABLE_SENSORS, n)
+            rc = dm_db_count_sensors(db, n)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_ALLOC
@@ -6841,7 +6801,7 @@ contains
         if (present(ntargets)) ntargets = 0_i8
 
         sql_block: block
-            rc = db_select_nrows(db, SQL_TABLE_TARGETS, n)
+            rc = dm_db_count_targets(db, n)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_ALLOC
