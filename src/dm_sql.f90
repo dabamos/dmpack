@@ -954,7 +954,7 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'x', x, 'y', y, 'z', z, " // &
-        "'lon', lon, 'lat', lat, 'alt', alt) "                                             // &
+        "'lon', lon, 'lat', lat, 'alt', alt) "                                       // &
         "FROM nodes"
 
     ! Query to select sensors in JSON format.

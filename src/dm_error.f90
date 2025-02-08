@@ -284,7 +284,7 @@ contains
         if (present(extra))   extra_   = extra
         if (present(fatal))   fatal_   = fatal
 
-        if (error == E_NONE .and. .not. verbose_) return
+        if (dm_is_ok(error) .and. .not. verbose_) return
 
         if (present(message)) then
             if (extra_) then
@@ -296,8 +296,7 @@ contains
             write (stderr, FMT_ERROR) error, dm_error_message(error)
         end if
 
-        if (error == E_NONE) return
-        if (fatal_) call dm_stop(STOP_FAILURE)
+        if (dm_is_error(error) .and. fatal_) call dm_stop(STOP_FAILURE)
     end subroutine dm_error_out
 
     subroutine dm_stop(stat)

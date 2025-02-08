@@ -4,10 +4,10 @@
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
 ![Version](https://img.shields.io/badge/version-0.9.6-blue)
 
-**DMPACK** is a free and open-source software package for IoT-based automatic
-deformation monitoring and distributed control measurements in engineering
-geodesy and geotechnics. The project is the successor of
-[OpenADMS](https://www.dabamos.de/openadms.html), and in active development.
+**DMPACK** is a free software package for IoT-based automatic deformation
+monitoring and distributed control measurements in engineering geodesy and
+geotechnics. The project is the successor of
+[OpenADMS](https://www.dabamos.de/openadms.html) and in active development.
 
 The library and the accompanying programs are written in Fortran 2018, with
 some smaller parts in Lua 5.4. At the moment, **DMPACK** runs on 64-bit Linux
