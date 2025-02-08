@@ -678,19 +678,15 @@ contains
         !! `VE_FIELD_NONE` on error.
         character(len=*), intent(in) :: label !! Field label.
 
-        integer :: i, n
+        integer :: n
 
         type = VE_FIELD_NONE
 
         n = len_trim(label)
         if (n == 0) return
-        n = min(n, VE_LABEL_LEN)
 
-        do i = 1, VE_NFIELDS
-            if (label(1:n) /= VE_FIELDS(i)%label) cycle
-            type = i
-            exit
-        end do
+        n = min(n, VE_LABEL_LEN)
+        type = findloc(VE_FIELDS%label, label(1:n), dim=1)
     end function dm_ve_field_type
 
     pure elemental logical function dm_ve_is_error(code) result(error)
@@ -727,13 +723,12 @@ contains
         rc   = E_NOT_FOUND
         name = 'N/A'
 
-        do i = 1, VE_NPRODUCTS
-            if (pid == VE_PRODUCTS(i)%pid) then
-                rc   = E_NONE
-                name = VE_PRODUCTS(i)%name
-                return
-            end if
-        end do
+        i = findloc(VE_PRODUCTS%pid, pid, dim=1)
+
+        if (i > 0) then
+            rc = E_NONE
+            name = VE_PRODUCTS(i)%name
+        end if
     end function dm_ve_product_name
 
     ! **************************************************************************

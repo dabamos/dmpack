@@ -35,7 +35,7 @@ module dm_api_status
     public :: dm_api_status_equals
     public :: dm_api_status_to_string
 contains
-    integer function dm_api_status_from_string(string, api) result(rc)
+    integer function dm_api_status_from_string(string, status) result(rc)
         !! Reads API status type from given string. Only keys found in the
         !! string are overwritten in the derived type. No error is returned if
         !! the string does not contain any of the keys.
@@ -50,7 +50,7 @@ contains
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
 
         character(len=*),      intent(in)  :: string !! String representation of API status.
-        type(api_status_type), intent(out) :: api    !! Result.
+        type(api_status_type), intent(out) :: status !! Result.
 
         integer                       :: i, nlines, npairs
         character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
@@ -73,13 +73,13 @@ contains
             call dm_lower(key)
 
             select case (key)
-                case ('version');   api%version   = dm_ascii_escape(value)
-                case ('dmpack');    api%dmpack    = dm_ascii_escape(value)
-                case ('host');      api%host      = dm_ascii_escape(value)
-                case ('server');    api%server    = dm_ascii_escape(value)
-                case ('timestamp'); api%timestamp = dm_ascii_escape(value)
-                case ('message');   api%message   = dm_ascii_escape(value)
-                case ('error');     api%error     = dm_atoi(value)
+                case ('version');   status%version   = dm_ascii_escape(value)
+                case ('dmpack');    status%dmpack    = dm_ascii_escape(value)
+                case ('host');      status%host      = dm_ascii_escape(value)
+                case ('server');    status%server    = dm_ascii_escape(value)
+                case ('timestamp'); status%timestamp = dm_ascii_escape(value)
+                case ('message');   status%message   = dm_ascii_escape(value)
+                case ('error');     status%error     = dm_atoi(value)
                 case default;       cycle
             end select
         end do
@@ -87,38 +87,38 @@ contains
         rc = E_NONE
     end function dm_api_status_from_string
 
-    pure elemental logical function dm_api_status_equals(api1, api2) result(equals)
+    pure elemental logical function dm_api_status_equals(status1, status2) result(equals)
         !! Returns `.true.` if given API status types are equal.
-        type(api_status_type), intent(in) :: api1 !! The first status type.
-        type(api_status_type), intent(in) :: api2 !! The second status type.
+        type(api_status_type), intent(in) :: status1 !! The first status type.
+        type(api_status_type), intent(in) :: status2 !! The second status type.
 
         equals = .false.
-        if (api1%version   /= api2%version)   return
-        if (api1%dmpack    /= api2%dmpack)    return
-        if (api1%host      /= api2%host)      return
-        if (api1%server    /= api2%server)    return
-        if (api1%timestamp /= api2%timestamp) return
-        if (api1%message   /= api2%message)   return
-        if (api1%error     /= api2%error)     return
+        if (status1%version   /= status2%version)   return
+        if (status1%dmpack    /= status2%dmpack)    return
+        if (status1%host      /= status2%host)      return
+        if (status1%server    /= status2%server)    return
+        if (status1%timestamp /= status2%timestamp) return
+        if (status1%message   /= status2%message)   return
+        if (status1%error     /= status2%error)     return
         equals = .true.
     end function dm_api_status_equals
 
-    function dm_api_status_to_string(api) result(string)
+    function dm_api_status_to_string(status) result(string)
         !! Returns string representation of given API status type. The string
         !! contains new-line characters.
-        type(api_status_type), intent(inout) :: api    !! API status type.
+        type(api_status_type), intent(inout) :: status !! API status type.
         character(len=:), allocatable        :: string !! String representation.
 
-        string = 'version='   // trim(api%version) // NL // &
-                 'dmpack='    // trim(api%dmpack)  // NL // &
-                 'host='      // trim(api%host)    // NL // &
-                 'server='    // trim(api%server)  // NL // &
-                 'timestamp=' // trim(api%timestamp)
+        string = 'version='   // trim(status%version) // NL // &
+                 'dmpack='    // trim(status%dmpack)  // NL // &
+                 'host='      // trim(status%host)    // NL // &
+                 'server='    // trim(status%server)  // NL // &
+                 'timestamp=' // trim(status%timestamp)
 
-        if (len_trim(api%message) > 0) then
-            string = string // NL // 'message=' // trim(api%message)
+        if (len_trim(status%message) > 0) then
+            string = string // NL // 'message=' // trim(status%message)
         end if
 
-        string = string // NL // 'error=' // dm_itoa(api%error)
+        string = string // NL // 'error=' // dm_itoa(status%error)
     end function dm_api_status_to_string
 end module dm_api_status

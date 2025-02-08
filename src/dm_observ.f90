@@ -80,12 +80,7 @@ module dm_observ
         module procedure :: dm_observ_view_equals
     end interface
 
-    ! interface write (formatted)
-    !     module procedure :: observ_write_formatted
-    ! end interface
-
     public :: operator (==)
-    ! public :: write (formatted)
 
     public :: dm_observ_add_receiver
     public :: dm_observ_add_request

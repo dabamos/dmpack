@@ -8,14 +8,15 @@ program dmtestve
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestve'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -135,4 +136,22 @@ contains
         print '(" Associated error message: ", a, " (", i0, ")")', dm_ve_error_message(code), code
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(len=VE_PRODUCT_NAME_LEN) :: name
+        integer                            :: rc, type
+
+        stat = TEST_FAILED
+
+        print *, 'Validating product name ...'
+        rc = dm_ve_product_name(int(z'0203'), name)
+        if (dm_is_error(rc)) return
+        if (name /= 'BMV-700') return
+
+        print *, 'Validating field type ...'
+        type = dm_ve_field_type('ALARM')
+        if (type /= VE_FIELD_ALARM) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestve

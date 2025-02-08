@@ -106,13 +106,14 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        integer            :: rc
+        integer            :: i, j, rc
         integer(kind=i4)   :: ival4
         integer(kind=i8)   :: ival8
         logical            :: lval1
         real(kind=r4)      :: rval4
         real(kind=r8)      :: rval8
         type(request_type) :: request
+        type(observ_type)  :: observ
 
         stat = TEST_FAILED
 
@@ -129,6 +130,15 @@ contains
         call dm_request_set(request, 3, 'lval1', lval1)
         call dm_request_set(request, 4, 'rval4', rval4)
         call dm_request_set(request, 5, 'rval8', rval8)
+
+        print *, 'Validating indices ...'
+        rc = dm_observ_add_request(observ, request)
+        if (dm_is_error(rc)) return
+
+        rc = dm_observ_index(observ, 'ival4', i, j)
+        if (dm_is_error(rc)) return
+        if (i /= 1) return
+        if (j /= 1) return
 
         print *, 'Getting responses ...'
         call dm_request_get(request, 'ival4', ival4)

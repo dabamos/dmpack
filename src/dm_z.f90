@@ -256,6 +256,8 @@ contains
         integer(kind=i8),              intent(out),   optional :: output_len !! Actual output length.
         type(zstd_context_type),       intent(inout), optional :: context    !! Zstandard compression context to use with type `Z_TYPE_ZSTD`.
 
+        integer :: level
+
         if (present(output_len)) output_len = 0_i8
 
         rc = E_INVALID
@@ -272,17 +274,20 @@ contains
                 else
                     output = input
                 end if
+
                 if (present(output_len)) output_len = len(output, kind=i8)
 
             case (Z_TYPE_ZLIB)
                 rc = dm_zlib_compress(input, output, input_len=input_len, output_len=output_len)
 
             case (Z_TYPE_ZSTD)
+                level = dm_zstd_level_default()
+
                 if (present(context)) then
                     ! Use Zstandard compression context.
-                    rc = dm_zstd_compress(context, input, output, input_len=input_len, output_len=output_len)
+                    rc = dm_zstd_compress(context, input, output, level, input_len, output_len)
                 else
-                    rc = dm_zstd_compress(input, output, input_len=input_len, output_len=output_len)
+                    rc = dm_zstd_compress(input, output, level, input_len, output_len)
                 end if
         end select
     end function z_compress
@@ -463,6 +468,7 @@ contains
                 else
                     output = input
                 end if
+
                 if (present(output_len)) output_len = len(output, kind=i8)
 
             case (Z_TYPE_ZLIB)

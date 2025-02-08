@@ -90,8 +90,8 @@ contains
     end function dm_modbus_float_from_name
 
     pure elemental logical function dm_modbus_is_float(float) result(valid)
-        !! Returns `.true.` if argument is valid a float byte order enumerator.
-        !! `MODBUS_FLOAT_NONE` is invalid.
+        !! Returns `.true.` if argument is a valid float byte order enumerator.
+        !! `MODBUS_FLOAT_NONE` is not a float.
         integer, intent(in) :: float !! Modbus float enumerator.
 
         valid = (float == MODBUS_FLOAT_ABCD .or. &

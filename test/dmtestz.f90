@@ -43,6 +43,9 @@ contains
     end function test01
 
     logical function test02() result(stat)
+        character(len=*), parameter :: FMT = &
+            '(" - Compressed (", a, ") from ", i5, " bytes to ", i5, " bytes (", f4.1, " %) in ", f8.6, " sec")'
+
         integer :: rc
 
         stat = TEST_FAILED
@@ -50,8 +53,8 @@ contains
         test_block: block
             character(len=:), allocatable :: str
 
-            integer          :: z
-            real(kind=r8)    :: t
+            integer          :: m, n, z
+            real(kind=r8)    :: p, t
             type(timer_type) :: timer
 
             type(beat_type)   :: beat1, beat2
@@ -64,12 +67,18 @@ contains
             call dm_test_dummy(beat1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type beat (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type beat ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (beat1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, beat2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_BEAT_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (beat1 == beat2)) exit test_block
             end do
@@ -77,12 +86,18 @@ contains
             call dm_test_dummy(log1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type log (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type log ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (log1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, log2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_LOG_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (log1 == log2)) exit test_block
             end do
@@ -90,12 +105,18 @@ contains
             call dm_test_dummy(node1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type node (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type node ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (node1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, node2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_NODE_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (node1 == node2)) exit test_block
             end do
@@ -103,12 +124,18 @@ contains
             call dm_test_dummy(observ1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type observation (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type observation ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (observ1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, observ2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_OBSERV_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (observ1 == observ2)) exit test_block
             end do
@@ -116,12 +143,18 @@ contains
             call dm_test_dummy(sensor1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type sensor (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type sensor ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (sensor1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, sensor2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_SENSOR_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (sensor1 == sensor2)) exit test_block
             end do
@@ -129,12 +162,18 @@ contains
             call dm_test_dummy(target1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                print *, 'Type target (' // trim(Z_TYPE_NAMES(z)) // ') ...'
+                if (z == Z_TYPE_NONE) print *, 'Type target ...'
+
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (target1, z, str); if (dm_is_error(rc)) exit test_block
                 rc = dm_z_uncompress(str, z, target2); if (dm_is_error(rc)) exit test_block
                 call dm_timer_stop(timer, t)
-                print '(" Compressed to ", i0, " bytes and finished in ", f8.6, " sec.")', len(str), t
+
+                m = NML_TARGET_LEN
+                n = len(str)
+                p = (real(n) / real(m)) * 100.0
+                print FMT, Z_TYPE_NAMES(z), m, n, p, t
+
                 rc = E_CORRUPT
                 if (.not. (target1 == target2)) exit test_block
             end do
@@ -172,7 +211,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         print *, 'Uncompressing without zstd context ...'
         call dm_timer_start(timer)
@@ -181,7 +220,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
@@ -194,7 +233,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         print *, 'Uncompressing with zstd context ...'
         call dm_timer_start(timer)
@@ -203,7 +242,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
         rc2 = dm_zstd_destroy(context)
@@ -218,7 +257,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
         rc2 = dm_zstd_destroy(context)
@@ -230,7 +269,7 @@ contains
         call dm_timer_start(timer)
         rc = dm_z_compress_types(observs, Z_TYPE_ZSTD, strings)
         call dm_timer_stop(timer, t)
-        print '(" Finished ", i0, " observs in ", f8.6, " sec.")', N, t
+        print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return

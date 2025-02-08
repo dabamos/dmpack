@@ -246,7 +246,6 @@ contains
         type(tty_type), intent(inout) :: tty !! TTY type.
 
         character(len=VE_PRODUCT_NAME_LEN) :: product
-        character(len=VE_VALUE_LEN)        :: serial
 
         character        :: byte
         integer          :: errors(VE_NFIELDS)
@@ -254,7 +253,7 @@ contains
         integer(kind=i8) :: epoch_last, epoch_now
         logical          :: eor, finished, valid
         logical          :: debug
-        logical          :: has_product, has_receiver, has_serial
+        logical          :: has_product, has_receiver
 
         type(observ_type)   :: observ
         type(ve_frame_type) :: frame
@@ -267,7 +266,6 @@ contains
         epoch_last   = 0_i8
         has_product  = .false.
         has_receiver = (len_trim(app%receiver) > 0)
-        has_serial   = .false.
 
         ! Set serial port parameters.
         tty%path      = app%path
@@ -322,7 +320,7 @@ contains
 
                     ! Convert all frames to responses.
                     call dm_ve_frame_read(frames, responses, error=errors)
-                    if (any(dm_is_error(errors))) call logger%error('failed to convert VE.Direct frame', error=maxval(errors))
+                    if (any(dm_is_error(errors))) call logger%error('failed to convert frame to response', error=maxval(errors))
 
                     ! Create and forward observation.
                     call create_observ(observ, app, responses)
@@ -335,22 +333,16 @@ contains
 
             ! VE.Direct frame finished.
             if (eor) then
-                if (frame%label == 'BMV') cycle tty_loop              ! Ignore deprecated model description.
-                if (frame%label == 'ERR') code = dm_atoi(frame%value) ! Save device error.
-
-                ! Save serial number of device.
-                if (frame%label == 'SER#' .and. .not. has_serial) then
-                    serial     = frame%value
-                    has_serial = .true.
-                    cycle tty_loop
-                end if
+                if (frame%label == 'BMV')  cycle tty_loop              ! Ignore deprecated model description.
+                if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number string.
+                if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Save device error.
 
                 ! Log VE.Direct device error.
                 if (dm_ve_is_error(code)) then
                     call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
                 end if
 
-                ! Output product name and serial number of connected VE device.
+                ! Output product name of connected VE device.
                 if (frame%label == 'PID' .and. .not. has_product) then
                     call dm_hex_to_int(frame%value, pid)
                     rc = dm_ve_product_name(pid, product)
@@ -358,8 +350,7 @@ contains
                     if (dm_is_error(rc)) then
                         call logger%warning('connected to unknown Victron Energy device', error=rc)
                     else
-                        call logger%info('connected to Victron Energy ' // trim(product) // &
-                                         ' (' // trim(serial) // ')')
+                        call logger%info('connected to Victron Energy ' // product)
                     end if
 
                     has_product = .true.
@@ -369,11 +360,11 @@ contains
                 field_type = dm_ve_field_type(frame%label)
 
                 if (.not. dm_ve_is_valid_field_type(field_type)) then
-                    call logger%warning('received invalid or unsupported VE.Direct field ' // frame%label, error=rc)
+                    call logger%warning('received invalid or unsupported field ' // frame%label, error=rc)
                     cycle tty_loop
                 end if
 
-                if (debug) call logger%debug('received VE.Direct field ' // trim(frame%label) // ': ' // frame%value)
+                if (debug) call logger%debug('received field ' // trim(frame%label) // ': ' // frame%value)
 
                 ! Save VE.Direct frame.
                 frames(field_type) = frame
