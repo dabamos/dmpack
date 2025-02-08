@@ -23,13 +23,13 @@ module dm_db_query
         integer                       :: value_int    = 0                  !! Integer value.
         integer(kind=i8)              :: value_int64  = 0.0_i8             !! 64-bit integer value.
         character(len=:), allocatable :: value_text                        !! Text value.
-        character(len=:), allocatable :: sql                               !! Query string.
+        character(len=:), allocatable :: sql                               !! Query parameter string.
     end type db_query_param_type
 
     type, public :: db_query_type
         !! Database query.
         character(len=:), allocatable :: order_by                 !! ORDER BY clause.
-        logical                       :: order_desc = .false.     !! DESC order.
+        logical                       :: order_desc = .false.     !! ASC or DESC order.
         integer(kind=i8)              :: limit      = 0_i8        !! Row limit.
         integer                       :: nparams    = 0           !! Current parameter array size.
         type(db_query_param_type)     :: params(DB_QUERY_NPARAMS) !! Parameter array.
@@ -44,17 +44,18 @@ module dm_db_query
     public :: dm_db_query_limit
     public :: dm_db_query_order
 contains
-    integer function dm_db_query_add_double(db_query, param, value) result(rc)
-        !! Adds double precision parameter to query. Returns `E_LIMIT` if
-        !! parameter limit has been reached.
-        type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param    !! Query parameter.
-        real(kind=r8),       intent(in), optional :: value    !! Query parameter value.
+    subroutine dm_db_query_add_double(db_query, param, value, error)
+        !! Adds double precision parameter to query. Returns `E_LIMIT` in
+        !! `error` if parameter limit has been reached.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        real(kind=r8),       intent(in),  optional :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
 
-        rc = E_LIMIT
+        if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
-        rc = E_NONE
+        if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
         db_query%nparams = db_query%nparams + 1
@@ -62,19 +63,20 @@ contains
         db_query%params(db_query%nparams)%type         = DB_QUERY_TYPE_DOUBLE
         db_query%params(db_query%nparams)%sql          = trim(param)
         db_query%params(db_query%nparams)%value_double = value
-    end function dm_db_query_add_double
+    end subroutine dm_db_query_add_double
 
-    integer function dm_db_query_add_int(db_query, param, value) result(rc)
+    subroutine dm_db_query_add_int(db_query, param, value, error)
         !! Adds 32-bit integer parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param    !! Query parameter.
-        integer(kind=i4),    intent(in), optional :: value    !! Query parameter value.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        integer(kind=i4),    intent(in),  optional :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
 
-        rc = E_LIMIT
+        if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
-        rc = E_NONE
+        if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
         db_query%nparams = db_query%nparams + 1
@@ -82,19 +84,20 @@ contains
         db_query%params(db_query%nparams)%type      = DB_QUERY_TYPE_INT
         db_query%params(db_query%nparams)%sql       = trim(param)
         db_query%params(db_query%nparams)%value_int = value
-    end function dm_db_query_add_int
+    end subroutine dm_db_query_add_int
 
-    integer function dm_db_query_add_int64(db_query, param, value) result(rc)
+    subroutine dm_db_query_add_int64(db_query, param, value, error)
         !! Adds 64-bit integer parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param    !! Query parameter.
-        integer(kind=i8),    intent(in), optional :: value    !! Query parameter value.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        integer(kind=i8),    intent(in),  optional :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
 
-        rc = E_LIMIT
+        if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
-        rc = E_NONE
+        if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
         db_query%nparams = db_query%nparams + 1
@@ -102,19 +105,20 @@ contains
         db_query%params(db_query%nparams)%type        = DB_QUERY_TYPE_INT64
         db_query%params(db_query%nparams)%sql         = trim(param)
         db_query%params(db_query%nparams)%value_int64 = value
-    end function dm_db_query_add_int64
+    end subroutine dm_db_query_add_int64
 
-    integer function dm_db_query_add_text(db_query, param, value) result(rc)
+    subroutine dm_db_query_add_text(db_query, param, value, error)
         !! Adds text parameter to query. Returns `E_LIMIT` if parameter limit
         !! has been reached.
-        type(db_query_type), intent(inout)        :: db_query !! Database query type.
-        character(len=*),    intent(in)           :: param    !! Query parameter.
-        character(len=*),    intent(in), optional :: value    !! Query parameter value.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        character(len=*),    intent(in),  optional :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
 
-        rc = E_LIMIT
+        if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
-        rc = E_NONE
+        if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
         db_query%nparams = db_query%nparams + 1
@@ -122,7 +126,7 @@ contains
         db_query%params(db_query%nparams)%type       = DB_QUERY_TYPE_TEXT
         db_query%params(db_query%nparams)%sql        = trim(param)
         db_query%params(db_query%nparams)%value_text = trim(value)
-    end function dm_db_query_add_text
+    end subroutine dm_db_query_add_text
 
     function dm_db_query_build(db_query, base) result(sql)
         !! Returns SQL string from query.

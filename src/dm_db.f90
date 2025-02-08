@@ -389,6 +389,7 @@ module dm_db
     public :: dm_db_set_update_callback
     public :: dm_db_set_user_version
     public :: dm_db_shutdown
+    public :: dm_db_size
     public :: dm_db_sleep
     public :: dm_db_update
     public :: dm_db_update_node
@@ -486,25 +487,20 @@ contains
         !!
         use :: dm_file, only: dm_file_exists
 
-        character(len=*), parameter :: QUERY_FMT = '("ATTACH DATABASE ''", a, "'' AS ", a)'
+        character(len=*), parameter :: QUERY = 'ATTACH DATABASE '
 
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in)           :: path !! Path of database to attach.
         character(len=*), intent(in), optional :: name !! Name of attached database.
 
-        character(len=DB_MAX_QUERY_LEN) :: query
+        integer :: stat
 
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(path)) return
 
-        if (present(name)) then
-            write (query, QUERY_FMT) trim(path), name
-        else
-            write (query, QUERY_FMT) trim(path), DB_ATTACHED_NAME
-        end if
-
         rc = E_DB_ATTACH
-        if (dm_is_error(db_exec(db, trim(query)))) return
+        stat = db_exec(db, QUERY // dm_btoa(present(name), name, DB_ATTACHED_NAME))
+        if (dm_is_error(stat)) return
 
         rc = E_NONE
     end function dm_db_attach
@@ -1095,21 +1091,18 @@ contains
         !! Detaches database from the current connection. If no name is passed
         !! for the attached database, the name is assumed to be `attached`. The
         !! function trims the given name string. Returns `E_DB_DETACH` on error.
-        character(len=*), parameter :: QUERY_FMT = '("DETACH DATABASE ", a)'
+        character(len=*), parameter :: QUERY = 'DETACH DATABASE '
 
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in), optional :: name !! Name of attached database.
 
-        character(len=DB_MAX_QUERY_LEN) :: query
+        integer :: stat
 
         rc = E_DB_DETACH
-        if (present(name)) then
-            write (query, QUERY_FMT) name
-        else
-            write (query, QUERY_FMT) DB_ATTACHED_NAME
-        end if
 
-        if (dm_is_error(db_exec(db, trim(query)))) return
+        stat = db_exec(db, QUERY // dm_btoa(present(name), name, DB_ATTACHED_NAME))
+        if (dm_is_error(stat)) return
+
         rc = E_NONE
     end function dm_db_detach
 
@@ -2331,7 +2324,7 @@ contains
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'node_id = ?', node_id)
+        call dm_db_query_add_text(db_query, 'node_id = ?', node_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
@@ -2373,7 +2366,7 @@ contains
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'node_id = ?', node_id)
+        call dm_db_query_add_text(db_query, 'node_id = ?', node_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
@@ -2417,7 +2410,7 @@ contains
         rc = E_INVALID
         if (len_trim(log_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'id = ?', log_id)
+        call dm_db_query_add_text(db_query, 'id = ?', log_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
@@ -2460,7 +2453,7 @@ contains
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'id = ?', node_id)
+        call dm_db_query_add_text(db_query, 'id = ?', node_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
@@ -2504,7 +2497,7 @@ contains
         rc = E_INVALID
         if (len_trim(log_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'id = ?', log_id)
+        call dm_db_query_add_text(db_query, 'id = ?', log_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
@@ -2547,7 +2540,7 @@ contains
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NODES))
@@ -2591,7 +2584,7 @@ contains
         rc = E_INVALID
         if (len_trim(observ_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'observs.id = ?', observ_id)
+        call dm_db_query_add_text(db_query, 'observs.id = ?', observ_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
@@ -2673,11 +2666,11 @@ contains
 
         if (present(nids)) nids = 0_i8
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
-        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
-        rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
-        rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+        call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
@@ -2766,12 +2759,12 @@ contains
 
         if (present(nviews)) nviews = 0_i8
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
-        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
-        rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
-        rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
-        rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+        call dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+        call dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERV_VIEWS))
@@ -2849,11 +2842,12 @@ contains
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
         integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
 
-        integer            :: stat
-        integer(kind=i8)   :: i, nobs
-        logical            :: stub_
-        type(db_stmt_type) :: db_stmt
-        type(observ_type)  :: observ1, observ2
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        logical             :: stub_
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
+        type(observ_type)   :: observ1, observ2
 
         if (present(nobservs)) nobservs = 0_i8
 
@@ -2873,63 +2867,48 @@ contains
             if (observ1%target_id /= observ2%target_id) return
         end if
 
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',    observ1%node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',  observ1%sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',  observ1%target_id)
+        call dm_db_query_add_text(db_query, 'observs.id <> ?', after)
+        call dm_db_query_add_text(db_query, 'observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?)', after)
+        call dm_db_query_add_text(db_query, 'observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?)',  before)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NOBSERVS_BY_ID)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, observ1%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, observ1%sensor_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, observ1%target_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, after);             if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, after);             if (dm_is_error(rc)) exit sql_block
-
-            if (present(before)) then
-                rc = db_bind(db_stmt, 6, before)
-                if (dm_is_error(rc)) exit sql_block
-            end if
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            call db_column(db_stmt, 0, nobs)
+            call db_column(db_stmt, 0, n)
 
             rc = db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit)) nobs = min(nobs, limit)
+            if (present(nobservs)) nobservs = n
+            if (present(limit))    n        = min(n, limit)
 
             rc = E_ALLOC
-            allocate (observs(nobs), stat=stat)
+            allocate (observs(n), stat=stat)
             if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
-            if (nobs == 0) exit sql_block
+            if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_ID // ' LIMIT ?')
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_ID)
-            end if
+            call dm_db_query_order(db_query, 'observs.timestamp', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
 
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, observ1%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, observ1%sensor_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, observ1%target_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, after);             if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, after);             if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
-            if (present(before)) then
-                rc = db_bind(db_stmt, 6, before)
-                if (dm_is_error(rc)) exit sql_block
-            end if
-
-            if (present(limit)) then
-                rc = db_bind(db_stmt, 7, limit)
-                if (dm_is_error(rc)) exit sql_block
-            end if
-
-            do i = 1, nobs
+            do i = 1, n
                 rc = db_step(db_stmt)
                 if (dm_is_error(rc)) exit sql_block
 
@@ -2937,10 +2916,10 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end do
 
-            if (present(nobservs)) nobservs = nobs
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
@@ -2978,64 +2957,58 @@ contains
         logical,                        intent(in),  optional :: stub       !! No receivers, requests, responses.
         integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
 
-        integer            :: stat
-        integer(kind=i8)   :: i, nobs
-        logical            :: stub_
-        type(db_stmt_type) :: db_stmt
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        logical             :: stub_
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
 
         if (present(nobservs)) nobservs = 0_i8
 
         stub_ = .false.
         if (present(stub)) stub_ = stub
 
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+        call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
+
         sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_NOBSERVS_BY_TIME)
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, from);      if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, to);        if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            call db_column(db_stmt, 0, nobs)
-            if (present(nobservs)) nobservs = nobs
+            call db_column(db_stmt, 0, n)
+
+            if (present(nobservs)) nobservs = n
+            if (present(limit))    n        = min(n, limit)
 
             rc = db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit)) nobs = min(nobs, limit)
-
             rc = E_ALLOC
-            allocate (observs(nobs), stat=stat)
+            allocate (observs(n), stat=stat)
             if (stat /= 0) exit sql_block
 
             rc = E_DB_NO_ROWS
-            if (nobs == 0) exit sql_block
+            if (n == 0) exit sql_block
 
-            if (present(limit)) then
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_TIME // ' LIMIT ?')
-            else
-                rc = db_prepare(db, db_stmt, SQL_SELECT_OBSERVS_BY_TIME)
-            end if
+            call dm_db_query_order(db_query, 'observs.timestamp', desc=.false.)
+            call dm_db_query_limit(db_query, limit)
 
+            rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_bind(db_stmt, 1, node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 2, sensor_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 3, target_id); if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 4, from);      if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 5, to);        if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit)) then
-                rc = db_bind(db_stmt, 6, limit)
-                if (dm_is_error(rc)) exit sql_block
-            end if
-
-            do i = 1, nobs
+            do i = 1, n
                 rc = db_step(db_stmt)
                 if (dm_is_error(rc)) exit sql_block
 
@@ -3046,6 +3019,7 @@ contains
             rc = E_NONE
         end block sql_block
 
+        call dm_db_query_destroy(db_query)
         stat = db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
@@ -3080,7 +3054,7 @@ contains
         rc = E_INVALID
         if (len_trim(sensor_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'sensors.id = ?', sensor_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?', sensor_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
@@ -3381,7 +3355,7 @@ contains
         rc = E_INVALID
         if (len_trim(target_id) == 0) return
 
-        rc = dm_db_query_add_text(db_query, 'targets.id = ?', target_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?', target_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_TARGETS))
@@ -3538,11 +3512,7 @@ contains
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
-            if (enabled) then
-                rc = db_prepare(db, db_stmt, QUERY // 'ON')
-            else
-                rc = db_prepare(db, db_stmt, QUERY // 'OFF')
-            end if
+            rc = db_prepare(db, db_stmt, QUERY // dm_btoa(enabled, 'ON', 'OFF'))
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -3633,11 +3603,7 @@ contains
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
-            if (enabled) then
-                rc = db_prepare(db, db_stmt, QUERY // 'ON')
-            else
-                rc = db_prepare(db, db_stmt, QUERY // 'OFF')
-            end if
+            rc = db_prepare(db, db_stmt, QUERY // dm_btoa(enabled, 'ON', 'OFF'))
             if (dm_is_error(rc)) exit sql_block
 
             rc = db_step(db_stmt)
@@ -3705,6 +3671,43 @@ contains
         if (sqlite3_shutdown() /= SQLITE_OK) return
         rc = E_NONE
     end function dm_db_shutdown
+
+    integer function dm_db_size(db, nbytes) result(rc)
+        !! Returns SQLite database size in bytes.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_DB_TYPE` if returned column is unexpected.
+        !!
+        character(len=*), parameter :: QUERY = &
+            'SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size()'
+
+        type(db_type),    intent(inout) :: db     !! Database type.
+        integer(kind=i8), intent(out)   :: nbytes !! Database size in bytes.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        nbytes = 0_i8
+
+        sql_block: block
+            rc = db_prepare(db, db_stmt, QUERY)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_TYPE
+            if (.not. db_column_is_integer(db_stmt, 0)) exit sql_block
+
+            rc = E_NONE
+            call db_column(db_stmt, 0, nbytes)
+        end block sql_block
+
+        stat = db_finalize(db_stmt)
+    end function dm_db_size
 
     integer function dm_db_update_node(db, node, validate) result(rc)
         !! Updates the given node in database. The node data is validated by
@@ -3888,7 +3891,7 @@ contains
         !!
         use :: dm_file
 
-        character(len=*), parameter :: QUERY = "VACUUM 'main'"
+        character(len=*), parameter :: QUERY = "VACUUM 'main' "
 
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in), optional :: into !! File path to vacuum database.
@@ -3903,7 +3906,7 @@ contains
 
         sql_block: block
             if (present(into)) then
-                rc = db_prepare(db, db_stmt, QUERY // ' INTO ?')
+                rc = db_prepare(db, db_stmt, QUERY // 'INTO ?')
                 if (dm_is_error(rc)) exit sql_block
 
                 rc = db_bind(db_stmt, 1, into)
@@ -5062,8 +5065,8 @@ contains
             rc = db_count(db, SQL_TABLE_BEATS, n)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit))  n      = min(n, limit)
             if (present(nbeats)) nbeats = n
+            if (present(limit))  n      = min(n, limit)
 
             rc = E_ALLOC
             allocate (beats(n), stat=stat)
@@ -5176,13 +5179,13 @@ contains
 
         if (present(npoints)) npoints = 0_i8
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
-        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
-        rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
-        rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
-        rc = dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
-        rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+        call dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+        call dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
+        call dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NDATA_POINTS))
@@ -5199,8 +5202,8 @@ contains
             rc = db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit))   n       = min(n, limit)
             if (present(npoints)) npoints = n
+            if (present(limit))   n       = min(n, limit)
 
             rc = E_ALLOC
             allocate (dps(n), stat=stat)
@@ -5269,13 +5272,13 @@ contains
         if (present(error)) error_ = error
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
-            rc = dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
-            rc = dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
-            rc = dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
-            rc = dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
-            rc = dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
-            rc = dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
+            call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
+            call dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
+            call dm_db_query_add_text(db_query, 'targets.id = ?',          target_id)
+            call dm_db_query_add_text(db_query, 'responses.name = ?',      response_name)
+            call dm_db_query_add_int (db_query, 'responses.error = ?',     error_)
+            call dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
+            call dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
 
             call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
             call dm_db_query_limit(db_query, limit)
@@ -5328,8 +5331,8 @@ contains
             rc = db_count(db, SQL_TABLE_BEATS, n)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit))  n      = min(n, limit)
             if (present(nbeats)) nbeats = n
+            if (present(limit))  n      = min(n, limit)
 
             rc = E_ALLOC
             allocate (strings(n), stat=stat)
@@ -5443,15 +5446,15 @@ contains
 
         if (present(nlogs)) nlogs = 0_i8
 
-        rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
-        rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
-        rc = dm_db_query_add_int (db_query, 'error = ?',      error)
-        rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
-        rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
-        rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
-        rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
-        rc = dm_db_query_add_text(db_query, 'source = ?',     source)
+        call dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+        call dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+        call dm_db_query_add_int (db_query, 'error = ?',      error)
+        call dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+        call dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+        call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+        call dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
@@ -5537,15 +5540,15 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
-            rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
-            rc = dm_db_query_add_int (db_query, 'error = ?',      error)
-            rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
-            rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
-            rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
-            rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
-            rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
-            rc = dm_db_query_add_text(db_query, 'source = ?',     source)
+            call dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+            call dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+            call dm_db_query_add_int (db_query, 'error = ?',      error)
+            call dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+            call dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+            call dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+            call dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+            call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+            call dm_db_query_add_text(db_query, 'source = ?',     source)
 
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
@@ -5598,8 +5601,8 @@ contains
             rc = db_count(db, SQL_TABLE_NODES, n)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(limit))  n      = min(n, limit)
             if (present(nnodes)) nnodes = n
+            if (present(limit))  n      = min(n, limit)
 
             rc = E_ALLOC
             allocate (strings(n), stat=stat)
@@ -5712,16 +5715,16 @@ contains
 
         if (present(nlogs)) nlogs = 0_i8
 
-        rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
-        rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
-        rc = dm_db_query_add_int (db_query, 'error = ?',      error)
-        rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
-        rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
-        rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
-        rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
-        rc = dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
-        rc = dm_db_query_add_text(db_query, 'source = ?',     source)
+        call dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+        call dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+        call dm_db_query_add_int (db_query, 'error = ?',      error)
+        call dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+        call dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+        call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+        call dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
+        call dm_db_query_add_text(db_query, 'source = ?',     source)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
@@ -5806,16 +5809,16 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = dm_db_query_add_int (db_query, 'level >= ?',     min_level)
-            rc = dm_db_query_add_int (db_query, 'level <= ?',     max_level)
-            rc = dm_db_query_add_int (db_query, 'error = ?',      error)
-            rc = dm_db_query_add_text(db_query, 'timestamp >= ?', from)
-            rc = dm_db_query_add_text(db_query, 'timestamp < ?',  to)
-            rc = dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
-            rc = dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
-            rc = dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
-            rc = dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
-            rc = dm_db_query_add_text(db_query, 'source = ?',     source)
+            call dm_db_query_add_int (db_query, 'level >= ?',     min_level)
+            call dm_db_query_add_int (db_query, 'level <= ?',     max_level)
+            call dm_db_query_add_int (db_query, 'error = ?',      error)
+            call dm_db_query_add_text(db_query, 'timestamp >= ?', from)
+            call dm_db_query_add_text(db_query, 'timestamp < ?',  to)
+            call dm_db_query_add_text(db_query, 'node_id = ?',    node_id)
+            call dm_db_query_add_text(db_query, 'sensor_id = ?',  sensor_id)
+            call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
+            call dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
+            call dm_db_query_add_text(db_query, 'source = ?',     source)
 
             call dm_db_query_order(db_query, 'timestamp', desc)
             call dm_db_query_limit(db_query, limit)
@@ -5974,11 +5977,11 @@ contains
         stub_ = .false.
         if (present(stub)) stub_ = stub
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
-        rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
-        rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
-        rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
-        rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+        call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+        call dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+        call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+        call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
@@ -6077,11 +6080,11 @@ contains
         if (present(stub)) stub_ = stub
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            rc = dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
-            rc = dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
-            rc = dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
-            rc = dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
-            rc = dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
+            call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
+            call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
+            call dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
+            call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
+            call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
             call dm_db_query_order(db_query, 'observs.timestamp', desc)
             call dm_db_query_limit(db_query, limit)
@@ -6453,7 +6456,7 @@ contains
             if (len_trim(node_id) == 0) return
         end if
 
-        rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
+        call dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
 
         sql_block: block
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NSENSORS))
@@ -6529,7 +6532,7 @@ contains
                 if (len_trim(node_id) == 0) return
             end if
 
-            rc = dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
+            call dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
             call dm_db_query_order(db_query, 'sensors.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))

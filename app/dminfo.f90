@@ -54,7 +54,7 @@ contains
 
         character(len=:), allocatable :: mode_name
         integer                       :: app_id, mode, user_version
-        integer(kind=i8)              :: n, sz
+        integer(kind=i8)              :: n, nbytes
         logical                       :: has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
@@ -63,7 +63,6 @@ contains
         has_db = (len_trim(app%database) > 0)
 
         if (has_db) then
-            sz = dm_file_size(app%database)
             rc = dm_db_open(db, app%database, read_only=.true.)
             if (dm_is_error(rc)) call dm_error_out(rc, 'failed to open database ' // app%database, fatal=.true.)
         end if
@@ -77,13 +76,14 @@ contains
             rc = dm_db_get_application_id(db, app_id)
             rc = dm_db_get_user_version(db, user_version)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
+            rc = dm_db_size(db, nbytes)
 
             print '("db.application_id: ", z0)', app_id
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)
             print '("db.schema_version: ", i0)', user_version
-            print '("db.size: ", i0)',           sz
+            print '("db.size: ", i0)',           nbytes
 
             if (dm_db_has_table(db, SQL_TABLE_BEATS)) then
                 rc = dm_db_count_beats(db, n)

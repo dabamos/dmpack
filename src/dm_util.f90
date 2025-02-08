@@ -162,16 +162,26 @@ contains
 
     pure function dm_btoa(b, true, false) result(a)
         !! Returns either argument `true` or `false` as allocatable character,
-        !! depending on the value of logical value `b`. The result is trimmed.
-        logical,          intent(in)  :: b     !! Logical value.
-        character(len=*), intent(in)  :: true  !! Return value on `.true.`.
-        character(len=*), intent(in)  :: false !! Return value on `.false.`.
-        character(len=:), allocatable :: a     !! Returned string.
+        !! depending on the value of logical value `b`. If `true` and/or
+        !! `false` is missing, `T` or `F` is returned respectively. The result
+        !! is trimmed.
+        logical,          intent(in)           :: b     !! Logical value.
+        character(len=*), intent(in), optional :: true  !! Return value on `.true.`.
+        character(len=*), intent(in), optional :: false !! Return value on `.false.`.
+        character(len=:), allocatable          :: a     !! Returned string.
 
         if (b) then
-            a = trim(true)
+            if (present(true)) then
+                a = trim(true)
+            else
+                a = 'T'
+            end if
         else
-            a = trim(false)
+            if (present(false)) then
+                a = trim(false)
+            else
+                a = 'F'
+            end if
         end if
     end function dm_btoa
 
@@ -492,8 +502,8 @@ contains
     ! **************************************************************************
     ! PRIVATE HEX STRING TO INTEGER ROUTINES.
     ! **************************************************************************
-    pure subroutine hex_to_int32(string, value, error)
-        !! Returns hexadecimal values as 4-byte integer. The input string must
+    pure elemental subroutine hex_to_int32(string, value, error)
+        !! Returns hexadecimal value as 4-byte integer. The input string must
         !! start with `0x` or `0X`. The routine returns the following error
         !! codes in `error`:
         !!
@@ -517,8 +527,8 @@ contains
         if (present(error)) error = E_NONE
     end subroutine hex_to_int32
 
-    pure subroutine hex_to_int64(string, value, error)
-        !! Returns hexadecimal values as 8-byte integer. The input string must
+    pure elemental subroutine hex_to_int64(string, value, error)
+        !! Returns hexadecimal value as 8-byte integer. The input string must
         !! start with `0x` or `0X`. The routine returns the following error
         !! codes in `error`:
         !!
