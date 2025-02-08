@@ -236,7 +236,7 @@ be downloaded automatically. Otherwise, run script `fetchvendor.sh` first.
 == Installation
 
 This section describes the steps to build the DMPACK library and programs from
-source, either with POSIX make or the
+source, either with POSIX Make or the
 link:https://fpm.fortran-lang.org/[Fortran Package Manager] (FPM). At the
 moment, support for the Fortran Package Manager is experimental, and using
 GNU/BSD Make is the recommended way. Display the available build targets of the
@@ -3347,7 +3347,7 @@ an additional `\`. Simply replace every occurance of `\` with `\\`:
 ....
 
 Set the regular expression pattern as value of attribute `pattern` in request
-`get_values` of observation `meter`. The complete configuration file of
+`get-values` of observation `meter`. The complete configuration file of
 *dmserial* is listed below.
 
 [source,lua]
@@ -3372,7 +3372,7 @@ observs = {
     receivers = { },            -- List of receivers (up to 16).
     requests = {                -- List of requests (up to 8).
       {
-        name = "start_sensor",  -- Request name (required).
+        name = "start-sensor",  -- Request name (required).
         request = "\\r",        -- Raw request to send to sensor.
         delimiter = "\\n",      -- Response delimiter.
         pattern = "",           -- RegEx pattern of the response.
@@ -3389,7 +3389,7 @@ observs = {
     receivers = { },            -- List of receivers (up to 16).
     requests = {                -- List of requests (up to 8).
       {
-        name = "stop_meter",    -- Request name (required).
+        name = "stop-meter",    -- Request name (required).
         request = "s\\r",       -- Raw request to send to sensor.
         delimiter = "",         -- Response delimiter.
         pattern = "",           -- RegEx pattern of the response.
@@ -3404,7 +3404,7 @@ observs = {
     receivers = { "dmdb" },     -- List of receivers (up to 16).
     requests = {                -- List of requests (up to 8).
       {
-        name = "get_values",    -- Request name (required).
+        name = "get-values",    -- Request name (required).
         request = "Meter\\r",   -- Raw request to send to sensor.
         delimiter = "\\r",      -- Response delimiter.
         pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
@@ -3594,7 +3594,7 @@ dmfs = {
       disabled = false,         -- Skip job.
       onetime = false,          -- Run job only once.
       observation = {           -- Observation to execute (required).
-        name = "get_temp",      -- Observation name (required).
+        name = "get-temp",      -- Observation name (required).
         target_id = target_id,  -- Target id (required).
         receivers = { "dmdb" }, -- List of receivers (up to 16).
         requests = {            -- List of files to read.
@@ -5488,7 +5488,7 @@ jobs = {
     delay = 5 * 1000,
     observation = {
       -- Initialise RTS and send responses to dmdb.
-      name = "init_tps",
+      name = "init-tps",
       target_id = "p99",
       receivers = { "dmdb" },
       requests = {
@@ -5509,7 +5509,7 @@ jobs = {
     delay = 10 * 1000,
     observation = {
       -- Set position and start measurement, send responses to dmdb.
-      name = "get_p01",
+      name = "get-p01",
       target_id = "p01",
       receivers = { "dmdb" },
       requests = {
