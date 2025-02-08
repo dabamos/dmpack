@@ -2,12 +2,12 @@
 .\"     Title: dmved
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-02-02
+.\"      Date: 2025-02-08
 .\"    Manual: User Commands
 .\"    Source: DMVED
 .\"  Language: English
 .\"
-.TH "DMVED" "1" "2025-02-02" "DMVED" "User Commands"
+.TH "DMVED" "1" "2025-02-08" "DMVED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmved \- reads status of connected Victron Energy MPPT charger
+dmved \- reads status of connected MPPT charger or battery shunt
 .SH "SYNOPSIS"
 .sp
 \fBdmved\fP \-\-help
@@ -44,8 +44,8 @@ This program captures status data received from a connected Maximum Power Point
 Tracking (MPPT) solar charge controller or SmartShunt battery monitor by
 Victron Energy, using the VE.Direct protocol. Only the BlueSolar/SmartSolar
 MPPT series and the SmartShunt monitor are supported. The serial port will be
-configured to 19200 baud (8N1). Observations are sent to the receiver via
-message queue in the specified interval.
+configured to 19200 baud (8N1). Observations are forwarded via message queue in
+the given interval if a receiver is specified.
 .sp
 The following VE.Direct fields are captured, depending on the device:
 .sp

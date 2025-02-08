@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmved - reads status of connected Victron Energy MPPT charger
+dmved - reads status of connected MPPT charger or battery shunt
 
 == SYNOPSIS
 
@@ -25,8 +25,8 @@ This program captures status data received from a connected Maximum Power Point
 Tracking (MPPT) solar charge controller or SmartShunt battery monitor by
 Victron Energy, using the VE.Direct protocol. Only the BlueSolar/SmartSolar
 MPPT series and the SmartShunt monitor are supported. The serial port will be
-configured to 19200 baud (8N1). Observations are sent to the receiver via
-message queue in the specified interval.
+configured to 19200 baud (8N1). Observations are forwarded via message queue in
+the given interval if a receiver is specified.
 
 The following VE.Direct fields are captured, depending on the device:
 
