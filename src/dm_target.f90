@@ -57,7 +57,6 @@ module dm_target
     public :: dm_target_out
     public :: dm_target_state_is_valid
     public :: dm_target_state_name
-
 contains
     pure elemental logical function dm_target_equals(target1, target2) result(equals)
         !! Returns `.true.` if given targets are equal.
@@ -122,8 +121,7 @@ contains
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("target.id: ", a)')        trim(target%id)
         write (unit_, '("target.name: ", a)')      trim(target%name)

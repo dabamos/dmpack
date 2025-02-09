@@ -81,15 +81,12 @@ contains
 
     function dm_zstd_version(name) result(version)
         !! Returns zstd library version as allocatable string.
+        use :: dm_util, only: dm_present
+
         logical, intent(in), optional :: name !! Add prefix `libzstd/`.
         character(len=:), allocatable :: version
 
-        logical :: name_
-
-        name_ = .false.
-        if (present(name)) name_ = name
-
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = 'libzstd/' // zstd_version_string()
         else
             version = zstd_version_string()

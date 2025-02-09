@@ -91,8 +91,11 @@ contains
         second_  = dm_present(second,  0)
         usecond_ = dm_present(usecond, 0)
 
-        zone_ = '+00:00'
-        if (present(zone)) zone_ = zone
+        if (present(zone)) then
+            zone_ = zone
+        else
+            zone_ = '+00:00'
+        end if
 
         write (string, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
@@ -125,15 +128,10 @@ contains
         character(len=:), allocatable :: string
         logical                       :: days_, hours_, minutes_, seconds_
 
-        days_    = .true.
-        hours_   = .true.
-        minutes_ = .true.
-        seconds_ = .true.
-
-        if (present(days))    days_    = days
-        if (present(hours))   hours_   = hours
-        if (present(minutes)) minutes_ = minutes
-        if (present(seconds)) seconds_ = seconds
+        days_    = dm_present(days,    .true.)
+        hours_   = dm_present(hours,   .true.)
+        minutes_ = dm_present(minutes, .true.)
+        seconds_ = dm_present(seconds, .true.)
 
         string = ''
         if (days_)    string = string // dm_itoa(time_delta%days)    // ' days '
@@ -181,16 +179,12 @@ contains
 
         character :: a
         integer   :: i, n
-        logical   :: strict_
 
         valid = .false.
 
-        strict_ = .false.
-        if (present(strict)) strict_ = strict
-
         n = len_trim(time)
 
-        if (strict_) then
+        if (dm_present(strict, .false.)) then
             if (n /= TIME_LEN) return
         else
             if (n < 4 .or. n > TIME_LEN) return

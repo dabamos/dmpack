@@ -76,7 +76,7 @@ contains
         rc = E_NONE
     end function dm_transform_coord_2d
 
-    integer function dm_transform_polar_3d(vx, vy, vz, tx, ty, hz, v, dist_hz, x, y, z, azimuth) result(rc)
+    integer function dm_transform_polar_3d(vx, vy, vz, tx, ty, hz, v, hz_dist, x, y, z, azimuth) result(rc)
         !! Calculates coordinates (x, y, z) out of horizontal direction,
         !! vertical angle, and slope distance to a target point using a
         !! 3-dimensional polar transformation.
@@ -87,7 +87,7 @@ contains
         real(kind=r8), intent(in)           :: ty      !! Target y.
         real(kind=r8), intent(in)           :: hz      !! Horizontal direction between view point and target point.
         real(kind=r8), intent(in)           :: v       !! Vertical angle between view point and target point.
-        real(kind=r8), intent(in)           :: dist_hz !! Horizontal distance between view point and target point.
+        real(kind=r8), intent(in)           :: hz_dist !! Horizontal distance between view point and target point.
         real(kind=r8), intent(out)          :: x       !! Transformed x.
         real(kind=r8), intent(out)          :: y       !! Transformed y.
         real(kind=r8), intent(out)          :: z       !! Transformed z.
@@ -123,7 +123,7 @@ contains
         t = z + hz
 
         ! Calculate coordinates of the target point.
-        call dm_transform_polar_to_cartesian(t, v, dist_hz, dx, dy, dz)
+        call dm_transform_polar_to_cartesian(t, v, hz_dist, dx, dy, dz)
 
         x = vx + dx
         y = vy + dy

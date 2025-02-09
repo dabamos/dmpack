@@ -37,6 +37,7 @@ module dm_rts
     !!
     !! Formulas are taken from the Leica TM30/TS30 User Manual.
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -111,8 +112,7 @@ contains
         real(kind=r8) :: a, b, c, d, x
         real(kind=r8) :: humidity_
 
-        humidity_ = 0.6_r8
-        if (present(humidity)) humidity_ = humidity
+        humidity_ = dm_present(humidity, 0.6_r8)
 
         a = 1 / 273.15_r8
         b = 1 + a * temperature
@@ -176,8 +176,7 @@ contains
 
         real(kind=r8) :: a, k_, x, y
 
-        k_ = MEAN_REFRACT_COEFF
-        if (present(k)) k_ = k
+        k_ = dm_present(k, MEAN_REFRACT_COEFF)
 
         a = (1 - (k_ / 2)) / EARTH_RADIUS
         x = slope_dist * cos(v)
@@ -229,8 +228,7 @@ contains
 
         real(kind=r8) :: b, k_, x, y
 
-        k_ = MEAN_REFRACT_COEFF
-        if (present(k)) k_ = k
+        k_ = dm_present(k, MEAN_REFRACT_COEFF)
 
         b = (1 - k_) / (2 * EARTH_RADIUS)
         x = slope_dist * cos(v)

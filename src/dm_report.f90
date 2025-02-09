@@ -7,8 +7,7 @@ module dm_report
     use :: dm_kind
     use :: dm_log
     use :: dm_node,     only: NODE_ID_LEN
-    use :: dm_plot,     only: PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO, PLOT_TERMINAL_SVG, &
-                              PLOT_TERMINAL_NAMES, PLOT_TERMINAL_NAME_LEN
+    use :: dm_plot
     use :: dm_response, only: RESPONSE_NAME_LEN, RESPONSE_UNIT_LEN
     use :: dm_sensor,   only: SENSOR_ID_LEN
     use :: dm_target,   only: TARGET_ID_LEN
@@ -74,7 +73,7 @@ contains
         !! Returns `.true.` if given report type is valid, else `.false.`.
         type(report_type), intent(inout) :: report !! Report type.
 
-        integer :: i, n
+        integer :: i, n, terminal
 
         valid = .false.
 
@@ -89,10 +88,12 @@ contains
             if (allocated(report%plot%observs)) n = size(report%plot%observs)
 
             do i = 1, n
-                if (report%plot%observs(i)%format /= PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF)       .and. &
-                    report%plot%observs(i)%format /= PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG)       .and. &
-                    report%plot%observs(i)%format /= PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO) .and. &
-                    report%plot%observs(i)%format /= PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG)) return
+                terminal = dm_plot_terminal_from_name(report%plot%observs(i)%format)
+
+                if (terminal /= PLOT_TERMINAL_GIF       .and. &
+                    terminal /= PLOT_TERMINAL_PNG       .and. &
+                    terminal /= PLOT_TERMINAL_PNG_CAIRO .and. &
+                    terminal /= PLOT_TERMINAL_SVG) return
 
                 if (.not. dm_id_is_valid(report%plot%observs(i)%sensor)) return
                 if (.not. dm_id_is_valid(report%plot%observs(i)%target)) return

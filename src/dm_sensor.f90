@@ -77,6 +77,7 @@ contains
     pure elemental logical function dm_sensor_equals(sensor1, sensor2) result(equals)
         !! Returns `.true.` if given sensors are equal.
         use :: dm_util, only: dm_equals
+
         type(sensor_type), intent(in) :: sensor1 !! First sensor.
         type(sensor_type), intent(in) :: sensor2 !! Second sensor.
 
@@ -163,13 +164,14 @@ contains
 
     subroutine dm_sensor_out(sensor, unit)
         !! Prints sensor to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         type(sensor_type), intent(inout)        :: sensor !! Sensor type.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("sensor.id: ", a)')        trim(sensor%id)
         write (unit_, '("sensor.node_id: ", a)')   trim(sensor%node_id)
