@@ -4317,11 +4317,11 @@ contains
 
         sql_block: block
             select case (table)
-                case (SQL_TABLE_LOGS);    rc = db_prepare(db, db_stmt, SQL_EXISTS_LOG)
-                case (SQL_TABLE_NODES);   rc = db_prepare(db, db_stmt, SQL_EXISTS_NODE)
-                case (SQL_TABLE_OBSERVS); rc = db_prepare(db, db_stmt, SQL_EXISTS_OBSERV)
-                case (SQL_TABLE_SENSORS); rc = db_prepare(db, db_stmt, SQL_EXISTS_SENSOR)
-                case (SQL_TABLE_TARGETS); rc = db_prepare(db, db_stmt, SQL_EXISTS_TARGET)
+                case (SQL_TABLE_LOGS);    rc = db_prepare(db, db_stmt, SQL_HAS_LOG)
+                case (SQL_TABLE_NODES);   rc = db_prepare(db, db_stmt, SQL_HAS_NODE)
+                case (SQL_TABLE_OBSERVS); rc = db_prepare(db, db_stmt, SQL_HAS_OBSERV)
+                case (SQL_TABLE_SENSORS); rc = db_prepare(db, db_stmt, SQL_HAS_SENSOR)
+                case (SQL_TABLE_TARGETS); rc = db_prepare(db, db_stmt, SQL_HAS_TARGET)
                 case default;             return
             end select
             if (dm_is_error(rc)) exit sql_block

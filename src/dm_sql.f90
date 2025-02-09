@@ -497,31 +497,31 @@ module dm_sql
     ! **************************************************************************
     ! Query to check if log exists.
     ! Arguments: logs.id
-    character(len=*), parameter, public :: SQL_EXISTS_LOG = &
+    character(len=*), parameter, public :: SQL_HAS_LOG = &
         "SELECT EXISTS(SELECT 1 FROM logs WHERE logs.id = ? LIMIT 1)"
 
     ! Query to check if node exists.
     ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_EXISTS_NODE = &
+    character(len=*), parameter, public :: SQL_HAS_NODE = &
         "SELECT EXISTS(SELECT 1 FROM nodes WHERE nodes.id = ? LIMIT 1)"
 
     ! Query to check if observation exists.
     ! Arguments: observs.id
-    character(len=*), parameter, public :: SQL_EXISTS_OBSERV = &
+    character(len=*), parameter, public :: SQL_HAS_OBSERV = &
         "SELECT EXISTS(SELECT 1 FROM observs WHERE observs.id = ? LIMIT 1)"
 
     ! Query to check if sensor exists.
     ! Arguments: sensors.id
-    character(len=*), parameter, public :: SQL_EXISTS_SENSOR = &
+    character(len=*), parameter, public :: SQL_HAS_SENSOR = &
         "SELECT EXISTS(SELECT 1 FROM sensors WHERE sensors.id = ? LIMIT 1)"
 
     ! Query to check if target exists.
     ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_EXISTS_TARGET = &
+    character(len=*), parameter, public :: SQL_HAS_TARGET = &
         "SELECT EXISTS(SELECT 1 FROM targets WHERE targets.id = ? LIMIT 1)"
 
     ! **************************************************************************
-    ! SELECT QUERIES.
+    ! SELECT COUNT QUERIES.
     ! **************************************************************************
     character(len=*), parameter, public :: SQL_SELECT_NBEATS = &
         "SELECT COUNT(row_id) FROM beats"
@@ -558,6 +558,9 @@ module dm_sql
         "SELECT COUNT(sensors.row_id) FROM sensors " // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
+    ! **************************************************************************
+    ! SELECT QUERIES.
+    ! **************************************************************************
     ! Query to select beats.
     character(len=*), parameter, public :: SQL_SELECT_BEATS = &
         "SELECT "     // &
@@ -612,7 +615,7 @@ module dm_sql
         "nodes.alt "   // &
         "FROM nodes"
 
-    ! Query to select of observation ids.
+    ! Query to select observation ids.
     character(len=*), parameter, public :: SQL_SELECT_OBSERV_IDS = &
         "SELECT observs.id FROM observs "                           // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "       // &
@@ -840,6 +843,9 @@ module dm_sql
         "code = excluded.code, "                                          // &
         "attempts = excluded.attempts"
 
+    ! **************************************************************************
+    ! SELECT SYNC COUNT QUERIES.
+    ! **************************************************************************
     ! Query to select the number of logs to synchronise.
     character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
         "SELECT COUNT(logs.row_id) FROM logs "                   // &
@@ -870,6 +876,9 @@ module dm_sql
         "LEFT JOIN sync_targets ON sync_targets.target_id = targets.row_id " // &
         "WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)"
 
+    ! **************************************************************************
+    ! SELECT SYNC QUERIES.
+    ! **************************************************************************
     ! Query to select logs.id and sync_logs meta data of unsynchronised logs.
     character(len=*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
         "SELECT "                                                             // &
