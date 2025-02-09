@@ -3,7 +3,6 @@
 module dm_geocom_type
     !! GeoCOM API types and enumerators. The GeoCOM named parameters start with
     !! prefix `GEOCOM_`.
-    use :: dm_error
     implicit none (type, external)
     private
 
@@ -395,6 +394,9 @@ contains
         !!
         !! If `verbose` is `.true.`, an error message is printed to standard
         !! error.
+        use :: dm_error
+        use :: dm_util, only: dm_present
+
         integer, intent(in)            :: type    !! GeoCOM enumeration type.
         integer, intent(in),  optional :: value   !! Enumerator to validate.
         integer, intent(in),  optional :: default !! Value to return on error.
@@ -407,11 +409,8 @@ contains
         rc = E_INVALID
         n  = 0
 
-        value_ = -1
-        if (present(value)) value_ = value
-
-        verbose_ = .false.
-        if (present(verbose)) verbose_ = verbose
+        value_   = dm_present(value, -1)
+        verbose_ = dm_present(verbose, .false.)
 
         select case (type)
             case (GEOCOM_AUT_ADJMODE)

@@ -181,8 +181,7 @@ contains
 
         rc = E_INVALID
 
-        port_ = 0
-        if (present(port)) port_ = port
+        port_ = dm_present(port, 0)
         if (len_trim(host) == 0 .or. port_ < 0) return
 
         tls_ = .false.
@@ -308,10 +307,8 @@ contains
         type(c_ptr)                :: curl_ctx, list_ctx
         type(payload_type), target :: payload
 
-        stat = CURLE_OK
-
-        debug_ = .false.
-        if (present(debug)) debug_ = debug
+        stat   = CURLE_OK
+        debug_ = dm_present(debug, .false.)
 
         mail_block: block
             ! Mail and server must be initialised.
@@ -443,11 +440,8 @@ contains
         logical     :: tls_
         type(c_ptr) :: ptr
 
-        port_ = 0
-        if (present(port)) port_ = port
-
-        tls_ = .false.
-        if (present(tls)) tls_ = tls
+        port_ = dm_present(port, 0)
+        tls_  = dm_present(tls, .false.)
 
         url_block: block
             ptr = curl_url()
@@ -594,8 +588,7 @@ contains
 
         integer :: i, unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("mail.from: ", a)') dm_mail_address(mail%from)
 
@@ -628,8 +621,7 @@ contains
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         if (allocated(server%url))      write (unit_, '("mail_server.url: ", a)')      trim(server%url)
         if (allocated(server%username)) write (unit_, '("mail_server.username: ", a)') trim(server%username)

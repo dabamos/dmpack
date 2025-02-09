@@ -385,7 +385,8 @@ module dm_sql
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
     !            beats.time_recv, beats.interval, beats.error
     character(len=*), parameter, public :: SQL_INSERT_BEAT = &
-        "INSERT INTO beats(node_id, address, client, time_sent, time_recv, error, interval, uptime) " // &
+        "INSERT INTO "                     // &
+        "beats(node_id, address, client, time_sent, time_recv, error, interval, uptime) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " // &
         "ON CONFLICT DO UPDATE SET "       // &
         "node_id = excluded.node_id, "     // &
@@ -401,7 +402,7 @@ module dm_sql
     ! Arguments: logs.level, logs.error, logs.timestamp, logs.node_id,
     !            logs.sensor_id, logs.target_id, logs.observ_id, logs.message
     character(len=*), parameter, public :: SQL_INSERT_LOG = &
-        "INSERT OR FAIL INTO " // &
+        "INSERT OR FAIL INTO "                                                                          // &
         "logs(id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
@@ -409,44 +410,48 @@ module dm_sql
     ! Arguments: nodes.id, nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z,
     !            nodes.lon, nodes.lat, nodes.alt
     character(len=*), parameter, public :: SQL_INSERT_NODE = &
-        "INSERT OR FAIL INTO nodes(id, name, meta, x, y, z, lon, lat, alt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT OR FAIL INTO "                           // &
+        "nodes(id, name, meta, x, y, z, lon, lat, alt) " // &
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
     !            sensors.sn, sensors.meta, sensors.x, sensors.y, sensors.z,
     !            sensors.lon, sensors.lat, sensors.alt
     character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
-        "INSERT OR FAIL INTO sensors(id, node_id, type, name, sn, meta, x, y, z, lon, lat, alt) VALUES (" // &
-        "?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT OR FAIL INTO "                                                // &
+        "sensors(id, node_id, type, name, sn, meta, x, y, z, lon, lat, alt) " // &
+        "VALUES (?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert target.
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
     !            targets.x, targets.y, targets.z, targets.lon, targets.lat,
     !            targets.alt
     character(len=*), parameter, public :: SQL_INSERT_TARGET = &
-        "INSERT OR FAIL INTO targets(id, name, meta, state, x, y, z, lon, lat, alt) VALUES (" // &
-        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT OR FAIL INTO "                                    // &
+        "targets(id, name, meta, state, x, y, z, lon, lat, alt) " // &
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert observation.
     ! Arguments: nodes.id, sensors.id, targets.id, observs.id, observs.name,
     !            observs.timestamp, observs.source, observs.device, observs.priority,
     !            observs.error, observs.next, observs.nreceivers, observs.nrequests
     character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
-        "INSERT OR FAIL INTO observs "                                          // &
-        "(id, node_id, sensor_id, target_id, name, timestamp, source, device, " // &
-        "priority, error, next, nreceivers, nrequests) "                        // &
-        "VALUES ("                                                              // &
-        "?, "                                                                   // &
-        "(SELECT row_id FROM nodes WHERE id = ?), "                             // &
-        "(SELECT row_id FROM sensors WHERE id = ?), "                           // &
-        "(SELECT row_id FROM targets WHERE id = ?), "                           // &
+        "INSERT OR FAIL INTO "                                                         // &
+        "observs(id, node_id, sensor_id, target_id, name, timestamp, source, device, " // &
+        "priority, error, next, nreceivers, nrequests) "                               // &
+        "VALUES (?, "                                                                  // &
+        "(SELECT row_id FROM nodes WHERE id = ?), "                                    // &
+        "(SELECT row_id FROM sensors WHERE id = ?), "                                  // &
+        "(SELECT row_id FROM targets WHERE id = ?), "                                  // &
         "?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert receiver.
     ! Arguments: observs.id, receivers.idx, receivers.name
     character(len=*), parameter, public :: SQL_INSERT_RECEIVER = &
-        "INSERT OR FAIL INTO receivers(observ_id, idx, name) VALUES (" // &
-        "(SELECT row_id FROM observs WHERE id = ?), ?, ?)"
+        "INSERT OR FAIL INTO "             // &
+        "receivers(observ_id, idx, name) " // &
+        "VALUES ((SELECT row_id FROM observs WHERE id = ?), ?, ?)"
 
     ! Query to insert request.
     ! Arguments: observs.id, requests.idx, requests.name, requests.timestamp,
@@ -455,18 +460,19 @@ module dm_sql
     !            requests.retries, requests.state, requests.timeout,
     !            requests.nresponses
     character(len=*), parameter, public :: SQL_INSERT_REQUEST = &
-        "INSERT OR FAIL INTO requests(observ_id, idx, name, timestamp, request, response, "     // &
-        "delimiter, pattern, delay, error, mode, retries, state, timeout, nresponses) VALUES (" // &
-        "(SELECT row_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT OR FAIL INTO "                                                              // &
+        "requests(observ_id, idx, name, timestamp, request, response, delimiter, pattern, " // &
+        "delay, error, mode, retries, state, timeout, nresponses) "                         // &
+        "VALUES ((SELECT row_id FROM observs WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert response that references observation, request index.
     ! Arguments: responses.request_id, responses.idx, responses.name,
     !            responses.unit, response.type, responses.error, responses.value
     character(len=*), parameter, public :: SQL_INSERT_RESPONSE = &
-        "INSERT OR FAIL INTO responses(request_id, idx, name, unit, type, error, value) VALUES (" // &
-        "(SELECT requests.row_id FROM requests "                                                  // &
-        "INNER JOIN observs ON observs.row_id = requests.observ_id "                              // &
-        "WHERE observs.id = ? AND requests.idx = ?), ?, ?, ?, ?, ?, ?)"
+        "INSERT OR FAIL INTO "                                        // &
+        "responses(request_id, idx, name, unit, type, error, value) " // &
+        "VALUES ((SELECT requests.row_id FROM requests INNER JOIN observs ON observs.row_id = requests.observ_id WHERE observs.id = ? AND requests.idx = ?), " // &
+        "?, ?, ?, ?, ?, ?)"
 
     ! **************************************************************************
     ! UPDATE QUERIES.

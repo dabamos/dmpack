@@ -273,11 +273,6 @@ contains
         type(lua_state_type), intent(inout)        :: lua  !! Lua type.
         logical,              intent(in), optional :: libs !! Open Lua libraries.
 
-        logical :: libs_
-
-        libs_ = .true.
-        if (present(libs)) libs_ = libs
-
         rc = E_EXIST
         if (c_associated(lua%ctx)) return
 
@@ -286,7 +281,7 @@ contains
         if (.not. c_associated(lua%ctx)) return
 
         rc = E_NONE
-        if (libs_) call lual_openlibs(lua%ctx)
+        if (dm_present(libs, .true.)) call lual_openlibs(lua%ctx)
     end function dm_lua_init
 
     logical function dm_lua_is_function(lua) result(is_function)
@@ -335,7 +330,7 @@ contains
         character(len=*),     intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
 
-        logical :: eval_
+        integer :: stat
 
         rc = E_NULL
         if (.not. c_associated(lua%ctx)) return
@@ -343,15 +338,13 @@ contains
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(file_path)) return
 
-        eval_ = .true.
-        if (present(eval)) eval_ = eval
-
-        if (eval_) then
-            rc = dm_lua_error(lual_dofile(lua%ctx, trim(file_path)))
-            return
+        if (dm_present(eval, .true.)) then
+            stat = lual_dofile(lua%ctx, trim(file_path))
+        else
+            stat = lual_loadfile(lua%ctx, trim(file_path))
         end if
 
-        rc = dm_lua_error(lual_loadfile(lua%ctx, trim(file_path)))
+        rc = dm_lua_error(stat)
     end function dm_lua_open
 
     integer function dm_lua_table(lua, name, n) result(rc)
@@ -380,8 +373,8 @@ contains
             return
         end if
 
-        if (present(n)) n = dm_lua_table_size(lua)
         rc = E_NONE
+        if (present(n)) n = dm_lua_table_size(lua)
     end function dm_lua_table
 
     integer function dm_lua_table_size(lua) result(n)
@@ -492,11 +485,7 @@ contains
 
         character(len=3)     :: v
         integer              :: major, minor, rc
-        logical              :: name_
         type(lua_state_type) :: lua
-
-        name_ = .false.
-        if (present(name)) name_ = name
 
         v  = '0.0'
         rc = dm_lua_init(lua)
@@ -508,7 +497,7 @@ contains
 
         call dm_lua_destroy(lua)
 
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = 'liblua/' // v
         else
             version = v
@@ -534,10 +523,8 @@ contains
 
         integer :: i, top, type, unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        top = lua_gettop(lua%ctx)
+        unit_ = dm_present(unit, stdout)
+        top   = lua_gettop(lua%ctx)
 
         do i = 1, top
             type = lua_type(lua%ctx, i)
@@ -560,8 +547,7 @@ contains
 
         integer :: n_
 
-        n_ = 1
-        if (present(n)) n_ = n
+        n_ = dm_present(n, 1)
         if (.not. c_associated(lua%ctx)) return
         call lua_pop(lua%ctx, n_)
     end subroutine dm_lua_pop
@@ -889,11 +875,6 @@ contains
         character(len=*),     intent(inout)        :: value    !! Table field value.
         logical,              intent(in), optional :: unescape !! Unescape the string.
 
-        logical :: unescape_
-
-        unescape_ = .false.
-        if (present(unescape)) unescape_ = unescape
-
         lua_block: block
             character(len=:), allocatable :: string
 
@@ -905,7 +886,7 @@ contains
 
             string = lua_tostring(lua%ctx, -1)
 
-            if (unescape_) then
+            if (dm_present(unescape, .false.)) then
                 value = dm_lua_unescape(string)
             else
                 value = string
@@ -1081,11 +1062,6 @@ contains
         character(len=*),     intent(inout)        :: value    !! Variable value.
         logical,              intent(in), optional :: unescape !! Unescape string.
 
-        logical :: unescape_
-
-        unescape_ = .false.
-        if (present(unescape)) unescape_ = unescape
-
         lua_block: block
             character(len=:), allocatable :: string
 
@@ -1100,7 +1076,7 @@ contains
 
             string = lua_tostring(lua%ctx, -1)
 
-            if (unescape_) then
+            if (dm_present(unescape, .false.)) then
                 value = dm_lua_unescape(string)
             else
                 value = string

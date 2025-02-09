@@ -496,8 +496,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(beat)
         if (stat /= 0) return
         rc = E_NONE
@@ -513,8 +512,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(beats)
 
         if (n == 0) then
@@ -549,8 +547,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(data_point)
         if (stat /= 0) return
         rc = E_NONE
@@ -566,8 +563,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(data_points)
 
         if (n == 0) then
@@ -602,8 +598,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(log)
         if (stat /= 0) return
         rc = E_NONE
@@ -619,8 +614,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(logs)
 
         if (n == 0) then
@@ -655,8 +649,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(node)
         if (stat /= 0) return
         rc = E_NONE
@@ -672,8 +665,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(nodes)
 
         if (n == 0) then
@@ -708,8 +700,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(observ)
         if (stat /= 0) return
         rc = E_NONE
@@ -725,8 +716,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(observs)
 
         if (n == 0) then
@@ -761,8 +751,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(sensor)
         if (stat /= 0) return
         rc = E_NONE
@@ -778,8 +767,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(sensors)
 
         if (n == 0) then
@@ -814,8 +802,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_json_from(target)
         if (stat /= 0) return
         rc = E_NONE
@@ -831,8 +818,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         n = size(targets)
 
         if (n == 0) then

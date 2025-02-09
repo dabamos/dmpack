@@ -62,6 +62,17 @@ module dm_util
         module procedure :: dm_real32_to_real64
     end interface dm_to_real64
 
+    interface dm_present
+        !! Returns present argument or default value.
+        module procedure :: present_character
+        module procedure :: present_logical
+        module procedure :: present_int32
+        module procedure :: present_int64
+        module procedure :: present_ptr
+        module procedure :: present_real32
+        module procedure :: present_real64
+    end interface dm_present
+
     interface dm_sec_to_msec
         !! Generic seconds to milliseconds function.
         module procedure :: sec_to_msec_int32
@@ -87,6 +98,7 @@ module dm_util
     public :: dm_hex_to_int
     public :: dm_inc
     public :: dm_msleep
+    public :: dm_present
     public :: dm_sleep
     public :: dm_usleep
 
@@ -129,6 +141,14 @@ module dm_util
 
     private :: hex_to_int32
     private :: hex_to_int64
+
+    private :: present_character
+    private :: present_logical
+    private :: present_int32
+    private :: present_int64
+    private :: present_ptr
+    private :: present_real32
+    private :: present_real64
 
     private :: msec_to_sec_int32
     private :: msec_to_sec_int64
@@ -423,6 +443,108 @@ contains
             c = a + 1
         end if
     end function inc_int64
+
+    ! **************************************************************************
+    ! PRIVATE PRESENT FUNCTIONS.
+    ! **************************************************************************
+    pure elemental function present_character(arg, default) result(value)
+        !! Returns 1-byte character argument `arg` if present or `default`
+        !! otherwise.
+        character, intent(in), optional :: arg     !! Argument.
+        character, intent(in)           :: default !! Default value.
+        character                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_character
+
+    pure elemental function present_logical(arg, default) result(value)
+        !! Returns logical argument `arg` if present or `default` otherwise.
+        logical, intent(in), optional :: arg     !! Argument.
+        logical, intent(in)           :: default !! Default value.
+        logical                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_logical
+
+    pure elemental function present_int32(arg, default) result(value)
+        !! Returns 4-byte integer argument `arg` if present or `default`
+        !! otherwise.
+        integer(kind=i4), intent(in), optional :: arg     !! Argument.
+        integer(kind=i4), intent(in)           :: default !! Default value.
+        integer(kind=i4)                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_int32
+
+    pure elemental function present_int64(arg, default) result(value)
+        !! Returns 8-byte integer argument `arg` if present or `default`
+        !! otherwise.
+        integer(kind=i8), intent(in), optional :: arg     !! Argument.
+        integer(kind=i8), intent(in)           :: default !! Default value.
+        integer(kind=i8)                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_int64
+
+    pure elemental function present_ptr(arg, default) result(value)
+        !! Returns 4-byte real argument `arg` if present or `default`
+        !! otherwise.
+        use, intrinsic :: iso_c_binding, only: c_ptr
+
+        type(c_ptr), intent(in), optional :: arg     !! Argument.
+        type(c_ptr), intent(in)           :: default !! Default value.
+        type(c_ptr)                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_ptr
+
+    pure elemental function present_real32(arg, default) result(value)
+        !! Returns 4-byte real argument `arg` if present or `default`
+        !! otherwise.
+        real(kind=r4), intent(in), optional :: arg     !! Argument.
+        real(kind=r4), intent(in)           :: default !! Default value.
+        real(kind=r4)                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_real32
+
+    pure elemental function present_real64(arg, default) result(value)
+        !! Returns 8-byte real argument `arg` if present or `default`
+        !! otherwise.
+        real(kind=r8), intent(in), optional :: arg     !! Argument.
+        real(kind=r8), intent(in)           :: default !! Default value.
+        real(kind=r8)                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_real64
 
     ! **************************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS.

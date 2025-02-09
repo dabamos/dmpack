@@ -190,8 +190,7 @@ contains
         rc = dm_observ_add_receiver(observ, 'dummy-receiver-2')
         rc = dm_observ_add_receiver(observ, 'dummy-receiver-3')
 
-        n = 1
-        if (present(nrequests)) n = nrequests
+        n = dm_present(nrequests, 1)
 
         do i = 1, n
             if (present(response_value)) then
@@ -331,17 +330,15 @@ contains
 
         n = size(tests)
 
-        no_color_ = .false.
-        if (present(no_color)) no_color_ = no_color
+        no_color_ = dm_present(no_color, .false.)
 
         call dm_system_uname(uname)
-
         call dm_ansi_color(COLOR_GREEN, no_color_)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color_)
 
         print '("Name....: ", a)', trim(name)
-        print '("Time....: ", a)', dm_time_strip_usec(dm_time_now())
+        print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
         print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
                                                         trim(uname%release), &
                                                         trim(uname%machine)
@@ -412,8 +409,7 @@ contains
 
         logical :: no_color_
 
-        no_color_ = .false.
-        if (present(no_color)) no_color_ = no_color
+        no_color_ = dm_present(no_color, .false.)
 
         call dm_ansi_color(TEST_COLORS(state), no_color_)
 
@@ -435,9 +431,7 @@ contains
         character :: a
         integer   :: i, j, k
 
-        a = '*'
-        if (present(ch)) a = ch
-
+        a = dm_present(ch, '*')
         i = length - len_trim(text) - 2
         j = i / 2
         k = modulo(i, 2)

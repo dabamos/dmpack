@@ -72,6 +72,7 @@ module dm_im
     use :: dm_id
     use :: dm_kind
     use :: dm_mime
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -352,13 +353,9 @@ contains
         if (len_trim(jid) == 0 .or. len_trim(password) == 0) return
 
         ! Optional arguments.
-        keep_alive_   = .false.
-        tls_required_ = .false.
-        tls_trusted_  = .false.
-
-        if (present(keep_alive))   keep_alive_   = keep_alive
-        if (present(tls_required)) tls_required_ = tls_required
-        if (present(tls_trusted))  tls_trusted_  = tls_trusted
+        keep_alive_   = dm_present(keep_alive,   .false.)
+        tls_required_ = dm_present(tls_required, .false.)
+        tls_trusted_  = dm_present(tls_trusted,  .false.)
 
         ! Create new connection.
         rc = E_XMPP
@@ -396,8 +393,7 @@ contains
         end if
 
         ! C pointer to user data.
-        user_data_ = c_null_ptr
-        if (present(user_data)) user_data_ = user_data
+        user_data_ = dm_present(user_data, c_null_ptr)
 
         rc = E_IO
         stat = xmpp_connect_client(conn       = im%connection, &
@@ -430,8 +426,7 @@ contains
         log = c_null_ptr
 
         ! Set log level.
-        ll = IM_LL_NONE
-        if (present(log_level)) ll = log_level
+        ll = dm_present(log_level, IM_LL_NONE)
         if (ll < IM_LL_NONE .or. ll > IM_LL_ERROR) return
 
         ! Enable logging.
@@ -475,8 +470,6 @@ contains
 
     type(c_ptr) function dm_im_create_iq_http_upload(im, id, file_name, file_size, content_type) result(iq_stanza)
         !! Returns C pointer to new http upload iq stanza.
-        use :: dm_util, only: dm_itoa
-
         type(im_type),    intent(inout) :: im           !! IM context type.
         character(len=*), intent(in)    :: id           !! Stanza id.
         character(len=*), intent(in)    :: file_name    !! File name.
@@ -626,13 +619,9 @@ contains
         logical,       intent(in), optional :: release !! Release stanza afterwards.
 
         integer :: stat
-        logical :: release_
-
-        release_ = .true.
-        if (present(release)) release_ = release
 
         call xmpp_send(im%connection, stanza)
-        if (release_) stat = xmpp_stanza_release(stanza)
+        if (dm_present(release, .true.)) stat = xmpp_stanza_release(stanza)
     end subroutine dm_im_send_stanza
 
     subroutine dm_im_shutdown()

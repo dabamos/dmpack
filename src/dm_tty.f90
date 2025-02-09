@@ -85,17 +85,15 @@ module dm_tty
 
     ! Public procedures.
     public :: dm_tty_baud_rate_from_value
+    public :: dm_tty_baud_rate_is_valid
     public :: dm_tty_byte_size_from_value
+    public :: dm_tty_byte_size_is_valid
     public :: dm_tty_close
     public :: dm_tty_flush
     public :: dm_tty_is_connected
-    public :: dm_tty_is_valid_baud_rate
-    public :: dm_tty_is_valid_byte_size
-    public :: dm_tty_is_valid_parity
-    public :: dm_tty_is_valid_stop_bits
-    public :: dm_tty_is_valid_timeout
     public :: dm_tty_open
     public :: dm_tty_parity_from_name
+    public :: dm_tty_parity_is_valid
     public :: dm_tty_read
     public :: dm_tty_read_byte
     public :: dm_tty_read_bytes
@@ -104,6 +102,8 @@ module dm_tty
     public :: dm_tty_set_blocking
     public :: dm_tty_set_timeout
     public :: dm_tty_stop_bits_from_value
+    public :: dm_tty_stop_bits_is_valid
+    public :: dm_tty_timeout_is_valid
     public :: dm_tty_write
     public :: dm_tty_write_bytes
     public :: dm_tty_write_request
@@ -115,21 +115,68 @@ contains
         integer, intent(in)            :: value !! Numeric baud rate value.
         integer, intent(out), optional :: error !! Error code.
 
-        baud_rate = 0
-        if (present(error)) error = E_INVALID
-
         select case (value)
-            case (TTY_B0, TTY_B50, TTY_B75, TTY_B110, TTY_B134, TTY_B150, TTY_B200, &
-                  TTY_B300, TTY_B600, TTY_B1200, TTY_B1800, TTY_B2400, TTY_B4800,   &
-                  TTY_B9600, TTY_B19200, TTY_B38400, TTY_B57600, TTY_B115200,       &
-                  TTY_B230400, TTY_B460800, TTY_B921600)
+            case (TTY_B0,      &
+                  TTY_B50,     &
+                  TTY_B75,     &
+                  TTY_B110,    &
+                  TTY_B134,    &
+                  TTY_B150,    &
+                  TTY_B200,    &
+                  TTY_B300,    &
+                  TTY_B600,    &
+                  TTY_B1200,   &
+                  TTY_B1800,   &
+                  TTY_B2400,   &
+                  TTY_B4800,   &
+                  TTY_B9600,   &
+                  TTY_B19200,  &
+                  TTY_B38400,  &
+                  TTY_B57600,  &
+                  TTY_B115200, &
+                  TTY_B230400, &
+                  TTY_B460800, &
+                  TTY_B921600)
+                if (present(error)) error = E_NONE
                 baud_rate = value
             case default
+                if (present(error)) error = E_INVALID
+                baud_rate = TTY_B0
                 return
         end select
-
-        if (present(error)) error = E_NONE
     end function dm_tty_baud_rate_from_value
+
+    pure elemental logical function dm_tty_baud_rate_is_valid(baud_rate) result(valid)
+        !! Returns `.true.` if given baud rate value is valid, else `.false.`.
+        integer, intent(in) :: baud_rate !! Baud rate.
+
+        select case (baud_rate)
+            case (TTY_B0,      &
+                  TTY_B50,     &
+                  TTY_B75,     &
+                  TTY_B110,    &
+                  TTY_B134,    &
+                  TTY_B150,    &
+                  TTY_B200,    &
+                  TTY_B300,    &
+                  TTY_B600,    &
+                  TTY_B1200,   &
+                  TTY_B1800,   &
+                  TTY_B2400,   &
+                  TTY_B4800,   &
+                  TTY_B9600,   &
+                  TTY_B19200,  &
+                  TTY_B38400,  &
+                  TTY_B57600,  &
+                  TTY_B115200, &
+                  TTY_B230400, &
+                  TTY_B460800, &
+                  TTY_B921600)
+                valid = .true.
+            case default
+                valid = .false.
+        end select
+    end function dm_tty_baud_rate_is_valid
 
     integer function dm_tty_byte_size_from_value(value, error) result(byte_size)
         !! Returns byte size enumerator from numeric value. If the value is
@@ -138,25 +185,37 @@ contains
         integer, intent(in)            :: value !! Numeric byte size value.
         integer, intent(out), optional :: error !! Error code.
 
-        byte_size = 0
-        if (present(error)) error = E_INVALID
+        if (present(error)) error = E_NONE
 
         select case (value)
             case (5); byte_size = TTY_BYTE_SIZE5
             case (6); byte_size = TTY_BYTE_SIZE6
             case (7); byte_size = TTY_BYTE_SIZE7
             case (8); byte_size = TTY_BYTE_SIZE8
-            case default; return
+            case default
+                if (present(error)) error = E_INVALID
+                byte_size = 0
         end select
-
-        if (present(error)) error = E_NONE
     end function dm_tty_byte_size_from_value
+
+    pure elemental logical function dm_tty_byte_size_is_valid(byte_size) result(valid)
+        !! Returns `.true.` if given byte size value is valid, else `.false.`.
+        integer, intent(in) :: byte_size !! Byte size.
+
+        select case (byte_size)
+            case (TTY_BYTE_SIZE5, TTY_BYTE_SIZE6, TTY_BYTE_SIZE7, TTY_BYTE_SIZE8)
+                valid = .true.
+            case default
+                valid = .false.
+        end select
+    end function dm_tty_byte_size_is_valid
 
     integer function dm_tty_flush(tty, input, output) result(rc)
         !! Flushes TTY input and output buffer. Returns `E_INVALID` if the
         !! passed `tty` type is invalid, or `E_SYSTEM` if the system call
         !! failed.
-        use :: unix, only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
+        use :: unix,    only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
+        use :: dm_util, only: dm_present
 
         type(tty_type), intent(inout)        :: tty    !! TTY type.
         logical,        intent(in), optional :: input  !! Flush input buffer.
@@ -165,11 +224,8 @@ contains
         integer(kind=c_int) :: n
         logical             :: input_, output_
 
-        input_  = .true.
-        output_ = .true.
-
-        if (present(input))  input_  = input
-        if (present(output)) output_ = output
+        input_  = dm_present(input,  .true.)
+        output_ = dm_present(output, .true.)
 
         rc = E_INVALID
         if (tty%fd < 0) return
@@ -203,81 +259,6 @@ contains
         if (tty%fd /= -1) connected = .true.
     end function dm_tty_is_connected
 
-    pure elemental logical function dm_tty_is_valid_baud_rate(baud_rate) result(valid)
-        !! Returns `.true.` if given baud rate value is valid, else `.false.`.
-        integer, intent(in) :: baud_rate !! Baud rate.
-
-        valid = .false.
-
-        select case (baud_rate)
-            case (TTY_B0,      &
-                  TTY_B50,     &
-                  TTY_B75,     &
-                  TTY_B110,    &
-                  TTY_B134,    &
-                  TTY_B150,    &
-                  TTY_B200,    &
-                  TTY_B300,    &
-                  TTY_B600,    &
-                  TTY_B1200,   &
-                  TTY_B1800,   &
-                  TTY_B2400,   &
-                  TTY_B4800,   &
-                  TTY_B9600,   &
-                  TTY_B19200,  &
-                  TTY_B38400,  &
-                  TTY_B57600,  &
-                  TTY_B115200, &
-                  TTY_B230400, &
-                  TTY_B460800, &
-                  TTY_B921600)
-                valid = .true.
-        end select
-    end function dm_tty_is_valid_baud_rate
-
-    pure elemental logical function dm_tty_is_valid_byte_size(byte_size) result(valid)
-        !! Returns `.true.` if given byte size value is valid, else `.false.`.
-        integer, intent(in) :: byte_size !! Byte size.
-
-        valid = .false.
-
-        select case (byte_size)
-            case (TTY_BYTE_SIZE5, TTY_BYTE_SIZE6, TTY_BYTE_SIZE7, TTY_BYTE_SIZE8)
-                valid = .true.
-        end select
-    end function dm_tty_is_valid_byte_size
-
-    pure elemental logical function dm_tty_is_valid_parity(parity) result(valid)
-        !! Returns `.true.` if given parity value is valid, else `.false.`.
-        integer, intent(in) :: parity !! Parity.
-
-        valid = .false.
-
-        select case (parity)
-            case (TTY_PARITY_NONE, TTY_PARITY_EVEN, TTY_PARITY_ODD)
-                valid = .true.
-        end select
-    end function dm_tty_is_valid_parity
-
-    pure elemental logical function dm_tty_is_valid_stop_bits(stop_bits) result(valid)
-        !! Returns `.true.` if given stop bits value is valid, else `.false.`.
-        integer, intent(in) :: stop_bits !! Stop bits.
-
-        valid = .false.
-
-        select case (stop_bits)
-            case (TTY_STOP_BITS1, TTY_STOP_BITS2)
-                valid = .true.
-        end select
-    end function dm_tty_is_valid_stop_bits
-
-    pure elemental logical function dm_tty_is_valid_timeout(timeout) result(valid)
-        !! Returns `.true.` if given timeout value is valid, else `.false.`.
-        integer, intent(in) :: timeout !! Timeout.
-
-        valid = (timeout >= 0)
-    end function dm_tty_is_valid_timeout
-
     integer function dm_tty_open(tty, path, baud_rate, byte_size, parity, stop_bits) result(rc)
         !! Opens TTY/PTS device in set access mode and applies serial port
         !! attributes. The arguments `baud_rate`, `byte_size`, `parity`, and
@@ -309,22 +290,22 @@ contains
         if (present(path)) tty%path = path
 
         if (present(baud_rate)) then
-            if (.not. dm_tty_is_valid_baud_rate(baud_rate)) return
+            if (.not. dm_tty_baud_rate_is_valid(baud_rate)) return
             tty%baud_rate = baud_rate
         end if
 
         if (present(byte_size)) then
-            if (.not. dm_tty_is_valid_byte_size(byte_size)) return
+            if (.not. dm_tty_byte_size_is_valid(byte_size)) return
             tty%byte_size = byte_size
         end if
 
         if (present(parity)) then
-            if (.not. dm_tty_is_valid_parity(parity)) return
+            if (.not. dm_tty_parity_is_valid(parity)) return
             tty%parity = parity
         end if
 
         if (present(stop_bits)) then
-            if (.not. dm_tty_is_valid_stop_bits(stop_bits)) return
+            if (.not. dm_tty_stop_bits_is_valid(stop_bits)) return
             tty%stop_bits = stop_bits
         end if
 
@@ -372,6 +353,18 @@ contains
 
         if (present(error)) error = E_NONE
     end function dm_tty_parity_from_name
+
+    pure elemental logical function dm_tty_parity_is_valid(parity) result(valid)
+        !! Returns `.true.` if given parity value is valid, else `.false.`.
+        integer, intent(in) :: parity !! Parity.
+
+        select case (parity)
+            case (TTY_PARITY_NONE, TTY_PARITY_EVEN, TTY_PARITY_ODD)
+                valid = .true.
+            case default
+                valid = .false.
+        end select
+    end function dm_tty_parity_is_valid
 
     integer function dm_tty_read_byte(tty, byte) result(rc)
         !! Reads single byte from file descriptor.
@@ -679,13 +672,32 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (value)
-            case (1); stop_bits = TTY_STOP_BITS1
-            case (2); stop_bits = TTY_STOP_BITS2
+            case (1);     stop_bits = TTY_STOP_BITS1
+            case (2);     stop_bits = TTY_STOP_BITS2
             case default; return
         end select
 
         if (present(error)) error = E_NONE
     end function dm_tty_stop_bits_from_value
+
+    pure elemental logical function dm_tty_stop_bits_is_valid(stop_bits) result(valid)
+        !! Returns `.true.` if given stop bits value is valid, else `.false.`.
+        integer, intent(in) :: stop_bits !! Stop bits.
+
+        select case (stop_bits)
+            case (TTY_STOP_BITS1, TTY_STOP_BITS2)
+                valid = .true.
+            case default
+                valid = .false.
+        end select
+    end function dm_tty_stop_bits_is_valid
+
+    pure elemental logical function dm_tty_timeout_is_valid(timeout) result(valid)
+        !! Returns `.true.` if given timeout value is valid, else `.false.`.
+        integer, intent(in) :: timeout !! Timeout.
+
+        valid = (timeout >= 0)
+    end function dm_tty_timeout_is_valid
 
     integer function dm_tty_write_bytes(tty, bytes, nbytes) result(rc)
         !! Writes given string to TTY. Returns `E_WRITE` on error. The function

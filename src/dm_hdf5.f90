@@ -44,6 +44,7 @@ module dm_hdf5
     use :: hdf5
     use :: dm_error
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -221,8 +222,8 @@ contains
         call h5fget_name_f(file%id, path, sz, stat)
         if (stat < 0) return
 
-        if (present(n)) n = int(sz)
         rc = E_NONE
+        if (present(n)) n = int(sz)
     end function dm_hdf5_file_path
 
     logical function dm_hdf5_has_filter(filter, error) result(available)
@@ -310,15 +311,11 @@ contains
         character(len=8) :: v
         integer          :: major, minor, release
         integer          :: rc
-        logical          :: name_
-
-        name_ = .false.
-        if (present(name)) name_ = name
 
         rc = dm_hdf5_version_number(major, minor, release)
         write (v, '(2(i0, "."), i0)') major, minor, release
 
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = 'libhdf5/' // trim(v)
         else
             version = trim(v)
@@ -898,8 +895,8 @@ contains
         if (file%id > -1) return
 
         exists  = dm_file_exists(path)
-        create_ = .false.
-        if (present(create)) create_ = create
+        create_ = dm_present(create, .false.)
+        mode_   = dm_present(mode, HDF5_RDWR)
 
         ! Create new file.
         if (create_) then
@@ -915,9 +912,6 @@ contains
         end if
 
         ! Open file.
-        mode_ = HDF5_RDWR
-        if (present(mode)) mode_ = mode
-
         rc = E_INVALID
         select case (mode_)
             case (HDF5_RDONLY); flags = H5F_ACC_RDONLY_F
@@ -945,17 +939,12 @@ contains
         logical,               intent(in), optional :: create !! Create group.
 
         integer :: stat
-        logical :: create_
 
         rc = E_INVALID
         if (id%id < 0) return
 
-        create_ = .false.
-        if (present(create)) create_ = create
-
         rc = E_HDF5
-
-        if (create_) then
+        if (dm_present(create, .false.)) then
             ! Create group.
             call h5gcreate_f(id%id, trim(name), group%id, stat)
         else

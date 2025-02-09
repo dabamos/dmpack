@@ -748,8 +748,7 @@ contains
 
         integer :: grc_
 
-        grc_ = this%grc
-        if (present(grc)) grc_ = grc
+        grc_    = dm_present(grc, this%grc)
         message = dm_geocom_error_message(grc_)
     end function geocom_message
 

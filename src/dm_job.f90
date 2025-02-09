@@ -5,6 +5,7 @@ module dm_job
     use :: dm_error
     use :: dm_id
     use :: dm_observ
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -84,15 +85,10 @@ contains
         type(job_list_type), intent(inout)        :: job_list !! Job list type.
         logical,             intent(in), optional :: disabled !! Include disabled jobs.
 
-        logical :: disabled_
-
         n = 0
         if (.not. allocated(job_list%mask)) return
 
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
-
-        if (disabled_) then
+        if (dm_present(disabled, .false.)) then
             n = job_list%njobs
             return
         end if
@@ -151,8 +147,7 @@ contains
         if (job_list%njobs == 0) return
 
         ! At least one enabled job in job list?
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
+        disabled_ = dm_present(disabled, .false.)
         if (.not. disabled_ .and. .not. dm_job_list_any(job_list)) return
 
         ! Find next job (including invalid ones).

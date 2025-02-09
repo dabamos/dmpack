@@ -80,7 +80,7 @@ contains
             rc = dm_db_size(db, nbytes)
 
             print '("db.application_id: ", z0)', app_id
-            print '("db.foreign_keys: ", l1)',   foreign_keys
+            print '("db.foreign_keys: ", l1)',   dm_btoa(foreign_keys, 'true', 'false')
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)

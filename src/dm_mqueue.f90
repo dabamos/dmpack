@@ -9,6 +9,7 @@ module dm_mqueue
     use :: dm_kind
     use :: dm_log
     use :: dm_observ
+    use :: dm_util
     use :: dm_type
     implicit none (type, external)
     private
@@ -180,8 +181,7 @@ contains
         end if
 
         ! MQ permissions.
-        mode_ = MQUEUE_MODE
-        if (present(mode)) mode_ = mode
+        mode_ = dm_present(mode, MQUEUE_MODE)
 
         if (present(create)) then
             if (create) flag = ior(flag, O_CREAT)
@@ -248,17 +248,16 @@ contains
                 return
         end select
 
-        blocking_ = .true.
-        if (present(blocking)) blocking_ = blocking
+        blocking_ = dm_present(blocking, .true.)
 
-        rc = dm_mqueue_open(mqueue   = mqueue, &
-                            name     = trim(name), &
-                            max_msg  = MQUEUE_MAX_MSG, &
-                            msg_size = sz, &
-                            access   = access_, &
-                            mode     = MQUEUE_MODE, &
-                            create   = .true., &
-                            blocking = blocking_)
+        rc = dm_mqueue_open(mqueue   = mqueue,         & ! Message queue type.
+                            name     = trim(name),     & ! Name without slash.
+                            max_msg  = MQUEUE_MAX_MSG, & ! Max. number of messages.
+                            msg_size = sz,             & ! Max. message size in bytes.
+                            access   = access_,        & ! Read-only, write-only, or read-write access.
+                            mode     = MQUEUE_MODE,    & ! Permissions.
+                            create   = .true.,         & ! Create message queue.
+                            blocking = blocking_)        ! Access is blocking.
     end function mqueue_open_type
 
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
@@ -361,8 +360,7 @@ contains
         integer :: priority_
 
         rc = E_MQUEUE
-        priority_ = 0
-        if (present(priority)) priority_ = priority
+        priority_ = dm_present(priority, 0)
         if (c_mq_send(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_) < 0) return
         rc = E_NONE
     end function mqueue_write_raw

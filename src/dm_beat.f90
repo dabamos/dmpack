@@ -72,13 +72,14 @@ contains
 
     subroutine dm_beat_out(beat, unit)
         !! Prints beat to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         type(beat_type), intent(inout)        :: beat !! Beat type.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("beat.node_id: ", a)')   trim(beat%node_id)
         write (unit_, '("beat.address: ", a)')   trim(beat%address)

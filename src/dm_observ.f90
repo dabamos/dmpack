@@ -231,17 +231,13 @@ contains
         logical,           intent(in), optional :: id        !! Enable id validation (on by default).
         logical,           intent(in), optional :: timestamp !! Enable timestamp validation (on by default).
 
-        logical :: id_, timestamp_
+        logical :: timestamp_
 
         valid = .false.
 
-        id_ = .true.
-        if (present(id)) id_ = id
+        timestamp_ = dm_present(timestamp, .true.)
 
-        timestamp_ = .true.
-        if (present(timestamp)) timestamp_ = timestamp
-
-        if (id_) then
+        if (dm_present(id, .true.)) then
             if (observ%id == UUID_DEFAULT) return
 
             if (.not. dm_uuid4_is_valid(observ%id))     return
@@ -315,8 +311,7 @@ contains
 
         integer :: i, j, unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("observ.id: ", a)')          trim(observ%id)
         write (unit_, '("observ.node_id: ", a)')     trim(observ%node_id)

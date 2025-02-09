@@ -25,10 +25,10 @@ module dm_time
 
     type, public :: time_delta_type
         !! Time delta type to store elapsed time.
-        integer :: days    = 0 !! Bygone days.
-        integer :: hours   = 0 !! Bygone hours.
-        integer :: minutes = 0 !! Bygone minutes.
-        integer :: seconds = 0 !! Bygone seconds.
+        integer :: days    = 0 !! Passed days.
+        integer :: hours   = 0 !! Passed hours.
+        integer :: minutes = 0 !! Passed minutes.
+        integer :: seconds = 0 !! Passed seconds.
     end type time_delta_type
 
     interface dm_time_from_unix
@@ -46,12 +46,12 @@ module dm_time
     public :: dm_time_now
     public :: dm_time_rfc2822
     public :: dm_time_strings
-    public :: dm_time_strip_usec
+    public :: dm_time_strip_useconds
     public :: dm_time_to_beats
     public :: dm_time_to_human
     public :: dm_time_to_unix
     public :: dm_time_unix
-    public :: dm_time_unix_msec
+    public :: dm_time_unix_mseconds
     public :: dm_time_zone
     public :: dm_time_zone_iso
 
@@ -83,31 +83,24 @@ contains
         integer          :: hour_, minute_, second_, usecond_
         character(len=6) :: zone_
 
-        year_    = 1970
-        month_   = 1
-        day_     = 1
-        hour_    = 0
-        minute_  = 0
-        second_  = 0
-        usecond_ = 0
-        zone_    = '+00:00'
+        year_    = dm_present(year,    1970)
+        month_   = dm_present(month,   1)
+        day_     = dm_present(day,     1)
+        hour_    = dm_present(hour,    0)
+        minute_  = dm_present(minute,  0)
+        second_  = dm_present(second,  0)
+        usecond_ = dm_present(usecond, 0)
 
-        if (present(year))    year_    = year
-        if (present(month))   month_   = month
-        if (present(day))     day_     = day
-        if (present(hour))    hour_    = hour
-        if (present(minute))  minute_  = minute
-        if (present(second))  second_  = second
-        if (present(usecond)) usecond_ = usecond
-        if (present(zone))    zone_    = zone
+        zone_ = '+00:00'
+        if (present(zone)) zone_ = zone
 
         write (string, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
 
     pure elemental subroutine dm_time_delta_from_seconds(time_delta, seconds)
-        !! Returns time delta type `time_delta` from Unix time stamp in `seconds`.
+        !! Returns time delta type `time_delta` from passed time `seconds`.
         type(time_delta_type), intent(out) :: time_delta !! Time delta type.
-        integer(kind=i8),      intent(in)  :: seconds    !! Unix time stamp (Epoch).
+        integer(kind=i8),      intent(in)  :: seconds    !! Time in seconds.
 
         integer(kind=i8) :: t
 
@@ -274,7 +267,7 @@ contains
         write (string, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
 
-    pure elemental character(len=25) function dm_time_strip_usec(time) result(string)
+    pure elemental character(len=25) function dm_time_strip_useconds(time) result(string)
         !! Strips the microseconds part of the given ISO 8601 time stamp and
         !! returns a 25-characters long string. The function does not validate
         !! the time stamp for performance reasons. Make sure that only a valid
@@ -282,7 +275,7 @@ contains
         character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
 
         write (string, '(a19, a6)') time(1:19), time(27:32)
-    end function dm_time_strip_usec
+    end function dm_time_strip_useconds
 
     impure elemental integer function dm_time_to_beats(time, beats) result(rc)
         !! Converts ISO 8601 time stamp `time` into
@@ -381,15 +374,15 @@ contains
         sec = tp%tv_sec
     end function dm_time_unix
 
-    integer(kind=i8) function dm_time_unix_msec() result(msec)
+    integer(kind=i8) function dm_time_unix_mseconds() result(mseconds)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
 
-        msec = 0_i8
+        mseconds = 0_i8
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
-        msec = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
-    end function dm_time_unix_msec
+        mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
+    end function dm_time_unix_mseconds
 
     character(len=5) function dm_time_zone() result(zone)
         !! Returns current time zone as five characters long string, for

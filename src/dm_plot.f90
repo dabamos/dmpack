@@ -208,6 +208,8 @@ contains
     function dm_plot_version(name, found) result(version)
         !! Returns Gnuplot version as allocatable string. This function is quite
         !! slow as Gnuplot has to be started in a new process.
+        use :: dm_util, only: dm_present
+
         character(len=*), parameter :: NAME_STR = 'gnuplot'
 
         logical, intent(in),  optional :: name  !! Add prefix `gnuplot/`.
@@ -218,11 +220,8 @@ contains
         character(len=32) :: buffer
         integer           :: rc
         integer(kind=i8)  :: sz
-        logical           :: name_
         type(pipe_type)   :: pipe
 
-        name_ = .false.
-        if (present(name))  name_ = name
         if (present(found)) found = .false.
 
         rc = dm_pipe_open(pipe, PLOT_BINARY // ' --version', PIPE_RDONLY)
@@ -236,7 +235,7 @@ contains
 
         call dm_pipe_close(pipe)
 
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = NAME_STR // '/' // v
         else
             version = v

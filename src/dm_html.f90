@@ -206,12 +206,7 @@ contains
         logical,           intent(in), optional :: encode !! Encode address and inner HTML of anchor element.
         character(len=:), allocatable           :: html   !! Generated HTML.
 
-        logical :: encode_
-
-        encode_ = .true.
-        if (present(encode)) encode_ = encode
-
-        if (encode_) then
+        if (dm_present(encode, .true.)) then
             html = '<a href="' // dm_html_encode(anchor%link) // '">' // dm_html_encode(anchor%text) // '</a>'
         else
             html = '<a href="' // trim(anchor%link) // '">' // trim(anchor%text) // '</a>'
@@ -236,8 +231,7 @@ contains
         type(anchor_type)             :: anchor
         type(time_delta_type)         :: time, time_delta, time_inter
 
-        delta_ = huge(0_i8)
-        if (present(delta)) delta_ = delta
+        delta_ = dm_present(delta, 0_i8)
 
         if (present(prefix)) then
             ! Turn node id into link to `prefix`.
@@ -372,17 +366,13 @@ contains
         character(len=:), allocatable          :: html     !! Generated HTML.
 
         integer :: type_
-        logical :: disabled_
-
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
 
         type_ = HTML_BUTTON_TYPE_BUTTON
 
         if (type >= HTML_BUTTON_TYPE_BUTTON .and. &
             type <= HTML_BUTTON_TYPE_SUBMIT) type_ = type
 
-        if (disabled_) then
+        if (dm_present(disabled, .false.)) then
             html = '<button type="' // trim(BUTTON_TYPES(type_)) // '" disabled="disabled">' // &
                    trim(text) // &
                    '</button>' // NL
@@ -924,8 +914,7 @@ contains
         logical                        :: is_anchor, node_
         type(anchor_type)              :: anchor
 
-        node_ = .true.
-        if (present(node)) node_ = node
+        node_ = dm_present(node, .true.)
 
         is_anchor = .false.
         if (present(prefix)) is_anchor = .true.
@@ -1226,21 +1215,13 @@ contains
         is_anchor = .false.
         if (present(prefix)) is_anchor = .true.
 
-        id_        = .false.
-        node_id_   = .false.
-        sensor_id_ = .false.
-        target_id_ = .false.
-        name_      = .false.
-        source_    = .false.
-        error_     = .false.
-
-        if (present(id))        id_        = id
-        if (present(node_id))   node_id_   = node_id
-        if (present(sensor_id)) sensor_id_ = sensor_id
-        if (present(target_id)) target_id_ = target_id
-        if (present(name))      name_      = name
-        if (present(source))    source_    = source
-        if (present(error))     error_     = error
+        id_        = dm_present(id,        .false.)
+        node_id_   = dm_present(node_id,   .false.)
+        sensor_id_ = dm_present(sensor_id, .false.)
+        target_id_ = dm_present(target_id, .false.)
+        name_      = dm_present(name,      .false.)
+        source_    = dm_present(source,    .false.)
+        error_     = dm_present(error,     .false.)
 
         html = H_TABLE // H_THEAD // H_TR // &
                H_TH // '#'         // H_TH_END // &
@@ -1290,12 +1271,7 @@ contains
         logical,          intent(in), optional :: encode !! HTML-encode string.
         character(len=:), allocatable          :: html   !! Generated HTML.
 
-        logical :: encode_
-
-        encode_ = .false.
-        if (present(encode)) encode_ = encode
-
-        if (encode_) then
+        if (dm_present(encode, .false.)) then
             html = H_P // dm_html_encode(string) // H_P_END
         else
             html = H_P // string // H_P_END
@@ -1309,12 +1285,7 @@ contains
         logical,          intent(in), optional :: code   !! Additional code tag?
         character(len=:), allocatable          :: html   !! Generated HTML.
 
-        logical :: code_
-
-        code_ = .false.
-        if (present(code)) code_ = code
-
-        if (code_) then
+        if (dm_present(code, .false.)) then
             html = H_PRE // H_CODE // string // H_CODE_END // H_PRE_END
         else
             html = H_PRE // string // H_PRE_END
@@ -1415,8 +1386,7 @@ contains
         integer :: i, n
         logical :: disabled_
 
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
+        disabled_ = dm_present(disabled, .false.)
 
         html = '<select id="' // id // '" name="' // name // '">' // NL
 
@@ -1665,21 +1635,16 @@ contains
         !! If optional argument `human` is passed and `.true.`, the output
         !! format of the time stamp will be changed to the slightly more
         !! human-readable format `1970-01-01 00:00:00 +00:00`.
-        use :: dm_time, only: dm_time_strip_usec, dm_time_to_human
+        use :: dm_time, only: dm_time_strip_useconds, dm_time_to_human
 
         character(len=*), intent(in)           :: time  !! ISO 8601 time stamp.
         logical,          intent(in), optional :: human !! Turn time stamp into human-readable format.
         character(len=:), allocatable          :: html  !! Generated HTML.
 
-        logical :: human_
-
-        human_ = .false.
-        if (present(human)) human_ = human
-
-        if (human_) then
-            html = '<time datetime="' // dm_time_strip_usec(time) // '">' // dm_time_to_human(time) // H_TIME_END
+        if (dm_present(human, .false.)) then
+            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // dm_time_to_human(time) // H_TIME_END
         else
-            html = '<time datetime="' // dm_time_strip_usec(time) // '">' // trim(time) // H_TIME_END
+            html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
         end if
     end function dm_html_time
 

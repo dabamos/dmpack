@@ -52,17 +52,10 @@ contains
         rc   = E_NONE
         next = observ%next
 
-        ! Blocking message queue access.
-        blocking_ = .true.
-        if (present(blocking)) blocking_ = blocking
+        blocking_   = dm_present(blocking,   .true.)  ! Blocking message queue access.
+        allow_self_ = dm_present(allow_self, .false.) ! Allow forwarding to sender.
+        verbose_    = dm_present(verbose,    .true.)  ! Enable logging.
 
-        ! Allow forwarding to sender.
-        allow_self_ = .false.
-        if (present(allow_self)) allow_self_ = allow_self
-
-        ! Enable logging.
-        verbose_ = .true.
-        if (present(verbose)) verbose_ = verbose
         if (verbose_) logger => dm_logger_get_default()
 
         do

@@ -4,6 +4,7 @@ module dm_nml
     !! Fortran 95 Namelist import/export of DMPACK derived types.
     use :: dm_error
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -409,8 +410,7 @@ contains
         namelist /DMLOG/ log
 
         rc = E_READ
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdin)
         read (unit_, nml=DMLOG, iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
@@ -427,8 +427,7 @@ contains
         namelist /DMOBSERV/ observ
 
         rc = E_READ
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdin)
         read (unit_, nml=DMOBSERV, iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
@@ -542,8 +541,7 @@ contains
         namelist /DMLOG/ log
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdin)
         write (unit_, nml=DMLOG, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
@@ -561,8 +559,7 @@ contains
         namelist /DMOBSERV/ observ
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdin)
         write (unit_, nml=DMOBSERV, delim='quote', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE

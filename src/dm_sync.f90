@@ -117,13 +117,14 @@ contains
 
     subroutine dm_sync_out(sync, unit)
         !! Prints sync type to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         type(sync_type), intent(inout)        :: sync !! Sync type.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("sync.type: ", a)')       sync%type
         write (unit_, '("sync.id: ", a)')         trim(sync%id)

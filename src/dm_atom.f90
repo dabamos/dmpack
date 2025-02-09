@@ -135,7 +135,7 @@ contains
             atom%updated = dm_time_now()
         end if
 
-        xml = xml // A_UPDATED // dm_time_strip_usec(atom%updated) // A_UPDATED_END
+        xml = xml // A_UPDATED // dm_time_strip_useconds(atom%updated) // A_UPDATED_END
 
         ! Feed author
         author_len = len_trim(atom%author)
@@ -207,8 +207,8 @@ contains
         ! Atom entry content.
         xml = xml // &
               A_ID            // 'urn:uuid:' // dm_uuid4_hyphenize(log%id) // A_ID_END // &
-              A_PUBLISHED     // dm_time_strip_usec(log%timestamp)     // A_PUBLISHED_END // &
-              A_UPDATED       // dm_time_strip_usec(log%timestamp)     // A_UPDATED_END // &
+              A_PUBLISHED     // dm_time_strip_useconds(log%timestamp)     // A_PUBLISHED_END // &
+              A_UPDATED       // dm_time_strip_useconds(log%timestamp)     // A_UPDATED_END // &
               A_SUMMARY       // dm_html_encode(LOG_LEVEL_NAMES(level))    // ': ' // &
                                  dm_html_encode(log%message)               // A_SUMMARY_END // &
               A_CONTENT_XHTML // A_DIV  // dm_html_log(log)                // A_DIV_END  // A_CONTENT_END // &

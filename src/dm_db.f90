@@ -538,14 +538,9 @@ contains
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        wal_ = .false.
-        if (present(wal)) wal_ = wal
-
-        nsteps_ = NSTEPS_DEFAULT
-        if (present(nsteps)) nsteps_ = nsteps
-
-        sleep_time_ = SLEEP_TIME_DEFAULT
-        if (present(sleep_time)) sleep_time_ = sleep_time
+        wal_        = dm_present(wal, .false.)
+        nsteps_     = dm_present(nsteps, NSTEPS_DEFAULT)
+        sleep_time_ = dm_present(sleep_time, SLEEP_TIME_DEFAULT)
 
         rc = E_EXIST
         if (dm_file_exists(path)) return
@@ -587,11 +582,10 @@ contains
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
-        logical :: optimize_
-
-        optimize_ = .false.
-        if (present(optimize)) optimize_ = optimize
-        if (optimize_) rc = dm_db_optimize(db)
+        if (dm_present(optimize, .false.)) then
+            rc = dm_db_optimize(db)
+            if (dm_is_error(rc)) return
+        end if
 
         rc = E_DB
         if (sqlite3_close(db%ctx) /= SQLITE_OK) return
@@ -766,7 +760,6 @@ contains
         logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
-        logical :: sync_
 
         rc = E_READ_ONLY
         if (db%read_only) return
@@ -774,15 +767,12 @@ contains
         rc = E_INVALID
         if (.not. dm_db_is_connected(db)) return
 
-        sync_ = .false.
-        if (present(sync)) sync_ = sync
-
         ! Create logs table.
         rc = db_exec(db, SQL_CREATE_LOGS)
         if (dm_is_error(rc)) return
 
         ! Create sync logs table.
-        if (sync_) then
+        if (dm_present(sync, .false.)) then
             rc = db_exec(db, SQL_CREATE_SYNC_LOGS)
             if (dm_is_error(rc)) return
         end if
@@ -811,16 +801,12 @@ contains
         logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
-        logical :: sync_
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         rc = E_INVALID
         if (.not. dm_db_is_connected(db)) return
-
-        sync_ = .false.
-        if (present(sync)) sync_ = sync
 
         ! Create tables.
         rc = db_exec(db, SQL_CREATE_NODES);     if (dm_is_error(rc)) return
@@ -832,7 +818,7 @@ contains
         rc = db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
 
         ! Create sync tables.
-        if (sync_) then
+        if (dm_present(sync, .false.)) then
             rc = db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
             rc = db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
             rc = db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
@@ -1468,17 +1454,13 @@ contains
         logical,            intent(in),    optional :: validate !! Validate beat.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt_
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate beat.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_beat_is_valid(beat)) return
         end if
@@ -1548,8 +1530,7 @@ contains
         rc = E_EMPTY
         if (size(beats) == 0) return
 
-        transaction_ = .true.
-        if (present(transaction)) transaction_ = transaction
+        transaction_ = dm_present(transaction, .true.)
 
         ! Start transaction.
         if (transaction_) then
@@ -1593,17 +1574,13 @@ contains
         logical,        intent(in), optional :: validate !! Validate log.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate log.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_log_is_valid(log)) return
         end if
@@ -1648,17 +1625,13 @@ contains
         logical,         intent(in), optional :: validate !! Validate node.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate node.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_node_is_valid(node)) return
         end if
@@ -1711,17 +1684,13 @@ contains
         logical,            intent(in),    optional :: validate !! Validate observation.
 
         integer            :: i, n, stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt_
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate observation.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_observ_is_valid(observ)) return
         end if
@@ -1831,8 +1800,7 @@ contains
         rc = E_EMPTY
         if (size(observs) == 0) return
 
-        transaction_ = .true.
-        if (present(transaction)) transaction_ = transaction
+        transaction_ = dm_present(transaction, .true.)
 
         ! Start transaction.
         if (transaction_) then
@@ -1876,17 +1844,13 @@ contains
         logical,           intent(in), optional :: validate !! Validate sensor.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate sensor.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_sensor_is_valid(sensor)) return
         end if
@@ -2064,17 +2028,13 @@ contains
         logical,           intent(in), optional :: validate !! Validate target.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate target.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_target_is_valid(target)) return
         end if
@@ -2165,32 +2125,13 @@ contains
         integer :: flag, timeout_
         logical :: create_, exists, foreign_keys_, threaded_, validate_, wal_
 
-        ! Create database.
-        create_ = .false.
-        if (present(create)) create_ = create
-
-        ! Foreign keys contraint.
-        foreign_keys_ = .true.
-        if (present(foreign_keys)) foreign_keys_ = foreign_keys
-
-        ! Read-only mode.
-        if (present(read_only)) db%read_only = read_only
-
-        ! Threaded access (not recommended).
-        threaded_ = .false.
-        if (present(threaded)) threaded_ = threaded
-
-        ! Busy timeout.
-        timeout_ = 0
-        if (present(timeout)) timeout_ = timeout
-
-        ! App ID validation.
-        validate_ = .false.
-        if (present(validate)) validate_ = validate
-
-        ! WAL mode.
-        wal_ = .false.
-        if (present(wal)) wal_ = wal
+        create_       = dm_present(create,       .false.) ! Create database.
+        foreign_keys_ = dm_present(foreign_keys, .true.)  ! Foreign keys contraint.
+        db%read_only  = dm_present(read_only,    .false.) ! Read-only mode.
+        threaded_     = dm_present(threaded,     .false.) ! Threaded access (not recommended).
+        timeout_      = dm_present(timeout,      0)       ! Busy timeout.
+        validate_     = dm_present(validate,     .true.)  ! App ID validation.
+        wal_          = dm_present(wal,          .false.) ! WAL mode.
 
         ! Validate options.
         exists = dm_file_exists(path)
@@ -2844,15 +2785,11 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        logical             :: stub_
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
         type(observ_type)   :: observ1, observ2
 
         if (present(nobservs)) nobservs = 0_i8
-
-        stub_ = .false.
-        if (present(stub)) stub_ = stub
 
         rc = dm_db_select_observ(db, observ1, after)
         if (dm_is_error(rc)) return
@@ -2924,7 +2861,7 @@ contains
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
-        if (stub_) return
+        if (dm_present(stub, .false.)) return
         if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
@@ -2959,14 +2896,10 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        logical             :: stub_
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
         if (present(nobservs)) nobservs = 0_i8
-
-        stub_ = .false.
-        if (present(stub)) stub_ = stub
 
         call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
         call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
@@ -3024,7 +2957,7 @@ contains
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
-        if (stub_) return
+        if (dm_present(stub, .false.)) return
         if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
@@ -3728,17 +3661,13 @@ contains
         logical,         intent(in), optional :: validate !! Validate node.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate node.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_node_is_valid(node)) return
         end if
@@ -3783,17 +3712,13 @@ contains
         logical,           intent(in), optional :: validate !! Validate sensor.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate sensor.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_sensor_is_valid(sensor)) return
         end if
@@ -3841,17 +3766,13 @@ contains
         logical,           intent(in), optional :: validate !! Validate target.
 
         integer            :: stat
-        logical            :: validate_
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
         if (db%read_only) return
 
         ! Validate target.
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_INVALID
             if (.not. dm_target_is_valid(target)) return
         end if
@@ -3959,12 +3880,7 @@ contains
         logical, intent(in), optional :: name    !! Add prefix `libsqlite/'.
         character(len=:), allocatable :: version !! Version string.
 
-        logical :: name_
-
-        name_ = .false.
-        if (present(name)) name_ = name
-
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = 'libsqlite3/' // sqlite3_libversion()
         else
             version = sqlite3_libversion()
@@ -4010,8 +3926,7 @@ contains
 
         integer :: mode_
 
-        mode_ = DB_TRANS_IMMEDIATE
-        if (present(mode)) mode_ = mode
+        mode_ = dm_present(mode, DB_TRANS_IMMEDIATE)
 
         rc = E_INVALID
         select case (mode_)
@@ -4535,12 +4450,7 @@ contains
         character(len=:), allocatable, intent(out)          :: string   !! Allocatable character string.
         logical,                       intent(in), optional :: validate !! Validate column types.
 
-        logical :: validate_
-
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text(db_stmt, 0)) then
                 string = ''
@@ -4562,14 +4472,9 @@ contains
         integer,            intent(out)          :: nbytes   !! Size of string in bytes.
         logical,            intent(in), optional :: validate !! Validate column types.
 
-        logical :: validate_
-
         nbytes = 0
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text(db_stmt, 0)) then
                 string = ''
@@ -4592,12 +4497,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt, 0)) return
             if (.not. db_column_is_text   (db_stmt, 1)) return
@@ -4631,12 +4532,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text (db_stmt, 0)) return
             if (.not. db_column_is_float(db_stmt, 1)) return
@@ -4658,12 +4555,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt, 0)) return
             if (.not. db_column_is_integer(db_stmt, 1)) return
@@ -4701,12 +4594,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text (db_stmt, 0)) return
             if (.not. db_column_is_text (db_stmt, 1)) return
@@ -4742,12 +4631,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt,  0)) return
             if (.not. db_column_is_text   (db_stmt,  1)) return
@@ -4791,12 +4676,8 @@ contains
         logical,                intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt,  0)) return
             if (.not. db_column_is_text   (db_stmt,  1)) return
@@ -4842,12 +4723,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt,  0)) return
             if (.not. db_column_is_text   (db_stmt,  1)) return
@@ -4889,12 +4766,7 @@ contains
         type(string_type),  intent(out)          :: string   !! String type.
         logical,            intent(in), optional :: validate !! Validate column types.
 
-        logical :: validate_
-
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text(db_stmt, 0)) then
                 string%data = ''
@@ -4952,12 +4824,8 @@ contains
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
-        logical :: validate_
 
-        validate_ = .true.
-        if (present(validate)) validate_ = validate
-
-        if (validate_) then
+        if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
             if (.not. db_column_is_text   (db_stmt, 0)) return
             if (.not. db_column_is_text   (db_stmt, 1)) return
@@ -5174,9 +5042,7 @@ contains
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
-        error_ = E_NONE
-        if (present(error)) error_ = error
-
+        error_ = dm_present(error, E_NONE)
         if (present(npoints)) npoints = 0_i8
 
         call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
@@ -5268,8 +5134,7 @@ contains
         integer             :: error_
         type(db_query_type) :: db_query
 
-        error_ = E_NONE
-        if (present(error)) error_ = error
+        error_ = dm_present(error, E_NONE)
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
@@ -5968,14 +5833,10 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        logical             :: stub_
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
         if (present(nobservs)) nobservs  = 0_i8
-
-        stub_ = .false.
-        if (present(stub)) stub_ = stub
 
         call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
         call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
@@ -6033,7 +5894,7 @@ contains
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
-        if (stub_) return
+        if (dm_present(stub, .false.)) return
         if (size(observs) == 0) return
 
         rc = db_select_observs_data(db, observs)
@@ -6073,11 +5934,7 @@ contains
         logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
 
         integer             :: i, n
-        logical             :: stub_
         type(db_query_type) :: db_query
-
-        stub_ = .false.
-        if (present(stub)) stub_ = stub
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
@@ -6103,7 +5960,7 @@ contains
 
         rc = db_next_row(db_stmt, observ)
         if (dm_is_error(rc)) return
-        if (stub_) return
+        if (dm_present(stub, .false.)) return
 
         ! Get receivers.
         if (observ%nreceivers > 0) then

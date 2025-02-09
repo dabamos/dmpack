@@ -5,6 +5,7 @@ module dm_block
     use :: dm_dp
     use :: dm_error
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -47,8 +48,7 @@ contains
         integer :: unit_, stat
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_point%x, data_point%y
         if (stat /= 0) return
         rc = E_NONE
@@ -62,8 +62,7 @@ contains
         integer :: i, unit_, stat
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         do i = 1, size(data_points)
             write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_points(i)%x, data_points(i)%y

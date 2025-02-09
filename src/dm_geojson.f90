@@ -83,19 +83,15 @@ contains
         logical,                       intent(in), optional :: comma   !! Append comma separator.
 
         integer :: type_
-        logical :: comma_
 
         type_ = TYPE_NONE
         if (dm_type_is_valid(type)) type_ = type
-
-        comma_ = .false.
-        if (present(comma)) comma_ = comma
 
         geojson = '{"type":"Feature","geometry":{"type":"Point","coordinates":[' // &
                   dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
                   ']},"properties":{"type":"' // trim(TYPE_NAMES(type_)) // '","data":' // &
                   trim(data) // '}}'
-        if (comma_) geojson = geojson // ','
+        if (dm_present(comma, .false.)) geojson = geojson // ','
     end subroutine dm_geojson_feature_point
 
     ! **************************************************************************
@@ -145,8 +141,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(node, comma)
         if (stat /= 0) return
         rc = E_NONE
@@ -163,8 +158,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(sensor, comma)
         if (stat /= 0) return
         rc = E_NONE
@@ -181,8 +175,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(target, comma)
         if (stat /= 0) return
         rc = E_NONE

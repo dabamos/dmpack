@@ -162,10 +162,10 @@ contains
         integer   :: byte_size_, stop_bits_
 
         rc = E_INVALID
-        if (.not. dm_tty_is_valid_baud_rate(baud_rate)) return
-        if (.not. dm_tty_is_valid_byte_size(byte_size)) return
-        if (.not. dm_tty_is_valid_parity(parity))       return
-        if (.not. dm_tty_is_valid_stop_bits(stop_bits)) return
+        if (.not. dm_tty_baud_rate_is_valid(baud_rate)) return
+        if (.not. dm_tty_byte_size_is_valid(byte_size)) return
+        if (.not. dm_tty_parity_is_valid(parity))       return
+        if (.not. dm_tty_stop_bits_is_valid(stop_bits)) return
 
         ! Byte size: 5, 6, 7, 8 (start bits).
         select case (byte_size)
@@ -443,14 +443,15 @@ contains
 
     function dm_modbus_version(name) result(version)
         !! Returns libmodbus version as allocatable string.
+        use :: dm_util, only: dm_present
+
         logical, intent(in), optional :: name    !! Add prefix `libmodbus/`.
         character(len=:), allocatable :: version !! Version string.
 
         character(len=8) :: v
         logical          :: name_
 
-        name_ = .false.
-        if (present(name)) name_ = name
+        name_ = dm_present(name, .false.)
 
         write (v, '(2(i0, "."), i0)') LIBMODBUS_VERSION_MAJOR, &
                                       LIBMODBUS_VERSION_MINOR, &

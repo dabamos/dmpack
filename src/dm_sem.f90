@@ -5,6 +5,7 @@ module dm_sem
     use :: unix
     use :: dm_error
     use :: dm_id
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -105,8 +106,7 @@ contains
 
         integer :: value_
 
-        value_ = 0
-        if (present(value)) value_ = value
+        value_ = dm_present(value, 0)
 
         rc = E_SYSTEM
         if (c_sem_init(sem%ctx, value_) /= 0) return
@@ -132,14 +132,9 @@ contains
         integer :: flag, mode_, value_
         logical :: create_
 
-        value_ = 0
-        if (present(value)) value_ = value
-
-        create_ = .false.
-        if (present(create)) create_ = create
-
-        mode_ = SEM_MODE
-        if (present(mode)) mode_ = mode
+        value_  = dm_present(value, 0)
+        create_ = dm_present(create, .false.)
+        mode_   = dm_present(mode, SEM_MODE)
 
         flag = 0
         if (create_) flag = ior(flag, O_CREAT)

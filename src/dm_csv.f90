@@ -144,8 +144,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#node_id'  // s // &
                  'address'   // s // &
@@ -165,8 +164,8 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
+
         header = '#x' // s // 'y'
     end function dm_csv_header_data_point
 
@@ -178,8 +177,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'       // s // &
                  'level'     // s // &
@@ -200,8 +198,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'  // s // &
                  'name' // s // &
@@ -227,8 +224,7 @@ contains
         character(len=:), allocatable :: ai, aj
         integer                       :: i, j
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'        // s // &
                  'node_id'    // s // &
@@ -285,8 +281,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#node_id'          // s // &
                  'sensor_id'         // s // &
@@ -312,8 +307,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'     // s // &
                  'node_id' // s // &
@@ -337,8 +331,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'   // s // &
                  'name'  // s // &
@@ -365,8 +358,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(beat%node_id)     // s // &
               trim(beat%client)      // s // &
@@ -389,15 +381,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_beat(s) // ASCII_LF
         else
             csv = ''
@@ -418,8 +405,8 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
+
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
     end function csv_from_data_point
 
@@ -434,15 +421,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_data_point(s) // ASCII_LF
         else
             csv = ''
@@ -464,8 +446,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(log%id)        // s // &
               dm_itoa(log%level)  // s // &
@@ -489,15 +470,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_log(s) // ASCII_LF
         else
             csv = ''
@@ -518,8 +494,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(node%id)                 // s // &
               trim(node%name)               // s // &
@@ -543,15 +518,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_node(s) // ASCII_LF
         else
             csv = ''
@@ -575,8 +545,7 @@ contains
         character :: s
         integer   :: i, j
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(observ%id)            // s // &
               trim(observ%node_id)       // s // &
@@ -643,8 +612,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(view%node_id)           // s // &
               trim(view%sensor_id)         // s // &
@@ -673,15 +641,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_observ_view(s) // ASCII_LF
         else
             csv = ''
@@ -703,15 +666,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_observ(s) // ASCII_LF
         else
             csv = ''
@@ -732,8 +690,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(sensor%id)                 // s // &
               trim(sensor%node_id)            // s // &
@@ -760,15 +717,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_sensor(s) // ASCII_LF
         else
             csv = ''
@@ -789,8 +741,7 @@ contains
 
         character :: s
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(target%id)                 // s // &
               trim(target%name)               // s // &
@@ -815,15 +766,10 @@ contains
 
         character :: s
         integer   :: i
-        logical   :: header_
 
-        header_ = .false.
-        if (present(header)) header_ = header
+        s = dm_present(separator, CSV_SEPARATOR)
 
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             csv = dm_csv_header_target(s) // ASCII_LF
         else
             csv = ''
@@ -846,10 +792,9 @@ contains
         character :: q
         integer   :: old
 
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        q   = dm_present(quote, ASCII_NUL)
         old = pos
-        rc = csv_parse(input, separator, limit, pos)
+        rc  = csv_parse(input, separator, limit, pos)
         if (dm_is_error(rc)) return
         call dm_string_to(input(old + 1:pos - 1), output, error=rc)
     end function csv_next_int32
@@ -866,10 +811,9 @@ contains
         character :: q
         integer   :: old
 
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        q   = dm_present(quote, ASCII_NUL)
         old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
+        rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
         call dm_string_to(input(old + 1:pos - 1), output, error=rc)
     end function csv_next_int64
@@ -886,10 +830,9 @@ contains
         character :: q
         integer   :: old
 
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        q   = dm_present(quote, ASCII_NUL)
         old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
+        rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
         call dm_string_to(input(old + 1:pos - 1), output, error=rc)
     end function csv_next_real32
@@ -906,10 +849,9 @@ contains
         character :: q
         integer   :: old
 
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        q   = dm_present(quote, ASCII_NUL)
         old = pos
-        rc = csv_parse(input, separator, limit, pos, q)
+        rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
         call dm_string_to(input(old + 1:pos - 1), output, error=rc)
     end function csv_next_real64
@@ -993,14 +935,9 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        unit_ = dm_present(unit,      stdin)
+        s     = dm_present(separator, CSV_SEPARATOR)
+        q     = dm_present(quote,     ASCII_NUL)
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
@@ -1048,14 +985,9 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        unit_ = dm_present(unit,      stdin)
+        s     = dm_present(separator, CSV_SEPARATOR)
+        q     = dm_present(quote,     ASCII_NUL)
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
@@ -1105,14 +1037,9 @@ contains
         integer   :: i, j, n, p
         integer   :: unit_, stat
 
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        unit_ = dm_present(unit,      stdin)
+        s     = dm_present(separator, CSV_SEPARATOR)
+        q     = dm_present(quote,     ASCII_NUL)
 
         read (unit_, '(a)', iostat=stat) buffer
 
@@ -1191,14 +1118,9 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        unit_ = dm_present(unit,      stdin)
+        s     = dm_present(separator, CSV_SEPARATOR)
+        q     = dm_present(quote,     ASCII_NUL)
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
@@ -1248,14 +1170,9 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = stdin
-        if (present(unit)) unit_ = unit
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        q = ASCII_NUL
-        if (present(quote)) q = quote
+        unit_ = dm_present(unit,      stdin)
+        s     = dm_present(separator, CSV_SEPARATOR)
+        q     = dm_present(quote,     ASCII_NUL)
 
         rc = E_READ
         read (unit_, '(a)', iostat=stat) buffer
@@ -1297,20 +1214,13 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_beat(s)
             if (stat /= 0) return
         end if
@@ -1344,14 +1254,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(beats)
             rc = dm_csv_write(beats(i), unit_, header_, s)
@@ -1371,20 +1276,13 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_data_point(s)
             if (stat /= 0) return
         end if
@@ -1410,14 +1308,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(data_points)
             rc = dm_csv_write(data_points(i), unit_, header_, s)
@@ -1437,20 +1330,13 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_log(s)
             if (stat /= 0) return
         end if
@@ -1486,14 +1372,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(logs)
             rc = dm_csv_write(logs(i), unit_, header_, s)
@@ -1513,20 +1394,13 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_node(s)
             if (stat /= 0) return
         end if
@@ -1561,14 +1435,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(nodes)
             rc = dm_csv_write(nodes(i), unit_, header_, s)
@@ -1590,20 +1459,13 @@ contains
 
         character :: s
         integer   :: i, j, unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_observ(s)
             if (stat /= 0) return
         end if
@@ -1696,14 +1558,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(observs)
             rc = dm_csv_write(observs(i), unit_, header_, s)
@@ -1723,20 +1580,13 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
-
-        if (header_) then
+        if (dm_present(header, .false.)) then
             write (unit_, '(a)', iostat=stat) dm_csv_header_sensor(s)
             if (stat /= 0) return
         end if
@@ -1774,14 +1624,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(sensors)
             rc = dm_csv_write(sensors(i), unit_, header_, s)
@@ -1801,18 +1646,16 @@ contains
 
         character :: s
         integer   :: unit_, stat
-        logical   :: header_
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit,      stdout)
+        s     = dm_present(separator, CSV_SEPARATOR)
 
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        if (dm_present(header, .false.)) then
+            write (unit_, '(a)', iostat=stat) dm_csv_header_target(s)
+            if (stat /= 0) return
+        end if
 
         write (unit_, '(8a, i0, 6(a, ' // FMT_REAL // '))', iostat=stat) &
             trim(target%id),             s, &
@@ -1845,14 +1688,9 @@ contains
 
         rc = E_WRITE
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        header_ = .false.
-        if (present(header)) header_ = header
-
-        s = CSV_SEPARATOR
-        if (present(separator)) s = separator
+        unit_   = dm_present(unit,      stdout)
+        header_ = dm_present(header,    .false.)
+        s       = dm_present(separator, CSV_SEPARATOR)
 
         do i = 1, size(targets)
             rc = dm_csv_write(targets(i), unit_, header_, s)

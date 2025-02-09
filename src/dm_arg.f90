@@ -134,18 +134,12 @@ contains
 
         character(len=ARG_VALUE_LEN) :: a, value
         integer                      :: i, j, k, n, stat
-        logical                      :: ignore_unknown_, verbose_
-        logical                      :: exists
+        logical                      :: exists, ignore_unknown_, verbose_
 
         rc = E_NONE
 
-        ! Allow unknown command-line arguments?
-        ignore_unknown_ = .false.
-        if (present(ignore_unknown)) ignore_unknown_ = ignore_unknown
-
-        ! Show error messages?
-        verbose_ = .true.
-        if (present(verbose)) verbose_ = verbose
+        ignore_unknown_ = dm_present(ignore_unknown, .false.) ! Allow unknown command-line arguments?
+        verbose_        = dm_present(verbose,        .true.)  ! Show error messages?
 
         ! Reset arguments.
         do i = 1, size(args)

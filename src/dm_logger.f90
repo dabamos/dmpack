@@ -27,6 +27,7 @@ module dm_logger
     use :: dm_node
     use :: dm_observ
     use :: dm_type
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -224,11 +225,8 @@ contains
         logical        :: escape_, verbose_
         type(log_type) :: log
 
-        escape_  = .true.
-        verbose_ = .false.
-
-        if (present(escape))  escape_  = escape
-        if (present(verbose)) verbose_ = verbose
+        escape_  = dm_present(escape, .true.)
+        verbose_ = dm_present(verbose, .false.)
 
         ! Ignore debugging messages if forwarding and output are both disabled.
         if (level == LL_DEBUG .and. this%min_level > LL_DEBUG .and. .not. this%verbose) return
@@ -390,8 +388,7 @@ contains
         level = LL_ERROR
         if (dm_log_level_is_valid(log%level)) level = log%level
 
-        unit_ = stderr
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stderr)
 
         if (.not. this%no_color) call dm_ansi_color(LOGGER_COLORS(level))
 

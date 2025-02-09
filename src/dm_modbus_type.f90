@@ -199,13 +199,15 @@ contains
     end subroutine dm_modbus_parse
 
     subroutine dm_modbus_register_out(register, unit)
+        !! Outputs Modbus register type.
+        use :: dm_util, only: dm_present
+
         type(modbus_register_type), intent(inout)        :: register !! Modbus register type.
         integer,                    intent(in), optional :: unit     !! File unit.
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("modbus_register.access: ", i0)')  register%access
         write (unit_, '("modbus_register.slave: ", i0)')   register%slave

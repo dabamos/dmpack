@@ -137,8 +137,8 @@ contains
         real(kind=r8), intent(in)  :: x  !! X coordinate.
         real(kind=r8), intent(in)  :: y  !! Y coordinate.
         real(kind=r8), intent(in)  :: z  !! Z coordinate.
-        real(kind=r8), intent(out) :: hz !! Horizontal angle (phi).
-        real(kind=r8), intent(out) :: v  !! Vertical angle (omega).
+        real(kind=r8), intent(out) :: hz !! Horizontal angle (phi) [rad].
+        real(kind=r8), intent(out) :: v  !! Vertical angle (omega) [rad].
         real(kind=r8), intent(out) :: r  !! Radius.
 
         r  = sqrt(x**2 + y**2 + z**2)
@@ -148,8 +148,8 @@ contains
 
     pure elemental subroutine dm_transform_polar_to_cartesian(hz, v, r, x, y, z)
         !! Transforms polar (spherical) coordinates to cartesian coordinates.
-        real(kind=r8), intent(in)  :: hz !! Horizontal angle (phi).
-        real(kind=r8), intent(in)  :: v  !! Vertical angle (omega).
+        real(kind=r8), intent(in)  :: hz !! Horizontal angle (phi) [rad].
+        real(kind=r8), intent(in)  :: v  !! Vertical angle (omega) [rad].
         real(kind=r8), intent(in)  :: r  !! Radius.
         real(kind=r8), intent(out) :: x  !! X coordinate.
         real(kind=r8), intent(out) :: y  !! Y coordinate.

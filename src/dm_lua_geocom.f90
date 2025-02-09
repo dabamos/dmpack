@@ -265,25 +265,17 @@ contains
         !! * `geocom_switch_on()`
         !! * `geocom_take_image()`
         !!
-        use :: dm_util, only: dm_itoa
+        use :: dm_util, only: dm_itoa, dm_present
 
         type(lua_state_type), intent(inout)        :: lua        !! Lua state type.
         logical,              intent(in), optional :: procedures !! Export GeoCOM API procedures and type parameters.
         logical,              intent(in), optional :: errors     !! Export GeoCOM return codes (`GRC_*`).
 
-        logical :: errors_, procedures_
-
-        procedures_ = .true.
-        if (present(procedures)) procedures_ = procedures
-
-        errors_ = .false.
-        if (present(errors)) errors_ = errors
-
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
 
         ! Register GeoCOM Lua API.
-        if (procedures_) then
+        if (dm_present(procedures, .true.)) then
             ! Add GeoCOM type parameters.
             rc = dm_lua_set(lua, 'GEOCOM_AUT_NORMAL',               GEOCOM_AUT_NORMAL);               if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'GEOCOM_AUT_PRECISE',              GEOCOM_AUT_PRECISE);              if (dm_is_error(rc)) return
@@ -556,7 +548,7 @@ contains
         end if
 
         ! Register GeoCOM return codes.
-        if (errors_) then
+        if (dm_present(errors, .false.)) then
             rc = dm_lua_set(lua, 'GRC_OK',                         GRC_OK);                         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'GRC_UNDEFINED',                  GRC_UNDEFINED);                  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'GRC_IVPARAM',                    GRC_IVPARAM);                    if (dm_is_error(rc)) return

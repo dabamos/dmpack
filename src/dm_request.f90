@@ -198,16 +198,11 @@ contains
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
-        logical :: timestamp_
-
         valid = .false.
-
-        timestamp_ = .true.
-        if (present(timestamp)) timestamp_ = timestamp
 
         if (.not. dm_id_is_valid(request%name)) return
 
-        if (timestamp_) then
+        if (dm_present(timestamp, .true.)) then
             if (.not. dm_time_is_valid(request%timestamp, strict=.true.)) return
         end if
 
@@ -269,8 +264,7 @@ contains
 
         integer :: i, unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("request.name: ", a)')        trim(request%name)
         write (unit_, '("request.timestamp: ", a)')   trim(request%timestamp)

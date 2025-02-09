@@ -240,9 +240,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(beats)
         if (n == 0) return
@@ -267,9 +265,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(data_points)
         if (n == 0) return
@@ -294,9 +290,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(logs)
         if (n == 0) return
@@ -321,9 +315,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(nodes)
         if (n == 0) return
@@ -348,9 +340,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(observs)
         if (n == 0) return
@@ -375,9 +365,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(sensors)
         if (n == 0) return
@@ -402,9 +390,7 @@ contains
         integer :: i, n, stat, unit_
 
         rc = E_NONE
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         n = size(targets)
         if (n == 0) return

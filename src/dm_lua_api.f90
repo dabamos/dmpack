@@ -79,23 +79,11 @@ contains
         logical,              intent(in), optional :: procedures     !! Export procedures.
         logical,              intent(in), optional :: response_types !! Export response type parameters.
 
-        logical :: errors_, log_levels_, procedures_, response_types_
-
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
 
-        errors_         = .true.
-        log_levels_     = .true.
-        procedures_     = .true.
-        response_types_ = .true.
-
-        if (present(errors))         errors_         = errors
-        if (present(log_levels))     log_levels_     = log_levels
-        if (present(procedures))     procedures_     = procedures
-        if (present(response_types)) response_types_ = response_types
-
         ! Add error codes.
-        if (errors_) then
+        if (dm_present(errors, .true.)) then
             rc = dm_lua_set(lua, 'E_NONE',           E_NONE);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ERROR',          E_ERROR);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DUMMY',          E_DUMMY);          if (dm_is_error(rc)) return
@@ -197,7 +185,7 @@ contains
         end if
 
         ! Add log levels.
-        if (log_levels_) then
+        if (dm_present(log_levels, .true.)) then
             rc = dm_lua_set(lua, 'LL_NONE',     LL_NONE);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_DEBUG',    LL_DEBUG);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_INFO',     LL_INFO);     if (dm_is_error(rc)) return
@@ -208,7 +196,7 @@ contains
         end if
 
         ! Register response type parameters.
-        if (response_types_) then
+        if (dm_present(response_types, .true.)) then
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_REAL64',  RESPONSE_TYPE_REAL64);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_REAL32',  RESPONSE_TYPE_REAL32);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_INT64',   RESPONSE_TYPE_INT64);   if (dm_is_error(rc)) return
@@ -219,7 +207,7 @@ contains
         end if
 
         ! Register procedures.
-        if (procedures_) then
+        if (dm_present(procedures, .true.)) then
             call dm_lua_register(lua, 'deg2gon', dm_lua_api_deg2gon)
             call dm_lua_register(lua, 'deg2rad', dm_lua_api_deg2rad)
             call dm_lua_register(lua, 'gon2deg', dm_lua_api_gon2deg)

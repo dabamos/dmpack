@@ -284,7 +284,7 @@ contains
             return
         end if
 
-        if (.not. dm_tty_is_valid_timeout(app%timeout)) then
+        if (.not. dm_tty_timeout_is_valid(app%timeout)) then
             call dm_error_out(rc, 'invalid timeout')
             return
         end if
@@ -351,9 +351,7 @@ contains
         type(response_type), pointer :: response ! Single response in request.
 
         rc = E_EMPTY
-
-        debug_ = .true.
-        if (present(debug)) debug_ = debug
+        debug_ = dm_present(debug, .true.)
 
         ! Initialise observation.
         observ%id        = dm_uuid4()

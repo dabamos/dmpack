@@ -40,6 +40,7 @@ module dm_config
     use :: dm_kind
     use :: dm_lua
     use :: dm_string
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -118,11 +119,6 @@ contains
         character(len=*),  intent(in), optional :: name   !! Name of table. Passed name implies table loading.
         logical,           intent(in), optional :: geocom !! Register GeoCOM API for Lua.
 
-        logical :: geocom_
-
-        geocom_ = .false.
-        if (present(geocom)) geocom_ = geocom
-
         rc = E_INVALID
         if (len_trim(path) == 0) then
             call dm_error_out(rc, 'missing path to configuration file')
@@ -145,7 +141,7 @@ contains
             if (dm_is_error(rc)) exit lua_block
 
             ! Register GeoCOM API for Lua.
-            if (geocom_) then
+            if (dm_present(geocom, .false.)) then
                 rc = dm_lua_geocom_register(config%lua, procedures=.true., errors=.true.)
                 if (dm_is_error(rc)) exit lua_block
             end if
@@ -297,11 +293,8 @@ contains
         logical,             intent(in),  optional :: field  !! Read from table field.
 
         integer :: rc
-        logical :: field_
 
-        field_ = .true.
-        if (present(field)) field_ = field
-        if (field_) rc = dm_lua_field(config%lua, name)
+        if (dm_present(field, .true.)) rc = dm_lua_field(config%lua, name)
         rc = dm_lua_to(config%lua, value)
         rc = config_error(rc, param=name)
         if (present(error)) error = rc
@@ -333,11 +326,8 @@ contains
         logical,                                 intent(in),  optional :: field     !! Read from table field.
 
         integer :: i, rc, stat, sz
-        logical :: field_
 
-        field_ = .true.
-        if (present(field)) field_ = field
-        if (field_) rc = dm_lua_field(config%lua, name)
+        if (dm_present(field, .true.)) rc = dm_lua_field(config%lua, name)
 
         lua_block: block
             rc = E_TYPE
@@ -410,11 +400,8 @@ contains
         logical,           intent(in),  optional :: field  !! Read from table field.
 
         integer :: rc
-        logical :: field_
 
-        field_ = .true.
-        if (present(field)) field_ = field
-        if (field_) rc = dm_lua_field(config%lua, name)
+        if (dm_present(field, .true.)) rc = dm_lua_field(config%lua, name)
         rc = dm_lua_to(config%lua, value)
         rc = config_error(rc, param=name)
         if (present(error)) error = rc

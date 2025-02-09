@@ -195,13 +195,14 @@ contains
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         type(log_type), intent(inout)        :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("log.id: ", a)')        trim(log%id)
         write (unit_, '("log.level: ", i0)')    log%level

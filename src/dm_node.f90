@@ -73,13 +73,14 @@ contains
 
     subroutine dm_node_out(node, unit)
         !! Prints node to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         type(node_type), intent(inout)        :: node
         integer,         intent(in), optional :: unit
 
         integer :: unit_
 
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
+        unit_ = dm_present(unit, stdout)
 
         write (unit_, '("node.id: ", a)')        trim(node%id)
         write (unit_, '("node.name: ", a)')      trim(node%name)

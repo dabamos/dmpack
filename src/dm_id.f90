@@ -14,6 +14,8 @@ contains
         !! be between 1 and 32 characters long, and all characters have to
         !! be in set `[-0-9A-Z_a-z]`. The optional argument `max_len`
         !! overwrites the default maximum id length.
+        use :: dm_util, only: dm_present
+
         character(len=*), parameter :: ID_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
 
@@ -23,8 +25,7 @@ contains
         integer :: max_len_, n
 
         valid = .false.
-        max_len_ = ID_LEN
-        if (present(max_len)) max_len_ = max_len
+        max_len_ = dm_present(max_len, ID_LEN)
         n = len_trim(id)
         if (n == 0 .or. n > max_len_) return
         if (id(1:1) == ' ') return

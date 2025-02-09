@@ -1567,7 +1567,7 @@ $ dminfo --database /var/dmpack/observ.sqlite
 build.compiler: GCC version 14.2.0
 build.options: -mtune=generic -march=x86-64 -std=f2018
 db.application_id: 444D31
-db.foreign_keys: T
+db.foreign_keys: true
 db.journal_mode: wal
 db.library: libsqlite3/3.46.1
 db.path: /var/dmpack/observ.sqlite

@@ -362,17 +362,14 @@ contains
         logical                 :: sequential_
         type(zstd_context_type) :: context
 
+        z           = dm_present(compression, Z_TYPE_NONE)
+        sequential_ = dm_present(sequential, .false.)
+
         rc = E_CORRUPT
         if (size(requests) /= size(types)) return
 
-        z = Z_TYPE_NONE
-        if (present(compression)) z = compression
-
         rc = E_INVALID
         if (.not. dm_z_type_is_valid(z)) return
-
-        sequential_ = .false.
-        if (present(sequential)) sequential_ = sequential
 
         n = size(requests)
 
@@ -527,11 +524,8 @@ contains
         logical     :: tls_
         type(c_ptr) :: ptr
 
-        tls_ = .false.
-        if (present(tls)) tls_ = tls
-
-        port_ = 0
-        if (present(port)) port_ = port
+        tls_  = dm_present(tls, .false.)
+        port_ = dm_present(port, 0)
 
         url_block: block
             ptr = curl_url()
