@@ -248,6 +248,7 @@ module dm_ve
     !!         print '("Record is invalid")'
     !!     end if
     !!
+    !!     call dm_ve_frame_reset(frame)
     !!     return
     !! end if
     !!
@@ -256,8 +257,6 @@ module dm_ve
     !!     print '("Label: ", a, " Value: ", a)',    frame%label, trim(frame%value)
     !!     print '("Name:  ", a, " Value: ", f8.1)', response%name, response%value
     !! end if
-    !!
-    !! call dm_ve_frame_reset(frame)
     !! ```
     !!
     !! ## References
@@ -896,11 +895,7 @@ contains
 
                 case (RESPONSE_TYPE_LOGICAL)
                     rc = E_NONE
-                    if (frame%value == 'ON') then
-                        response%value = dm_to_real64(.true.)
-                    else
-                        response%value = dm_to_real64(.false.)
-                    end if
+                    response%value = dm_to_real64((frame%value == 'ON'))
             end select
 
             response%error = rc

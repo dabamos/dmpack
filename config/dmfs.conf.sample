@@ -36,7 +36,7 @@ observs = {
         receivers = { "dmdb" },
         requests = {
             {
-                name = "get-temp"
+                name = "get_temp"
                 request = owfs_path,
                 pattern = "(?<temp>[-+0-9\\.]+)",
                 delay = 500,
