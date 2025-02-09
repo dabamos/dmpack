@@ -53,9 +53,9 @@ contains
         type(app_type), intent(inout) :: app
 
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, mode, user_version
+        integer                       :: app_id, mode, schema_version
         integer(kind=i8)              :: n, nbytes
-        logical                       :: has_db
+        logical                       :: foreign_keys, has_db
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
@@ -74,15 +74,17 @@ contains
         ! Database information.
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
-            rc = dm_db_get_user_version(db, user_version)
+            rc = dm_db_get_foreign_keys(db, foreign_keys)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
+            rc = dm_db_get_schema_version(db, schema_version)
             rc = dm_db_size(db, nbytes)
 
             print '("db.application_id: ", z0)', app_id
+            print '("db.foreign_keys: ", l1)',   foreign_keys
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)
-            print '("db.schema_version: ", i0)', user_version
+            print '("db.schema_version: ", i0)', schema_version
             print '("db.size: ", i0)',           nbytes
 
             if (dm_db_has_table(db, SQL_TABLE_BEATS)) then

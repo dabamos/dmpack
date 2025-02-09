@@ -320,7 +320,7 @@ contains
 
                     ! Convert all frames to responses.
                     call dm_ve_frame_read(frames, responses, error=errors)
-                    if (any(dm_is_error(errors))) call logger%error('failed to convert frame to response', error=maxval(errors))
+                    if (any(dm_is_error(errors))) call logger%error('failed to convert frames to responses', error=maxval(errors))
 
                     ! Create and forward observation.
                     call create_observ(observ, app, responses)

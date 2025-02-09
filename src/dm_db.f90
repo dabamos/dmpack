@@ -73,7 +73,7 @@ module dm_db
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
-    integer, parameter, public :: DB_USER_VERSION    = 2              !! Database schema version, increased on updates.
+    integer, parameter, public :: DB_SCHEMA_VERSION  = 2              !! Database schema version, increased on updates.
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     ! Private parameters.
@@ -313,7 +313,7 @@ module dm_db
     public :: dm_db_get_foreign_keys
     public :: dm_db_get_journal_mode
     public :: dm_db_get_query_only
-    public :: dm_db_get_user_version
+    public :: dm_db_get_schema_version
     public :: dm_db_has_log
     public :: dm_db_has_node
     public :: dm_db_has_observ
@@ -386,8 +386,8 @@ module dm_db
     public :: dm_db_set_journal_mode
     public :: dm_db_set_log_callback
     public :: dm_db_set_query_only
+    public :: dm_db_set_schema_version
     public :: dm_db_set_update_callback
-    public :: dm_db_set_user_version
     public :: dm_db_shutdown
     public :: dm_db_size
     public :: dm_db_sleep
@@ -1344,7 +1344,7 @@ contains
         stat = db_finalize(db_stmt)
     end function dm_db_get_query_only
 
-    integer function dm_db_get_user_version(db, version) result(rc)
+    integer function dm_db_get_schema_version(db, version) result(rc)
         !! Returns user version of database in `version`.
         !!
         !! The function returns the following error codes:
@@ -1376,7 +1376,7 @@ contains
         end block sql_block
 
         stat = db_finalize(db_stmt)
-    end function dm_db_get_user_version
+    end function dm_db_get_schema_version
 
     logical function dm_db_has_log(db, log_id) result(has)
         !! Returns `.true.` if log id exists.
@@ -2237,7 +2237,7 @@ contains
                 if (dm_is_error(rc)) return
 
                 ! Set database version.
-                rc = dm_db_set_user_version(db, DB_USER_VERSION)
+                rc = dm_db_set_schema_version(db, DB_SCHEMA_VERSION)
                 if (dm_is_error(rc)) return
             end if
 
@@ -2697,8 +2697,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'observs.timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS))
             if (dm_is_error(rc)) exit sql_block
@@ -2791,8 +2791,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_VIEWS))
             if (dm_is_error(rc)) exit sql_block
@@ -2899,8 +2899,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'observs.timestamp', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'observs.timestamp', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
@@ -2999,8 +2999,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'observs.timestamp', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'observs.timestamp', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
@@ -3612,26 +3612,8 @@ contains
         stat = db_finalize(db_stmt)
     end function dm_db_set_query_only
 
-    integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
-        !! Sets SQLite error log callback. The dummy argument `client_data` is
-        !! passed to the callback routine. The function returns `E_DB` on error.
-        type(db_type), intent(inout)         :: db          !! Database type.
-        procedure(dm_db_update_callback)     :: callback    !! Callback routine.
-        type(c_ptr),   intent(in), optional  :: client_data !! C pointer to client data.
-
-        type(c_ptr) :: udp
-
-        rc = E_DB
-        if (present(client_data)) then
-            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), client_data)
-        else
-            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), c_null_ptr)
-        end if
-        rc = E_NONE
-    end function dm_db_set_update_callback
-
-    integer function dm_db_set_user_version(db, version) result(rc)
-        !! Sets database user version.
+    integer function dm_db_set_schema_version(db, version) result(rc)
+        !! Sets database schema version.
         !!
         !! The `user_version` pragma will get or set the value of the
         !! user-version integer at offset 60 in the database header. The
@@ -3663,7 +3645,25 @@ contains
         end block sql_block
 
         stat = db_finalize(db_stmt)
-    end function dm_db_set_user_version
+    end function dm_db_set_schema_version
+
+    integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
+        !! Sets SQLite error log callback. The dummy argument `client_data` is
+        !! passed to the callback routine. The function returns `E_DB` on error.
+        type(db_type), intent(inout)         :: db          !! Database type.
+        procedure(dm_db_update_callback)     :: callback    !! Callback routine.
+        type(c_ptr),   intent(in), optional  :: client_data !! C pointer to client data.
+
+        type(c_ptr) :: udp
+
+        rc = E_DB
+        if (present(client_data)) then
+            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), client_data)
+        else
+            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), c_null_ptr)
+        end if
+        rc = E_NONE
+    end function dm_db_set_update_callback
 
     integer function dm_db_shutdown() result(rc)
         !! Finalises SQLite handle. Returns `E_DB` on error.
@@ -3925,7 +3925,7 @@ contains
     integer function dm_db_validate(db) result(rc)
         !! Validates an opened DMPACK database. The application id must match
         !! the constant `DB_APPLICATION_ID`, and the user version must be equal
-        !! to `DB_USER_VERSION`.
+        !! to `DB_SCHEMA_VERSION`.
         !!
         !! The function returns the following error codes:
         !!
@@ -3933,11 +3933,11 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
-        !! * `E_DB_VERSION` if the user version is incompatible.
+        !! * `E_DB_VERSION` if the schema version is incompatible.
         !!
         type(db_type), intent(inout) :: db !! Database type.
 
-        integer :: id, user_version
+        integer :: id, schema_version
 
         rc = dm_db_get_application_id(db, id)
         if (dm_is_error(rc)) return
@@ -3945,11 +3945,11 @@ contains
         rc = E_DB_ID
         if (id /= DB_APPLICATION_ID) return
 
-        rc = dm_db_get_user_version(db, user_version)
+        rc = dm_db_get_schema_version(db, schema_version)
         if (dm_is_error(rc)) return
 
         rc = E_DB_VERSION
-        if (user_version /= DB_USER_VERSION) return
+        if (schema_version /= DB_SCHEMA_VERSION) return
 
         rc = E_NONE
     end function dm_db_validate
@@ -5075,8 +5075,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'node_id', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'node_id', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
             if (dm_is_error(rc)) exit sql_block
@@ -5122,7 +5122,7 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
             if (dm_is_error(rc)) return
@@ -5212,8 +5212,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_DATA_POINTS))
             if (dm_is_error(rc)) exit sql_block
@@ -5280,8 +5280,8 @@ contains
             call dm_db_query_add_text(db_query, 'requests.timestamp >= ?', from)
             call dm_db_query_add_text(db_query, 'requests.timestamp < ?',  to)
 
-            call dm_db_query_order(db_query, 'requests.timestamp', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'requests.timestamp', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_DATA_POINTS))
             if (dm_is_error(rc)) return
@@ -5341,7 +5341,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
@@ -5388,7 +5388,7 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) return
@@ -5481,8 +5481,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
@@ -5550,8 +5550,8 @@ contains
             call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
             call dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            call dm_db_query_order(db_query, 'timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) return
@@ -5611,8 +5611,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'nodes.row_id', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'nodes.row_id', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
@@ -5659,8 +5659,8 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            call dm_db_query_order(db_query, 'nodes.row_id', desc=.false.)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'nodes.row_id', desc=.false.)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) return
@@ -5751,8 +5751,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
             if (dm_is_error(rc)) exit sql_block
@@ -5820,8 +5820,8 @@ contains
             call dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
             call dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            call dm_db_query_order(db_query, 'timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
             if (dm_is_error(rc)) return
@@ -5872,7 +5872,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'nodes.id', desc=.false.)
+            call dm_db_query_set_order(db_query, 'nodes.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, SQL_SELECT_NODES)
             if (dm_is_error(rc)) exit sql_block
@@ -5913,7 +5913,7 @@ contains
         type(db_query_type) :: db_query
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
-            call dm_db_query_order(db_query, 'nodes.id', desc=.false.)
+            call dm_db_query_set_order(db_query, 'nodes.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NODES))
             if (dm_is_error(rc)) return
@@ -6008,8 +6008,8 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'observs.timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
@@ -6086,8 +6086,8 @@ contains
             call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
             call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
-            call dm_db_query_order(db_query, 'observs.timestamp', desc)
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_order(db_query, 'observs.timestamp', desc)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) return
@@ -6482,7 +6482,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_order(db_query, 'sensors.id', desc=.false.)
+            call dm_db_query_set_order(db_query, 'sensors.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
             if (dm_is_error(rc)) exit sql_block
@@ -6533,7 +6533,7 @@ contains
             end if
 
             call dm_db_query_add_text(db_query, 'nodes.id = ?', node_id)
-            call dm_db_query_order(db_query, 'sensors.id', desc=.false.)
+            call dm_db_query_set_order(db_query, 'sensors.id', desc=.false.)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_SENSORS))
             if (dm_is_error(rc)) return
@@ -6643,7 +6643,7 @@ contains
             rc = E_DB_NO_ROWS
             if (nsyncs == 0) exit sql_block
 
-            call dm_db_query_limit(db_query, limit)
+            call dm_db_query_set_limit(db_query, limit)
 
             rc = db_prepare(db, db_stmt, dm_db_query_build(db_query, trim(query)))
             if (dm_is_error(rc)) exit sql_block

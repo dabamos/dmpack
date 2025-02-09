@@ -1023,7 +1023,7 @@ contains
 
     logical function test19() result(stat)
         !! Tests PRAGMAs.
-        integer, parameter :: USER_VERSION = 1
+        integer, parameter :: SCHEMA_VERSION = DB_SCHEMA_VERSION
 
         integer       :: n, rc
         logical       :: enabled
@@ -1049,12 +1049,12 @@ contains
             if (dm_is_error(rc)) exit test_block
             if (n /= DB_APPLICATION_ID) exit test_block
 
-            print *, 'Testing user version ...'
-            rc = dm_db_set_user_version(db, USER_VERSION)
+            print *, 'Testing schema version ...'
+            rc = dm_db_set_schema_version(db, SCHEMA_VERSION)
             if (dm_is_error(rc)) exit test_block
-            rc = dm_db_get_user_version(db, n)
+            rc = dm_db_get_schema_version(db, n)
             if (dm_is_error(rc)) exit test_block
-            if (n /= USER_VERSION) exit test_block
+            if (n /= SCHEMA_VERSION) exit test_block
 
             print *, 'Testing query-only ...'
             rc = dm_db_set_query_only(db, .true.)

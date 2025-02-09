@@ -1564,18 +1564,33 @@ Print build, database, and system information:
 
 ....
 $ dminfo --database /var/dmpack/observ.sqlite
-build.compiler: GCC version 13.2.0
+build.compiler: GCC version 14.2.0
 build.options: -mtune=generic -march=x86-64 -std=f2018
 db.application_id: 444D31
 db.foreign_keys: T
 db.journal_mode: wal
-db.library: libsqlite3/3.46.0
+db.library: libsqlite3/3.46.1
 db.path: /var/dmpack/observ.sqlite
-db.schema_version: 1
+db.schema_version: 2
 db.size: 286720
+db.table.beats.rows: 0
+db.table.logs.rows: 0
 db.table.nodes.rows: 1
 db.table.observs.rows: 202
-...
+db.table.receivers.rows: 606
+db.table.requests.rows: 202
+db.table.responses.rows: 232
+db.table.sensors.rows: 2
+db.table.targets.rows: 2
+dmpack.version: 0.9.6
+system.byte_order: little-endian
+system.host: workstation
+system.name: FreeBSD
+system.platform: amd64
+system.release: 14.2-RELEASE
+system.time.now: 2025-02-09T14:23:24.207627+01:00
+system.time.zone: +0100
+system.version: FreeBSD 14.2-RELEASE releng/14.2-n269506-c8918d6c7412 GENERIC
 ....
 
 === dmimport [[dmimport]]

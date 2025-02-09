@@ -41,8 +41,8 @@ module dm_db_query
     public :: dm_db_query_add_text
     public :: dm_db_query_build
     public :: dm_db_query_destroy
-    public :: dm_db_query_limit
-    public :: dm_db_query_order
+    public :: dm_db_query_set_limit
+    public :: dm_db_query_set_order
 contains
     subroutine dm_db_query_add_double(db_query, param, value, error)
         !! Adds double precision parameter to query. Returns `E_LIMIT` in
@@ -177,16 +177,16 @@ contains
         db_query = db_query_type()
     end subroutine dm_db_query_destroy
 
-    pure elemental subroutine dm_db_query_limit(db_query, limit)
+    pure elemental subroutine dm_db_query_set_limit(db_query, limit)
         !! Sets `LIMIT` clause of query.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
         integer(kind=i8),    intent(in), optional :: limit    !! Limit value.
 
         if (.not. present(limit)) return
         db_query%limit = max(0_i8, limit)
-    end subroutine dm_db_query_limit
+    end subroutine dm_db_query_set_limit
 
-    pure elemental subroutine dm_db_query_order(db_query, by, desc)
+    pure elemental subroutine dm_db_query_set_order(db_query, by, desc)
         !! Sets `ORDER BY` clause of query.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
         character(len=*),    intent(in)           :: by       !! Field name.
@@ -194,5 +194,5 @@ contains
 
         db_query%order_by = trim(by)
         if (present(desc)) db_query%order_desc = desc
-    end subroutine dm_db_query_order
+    end subroutine dm_db_query_set_order
 end module dm_db_query
