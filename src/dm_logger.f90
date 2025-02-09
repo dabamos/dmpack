@@ -395,7 +395,7 @@ contains
 
         if (.not. this%no_color) call dm_ansi_color(LOGGER_COLORS(level))
 
-        if (log%error /= E_NONE) then
+        if (dm_is_error(log%error)) then
             write (unit_, FMT_ERROR) log%timestamp, &
                                      trim(LOG_LEVEL_NAMES(level)), &
                                      trim(log%source), &

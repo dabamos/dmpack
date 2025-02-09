@@ -304,10 +304,14 @@ contains
         type(cgi_param_type), intent(out)   :: param !! CGI parameter type.
 
         character(len=:), allocatable :: content
+        integer                       :: rc
 
         if (env%content_type /= MIME_FORM) return
         if (env%content_length == 0) return
-        if (dm_cgi_content(env, content) /= E_NONE) return
+
+        rc = dm_cgi_content(env, content)
+        if (dm_is_error(rc)) return
+
         call dm_cgi_parse(content, param)
     end subroutine dm_cgi_form
 
@@ -350,10 +354,12 @@ contains
         character(len=CGI_PARAM_LEN) :: pair(2)
         character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_PARAMS)
         character(len=len(input))    :: content
-        integer                      :: i, j, n
+        integer                      :: i, j, n, rc
 
         if (len_trim(input) == 0) return
-        if (dm_cgi_decode(input, content) /= E_NONE) return
+
+        rc = dm_cgi_decode(input, content)
+        if (dm_is_error(rc)) return
 
         n = dm_string_count_char(content, '&') + 1
         n = min(n, CGI_MAX_PARAMS)
@@ -465,7 +471,7 @@ contains
 
         rc = E_TYPE
         call dm_string_to(param%values(loc), i, stat)
-        if (stat /= E_NONE) return
+        if (dm_is_error(stat)) return
         value = (i /= 0)
         rc = E_NONE
     end function cgi_get_logical

@@ -8,7 +8,7 @@ module dm_env
     implicit none (type, external)
     private
 
-    integer, parameter :: ENV_BUFFER_LEN = 2048 !! Read buffer length.
+    integer, parameter :: ENV_BUFFER_LEN = 2048 !! Input buffer length.
 
     interface dm_env_get
         !! Generic environment variable access.
@@ -105,7 +105,7 @@ contains
         if (stat /= 0 .or. n == 0) return
         if (present(exists)) exists = .true.
         call dm_string_to(buffer, i, rc)
-        if (rc /= E_NONE) return
+        if (dm_is_error(rc)) return
 
         value = i
         rc    = E_NONE
@@ -133,7 +133,7 @@ contains
         if (stat /= 0 .or. n == 0) return
         if (present(exists)) exists = .true.
         call dm_string_to(buffer, i, rc)
-        if (rc /= E_NONE) return
+        if (dm_is_error(rc)) return
 
         value = i
         rc = E_NONE
@@ -156,7 +156,7 @@ contains
         if (present(exists))  exists = .false.
 
         rc = dm_env_get(name, i)
-        if (rc /= E_NONE) return
+        if (dm_is_error(rc)) return
         if (present(exists)) exists = .true.
 
         value = (i > 0)
@@ -185,7 +185,7 @@ contains
         if (stat /= 0 .or. n == 0) return
         if (present(exists)) exists = .true.
         call dm_string_to(buffer, f, rc)
-        if (rc /= E_NONE) return
+        if (dm_is_error(rc)) return
 
         value = f
         rc = E_NONE
@@ -213,7 +213,7 @@ contains
         if (stat /= 0 .or. n == 0) return
         if (present(exists)) exists = .true.
         call dm_string_to(buffer, f, rc)
-        if (rc /= E_NONE) return
+        if (dm_is_error(rc)) return
 
         value = f
         rc = E_NONE

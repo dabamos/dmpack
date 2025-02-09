@@ -647,10 +647,7 @@ contains
         end block response_block
 
         if (present(status)) status = rc
-
-        if (present(default)) then
-            if (rc /= E_NONE) response = default
-        endif
+        if (present(default) .and. dm_is_error(rc)) response = default
     end subroutine request_get_type
 
     pure elemental subroutine request_set_int32(request, index, name, value, unit, error)
