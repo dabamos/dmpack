@@ -105,11 +105,16 @@
 OS      = FreeBSD
 PREFIX  = /usr/local
 
-# Compilers and build utilities.
+# Fortran and C compiler.
 FC      = gfortran
 CC      = gcc
+
+# Build utilities.
 AR      = ar
+CP      = /bin/cp
+INSTALL = install
 MAKE    = make
+MKDIR   = /bin/mkdir
 STRIP   = strip
 RM      = /bin/rm
 SH      = /bin/sh
@@ -468,9 +473,9 @@ test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconf
 # ******************************************************************************
 
 setup:
-	mkdir -p $(INCDIR)
-	mkdir -p $(LIBDIR)
-	mkdir -p $(DISTDIR)
+	$(MKDIR) -p $(INCDIR)
+	$(MKDIR) -p $(LIBDIR)
+	$(MKDIR) -p $(DISTDIR)
 
 # ******************************************************************************
 #
@@ -515,43 +520,43 @@ linux:
 # ******************************************************************************
 
 $(LIBFCURL): setup
-	cd vendor/fortran-curl/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
-	cp vendor/fortran-curl/*.mod $(INCDIR)/
+	cd vendor/fortran-curl/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
+	$(CP) vendor/fortran-curl/*.mod $(INCDIR)/
 
 $(LIBFLUA54): setup
-	cd vendor/fortran-lua54/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
-	cp vendor/fortran-lua54/*.mod $(INCDIR)/
+	cd vendor/fortran-lua54/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
+	$(CP) vendor/fortran-lua54/*.mod $(INCDIR)/
 
 $(LIBFMODBUS): setup
-	cd vendor/fortran-modbus/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
-	cp vendor/fortran-modbus/*.mod $(INCDIR)/
+	cd vendor/fortran-modbus/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
+	$(CP) vendor/fortran-modbus/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
-	cd vendor/fortran-pcre2/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
-	cp vendor/fortran-pcre2/*.mod $(INCDIR)/
+	cd vendor/fortran-pcre2/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
+	$(CP) vendor/fortran-pcre2/*.mod $(INCDIR)/
 
 $(LIBFSQLITE3): setup
-	cd vendor/fortran-sqlite3/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
-	cp vendor/fortran-sqlite3/*.mod $(INCDIR)/
+	cd vendor/fortran-sqlite3/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFSQLITE3)"
+	$(CP) vendor/fortran-sqlite3/*.mod $(INCDIR)/
 
 $(LIBFUNIX): setup
 	@echo "---"
 	@echo "--- Building for $(OS) ..."
 	@echo "---"
-	cd vendor/fortran-unix/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
-	cp vendor/fortran-unix/*.mod $(INCDIR)/
+	cd vendor/fortran-unix/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
+	$(CP) vendor/fortran-unix/*.mod $(INCDIR)/
 
 $(LIBFXMPP): setup
-	cd vendor/fortran-xmpp/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFXMPP)"
-	cp vendor/fortran-xmpp/*.mod $(INCDIR)/
+	cd vendor/fortran-xmpp/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFXMPP)"
+	$(CP) vendor/fortran-xmpp/*.mod $(INCDIR)/
 
 $(LIBFZLIB): setup
-	cd vendor/fortran-zlib/ && make CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
-	cp vendor/fortran-zlib/*.mod $(INCDIR)/
+	cd vendor/fortran-zlib/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
+	$(CP) vendor/fortran-zlib/*.mod $(INCDIR)/
 
 $(LIBFZSTD): setup
-	cd vendor/fortran-zstd/ && make FC=$(FC) FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZSTD)"
-	cp vendor/fortran-zstd/*.mod $(INCDIR)/
+	cd vendor/fortran-zstd/ && $(MAKE) FC=$(FC) FFLAGS="$(FFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZSTD)"
+	$(CP) vendor/fortran-zstd/*.mod $(INCDIR)/
 
 # ******************************************************************************
 #
@@ -936,59 +941,59 @@ guide:
 
 install:
 	@echo "--- Installing DMPACK to $(PREFIX) ..."
-	install -d $(IBINDIR)
-	install -d $(IETCDIR)
-	install -d $(IINCDIR)
-	install -d $(ILIBDIR)
-	install -d $(IMANDIR)
-	install -d $(ISHRDIR)
-	install -d $(ISHRDIR)/dmfeed
-	install -d $(ISHRDIR)/dmlua
-	install -d $(ISHRDIR)/dmpipe
-	install -d $(ISHRDIR)/dmreport
-	install -d $(ISHRDIR)/dmweb
-	install -m 755 $(DMAPI)    $(IBINDIR)/
-	install -m 755 $(DMBACKUP) $(IBINDIR)/
-	install -m 755 $(DMBEAT)   $(IBINDIR)/
-	install -m 755 $(DMBOT)    $(IBINDIR)/
-	install -m 755 $(DMDB)     $(IBINDIR)/
-	install -m 755 $(DMDBCTL)  $(IBINDIR)/
-	install -m 755 $(DMEXPORT) $(IBINDIR)/
-	install -m 755 $(DMFEED)   $(IBINDIR)/
-	install -m 755 $(DMFS)     $(IBINDIR)/
-	install -m 755 $(DMGRC)    $(IBINDIR)/
-	install -m 755 $(DMIMPORT) $(IBINDIR)/
-	install -m 755 $(DMINFO)   $(IBINDIR)/
-	install -m 755 $(DMINIT)   $(IBINDIR)/
-	install -m 755 $(DMLOG)    $(IBINDIR)/
-	install -m 755 $(DMLOGGER) $(IBINDIR)/
-	install -m 755 $(DMLUA)    $(IBINDIR)/
-	install -m 755 $(DMMBCTL)  $(IBINDIR)/
-	install -m 755 $(DMPIPE)   $(IBINDIR)/
-	install -m 755 $(DMPLOT)   $(IBINDIR)/
-	install -m 755 $(DMRECV)   $(IBINDIR)/
-	install -m 755 $(DMREPORT) $(IBINDIR)/
-	install -m 755 $(DMSEND)   $(IBINDIR)/
-	install -m 755 $(DMSERIAL) $(IBINDIR)/
-	install -m 755 $(DMSYNC)   $(IBINDIR)/
-	install -m 755 $(DMUUID)   $(IBINDIR)/
-	install -m 755 $(DMVED)    $(IBINDIR)/
-	install -m 755 $(DMWEB)    $(IBINDIR)/
-	install -m 644 $(INCDIR)/*.mod $(IINCDIR)/
-	install -m 644 $(TARGET) $(ILIBDIR)/
-	install -m 644 $(SHARED) $(ILIBDIR)/
-	install -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
-	install -m 644 $(SHRDIR)/dmfeed/feed.xsl           $(ISHRDIR)/dmfeed/
-	install -m 644 $(SHRDIR)/dmlua/dmlua.lua           $(ISHRDIR)/dmlua/
-	install -m 755 $(SHRDIR)/dmpipe/diskfree.sh        $(ISHRDIR)/dmpipe/
-	install -m 644 $(SHRDIR)/dmreport/dmreport.css     $(ISHRDIR)/dmreport/
-	install -m 644 $(SHRDIR)/dmreport/dmreport.min.css $(ISHRDIR)/dmreport/
-	install -m 755 $(SHRDIR)/dmreport/mkreport.sh      $(ISHRDIR)/dmreport/
-	install -m 644 $(SHRDIR)/dmweb/dmpack.css          $(ISHRDIR)/dmweb/
-	install -m 644 $(SHRDIR)/dmweb/dmpack.min.css      $(ISHRDIR)/dmweb/
-	install -m 644 $(SHRDIR)/dmweb/leaflet.min.css     $(ISHRDIR)/dmweb/
-	install -m 644 $(SHRDIR)/dmweb/dmpack.js           $(ISHRDIR)/dmweb/
-	install -m 644 $(SHRDIR)/dmweb/leaflet.js          $(ISHRDIR)/dmweb/
+	$(INSTALL) -d $(IBINDIR)
+	$(INSTALL) -d $(IETCDIR)
+	$(INSTALL) -d $(IINCDIR)
+	$(INSTALL) -d $(ILIBDIR)
+	$(INSTALL) -d $(IMANDIR)
+	$(INSTALL) -d $(ISHRDIR)
+	$(INSTALL) -d $(ISHRDIR)/dmfeed
+	$(INSTALL) -d $(ISHRDIR)/dmlua
+	$(INSTALL) -d $(ISHRDIR)/dmpipe
+	$(INSTALL) -d $(ISHRDIR)/dmreport
+	$(INSTALL) -d $(ISHRDIR)/dmweb
+	$(INSTALL) -m 755 $(DMAPI)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMBACKUP) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMBEAT)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMBOT)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMDB)     $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMDBCTL)  $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMEXPORT) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMFEED)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMFS)     $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMGRC)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMIMPORT) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMINFO)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMINIT)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMLOG)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMLOGGER) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMLUA)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMMBCTL)  $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMPIPE)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMPLOT)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMRECV)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMREPORT) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMSEND)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMSERIAL) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMSYNC)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMUUID)   $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMVED)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMWEB)    $(IBINDIR)/
+	$(INSTALL) -m 644 $(INCDIR)/*.mod $(IINCDIR)/
+	$(INSTALL) -m 644 $(TARGET) $(ILIBDIR)/
+	$(INSTALL) -m 644 $(SHARED) $(ILIBDIR)/
+	$(INSTALL) -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
+	$(INSTALL) -m 644 $(SHRDIR)/dmfeed/feed.xsl           $(ISHRDIR)/dmfeed/
+	$(INSTALL) -m 644 $(SHRDIR)/dmlua/dmlua.lua           $(ISHRDIR)/dmlua/
+	$(INSTALL) -m 755 $(SHRDIR)/dmpipe/diskfree.sh        $(ISHRDIR)/dmpipe/
+	$(INSTALL) -m 644 $(SHRDIR)/dmreport/dmreport.css     $(ISHRDIR)/dmreport/
+	$(INSTALL) -m 644 $(SHRDIR)/dmreport/dmreport.min.css $(ISHRDIR)/dmreport/
+	$(INSTALL) -m 755 $(SHRDIR)/dmreport/mkreport.sh      $(ISHRDIR)/dmreport/
+	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.css          $(ISHRDIR)/dmweb/
+	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.min.css      $(ISHRDIR)/dmweb/
+	$(INSTALL) -m 644 $(SHRDIR)/dmweb/leaflet.min.css     $(ISHRDIR)/dmweb/
+	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.js           $(ISHRDIR)/dmweb/
+	$(INSTALL) -m 644 $(SHRDIR)/dmweb/leaflet.js          $(ISHRDIR)/dmweb/
 	$(GZIP) -9 < $(MANDIR)/dmapi.1    > $(IMANDIR)/dmapi.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
@@ -1116,31 +1121,31 @@ clean:
 purge: clean
 	@echo
 	@echo "--- Cleaning fortran-curl ..."
-	cd vendor/fortran-curl/ && make clean TARGET="../../$(LIBFCURL)"
+	cd vendor/fortran-curl/ && $(MAKE) clean TARGET="../../$(LIBFCURL)"
 	@echo
 	@echo "--- Cleaning fortran-lua54 ..."
-	cd vendor/fortran-lua54/ && make clean TARGET="../../$(LIBFLUA54)"
+	cd vendor/fortran-lua54/ && $(MAKE) clean TARGET="../../$(LIBFLUA54)"
 	@echo
 	@echo "--- Cleaning fortran-modbus ..."
-	cd vendor/fortran-modbus/ && make clean TARGET="../../$(LIBFMODBUS)"
+	cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
 	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
-	cd vendor/fortran-pcre2/ && make clean TARGET="../../$(LIBFPCRE2)"
+	cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"
 	@echo
 	@echo "--- Cleaning fortran-sqlite3 ..."
-	cd vendor/fortran-sqlite3/ && make clean TARGET="../../$(LIBFSQLITE3)"
+	cd vendor/fortran-sqlite3/ && $(MAKE) clean TARGET="../../$(LIBFSQLITE3)"
 	@echo
 	@echo "--- Cleaning fortran-unix ..."
-	cd vendor/fortran-unix/ && make clean TARGET="../../$(LIBFUNIX)"
+	cd vendor/fortran-unix/ && $(MAKE) clean TARGET="../../$(LIBFUNIX)"
 	@echo
 	@echo "--- Cleaning fortran-xmpp ..."
-	cd vendor/fortran-xmpp/ && make clean TARGET="../../$(LIBFXMPP)"
+	cd vendor/fortran-xmpp/ && $(MAKE) clean TARGET="../../$(LIBFXMPP)"
 	@echo
 	@echo "--- Cleaning fortran-zlib ..."
-	cd vendor/fortran-zlib/ && make clean TARGET="../../$(LIBFZLIB)"
+	cd vendor/fortran-zlib/ && $(MAKE) clean TARGET="../../$(LIBFZLIB)"
 	@echo
 	@echo "--- Cleaning fortran-zstd ..."
-	cd vendor/fortran-zstd/ && make clean TARGET="../../$(LIBFZSTD)"
+	cd vendor/fortran-zstd/ && $(MAKE) clean TARGET="../../$(LIBFZSTD)"
 	@echo
 	@echo "--- Deleting module files ..."
 	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
