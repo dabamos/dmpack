@@ -63,6 +63,7 @@ module dm_modbus_type
     public :: dm_modbus_parse
     public :: dm_modbus_order_is_valid
     public :: dm_modbus_order_from_name
+    public :: dm_modbus_register_is_valid
     public :: dm_modbus_register_out
     public :: dm_modbus_type_from_name
     public :: dm_modbus_type_is_valid
@@ -225,6 +226,28 @@ contains
                  order == MODBUS_ORDER_CDAB .or. &
                  order == MODBUS_ORDER_DCBA)
     end function dm_modbus_order_is_valid
+
+    pure elemental logical function dm_modbus_register_is_valid(register) result(valid)
+        !! Returns `.true.` if Modbus register type is valid.
+        use :: dm_id, only: dm_id_is_valid
+
+        type(modbus_register_type), intent(in) :: register !! Modbus register type.
+
+        valid = .false.
+
+        if (register%slave < 1)   return
+        if (register%address < 1) return
+
+        if (.not. dm_id_is_valid(register%name))              return
+        if (.not. dm_string_is_printable(register%unit))      return
+        if (.not. dm_modbus_access_is_valid(register%access)) return
+        if (.not. dm_modbus_type_is_valid(register%type))     return
+
+        if (.not. dm_modbus_order_is_valid(register%order) .and. &
+            register%order /= MODBUS_ORDER_NONE) return
+
+        valid = .true.
+    end function dm_modbus_register_is_valid
 
     subroutine dm_modbus_register_out(register, unit)
         !! Outputs Modbus register type.

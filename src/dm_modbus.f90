@@ -12,7 +12,7 @@ module dm_modbus
     !!
     !! ```fortran
     !! integer               :: i, rc, s
-    !! integer(kind=u2)      :: regs(2)
+    !! integer(kind=u2)      :: data(2)
     !! type(modbus_rtu_type) :: modbus
     !!
     !! ! Create Modbus RTU context and connect to device 10.
@@ -26,15 +26,15 @@ module dm_modbus
     !! rc = dm_modbus_set_slave(modbus, slave=10)
     !!
     !! ! Read and output two registers.
-    !! rc = dm_modbus_read_registers(modbus, address=50, registers=regs)
+    !! rc = dm_modbus_read_registers(modbus, address=50, data=data)
     !!
     !! do i = 1, size(registers)
-    !!     s = dm_to_signed(regs(i))
-    !!     print '("regs(", i0, ") = ", i0, " (0x", z0, ")")', i, s, s
+    !!     s = dm_to_signed(data(i))
+    !!     print '("data(", i0, ") = ", i0, " (0x", z0, ")")', i, s, s
     !! end do
     !!
     !! ! Print the two registers as real in ABCD byte order.
-    !! print '(f12.8)', dm_modbus_get_float_abcd(regs)
+    !! print '(f12.8)', dm_modbus_get_float_abcd(data)
     !!
     !! ! Disconnect and clean-up.
     !! call dm_modbus_close(modbus)
@@ -104,20 +104,35 @@ module dm_modbus
     public :: dm_modbus_get_float_badc
     public :: dm_modbus_get_float_cdab
     public :: dm_modbus_get_float_dcba
+    public :: dm_modbus_get_high_byte
+    public :: dm_modbus_get_int32_from_int16
+    public :: dm_modbus_get_int64_from_int16
+    public :: dm_modbus_get_low_byte
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
+    public :: dm_modbus_read_float
+    public :: dm_modbus_read_int16
+    public :: dm_modbus_read_int32
     public :: dm_modbus_read_registers
+    public :: dm_modbus_read_uint16
+    public :: dm_modbus_read_uint32
     public :: dm_modbus_set_debug
     public :: dm_modbus_set_float
     public :: dm_modbus_set_float_abcd
     public :: dm_modbus_set_float_badc
     public :: dm_modbus_set_float_cdab
     public :: dm_modbus_set_float_dcba
+    public :: dm_modbus_set_int32_to_int16
+    public :: dm_modbus_set_int64_to_int16
     public :: dm_modbus_set_serial_mode
     public :: dm_modbus_set_slave
     public :: dm_modbus_version
+    public :: dm_modbus_write_int16
+    public :: dm_modbus_write_int32
     public :: dm_modbus_write_register
     public :: dm_modbus_write_registers
+    public :: dm_modbus_write_uint16
+    public :: dm_modbus_write_uint32
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -245,7 +260,7 @@ contains
         rc = E_NONE
     end function dm_modbus_flush
 
-    real function dm_modbus_get_float(registers, byte_order, error) result(value)
+    real function dm_modbus_get_float(data, byte_order, error) result(value)
         !! Returns real value from two registers of given byte order in argument
         !! `value`. The argument byte order must be one of the following:
         !!
@@ -255,51 +270,85 @@ contains
         !! * `MODBUS_ORDER_DCBA`
         !!
         !! The function sets argument `error' to `E_INVALID` on any other value.
-        integer(kind=u2), intent(inout)         :: registers(2) !! Registers to convert.
-        integer,          intent(in)            :: byte_order   !! Byte order.
-        integer,          intent(out), optional :: error        !! Error code.
+        integer(kind=u2), intent(inout)         :: data(2)    !! Registers to convert.
+        integer,          intent(in)            :: byte_order !! Byte order.
+        integer,          intent(out), optional :: error      !! Error code.
 
         value = 0.0
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_ORDER_ABCD); value = modbus_get_float_abcd(registers)
-            case (MODBUS_ORDER_BADC); value = modbus_get_float_badc(registers)
-            case (MODBUS_ORDER_CDAB); value = modbus_get_float_cdab(registers)
-            case (MODBUS_ORDER_DCBA); value = modbus_get_float_dcba(registers)
+            case (MODBUS_ORDER_ABCD); value = modbus_get_float_abcd(data)
+            case (MODBUS_ORDER_BADC); value = modbus_get_float_badc(data)
+            case (MODBUS_ORDER_CDAB); value = modbus_get_float_cdab(data)
+            case (MODBUS_ORDER_DCBA); value = modbus_get_float_dcba(data)
             case default;             return
         end select
 
         if (present(error)) error = E_NONE
     end function dm_modbus_get_float
 
-    real function dm_modbus_get_float_abcd(registers) result(value)
+    real function dm_modbus_get_float_abcd(data) result(value)
         !! Returns real value from two registers in ABCD byte order.
-        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+        integer(kind=u2), intent(inout) :: data(2) !! Registers to convert.
 
-        value = modbus_get_float_abcd(registers)
+        value = modbus_get_float_abcd(data)
     end function dm_modbus_get_float_abcd
 
-    real function dm_modbus_get_float_badc(registers) result(value)
+    real function dm_modbus_get_float_badc(data) result(value)
         !! Returns real value from two registers in BADC byte order.
-        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+        integer(kind=u2), intent(inout) :: data(2) !! Registers to convert.
 
-        value = modbus_get_float_badc(registers)
+        value = modbus_get_float_badc(data)
     end function dm_modbus_get_float_badc
 
-    real function dm_modbus_get_float_cdab(registers) result(value)
+    real function dm_modbus_get_float_cdab(data) result(value)
         !! Returns real value from two registers in CDAB byte order.
-        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+        integer(kind=u2), intent(inout) :: data(2) !! Registers to convert.
 
-        value = modbus_get_float_cdab(registers)
+        value = modbus_get_float_cdab(data)
     end function dm_modbus_get_float_cdab
 
-    real function dm_modbus_get_float_dcba(registers) result(value)
+    real function dm_modbus_get_float_dcba(data) result(value)
         !! Returns real value from two registers in DCBA byte order.
-        integer(kind=u2), intent(inout) :: registers(2) !! Registers to convert.
+        integer(kind=u2), intent(inout) :: data(2) !! Registers to convert.
 
-        value = modbus_get_float_dcba(registers)
+        value = modbus_get_float_dcba(data)
     end function dm_modbus_get_float_dcba
+
+    pure elemental character function dm_modbus_get_high_byte(data) result(value)
+        !! Returns high byte from 2-byte integer.
+        integer(kind=u2), intent(in) :: data !! Register data.
+
+        value = achar(iand(shiftr(data, 8), int(z'FF', kind=u2)))
+    end function dm_modbus_get_high_byte
+
+    pure integer(kind=i4) function dm_modbus_get_int32_from_int16(data) result(value)
+        !! Returns 4-byte integer from two 2-byte registers.
+        integer(kind=u2), intent(in) :: data(2) !! Register data.
+
+        integer(kind=i4) :: d(2)
+
+        d = int(data, kind=i4)
+        value = ior(shiftl(d(1), 16), d(2))
+    end function dm_modbus_get_int32_from_int16
+
+    pure integer(kind=i8) function dm_modbus_get_int64_from_int16(data) result(value)
+        !! Returns 8-byte integer from four 2-byte registers.
+        integer(kind=u2), intent(in) :: data(4) !! Register data.
+
+        integer(kind=i8) :: d(4)
+
+        d = int(data, kind=i8)
+        value = ior(ior(ior(shiftl(d(1), 48), shiftl(d(2), 32)), shiftl(d(3), 16)), d(4))
+    end function dm_modbus_get_int64_from_int16
+
+    pure elemental character function dm_modbus_get_low_byte(data) result(value)
+        !! Returns low byte from 2-byte integer.
+        integer(kind=u2), intent(in) :: data !! Register data.
+
+        value = achar(iand(data, int(z'FF', kind=u2)))
+    end function dm_modbus_get_low_byte
 
     integer function dm_modbus_get_serial_mode(modbus, mode) result(rc)
         !! Gets the current Modbus RTU serial mode (RS-232 or RS-485).
@@ -346,45 +395,128 @@ contains
         rc = E_NONE
     end function dm_modbus_get_slave
 
-    integer function dm_modbus_read_registers(modbus, address, registers, n) result(rc)
-        !! Reads many registers from `address`. The size of argument
-        !! `registers` determines the number of registers to read, unless
-        !! optional argument `n` is passed. The function uses the Modbus
-        !! function code `0x03` (read holding registers).
+    integer function dm_modbus_read_float(modbus, address, byte_order, value) result(rc)
+        !! Reads 4-byte real value from two registers and returns result in
+        !! `value`.
+        class(modbus_type), intent(inout) :: modbus     !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address    !! Address to read from.
+        integer,            intent(in)    :: byte_order !! Byte order.
+        real(kind=4),       intent(out)   :: value      !! Value read from register.
+
+        integer(kind=u2) :: data(2)
+
+        rc = dm_modbus_read_registers(modbus, address, data)
+        if (dm_is_error(rc)) return
+        value = dm_modbus_get_float(data, byte_order, error=rc)
+    end function dm_modbus_read_float
+
+    integer function dm_modbus_read_int16(modbus, address, value) result(rc)
+        !! Reads 2-byte signed integer from register and returns result in
+        !! `value`.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer(kind=i2),   intent(out)   :: value   !! Value read from register.
+
+        integer(kind=u2) :: data(1)
+
+        value = 0
+        rc = dm_modbus_read_registers(modbus, address, data)
+        if (dm_is_error(rc)) return
+        value = data(1)
+    end function dm_modbus_read_int16
+
+    integer function dm_modbus_read_int32(modbus, address, value) result(rc)
+        !! Reads 4-byte signed integer from register and returns result in
+        !! `value`.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer(kind=i4),   intent(out)   :: value   !! Value read from register.
+
+        integer(kind=u2) :: data(2)
+
+        value = 0
+        rc = dm_modbus_read_registers(modbus, address, data)
+        if (dm_is_error(rc)) return
+        value = dm_modbus_get_int32_from_int16(data)
+    end function dm_modbus_read_int32
+
+    integer function dm_modbus_read_registers(modbus, address, data, n) result(rc)
+        !! Reads many registers from `address`. The size of argument `data`
+        !! determines the number of registers to read, unless optional argument
+        !! `n` is passed. The function uses the Modbus function code `0x03`
+        !! (read holding registers).
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if argument `registers` is invalid.
+        !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
+        !! * `E_INVALID` if argument `data` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus       !! Modbus RTU/TCP type.
-        integer,            intent(in)              :: address      !! Address to read from.
-        integer(kind=u2),   intent(inout)           :: registers(:) !! Register values (unsigned).
-        integer,            intent(inout), optional :: n            !! Number of registers to read on input, number of registers read on output.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)              :: address !! Address to read from.
+        integer(kind=u2),   intent(inout)           :: data(:) !! Register values (unsigned).
+        integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
 
         integer :: nregisters, stat
 
-        registers(:) = 0_u2
+        data(:) = 0_u2
 
-        nregisters = size(registers)
-        if (present(n)) nregisters = n
-        if (nregisters > size(registers)) nregisters = size(registers)
-        if (present(n)) n = 0
+        nregisters = size(data)
+
+        if (present(n)) then
+            nregisters = n
+            n = 0
+        end if
+
+        rc = E_BOUNDS
+        if (nregisters > size(data)) return
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_INVALID
-        if (size(registers) == 0 .or. nregisters <= 0) return
+        if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_read_registers(modbus%ctx, address, nregisters, registers)
+        stat = modbus_read_registers(modbus%ctx, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
         rc = E_NONE
     end function dm_modbus_read_registers
+
+    integer function dm_modbus_read_uint16(modbus, address, value) result(rc)
+        !! Reads 2-byte unsigned integer from register and returns result in
+        !! `value`. Stores the 2-byte unsigned value in a 4-byte signed
+        !! integer.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer(kind=i4),   intent(out)   :: value   !! Value read from register.
+
+        integer(kind=i2) :: u
+
+        value = 0_i4
+        rc = dm_modbus_read_int16(modbus, address, u)
+        if (dm_is_error(rc)) return
+        value = dm_to_signed(u)
+    end function dm_modbus_read_uint16
+
+    integer function dm_modbus_read_uint32(modbus, address, value) result(rc)
+        !! Reads 4-byte unsigned integer from register and returns result in
+        !! `value`. Stores the 4-byte unsigned value in an 8-byte signed
+        !! integer.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer(kind=i8),   intent(out)   :: value   !! Value read from register.
+
+        integer(kind=u4) :: u
+
+        value = 0_i8
+        rc = dm_modbus_read_int32(modbus, address, u)
+        if (dm_is_error(rc)) return
+        value = dm_to_signed(u)
+    end function dm_modbus_read_uint32
 
     integer function dm_modbus_set_debug(modbus, debug) result(rc)
         !! Sets debug flag of the Modbus context. Returns `E_MODBUS` on error.
@@ -461,7 +593,40 @@ contains
         end if
     end function dm_modbus_version
 
-    integer function dm_modbus_write_register(modbus, address, register) result(rc)
+    integer function dm_modbus_write_int16(modbus, address, value) result(rc)
+        !! Writes 2-byte signed integer to `address`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to write to.
+        integer(kind=i2),   intent(in)    :: value   !! Value to write.
+
+        rc = dm_modbus_write_register(modbus, address, value)
+    end function dm_modbus_write_int16
+
+    integer function dm_modbus_write_int32(modbus, address, value) result(rc)
+        !! Writes 4-byte signed integer to `address`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to write to.
+        integer(kind=i4),   intent(in)    :: value   !! Value to write.
+
+        integer(kind=u2) :: data(2)
+
+        call dm_modbus_set_int32_to_int16(value, data)
+        rc = dm_modbus_write_registers(modbus, address, data)
+    end function dm_modbus_write_int32
+
+    integer function dm_modbus_write_register(modbus, address, data) result(rc)
         !! Writes register to `address`. The function uses the Modbus function
         !! code `0x06` (preset single register).
         !!
@@ -472,7 +637,7 @@ contains
         !!
         class(modbus_type), intent(inout) :: modbus   !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address  !! Address to write to.
-        integer(kind=u2),   intent(in)    :: register !! Register value (unsigned).
+        integer(kind=u2),   intent(in)    :: data     !! Register value (unsigned).
 
         integer :: stat
 
@@ -480,49 +645,90 @@ contains
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_MODBUS
-        stat = modbus_write_register(modbus%ctx, address, register)
+        stat = modbus_write_register(modbus%ctx, address, data)
         if (stat == -1) return
 
         rc = E_NONE
     end function dm_modbus_write_register
 
-    integer function dm_modbus_write_registers(modbus, address, registers, n) result(rc)
-        !! Writes many registers to `address`. The size of argument `registers`
+    integer function dm_modbus_write_registers(modbus, address, data, n) result(rc)
+        !! Writes many registers to `address`. The size of argument `data`
         !! determines the number of registers to write, unless optional
         !! argument `n` is passed. The function uses the Modbus function code
         !! `0x10` (preset multiple registers).
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_INVALID` if argument `registers` is invalid.
+        !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
+        !! * `E_INVALID` if argument `data` is invalid.
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus       !! Modbus RTU/TCP type.
-        integer,            intent(in)              :: address      !! Address to write to.
-        integer(kind=u2),   intent(inout)           :: registers(:) !! Register values (unsigned).
-        integer,            intent(inout), optional :: n            !! Number of registers to write on input, number of registers written on output.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)              :: address !! Address to write to.
+        integer(kind=u2),   intent(inout)           :: data(:) !! Register values (unsigned).
+        integer,            intent(inout), optional :: n       !! Number of registers to write on input, number of registers written on output.
 
         integer :: nregisters, stat
 
-        nregisters = size(registers)
-        if (present(n)) nregisters = n
-        if (nregisters > size(registers)) nregisters = size(registers)
-        if (present(n)) n = 0
+        nregisters = size(data)
+
+        if (present(n)) then
+            nregisters = n
+            n = 0
+        end if
+
+        rc = E_BOUNDS
+        if (nregisters > size(data)) return
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_INVALID
-        if (size(registers) == 0 .or. nregisters <= 0) return
+        if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_write_registers(modbus%ctx, address, nregisters, registers)
+        stat = modbus_write_registers(modbus%ctx, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
         rc = E_NONE
     end function dm_modbus_write_registers
+
+    integer function dm_modbus_write_uint16(modbus, address, value) result(rc)
+        !! Writes 2-byte unsigned integer to `address`. The unsigned value must
+        !! be passed in a 4-byte signed integer.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to write to.
+        integer(kind=i4),   intent(in)    :: value   !! Value to write.
+
+        rc = dm_modbus_write_register(modbus, address, dm_to_unsigned(value))
+    end function dm_modbus_write_uint16
+
+    integer function dm_modbus_write_uint32(modbus, address, value) result(rc)
+        !! Writes 4-byte unsigned integer to `address`. The unsigned value must
+        !! be passed in a 8-byte signed integer.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to write to.
+        integer(kind=i8),   intent(in)    :: value   !! Value to write.
+
+        integer(kind=u2) :: data(2)
+
+        call dm_modbus_set_int32_to_int16(dm_to_unsigned(value), data)
+        rc = dm_modbus_write_registers(modbus, address, data)
+    end function dm_modbus_write_uint32
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
@@ -543,7 +749,31 @@ contains
         call modbus_free(modbus%ctx)
     end subroutine dm_modbus_destroy
 
-    subroutine dm_modbus_set_float(value, registers, byte_order, error)
+    pure subroutine dm_modbus_set_int32_to_int16(value, data)
+        !! Sets 4-byte integer to two 2-byte registers.
+        integer(kind=i4), intent(in)  :: value   !! Value to convert.
+        integer(kind=u2), intent(out) :: data(2) !! Returned register data.
+
+        data = [ &
+            int(shiftr(value, 16), kind=u2), &
+            int(value, kind=u2)              &
+        ]
+    end subroutine dm_modbus_set_int32_to_int16
+
+    pure subroutine dm_modbus_set_int64_to_int16(value, data)
+        !! Sets 8-byte integer to four 2-byte registers.
+        integer(kind=i8), intent(in)  :: value   !! Value to convert.
+        integer(kind=u2), intent(out) :: data(4) !! Returned register data.
+
+        data = [ &
+            int(shiftr(value, 48), kind=u2), &
+            int(shiftr(value, 32), kind=u2), &
+            int(shiftr(value, 16), kind=u2), &
+            int(value, kind=u2)              &
+        ]
+    end subroutine dm_modbus_set_int64_to_int16
+
+    subroutine dm_modbus_set_float(value, data, byte_order, error)
         !! Sets real value to registers of given byte order. The argument
         !! `byte_order` must be one of the following:
         !!
@@ -553,54 +783,54 @@ contains
         !! * `MODBUS_ORDER_DCBA`
         !!
         !! The routine sets argument `error' to `E_INVALID` on any other value.
-        real,             intent(in)            :: value        !! Real value to set.
-        integer(kind=u2), intent(out)           :: registers(2) !! Registers to write to.
-        integer,          intent(in)            :: byte_order   !! Byte order.
-        integer,          intent(out), optional :: error        !! Error code.
+        real,             intent(in)            :: value      !! Real value to set.
+        integer(kind=u2), intent(out)           :: data(2)    !! Registers to write to.
+        integer,          intent(in)            :: byte_order !! Byte order.
+        integer,          intent(out), optional :: error      !! Error code.
 
-        registers(:) = 0_u2
+        data(:) = 0_u2
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_ORDER_ABCD); call modbus_set_float_abcd(value, registers)
-            case (MODBUS_ORDER_BADC); call modbus_set_float_badc(value, registers)
-            case (MODBUS_ORDER_CDAB); call modbus_set_float_cdab(value, registers)
-            case (MODBUS_ORDER_DCBA); call modbus_set_float_dcba(value, registers)
+            case (MODBUS_ORDER_ABCD); call modbus_set_float_abcd(value, data)
+            case (MODBUS_ORDER_BADC); call modbus_set_float_badc(value, data)
+            case (MODBUS_ORDER_CDAB); call modbus_set_float_cdab(value, data)
+            case (MODBUS_ORDER_DCBA); call modbus_set_float_dcba(value, data)
             case default;             return
         end select
 
         if (present(error)) error = E_NONE
     end subroutine dm_modbus_set_float
 
-    subroutine dm_modbus_set_float_abcd(value, registers)
+    subroutine dm_modbus_set_float_abcd(value, data)
         !! Returns real value to registers in ABCD byte order.
-        real,             intent(in)  :: value        !! Real value to set.
-        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+        real,             intent(in)  :: value   !! Real value to set.
+        integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
-        call modbus_set_float_abcd(value, registers)
+        call modbus_set_float_abcd(value, data)
     end subroutine dm_modbus_set_float_abcd
 
-    subroutine dm_modbus_set_float_badc(value, registers)
+    subroutine dm_modbus_set_float_badc(value, data)
         !! Returns real value to registers in BADC byte order.
-        real,             intent(in)  :: value        !! Real value to set.
-        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+        real,             intent(in)  :: value   !! Real value to set.
+        integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
-        call modbus_set_float_badc(value, registers)
+        call modbus_set_float_badc(value, data)
     end subroutine dm_modbus_set_float_badc
 
-    subroutine dm_modbus_set_float_cdab(value, registers)
+    subroutine dm_modbus_set_float_cdab(value, data)
         !! Sets real value to registers in CDAB byte order.
-        real,             intent(in)  :: value        !! Real value to set.
-        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+        real,             intent(in)  :: value   !! Real value to set.
+        integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
-        call modbus_set_float_cdab(value, registers)
+        call modbus_set_float_cdab(value, data)
     end subroutine dm_modbus_set_float_cdab
 
-    subroutine dm_modbus_set_float_dcba(value, registers)
+    subroutine dm_modbus_set_float_dcba(value, data)
         !! Sets real value to registers in DCBA byte order.
-        real,             intent(in)  :: value        !! Real value to set.
-        integer(kind=u2), intent(out) :: registers(2) !! Registers to write to.
+        real,             intent(in)  :: value   !! Real value to set.
+        integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
-        call modbus_set_float_dcba(value, registers)
+        call modbus_set_float_dcba(value, data)
     end subroutine dm_modbus_set_float_dcba
 end module dm_modbus
