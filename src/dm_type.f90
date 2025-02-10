@@ -29,10 +29,8 @@ module dm_type
     public :: dm_type_from_name
     public :: dm_type_is_valid
 contains
-    integer function dm_type_from_name(name) result(type)
-        !! Returns type from given name. If `name` is longer than
-        !! `TYPE_NAME_LEN`, only the characters from `1` to `TYPE_NAME_LEN` are
-        !! compared.
+    pure elemental integer function dm_type_from_name(name) result(type)
+        !! Returns type from given name.
         use :: dm_string, only: dm_to_lower
 
         character(len=*), intent(in) :: name !! Derived type name.

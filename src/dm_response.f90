@@ -9,9 +9,6 @@ module dm_response
     implicit none (type, external)
     private
 
-    integer, parameter, public :: RESPONSE_NAME_LEN = 8 !! Max. response name length.
-    integer, parameter, public :: RESPONSE_UNIT_LEN = 8 !! Max. response unit length.
-
     ! Response types.
     integer, parameter, public :: RESPONSE_TYPE_REAL64  = 0 !! 8-byte signed real.
     integer, parameter, public :: RESPONSE_TYPE_REAL32  = 1 !! 4-byte signed real.
@@ -29,6 +26,9 @@ module dm_response
         character(len=RESPONSE_TYPE_NAME_LEN) :: &
         'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' &
     ] !! Response value type names.
+
+    integer, parameter, public :: RESPONSE_NAME_LEN = 8 !! Max. response name length.
+    integer, parameter, public :: RESPONSE_UNIT_LEN = 8 !! Max. response unit length.
 
     type, public :: response_type
         !! Response of a sensor.
@@ -88,6 +88,22 @@ contains
         valid = .true.
     end function dm_response_is_valid
 
+    subroutine dm_response_out(response, unit)
+        !! Prints response to standard output or given file unit.
+        type(response_type), intent(inout)        :: response
+        integer,             intent(in), optional :: unit
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, stdout)
+
+        write (unit_, '("response.name: ", a)')        trim(response%name)
+        write (unit_, '("response.unit: ", a)')        trim(response%unit)
+        write (unit_, '("response.type: ", i0)')       response%type
+        write (unit_, '("response.error: ", i0)')      response%error
+        write (unit_, '("response.value: ", 1pg0.12)') response%value
+    end subroutine dm_response_out
+
     pure elemental logical function dm_response_type_is_valid(type) result(valid)
         !! Returns `.true.` if the given response value type is valid.
         integer, intent(in) :: type !! Response value type.
@@ -108,21 +124,4 @@ contains
 
         name = trim(RESPONSE_TYPE_NAMES(type))
     end function dm_response_type_to_name
-
-    subroutine dm_response_out(response, unit)
-        !! Prints response to standard output or given file unit.
-        type(response_type), intent(inout)        :: response
-        integer,             intent(in), optional :: unit
-
-        integer :: unit_
-
-        unit_ = stdout
-        if (present(unit)) unit_ = unit
-
-        write (unit_, '("response.name: ", a)')        trim(response%name)
-        write (unit_, '("response.unit: ", a)')        trim(response%unit)
-        write (unit_, '("response.type: ", i0)')       dm_response_type_to_name(response%type)
-        write (unit_, '("response.error: ", i0)')      response%error
-        write (unit_, '("response.value: ", 1pg0.12)') response%value
-    end subroutine dm_response_out
 end module dm_response

@@ -65,9 +65,9 @@ module dm_util
     interface dm_present
         !! Returns present argument or default value.
         module procedure :: present_character
-        module procedure :: present_logical
         module procedure :: present_int32
         module procedure :: present_int64
+        module procedure :: present_logical
         module procedure :: present_ptr
         module procedure :: present_real32
         module procedure :: present_real64
@@ -143,9 +143,9 @@ module dm_util
     private :: hex_to_int64
 
     private :: present_character
-    private :: present_logical
     private :: present_int32
     private :: present_int64
+    private :: present_logical
     private :: present_ptr
     private :: present_real32
     private :: present_real64
@@ -461,19 +461,6 @@ contains
         end if
     end function present_character
 
-    pure elemental function present_logical(arg, default) result(value)
-        !! Returns logical argument `arg` if present or `default` otherwise.
-        logical, intent(in), optional :: arg     !! Argument.
-        logical, intent(in)           :: default !! Default value.
-        logical                       :: value   !! Argument or default.
-
-        if (present(arg)) then
-            value = arg
-        else
-            value = default
-        end if
-    end function present_logical
-
     pure elemental function present_int32(arg, default) result(value)
         !! Returns 4-byte integer argument `arg` if present or `default`
         !! otherwise.
@@ -502,9 +489,21 @@ contains
         end if
     end function present_int64
 
+    pure elemental function present_logical(arg, default) result(value)
+        !! Returns logical argument `arg` if present or `default` otherwise.
+        logical, intent(in), optional :: arg     !! Argument.
+        logical, intent(in)           :: default !! Default value.
+        logical                       :: value   !! Argument or default.
+
+        if (present(arg)) then
+            value = arg
+        else
+            value = default
+        end if
+    end function present_logical
+
     pure elemental function present_ptr(arg, default) result(value)
-        !! Returns 4-byte real argument `arg` if present or `default`
-        !! otherwise.
+        !! Returns C pointer argument `arg` if present or `default` otherwise.
         use, intrinsic :: iso_c_binding, only: c_ptr
 
         type(c_ptr), intent(in), optional :: arg     !! Argument.

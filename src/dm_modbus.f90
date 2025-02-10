@@ -249,10 +249,10 @@ contains
         !! Returns real value from two registers of given byte order in argument
         !! `value`. The argument byte order must be one of the following:
         !!
-        !! * `MODBUS_FLOAT_ABCD`
-        !! * `MODBUS_FLOAT_BADC`
-        !! * `MODBUS_FLOAT_CDAB`
-        !! * `MODBUS_FLOAT_DCBA`
+        !! * `MODBUS_ORDER_ABCD`
+        !! * `MODBUS_ORDER_BADC`
+        !! * `MODBUS_ORDER_CDAB`
+        !! * `MODBUS_ORDER_DCBA`
         !!
         !! The function sets argument `error' to `E_INVALID` on any other value.
         integer(kind=u2), intent(inout)         :: registers(2) !! Registers to convert.
@@ -263,10 +263,10 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_FLOAT_ABCD); value = modbus_get_float_abcd(registers)
-            case (MODBUS_FLOAT_BADC); value = modbus_get_float_badc(registers)
-            case (MODBUS_FLOAT_CDAB); value = modbus_get_float_cdab(registers)
-            case (MODBUS_FLOAT_DCBA); value = modbus_get_float_dcba(registers)
+            case (MODBUS_ORDER_ABCD); value = modbus_get_float_abcd(registers)
+            case (MODBUS_ORDER_BADC); value = modbus_get_float_badc(registers)
+            case (MODBUS_ORDER_CDAB); value = modbus_get_float_cdab(registers)
+            case (MODBUS_ORDER_DCBA); value = modbus_get_float_dcba(registers)
             case default;             return
         end select
 
@@ -449,15 +449,12 @@ contains
         character(len=:), allocatable :: version !! Version string.
 
         character(len=8) :: v
-        logical          :: name_
-
-        name_ = dm_present(name, .false.)
 
         write (v, '(2(i0, "."), i0)') LIBMODBUS_VERSION_MAJOR, &
                                       LIBMODBUS_VERSION_MINOR, &
                                       LIBMODBUS_VERSION_MICRO
 
-        if (name_) then
+        if (dm_present(name, .false.)) then
             version = 'libmodbus/' // trim(v)
         else
             version = trim(v)
@@ -550,10 +547,10 @@ contains
         !! Sets real value to registers of given byte order. The argument
         !! `byte_order` must be one of the following:
         !!
-        !! * `MODBUS_FLOAT_ABCD`
-        !! * `MODBUS_FLOAT_BADC`
-        !! * `MODBUS_FLOAT_CDAB`
-        !! * `MODBUS_FLOAT_DCBA`
+        !! * `MODBUS_ORDER_ABCD`
+        !! * `MODBUS_ORDER_BADC`
+        !! * `MODBUS_ORDER_CDAB`
+        !! * `MODBUS_ORDER_DCBA`
         !!
         !! The routine sets argument `error' to `E_INVALID` on any other value.
         real,             intent(in)            :: value        !! Real value to set.
@@ -565,10 +562,10 @@ contains
         if (present(error)) error = E_INVALID
 
         select case (byte_order)
-            case (MODBUS_FLOAT_ABCD); call modbus_set_float_abcd(value, registers)
-            case (MODBUS_FLOAT_BADC); call modbus_set_float_badc(value, registers)
-            case (MODBUS_FLOAT_CDAB); call modbus_set_float_cdab(value, registers)
-            case (MODBUS_FLOAT_DCBA); call modbus_set_float_dcba(value, registers)
+            case (MODBUS_ORDER_ABCD); call modbus_set_float_abcd(value, registers)
+            case (MODBUS_ORDER_BADC); call modbus_set_float_badc(value, registers)
+            case (MODBUS_ORDER_CDAB); call modbus_set_float_cdab(value, registers)
+            case (MODBUS_ORDER_DCBA); call modbus_set_float_dcba(value, registers)
             case default;             return
         end select
 

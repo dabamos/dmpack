@@ -565,14 +565,14 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_platform.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_c.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ascii.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ansi.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_const.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_error.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_string.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_type.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_format.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ansi.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_env.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_util.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_type.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_env.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_time.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_timer.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_base64.f90

@@ -1370,22 +1370,25 @@ contains
 
         lua_block: block
             character(len=MODBUS_ACCESS_NAME_LEN) :: access
-            character(len=MODBUS_FLOAT_NAME_LEN)  :: float
+            character(len=MODBUS_ORDER_NAME_LEN)  :: order
+            character(len=MODBUS_TYPE_NAME_LEN)   :: type
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
             ! Ignore error codes, just assume defaults if missing.
+            rc = dm_lua_field(lua, 'name',    register%name)
+            rc = dm_lua_field(lua, 'unit',    register%unit)
             rc = dm_lua_field(lua, 'access',  access)
             rc = dm_lua_field(lua, 'slave',   register%slave)
             rc = dm_lua_field(lua, 'address', register%address)
+            rc = dm_lua_field(lua, 'type',    type)
+            rc = dm_lua_field(lua, 'order',   order)
             rc = dm_lua_field(lua, 'value',   register%value)
-            rc = dm_lua_field(lua, 'float',   float)
-            rc = dm_lua_field(lua, 'name',    register%name)
-            rc = dm_lua_field(lua, 'unit',    register%unit)
 
             register%access = dm_modbus_access_from_name(access)
-            register%float  = dm_modbus_float_from_name(float)
+            register%order  = dm_modbus_order_from_name(order)
+            register%type   = dm_modbus_type_from_name(type)
         end block lua_block
 
         call dm_lua_pop(lua)

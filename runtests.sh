@@ -41,14 +41,16 @@ dmtestlua dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml \
 dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
 dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
 dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd"
-
 NTEST=`echo ${TESTS} | wc -w`
+
+FAILS=""
 NFAIL=0
 
 for TEST in ${TESTS}; do
     ./${TEST}
     if [ $? -ne 0 ]; then
         NFAIL=`expr ${NFAIL} + 1`
+        FAILS="${FAILS} ${TEST}"
         printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
         printf "TEST %s FAILED!\n" ${TEST}
         printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
@@ -60,7 +62,10 @@ printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if [ ${NFAIL} -eq 0 ]; then
     printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${NTEST}
 else
-    printf "%s OF %s TEST PROGRAMS FAILED!\n" ${NFAIL} ${NTEST}
+    printf "%s OF %s TEST PROGRAMS FAILED:\n" ${NFAIL} ${NTEST}
+    for FAIL in ${FAILS}; do
+        printf "${FAIL}\n"
+    done
 fi
 
 printf "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"

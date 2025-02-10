@@ -68,10 +68,10 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STRING1 = 'access=read,slave=10,address=50,float=abcd'
-        character(len=*), parameter :: STRING2 = 'ACCESS = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10'
-        character(len=*), parameter :: STRING3 = 'access=none,slave=10,address=50,value=10,float=none'
-        character(len=*), parameter :: STRING4 = 'access=write,slave=10,address=50,value=123456789,float=none'
+        character(len=*), parameter :: STRING1 = 'access=read,slave=10,address=50,type=float,order=abcd'
+        character(len=*), parameter :: STRING2 = 'ACCESS = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10, TYPE = INT32'
+        character(len=*), parameter :: STRING3 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
+        character(len=*), parameter :: STRING4 = 'access=write,slave=10,address=50,value=abc'
         character(len=*), parameter :: STRING5 = 'access-read.slave-10.address-50'
 
         type(modbus_register_type) :: register
@@ -88,7 +88,8 @@ contains
         if (register%access /= MODBUS_ACCESS_READ) return
         if (register%slave /= 10)                  return
         if (register%address /= 50)                return
-        if (register%float /= MODBUS_FLOAT_ABCD)   return
+        if (register%type /= MODBUS_TYPE_FLOAT)    return
+        if (register%order /= MODBUS_ORDER_ABCD)   return
 
         print *, STRING2
         call dm_modbus_parse(STRING2, register, error=rc)
@@ -97,8 +98,9 @@ contains
         if (register%access /= MODBUS_ACCESS_WRITE) return
         if (register%slave /= 9)                    return
         if (register%address /= 1)                  return
-        if (register%value /= 10_u2)                return
-        if (register%float /= MODBUS_FLOAT_NONE)    return
+        if (register%type /= MODBUS_TYPE_INT32)     return
+        if (register%order /= MODBUS_ORDER_NONE)    return
+        if (register%value /= 10)                   return
 
         print *, STRING3
         call dm_modbus_parse(STRING3, register, error=rc)

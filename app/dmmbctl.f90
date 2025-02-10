@@ -12,12 +12,9 @@ program dmmbctl
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: ACCESS_READ  = 0 !! Read values.
-    integer, parameter :: ACCESS_WRITE = 1 !! Write values.
-
-    integer, parameter :: MODE_NONE = 0    !! Unset mode.
-    integer, parameter :: MODE_RTU  = 1    !! Modbus RTU mode.
-    integer, parameter :: MODE_TCP  = 2    !! Modbus TCP mode.
+    integer, parameter :: MODE_NONE = 0 !! Unset mode.
+    integer, parameter :: MODE_RTU  = 1 !! Modbus RTU mode.
+    integer, parameter :: MODE_TCP  = 2 !! Modbus TCP mode.
 
     type :: rtu_type
         !! Modbus RTU settings.
@@ -36,13 +33,13 @@ program dmmbctl
 
     type :: app_type
         !! Application settings.
-        integer        :: access    = ACCESS_READ       !! Read or write operation.
-        integer        :: address   = 0                 !! Modbus address.
-        integer        :: mode      = MODE_NONE         !! Modbus mode (RTU, TCP).
-        integer        :: float     = MODBUS_FLOAT_NONE !! Number type and byte order.
-        integer        :: registers = 1                 !! Modbus register count to read or write.
-        integer        :: slave     = 1                 !! Modbus slave id.
-        logical        :: verbose   = .false.           !! Print debug messages to stderr.
+        integer        :: mode    = MODE_NONE           !! Modbus mode (RTU, TCP).
+        integer        :: slave   = 1                   !! Modbus slave id.
+        integer        :: address = 0                   !! Modbus address.
+        integer        :: access  = MODBUS_ACCESS_READ  !! Read or write operation.
+        integer        :: type    = MODBUS_TYPE_DEFAULT !! Number type.
+        integer        :: order   = MODBUS_ORDER_NONE   !! Byte order of type float.
+        logical        :: verbose = .false.             !! Print debug messages to stderr.
         type(rtu_type) :: rtu                           !! Modbus RTU settings.
         type(tcp_type) :: tcp                           !! Modbus TCP settings.
     end type app_type
@@ -63,11 +60,11 @@ contains
 
         type(app_type), intent(out) :: app
 
-        character(len=4) :: float, parity
+        character(len=4) :: order, parity
+        character(len=6) :: type
         integer          :: read_address, write_address
-        logical          :: has_baud_rate, has_byte_size, has_float, has_path, has_parity, has_stop_bits
-        logical          :: has_address, has_port, has_registers
-        logical          :: has_read, has_write
+        logical          :: has_address, has_baud_rate, has_byte_size, has_order, has_path
+        logical          :: has_parity, has_port, has_read, has_stop_bits, has_type, has_write
         type(arg_type)   :: args(13)
 
         args = [ &
@@ -79,10 +76,10 @@ contains
             arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=NET_IPV4_LEN), & ! -a, --address <string>
             arg_type('port',      short='q', type=ARG_TYPE_INTEGER),                      & ! -q, --port <n>
             arg_type('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.),     & ! -s, --slave <n>
-            arg_type('registers', short='n', type=ARG_TYPE_INTEGER),                      & ! -n, --registers <n>
             arg_type('read',      short='r', type=ARG_TYPE_INTEGER),                      & ! -r, --read <address>
             arg_type('write',     short='w', type=ARG_TYPE_INTEGER),                      & ! -w, --write <address>
-            arg_type('float',     short='f', type=ARG_TYPE_STRING, min_len=4, max_len=4), & ! -f, --float
+            arg_type('type',      short='t', type=ARG_TYPE_STRING, min_len=5, max_len=6), & ! -t, --type <string>
+            arg_type('order',     short='b', type=ARG_TYPE_STRING, min_len=4, max_len=4), & ! -b, --order <string>
             arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                       & ! -V, --verbose
         ]
 
@@ -98,10 +95,10 @@ contains
         call dm_arg_get(args( 6), app%tcp%address,   passed=has_address)
         call dm_arg_get(args( 7), app%tcp%port,      passed=has_port)
         call dm_arg_get(args( 8), app%slave)
-        call dm_arg_get(args( 9), app%registers,     passed=has_registers)
-        call dm_arg_get(args(10), read_address,      passed=has_read)
-        call dm_arg_get(args(11), write_address,     passed=has_write)
-        call dm_arg_get(args(12), float,             passed=has_float)
+        call dm_arg_get(args( 9), read_address,      passed=has_read)
+        call dm_arg_get(args(10), write_address,     passed=has_write)
+        call dm_arg_get(args(11), type,              passed=has_type)
+        call dm_arg_get(args(12), order,             passed=has_order)
         call dm_arg_get(args(13), app%verbose)
 
         ! Modbus RTU or TCP mode.
@@ -231,12 +228,6 @@ contains
             return
         end if
 
-        ! Number of registers to read or write.
-        if (app%registers < 1) then
-            call dm_error_out(rc, 'argument --registers must be > 0')
-            return
-        end if
-
         ! Read or write operation.
         if (has_read .and. has_write) then
             call dm_error_out(rc, 'argument --read conflicts with --write')
@@ -253,7 +244,7 @@ contains
                 return
             end if
 
-            app%access  = ACCESS_READ
+            app%access  = MODBUS_ACCESS_READ
             app%address = read_address
         else if (has_write) then
             if (write_address < 0) then
@@ -261,25 +252,28 @@ contains
                 return
             end if
 
-            app%access  = ACCESS_WRITE
+            app%access  = MODBUS_ACCESS_WRITE
             app%address = write_address
         end if
 
-        ! Floating-point number.
-        if (has_float) then
-            app%float = dm_modbus_float_from_name(float)
+        ! Number type.
+        if (has_type) then
+            app%type = dm_modbus_type_from_name(type)
 
-            if (.not. dm_modbus_is_float(app%float)) then
-                call dm_error_out(rc, 'argument --float is not a valid byte order')
+            if (.not. dm_modbus_type_is_valid(app%order)) then
+                call dm_error_out(rc, 'argument --type is not a valid number type')
                 return
             end if
+        end if
 
-            if (has_registers .and. app%registers /= 2) then
-                call dm_error_out(rc, 'argument --registers must be 2')
+        ! Byte order.
+        if (has_order) then
+            app%order = dm_modbus_order_from_name(order)
+
+            if (.not. dm_modbus_order_is_valid(app%order)) then
+                call dm_error_out(rc, 'argument --order is not a valid byte order')
                 return
             end if
-
-            app%registers = 2
         end if
 
         rc = E_NONE

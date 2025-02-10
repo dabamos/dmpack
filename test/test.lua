@@ -114,15 +114,17 @@ dmtestconfig = {
             access = "read",
             slave = 10,
             address = 50,
-            float = "abcd"
+            type = "float",
+            order = "abcd"
         },
         {
+            name = "test",
+            unit = "none",
             access = "write",
             slave = 99,
             address = 10,
-            value = 16,
-            name = "test",
-            unit = "none"
+            type = "int32",
+            value = 16
         }
     }
 }
