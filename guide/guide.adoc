@@ -288,18 +288,42 @@ $ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot graphicsmagic
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
 to SVG only). The packages `ffmpeg` and `graphicsmagick` are only required for
-client-side camera access and may be omitted. The SQLite 3 package version must
-be ≥ 3.39.0. If the version in the package repository is too old, like on Ubuntu
-22.04 LTS, you can also <<third-party-sqlite,build the library from source>>.
-Depending on the Linux distribution, the names of the HDF5 and Lua packages may
-differ.
+client-side camera access and may be omitted. Depending on the Linux
+distribution, the names of the HDF5 and Lua packages may differ.
 
 [NOTE]
+.Building from Source
 ====
-If Intel oneAPI is used, it is necessary to build HDF5 from source, as the
+If third-party libraries are not available in the required minimum version,
+like on Ubuntu 22.04 LTS or Debian 12 (Bookworm), you may want to build the
+missing dependencies from source, for instance:
+
+* <<third-party-libmodbus,libmodbus>>
+* <<third-party-libstrophe,libstrophe>>
+* <<third-party-sqlite,SQLite 3>>
+* <<third-party-zstd,Zstandard>>
+
+If the libraries are installed to a non-default directory, overwrite the
+specific linker flag. For example, if SQLite 3 has been installed to `/opt`,
+pass argument `LIBSQLITE3`:
+
+....
+$ make build OS=linux LIBSQLITE3="-Wl,-rpath=/opt/lib -L/opt/lib -lsqlite3"
+....
+
+For the other libraries, pass `LIBMODBUS`, `LIBSTROPHE`, and `LIBZSTD`
+respectively.
+====
+
+[NOTE]
+.Intel oneAPI Compilers
+====
+If Intel oneAPI is used, it is necessary to build HDF5 from source, because the
 versions in the Linux package repositories have been compiled with GNU Fortran
-and are therefore incompatible. See section <<third-party-hdf5,HDFView>> for
-hints regarding the build process.
+and are therefore incompatible. See section <<third-party-hdf5,HDF5>> for hints
+regarding the build process. Pass the library installation path additionally to
+`-lhdf5 -lhdf5_fortran` as argument `LIBHDF5` and the path to the module files
+as argument `INCHDF5`.
 ====
 
 ==== Make [[linux-make]]
@@ -350,35 +374,20 @@ Path `/opt/bin/` must be added to the global `PATH` environment variable to run
 DMPACK programs from the command-line.
 
 [NOTE]
-.Custom SQLite 3
-====
-If the SQLite 3 library has been built from source and installed to
-`/usr/local/lib`, overwrite the variable `LIBSQLITE3` to pass the path of shared
-library `libsqlite3.so`:
-
-....
-$ make build OS=linux LIBSQLITE3="-L/usr/local/lib -lsqlite3"
-....
-
-If more than one library is installed, additionally specify the path with linker
-flag `-Wl,-rpath=/usr/local/lib`.
-====
-
-[NOTE]
 .Intel oneAPI Compilers
 ====
 If Intel oneAPI is used instead of the GNU Compiler Collection, run:
 
 ....
-$ make build OS=linux CC=icx FC=ifx PPFLAGS= \
+$ make build OS=linux CC=icx FC=ifx PPFLAGS="" \
   CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
   LDFLAGS="-module ./include -I./include" \
   INCHDF5="-I/opt/include" \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
 ....
 
-In this particular case, the HDF5 libraries are installed to `/opt/lib/`, and
-the HDF5 modules files to `/opt/include/`. Change the paths to the actual
+In this particular case, the HDF5 libraries are installed to `/opt/lib`, and
+the HDF5 modules files to `/opt/include`. Change the paths to the actual
 locations.
 ====
 
@@ -7953,6 +7962,8 @@ $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
 $ cmake --build . --config Release
 ....
 
+Change argument `CMAKE_Fortran_COMPILER` to `ifx` and argument
+`CMAKE_C_COMPILER` to `icx` if you want to build with Intel oneAPI instead.
 Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
 build directory.
 
@@ -7975,6 +7986,8 @@ $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
 $ cmake --build . --config Release
 ....
 
+Change argument `CMAKE_Fortran_COMPILER` to `ifx` and argument
+`CMAKE_C_COMPILER` to `icx` if you want to build with Intel oneAPI instead.
 Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
 to `bin/` in the HDF5 build directory.
 
@@ -8025,25 +8038,78 @@ $ cd build/HDF_Group/HDFView/99.99.99/
 $ sh hdfview.sh
 ....
 
+=== libmodbus [[third-party-libmodbus]]
+
+If a package of link:https://libmodbus.org/[libmodbus] is not available on
+the targeted Linux distribution, the latest version can be built from source.
+Additionally, _automake_, _autoconf_, _libtool_ and a C compiler must be
+present. Then, run:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/stephane/libmodbus.git
+$ cd libmodbus/
+$ ./autogen.sh
+$ ./configure --prefix=/opt
+....
+
+Finally, build and install the library:
+
+....
+$ sudo make install
+....
+
+Pass the parameter `LIBMODBUS="-Wl,-rpath=/opt/lib -L/opt/lib -lmodbus"` to the
+DMPACK Makefile.
+
+=== libstrophe [[third-party-libstrophe]]
+
+DMPACK requires the XMPP client library
+link:https://strophe.im/libstrophe/[libstrophe] 0.13.1 or newer. On Linux,
+build the latest version from source if a package is not available. Either
+_expat_ or _libxml2_ must be installed, alongside OpenSSL or GnuTLS. First,
+bootstrap the build environment:
+
+....
+$ cd /tmp/
+$ git clone --depth 1 https://github.com/strophe/libstrophe.git
+$ cd libstrophe/
+$ ./bootstrap.sh
+$ ./configure --prefix=/opt
+....
+
+Then, build and install the library:
+
+....
+$ sudo make install
+....
+
+Pass the parameter `LIBSTROPHE="-Wl,-rpath=/opt/lib -L/opt/lib -lstrophe"` to
+the DMPACK Makefile.
+
 === SQLite 3 [[third-party-sqlite]]
 
 DMPACK depends on SQLite version 3.39.0 or newer. If only an older package is
-available in the package repository of the operating system, build the latest
+available in the package repository of the operating system, compile the latest
 version from source:
 
 ....
 $ cd /tmp/
 $ git clone --depth 1 https://github.com/sqlite/sqlite.git
 $ cd sqlite/
-$ ./configure
+$ ./configure --prefix=/opt
 ....
 
-Install SQLite 3 and test the command-line utility:
+Change the prefix to the desired installation directory. Build and install
+SQLite 3, then test the command-line utility:
 
 ....
 $ sudo make install
-$ /usr/local/bin/sqlite3 --version
+$ /opt/bin/sqlite3 --version
 ....
+
+Pass the parameter `LIBSQLITE3="-Wl,-rpath=/opt/lib -L/opt/lib -lsqlite3"` to
+the DMPACK Makefile.
 
 === Zstandard [[third-party-zstd]]
 
@@ -8058,14 +8124,18 @@ $ cd zstd/build/cmake/
 $ mkdir build && cd build/
 $ cmake ..
 $ cmake --build . --config Release
-$ sudo cmake --install . --prefix /usr/local
+$ sudo cmake --install . --prefix /opt
 ....
 
-Execute the Zstandard command-line utility to verify the installation:
+Change the prefix to the desired installation directory. Execute the Zstandard
+command-line utility to verify the installation:
 
 ....
-$ /usr/local/bin/zstd --version
+$ /opt/bin/zstd --version
 ....
+
+Pass the parameter `LIBZSTD="-Wl,-rpath=/opt/lib -L/opt/lib -lzstd"` to
+the DMPACK Makefile.
 
 == Error Codes [[error-codes]]
 
