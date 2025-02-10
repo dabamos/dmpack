@@ -330,11 +330,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = achar(floor(request%responses(i)%value, kind=i4))
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -383,11 +380,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = floor(request%responses(i)%value, kind=i4)
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -436,11 +430,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = floor(request%responses(i)%value, kind=i8)
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -489,11 +480,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = (floor(request%responses(i)%value) >= 1)
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -542,11 +530,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = real(request%responses(i)%value, kind=r4)
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -595,11 +580,8 @@ contains
             if (request%responses(i)%type /= VALUE_TYPE) exit response_block
 
             rc = E_NONE
+            call dm_response_get(request%responses(i), unit=unit, type=type, error=error)
             value = request%responses(i)%value
-
-            if (present(unit))  unit  = request%responses(i)%unit
-            if (present(type))  type  = request%responses(i)%type
-            if (present(error)) error = request%responses(i)%error
         end block response_block
 
         if (present(status)) status = rc
@@ -658,18 +640,12 @@ contains
         integer,            intent(in), optional :: error   !! Response error.
 
         if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-
-        request%responses(index)%name  = name
-        request%responses(index)%value = dm_to_real64(value)
-        request%responses(index)%type  = RESPONSE_TYPE_INT32
-
-        if (present(unit)) request%responses(index)%unit = unit
-
-        if (present(error)) then
-            request%responses(index)%error = error
-        else
-            request%responses(index)%error = E_NONE
-        end if
+        call dm_response_set(response = request%responses(index), &
+                             name     = name, &
+                             unit     = unit, &
+                             type     = RESPONSE_TYPE_INT32, &
+                             error    = dm_present(error, E_NONE), &
+                             value    = dm_to_real64(value))
     end subroutine request_set_int32
 
     pure elemental subroutine request_set_int64(request, index, name, value, unit, error)
@@ -686,18 +662,12 @@ contains
         integer,            intent(in), optional :: error   !! Response error.
 
         if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-
-        request%responses(index)%name  = name
-        request%responses(index)%value = dm_to_real64(value)
-        request%responses(index)%type  = RESPONSE_TYPE_INT64
-
-        if (present(unit)) request%responses(index)%unit = unit
-
-        if (present(error)) then
-            request%responses(index)%error = error
-        else
-            request%responses(index)%error = E_NONE
-        end if
+        call dm_response_set(response = request%responses(index), &
+                             name     = name, &
+                             unit     = unit, &
+                             type     = RESPONSE_TYPE_INT64, &
+                             error    = dm_present(error, E_NONE), &
+                             value    = dm_to_real64(value))
     end subroutine request_set_int64
 
     pure elemental subroutine request_set_logical(request, index, name, value, unit, error)
@@ -714,18 +684,12 @@ contains
         integer,            intent(in), optional :: error   !! Response error.
 
         if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-
-        request%responses(index)%name  = name
-        request%responses(index)%value = dm_to_real64(value)
-        request%responses(index)%type  = RESPONSE_TYPE_LOGICAL
-
-        if (present(unit)) request%responses(index)%unit = unit
-
-        if (present(error)) then
-            request%responses(index)%error = error
-        else
-            request%responses(index)%error = E_NONE
-        end if
+        call dm_response_set(response = request%responses(index), &
+                             name     = name, &
+                             unit     = unit, &
+                             type     = RESPONSE_TYPE_LOGICAL, &
+                             error    = dm_present(error, E_NONE), &
+                             value    = dm_to_real64(value))
     end subroutine request_set_logical
 
     pure elemental subroutine request_set_real32(request, index, name, value, unit, error)
@@ -742,18 +706,12 @@ contains
         integer,            intent(in), optional :: error   !! Response error.
 
         if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-
-        request%responses(index)%name  = name
-        request%responses(index)%value = dm_to_real64(value)
-        request%responses(index)%type  = RESPONSE_TYPE_REAL32
-
-        if (present(unit)) request%responses(index)%unit = unit
-
-        if (present(error)) then
-            request%responses(index)%error = error
-        else
-            request%responses(index)%error = E_NONE
-        end if
+        call dm_response_set(response = request%responses(index), &
+                             name     = name, &
+                             unit     = unit, &
+                             type     = RESPONSE_TYPE_REAL32, &
+                             error    = dm_present(error, E_NONE), &
+                             value    = dm_to_real64(value))
     end subroutine request_set_real32
 
     pure elemental subroutine request_set_real64(request, index, name, value, unit, error)
@@ -770,17 +728,11 @@ contains
         integer,            intent(in), optional :: error   !! Response error.
 
         if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-
-        request%responses(index)%name  = name
-        request%responses(index)%value = value
-        request%responses(index)%type  = RESPONSE_TYPE_REAL64
-
-        if (present(unit)) request%responses(index)%unit = unit
-
-        if (present(error)) then
-            request%responses(index)%error = error
-        else
-            request%responses(index)%error = E_NONE
-        end if
+        call dm_response_set(response = request%responses(index), &
+                             name     = name, &
+                             unit     = unit, &
+                             type     = RESPONSE_TYPE_REAL64, &
+                             error    = dm_present(error, E_NONE), &
+                             value    = value)
     end subroutine request_set_real64
 end module dm_request

@@ -49,13 +49,15 @@ module dm_response
     public :: operator (==)
 
     public :: dm_response_equals
+    public :: dm_response_get
     public :: dm_response_is_valid
     public :: dm_response_out
+    public :: dm_response_set
     public :: dm_response_type_is_valid
     public :: dm_response_type_to_name
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC FUNCTIONS.
     ! **************************************************************************
     pure elemental logical function dm_response_equals(response1, response2) result(equals)
         !! Returns `.true.` if given responses are equal.
@@ -124,4 +126,39 @@ contains
 
         name = trim(RESPONSE_TYPE_NAMES(type))
     end function dm_response_type_to_name
+
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
+    pure elemental subroutine dm_response_get(response, name, unit, type, error, value)
+        !! Gets attributes of response type.
+        type(response_type),              intent(inout)         :: response !! Response type.
+        character(len=RESPONSE_NAME_LEN), intent(out), optional :: name     !! Name.
+        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit     !! Unit.
+        integer,                          intent(out), optional :: type     !! Value type.
+        integer,                          intent(out), optional :: error    !! Error code.
+        real(kind=r8),                    intent(out), optional :: value    !! Value.
+
+        if (present(name))  name  = response%name
+        if (present(unit))  unit  = response%unit
+        if (present(type))  type  = response%type
+        if (present(error)) error = response%error
+        if (present(value)) value = response%value
+    end subroutine dm_response_get
+
+    pure elemental subroutine dm_response_set(response, name, unit, type, error, value)
+        !! Sets attributes of response type.
+        type(response_type), intent(inout)        :: response !! Response type.
+        character(len=*),    intent(in), optional :: name     !! Name.
+        character(len=*),    intent(in), optional :: unit     !! Unit.
+        integer,             intent(in), optional :: type     !! Value type.
+        integer,             intent(in), optional :: error    !! Error code.
+        real(kind=r8),       intent(in), optional :: value    !! Value.
+
+        if (present(name))  response%name  = name
+        if (present(unit))  response%unit  = unit
+        if (present(type))  response%type  = type
+        if (present(error)) response%error = error
+        if (present(value)) response%value = value
+    end subroutine dm_response_set
 end module dm_response
