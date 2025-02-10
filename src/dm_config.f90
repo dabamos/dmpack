@@ -99,7 +99,7 @@ contains
         if (dm_is_error(rc)) rc = E_CONFIG
     end function dm_config_field
 
-    integer function dm_config_open(config, path, name, geocom) result(rc)
+    integer function dm_config_open(config, path, name, geocom, modbus) result(rc)
         !! Opens configuration file and optionally loads the table of the given
         !! name if the argument has been passed.
         !!
@@ -118,6 +118,7 @@ contains
         character(len=*),  intent(in)           :: path   !! Path to config file.
         character(len=*),  intent(in), optional :: name   !! Name of table. Passed name implies table loading.
         logical,           intent(in), optional :: geocom !! Register GeoCOM API for Lua.
+        logical,           intent(in), optional :: modbus !! Register Modbus API for Lua.
 
         rc = E_INVALID
         if (len_trim(path) == 0) then
@@ -137,7 +138,7 @@ contains
             if (dm_is_error(rc)) exit lua_block
 
             ! Register DMPACK API for Lua.
-            rc = dm_lua_api_register(config%lua)
+            rc = dm_lua_api_register(config%lua, modbus_types=modbus)
             if (dm_is_error(rc)) exit lua_block
 
             ! Register GeoCOM API for Lua.

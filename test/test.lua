@@ -111,19 +111,19 @@ dmtestconfig = {
     real = 1.0,
     registers = {
         {
-            access = "read",
+            access = MODBUS_ACCESS_READ,
             slave = 10,
             address = 50,
-            type = "float",
-            order = "abcd"
+            type = MODBUS_TYPE_FLOAT,
+            order = MODBUS_ORDER_ABCD
         },
         {
             name = "test",
             unit = "none",
-            access = "write",
+            access = MODBUS_ACCESS_WRITE,
             slave = 99,
             address = 10,
-            type = "int32",
+            type = MODBUS_TYPE_INT16,
             value = 16
         }
     }

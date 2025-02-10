@@ -260,7 +260,7 @@ contains
         rc = E_NONE
     end function dm_modbus_flush
 
-    real function dm_modbus_get_float(data, byte_order, error) result(value)
+    real function dm_modbus_get_float(data, order, error) result(value)
         !! Returns real value from two registers of given byte order in argument
         !! `value`. The argument byte order must be one of the following:
         !!
@@ -270,14 +270,14 @@ contains
         !! * `MODBUS_ORDER_DCBA`
         !!
         !! The function sets argument `error' to `E_INVALID` on any other value.
-        integer(kind=u2), intent(inout)         :: data(2)    !! Registers to convert.
-        integer,          intent(in)            :: byte_order !! Byte order.
-        integer,          intent(out), optional :: error      !! Error code.
+        integer(kind=u2), intent(inout)         :: data(2) !! Registers to convert.
+        integer,          intent(in)            :: order   !! Byte order.
+        integer,          intent(out), optional :: error   !! Error code.
 
         value = 0.0
         if (present(error)) error = E_INVALID
 
-        select case (byte_order)
+        select case (order)
             case (MODBUS_ORDER_ABCD); value = modbus_get_float_abcd(data)
             case (MODBUS_ORDER_BADC); value = modbus_get_float_badc(data)
             case (MODBUS_ORDER_CDAB); value = modbus_get_float_cdab(data)
@@ -395,19 +395,19 @@ contains
         rc = E_NONE
     end function dm_modbus_get_slave
 
-    integer function dm_modbus_read_float(modbus, address, byte_order, value) result(rc)
+    integer function dm_modbus_read_float(modbus, address, order, value) result(rc)
         !! Reads 4-byte real value from two registers and returns result in
         !! `value`.
-        class(modbus_type), intent(inout) :: modbus     !! Modbus RTU/TCP type.
-        integer,            intent(in)    :: address    !! Address to read from.
-        integer,            intent(in)    :: byte_order !! Byte order.
-        real(kind=4),       intent(out)   :: value      !! Value read from register.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer,            intent(in)    :: order   !! Byte order.
+        real(kind=4),       intent(out)   :: value   !! Value read from register.
 
         integer(kind=u2) :: data(2)
 
         rc = dm_modbus_read_registers(modbus, address, data)
         if (dm_is_error(rc)) return
-        value = dm_modbus_get_float(data, byte_order, error=rc)
+        value = dm_modbus_get_float(data, order, error=rc)
     end function dm_modbus_read_float
 
     integer function dm_modbus_read_int16(modbus, address, value) result(rc)
@@ -773,9 +773,9 @@ contains
         ]
     end subroutine dm_modbus_set_int64_to_int16
 
-    subroutine dm_modbus_set_float(value, data, byte_order, error)
+    subroutine dm_modbus_set_float(value, data, order, error)
         !! Sets real value to registers of given byte order. The argument
-        !! `byte_order` must be one of the following:
+        !! `order` must be one of the following:
         !!
         !! * `MODBUS_ORDER_ABCD`
         !! * `MODBUS_ORDER_BADC`
@@ -783,15 +783,15 @@ contains
         !! * `MODBUS_ORDER_DCBA`
         !!
         !! The routine sets argument `error' to `E_INVALID` on any other value.
-        real,             intent(in)            :: value      !! Real value to set.
-        integer(kind=u2), intent(out)           :: data(2)    !! Registers to write to.
-        integer,          intent(in)            :: byte_order !! Byte order.
-        integer,          intent(out), optional :: error      !! Error code.
+        real,             intent(in)            :: value   !! Real value to set.
+        integer(kind=u2), intent(out)           :: data(2) !! Registers to write to.
+        integer,          intent(in)            :: order   !! Byte order.
+        integer,          intent(out), optional :: error   !! Error code.
 
         data(:) = 0_u2
         if (present(error)) error = E_INVALID
 
-        select case (byte_order)
+        select case (order)
             case (MODBUS_ORDER_ABCD); call modbus_set_float_abcd(value, data)
             case (MODBUS_ORDER_BADC); call modbus_set_float_badc(value, data)
             case (MODBUS_ORDER_CDAB); call modbus_set_float_cdab(value, data)

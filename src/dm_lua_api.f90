@@ -2,7 +2,6 @@
 ! Licence: ISC
 module dm_lua_api
     !! DMPACK API for Lua.
-    use, intrinsic :: iso_c_binding
     use :: dm_error
     use :: dm_lua
     use :: dm_util
@@ -12,6 +11,7 @@ module dm_lua_api
     ! Public procedures.
     public :: dm_lua_api_register
 
+    ! C-interoperable Fortran functions for Lua.
     public :: dm_lua_api_deg2gon
     public :: dm_lua_api_deg2rad
     public :: dm_lua_api_gon2deg
@@ -22,7 +22,8 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_lua_api_register(lua, errors, log_levels, procedures, response_types) result(rc)
+    integer function dm_lua_api_register(lua, errors, log_levels, procedures, &
+                                         response_types, modbus_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
         !! the given Lua environment `lua`.
         !!
@@ -65,12 +66,33 @@ contains
         !! * `RESPONSE_TYPE_BYTE`
         !! * `RESPONSE_TYPE_STRING`
         !!
+        !! The following Modbus type parameters are injected if `modbus_types`
+        !! is `.true.`:
+        !!
+        !! * `MODBUS_ACCESS_NONE`
+        !! * `MODBUS_ACCESS_READ`
+        !! * `MODBUS_ACCESS_WRITE`
+        !!
+        !! * `MODBUS_TYPE_NONE`
+        !! * `MODBUS_TYPE_INT16`
+        !! * `MODBUS_TYPE_INT32`
+        !! * `MODBUS_TYPE_UINT16`
+        !! * `MODBUS_TYPE_UINT32`
+        !! * `MODBUS_TYPE_FLOAT`
+        !!
+        !! * `MODBUS_ORDER_NONE`
+        !! * `MODBUS_ORDER_ABCD`
+        !! * `MODBUS_ORDER_BADC`
+        !! * `MODBUS_ORDER_CDAB`
+        !! * `MODBUS_ORDER_DCBA`
+        !!
         !! The GeoCOM API is registered through function `dm_lua_geocom_register()`
         !! in module `dm_lua_geocom`.
         !!
         !! This function returns `E_INVALID` if the Lua interpreter has not been
         !! initialised, or `E_LUA` if the registration failed.
         use :: dm_log
+        use :: dm_modbus_type
         use :: dm_response
 
         type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
@@ -78,6 +100,7 @@ contains
         logical,              intent(in), optional :: log_levels     !! Export log level.
         logical,              intent(in), optional :: procedures     !! Export procedures.
         logical,              intent(in), optional :: response_types !! Export response type parameters.
+        logical,              intent(in), optional :: modbus_types   !! Export Modbus type parameters.
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
@@ -195,6 +218,16 @@ contains
             rc = dm_lua_set(lua, 'LL_USER',     LL_USER);     if (dm_is_error(rc)) return
         end if
 
+        ! Register procedures.
+        if (dm_present(procedures, .true.)) then
+            call dm_lua_register(lua, 'deg2gon', dm_lua_api_deg2gon)
+            call dm_lua_register(lua, 'deg2rad', dm_lua_api_deg2rad)
+            call dm_lua_register(lua, 'gon2deg', dm_lua_api_gon2deg)
+            call dm_lua_register(lua, 'gon2rad', dm_lua_api_gon2rad)
+            call dm_lua_register(lua, 'rad2deg', dm_lua_api_rad2deg)
+            call dm_lua_register(lua, 'rad2gon', dm_lua_api_rad2gon)
+        end if
+
         ! Register response type parameters.
         if (dm_present(response_types, .true.)) then
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_REAL64',  RESPONSE_TYPE_REAL64);  if (dm_is_error(rc)) return
@@ -206,14 +239,24 @@ contains
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_STRING',  RESPONSE_TYPE_STRING);  if (dm_is_error(rc)) return
         end if
 
-        ! Register procedures.
-        if (dm_present(procedures, .true.)) then
-            call dm_lua_register(lua, 'deg2gon', dm_lua_api_deg2gon)
-            call dm_lua_register(lua, 'deg2rad', dm_lua_api_deg2rad)
-            call dm_lua_register(lua, 'gon2deg', dm_lua_api_gon2deg)
-            call dm_lua_register(lua, 'gon2rad', dm_lua_api_gon2rad)
-            call dm_lua_register(lua, 'rad2deg', dm_lua_api_rad2deg)
-            call dm_lua_register(lua, 'rad2gon', dm_lua_api_rad2gon)
+        ! Register Modbus type parameters.
+        if (dm_present(modbus_types, .false.)) then
+            rc = dm_lua_set(lua, 'MODBUS_ACCESS_NONE',  MODBUS_ACCESS_NONE);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ACCESS_READ',  MODBUS_ACCESS_READ);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ACCESS_WRITE', MODBUS_ACCESS_WRITE); if (dm_is_error(rc)) return
+
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_NONE',    MODBUS_TYPE_NONE);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_INT16',   MODBUS_TYPE_INT16);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_INT32',   MODBUS_TYPE_INT32);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_UINT16',  MODBUS_TYPE_UINT16);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_UINT32',  MODBUS_TYPE_UINT32);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_TYPE_FLOAT',   MODBUS_TYPE_FLOAT);   if (dm_is_error(rc)) return
+
+            rc = dm_lua_set(lua, 'MODBUS_ORDER_NONE',   MODBUS_ORDER_NONE);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ORDER_ABCD',   MODBUS_ORDER_ABCD);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ORDER_BADC',   MODBUS_ORDER_BADC);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ORDER_CDAB',   MODBUS_ORDER_CDAB);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'MODBUS_ORDER_DCBA',   MODBUS_ORDER_DCBA);   if (dm_is_error(rc)) return
         end if
 
         rc = E_NONE
@@ -224,6 +267,7 @@ contains
     ! **************************************************************************
     function dm_lua_api_deg2gon(ptr) bind(c) result(n)
         !! Lua function `deg2gon()` that converts angle from [deg] to [gon].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
@@ -239,6 +283,7 @@ contains
 
     function dm_lua_api_deg2rad(ptr) bind(c) result(n)
         !! Lua function `deg2rad()` that converts angle from [deg] to [rad].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
@@ -254,6 +299,7 @@ contains
 
     function dm_lua_api_gon2deg(ptr) bind(c) result(n)
         !! Lua function `gon2deg()` that converts angle from [gon] to [deg].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
@@ -269,6 +315,7 @@ contains
 
     function dm_lua_api_gon2rad(ptr) bind(c) result(n)
         !! Lua function `gon2rad()` that converts angle from [gon] to [rad].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
@@ -284,6 +331,7 @@ contains
 
     function dm_lua_api_rad2deg(ptr) bind(c) result(n)
         !! Lua function `rad2deg()` that converts angle from [rad] to [deg].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
@@ -299,6 +347,7 @@ contains
 
     function dm_lua_api_rad2gon(ptr) bind(c) result(n)
         !! Lua function `rad2gon()` that converts angle from [rad] to [gon].
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
