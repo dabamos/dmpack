@@ -383,7 +383,7 @@ $ make build OS=linux CC=icx FC=ifx PPFLAGS="" \
   CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
   LDFLAGS="-module ./include -I./include" \
   INCHDF5="-I/opt/include" \
-  LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5_fortran -lhdf5"
+  LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
 
 In this particular case, the HDF5 libraries are installed to `/opt/lib`, and
@@ -431,8 +431,8 @@ applications additionally require a web server:
 $ doas pkg install www/lighttpd
 ....
 
-Optionally, install Pygments and AsciiDoctor to generate the man pages and the
-User Guide from source:
+If you want to generate the man pages and the User Guide from source, also
+install Pygments and AsciiDoctor:
 
 ....
 $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
