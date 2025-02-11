@@ -52,17 +52,20 @@ contains
         real(kind=r8),       intent(in),  optional :: value    !! Query parameter value.
         integer,             intent(out), optional :: error    !! Error code.
 
+        integer :: n
+
         if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
-        db_query%nparams = db_query%nparams + 1
+        n = db_query%nparams + 1
 
-        db_query%params(db_query%nparams)%type         = DB_QUERY_TYPE_DOUBLE
-        db_query%params(db_query%nparams)%sql          = trim(param)
-        db_query%params(db_query%nparams)%value_double = value
+        db_query%nparams                = n
+        db_query%params(n)%type         = DB_QUERY_TYPE_DOUBLE
+        db_query%params(n)%sql          = trim(param)
+        db_query%params(n)%value_double = value
     end subroutine dm_db_query_add_double
 
     subroutine dm_db_query_add_int(db_query, param, value, error)
@@ -73,17 +76,20 @@ contains
         integer(kind=i4),    intent(in),  optional :: value    !! Query parameter value.
         integer,             intent(out), optional :: error    !! Error code.
 
+        integer :: n
+
         if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
-        db_query%nparams = db_query%nparams + 1
+        n = db_query%nparams + 1
 
-        db_query%params(db_query%nparams)%type      = DB_QUERY_TYPE_INT
-        db_query%params(db_query%nparams)%sql       = trim(param)
-        db_query%params(db_query%nparams)%value_int = value
+        db_query%nparams             = n
+        db_query%params(n)%type      = DB_QUERY_TYPE_INT
+        db_query%params(n)%sql       = trim(param)
+        db_query%params(n)%value_int = value
     end subroutine dm_db_query_add_int
 
     subroutine dm_db_query_add_int64(db_query, param, value, error)
@@ -94,17 +100,20 @@ contains
         integer(kind=i8),    intent(in),  optional :: value    !! Query parameter value.
         integer,             intent(out), optional :: error    !! Error code.
 
+        integer :: n
+
         if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
-        db_query%nparams = db_query%nparams + 1
+        n = db_query%nparams + 1
 
-        db_query%params(db_query%nparams)%type        = DB_QUERY_TYPE_INT64
-        db_query%params(db_query%nparams)%sql         = trim(param)
-        db_query%params(db_query%nparams)%value_int64 = value
+        db_query%nparams               = n
+        db_query%params(n)%type        = DB_QUERY_TYPE_INT64
+        db_query%params(n)%sql         = trim(param)
+        db_query%params(n)%value_int64 = value
     end subroutine dm_db_query_add_int64
 
     subroutine dm_db_query_add_text(db_query, param, value, error)
@@ -115,17 +124,20 @@ contains
         character(len=*),    intent(in),  optional :: value    !! Query parameter value.
         integer,             intent(out), optional :: error    !! Error code.
 
+        integer :: n
+
         if (present(error)) error = E_LIMIT
         if (db_query%nparams >= size(db_query%params)) return
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
 
-        db_query%nparams = db_query%nparams + 1
+        n = db_query%nparams + 1
 
-        db_query%params(db_query%nparams)%type       = DB_QUERY_TYPE_TEXT
-        db_query%params(db_query%nparams)%sql        = trim(param)
-        db_query%params(db_query%nparams)%value_text = trim(value)
+        db_query%nparams              = n
+        db_query%params(n)%type       = DB_QUERY_TYPE_TEXT
+        db_query%params(n)%sql        = trim(param)
+        db_query%params(n)%value_text = trim(value)
     end subroutine dm_db_query_add_text
 
     function dm_db_query_build(db_query, base) result(sql)

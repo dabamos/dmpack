@@ -61,7 +61,7 @@ contains
         character(len=ENV_BUFFER_LEN) :: buffer
         integer                       :: n, stat
 
-        rc     = E_EMPTY
+        rc = E_EMPTY
         buffer = ' '
 
         if (present(exists)) exists = .false.
@@ -80,8 +80,8 @@ contains
 
         if (present(exists)) exists = .true.
 
+        rc = E_NONE
         value = trim(buffer)
-        rc    = E_NONE
     end function env_get_allocatable
 
     integer function env_get_int32(name, value, default, exists) result(rc)
@@ -95,7 +95,7 @@ contains
         character(len=20) :: buffer
         integer           :: i, n, stat
 
-        rc    = E_EMPTY
+        rc = E_EMPTY
         value = 0
 
         if (present(default)) value  = default
@@ -108,7 +108,7 @@ contains
         if (dm_is_error(rc)) return
 
         value = i
-        rc    = E_NONE
+        rc = E_NONE
     end function env_get_int32
 
     integer function env_get_int64(name, value, default, exists) result(rc)
@@ -231,6 +231,7 @@ contains
 
         rc = E_EMPTY
         value = ' '
+
         if (present(exists)) exists = .false.
 
         call get_environment_variable(name, value, length=n, status=stat)

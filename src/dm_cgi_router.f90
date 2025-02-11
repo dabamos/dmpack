@@ -112,12 +112,10 @@ contains
         rc = dm_hash_table_get(router%routes, path, ptr)
         if (dm_is_error(rc)) return
 
+        rc = E_TYPE
         select type (p => ptr)
-            type is (cgi_route_type)
-                route => p
-            class default
-                rc = E_TYPE
-                return
+            type is (cgi_route_type); route => p
+            class default;            return
         end select
 
         rc = E_NONE

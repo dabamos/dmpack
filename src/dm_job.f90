@@ -104,10 +104,8 @@ contains
         integer :: stat
 
         rc = E_ALLOC
-        allocate (job_list%jobs(n), stat=stat)
-        if (stat /= 0) return
-        allocate (job_list%mask(n), stat=stat, source=.true.)
-        if (stat /= 0) return
+        allocate (job_list%jobs(n), stat=stat);                if (stat /= 0) return
+        allocate (job_list%mask(n), stat=stat, source=.true.); if (stat /= 0) return
         rc = E_NONE
     end function dm_job_list_init
 

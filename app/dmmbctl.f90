@@ -338,7 +338,7 @@ contains
             end if
 
             if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to create Modbus context')
+                call dm_error_out(rc, 'failed to create Modbus context: ' // dm_modbus_error_message())
                 exit modbus_block
             end if
 
@@ -347,7 +347,7 @@ contains
                 rc = dm_modbus_set_debug(modbus, .true.)
 
                 if (dm_is_error(rc)) then
-                    call dm_error_out(rc, 'failed to enable debug mode')
+                    call dm_error_out(rc, 'failed to enable debug mode: ' // dm_modbus_error_message())
                     exit modbus_block
                 end if
             end if
@@ -356,7 +356,7 @@ contains
             rc = dm_modbus_connect(modbus)
 
             if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to create Modbus connection')
+                call dm_error_out(rc, 'failed to create Modbus connection: ' // dm_modbus_error_message())
                 exit modbus_block
             end if
 
@@ -370,32 +370,27 @@ contains
 
             ! Read value.
             if (app%access == MODBUS_ACCESS_READ) then
-                read_select: select case (app%type)
+                select case (app%type)
                     case (MODBUS_TYPE_INT16)
                         rc = dm_modbus_read_int16(modbus, app%address, i16)
-                        if (dm_is_error(rc)) exit read_select
-                        print '(i0)', i16
+                        if (dm_is_ok(rc)) print '(i0)', i16
 
                     case (MODBUS_TYPE_INT32)
                         rc = dm_modbus_read_int32(modbus, app%address, i32)
-                        if (dm_is_error(rc)) exit read_select
-                        print '(i0)', i32
+                        if (dm_is_ok(rc)) print '(i0)', i32
 
                     case (MODBUS_TYPE_UINT16)
                         rc = dm_modbus_read_uint16(modbus, app%address, i32)
-                        if (dm_is_error(rc)) exit read_select
-                        print '(i0)', i32
+                        if (dm_is_ok(rc)) print '(i0)', i32
 
                     case (MODBUS_TYPE_UINT32)
                         rc = dm_modbus_read_uint32(modbus, app%address, i64)
-                        if (dm_is_error(rc)) exit read_select
-                        print '(i0)', i64
+                        if (dm_is_ok(rc)) print '(i0)', i64
 
                     case (MODBUS_TYPE_FLOAT)
                         rc = dm_modbus_read_float(modbus, app%address, app%order, r32)
-                        if (dm_is_error(rc)) exit read_select
-                        print '(f0.12)', i64
-                end select read_select
+                        if (dm_is_ok(rc)) print '(f0.12)', r32
+                end select
 
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to read ' // MODBUS_TYPE_NAMES(app%type))
@@ -404,7 +399,7 @@ contains
 
             ! Write value.
             else if (app%access == MODBUS_ACCESS_WRITE) then
-                write_select: select case (app%type)
+                select case (app%type)
                     case (MODBUS_TYPE_INT16)
                         rc = dm_modbus_write_int16(modbus, app%address, int(app%value, kind=i2))
 
@@ -419,7 +414,7 @@ contains
 
                     case default
                         rc = E_INVALID
-                end select write_select
+                end select
 
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to write ' // MODBUS_TYPE_NAMES(app%type))

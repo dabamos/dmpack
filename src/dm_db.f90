@@ -142,7 +142,7 @@ module dm_db
         module procedure :: db_column_int
         module procedure :: db_column_int64
         module procedure :: db_column_text
-        module procedure :: db_column_text_alloc
+        module procedure :: db_column_text_allocatable
     end interface db_column
 
     interface db_next_row
@@ -416,7 +416,7 @@ module dm_db
     private :: db_column_is_integer
     private :: db_column_is_text
     private :: db_column_text
-    private :: db_column_text_alloc
+    private :: db_column_text_allocatable
     private :: db_commit
     private :: db_count
     private :: db_delete_receivers ! obsolete
@@ -6668,12 +6668,12 @@ contains
         n     = sqlite3_column_bytes(db_stmt%ctx, index)
     end subroutine db_column_text
 
-    subroutine db_column_text_alloc(db_stmt, index, value)
+    subroutine db_column_text_allocatable(db_stmt, index, value)
         !! Returns string value from column of given index.
         type(db_stmt_type),            intent(inout) :: db_stmt !! Database statement type.
         integer,                       intent(in)    :: index   !! Column index.
         character(len=:), allocatable, intent(out)   :: value   !! Value.
 
         value = sqlite3_column_text(db_stmt%ctx, index)
-    end subroutine db_column_text_alloc
+    end subroutine db_column_text_allocatable
 end module dm_db
