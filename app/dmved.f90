@@ -303,7 +303,7 @@ contains
                 mqueue_block: block
                     ! Check if block is valid.
                     if (.not. valid) then
-                        call logger%warning('checksum error detected, discarding block', error=E_CORRUPT)
+                        call logger%debug('checksum error detected, discarding block', error=E_CORRUPT)
                         exit mqueue_block
                     end if
 
@@ -320,7 +320,7 @@ contains
 
                     ! Convert all frames to responses.
                     call dm_ve_frame_read(frames, responses, error=errors)
-                    if (any(dm_is_error(errors))) call logger%error('failed to convert frames to responses', error=maxval(errors))
+                    if (any(dm_is_error(errors))) call logger%warning('failed to convert frames to responses', error=maxval(errors))
 
                     ! Create and forward observation.
                     call create_observ(observ, app, responses)
@@ -333,13 +333,13 @@ contains
 
             ! VE.Direct frame finished.
             if (eor) then
-                if (frame%label == 'BMV')  cycle tty_loop              ! Ignore deprecated model description.
-                if (frame%label == 'SER#') cycle tty_loop              ! Ignore serial number string.
-                if (frame%label == 'ERR')  code = dm_atoi(frame%value) ! Save device error.
+                if (frame%label == 'BMV')  cycle tty_loop ! Ignore deprecated model description.
+                if (frame%label == 'SER#') cycle tty_loop ! Ignore serial number string.
 
                 ! Log VE.Direct device error.
-                if (dm_ve_is_error(code)) then
-                    call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
+                if (frame%label == 'ERR') then
+                    code = dm_atoi(frame%value)
+                    if (dm_ve_is_error(code)) call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
                 end if
 
                 ! Output product name of connected VE device.

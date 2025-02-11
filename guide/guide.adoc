@@ -2824,18 +2824,20 @@ dmved = {
 }
 ....
 
-Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
-format:
-
-....
-$ dmrecv --name dmrecv --type observ --format jsonl
-....
-
 Start *dmved* to read and forward status data from the connected MPPT every 60
 seconds:
 
 ....
 $ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
+2025-02-11T14:13:27.587013+00:00 [INFO] dmved - started dmved
+2025-02-11T14:13:28.371825+00:00 [INFO] dmved - connected to Victron Energy SmartSolar MPPT 250|60 rev2
+....
+
+Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
+format:
+
+....
+$ dmrecv --name dmrecv --type observ --format jsonl
 ....
 
 === dmweb [[dmweb]]

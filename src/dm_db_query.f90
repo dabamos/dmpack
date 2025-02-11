@@ -116,12 +116,16 @@ contains
         db_query%params(n)%value_int64 = value
     end subroutine dm_db_query_add_int64
 
-    subroutine dm_db_query_add_text(db_query, param, value, error)
+    subroutine dm_db_query_add_text(db_query, param, value, empty, error)
         !! Adds text parameter to query. Returns `E_LIMIT` if parameter limit
-        !! has been reached.
+        !! has been reached. Empty strings and strings containing only
+        !! white-spaces are ignored, unless argument `empty` is set to `.true.`.
+        use :: dm_util, only: dm_present
+
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
         character(len=*),    intent(in)            :: param    !! Query parameter.
         character(len=*),    intent(in),  optional :: value    !! Query parameter value.
+        logical,             intent(in),  optional :: empty    !! Add empty string.
         integer,             intent(out), optional :: error    !! Error code.
 
         integer :: n
@@ -131,6 +135,7 @@ contains
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
+        if (dm_present(empty, .false.) .and. len_trim(value) == 0) return
 
         n = db_query%nparams + 1
 

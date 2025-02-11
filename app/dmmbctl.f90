@@ -40,7 +40,7 @@ program dmmbctl
         integer        :: type    = MODBUS_TYPE_DEFAULT !! Number type.
         integer        :: order   = MODBUS_ORDER_NONE   !! Byte order of type float.
         integer        :: value   = 0                   !! Value to write.
-        logical        :: verbose = .false.             !! Print debug messages to stderr.
+        logical        :: debug   = .false.             !! Enable debug mode of libmodbus.
         type(rtu_type) :: rtu                           !! Modbus RTU settings.
         type(tcp_type) :: tcp                           !! Modbus TCP settings.
     end type app_type
@@ -87,7 +87,7 @@ contains
             arg_type('type',      short='t', type=ARG_TYPE_STRING, min_len=5, max_len=6), & ! -t, --type <string>
             arg_type('order',     short='b', type=ARG_TYPE_STRING, min_len=4, max_len=4), & ! -b, --order <string>
             arg_type('value',     short='i', type=ARG_TYPE_INTEGER),                      & ! -i, --value <n>
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                       & ! -V, --verbose
+            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL)                       & ! -D, --debug
         ]
 
         ! Read all command-line arguments.
@@ -107,7 +107,7 @@ contains
         call dm_arg_get(args(11), type,            passed=has_type)
         call dm_arg_get(args(12), order,           passed=has_order)
         call dm_arg_get(args(13), app%value,       passed=has_value)
-        call dm_arg_get(args(14), app%verbose)
+        call dm_arg_get(args(14), app%debug)
 
         ! Parse and validate settings.
         rc = E_INVALID
@@ -347,7 +347,7 @@ contains
             end if
 
             ! Debug mode.
-            if (app%verbose) then
+            if (app%debug) then
                 rc = dm_modbus_set_debug(modbus, .true.)
 
                 if (dm_is_error(rc)) then
