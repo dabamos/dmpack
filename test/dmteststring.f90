@@ -23,7 +23,7 @@ program dmteststring
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=:), allocatable :: a, b
+        character(len=:), allocatable :: a
         integer                       :: n
 
         stat = TEST_FAILED
@@ -35,11 +35,6 @@ contains
 
         print *, 'Counting lines ...'
         n = dm_string_count_lines(a)
-        if (n /= 4) return
-
-        print *, 'Counting characters (with quoting) ...'
-        b = '100,3.141,"foo,",,"bar"'
-        n = dm_string_count_char(b, ',', quote='"')
         if (n /= 4) return
 
         stat = TEST_PASSED

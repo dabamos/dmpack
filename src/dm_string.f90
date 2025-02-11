@@ -96,38 +96,37 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    pure elemental integer function dm_string_count_char(string, a, quote) result(n)
-        !! Counts occurences of character `a` in `string`, with optional quoting
-        !! (`a` in between quote characters is not counted).
+    pure elemental integer function dm_string_count_char(string, a, n) result(count)
+        !! Counts occurences of character `a` in `string`.
         character(len=*), intent(in)           :: string !! Input.
         character,        intent(in)           :: a      !! Character to count.
-        character,        intent(in), optional :: quote  !! Quote character.
+        integer,          intent(in), optional :: n      !! String length.
 
-        character :: c
-        integer   :: i
-        logical   :: f, q
+        integer :: i, n_
 
-        n = 0
-        f = .false.
-        q = present(quote)
-        if (q) c = quote
+        count = 0
 
-        do i = 1, len_trim(string)
-            if (q .and. string(i:i) == c) f = .not. f
-            if (.not. f .and. string(i:i) == a) n = n + 1
+        if (present(n)) then
+            n_ = n
+        else
+            n_ = len(string)
+        end if
+
+        do i = 1, n_
+            if (string(i:i) == a) count = count + 1
         end do
     end function dm_string_count_char
 
-    integer function dm_string_count_lines(string) result(n)
+    integer function dm_string_count_lines(string) result(count)
         !! Returns the number of line breaks in string.
         use :: dm_ascii, only: ASCII_LF
 
         character(len=*), intent(inout) :: string !! Input string.
 
-        n = dm_string_count_char(string, ASCII_LF) + 1
+        count = dm_string_count_char(string, ASCII_LF, len_trim(string)) + 1
     end function dm_string_count_lines
 
-    pure elemental integer function dm_string_count_substring(string1, string2) result(n)
+    pure elemental integer function dm_string_count_substring(string1, string2) result(count)
         !! Returns the number of occurences of `string2` in `string1`.
         character(len=*), intent(in) :: string1 !! Haystack string.
         character(len=*), intent(in) :: string2 !! Needle string.
@@ -135,15 +134,15 @@ contains
         integer :: p
         integer :: pos_n
 
-        n = 0
-        p = 1
-
+        count = 0
         if (len(string2) == 0) return
+
+        p = 1
 
         do
             pos_n = index(string1(p:), string2)
             if (pos_n == 0) return
-            n = n + 1
+            count = count + 1
             p = p + pos_n + len(string2)
         end do
     end function dm_string_count_substring
