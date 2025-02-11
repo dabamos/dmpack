@@ -49,7 +49,7 @@ an empty file will be created.
   Enable CSV header.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--node*, *-N* _id_::
   Node id (required).
@@ -76,7 +76,7 @@ an empty file will be created.
   Type of records to export (required).
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

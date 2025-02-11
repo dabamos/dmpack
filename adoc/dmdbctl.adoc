@@ -57,7 +57,7 @@ through command-line arguments.
   Delete database record (node, sensor, or target).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--id*, *-I* _id_::
   ID of node, sensor, or target.
@@ -96,7 +96,7 @@ through command-line arguments.
   Print additional log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--x*, *-X* _x_::
   Node, sensor, or target x, usually in metres. May be in local or global

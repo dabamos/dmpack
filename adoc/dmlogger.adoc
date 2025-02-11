@@ -48,7 +48,7 @@ then trigger the log synchronisation.
   Path to SQLite log database.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--ipc*, *-Q*::
   Use POSIX semaphore for process synchronisation. The name of the semaphore
@@ -71,7 +71,7 @@ then trigger the log synchronisation.
   Print received logs to _stdout_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

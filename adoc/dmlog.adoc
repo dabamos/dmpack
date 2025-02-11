@@ -33,7 +33,7 @@ transmission.
   DMPACK error code (>= 0).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--level*, *-L* _level_::
   Log level, from `debug` (1) to `user` (6) The default level is `info` (2).
@@ -64,7 +64,7 @@ transmission.
   Print log to _stdout_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

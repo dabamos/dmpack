@@ -967,10 +967,10 @@ $ sqlite3 <database> ".backup '<output>'"
 
 | `--backup _file_`   | `-b`  | –       | Path of the backup database.
 | `--database _file_` | `-d`  | –       | Path of the SQLite database to backup.
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--vacuum`          | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite backup API.
 | `--verbose`         | `-V`  | off     | Print backup progess (not in vacuum mode).
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 | `--wal`             | `-W`  | off     | Enable WAL journal for backup database.
 |===
 
@@ -1018,7 +1018,7 @@ network access. The RPC endpoint on the server is expected at URL
 | `--config _file_`      | `-c`  | –        | Path to configuration file.
 | `--count _n_`          | `-C`  | 0        | Number of heartbeats to send (unlimited if 0).
 | `--debug`              | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
-| `--help`               | `-h`  | –        | Output available command-line arguments and quit.
+| `--help`               | `-h`  | –        | Print available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`).
 | `--interval _seconds_` | `-I`  | 0        | Emit interval in seconds.
 | `--logger _name_`      | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1029,7 +1029,7 @@ network access. The RPC endpoint on the server is expected at URL
 | `--tls`                | `-E`  | off      | Use TLS encryption.
 | `--username _string_`  | `-U`  | –        | API user name. If set, implies HTTP Basic Auth.
 | `--verbose`            | `-V`  | off      | Print log messages to _stderr_.
-| `--version`            | `-v`  | –        | Output version information and quit.
+| `--version`            | `-v`  | –        | Print version information and quit.
 |===
 
 [discrete]
@@ -1098,7 +1098,7 @@ for testing.
 
 | `--config _file_`     | `-c`  | –       | Path to configuration file.
 | `--debug`             | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
-| `--help`              | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`              | `-h`  | –       | Print available command-line arguments and quit.
 | `--host _host_`       | `-H`  | –       | FQDN of XMPP server (for instance, `example.com`).
 | `--jid _string_`      | `-J`  | –       | Bot Jabber id (for example, `bot@example.com`).
 | `--logger _name_`     | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -1109,7 +1109,7 @@ for testing.
 | `--reconnect`         | `-R`  | off     | Reconnect on error.
 | `--tls`               | `-E`  | off     | Force TLS encryption.
 | `--verbose`           | `-V`  | off     | Print log messages to _stderr_.
-| `--version`           | `-v`  | –       | Output version information and quit.
+| `--version`           | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1153,7 +1153,7 @@ messages are stored to database by the distinct <<dmlogger>> program.
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database.
 | `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 
 | `--ipc`
 | `-Q`
@@ -1177,7 +1177,7 @@ POSIX semaphore.
 
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1225,7 +1225,7 @@ through command-line arguments.
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
 | `--lat _lat_`       | `-L`  | –       | Node, sensor, or target latitude (optional).
 | `--lon _lon_`       | `-G`  | –       | Node, sensor, or target longitude (optional).
@@ -1238,7 +1238,7 @@ through command-line arguments.
 | `--type _name_`     | `-t`  | `none`  | <<data-sensor-types,Sensor type>> (`none`, `rts`, `gnss`, …).
 | `--update _type_`   | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
 | `--verbose`         | `-V`  | off     | Print additional log messages to _stderr_.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 | `--x _x_`           | `-X`  | –       | Local node, sensor, or target x (optional).
 | `--y _y_`           | `-Y`  | –       | Local node, sensor, or target y (optional).
 | `--z _z_`           | `-Z`  | –       | Local node, sensor, or target z (optional).
@@ -1317,7 +1317,7 @@ empty file will be created.
 | `--format _format_`  | `-f`  | –       | <<dmexport-format,Output file format>> (`block`, `csv`, `json`, `jsonl`).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
-| `--help`             | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
 | `--node _id_`        | `-N`  | –       | Node id (required).
 | `--output _file_`    | `-o`  | –       | Path of output file.
 | `--response _name_`  | `-R`  | –       | Response name for type `dp`.
@@ -1326,7 +1326,7 @@ empty file will be created.
 | `--target _id_`      | `-T`  | –       | Target id (required for types `dp` and `observ`).
 | `--to _timestamp_`   | `-E`  | –       | End of time range in ISO 8601 (required for types `dp`, `log`, `observ`).
 | `--type _type_`      | `-t`  | –       | Type of record to export: `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` (required).
-| `--version`          | `-v`  | –       | Output version information and quit.
+| `--version`          | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1381,7 +1381,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--email _address_`   | `-M`  | –          | E-mail address of feed author (optional).
 | `--entries _count_`   | `-E`  | 50         | Maximum number of entries in feed (max. 500).
 | `--force`             | `-F`  | –          | Force file output even if no new log records are available.
-| `--help`              | `-h`  | –          | Output available command-line arguments and quit.
+| `--help`              | `-h`  | –          | Print available command-line arguments and quit.
 | `--id _uuid_`         | `-I`  | –          | UUID of the feed, 36 characters long with hyphens.
 | `--maxlevel _level_`  | `-K`  | `critical` | Select log messages of the given maximum <<data-log-level,log level>> (from `debug` or 1 to `user` or 6). Must be greater or equal the minimum level.
 | `--minlevel _level_`  | `-L`  | `debug`    | Select log messages of the given minimum <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
@@ -1391,7 +1391,7 @@ the web server. An example style sheet `feed.xsl` is located in
 | `--subtitle _string_` | `-G`  | –          | Sub-title of feed.
 | `--title _string_`    | `-C`  | –          | Title of feed.
 | `--url _url_`         | `-U`  | –          | Public URL of the feed.
-| `--version`           | `-v`  | –          | Output version information and quit.
+| `--version`           | `-v`  | –          | Print version information and quit.
 | `--xsl`               | `-x`  | –          | Path to XSLT style sheet.
 |===
 
@@ -1457,14 +1457,14 @@ present in the database.
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
 | `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
 | `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmfs`  | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--output _file_`   | `-o`  | –       | Output file to append observations to (`-` for _stdout_).
 | `--sensor _id_`     | `-S`  | –       | Sensor id.
 | `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1496,14 +1496,14 @@ Otherwise, the default log level is used instead.
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file (required).
 | `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--level _level_`   | `-L`  | 3       | Default <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
 | `--logger _name_`   | `-l`  | –       | Name of <<dmlogger>> process to send logs to.
 | `--name _name_`     | `-n`  | `dmgrc` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--response _name_` | `-R`  | `grc`   | Response name of the GeoCOM return code.
 | `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1564,8 +1564,8 @@ number of rows; as well as system name, version, and host name.
 | Option              | Short | Default | Description
 
 | `--database _file_` | `-d`  | –       | Path to SQLite database.
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1625,13 +1625,13 @@ sensors must exist as well.
 
 | `--database _file_`  | `-d`  | –       | Path to SQLite database (required, unless in dry mode).
 | `--dry`              | `-D`  | off     | Dry mode. Reads and validates records from file but skips database import.
-| `--help`             | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
 | `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
 | `--quote _char_`     | `-q`  | –       | CSV quote character.
 | `--separator _char_` | `-s`  | `,`     | CSV field separator.
 | `--type _type_`      | `-t`  | –       | Type of record to import, either `log`, `node`, `observ`, `sensor`, `target` (required).
 | `--verbose`          | `-V`  | off     | Print progress to _stdout_.
-| `--version`          | `-v`  | –       | Output version information and quit.
+| `--version`          | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1661,10 +1661,10 @@ readers.
 
 | `--database _file_` | `-d`  | –       | Path of the new SQLite database (required).
 | `--force`           | `-F`  | off     | Force the table creation even if the database already exists.
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--sync`            | `-s`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server.
 | `--type _type_`     | `-t`  | –       | Type of database, either  `beat`, `log`, or `observ` (required).
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 | `--wal`             | `-W`  | off     | Enable journal mode Write-Ahead Logging (WAL).
 |===
 
@@ -1724,7 +1724,7 @@ command-line arguments. For level _warning_, set argument `--level` to `3` or
 | Option               | Short | Default    | Description
 
 | `--error _n_`        | `-e`  | 0          | DMPACK <<error-codes,error code>> (optional).
-| `--help`             | `-h`  | –          | Output available command-line arguments and quit.
+| `--help`             | `-h`  | –          | Print available command-line arguments and quit.
 | `--level _level_`    | `-L`  | `info`     | <<data-log-level,Log level>>, from `debug` or 1 to `user` or 6.
 | `--logger _name_`    | `-l`  | `dmlogger` | Name of logger instance and POSIX message queue.
 | `--message _string_` | `-m`  | –          | Log message (max. 512 characters).
@@ -1734,7 +1734,7 @@ command-line arguments. For level _warning_, set argument `--level` to `3` or
 | `--source _source_`  | `-Z`  | –          | Source of the log message (optional).
 | `--target _id_`      | `-T`  | –          | Target id (optional).
 | `--verbose`          | `-V`  | off        | Print log to _stderr_.
-| `--version`          | `-v`  | –          | Output version information and quit.
+| `--version`          | `-v`  | –          | Print version information and quit.
 |===
 
 [discrete]
@@ -1799,7 +1799,7 @@ The following log levels are accepted:
 
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--database _file_` | `-d`  | –       | Path to SQLite log database.
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 
 | `--ipc`
 | `-Q`
@@ -1822,7 +1822,7 @@ semaphore.
 
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--verbose`         | `-V`  | off     | Print received logs to _stderr_.
-| `--version`         | `-v`  | –       | Output version information and quit.
+| `--version`         | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -1869,14 +1869,14 @@ the observation will be discarded.
 
 | `--config _file_`    | `-c`  | –         | Path to configuration file (optional).
 | `--debug`            | `-D`  | off       | Forward log messages of level _debug_ (if logger is set).
-| `--help`             | `-h`  | –         | Output available command-line arguments and quit.
+| `--help`             | `-h`  | –         | Print available command-line arguments and quit.
 | `--logger _name_`    | `-l`  | –         | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`      | `-n`  | `dmlua`   | Name of instance and table in configuration.
 | `--node _id_`        | `-N`  | –         | Node id.
 | `--procedure _name_` | `-p`  | `process` | Name of Lua function to call.
 | `--script _file_`    | `-s`  | –         | Path to Lua script to run.
 | `--verbose`          | `-V`  | off       | Print log messages to _stderr_.
-| `--version`          | `-v`  | –         | Output version information and quit.
+| `--version`          | `-v`  | –         | Print version information and quit.
 |===
 
 [discrete]
@@ -1936,31 +1936,31 @@ The following data types are supported:
 
 In order to read floating-point values, set `--type` to `float` and `--order`
 to the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
-`dcba`.
+`dcba`. Only integer values may be written to a register.
 
 [discrete]
 ==== Command-Line Options
 
 [cols="2,1,1,6"]
 |===
-| Option              | Short | Default | Description
+| Option               | Short | Default | Description
 
-| `--address _ip_`    | `-a`  | –       | Modbus TCP address (IPv4).
-| `--baudrate _n_`    | `-B`  | –       | Modbus RTU baud rate (9600, 19200, …).
-| `--bytesize _n_`    | `-Z`  | –       | Modbus RTU byte size (5, 6, 7, 8).
-| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
-| `--order _name_`    | `-b`  | –       | Byte order of float (`abcd`, `badc`, `cdab`, `dcba`).
-| `--parity _name_`   | `-P`  | –       | Modbus RTU parity bits (`none`, `even`, `odd`).
-| `--path _path_`     | `-p`  | –       | Modbus RTU device path.
-| `--port _port_`     | `-q`  | –       | Modbus TCP port.
-| `--read _address_`  | `-r`  | –       | Read value from given Modbus register address.
-| `--slave _n_`       | `-s`  | –       | Slave id of Modbus device.
-| `--stopbits _n_`    | `-O`  | –       | Modbus RTU stop bits (1, 2).
-| `--type _name_`     | `-t`  | –       | Number type (`int16`, `int32`, `uint16`, `uint32`, `float`).
-| `--value`           | `-i`  | –       | Integer value to write.
-| `--verbose`         | `-V`  | off     | Print debug messages.
-| `--version`         | `-v`  | –       | Output version information and quit.
-| `--write _address_` | `-w`  | –       | Write value to given Modbus register address.
+| `--address _ip_`     | `-a`  | –       | Modbus TCP address (IPv4).
+| `--baudrate _n_`     | `-B`  | –       | Modbus RTU baud rate (9600, 19200, …).
+| `--bytesize _n_`     | `-Z`  | –       | Modbus RTU byte size (5, 6, 7, 8).
+| `--debug`            | `-V`  | off     | Print debug messages from _libmodbus_.
+| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
+| `--order _name_`     | `-b`  | –       | Byte order of float (`abcd`, `badc`, `cdab`, `dcba`).
+| `--parity _name_`    | `-P`  | –       | Modbus RTU parity bits (`none`, `even`, `odd`).
+| `--path _path_`      | `-p`  | –       | Modbus RTU device path.
+| `--port _port_`      | `-q`  | –       | Modbus TCP port.
+| `--read _register_`  | `-r`  | –       | Read value from given Modbus register address.
+| `--slave _n_`        | `-s`  | –       | Slave id of Modbus device.
+| `--stopbits _n_`     | `-O`  | –       | Modbus RTU stop bits (1, 2).
+| `--type _name_`      | `-t`  | –       | Number type (`int16`, `int32`, `uint16`, `uint32`, `float`).
+| `--value _n_`        | `-i`  | –       | Integer value to write.
+| `--version`          | `-v`  | –       | Print version information and quit.
+| `--write _register_` | `-w`  | –       | Write value to given Modbus register address.
 |===
 
 [discrete]
@@ -1971,7 +1971,7 @@ an I/O module with Modbus RTU interface:
 
 ....
 $ dmmbctl --path /dev/ttyUSB0 --baudrate 19200 --bytesize 8 --parity even --stopbits 1 \
-  --read 50 --slave 1 --type float --order abcd
+  --slave 1 --read 50 --type float --order abcd
 21.217552185059
 ....
 
@@ -2007,14 +2007,14 @@ node, sensor and target ids have to exist in the database.
 | `--config _file_`   | `-c`  | –        | Path to configuration file (required).
 | `--debug`           | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
 | `--format _format_` | `-f`  | –        | Output format, either `csv` or `jsonl`.
-| `--help`            | `-h`  | –        | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –        | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmpipe` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –        | Node id.
 | `--output _file_`   | `-o`  | –        | Output file to append observations to (`-` for _stdout_).
 | `--sensor _id_`     | `-S`  | –        | Sensor id.
 | `--verbose`         | `-V`  | off      | Print log messages to _stderr_.
-| `--version`         | `-v`  | –        | Output version information and quit.
+| `--version`         | `-v`  | –        | Print version information and quit.
 |===
 
 [discrete]
@@ -2161,7 +2161,7 @@ configuration file.
 | `--foreground _color_`  | `-P`  | `#3b4cc0` | Foreground colour (for example, `#ff0000` or `red`).
 | `--from _timestamp_`    | `-B`  | –         | Start of time range in ISO 8601.
 | `--height _n_`          | `-H`  | 400       | Plot height.
-| `--help`                | `-h`  | –         | Output available command-line arguments and quit.
+| `--help`                | `-h`  | –         | Print available command-line arguments and quit.
 | `--name _name_`         | `-n`  | `dmplot`  | Name of table in configuration.
 | `--node _id_`           | `-N`  | –         | Node id.
 | `--output _file_`       | `-o`  | –         | File path of plot image. May include <<dmplot-descript,format descriptors>>.
@@ -2171,7 +2171,7 @@ configuration file.
 | `--terminal _terminal_` | `-m`  | –         | <<dmplot-format,Plot format>>.
 | `--title _title_`       | `-C`  | –         | Plot title.
 | `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
-| `--version`             | `-v`  | –         | Output version information and quit.
+| `--version`             | `-v`  | –         | Print version information and quit.
 | `--width _n_`           | `-W`  | 1000      | Plot width.
 |===
 
@@ -2248,7 +2248,7 @@ configuration file. The arguments overwrite settings from file.
 | `--debug`           | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
 | `--format _format_` | `-f`  | –        | <<dmrecv-output,Output format>> (`block`, `csv`, `jsonl`, `nml`).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
-| `--help`            | `-h`  | –        | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –        | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmrecv` | Name of table in configuration and POSIX message queue to subscribe to.
 | `--node _id_`       | `-N`  | –        | Optional node id.
@@ -2257,7 +2257,7 @@ configuration file. The arguments overwrite settings from file.
 | `--response _name_` | `-R`  | –        | Name of observation response to output (required for format `block`).
 | `--type _type_`     | `-t`  | –        | Data type to receive: `log` or `observ`.
 | `--verbose`         | `-V`  | off      | Print log messages to _stderr_.
-| `--version`         | `-v`  | –        | Output version information and quit.
+| `--version`         | `-v`  | –        | Print version information and quit.
 |===
 
 [discrete]
@@ -2357,13 +2357,13 @@ priority over settings in the configuration file.
 
 | `--config _file_`      | `-c`  | –          | Path to configuration file (required).
 | `--from _timestamp_`   | `-B`  | –          | Start of time range in ISO 8601.
-| `--help`               | `-h`  | –          | Output available command-line arguments and quit.
+| `--help`               | `-h`  | –          | Print available command-line arguments and quit.
 | `--name _name_`        | `-n`  | `dmreport` | Name of program instance and configuration.
 | `--node _id_`          | `-N`  | –          | Sensor node id.
 | `--output _path_`      | `-o`  | –          | Path of the HTML output file. May include <<dmreport-descript,format descriptors>>.
 | `--style _path_`       | `-C`  | –          | Path to the CSS file to inline.
 | `--to _timestamp_`     | `-E`  | –          | End of time range in ISO 8601.
-| `--version`            | `-v`  | –          | Output version information and quit.
+| `--version`            | `-v`  | –          | Print version information and quit.
 |===
 
 [discrete]
@@ -2478,14 +2478,14 @@ configuration file. The arguments overwrite settings from file.
 | `--format _format_` | `-f`  | –        | Input format: `csv` or `nml`.
 | `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
-| `--help`            | `-h`  | –        | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –        | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmsend` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –        | Optional node id.
 | `--receiver _name_` | `-r`  | –        | Name of receiver/message queue.
 | `--type _type_`     | `-t`  | –        | Input data type: `log` or `observ`.
 | `--verbose`         | `-V`  | off      | Print log messages to _stderr_.
-| `--version`         | `-v`  | –        | Output version information and quit.
+| `--version`         | `-v`  | –        | Print version information and quit.
 |===
 
 [discrete]
@@ -2540,7 +2540,7 @@ used in the configuration file. The following baud rates are supported: 50, 75,
 | `--debug`           | `-D`  | off        | Forward log messages of level _debug_ (if logger is set).
 | `--dtr`             | `-Q`  | off        | Enable Data Terminal Ready (DTR).
 | `--format _format_` | `-f`  | –          | Output format, either `csv` or `jsonl`.
-| `--help`            | `-h`  | –          | Output available command-line arguments and quit.
+| `--help`            | `-h`  | –          | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmserial` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –          | Node id.
@@ -2552,7 +2552,7 @@ used in the configuration file. The following baud rates are supported: 50, 75,
 | `--timeout _n_`     | `-T`  | 0          | Connection timeout in seconds (max. 25).
 | `--path _path_`     | `-p`  | –          | Path to TTY/PTY device (for example, `/dev/ttyU0`).
 | `--verbose`         | `-V`  | off        | Print log messages to _stderr_.
-| `--version`         | `-v`  | –          | Output version information and quit.
+| `--version`         | `-v`  | –          | Print version information and quit.
 |===
 
 [discrete]
@@ -2614,7 +2614,7 @@ for testing.
 | `--create`             | `-C`  | off      | Create missing database synchronisation tables.
 | `--database _file_`    | `-d`  | –        | Path to log or observation database.
 | `--debug`              | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
-| `--help`               | `-h`  | –        | Output available command-line arguments and quit.
+| `--help`               | `-h`  | –        | Print available command-line arguments and quit.
 | `--host _host_`        | `-H`  | –        | IP address or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`).
 | `--interval _seconds_` | `-I`  | 60       | Synchronisation interval in seconds. If set to 0, synchronisation is executed only once.
 | `--logger _name_`      | `-l`  | –        | Name of logger. If set, sends logs to <<dmlogger>> process of given name.
@@ -2632,7 +2632,7 @@ for testing.
 
 | `--username _string_`  | `-U`  | –        | API user name. If set, implies HTTP Basic Auth.
 | `--verbose`            | `-V`  | off      | Print log messages to _stderr_.
-| `--version`            | `-v`  | –        | Output version information and quit.
+| `--version`            | `-v`  | –        | Print version information and quit.
 | `--wait _name_`        | `-w`  | –        | Name of POSIX semaphore to wait for. Synchronises databases if semaphore is > 0.
 |===
 
@@ -2678,9 +2678,9 @@ create a feed id for <<dmfeed>>.
 
 | `--convert`   | `-C`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via _stdin_.
 | `--count _n_` | `-n`  | 1       | Number of identifiers to generate.
-| `--help`      | `-h`  | –       | Output available command-line arguments and quit.
+| `--help`      | `-h`  | –       | Print available command-line arguments and quit.
 | `--hyphens`   | `-H`  | off     | Return 36 characters long UUIDv4 with hyphens.
-| `--version`   | `-v`  | –       | Output version information and quit.
+| `--version`   | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -2720,61 +2720,166 @@ battery monitor, either:
 * SmartShunt.
 
 An official Victron Energy USB cable or TTL adapter with JST PH connector is
-required for data link. The TTY will be configured to 19200 baud (8N1). The
-following VE.Direct fields are supported, depending on the device:
+required for data link. The TTY will be configured to 19200 baud (8N1). Values
+are captured once per second. An observation containing the responses of the
+device is sent in the specified interval to the configured receiver.
 
-[cols="1,1,5,1,1"]
+[discrete]
+==== Fields
+
+The following VE.Direct fields are supported, depending on the device:
+
+[cols="1,1,1,1,5"]
 |===
-| Response | Unit    | Description                               | MPPT | Shunt
+| Response | Unit     | MPPT | Shunt | Description
 
-| `alarm`  | –       | Alarm condition active (on/off).          |      |   ✓
-| `ar`     | –       | Alarm reason.                             |      |   ✓
-| `ce`     | mAh     | Consumed amp hours.                       |      |   ✓
-| `cs`     | –       | State of operation.                       |  ✓   |
-| `dm`     | ‰       | Mid-point deviation of the battery bank.  |      |   ✓
-| `err`    | –       | Error code.                               |  ✓   |
-| `h1`     | mAh     | Depth of the deepest discharge.           |      |   ✓
-| `h2`     | mAh     | Depth of the last discharge.              |      |   ✓
-| `h3`     | mAh     | Depth of the average discharge.           |      |   ✓
-| `h4`     | –       | Number of charge cycles.                  |      |   ✓
-| `h5`     | –       | Number of full discharges.                |      |   ✓
-| `h6`     | mAh     | Cumulative amp hours drawn.               |      |   ✓
-| `h7`     | mV      | Minimum main (battery) voltage.           |      |   ✓
-| `h8`     | mV      | Maximum main (battery) voltage.           |      |   ✓
-| `h9`     | sec     | Number of seconds since last full charge. |      |   ✓
-| `h10`    | –       | Number of automatic synchronisations.     |      |   ✓
-| `h11`    | –       | Number of low main voltage alarms.        |      |   ✓
-| `h12`    | –       | Number of high main voltage alarms.       |      |   ✓
-| `h15`    | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓
-| `h16`    | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓
-| `h17`    | kWh/100 | Amount of produced energy.                |      |   ✓
-| `h18`    | kWh/100 | Amount of consumed energy.                |      |   ✓
-| `h19`    | kWh/100 | Yield total (user resettable counter).    |  ✓   |
-| `h20`    | kWh/100 | Yield today.                              |  ✓   |
-| `h21`    | W       | Maximum power today.                      |  ✓   |
-| `h22`    | kWh/100 | Yield yesterday.                          |  ✓   |
-| `h23`    | W       | Maximum power yesterday.                  |  ✓   |
-| `hsds`   | –       | Day sequence number (0 to 364).           |  ✓   |
-| `i`      | mA      | Main or channel 1 battery current.        |  ✓   |   ✓
-| `il`     | mA      | Load current.                             |  ✓   |
-| `load`   | –       | Load output state (on/off).               |  ✓   |
-| `mon`    | –       | DC monitor mode.                          |      |   ✓
-| `mppt`   | –       | Tracker operation mode.                   |  ✓   |
-| `or`     | –       | Off reason.                               |  ✓   |
-| `p`      | W       | Instantaneous power.                      |      |   ✓
-| `ppv`    | W       | Panel power.                              |  ✓   |
-| `relay`  | –       | Relay state (on/off).                     |  ✓   |   ✓
-| `soc`    | ‰       | State-of-charge.                          |      |   ✓
-| `t`      | °C      | Battery temperature.                      |      |   ✓
-| `ttg`    | min     | Time-to-go.                               |      |   ✓
-| `v`      | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓
-| `vm`     | mV      | Mid-point voltage of the battery bank.    |      |   ✓
-| `vpv`    | mV      | Panel voltage.                            |  ✓   |
-| `vs`     | mV      | Auxiliary (starter) voltage.              |      |   ✓
+| `alarm`  | –        |      |   ✓   | alarm condition active (on/off)
+| `ar`     | –        |      |   ✓   | alarm reason
+| `ce`     | mAh      |      |   ✓   | consumed amp hours
+| `cs`     | –        |  ✓   |       | state of operation
+| `dm`     | ‰        |      |   ✓   | mid-point deviation of the battery bank
+| `err`    | –        |  ✓   |       | error code
+| `h1`     | mAh      |      |   ✓   | depth of the deepest discharge
+| `h2`     | mAh      |      |   ✓   | depth of the last discharge
+| `h3`     | mAh      |      |   ✓   | depth of the average discharge
+| `h4`     | –        |      |   ✓   | number of charge cycles
+| `h5`     | –        |      |   ✓   | number of full discharges
+| `h6`     | mAh      |      |   ✓   | cumulative amp hours drawn
+| `h7`     | mV       |      |   ✓   | minimum main (battery) voltage
+| `h8`     | mV       |      |   ✓   | maximum main (battery) voltage
+| `h9`     | sec      |      |   ✓   | number of seconds since last full charge
+| `h10`    | –        |      |   ✓   | number of automatic synchronisations
+| `h11`    | –        |      |   ✓   | number of low main voltage alarms
+| `h12`    | –        |      |   ✓   | number of high main voltage alarms
+| `h15`    | mV       |      |   ✓   | minimum auxiliary (battery) voltage
+| `h16`    | mV       |      |   ✓   | maximum auxiliary (battery) voltage
+| `h17`    | kWh/100  |      |   ✓   | amount of produced energy
+| `h18`    | kWh/100  |      |   ✓   | amount of consumed energy
+| `h19`    | kWh/100  |  ✓   |       | yield total (user resettable counter)
+| `h20`    | kWh/100  |  ✓   |       | yield today
+| `h21`    | W        |  ✓   |       | maximum power today
+| `h22`    | kWh/100  |  ✓   |       | yield yesterday
+| `h23`    | W        |  ✓   |       | maximum power yesterday
+| `hsds`   | –        |  ✓   |       | day sequence number (0 to 364)
+| `i`      | mA       |  ✓   |   ✓   | main or channel 1 battery current
+| `il`     | mA       |  ✓   |       | load current
+| `load`   | –        |  ✓   |       | load output state (on/off)
+| `mon`    | –        |      |   ✓   | DC monitor mode
+| `mppt`   | –        |  ✓   |       | tracker operation mode
+| `or`     | –        |  ✓   |       | off reason
+| `p`      | W        |      |   ✓   | instantaneous power
+| `ppv`    | W        |  ✓   |       | panel power
+| `relay`  | –        |  ✓   |   ✓   | relay state (on/off)
+| `soc`    | ‰        |      |   ✓   | state-of-charge
+| `t`      | °C       |      |   ✓   | battery temperature
+| `ttg`    | min      |      |   ✓   | time-to-go
+| `v`      | mV       |  ✓   |   ✓   | main or channel 1 (battery) voltage
+| `vm`     | mV       |      |   ✓   | mid-point voltage of the battery bank
+| `vpv`    | mV       |  ✓   |       | panel voltage
+| `vs`     | mV       |      |   ✓   | auxiliary (starter) voltage
 |===
 
-The values are captured every second. An observation containing the responses of
-the device is sent in the specified interval to the configured receiver.
+ar:: This field describes the cause of the alarm. Since multiple alarm
+conditions can be present at the same time the values of the separate alarm
+conditions are added. The value total is sent in decimal notation.
++
+[cols="1,5"]
+|===
+| Value | Cause
+
+| 1     | low voltage
+| 2     | high voltage
+| 4     | low SOC
+| 8     | low starter voltage
+| 16    | high starter voltage
+| 32    | low temperature
+| 64    | high temperature
+| 128   | mid voltage
+|===
+cs:: The state of the MPPT operation.
++
+[cols="1,5"]
+|===
+| Value | State
+
+| 0     | off
+| 2     | fault
+| 3     | bulk
+| 4     | absorption
+| 5     | float
+| 7     | equalise (manual)
+| 245   | starting-up
+| 247   | auto-equalise/recondition
+| 252   | external control
+|===
+
+err:: The error code of the device, relevant when the device is in fault state.
++
+Error 19 can be ignored, this condition regularly occurs during start-up or
+shutdown of the MPPT charger. Since version 1.15 this error will no longer be
+reported.
++
+Error 21 can be ignored for 5 minutes, this condition regularly occurs
+during start-up or shutdown of the MPPT charger. Since version 1.16 this
+warning will no longer be reported when it is not persistent.
++
+[cols="1,8"]
+|===
+| Value | Error
+
+| 0     | no error
+| 2     | battery voltage too high
+| 17    | charger temperature too high
+| 18    | charger over current
+| 19    | charger current reversed
+| 20    | bulk time limit exceeded
+| 21    | current sensor issue (sensor bias/sensor broken)
+| 26    | terminals overheated
+| 28    | converter issue (dual converter models only)
+| 33    | input voltage too high (solar panel)
+| 34    | input current too high (solar panel)
+| 38    | input shutdown (due to excessive battery voltage)
+| 39    | input shutdown (due to current flow during off mode)
+| 65    | lost communication with one of devices
+| 66    | synchronised charging device configuration issue
+| 67    | BMS connection lost
+| 68    | network misconfigured
+| 116   | factory calibration data lost
+| 117   | invalid/incompatible firmware
+| 119   | user settings invalid
+|===
+
+hsds:: The day sequence number in range 0 to 364. A change in this number
+indicates a new day. This implies that the historical data has changed.
+
+mppt:: The tracker operation mode.
++
+[cols="1,5"]
+|===
+| Value | Mode
+
+| 0     | off
+| 1     | voltage or current limited
+| 2     | MPPT active
+|===
+
+or:: The off reason of the charger. This field describes why a unit is switched
+off.
++
+[cols="1,5"]
+|===
+| Value | Reason
+
+| 1     | no input power
+| 2     | switched off (power switch)
+| 4     | switched off (device mode register)
+| 8     | remote input
+| 16    | protection active
+| 32    | pay-as-you-go (PAYGo)
+| 64    | BMS
+| 128   | engine shutdown detection
+| 256   | analysing input voltage
+|===
 
 [discrete]
 ==== Command-Line Options
@@ -2786,7 +2891,8 @@ the device is sent in the specified interval to the configured receiver.
 | `--config _file_`      | `-c`  | –       | Path to configuration file.
 | `--debug`              | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
 | `--device _name_`      | `-d`  | –       | Type of connected device (`mppt` or `shunt`).
-| `--help`               | `-h`  | –       | Output available command-line arguments and quit.
+| `--dump _path_`        | `-o`  | –       | Path of file or named pipe to dump received raw data to.
+| `--help`               | `-h`  | –       | Print available command-line arguments and quit.
 | `--interval _seconds_` | `-I`  | 60      | Observation emit interval in seconds.
 | `--logger _name_`      | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`        | `-n`  | `dmved` | Name of instance and table in configuration.
@@ -2796,7 +2902,7 @@ the device is sent in the specified interval to the configured receiver.
 | `--sensor _id_`        | `-S`  | –       | Sensor id.
 | `--target _id_`        | `-T`  | –       | Target id.
 | `--verbose`            | `-V`  | off     | Print log messages to _stderr_.
-| `--version`            | `-v`  | –       | Output version information and quit.
+| `--version`            | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
@@ -2805,22 +2911,23 @@ the device is sent in the specified interval to the configured receiver.
 For a connected SmartSolar MPPT charger, create a configuration file
 `dmved.conf`, set the device to `mppt` and the path to the TTY path, for
 example `/dev/ttyUSB0` if a Victron Energy USB adapter cable is used. Change
-node id, sensor id, and target id according to your set-up:
+node id, sensor id, and target id to your setup:
 
 [source,lua]
 ....
 -- dmved.conf
 dmved = {
-  logger = "",
-  device = "mppt",
-  node = "dummy-node",
-  sensor = "dummy-sensor",
-  target = "dummy-target",
-  path = "/dev/ttyUSB0",
-  receiver = "dmrecv",
-  interval = 60 * 10,
-  debug = false,
-  verbose = true
+  logger = "",             -- No log forwarding.
+  device = "mppt",         -- Device is MPPT.
+  node = "dummy-node",     -- Node id.
+  sensor = "dummy-sensor", -- Sensor id.
+  target = "dummy-target", -- Target id.
+  path = "/dev/ttyUSB0",   -- Path of serial device.
+  dump = "",               -- No dump file.
+  receiver = "dmrecv",     -- Name of receiver.
+  interval = 60,           -- Forward observations every minute.
+  debug = false,           -- Disable forwarding of debug messages.
+  verbose = true           -- Print logs to standard error.
 }
 ....
 
@@ -2828,9 +2935,10 @@ Start *dmved* to read and forward status data from the connected MPPT every 60
 seconds:
 
 ....
-$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
+$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf
 2025-02-11T14:13:27.587013+00:00 [INFO] dmved - started dmved
 2025-02-11T14:13:28.371825+00:00 [INFO] dmved - connected to Victron Energy SmartSolar MPPT 250|60 rev2
+...
 ....
 
 Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
@@ -2991,7 +3099,7 @@ auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
 # Protected routes.
-$HTTP["url"] =^ "/api/v1" {
+$HTTP["url"] =~ "^/api/v1" {
   auth.require = ( "" => (
     "method"  => "basic",
     "realm"   => "dmpack",
@@ -3059,7 +3167,8 @@ additional FastCGI spawner. The following server modules have to be imported:
 * `mod_fastcgi` (FastCGI)
 
 Add the IP address of the proxy server to the list of trusted forwarders to have
-access to the real IP of a client.
+access to the real IP of a client. The following example configuration may be
+appended to your `lighttpd.conf`:
 
 [source,lighttpd]
 ....
@@ -3100,7 +3209,7 @@ fastcgi.server = (
 )
 
 # URL routing.
-$HTTP["url"] =^ "/api/v1" {
+$HTTP["url"] =~ "^/api/v1" {
   # Enable HTTP Basic Auth.
   auth.require = ( "" => (
     "method"  => "basic",
@@ -3119,6 +3228,13 @@ exist prior start. On FreeBSD, add the service to the system rc file
 ....
 # sysrc lighttpd_enable="YES"
 # service lighttpd start
+....
+
+On Linux, enable and start the service:
+
+....
+# systemctl enable lighttpd.service
+# systemctl start lighttpd.service
 ....
 
 If served locally, access the RPC API at http://127.0.0.1/api/v1/.
@@ -3159,8 +3275,8 @@ setenv.add-environment = (
   "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
   "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
   "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
-  "DM_READ_ONLY" => "0"
-  "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "DM_READ_ONLY" => "0",
+  "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 )
 
 # Set authentication back-end and path of user file.
@@ -3168,7 +3284,7 @@ auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
 # URL routing.
-$HTTP["url"] =^ "/dmpack/" {
+$HTTP["url"] =~ "^/dmpack/" {
   # Map URL to CGI executable.
   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
 
@@ -3209,6 +3325,13 @@ service to the system rc file `/etc/rc.conf` and start the web server manually:
 # service lighttpd start
 ....
 
+On Linux, enable and start the service:
+
+....
+# systemctl enable lighttpd.service
+# systemctl start lighttpd.service
+....
+
 If served locally, access the web application at http://127.0.0.1/dmpack/.
 
 == Databases
@@ -3222,8 +3345,8 @@ synchronisation tables for all record types.
 Log Database:: Stores all log messages in single table.
 Beat Database:: Stores heartbeat messages by unique node id.
 
-The databases are usually located in directory `/var/dmpack/` or
-`/opt/var/dmpack/`.
+The databases are usually located in directory `/var/dmpack` or
+`/opt/var/dmpack`.
 
 === Administration
 

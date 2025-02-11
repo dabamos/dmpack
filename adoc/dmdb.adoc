@@ -41,7 +41,7 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
   Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--ipc*, *-Q*::
   Uses a POSIX semaphore for process synchronisation. The name of the semaphore
@@ -63,7 +63,7 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

@@ -40,7 +40,7 @@ Otherwise, the default log level is used instead.
   Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--level*, *-L* _level_::
   Default log level of return codes other than `GRC_OK` (`LL_WARNING` by
@@ -62,7 +62,7 @@ Otherwise, the default log level is used instead.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

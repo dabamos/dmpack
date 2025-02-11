@@ -1,0 +1,207 @@
+'\" t
+.\"     Title: dmmbctl
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-02-11
+.\"    Manual: User Commands
+.\"    Source: DMMBCTL
+.\"  Language: English
+.\"
+.TH "DMMBCTL" "1" "2025-02-11" "DMMBCTL" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmmbctl \- read or write value from or to Modbus RTU/TCP register
+.SH "SYNOPSIS"
+.sp
+\fBdmmbctl\fP \-\-help
+.sp
+\fBdmmbctl\fP \-\-version
+.sp
+\fBdmmbctl\fP \-\-\fBpath\fP \fIpath\fP, \-\-\fBbaudrate\fP \fIn\fP, \-\-\fBbytesize\fP \fIn\fP,
+\-\-\fBparity\fP \fIname\fP, \-\-\fBstopbits\fP \fIn\fP, \-\-\fBslave\fP \fIn\fP, \-\-\fBtype\fP \fIname\fP,
+[\-\-\fBorder\fP \fIname\fP], [\-\-\fBread\fP \fIaddress\fP], [\-\-\fBwrite\fP \fIaddress\fP],
+[\-\-\fBvalue\fP \fIn\fP], [\-\-\fBdebug\fP]
+.sp
+\fBdmmbctl\fP \-\-\fBaddress\fP \fIip\fP, \-\-\fBport\fP \fIport\fP, \-\-\fBslave\fP \fIn\fP, \-\-\fBtype\fP \fIname\fP,
+[\-\-\fBorder\fP \fIname\fP], [\-\-\fBread\fP \fIaddress\fP], [\-\-\fBwrite\fP \fIaddress\fP],
+[\-\-\fBvalue\fP \fIn\fP], [\-\-\fBdebug\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmmbctl\fP command\-line program reads a value from or writes a value to a
+register of a connected Modbus RTU/TCP device.  Modbus RTU requires the
+command\-line arguments \f(CR\-\-path\fP, \f(CR\-\-baudrate\fP, \f(CR\-\-bytesize\fP, \f(CR\-\-parity\fP, and
+\f(CR\-\-stopbits\fP. For Modbus TCP, only \f(CR\-\-address\fP and \f(CR\-\-port\fP must be passed.
+.sp
+The following data types are supported:
+.sp
+\f(CRint16\fP
+.RS 4
+Signed 2\-byte integer.
+.RE
+.sp
+\f(CRint32\fP
+.RS 4
+Signed 4\-byte integer.
+.RE
+.sp
+\f(CRuint16\fP
+.RS 4
+Unsigned 2\-byte integer.
+.RE
+.sp
+\f(CRuint32\fP
+.RS 4
+Unsigned 4\-byte integer.
+.RE
+.sp
+\f(CRfloat\fP
+.RS 4
+4\-byte float.
+.RE
+.sp
+In order to read floating\-point values, set \f(CR\-\-type\fP to \f(CRfloat\fP and \f(CR\-\-order\fP
+to the byte order used by the Modbus device, either \f(CRabcd\fP, \f(CRbadc\fP, \f(CRcdab\fP, or
+\f(CRdcba\fP.  Only integer values may be written to a register.
+.SH "OPTIONS"
+.sp
+\fB\-\-address\fP, \fB\-a\fP \fIip\fP
+.RS 4
+Modbus TCP address (IPv4).
+.RE
+.sp
+\fB\-\-baudrate\fP, \fB\-B\fP \fIn\fP
+.RS 4
+Modbus RTU baud rate (9600, 19200, …).
+.RE
+.sp
+\fB\-\-bytesize\fP, \fB\-Z\fP \fIn\fP
+.RS 4
+Modbus RTU byte size (5, 6, 7, 8).
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-V\fP
+.RS 4
+Print debug messages from \fIlibmodbus\fP.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Print available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-order\fP, \fB\-b\fP [abcd|badc|cdab|dcba]
+.RS 4
+Byte order of float (\f(CRabcd\fP, \f(CRbadc\fP, \f(CRcdab\fP, \f(CRdcba\fP).
+.RE
+.sp
+\fB\-\-parity\fP, \fB\-P\fP [none|even|odd]
+.RS 4
+Modbus RTU parity bits (\f(CRnone\fP, \f(CReven\fP, \f(CRodd\fP).
+.RE
+.sp
+\fB\-\-path\fP, \fB\-p\fP \fIpath\fP
+.RS 4
+Modbus RTU device path.
+.RE
+.sp
+\fB\-\-port\fP, \fB\-q\fP \fIport\fP
+.RS 4
+Modbus TCP port.
+.RE
+.sp
+\fB\-\-read\fP, \fB\-r\fP \fIregister\fP
+.RS 4
+Read value from given Modbus register address.
+.RE
+.sp
+\fB\-\-slave\fP, \fB\-s\fP \fIn\fP
+.RS 4
+Slave id of Modbus device.
+.RE
+.sp
+\fB\-\-stopbits\fP, \fB\-O\fP \fIn\fP
+.RS 4
+Modbus RTU stop bits (1, 2).
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [int16|int32|uint16|uint32|float]
+.RS 4
+Number type (\f(CRint16\fP, \f(CRint32\fP, \f(CRuint16\fP, \f(CRuint32\fP, \f(CRfloat\fP).
+.RE
+.sp
+\fB\-\-value\fP, \fB\-i\fP \fIn\fP
+.RS 4
+Integer value to write.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Print version information and quit.
+.RE
+.sp
+\fB\-\-write\fP , \fB\-w\fP \fIregister\fP
+.RS 4
+Write value to given Modbus register address.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Modbus access was successful.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Read the current temperature in degrees Celsius measured by a Pt100 RTD that is
+connected to an I/O module with Modbus RTU interface:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmmbctl \-\-path /dev/ttyUSB0 \-\-baudrate 19200 \-\-bytesize 8 \(rs
+  \-\-parity even \-\-stopbits 1 \-\-slave 1 \-\-read 50 \-\-type float \(rs
+  \-\-order abcd
+21.217552185059
+.fam
+.fi
+.if n .RE
+.sp
+The I/O module is attached through an RS\-485 adapter on \f(CR/dev/ttyUSB\fP (19200
+baud, 8E1) and configured to use slave id 1. The value is read from register 50
+and converted to float in \f(CRabcd\fP byte order.
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

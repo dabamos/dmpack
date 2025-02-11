@@ -43,7 +43,7 @@ priority over settings in the configuration file.
   Start of the time range in ISO 8601.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--name*, *-n* _name_::
   Name of instance and table in given configuration file (default is `dmreport`).
@@ -63,7 +63,7 @@ priority over settings in the configuration file.
   End of the time range in ISO 8601.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

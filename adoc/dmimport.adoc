@@ -40,7 +40,7 @@ sensors must exist as well.
   database import.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--input*, *-i* _file_::
   Path of input file in CSV format.
@@ -58,7 +58,7 @@ sensors must exist as well.
   Print progress to standard output.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

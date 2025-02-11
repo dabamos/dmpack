@@ -39,7 +39,7 @@ $ sqlite3 <database> ".backup '<backup>'"
   Path of the SQLite database to backup.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--vacuum*, *-U*::
   Use `VACUUM INTO` instead of the SQLite backup API.
@@ -48,7 +48,7 @@ $ sqlite3 <database> ".backup '<backup>'"
   Print progress to standard output (not in vacuum mode).
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--wal*, *-W*::
   Enable WAL mode for backup database.

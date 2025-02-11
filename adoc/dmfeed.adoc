@@ -60,7 +60,7 @@ file modification of the feed, the output file is not updated, unless argument
   only if new log records are available.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--id*, *-I* _uuid_::
   UUID of the feed, 36 characters long with hyphens.
@@ -94,7 +94,7 @@ file modification of the feed, the output file is not updated, unless argument
   Public URL of the feed.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--xsl*, *-X*::
   URL or path of optional XSLT style sheet. Web browsers may be able to display

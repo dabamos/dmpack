@@ -31,6 +31,7 @@ td {		vertical-align: top;
 ul, ol, dl {	margin-top: 0em;
 		margin-bottom: 0em; }
 li, dt {	margin-top: 1em; }
+pre br {	display: none; }
 
 .permalink {	border-bottom: thin dotted;
 		color: inherit;

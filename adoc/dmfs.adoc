@@ -52,7 +52,7 @@ the sensor, and the target.
   Output format of observations if `--output` is set. Either CSV or JSON Lines.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--logger*, *-l* _name_::
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
@@ -73,7 +73,7 @@ the sensor, and the target.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

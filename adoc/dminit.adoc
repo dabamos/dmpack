@@ -38,7 +38,7 @@ readers.
   Force creation of tables even if the database already exists.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--sync*, *-s*::
   Add synchronisation tables. Enable for data synchronisation between client
@@ -48,7 +48,7 @@ readers.
   Type of database, either beat, log, or observation.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--wal*, *-W*::
   Enable Write-Ahead Logging.

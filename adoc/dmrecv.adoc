@@ -66,7 +66,7 @@ configuration file. The arguments overwrite settings from file.
   Forward each observation to its next specified receiver.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--logger*, *-l* _name_::
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
@@ -93,7 +93,7 @@ configuration file. The arguments overwrite settings from file.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

@@ -36,13 +36,13 @@ standard input. Invalid identifiers will be replaced with the default UUIDv4.
   Number of UUIDs to generate (default: 1).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--hyphens*, *-H*::
   Return 36 characters long UUIDs with hyphens.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

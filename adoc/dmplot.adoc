@@ -63,7 +63,7 @@ configuration file.
   Optional plot height in pixels.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--name*, *-n* _name_::
   Name of program instance and configuration (default is `dmplot`).
@@ -96,7 +96,7 @@ configuration file.
   End of time range in ISO 8601.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--width*, *-W* _n_::
   Optional plot width in pixels.

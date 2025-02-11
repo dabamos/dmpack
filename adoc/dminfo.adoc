@@ -32,10 +32,10 @@ number of rows; as well as system name, version, and host name.
   File path to SQLite observation database.
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

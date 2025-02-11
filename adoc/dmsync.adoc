@@ -71,7 +71,7 @@ for testing.
   Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--host*, *-H* _host_::
   IP address or FQDN of RPC API server.
@@ -112,7 +112,7 @@ for testing.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 *--wait*, *-w*::
   Name of POSIX semaphore to wait for. Synchronises databases if semaphore is

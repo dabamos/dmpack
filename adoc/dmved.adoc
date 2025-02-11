@@ -17,7 +17,7 @@ dmved - reads status of connected MPPT charger or battery shunt
 
 *dmved* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
 [--*target* _id_] [--*logger* _name_] [--*path* _path_] [--*receiver* _name_]
-[--*interval* _seconds_] [--*debug*] [--*verbose*]
+[--*interval* _seconds_] [--*dump* _path_] [--*debug*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -88,8 +88,11 @@ The response names equal the field names in lower-case.
 *--device*, *-d* [mppt|shunt]::
   Connected device, either MPPT or SmartShunt.
 
+*--dump*, *-o* _path_::
+  Path of file or named pipe to dump received raw data to.
+
 *--help*, *-h*::
-  Output available command-line arguments and quit.
+  Print available command-line arguments and quit.
 
 *--interval*, *-I* _seconds_::
   Observation emit interval in seconds (default is 60 seconds).
@@ -119,7 +122,7 @@ The response names equal the field names in lower-case.
   Print log messages to _stderr_.
 
 *--version*, *-v*::
-  Output version information and quit.
+  Print version information and quit.
 
 == EXIT STATUS
 

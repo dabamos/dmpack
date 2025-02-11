@@ -2,12 +2,12 @@
 .\"     Title: dmved
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-02-08
+.\"      Date: 2025-02-11
 .\"    Manual: User Commands
 .\"    Source: DMVED
 .\"  Language: English
 .\"
-.TH "DMVED" "1" "2025-02-08" "DMVED" "User Commands"
+.TH "DMVED" "1" "2025-02-11" "DMVED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -37,7 +37,7 @@ dmved \- reads status of connected MPPT charger or battery shunt
 .sp
 \fBdmved\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
 [\-\-\fBtarget\fP \fIid\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBpath\fP \fIpath\fP] [\-\-\fBreceiver\fP \fIname\fP]
-[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBdump\fP \fIpath\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 This program captures status data received from a connected Maximum Power Point
@@ -287,9 +287,14 @@ Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
 Connected device, either MPPT or SmartShunt.
 .RE
 .sp
+\fB\-\-dump\fP, \fB\-o\fP \fIpath\fP
+.RS 4
+Path of file or named pipe to dump received raw data to.
+.RE
+.sp
 \fB\-\-help\fP, \fB\-h\fP
 .RS 4
-Output available command\-line arguments and quit.
+Print available command\-line arguments and quit.
 .RE
 .sp
 \fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
@@ -339,7 +344,7 @@ Print log messages to \fIstderr\fP.
 .sp
 \fB\-\-version\fP, \fB\-v\fP
 .RS 4
-Output version information and quit.
+Print version information and quit.
 .RE
 .SH "EXIT STATUS"
 .sp
