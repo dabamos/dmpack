@@ -67,6 +67,7 @@ contains
 
         character(len=4) :: order, parity
         character(len=6) :: type
+        integer          :: baud_rate, byte_size, stop_bits
         integer          :: read_address, write_address
         logical          :: has_address, has_baud_rate, has_byte_size, has_order, has_parity, has_path
         logical          :: has_port, has_read, has_stop_bits, has_type, has_value, has_write
@@ -93,19 +94,19 @@ contains
         rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args( 1), read_address,      passed=has_read)
-        call dm_arg_get(args( 2), write_address,     passed=has_write)
-        call dm_arg_get(args( 3), app%rtu%path,      passed=has_path)
-        call dm_arg_get(args( 4), app%rtu%baud_rate, passed=has_baud_rate)
-        call dm_arg_get(args( 5), app%rtu%byte_size, passed=has_byte_size)
-        call dm_arg_get(args( 6), parity,            passed=has_parity)
-        call dm_arg_get(args( 7), app%rtu%stop_bits, passed=has_stop_bits)
-        call dm_arg_get(args( 8), app%tcp%address,   passed=has_address)
-        call dm_arg_get(args( 9), app%tcp%port,      passed=has_port)
+        call dm_arg_get(args( 1), read_address,    passed=has_read)
+        call dm_arg_get(args( 2), write_address,   passed=has_write)
+        call dm_arg_get(args( 3), app%rtu%path,    passed=has_path)
+        call dm_arg_get(args( 4), baud_rate,       passed=has_baud_rate)
+        call dm_arg_get(args( 5), byte_size,       passed=has_byte_size)
+        call dm_arg_get(args( 6), parity,          passed=has_parity)
+        call dm_arg_get(args( 7), stop_bits,       passed=has_stop_bits)
+        call dm_arg_get(args( 8), app%tcp%address, passed=has_address)
+        call dm_arg_get(args( 9), app%tcp%port,    passed=has_port)
         call dm_arg_get(args(10), app%slave)
-        call dm_arg_get(args(11), type,              passed=has_type)
-        call dm_arg_get(args(12), order,             passed=has_order)
-        call dm_arg_get(args(13), app%value,         passed=has_value)
+        call dm_arg_get(args(11), type,            passed=has_type)
+        call dm_arg_get(args(12), order,           passed=has_order)
+        call dm_arg_get(args(13), app%value,       passed=has_value)
         call dm_arg_get(args(14), app%verbose)
 
         ! Parse and validate settings.
@@ -165,28 +166,31 @@ contains
                 return
             end if
 
+            app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
+            app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
+            app%rtu%parity    = dm_tty_parity_from_name(parity)
+            app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+
             ! TTY baud rate.
-            if (dm_tty_baud_rate_from_value(app%rtu%baud_rate) == 0) then
+            if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
                 call dm_error_out(rc, 'argument --baudrate is invalid')
                 return
             end if
 
             ! TTY byte size.
-            if (dm_tty_byte_size_from_value(app%rtu%byte_size) == 0) then
+            if (.not. dm_tty_byte_size_is_valid(app%rtu%byte_size)) then
                 call dm_error_out(rc, 'argument --bytesize is invalid')
                 return
             end if
 
             ! TTY parity.
-            app%rtu%parity = dm_tty_parity_from_name(parity)
-
-            if (app%rtu%parity == 0) then
+            if (.not. dm_tty_parity_is_valid(app%rtu%parity)) then
                 call dm_error_out(rc, 'argument --parity is invalid')
                 return
             end if
 
             ! TTY stop bits.
-            if (dm_tty_stop_bits_from_value(app%rtu%stop_bits) == 0) then
+            if (.not. dm_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
                 call dm_error_out(rc, 'argument --stopbits is invalid')
                 return
             end if
@@ -277,7 +281,7 @@ contains
         if (has_type) then
             app%type = dm_modbus_type_from_name(type)
 
-            if (.not. dm_modbus_type_is_valid(app%order)) then
+            if (.not. dm_modbus_type_is_valid(app%type)) then
                 call dm_error_out(rc, 'argument --type is not a valid number type')
                 return
             end if
