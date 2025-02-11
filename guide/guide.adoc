@@ -853,6 +853,8 @@ synchronisation from client to server is supported.
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
 program be used to read values from sensors connected via 1-Wire (OWFS).
 Observations are forwarded via POSIX message queue and/or written to file.
+<<dmmbctl>>:: Command-line utility program to read a value from or write a
+value to a register of a Modbus RTU/TCP device.
 <<dmpipe>>:: Executes a program as a sub-process connected through an anonymous
 pipe and forwards the output via POSIX message queue. Optionally, observations
 are written to file or _stdout_.
@@ -1911,6 +1913,71 @@ Any observation sent to receiver `dmlua` will be passed to the Lua function
 ....
 $ dmlua --name dmlua --node dummy-node --script script.lua --verbose
 ....
+
+=== dmmbctl [[dmmbctl]]
+
+The *dmmbctl* command-line program reads a value from or writes a value to a
+register of a connected Modbus RTU/TCP device.  Modbus RTU requires the
+command-line arguments `--path`, `--baudrate`, `--bytesize`, `--parity`, and
+`--stopbits`. For Modbus TCP, only `--address` and `--port` must be passed.
+
+The following data types are supported:
+
+[cols="1,5"]
+|===
+| Type     | Description
+
+| `int16`  | Signed 2-byte integer.
+| `int32`  | Signed 4-byte integer.
+| `uint16` | Unsigned 2-byte integer.
+| `uint32` | Unsigned 4-byte integer.
+| `float`  | 4-byte float.
+|===
+
+In order to read floating-point values, set `--type` to `float` and `--order`
+to the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
+`dcba`.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,6"]
+|===
+| Option              | Short | Default | Description
+
+| `--address _ip_`    | `-a`  | –       | Modbus TCP address (IPv4).
+| `--baudrate _n_`    | `-B`  | –       | Modbus RTU baud rate (9600, 19200, …).
+| `--bytesize _n_`    | `-Z`  | –       | Modbus RTU byte size (5, 6, 7, 8).
+| `--help`            | `-h`  | –       | Output available command-line arguments and quit.
+| `--order _name_`    | `-b`  | –       | Byte order of float (`abcd`, `badc`, `cdab`, `dcba`).
+| `--parity _name_`   | `-P`  | –       | Modbus RTU parity bits (`none`, `even`, `odd`).
+| `--path _path_`     | `-p`  | –       | Modbus RTU device path.
+| `--port _port_`     | `-q`  | –       | Modbus TCP port.
+| `--read _address_`  | `-r`  | –       | Read value from given Modbus register address.
+| `--slave _n_`       | `-s`  | –       | Slave id of Modbus device.
+| `--stopbits _n_`    | `-O`  | –       | Modbus RTU stop bits (1, 2).
+| `--type _name_`     | `-t`  | –       | Number type (`int16`, `int32`, `uint16`, `uint32`, `float`).
+| `--value`           | `-i`  | –       | Integer value to write.
+| `--verbose`         | `-V`  | off     | Print debug messages.
+| `--version`         | `-v`  | –       | Output version information and quit.
+| `--write _address_` | `-w`  | –       | Write value to given Modbus register address.
+|===
+
+[discrete]
+==== Examples
+
+Read the current temperature in °C measured by a Pt100 RTD that is connected to
+an I/O module with Modbus RTU interface:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 19200 --bytesize 8 --parity even --stopbits 1 \
+  --read 50 --slave 1 --type float --order abcd
+21.217552185059
+....
+
+The I/O module is attached through an RS-485 adapter on `/dev/ttyUSB` (19200
+baud, 8E1) and configured to use slave id 1. The value is read from register 50
+and converted to float in `abcd` byte order.
 
 === dmpipe [[dmpipe]]
 

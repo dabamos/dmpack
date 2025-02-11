@@ -77,8 +77,8 @@ module dm_db
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     ! Private parameters.
-    character(len=*), parameter :: DB_ATTACHED_NAME = 'attached'
-    integer,          parameter :: DB_MAX_QUERY_LEN = 4096
+    character(len=*), parameter :: DB_ATTACHED_NAME = 'attached'      !! Default attached database name.
+    integer,          parameter :: DB_MAX_QUERY_LEN = 4096            !! Max. SQL query string length.
 
     type, public :: db_type
         !! Opaque SQLite database connectivity type.
