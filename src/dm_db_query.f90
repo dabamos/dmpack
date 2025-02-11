@@ -119,7 +119,8 @@ contains
     subroutine dm_db_query_add_text(db_query, param, value, empty, error)
         !! Adds text parameter to query. Returns `E_LIMIT` if parameter limit
         !! has been reached. Empty strings and strings containing only
-        !! white-spaces are ignored, unless argument `empty` is set to `.true.`.
+        !! white-space characters are ignored, unless argument `empty` is set
+        !! to `.true.`.
         use :: dm_util, only: dm_present
 
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
