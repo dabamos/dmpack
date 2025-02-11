@@ -395,13 +395,13 @@ contains
         rc = E_NONE
     end function dm_modbus_get_slave
 
-    integer function dm_modbus_read_float(modbus, address, order, value) result(rc)
+    integer function dm_modbus_read_float(modbus, address, value, order) result(rc)
         !! Reads 4-byte real value from two registers and returns result in
         !! `value`.
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Address to read from.
-        integer,            intent(in)    :: order   !! Byte order.
         real(kind=4),       intent(out)   :: value   !! Value read from register.
+        integer,            intent(in)    :: order   !! Byte order.
 
         integer(kind=u2) :: data(2)
 
