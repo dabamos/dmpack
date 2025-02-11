@@ -96,7 +96,7 @@ module dm_ve
     !!
     !! Description of fields returned by MPPT chargers and SmartShunt.
     !!
-    !! ## Alarm
+    !! ### Alarm
     !!
     !! This shows the buzzer alarm state of the BMV. During normal operation,
     !! this will be `OFF`. When a buzzer alarm occurs the value will change to
@@ -107,7 +107,7 @@ module dm_ve
     !! `ON` until all alarm conditions have cleared; regardless of whether or
     !! not a button has been pressed to silence the buzzer.
     !!
-    !! ## AR
+    !! ### AR
     !!
     !! Alarm reason; this field describes the cause of the alarm. Since
     !! multiple alarm conditions can be present at the same time the values of

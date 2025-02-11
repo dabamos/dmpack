@@ -67,6 +67,7 @@ program dmved
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
+    integer, parameter :: APP_DUMP_UNIT   = 100    !! Unit of dump file.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_type
@@ -78,6 +79,7 @@ program dmved
         character(len=SENSOR_ID_LEN)       :: sensor_id   = ' '            !! Sensor id (required).
         character(len=TARGET_ID_LEN)       :: target_id   = ' '            !! Target id (required).
         character(len=FILE_PATH_LEN)       :: path        = ' '            !! Path of TTY/PTY device (required).
+        character(len=FILE_PATH_LEN)       :: dump        = ' '            !! Path of file or named pipe to dump VE.Direct raw data to.
         character(len=OBSERV_RECEIVER_LEN) :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
         character(len=VE_DEVICE_NAME_LEN)  :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
         integer                            :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
@@ -111,14 +113,44 @@ program dmved
     ! Register signal handler.
     call dm_signal_register(signal_callback)
 
+    ! Open dump file.
+    rc = open_dump(app%dump)
+    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+
     ! Run main loop.
     rc = run(app, tty)
+
+    ! Close dump file.
+    call close_dump(app%dump)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
+    subroutine close_dump(path)
+        !! Closes dump file.
+        character(len=*), intent(in) :: path !! Path of dump file.
+
+        if (len_trim(path) == 0) return
+        close (APP_DUMP_UNIT)
+    end subroutine close_dump
+
+    integer function open_dump(path) result(rc)
+        !! Opens dump file.
+        character(len=*), intent(in) :: path !! Path of dump file.
+
+        integer :: stat
+
+        rc = E_NONE
+        if (len_trim(path) == 0) return
+
+        call logger%debug('opening dump file ' // path)
+        open (action='write', file=trim(path), iostat=stat, position='append', status='unknown', unit=APP_DUMP_UNIT)
+        if (stat /= 0) rc = E_IO
+    end function open_dump
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(out) :: app
-        type(arg_type)              :: args(12)
+        type(app_type), intent(out) :: app !! App type.
+
+        type(arg_type) :: args(13)
 
         ! Required and optional command-line arguments.
         args = [ &
@@ -128,7 +160,8 @@ contains
             arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
             arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
             arg_type('target',   short='T', type=ARG_TYPE_ID),      & ! -T, --target <string>
-            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
+            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <path>
+            arg_type('dump',     short='o', type=ARG_TYPE_STRING),  & ! -o, --dump <path>
             arg_type('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
             arg_type('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN),  & ! -r, --receiver <string>
             arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
@@ -153,11 +186,12 @@ contains
         call dm_arg_get(args( 5), app%sensor_id)
         call dm_arg_get(args( 6), app%target_id)
         call dm_arg_get(args( 7), app%path)
-        call dm_arg_get(args( 8), app%receiver)
-        call dm_arg_get(args( 9), app%device_name)
-        call dm_arg_get(args(10), app%interval)
-        call dm_arg_get(args(11), app%debug)
-        call dm_arg_get(args(12), app%verbose)
+        call dm_arg_get(args( 8), app%dump)
+        call dm_arg_get(args( 9), app%receiver)
+        call dm_arg_get(args(10), app%device_name)
+        call dm_arg_get(args(11), app%interval)
+        call dm_arg_get(args(12), app%debug)
+        call dm_arg_get(args(13), app%verbose)
 
         app%device = dm_ve_device_from_name(app%device_name)
 
@@ -230,6 +264,7 @@ contains
             call dm_config_get(config, 'path',     app%path)
             call dm_config_get(config, 'receiver', app%receiver)
             call dm_config_get(config, 'device',   app%device_name)
+            call dm_config_get(config, 'dump',     app%dump)
             call dm_config_get(config, 'interval', app%interval)
             call dm_config_get(config, 'debug',    app%debug)
             call dm_config_get(config, 'verbose',  app%verbose)
@@ -249,22 +284,24 @@ contains
 
         character        :: byte
         integer          :: errors(VE_NFIELDS)
-        integer          :: code, field_type, pid
+        integer          :: code, code_last, field_type, pid, stat
         integer(kind=i8) :: epoch_last, epoch_now
-        logical          :: eor, finished, valid
-        logical          :: debug
-        logical          :: has_product, has_receiver
+        logical          :: debug, dump, eor, finished, valid
+        logical          :: has_pid, has_receiver
 
         type(observ_type)   :: observ
         type(ve_frame_type) :: frame
         type(ve_frame_type) :: frames(VE_NFIELDS)
         type(response_type) :: responses(VE_NFIELDS)
 
-        debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)
 
+        ! Set initial values.
+        code_last    = 0
         epoch_last   = 0_i8
-        has_product  = .false.
+        debug        = (app%debug .or. app%verbose)
+        dump         = (len_trim(app%dump) > 0)
+        has_pid      = .false.
         has_receiver = (len_trim(app%receiver) > 0)
 
         ! Set serial port parameters.
@@ -276,7 +313,7 @@ contains
         tty%stop_bits = VE_TTY_STOP_BITS
 
         ! Try to open TTY.
-        if (debug) call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
+        call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
 
         do
             rc = dm_tty_open(tty)
@@ -295,6 +332,12 @@ contains
                 exit tty_loop
             end if
 
+            ! Dump byte to file.
+            if (dump) then
+                write (APP_DUMP_UNIT, '(a1)', advance='no', iostat=stat) byte
+                if (stat /= 0) call logger%error('failed to write to dump file', error=E_IO)
+            end if
+
             ! Fill VE.Direct protocol frame.
             call dm_ve_frame_next(frame, byte, eor, finished, valid)
 
@@ -303,7 +346,7 @@ contains
                 mqueue_block: block
                     ! Check if block is valid.
                     if (.not. valid) then
-                        call logger%debug('checksum error detected, discarding block', error=E_CORRUPT)
+                        if (debug) call logger%debug('checksum error detected, discarding block', error=E_CORRUPT)
                         exit mqueue_block
                     end if
 
@@ -320,7 +363,7 @@ contains
 
                     ! Convert all frames to responses.
                     call dm_ve_frame_read(frames, responses, error=errors)
-                    if (any(dm_is_error(errors))) call logger%warning('failed to convert frames to responses', error=maxval(errors))
+                    if (any(dm_is_error(errors))) call logger%warning('failed to convert frame to response', error=maxval(errors))
 
                     ! Create and forward observation.
                     call create_observ(observ, app, responses)
@@ -339,11 +382,16 @@ contains
                 ! Log VE.Direct device error.
                 if (frame%label == 'ERR') then
                     code = dm_atoi(frame%value)
-                    if (dm_ve_is_error(code)) call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
+
+                    ! Create only one log message for the same error code.
+                    if (dm_ve_is_error(code) .and. code /= code_last) then
+                        call logger%warning(dm_ve_error_message(code), error=E_SENSOR)
+                        code_last = code
+                    end if
                 end if
 
-                ! Output product name of connected VE device.
-                if (frame%label == 'PID' .and. .not. has_product) then
+                ! Output product name of connected VE device from PID.
+                if (frame%label == 'PID' .and. .not. has_pid) then
                     call dm_hex_to_int(frame%value, pid)
                     rc = dm_ve_product_name(pid, product)
 
@@ -353,7 +401,7 @@ contains
                         call logger%info('connected to Victron Energy ' // product)
                     end if
 
-                    has_product = .true.
+                    has_pid = .true.
                 end if
 
                 ! Validate VE.Direct field type.
@@ -483,6 +531,8 @@ contains
                     call logger%debug('closing TTY ' // app%path)
                     call dm_tty_close(tty)
                 end if
+
+                call close_dump(app%dump)
 
                 call dm_stop(STOP_SUCCESS)
         end select

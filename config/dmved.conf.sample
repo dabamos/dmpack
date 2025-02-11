@@ -11,6 +11,7 @@
 --
 --      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
 --      device   - Connected device, either MPPT or SmartShunt (`mppt`, `shunt`).
+--      dump     - Path of file or named pipe to dump received raw data to.
 --      interval - Emit interval in seconds.
 --      logger   - Name of logger instance (implies log forwarding).
 --      node     - Node id (required).
@@ -28,8 +29,9 @@ dmved = {
     sensor = "dummy-sensor",
     target = "dummy-target",
     path = "/dev/ttyUSB0",
+    dump = "",
     receiver = "",
-    interval = 600,
+    interval = 60,
     debug = false,
     verbose = true
 }
