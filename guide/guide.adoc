@@ -853,8 +853,8 @@ synchronisation from client to server is supported.
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
 program be used to read values from sensors connected via 1-Wire (OWFS).
 Observations are forwarded via POSIX message queue and/or written to file.
-<<dmmbctl>>:: Command-line utility program to read a value from or write a
-value to a register of a Modbus RTU/TCP device.
+<<dmmbctl>>:: A command-line utility to read a value from or write a value to a
+register of a Modbus RTU/TCP device.
 <<dmpipe>>:: Executes a program as a sub-process connected through an anonymous
 pipe and forwards the output via POSIX message queue. Optionally, observations
 are written to file or _stdout_.
@@ -3241,9 +3241,8 @@ If served locally, access the RPC API at http://127.0.0.1/api/v1/.
 
 === Web UI [[web-web-ui]]
 
-The _lighttpd(1)_ web server has to be configured to run the CGI
-application under base path `/dmpack/`. The following server modules are
-required:
+The _lighttpd(1)_ web server has to be configured to run the CGI application
+under base path `/dmpack`. The following server modules are required:
 
 * `mod_alias` (URL rewrites)
 * `mod_authn_file` (HTTP Basic Auth)
