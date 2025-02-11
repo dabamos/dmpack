@@ -135,7 +135,7 @@ contains
 
         if (present(error)) error = E_NONE
         if (.not. present(value)) return
-        if (dm_present(empty, .false.) .and. len_trim(value) == 0) return
+        if (.not. dm_present(empty, .false.) .and. len_trim(value) == 0) return
 
         n = db_query%nparams + 1
 
