@@ -274,6 +274,10 @@ main = "dmtestmqueue.f90"
 link = [ "rt" ]
 
 [[test]]
+name = "dmtestnet"
+main = "dmtestnet.f90"
+
+[[test]]
 name = "dmtestnml"
 main = "dmtestnml.f90"
 

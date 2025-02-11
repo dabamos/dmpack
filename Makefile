@@ -461,8 +461,8 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DM
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconfig \
       dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
       dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson \
-      dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml dmtestobserv \
-      dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
+      dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnet dmtestnml \
+      dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
       dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
       dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
 
@@ -759,6 +759,9 @@ dmtestmqtt: test/dmtestmqtt.f90 $(TARGET)
 
 dmtestmqueue: test/dmtestmqueue.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestmqueue test/dmtestmqueue.f90 $(TARGET) $(LIBRT) $(LDLIBS)
+
+dmtestnet: test/dmtestnet.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestnet test/dmtestnet.f90 $(TARGET) $(LDLIBS)
 
 dmtestnml: test/dmtestnml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestnml test/dmtestnml.f90 $(TARGET) $(LDLIBS)

@@ -37,7 +37,7 @@
 TESTS="dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
 dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash \
 dmtesthdf5 dmtesthtml dmtestid dmtestjob dmtestjson dmtestlog dmtestlogger \
-dmtestlua dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnml \
+dmtestlua dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnet dmtestnml \
 dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
 dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
 dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd"
