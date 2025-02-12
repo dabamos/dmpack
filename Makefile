@@ -62,12 +62,9 @@
 #
 #   FC      - Fortran 2018 compiler (`gfortran`, `ifx`).
 #   CC      - ANSI C compiler (`gcc`, `icx`).
-#   AR      - Archiver.
-#   MAKE    - Either: `make`, `bmake`, or `gmake`.
-#   STRIP   - Strip utility.
-#   RM      - Remove command.
-#   SH      - Shell.
-#   FORD    - FORD documentation generator.
+#
+#   DEBUG   - Debug options.
+#   RELEASE - Release options.
 #
 #   FFLAGS  - Fortran compiler options.
 #   CFLAGS  - C compiler options.
@@ -75,9 +72,6 @@
 #   ARFLAGS - Archiver options.
 #   LDFLAGS - Linker options.
 #   LDLIBS  - Linker libraries.
-#
-#   DEBUG   - Debug options.
-#   RELEASE - Release options.
 #
 #   THIN    - Thin DMPACK library (without interface bindings).
 #   TARGET  - Path to the full DMPACK library (with interface bindings).
