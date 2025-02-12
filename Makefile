@@ -478,13 +478,28 @@ setup:
 #
 # ******************************************************************************
 
+# AArch64, x86-64
 freebsd_debug:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
+	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)" \
+        INCHDF5="$(INCHDF5)" LIBCURL="$(LIBCURL)" LIBCRYPTO="$(LIBCRYPTO)" \
+        LIBFASTCGI="$(LIBFASTCGI)" LIBHDF5="$(LIBHDF5)" LIBLAPACK="$(LIBLAPACK)" \
+        LIBLUA54="$(LIBLUA54)" LIBMODBUS="$(LIBMODBUS)" LIBPCRE2="$(LIBPCRE2)" \
+        LIBPTHREAD="$(LIBPTHREAD)" LIBRT="$(LIBRT)" LIBSQLITE3="$(LIBSQLITE3)" \
+        LIBSTROPHE="$(LIBSTROPHE)" LIBZLIB="$(LIBZLIB)" LIBZSTD="$(LIBZSTD)" \
+        LIBZ="$(LIBZ)"
 
+# AArch64, x86-64
 freebsd_release:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local
+	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)" \
+        INCHDF5="$(INCHDF5)" LIBCURL="$(LIBCURL)" LIBCRYPTO="$(LIBCRYPTO)" \
+        LIBFASTCGI="$(LIBFASTCGI)" LIBHDF5="$(LIBHDF5)" LIBLAPACK="$(LIBLAPACK)" \
+        LIBLUA54="$(LIBLUA54)" LIBMODBUS="$(LIBMODBUS)" LIBPCRE2="$(LIBPCRE2)" \
+        LIBPTHREAD="$(LIBPTHREAD)" LIBRT="$(LIBRT)" LIBSQLITE3="$(LIBSQLITE3)" \
+        LIBSTROPHE="$(LIBSTROPHE)" LIBZLIB="$(LIBZLIB)" LIBZSTD="$(LIBZSTD)" \
+        LIBZ="$(LIBZ)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
+# AArch64, x86-64
 freebsd:
 	$(MAKE) freebsd_release
 
@@ -494,17 +509,40 @@ freebsd:
 #
 # ******************************************************************************
 
+# AArch64
 linux_aarch64:
-	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__"
+	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" \
+        RELEASE="$(RELEASE)" \
+        INCHDF5="$(INCHDF5)" LIBCURL="$(LIBCURL)" LIBCRYPTO="$(LIBCRYPTO)" \
+        LIBFASTCGI="$(LIBFASTCGI)" LIBHDF5="$(LIBHDF5)" LIBLAPACK="$(LIBLAPACK)" \
+        LIBLUA54="$(LIBLUA54)" LIBMODBUS="$(LIBMODBUS)" LIBPCRE2="$(LIBPCRE2)" \
+        LIBPTHREAD="$(LIBPTHREAD)" LIBRT="$(LIBRT)" LIBSQLITE3="$(LIBSQLITE3)" \
+        LIBSTROPHE="$(LIBSTROPHE)" LIBZLIB="$(LIBZLIB)" LIBZSTD="$(LIBZSTD)" \
+        LIBZ="$(LIBZ)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
+# x86-64
 linux_debug:
-	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
+	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)" \
+        INCHDF5="$(INCHDF5)" LIBCURL="$(LIBCURL)" LIBCRYPTO="$(LIBCRYPTO)" \
+        LIBFASTCGI="$(LIBFASTCGI)" LIBHDF5="$(LIBHDF5)" LIBLAPACK="$(LIBLAPACK)" \
+        LIBLUA54="$(LIBLUA54)" LIBMODBUS="$(LIBMODBUS)" LIBPCRE2="$(LIBPCRE2)" \
+        LIBPTHREAD="$(LIBPTHREAD)" LIBRT="$(LIBRT)" LIBSQLITE3="$(LIBSQLITE3)" \
+        LIBSTROPHE="$(LIBSTROPHE)" LIBZLIB="$(LIBZLIB)" LIBZSTD="$(LIBZSTD)" \
+        LIBZ="$(LIBZ)"
 
+# x86-64
 linux_release:
-	$(MAKE) build OS=linux PREFIX=/usr
+	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)" \
+        INCHDF5="$(INCHDF5)" LIBCURL="$(LIBCURL)" LIBCRYPTO="$(LIBCRYPTO)" \
+        LIBFASTCGI="$(LIBFASTCGI)" LIBHDF5="$(LIBHDF5)" LIBLAPACK="$(LIBLAPACK)" \
+        LIBLUA54="$(LIBLUA54)" LIBMODBUS="$(LIBMODBUS)" LIBPCRE2="$(LIBPCRE2)" \
+        LIBPTHREAD="$(LIBPTHREAD)" LIBRT="$(LIBRT)" LIBSQLITE3="$(LIBSQLITE3)" \
+        LIBSTROPHE="$(LIBSTROPHE)" LIBZLIB="$(LIBZLIB)" LIBZSTD="$(LIBZSTD)" \
+        LIBZ="$(LIBZ)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
+# x86-64
 linux:
 	$(MAKE) linux_release
 

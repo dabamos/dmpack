@@ -12,7 +12,7 @@ program dmlua
     character(len=*), parameter :: APP_NAME  = 'dmlua'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 4
+    integer,          parameter :: APP_PATCH = 5
 
     integer, parameter :: APP_PROC_LEN    = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
@@ -92,8 +92,7 @@ program dmlua
                             access = MQUEUE_RDONLY) ! Read-only access.
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
-                              dm_system_error_message(), error=rc)
+            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
             exit init_block
         end if
 
@@ -108,7 +107,7 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         character(len=*), parameter :: PROC_SET = &
-            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
+            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz' ! Valid procedure name characters.
 
         type(app_type), intent(out) :: app
         type(arg_type)              :: args(8)
@@ -202,11 +201,13 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         rc = dm_mqueue_close(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
         rc = dm_mqueue_unlink(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call dm_lua_destroy(lua)
         call dm_stop(stat)
@@ -236,23 +237,20 @@ contains
             rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
             ! Validate observation.
             if (.not. dm_observ_is_valid(observ_in)) then
-                call logger%error('received invalid observ ' // trim(observ_in%name), &
-                                  observ=observ_in, error=E_INVALID)
+                call logger%error('received invalid observ ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call logger%debug('passing observ ' // trim(observ_in%name) // &
-                              ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
+            call logger%debug('passing observ ' // trim(observ_in%name) // ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
 
-            ! Pass the observation to the Lua function and read the returned
-            ! observation.
+            ! Pass the observation to the Lua function and read the returned observation.
             lua_block: block
                 ! Load Lua function.
                 rc = dm_lua_read(lua, trim(app%proc))
@@ -274,8 +272,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call logger%error('failed to execute Lua function ' // trim(app%proc) // '()', &
-                                      observ=observ_in, error=rc)
+                    call logger%error('failed to execute Lua function ' // trim(app%proc) // '()', observ=observ_in, error=rc)
                     exit lua_block
                 end if
 
@@ -284,28 +281,26 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call logger%error('failed to read observ from Lua stack', &
-                                      error=rc, observ=observ_in)
+                    call logger%error('failed to read observ from Lua stack', error=rc, observ=observ_in)
                     exit lua_block
                 end if
 
                 ! Validate returned observation.
                 if (.not. dm_observ_is_valid(observ_out)) then
                     rc = E_INVALID
-                    call logger%error('invalid observ returned from Lua function ' // &
-                                      trim(app%proc) // '()', error=rc, observ=observ_in)
+                    call logger%error('invalid observ returned from Lua function ' // trim(app%proc) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
 
             ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
-                observ_out = observ_in
+                call logger%debug('forwarding observ ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
+                rc = dm_mqueue_forward(observ_in, name=app%name, blocking=APP_MQ_BLOCKING)
             else
-                call logger%debug('finished observ ' // observ_out%name, observ=observ_out)
+                call logger%debug('forwarding observ ' // observ_out%name, observ=observ_out)
+                rc = dm_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
             end if
-
-            rc = dm_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 

@@ -60,10 +60,10 @@ program dmsync
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &                 ! Name of logger process.
-                          node_id = app%node_id, &                ! Node id.
-                          source  = app%name, &                   ! Log source.
-                          debug   = app%debug, &                  ! Forward DEBUG messages via IPC.
+    call logger%configure(name    = app%logger,                 & ! Name of logger process.
+                          node_id = app%node_id,                & ! Node id.
+                          source  = app%name,                   & ! Log source.
+                          debug   = app%debug,                  & ! Forward DEBUG messages via IPC.
                           ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
                           verbose = app%verbose)                  ! Print logs to standard error.
 
@@ -271,6 +271,7 @@ contains
         character(len=:), allocatable  :: name, url
         integer                        :: delay_sec, i, j, n, stat
         integer(kind=i8)               :: limit, nsyncs
+        logical                        :: has_auth
         real(kind=r8)                  :: dt
         type(timer_type)               :: sync_timer
         type(timer_type)               :: rpc_timer
@@ -286,46 +287,41 @@ contains
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
 
-        name  = dm_sync_name(app%type)
-        limit = APP_SYNC_LIMIT
+        name     = dm_sync_name(app%type)
+        limit    = APP_SYNC_LIMIT
+        has_auth = (len_trim(app%username) > 0 .and. len_trim(app%password) > 0)
 
         call logger%info('started ' // APP_NAME)
 
         if (app%compression == Z_TYPE_NONE) then
-            call logger%debug('compression is disabled')
+            call logger%debug('compression of ' // name // ' data is disabled')
         else
-            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
+            call logger%debug(dm_z_type_name(app%compression) // ' compression of ' // name // ' data is enabled')
         end if
 
-        ! Allocate type array, and generate URL of HTTP-RPC API endpoint.
+        ! Allocate type array.
+        rc = E_ALLOC
         select case (app%type)
-            case (SYNC_TYPE_LOG)
-                allocate (logs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_LOG, tls=app%tls)
-            case (SYNC_TYPE_NODE)
-                allocate (nodes(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_NODE, tls=app%tls)
-            case (SYNC_TYPE_OBSERV)
-                allocate (observs(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_OBSERV, tls=app%tls)
-            case (SYNC_TYPE_SENSOR)
-                allocate (sensors(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
-            case (SYNC_TYPE_TARGET)
-                allocate (targets(APP_SYNC_LIMIT), stat=stat)
-                url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
-            case default
-                ! Fail-safe, should never occur.
-                rc = E_TYPE
-                call logger%error('invalid sync type', error=rc)
+            case (SYNC_TYPE_LOG);    allocate (logs   (APP_SYNC_LIMIT), stat=stat)
+            case (SYNC_TYPE_NODE);   allocate (nodes  (APP_SYNC_LIMIT), stat=stat)
+            case (SYNC_TYPE_OBSERV); allocate (observs(APP_SYNC_LIMIT), stat=stat)
+            case (SYNC_TYPE_SENSOR); allocate (sensors(APP_SYNC_LIMIT), stat=stat)
+            case (SYNC_TYPE_TARGET); allocate (targets(APP_SYNC_LIMIT), stat=stat)
         end select
+        if (stat /= 0) return
 
+        ! Generate URL of HTTP-RPC API endpoint.
         rc = E_CORRUPT
+        select case (app%type)
+            case (SYNC_TYPE_LOG);    url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_LOG,    tls=app%tls)
+            case (SYNC_TYPE_NODE);   url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_NODE,   tls=app%tls)
+            case (SYNC_TYPE_OBSERV); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_OBSERV, tls=app%tls)
+            case (SYNC_TYPE_SENSOR); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
+            case (SYNC_TYPE_TARGET); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
+        end select
         if (len_trim(url) == 0) return
 
         rc = E_ALLOC
-        if (stat /= 0) return
-
         allocate (requests(APP_SYNC_LIMIT), stat=stat); if (stat /= 0) return
         allocate (ids(APP_SYNC_LIMIT),      stat=stat); if (stat /= 0) return
 
@@ -335,7 +331,7 @@ contains
             requests(i)%user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
             requests(i)%compression = app%compression
 
-            if (len_trim(app%username) > 0 .and. len_trim(app%password) > 0) then
+            if (has_auth) then
                 requests(i)%auth     = RPC_AUTH_BASIC
                 requests(i)%username = trim(app%username)
                 requests(i)%password = trim(app%password)
@@ -349,12 +345,12 @@ contains
                 call dm_timer_start(sync_timer)
             else
                 ! Wait for semaphore.
-                call logger%debug('waiting for signal from ' // app%wait)
+                call logger%debug('waiting for semaphore ' // app%wait)
                 rc = dm_sem_wait(sem)
 
                 if (dm_is_error(rc)) then
                     ! Unrecoverable semaphore error. Stop program.
-                    call logger%error('semaphore error', error=rc)
+                    call logger%error('failed to wait for semaphore ' // app%wait, error=rc)
                     exit sync_loop
                 end if
             end if
@@ -465,22 +461,19 @@ contains
                         case (HTTP_CREATED)
                             ! Success.
                             rc = E_NONE
-                            call logger%debug('synced ' // name // ' ' // trim(ids(i)), error=rc)
+                            call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
 
                         case (HTTP_CONFLICT)
                             ! Record exists in server database.
                             rc = E_EXIST
-                            call logger%debug(name // ' ' // trim(ids(i)) // ' exists', error=rc)
+                            call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
 
                         case (HTTP_UNAUTHORIZED)
                             ! Missing or wrong API credentials.
                             rc = E_RPC_AUTH
-                            if (has_api_status) then
-                                call logger%debug('unauthorized access on host ' // trim(app%host) // ': ' // &
-                                                  api_status%message, error=rc)
-                            else
-                                call logger%debug('unauthorized access on host ' // app%host, error=rc)
-                            end if
+                            message = 'unauthorized access on host ' // app%host
+                            if (has_api_status) message = trim(message) // ': ' // api_status%message
+                            call logger%debug(message, error=rc)
 
                         case (HTTP_INTERNAL_SERVER_ERROR)
                             ! Server crashed.
@@ -494,17 +487,15 @@ contains
 
                         case default
                             ! Any other server error.
+                            rc = E_RPC_API
+                            write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), responses(i)%code
+
                             if (has_api_status) then
                                 rc = api_status%error
-                                write (message, '("server error on host ", a, " (HTTP ", i0, "): ", a)') &
-                                    trim(app%host), responses(i)%code, api_status%message
-                                call logger%debug(message, error=rc)
-                            else
-                                rc = E_RPC_API
-                                write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') &
-                                    trim(app%host), responses(i)%code
-                                call logger%debug(message, error=rc)
+                                message = trim(message) // ': ' // api_status%message
                             end if
+
+                            call logger%debug(message, error=rc)
                     end select
 
                     last_error = max(last_error, rc)
@@ -573,12 +564,18 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         call dm_rpc_shutdown()
-        if (app%ipc) rc = dm_sem_close(sem)
+
+        if (app%ipc) then
+            rc = dm_sem_close(sem)
+            if (dm_is_error(rc)) call logger%error('failed to close semaphore ' // app%wait, error=rc)
+        end if
+
         rc = dm_db_close(db)
+        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+
         call dm_stop(stat)
     end subroutine halt
 

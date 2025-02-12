@@ -578,7 +578,15 @@ contains
 
     integer function dm_db_close(db, optimize) result(rc)
         !! Closes connection to SQLite database. Optimises the database if
-        !! `optimize` is `.true.`. Returns `E_DB` on error.
+        !! argument `optimize` is `.true.`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB` if closing the database failed.
+        !! * `E_DB_PREPARE` if database optimisation failed.
+        !! * `E_DB_STEP` if database optimisation failed (no write access).
+        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
+        !!
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
@@ -590,7 +598,10 @@ contains
         rc = E_DB
         if (sqlite3_close(db%ctx) /= SQLITE_OK) return
 
+        rc = E_EXIST
         db%ctx = c_null_ptr
+        if (c_associated(db%ctx)) return
+
         rc = E_NONE
     end function dm_db_close
 

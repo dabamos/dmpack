@@ -11,7 +11,7 @@ program dmdb
     character(len=*), parameter :: APP_NAME  = 'dmdb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -206,16 +206,23 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         rc = dm_db_close(db)
+        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+
         rc = dm_mqueue_close(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
         rc = dm_mqueue_unlink(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         if (app%ipc) then
             rc = dm_sem_close(sem)
+            if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
+
             rc = dm_sem_unlink(sem)
+            if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
         call dm_stop(stat)
@@ -269,7 +276,7 @@ contains
                     cycle db_loop
                 end if
 
-                ! Get more precise database error.
+                ! Handle database error.
                 if (dm_is_error(rc)) then
                     call logger%error('failed to insert observ ' // observ%name, error=rc)
                     exit db_loop
@@ -280,20 +287,36 @@ contains
                 ! Post semaphore.
                 if (app%ipc) then
                     rc = dm_sem_value(sem, value)
-                    if (value == 0) rc = dm_sem_post(sem)
+
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to get value of semaphore /' // app%name, error=rc)
+                        exit db_loop
+                    end if
+
+                    if (value /= 0) exit db_loop
+
+                    rc = dm_sem_post(sem)
+
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to post to semaphore /' // app%name, error=rc)
+                        exit db_loop
+                    end if
                 end if
 
                 exit db_loop
             end do db_loop
 
-            ! Forward observation.
+            ! Forward observation if any receivers are left.
             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
             if (steps == 0) then
-                ! Optimise database.
-                call logger%debug('optimizing database')
                 rc = dm_db_optimize(db)
-                if (dm_is_error(rc)) call logger%error('failed to optimize database', error=rc)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to optimize database', error=rc)
+                else
+                    call logger%debug('optimized database')
+                end if
             end if
 
             ! Increase optimise step counter.
@@ -306,11 +329,8 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call halt(E_NONE)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

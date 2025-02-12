@@ -5,14 +5,15 @@
 program dmgrc
     !! Leica GeoCOM return code inspector. This program checks the GeoCOM return
     !! code (GRC) of observations from robotic total stations and creates a log
-    !! message if an error is detected.
+    !! message if an error is detected. The GRC response must be of type
+    !! `RESPONSE_TYPE_INT32`.
     use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: APP_NAME  = 'dmgrc'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 0
+    integer,          parameter :: APP_PATCH = 1
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -77,7 +78,7 @@ program dmgrc
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
+        type(app_type), intent(out) :: app !! App type.
 
         integer        :: i
         type(arg_type) :: args(8)
@@ -151,7 +152,8 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_type) :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return
@@ -189,14 +191,15 @@ contains
         integer,              intent(in)    :: default       !! Default log level.
 
         integer :: i
+        logical :: has
 
         level = default
 
         do i = 1, size(grc_levels)
-            if (dm_array_has(grc_levels(i)%codes, grc)) then
-                level = i
-                return
-            end if
+            has = dm_array_has(grc_levels(i)%codes, grc)
+            if (.not. has) cycle
+            level = i
+            return
         end do
     end subroutine find_level
 
@@ -206,11 +209,13 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         rc = dm_mqueue_close(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
         rc = dm_mqueue_unlink(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call dm_stop(stat)
     end subroutine halt
@@ -230,7 +235,7 @@ contains
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
@@ -255,25 +260,25 @@ contains
 
                     ! Validate response type.
                     if (grc_type /= RESPONSE_TYPE_INT32) then
-                        call logger%warning('GeoCOM return code response ' // trim(app%response) // &
-                                            ' of invalid type in request ' // trim(observ%requests(i)%name) // &
-                                            ' (' // dm_itoa(i) // ') of observ ' // observ%name, observ=observ, error=E_TYPE)
+                        call logger%warning('GeoCOM return code response ' // trim(app%response) // ' of invalid type in request ' // &
+                                            trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // observ%name, &
+                                            observ=observ, error=E_TYPE)
                         cycle
                     end if
 
                     ! Validate response error.
                     if (dm_is_error(grc_error)) then
-                        call logger%warning('invalid GeoCOM return code response ' // trim(app%response) // &
-                                            ' in request ' // trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // &
-                                            ') of observ ' // observ%name, observ=observ, error=grc_error)
+                        call logger%warning('invalid GeoCOM return code response ' // trim(app%response) // ' in request ' // &
+                                            trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // &
+                                            observ%name, observ=observ, error=grc_error)
                         cycle
                     end if
 
                     ! Validate response value.
                     if (dm_geocom_is_ok(grc)) then
-                        call logger%debug('GeoCOM return code response ' // trim(app%response) // &
-                                          ' in request ' // trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // &
-                                          ') of observ ' // trim(observ%name) // ' not an error', observ=observ, error=E_NONE)
+                        call logger%debug('GeoCOM return code response ' // trim(app%response) // ' in request ' // &
+                                          trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // &
+                                          trim(observ%name) // ' not an error', observ=observ, error=E_NONE)
                         cycle
                     end if
 
@@ -300,11 +305,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call halt(E_NONE)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

@@ -11,7 +11,7 @@ program dmlogger
     character(len=*), parameter :: APP_NAME  = 'dmlogger'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -184,16 +184,23 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         rc = dm_db_close(db)
+        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+
         rc = dm_mqueue_close(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
         rc = dm_mqueue_unlink(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         if (app%ipc) then
             rc = dm_sem_close(sem)
+            if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
+
             rc = dm_sem_unlink(sem)
+            if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
         call dm_stop(stat)
@@ -236,7 +243,7 @@ contains
 
             ! Skip if log already exists.
             if (dm_db_has_log(db, log%id)) then
-                call logger%warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
+                call logger%warning('log with id ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -254,7 +261,7 @@ contains
                         cycle db_loop
                     end if
 
-                    call logger%error('failed to insert log ' // trim(log%id) // ': ' // &
+                    call logger%error('failed to insert log with id ' // trim(log%id) // ': ' // &
                                       dm_db_error_message(db), error=rc)
                     exit db_loop
                 end if
@@ -269,10 +276,13 @@ contains
             end do db_loop
 
             if (steps == 0) then
-                ! Optimise database.
-                call logger%debug('optimizing database')
                 rc = dm_db_optimize(db)
-                if (dm_is_error(rc)) call logger%error('failed to optimize database', error=rc)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to optimize database', error=rc)
+                else
+                    call logger%debug('optimized database')
+                end if
             end if
 
             ! Increase optimise step counter.
@@ -285,12 +295,9 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call dm_sleep(2)
-                call halt(0)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call dm_sleep(1)
+        call halt(0)
     end subroutine signal_callback
 
     subroutine version_callback()

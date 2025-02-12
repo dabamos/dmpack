@@ -30,14 +30,14 @@ module dm_util
 
     interface dm_itoa
         !! Generic integer to string converter.
-        module procedure :: int32_to_string
-        module procedure :: int64_to_string
+        module procedure :: itoa_int32
+        module procedure :: itoa_int64
     end interface dm_itoa
 
     interface dm_ftoa
         !! Generic real to string converter.
-        module procedure :: real32_to_string
-        module procedure :: real64_to_string
+        module procedure :: ftoa_real32
+        module procedure :: ftoa_real64
     end interface dm_ftoa
 
     interface dm_from_real64
@@ -126,11 +126,11 @@ module dm_util
     private :: inc_int32
     private :: inc_int64
 
-    private :: int32_to_string
-    private :: int64_to_string
+    private :: itoa_int32
+    private :: itoa_int64
 
-    private :: real32_to_string
-    private :: real64_to_string
+    private :: ftoa_real32
+    private :: ftoa_real64
 
     private :: present_character
     private :: present_int32
@@ -151,7 +151,7 @@ contains
     pure elemental function dm_atof(a) result(f)
         !! Converts string to 8-byte real.
         character(len=*),intent(in) :: a !! Number string.
-        real(kind=r8)               :: f !! Value.
+        real(kind=r8)               :: f !! Real result.
 
         integer :: stat
 
@@ -162,7 +162,7 @@ contains
     pure elemental function dm_atoi(a) result(i)
         !! Converts string to 4-byte integer.
         character(len=*),intent(in) :: a !! Number string.
-        integer(kind=i4)            :: i !! Value.
+        integer(kind=i4)            :: i !! Integer result.
 
         integer :: stat
 
@@ -178,7 +178,7 @@ contains
         logical,          intent(in)           :: b     !! Logical value.
         character(len=*), intent(in), optional :: true  !! Return value on `.true.`.
         character(len=*), intent(in), optional :: false !! Return value on `.false.`.
-        character(len=:), allocatable          :: a     !! Returned string.
+        character(len=:), allocatable          :: a     !! String result.
 
         if (b) then
             if (present(true)) then
@@ -195,13 +195,20 @@ contains
         end if
     end function dm_btoa
 
-    pure elemental function dm_btoi(b) result(i)
-        !! Converts logical (boolean) to 4-byte integer.
-        logical, intent(in) :: b !! Logical value.
-        integer             :: i !! `0` or `1`.
+    pure elemental function dm_btoi(b, true, false) result(i)
+        !! Converts logical (boolean) to 4-byte integer. The result is either 0
+        !! or 1, unless argument `true` or `false` is passed to overwrite the
+        !! value.
+        logical, intent(in)           :: b     !! Logical value.
+        integer, intent(in), optional :: true  !! Returns value on `.true.`.
+        integer, intent(in), optional :: false !! Returns value on `.false.`.
+        integer                       :: i     !! Integer result.
 
-        i = 0
-        if (b) i = 1
+        if (b) then
+            i = dm_present(true, 1)
+        else
+            i = dm_present(false, 0)
+        end if
     end function dm_btoi
 
     ! **************************************************************************
@@ -538,7 +545,7 @@ contains
     ! **************************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS.
     ! **************************************************************************
-    pure function int32_to_string(value) result(string)
+    pure function itoa_int32(value) result(string)
         !! Converts 4-byte integer to allocatable string of length > 0.
         integer(kind=i4), intent(in)  :: value  !! Value.
         character(len=:), allocatable :: string !! String of value.
@@ -554,9 +561,9 @@ contains
 
         allocate (character(len=n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
-    end function int32_to_string
+    end function itoa_int32
 
-    pure function int64_to_string(value) result(string)
+    pure function itoa_int64(value) result(string)
         !! Converts 8-byte integer to allocatable string of length > 0.
         integer(kind=i8), intent(in)  :: value  !! Value.
         character(len=:), allocatable :: string !! String of value.
@@ -572,9 +579,9 @@ contains
 
         allocate (character(len=n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
-    end function int64_to_string
+    end function itoa_int64
 
-    pure function real32_to_string(value) result(string)
+    pure function ftoa_real32(value) result(string)
         !! Converts 4-byte real to allocatable string of length > 1.
         real(kind=r4), intent(in)     :: value  !! Value.
         character(len=:), allocatable :: string !! String of value.
@@ -590,9 +597,9 @@ contains
         end if
 
         string = ''
-    end function real32_to_string
+    end function ftoa_real32
 
-    pure function real64_to_string(value) result(string)
+    pure function ftoa_real64(value) result(string)
         !! Converts 8-byte real to allocatable string of length > 1.
         real(kind=r8), intent(in)     :: value  !! Value.
         character(len=:), allocatable :: string !! String of value.
@@ -608,7 +615,7 @@ contains
         end if
 
         string = ''
-    end function real64_to_string
+    end function ftoa_real64
 
     ! **************************************************************************
     ! PRIVATE TIME UNIT FUNCTIONS.

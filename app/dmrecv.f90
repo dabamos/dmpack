@@ -99,12 +99,10 @@ contains
 
         if (replace) then
             ! Replace file.
-            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
-                  position='rewind', status='replace')
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, position='rewind', status='replace')
         else
             ! Append data.
-            open (action='write', file=trim(path), iostat=stat, newunit=unit, &
-                  position='append', status='unknown')
+            open (action='write', file=trim(path), iostat=stat, newunit=unit, position='append', status='unknown')
         end if
 
         if (stat == 0) rc = E_NONE
@@ -345,14 +343,12 @@ contains
         ! Write serialised observation to file/stdout.
         select case (app%format)
             case (FORMAT_BLOCK)
-                ! ASCII block format. Search for response of configured
-                ! name and convert the observation's response into a
-                ! data point type.
+                ! ASCII block format. Search for response of configured name and convert the
+                ! observation's response into a data point type.
                 stat = dm_observ_index(observ, app%response, i, j)
 
                 if (dm_is_ok(stat)) then
-                    dp = dp_type(x = observ%requests(i)%timestamp, &
-                                 y = observ%requests(i)%responses(j)%value)
+                    dp = dp_type(observ%requests(i)%timestamp, observ%requests(i)%responses(j)%value)
                     rc = dm_block_write(dp, unit=unit)
                 else
                     call logger%debug('no response of name ' // app%response, error=E_NOT_FOUND)
@@ -367,8 +363,7 @@ contains
                 rc = dm_json_write(observ, unit=unit)
 
             case (FORMAT_NML)
-                ! Namelist format. Write Namelist to a string first, to
-                ! avoid newline characters.
+                ! Namelist format. Write Namelist to a string first, to avoid newline characters.
                 rc = dm_nml_from(observ, observ_nml)
                 write (unit, '(a)', iostat=stat) trim(observ_nml)
                 if (stat /= 0) rc = E_WRITE
@@ -396,11 +391,13 @@ contains
 
         integer :: rc, stat
 
-        stat = STOP_SUCCESS
-        if (dm_is_error(error)) stat = STOP_FAILURE
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
         rc = dm_mqueue_close(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
         rc = dm_mqueue_unlink(mqueue)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call dm_stop(stat)
     end subroutine halt
