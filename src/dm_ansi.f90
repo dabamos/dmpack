@@ -21,6 +21,7 @@ module dm_ansi
     !! call dm_ansi_color(COLOR_RED, no_color)
     !! ```
     use :: dm_ascii
+    use :: dm_kind
     implicit none (type, external)
     private
 
@@ -42,26 +43,44 @@ module dm_ansi
     public :: dm_ansi_color
     public :: dm_ansi_reset
 contains
-    subroutine dm_ansi_color(color, no_color)
-        !! Changes foreground to given colour.
+    subroutine dm_ansi_color(color, no_color, unit)
+        !! Changes foreground to `color`. Writes to `stdout` if no unit is passed.
         integer, intent(in)           :: color    !! Colour.
         logical, intent(in), optional :: no_color !! No output if `.true.`.
+        integer, intent(in), optional :: unit     !! File unit.
+
+        integer :: unit_
 
         if (present(no_color)) then
             if (no_color) return
+        end if
+
+        if (present(unit)) then
+            unit_ = unit
+        else
+            unit_ = stdout
         end if
 
         write (*, '(a, "[", i2, "m")', advance='no') ASCII_ESC, 30 + color
     end subroutine dm_ansi_color
 
-    subroutine dm_ansi_reset(no_color)
-        !! Resets colours.
-        logical, intent(in), optional :: no_color
+    subroutine dm_ansi_reset(no_color, unit)
+        !! Resets colours. Writes to `stdout` if unit is passed.
+        logical, intent(in), optional :: no_color !! No output if `.true.`.
+        integer, intent(in), optional :: unit     !! File unit.
+
+        integer :: unit_
 
         if (present(no_color)) then
             if (no_color) return
         end if
 
-        write (*, '(a, "[0m")', advance='no') ASCII_ESC
+        if (present(unit)) then
+            unit_ = unit
+        else
+            unit_ = stdout
+        end if
+
+        write (unit_, '(a, "[0m")', advance='no') ASCII_ESC
     end subroutine dm_ansi_reset
 end module dm_ansi

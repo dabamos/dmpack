@@ -114,6 +114,7 @@ AR      = ar
 CP      = /bin/cp
 INSTALL = install
 MAKE    = make
+MAKELIB = makelib.sh
 MKDIR   = /bin/mkdir
 STRIP   = strip
 RM      = /bin/rm
@@ -667,7 +668,7 @@ $(OBJ): $(SRC)
 # Static library `libdmpack.a`.
 $(TARGET): $(LIBF) $(OBJ)
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
-	$(SH) makelib.sh $(TARGET) $(THIN)
+	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
 
 # ******************************************************************************
 #

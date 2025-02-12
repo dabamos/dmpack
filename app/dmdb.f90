@@ -64,7 +64,7 @@ program dmdb
         end if
 
         if (.not. has_tables(db)) then
-            call logger%error('required database tables missing', error=E_INVALID)
+            call logger%error('database tables not found', error=E_INVALID)
             exit init_block
         end if
 

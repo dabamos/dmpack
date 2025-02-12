@@ -59,6 +59,11 @@ program dmlogger
             exit init_block
         end if
 
+        if (.not. dm_db_has_table(db, SQL_TABLE_LOGS)) then
+            call logger%error('database table not found', error=E_INVALID)
+            exit init_block
+        end if
+
         ! Open log message queue for reading.
         rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
                             type   = TYPE_LOG, &    ! Log type.
