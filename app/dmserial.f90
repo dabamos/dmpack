@@ -136,7 +136,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to output observ', observ=observ, error=rc)
+                    call logger%error('failed to write observ', observ=observ, error=rc)
                     return
                 end if
 

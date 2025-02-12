@@ -33,10 +33,10 @@ command-line arguments `--path`, `--baudrate`, `--bytesize`, `--parity`, and
 
 The following data types are supported:
 
-`int16` :: Signed 2-byte integer.
-`int32` :: Signed 4-byte integer.
-`uint16`:: Unsigned 2-byte integer.
-`uint32`:: Unsigned 4-byte integer.
+`int16` :: 2-byte signed integer.
+`int32` :: 4-byte signed integer.
+`uint16`:: 2-byte unsigned integer.
+`uint32`:: 4-byte unsigned integer.
 `float` :: 4-byte float.
 
 In order to read floating-point values, set `--type` to `float` and `--order`

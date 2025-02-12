@@ -110,49 +110,27 @@ module dm_tty
 contains
     integer function dm_tty_baud_rate_from_value(value, error) result(baud_rate)
         !! Returns baud rate enumerator from numeric value. If the value is
-        !! invalid, returns 0 by default and sets optional argument `error` to
+        !! invalid, returns `TTY_B0` and sets optional argument `error` to
         !! `E_INVALID`.
         integer, intent(in)            :: value !! Numeric baud rate value.
         integer, intent(out), optional :: error !! Error code.
 
-        select case (value)
-            case (TTY_B0,      &
-                  TTY_B50,     &
-                  TTY_B75,     &
-                  TTY_B110,    &
-                  TTY_B134,    &
-                  TTY_B150,    &
-                  TTY_B200,    &
-                  TTY_B300,    &
-                  TTY_B600,    &
-                  TTY_B1200,   &
-                  TTY_B1800,   &
-                  TTY_B2400,   &
-                  TTY_B4800,   &
-                  TTY_B9600,   &
-                  TTY_B19200,  &
-                  TTY_B38400,  &
-                  TTY_B57600,  &
-                  TTY_B115200, &
-                  TTY_B230400, &
-                  TTY_B460800, &
-                  TTY_B921600)
-                if (present(error)) error = E_NONE
-                baud_rate = value
-            case default
-                if (present(error)) error = E_INVALID
-                baud_rate = TTY_B0
-                return
-        end select
+        baud_rate = TTY_B0
+        if (present(error)) error = E_INVALID
+
+        if (.not. dm_tty_baud_rate_is_valid(value)) return
+
+        baud_rate = value
+        if (present(error)) error = E_NONE
     end function dm_tty_baud_rate_from_value
 
     pure elemental logical function dm_tty_baud_rate_is_valid(baud_rate) result(valid)
         !! Returns `.true.` if given baud rate value is valid, else `.false.`.
+        !! Baud rate `TTY_B0` is invalid.
         integer, intent(in) :: baud_rate !! Baud rate.
 
         select case (baud_rate)
-            case (TTY_B0,      &
-                  TTY_B50,     &
+            case (TTY_B50,     &
                   TTY_B75,     &
                   TTY_B110,    &
                   TTY_B134,    &

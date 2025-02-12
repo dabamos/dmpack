@@ -292,7 +292,7 @@ client-side camera access and may be omitted. Depending on the Linux
 distribution, the names of the HDF5 and Lua packages may differ.
 
 [NOTE]
-.Building from Source
+.Building Dependencies from Source
 ====
 If third-party libraries are not available in the required minimum version,
 like on Ubuntu 22.04 LTS or Debian 12 (Bookworm), you may want to build the
@@ -1927,10 +1927,10 @@ The following data types are supported:
 |===
 | Type     | Description
 
-| `int16`  | Signed 2-byte integer.
-| `int32`  | Signed 4-byte integer.
-| `uint16` | Unsigned 2-byte integer.
-| `uint32` | Unsigned 4-byte integer.
+| `int16`  | 2-byte signed integer.
+| `int32`  | 4-byte signed integer.
+| `uint16` | 2-byte unsigned integer.
+| `uint32` | 4-byte unsigned integer.
 | `float`  | 4-byte float.
 |===
 
@@ -2676,10 +2676,10 @@ create a feed id for <<dmfeed>>.
 |===
 | Option        | Short | Default | Description
 
-| `--convert`   | `-C`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via _stdin_.
+| `--convert`   | `-c`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via _stdin_.
 | `--count _n_` | `-n`  | 1       | Number of identifiers to generate.
 | `--help`      | `-h`  | –       | Print available command-line arguments and quit.
-| `--hyphens`   | `-H`  | off     | Return 36 characters long UUIDv4 with hyphens.
+| `--hyphens`   | `-p`  | off     | Return 36 characters long UUIDv4 with hyphens.
 | `--version`   | `-v`  | –       | Print version information and quit.
 |===
 
@@ -2781,7 +2781,7 @@ The following VE.Direct fields are supported, depending on the device:
 
 ar:: This field describes the cause of the alarm. Since multiple alarm
 conditions can be present at the same time the values of the separate alarm
-conditions are added. The value total is sent in decimal notation.
+conditions are added.
 +
 [cols="1,5"]
 |===
@@ -3307,8 +3307,8 @@ $HTTP["url"] =~ "^/dmpack/" {
 }
 ....
 
-Copy the directory `dmweb` from `/usr/local/share/dmpack/` (or
-`/opt/share/dmpack/`) to the WWW root directory, in this case, `/var/www/`, or
+Copy the directory `dmweb` from `/usr/local/share/dmpack` (or
+`/opt/share/dmpack`) to the WWW root directory, in this case, `/var/www`, or
 simply create a symlink:
 
 ....

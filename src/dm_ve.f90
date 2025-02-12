@@ -841,8 +841,8 @@ contains
         !! * `E_INVALID` if the field label is unsupported.
         !! * `E_TYPE` if the field value type is invalid.
         !!
-        use :: dm_string, only: dm_string_to
-        use :: dm_util,   only: dm_hex_to_int, dm_to_real64
+        use :: dm_string, only: dm_string_hex_to_int, dm_string_to
+        use :: dm_util,   only: dm_to_real64
 
         type(ve_frame_type), intent(inout)         :: frame      !! Field frame.
         type(response_type), intent(out)           :: response   !! Response of field data.
@@ -886,7 +886,7 @@ contains
                         response%value = 0.0_r8
                     else if (frame%value(1:2) == '0X') then
                         ! Convert hex string to real.
-                        call dm_hex_to_int(frame%value, i, rc)
+                        call dm_string_hex_to_int(frame%value, i, rc)
                         response%value = dm_to_real64(i)
                     else
                         ! Convert string to real.

@@ -392,7 +392,7 @@ contains
 
                 ! Output product name of connected VE device from PID.
                 if (frame%label == 'PID' .and. .not. has_pid) then
-                    call dm_hex_to_int(frame%value, pid)
+                    call dm_string_hex_to_int(frame%value, pid)
                     rc = dm_ve_product_name(pid, product)
 
                     if (dm_is_error(rc)) then

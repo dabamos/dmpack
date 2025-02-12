@@ -55,9 +55,9 @@ contains
         type(arg_type)              :: args(3)
 
         args = [ &
-            arg_type('convert', short='C', type=ARG_TYPE_LOGICAL), & ! -C, --convert
+            arg_type('convert', short='c', type=ARG_TYPE_LOGICAL), & ! -c, --convert
             arg_type('count',   short='n', type=ARG_TYPE_INTEGER), & ! -n, --count
-            arg_type('hyphens', short='H', type=ARG_TYPE_LOGICAL)  & ! -H, --hyphens
+            arg_type('hyphens', short='p', type=ARG_TYPE_LOGICAL)  & ! -p, --hyphens
         ]
 
         ! Read all command-line arguments.

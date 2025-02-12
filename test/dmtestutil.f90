@@ -8,15 +8,14 @@ program dmtestutil
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestutil'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
@@ -93,27 +92,4 @@ contains
 
         stat = TEST_PASSED
     end function test02
-
-    logical function test03() result(stat)
-        integer          :: rc
-        integer(kind=i4) :: v4
-        integer(kind=i8) :: v8
-
-        stat = TEST_FAILED
-
-        print *, 'Converting hex to integer ...'
-        call dm_hex_to_int('0x0',        v4, rc); if (dm_is_error(rc)) return; if (v4 /= 0)        return
-        call dm_hex_to_int('0xFF',       v4, rc); if (dm_is_error(rc)) return; if (v4 /= 255)      return
-        call dm_hex_to_int('0xA068',     v4, rc); if (dm_is_error(rc)) return; if (v4 /= 41064)    return
-        call dm_hex_to_int('0x7FFFFFFF', v4, rc); if (dm_is_error(rc)) return; if (v4 /= huge(v4)) return
-
-        call dm_hex_to_int('0x0',                v8, rc); if (dm_is_error(rc)) return; if (v8 /= 0_i8)     return
-        call dm_hex_to_int('0xA068',             v8, rc); if (dm_is_error(rc)) return; if (v8 /= 41064_i8) return
-        call dm_hex_to_int('0x7FFFFFFFFFFFFFFF', v8, rc); if (dm_is_error(rc)) return; if (v8 /= huge(v8)) return
-
-        call dm_hex_to_int('0', v4, rc); if (.not. dm_is_error(rc)) return
-        call dm_hex_to_int('0', v8, rc); if (.not. dm_is_error(rc)) return
-
-        stat = TEST_PASSED
-    end function test03
 end program dmtestutil

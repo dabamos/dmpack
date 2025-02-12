@@ -63,6 +63,11 @@ program dmdb
             exit init_block
         end if
 
+        if (.not. has_tables(db)) then
+            call logger%error('required database tables missing', error=E_INVALID)
+            exit init_block
+        end if
+
         ! Open observation message queue for reading.
         rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
                             type   = TYPE_OBSERV, & ! Observation type.
@@ -92,6 +97,21 @@ program dmdb
 
     call halt(rc)
 contains
+    logical function has_tables(db) result(has)
+        !! Returns `.true.` if database contains all required tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = .false.
+        if (.not. dm_db_has_table(db, SQL_TABLE_NODES))     return
+        if (.not. dm_db_has_table(db, SQL_TABLE_SENSORS))   return
+        if (.not. dm_db_has_table(db, SQL_TABLE_TARGETS))   return
+        if (.not. dm_db_has_table(db, SQL_TABLE_OBSERVS))   return
+        if (.not. dm_db_has_table(db, SQL_TABLE_RECEIVERS)) return
+        if (.not. dm_db_has_table(db, SQL_TABLE_REQUESTS))  return
+        if (.not. dm_db_has_table(db, SQL_TABLE_RESPONSES)) return
+        has = .true.
+    end function has_tables
+
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
@@ -251,7 +271,6 @@ contains
 
                 ! Get more precise database error.
                 if (dm_is_error(rc)) then
-                    rc = dm_db_error(db)
                     call logger%error('failed to insert observ ' // observ%name, error=rc)
                     exit db_loop
                 end if

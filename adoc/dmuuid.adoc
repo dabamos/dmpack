@@ -29,7 +29,7 @@ standard input. Invalid identifiers will be replaced with the default UUIDv4.
 
 == OPTIONS
 
-*--convert*, *-C*::
+*--convert*, *-c*::
   Add hyphens to hexadecimal UUIDs passed via _stdin_.
 
 *--count*, *-n* _n_::
@@ -38,7 +38,7 @@ standard input. Invalid identifiers will be replaced with the default UUIDv4.
 *--help*, *-h*::
   Print available command-line arguments and quit.
 
-*--hyphens*, *-H*::
+*--hyphens*, *-p*::
   Return 36 characters long UUIDs with hyphens.
 
 *--version*, *-v*::
