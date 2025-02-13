@@ -63,7 +63,7 @@ program dmdb
             exit init_block
         end if
 
-        if (.not. has_tables(db)) then
+        if (.not. dm_db_table_has_observs(db)) then
             call logger%error('database tables not found', error=E_INVALID)
             exit init_block
         end if
@@ -97,24 +97,9 @@ program dmdb
 
     call halt(rc)
 contains
-    logical function has_tables(db) result(has)
-        !! Returns `.true.` if database contains all required tables.
-        type(db_type), intent(inout) :: db !! Database type.
-
-        has = .false.
-        if (.not. dm_db_has_table(db, SQL_TABLE_NODES))     return
-        if (.not. dm_db_has_table(db, SQL_TABLE_SENSORS))   return
-        if (.not. dm_db_has_table(db, SQL_TABLE_TARGETS))   return
-        if (.not. dm_db_has_table(db, SQL_TABLE_OBSERVS))   return
-        if (.not. dm_db_has_table(db, SQL_TABLE_RECEIVERS)) return
-        if (.not. dm_db_has_table(db, SQL_TABLE_REQUESTS))  return
-        if (.not. dm_db_has_table(db, SQL_TABLE_RESPONSES)) return
-        has = .true.
-    end function has_tables
-
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
+        type(app_type), intent(out) :: app !! App type.
 
         type(arg_type) :: args(8)
 
@@ -181,7 +166,8 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file if path is not emty.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_type) :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return

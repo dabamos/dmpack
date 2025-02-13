@@ -90,11 +90,11 @@ contains
 
                 ! Check for appropriate database table.
                 select case (app%type)
-                    case (TYPE_NODE);   has = dm_db_has_table(db, SQL_TABLE_NODES)
-                    case (TYPE_SENSOR); has = dm_db_has_table(db, SQL_TABLE_SENSORS)
-                    case (TYPE_TARGET); has = dm_db_has_table(db, SQL_TABLE_TARGETS)
-                    case (TYPE_OBSERV); has = dm_db_has_table(db, SQL_TABLE_OBSERVS)
-                    case (TYPE_LOG);    has = dm_db_has_table(db, SQL_TABLE_LOGS)
+                    case (TYPE_NODE);   has = dm_db_table_has(db, SQL_TABLE_NODES)
+                    case (TYPE_SENSOR); has = dm_db_table_has(db, SQL_TABLE_SENSORS)
+                    case (TYPE_TARGET); has = dm_db_table_has(db, SQL_TABLE_TARGETS)
+                    case (TYPE_OBSERV); has = dm_db_table_has_observs(db)
+                    case (TYPE_LOG);    has = dm_db_table_has_logs(db)
                 end select
 
                 if (.not. has) then

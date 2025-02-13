@@ -59,28 +59,13 @@ contains
         end if
 
         ! Create tables.
-        db_block: block
-            rc = E_INVALID
+        select case (type)
+            case (TYPE_BEAT);   rc = dm_db_table_create_beats(db)
+            case (TYPE_LOG);    rc = dm_db_table_create_logs(db, sync=sync)
+            case (TYPE_OBSERV); rc = dm_db_table_create_observs(db, sync=sync)
+        end select
 
-            select case (type)
-                case (TYPE_BEAT)
-                    ! Create beat table.
-                    rc = dm_db_create_beats(db)
-                case (TYPE_LOG)
-                    ! Create log table.
-                    rc = dm_db_create_logs(db, sync=sync)
-                case (TYPE_OBSERV)
-                    ! Create observation tables.
-                    rc = dm_db_create_observs(db, sync=sync)
-                case default
-                    ! Should never occur.
-                    call dm_error_out(rc, 'invalid database type')
-                    exit db_block
-            end select
-
-            if (dm_is_error(rc)) call dm_error_out(rc, 'failed to create database')
-        end block db_block
-
+        if (dm_is_error(rc)) call dm_error_out(rc, 'failed to create database')
         if (dm_is_error(dm_db_close(db))) rc = E_DB
     end function create_db
 

@@ -295,9 +295,6 @@ module dm_db
     public :: dm_db_count_sync_sensors
     public :: dm_db_count_sync_targets
     public :: dm_db_count_targets
-    public :: dm_db_create_beats
-    public :: dm_db_create_logs
-    public :: dm_db_create_observs
     public :: dm_db_delete_beat
     public :: dm_db_delete_log
     public :: dm_db_delete_node
@@ -318,7 +315,6 @@ module dm_db
     public :: dm_db_has_node
     public :: dm_db_has_observ
     public :: dm_db_has_sensor
-    public :: dm_db_has_table
     public :: dm_db_has_target
     public :: dm_db_init
     public :: dm_db_insert
@@ -375,7 +371,6 @@ module dm_db
     public :: dm_db_select_sync_sensors
     public :: dm_db_select_sync_target
     public :: dm_db_select_sync_targets
-    public :: dm_db_select_tables
     public :: dm_db_select_target
     public :: dm_db_select_targets
     public :: dm_db_set_application_id
@@ -391,6 +386,14 @@ module dm_db
     public :: dm_db_shutdown
     public :: dm_db_size
     public :: dm_db_sleep
+    public :: dm_db_table_create_beats
+    public :: dm_db_table_create_logs
+    public :: dm_db_table_create_observs
+    public :: dm_db_table_has
+    public :: dm_db_table_has_beats
+    public :: dm_db_table_has_logs
+    public :: dm_db_table_has_observs
+    public :: dm_db_table_select
     public :: dm_db_update
     public :: dm_db_update_node
     public :: dm_db_update_sensor
@@ -727,127 +730,6 @@ contains
 
         rc = db_count(db, SQL_TABLE_SYNC_TARGETS, n)
     end function dm_db_count_sync_targets
-
-    integer function dm_db_create_beats(db) result(rc)
-        !! Creates logs table in given database.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_EXEC` if table or index creation failed.
-        !! * `E_INVALID` if the database is not connected.
-        !! * `E_READ_ONLY` if database is opened read-only.
-        !!
-        type(db_type), intent(inout) :: db !! Database type.
-
-        integer :: i
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
-
-        rc = E_INVALID
-        if (.not. dm_db_is_connected(db)) return
-
-        rc = db_exec(db, SQL_CREATE_BEATS)
-        if (dm_is_error(rc)) return
-
-        do i = 1, size(SQL_CREATE_BEATS_INDICES)
-            rc = db_exec(db, trim(SQL_CREATE_BEATS_INDICES(i)))
-            if (dm_is_error(rc)) return
-        end do
-
-        rc = E_NONE
-    end function dm_db_create_beats
-
-    integer function dm_db_create_logs(db, sync) result(rc)
-        !! Creates logs table in given database.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_EXEC` if table or index creation failed.
-        !! * `E_INVALID` if the database is not connected.
-        !! * `E_READ_ONLY` if database is opened read-only.
-        !!
-        type(db_type), intent(inout)        :: db   !! Database type.
-        logical,       intent(in), optional :: sync !! Create synchronisation tables.
-
-        integer :: i
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
-
-        rc = E_INVALID
-        if (.not. dm_db_is_connected(db)) return
-
-        ! Create logs table.
-        rc = db_exec(db, SQL_CREATE_LOGS)
-        if (dm_is_error(rc)) return
-
-        ! Create sync logs table.
-        if (dm_present(sync, .false.)) then
-            rc = db_exec(db, SQL_CREATE_SYNC_LOGS)
-            if (dm_is_error(rc)) return
-        end if
-
-        ! Create indices.
-        do i = 1, size(SQL_CREATE_LOGS_INDICES)
-            rc = db_exec(db, trim(SQL_CREATE_LOGS_INDICES(i)))
-            if (dm_is_error(rc)) return
-        end do
-
-        rc = E_NONE
-    end function dm_db_create_logs
-
-    integer function dm_db_create_observs(db, sync) result(rc)
-        !! Initialises a connected SQLite 3 database by creating all necessary
-        !! tables if they do not exist already. The function also creates
-        !! additional indices and triggers on the tables.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_EXEC` if table, index, or trigger creation failed.
-        !! * `E_INVALID` if the database is not connected.
-        !! * `E_READ_ONLY` if database is opened read-only.
-        !!
-        type(db_type), intent(inout)        :: db   !! Database type.
-        logical,       intent(in), optional :: sync !! Create synchronisation tables.
-
-        integer :: i
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
-
-        rc = E_INVALID
-        if (.not. dm_db_is_connected(db)) return
-
-        ! Create tables.
-        rc = db_exec(db, SQL_CREATE_NODES);     if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_SENSORS);   if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_RECEIVERS); if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_REQUESTS);  if (dm_is_error(rc)) return
-        rc = db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
-
-        ! Create sync tables.
-        if (dm_present(sync, .false.)) then
-            rc = db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
-            rc = db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
-            rc = db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
-            rc = db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
-        end if
-
-        ! Add additional indices.
-        do i = 1, size(SQL_CREATE_OBSERVS_INDICES)
-            rc = db_exec(db, trim(SQL_CREATE_OBSERVS_INDICES(i)))
-            if (dm_is_error(rc)) return
-        end do
-
-        ! Add triggers.
-        rc = db_exec(db, SQL_DELETE_OBSERV_TRIGGER)
-        if (dm_is_error(rc)) return
-
-        rc = E_NONE
-    end function dm_db_create_observs
 
     integer function dm_db_delete_beat(db, node_id) result(rc)
         !! Deletes heartbeat from database.
@@ -1406,28 +1288,6 @@ contains
 
         exists = db_has(db, SQL_TABLE_SENSORS, sensor_id)
     end function dm_db_has_sensor
-
-    logical function dm_db_has_table(db, table) result(has)
-        !! Returns `.true.` if given table exists in database.
-        type(db_type), intent(inout) :: db    !! Database type.
-        integer,       intent(in)    :: table !! Table enumerator.
-
-        integer            :: rc
-        type(db_stmt_type) :: db_stmt
-
-        has = .false.
-        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
-
-        sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
-            rc = db_bind(db_stmt, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
-            rc = db_step(db_stmt);                            if (dm_is_error(rc)) exit sql_block
-
-            has = .true.
-        end block sql_block
-
-        rc = db_finalize(db_stmt)
-    end function dm_db_has_table
 
     logical function dm_db_has_target(db, target_id) result(has)
         !! Returns `.true.` if target id exists.
@@ -2118,7 +1978,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_VERSION` if the user version is incompatible.
-        !! * `E_INVALID` if database is already opened.
+        !! * `E_EXIST` if database is already opened.
         !! * `E_NOT_FOUND` if database has not been found.
         !!
         use :: dm_file
@@ -2147,7 +2007,7 @@ contains
         ! Validate options.
         exists = dm_file_exists(path)
 
-        rc = E_INVALID
+        rc = E_EXIST
         if (dm_db_is_connected(db)) return
 
         rc = E_NOT_FOUND
@@ -2871,9 +2731,10 @@ contains
         stat = db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
-        if (dm_is_error(rc)) return
+
+        if (dm_is_error(rc))           return
         if (dm_present(stub, .false.)) return
-        if (size(observs) == 0) return
+        if (size(observs) == 0)        return
 
         rc = db_select_observs_data(db, observs)
     end function dm_db_select_observs_by_id
@@ -2967,9 +2828,10 @@ contains
         stat = db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
-        if (dm_is_error(rc)) return
+
+        if (dm_is_error(rc))           return
         if (dm_present(stub, .false.)) return
-        if (size(observs) == 0) return
+        if (size(observs) == 0)        return
 
         rc = db_select_observs_data(db, observs)
     end function dm_db_select_observs_by_time
@@ -3217,63 +3079,6 @@ contains
         rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
     end function dm_db_select_sync_targets
-
-    integer function dm_db_select_tables(db, tables) result(rc)
-        !! Returns an array containing the names of all tables in the given
-        !! database.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_BOUNDS` if more tables are returned than expected.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        type(db_type),                                  intent(inout) :: db        !! Database type.
-        character(len=SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
-
-        character(len=:), allocatable :: table
-        integer                       :: i, n, stat
-        type(db_stmt_type)            :: db_stmt
-
-        sql_block: block
-            rc = db_prepare(db, db_stmt, SQL_SELECT_TABLES)
-            if (dm_is_error(rc)) exit sql_block
-
-            i = 1
-
-            do
-                if (dm_is_error(db_step(db_stmt))) exit
-
-                if (i == 1) then
-                    rc = E_DB_TYPE
-                    if (.not. db_column_is_integer(db_stmt, 0)) exit
-                    if (.not. db_column_is_text   (db_stmt, 1)) exit
-                end if
-
-                call db_column(db_stmt, 0, n)
-                call db_column(db_stmt, 1, table)
-
-                if (.not. allocated(tables)) then
-                    rc = E_ALLOC
-                    allocate (tables(n), stat=stat)
-                    if (stat /= 0) exit
-                end if
-
-                rc = E_BOUNDS
-                if (i > size(tables)) exit
-                tables(i) = table
-
-                rc = E_NONE
-                i = i + 1
-                if (i > n) exit
-            end do
-        end block sql_block
-
-        stat = db_finalize(db_stmt)
-        if (.not. allocated(tables)) allocate (tables(0))
-    end function dm_db_select_tables
 
     integer function dm_db_select_target(db, target, target_id) result(rc)
         !! Returns target data associated with given target id from database.
@@ -3652,6 +3457,235 @@ contains
 
         stat = db_finalize(db_stmt)
     end function dm_db_size
+
+    integer function dm_db_table_create_beats(db) result(rc)
+        !! Creates beats table in given database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        integer :: i
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = db_exec(db, SQL_CREATE_BEATS)
+        if (dm_is_error(rc)) return
+
+        do i = 1, size(SQL_CREATE_BEATS_INDICES)
+            rc = db_exec(db, trim(SQL_CREATE_BEATS_INDICES(i)))
+            if (dm_is_error(rc)) return
+        end do
+
+        rc = E_NONE
+    end function dm_db_table_create_beats
+
+    integer function dm_db_table_create_logs(db, sync) result(rc)
+        !! Creates logs table in given database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout)        :: db   !! Database type.
+        logical,       intent(in), optional :: sync !! Create synchronisation tables.
+
+        integer :: i
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        ! Create logs table.
+        rc = db_exec(db, SQL_CREATE_LOGS)
+        if (dm_is_error(rc)) return
+
+        ! Create sync logs table.
+        if (dm_present(sync, .false.)) then
+            rc = db_exec(db, SQL_CREATE_SYNC_LOGS)
+            if (dm_is_error(rc)) return
+        end if
+
+        ! Create indices.
+        do i = 1, size(SQL_CREATE_LOGS_INDICES)
+            rc = db_exec(db, trim(SQL_CREATE_LOGS_INDICES(i)))
+            if (dm_is_error(rc)) return
+        end do
+
+        rc = E_NONE
+    end function dm_db_table_create_logs
+
+    integer function dm_db_table_create_observs(db, sync) result(rc)
+        !! Initialises a connected SQLite 3 database by creating all necessary
+        !! tables if they do not exist already. The function also creates
+        !! additional indices and triggers on the tables.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table, index, or trigger creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout)        :: db   !! Database type.
+        logical,       intent(in), optional :: sync !! Create synchronisation tables.
+
+        integer :: i
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        ! Create tables.
+        rc = db_exec(db, SQL_CREATE_NODES);     if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_SENSORS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_RECEIVERS); if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_REQUESTS);  if (dm_is_error(rc)) return
+        rc = db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
+
+        ! Create sync tables.
+        if (dm_present(sync, .false.)) then
+            rc = db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
+            rc = db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
+        end if
+
+        ! Add additional indices.
+        do i = 1, size(SQL_CREATE_OBSERVS_INDICES)
+            rc = db_exec(db, trim(SQL_CREATE_OBSERVS_INDICES(i)))
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Add triggers.
+        rc = db_exec(db, SQL_DELETE_OBSERV_TRIGGER)
+        if (dm_is_error(rc)) return
+
+        rc = E_NONE
+    end function dm_db_table_create_observs
+
+    logical function dm_db_table_has(db, table) result(has)
+        !! Returns `.true.` if given table exists in database.
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer,       intent(in)    :: table !! Table enumerator.
+
+        integer            :: rc
+        type(db_stmt_type) :: db_stmt
+
+        has = .false.
+        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
+
+        sql_block: block
+            rc = db_prepare(db, db_stmt, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
+            rc = db_bind(db_stmt, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
+            rc = db_step(db_stmt);                            if (dm_is_error(rc)) exit sql_block
+
+            has = .true.
+        end block sql_block
+
+        rc = db_finalize(db_stmt)
+    end function dm_db_table_has
+
+    logical function dm_db_table_has_beats(db) result(has)
+        !! Returns `.true.` if database contains observation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_BEATS)
+    end function dm_db_table_has_beats
+
+    logical function dm_db_table_has_logs(db) result(has)
+        !! Returns `.true.` if database contains observation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_LOGS)
+    end function dm_db_table_has_logs
+
+    logical function dm_db_table_has_observs(db) result(has)
+        !! Returns `.true.` if database contains observation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = .false.
+        if (.not. dm_db_table_has(db, SQL_TABLE_NODES))     return
+        if (.not. dm_db_table_has(db, SQL_TABLE_SENSORS))   return
+        if (.not. dm_db_table_has(db, SQL_TABLE_TARGETS))   return
+        if (.not. dm_db_table_has(db, SQL_TABLE_OBSERVS))   return
+        if (.not. dm_db_table_has(db, SQL_TABLE_RECEIVERS)) return
+        if (.not. dm_db_table_has(db, SQL_TABLE_REQUESTS))  return
+        if (.not. dm_db_table_has(db, SQL_TABLE_RESPONSES)) return
+        has = .true.
+    end function dm_db_table_has_observs
+
+    integer function dm_db_table_select(db, tables) result(rc)
+        !! Returns an array containing the names of all tables in the given
+        !! database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_BOUNDS` if more tables are returned than expected.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        type(db_type),                                  intent(inout) :: db        !! Database type.
+        character(len=SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
+
+        character(len=:), allocatable :: table
+        integer                       :: i, n, stat
+        type(db_stmt_type)            :: db_stmt
+
+        sql_block: block
+            rc = db_prepare(db, db_stmt, SQL_SELECT_TABLES)
+            if (dm_is_error(rc)) exit sql_block
+
+            i = 1
+
+            do
+                if (dm_is_error(db_step(db_stmt))) exit
+
+                if (i == 1) then
+                    rc = E_DB_TYPE
+                    if (.not. db_column_is_integer(db_stmt, 0)) exit
+                    if (.not. db_column_is_text   (db_stmt, 1)) exit
+                end if
+
+                call db_column(db_stmt, 0, n)
+                call db_column(db_stmt, 1, table)
+
+                if (.not. allocated(tables)) then
+                    rc = E_ALLOC
+                    allocate (tables(n), stat=stat)
+                    if (stat /= 0) exit
+                end if
+
+                rc = E_BOUNDS
+                if (i > size(tables)) exit
+                tables(i) = table
+
+                rc = E_NONE
+                i = i + 1
+                if (i > n) exit
+            end do
+        end block sql_block
+
+        stat = db_finalize(db_stmt)
+        if (.not. allocated(tables)) allocate (tables(0))
+    end function dm_db_table_select
 
     integer function dm_db_update_node(db, node, validate) result(rc)
         !! Updates the given node in database. The node data is validated by
@@ -6220,8 +6254,8 @@ contains
         !! Returns all responses from a given observation and request index in
         !! array `responses`. If `statement` is passed, the statement will not
         !! be finalised in order to be re-used again. Finalisation has to be
-        !! done by the caller. If `statement` is passed and set to
-        !! `c_null_ptr`, it will be prepared by the function.
+        !! done by the caller. If `statement` is passed and set to `c_null_ptr`,
+        !! it will be prepared by the function.
         !!
         !! The function returns the following error codes:
         !!

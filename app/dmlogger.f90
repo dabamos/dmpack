@@ -59,7 +59,7 @@ program dmlogger
             exit init_block
         end if
 
-        if (.not. dm_db_has_table(db, SQL_TABLE_LOGS)) then
+        if (.not. dm_db_table_has_logs(db)) then
             call logger%error('database table not found', error=E_INVALID)
             exit init_block
         end if
@@ -180,7 +180,7 @@ contains
 
     subroutine halt(error)
         !! Cleans up and stops program.
-        integer, intent(in) :: error
+        integer, intent(in) :: error !! DMPACK error code.
 
         integer :: rc, stat
 

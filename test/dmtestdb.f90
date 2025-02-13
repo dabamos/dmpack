@@ -75,10 +75,10 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'
-            rc = dm_db_create_observs(db, sync=.true.)
+            rc = dm_db_table_create_observs(db, sync=.true.)
             if (dm_is_error(rc)) exit test_block
 
-            rc = dm_db_select_tables(db, tables)
+            rc = dm_db_table_select(db, tables)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Tables:'
@@ -603,7 +603,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'
-            rc = dm_db_create_logs(db, sync=.true.)
+            rc = dm_db_table_create_logs(db, sync=.true.)
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
@@ -820,7 +820,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating tables ...'
-            rc = dm_db_create_beats(db)
+            rc = dm_db_table_create_beats(db)
             if (dm_is_error(rc)) exit test_block
 
             beat1%node_id = 'dummy-node'

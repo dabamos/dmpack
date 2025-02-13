@@ -79,7 +79,7 @@ program dmsync
 
         ! Create synchronisation tables.
         if (app%create) then
-            rc = dm_db_create_observs(db, sync=.true.)
+            rc = dm_db_table_create_observs(db, sync=.true.)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to create database tables', error=rc)

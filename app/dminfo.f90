@@ -87,47 +87,47 @@ contains
             print '("db.schema_version: ", i0)', schema_version
             print '("db.size: ", i0)',           nbytes
 
-            if (dm_db_has_table(db, SQL_TABLE_BEATS)) then
+            if (dm_db_table_has(db, SQL_TABLE_BEATS)) then
                 rc = dm_db_count_beats(db, n)
                 print '("db.table.beats.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_LOGS)) then
+            if (dm_db_table_has(db, SQL_TABLE_LOGS)) then
                 rc = dm_db_count_logs(db, n)
                 print '("db.table.logs.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_NODES)) then
+            if (dm_db_table_has(db, SQL_TABLE_NODES)) then
                 rc = dm_db_count_nodes(db, n)
                 print '("db.table.nodes.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_OBSERVS)) then
+            if (dm_db_table_has(db, SQL_TABLE_OBSERVS)) then
                 rc = dm_db_count_observs(db, n)
                 print '("db.table.observs.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_RECEIVERS)) then
+            if (dm_db_table_has(db, SQL_TABLE_RECEIVERS)) then
                 rc = dm_db_count_receivers(db, n)
                 print '("db.table.receivers.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_REQUESTS)) then
+            if (dm_db_table_has(db, SQL_TABLE_REQUESTS)) then
                 rc = dm_db_count_requests(db, n)
                 print '("db.table.requests.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_RESPONSES)) then
+            if (dm_db_table_has(db, SQL_TABLE_RESPONSES)) then
                 rc = dm_db_count_responses(db, n)
                 print '("db.table.responses.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_SENSORS)) then
+            if (dm_db_table_has(db, SQL_TABLE_SENSORS)) then
                 rc = dm_db_count_sensors(db, n)
                 print '("db.table.sensors.rows: ", i0)', n
             end if
 
-            if (dm_db_has_table(db, SQL_TABLE_TARGETS)) then
+            if (dm_db_table_has(db, SQL_TABLE_TARGETS)) then
                 rc = dm_db_count_targets(db, n)
                 print '("db.table.targets.rows: ", i0)', n
             end if
