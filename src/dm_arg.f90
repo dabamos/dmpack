@@ -142,10 +142,8 @@ contains
         verbose_        = dm_present(verbose,        .true.)  ! Show error messages?
 
         ! Reset arguments.
-        do i = 1, size(args)
-            args(i)%passed = .false.
-            args(i)%error  = E_ARG_NOT_FOUND
-        end do
+        args(:)%passed = .false.
+        args(:)%error  = E_ARG_NOT_FOUND
 
         ! Cycle through passed command-line arguments.
         i = 1

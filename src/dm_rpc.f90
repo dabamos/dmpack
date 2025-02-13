@@ -740,12 +740,9 @@ contains
 
             ! Get response info and clean-up requests.
             do i = 1, n
-                ! Get HTTP response code.
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_RESPONSE_CODE, responses(i)%code)
-                ! Get content type of response.
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_CONTENT_TYPE, responses(i)%content_type)
-                ! Get transmission time.
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_TOTAL_TIME, responses(i)%total_time)
+                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_RESPONSE_CODE, responses(i)%code)         ! HTTP response code.
+                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_CONTENT_TYPE,  responses(i)%content_type) ! Content type of response.
+                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_TOTAL_TIME,    responses(i)%total_time)   ! Transmission time.
 
                 ! Set error code and message.
                 if (responses(i)%error_curl /= CURLE_OK) then
