@@ -756,7 +756,7 @@ contains
 
         data = [ &
             int(shiftr(value, 16), kind=u2), &
-            int(value, kind=u2)              &
+            int(value,             kind=u2)  &
         ]
     end subroutine dm_modbus_set_int32_to_int16
 
@@ -769,7 +769,7 @@ contains
             int(shiftr(value, 48), kind=u2), &
             int(shiftr(value, 32), kind=u2), &
             int(shiftr(value, 16), kind=u2), &
-            int(value, kind=u2)              &
+            int(value,             kind=u2)  &
         ]
     end subroutine dm_modbus_set_int64_to_int16
 

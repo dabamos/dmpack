@@ -53,7 +53,7 @@ observs = {
 }
 
 dmfs = {
-    logger = "dmlogger",
+    logger = "",
     node = "dummy-node",
     sensor = "dummy-sensor",
     output = "",
