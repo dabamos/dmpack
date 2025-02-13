@@ -278,18 +278,22 @@ $ sudo apt-get install gcc gfortran git make pkg-config
 The third-party dependencies have to be installed with development headers:
 
 ....
-$ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot graphicsmagick \
-  libblas-dev libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 \
-  libhdf5-dev liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev \
-  libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
-  libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
+$ sudo apt-get install --no-install-recommends curl gnuplot libblas-dev libcurl4 \
+  libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 libhdf5-dev \
+  liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 \
+  libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev libzstd1 \
+  libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
 ....
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
-to SVG only). The packages `ffmpeg` and `graphicsmagick` are only required for
-client-side camera access and may be omitted. Depending on the Linux
-distribution, the names of the HDF5 and Lua packages may differ.
+to SVG only). Depending on the Linux distribution, the names of the HDF5 and Lua
+packages may differ. The packages `ffmpeg` and `graphicsmagick` are only
+required for client-side camera access and may be omitted:
+
+....
+$ sudo apt-get install --no-install-recommends ffmpeg graphicsmagick
+....
 
 [NOTE]
 .Building Dependencies from Source
@@ -298,6 +302,7 @@ If third-party libraries are not available in the required minimum version,
 like on Ubuntu 22.04 LTS or Debian 12 (Bookworm), you may want to build the
 missing dependencies from source, for instance:
 
+* <<third-party-libcurl,libcurl>>
 * <<third-party-libmodbus,libmodbus>>
 * <<third-party-libstrophe,libstrophe>>
 * <<third-party-sqlite,SQLite 3>>
@@ -8229,24 +8234,58 @@ $ cd build/HDF_Group/HDFView/99.99.99/
 $ sh hdfview.sh
 ....
 
+=== libcurl [[third-party-libcurl]]
+
+If the locally available version of _libcurl_ is too old, we can build the
+current version simply from source. Detailed instructions are listed on the
+link:https://curl.se/docs/install.html[official website]. Download the
+link:https://github.com/curl/curl/releases[latest release], in this example
+version 8.12.1, unpack the archive, and create a Makefile:
+
+....
+$ cd /tmp/
+$ curl -L -s -o curl.tar.gz https://github.com/curl/curl/releases/download/curl-8_12_1/curl-8.12.1.tar.gz
+$ tar xfvz curl.tar.gz
+$ cd curl-8.12.1/
+$ ./configure --with-openssl --prefix=/opt
+....
+
+Then, build and install the library to `/opt`:
+
+....
+$ make
+$ sudo make install
+$ /opt/bin/curl --version
+....
+
+Pass the parameter `LIBCURL="-Wl,-rpath=/opt/lib -L/opt/lib -lcurl"` to the
+DMPACK Makefile, for example:
+
+....
+$ make linux LIBCURL="-Wl,-rpath=/opt/lib -L/opt/lib -lcurl"
+....
+
 === libmodbus [[third-party-libmodbus]]
 
 If a package of link:https://libmodbus.org/[libmodbus] is not available on
 the targeted Linux distribution, the latest version can be built from source.
-Additionally, _automake_, _autoconf_, _libtool_ and a C compiler must be
-present. Then, run:
+Additionally, _autoconf_, _automake_, _libtool_, and a C compiler must be
+present. Download the
+link:https://github.com/stephane/libmodbus/releases[latest release], then
+generate a Makefile:
 
 ....
 $ cd /tmp/
-$ git clone --depth 1 https://github.com/stephane/libmodbus.git
-$ cd libmodbus/
-$ ./autogen.sh
+$ curl -L -s -o libmodbus.tar.gz https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz
+$ tar xfvz libmodbus.tar.gz
+$ cd libmodbus-3.1.11/
 $ ./configure --prefix=/opt
 ....
 
-Finally, build and install the library:
+Finally, build and install the library to `/opt`:
 
 ....
+$ make
 $ sudo make install
 ....
 
@@ -8259,19 +8298,20 @@ DMPACK requires the XMPP client library
 link:https://strophe.im/libstrophe/[libstrophe] 0.13.1 or newer. On Linux,
 build the latest version from source if a package is not available. Either
 _expat_ or _libxml2_ must be installed, alongside OpenSSL or GnuTLS. First,
-bootstrap the build environment:
+download the link:https://github.com/strophe/libstrophe/releases[latest
+release] and create a Makefile:
 
 ....
 $ cd /tmp/
-$ git clone --depth 1 https://github.com/strophe/libstrophe.git
-$ cd libstrophe/
-$ ./bootstrap.sh
+$ curl -L -s -o libstrophe.tar.gz https://github.com/strophe/libstrophe/releases/download/0.13.1/libstrophe-0.13.1.tar.gz
+$ cd libstrophe-0.13.1/
 $ ./configure --prefix=/opt
 ....
 
 Then, build and install the library:
 
 ....
+$ make
 $ sudo make install
 ....
 
@@ -8280,14 +8320,16 @@ the DMPACK Makefile.
 
 === SQLite 3 [[third-party-sqlite]]
 
-DMPACK depends on SQLite version 3.39.0 or newer. If only an older package is
-available in the package repository of the operating system, compile the latest
-version from source:
+DMPACK depends on SQLite 3.39.0 or newer. If only an outdated package is
+available in the package repository of the operating system, compile the
+link:https://www.sqlite.org/download.html[latest release] from source, in this
+case, version 3.49.0:
 
 ....
 $ cd /tmp/
-$ git clone --depth 1 https://github.com/sqlite/sqlite.git
-$ cd sqlite/
+$ curl -L -s -o sqlite.zip https://www.sqlite.org/2025/sqlite-src-3490000.zip
+$ unzip sqlite.zip
+$ cd sqlite-src-3490000/
 $ ./configure --prefix=/opt
 ....
 
@@ -8295,6 +8337,7 @@ Change the prefix to the desired installation directory. Build and install
 SQLite 3, then test the command-line utility:
 
 ....
+$ make
 $ sudo make install
 $ /opt/bin/sqlite3 --version
 ....
@@ -8305,13 +8348,14 @@ the DMPACK Makefile.
 === Zstandard [[third-party-zstd]]
 
 If the Zstandard version provided in the Linux package repository is too old to
-be compatible with DMPACK, we can compile the library simply from source. Git
-and CMake must be installed:
+be compatible with DMPACK, we can compile the library from source. Download the
+link:https://github.com/facebook/zstd/releases[latest release] and build with
+CMake:
 
 ....
 $ cd /tmp/
-$ git clone --depth 1 https://github.com/facebook/zstd.git
-$ cd zstd/build/cmake/
+$ curl -L -s -o zstd.tar.gz https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz
+$ cd zstd-1.5.6/build/cmake/
 $ mkdir build && cd build/
 $ cmake ..
 $ cmake --build . --config Release
