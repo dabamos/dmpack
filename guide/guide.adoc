@@ -287,13 +287,15 @@ $ sudo apt-get install --no-install-recommends curl gnuplot libblas-dev libcurl4
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
-to SVG only). Depending on the Linux distribution, the names of the HDF5 and Lua
+to SVG). Depending on the Linux distribution, the names of the HDF5 and Lua
 packages may differ. The packages `ffmpeg` and `graphicsmagick` are only
 required for client-side camera access and may be omitted:
 
 ....
 $ sudo apt-get install --no-install-recommends ffmpeg graphicsmagick
 ....
+
+In the next step, build DMPACK with Make or FPM.
 
 [NOTE]
 .Building Dependencies from Source
@@ -356,8 +358,8 @@ Then, execute build target `linux` of the Makefile to compile the source:
 $ make linux
 ....
 
-On 64-bit ARM platforms, like those of the Raspberry Pi 3/4/5, select build
-target `linux_aarch64` instead:
+On 64-bit ARM platforms, like those of the Raspberry Pi 3/4/5 series, select
+build target `linux_aarch64` instead:
 
 ....
 $ make linux_aarch64
@@ -1057,8 +1059,8 @@ Requests from clients whose JID is not in the table will be rejected. If table
 `group` is empty, all clients are allowed to send commands to the bot.
 
 The XMPP resource is automatically set to the name of the bot instance. If the
-JID of the bot account is `bot@example.com`, the full JID will be set to
-`bot@example.com/dmbot` if the bot name is `dmbot`.
+JID of the bot account is `bot@example.com` and the bot name is `dmbot`, the
+full JID will be set to `bot@example.com/dmbot`.
 
 All commands start with prefix `!`. For an overview, send chat command `!help`
 to the bot. The bot understands the following commands:
@@ -8239,7 +8241,7 @@ $ sh hdfview.sh
 If the locally available version of _libcurl_ is too old, we can build the
 current version simply from source. Detailed instructions are listed on the
 link:https://curl.se/docs/install.html[official website]. Download the
-link:https://github.com/curl/curl/releases[latest release], in this example
+link:https://github.com/curl/curl/releases[latest release], in this example,
 version 8.12.1, unpack the archive, and create a Makefile:
 
 ....

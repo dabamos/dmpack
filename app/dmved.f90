@@ -129,6 +129,7 @@ contains
         character(len=*), intent(in) :: path !! Path of dump file.
 
         if (len_trim(path) == 0) return
+        call logger%debug('closing dump file ' // path)
         close (APP_DUMP_UNIT)
     end subroutine close_dump
 
