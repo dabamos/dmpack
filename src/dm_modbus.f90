@@ -28,7 +28,7 @@ module dm_modbus
     !! ! Read and output two registers.
     !! rc = dm_modbus_read_registers(modbus, address=50, data=data)
     !!
-    !! do i = 1, size(registers)
+    !! do i = 1, size(data)
     !!     s = dm_to_signed(data(i))
     !!     print '("data(", i0, ") = ", i0, " (0x", z0, ")")', i, s, s
     !! end do
@@ -111,6 +111,7 @@ module dm_modbus
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
     public :: dm_modbus_read_float
+    public :: dm_modbus_read_input_registers
     public :: dm_modbus_read_int16
     public :: dm_modbus_read_int32
     public :: dm_modbus_read_registers
@@ -329,7 +330,7 @@ contains
 
         integer(kind=i4) :: d(2)
 
-        d = int(data, kind=i4)
+        d = dm_to_signed(data)
         value = ior(shiftl(d(1), 16), d(2))
     end function dm_modbus_get_int32_from_int16
 
@@ -339,7 +340,7 @@ contains
 
         integer(kind=i8) :: d(4)
 
-        d = int(data, kind=i8)
+        d = dm_to_signed(data)
         value = ior(ior(ior(shiftl(d(1), 48), shiftl(d(2), 32)), shiftl(d(3), 16)), d(4))
     end function dm_modbus_get_int64_from_int16
 
@@ -405,10 +406,56 @@ contains
 
         integer(kind=u2) :: data(2)
 
-        rc = dm_modbus_read_registers(modbus, address, data)
+        rc = dm_modbus_read_input_registers(modbus, address, data)
         if (dm_is_error(rc)) return
         value = dm_modbus_get_float(data, order, error=rc)
     end function dm_modbus_read_float
+
+    integer function dm_modbus_read_input_registers(modbus, address, data, n) result(rc)
+        !! Reads many registers from `address`. The size of argument `data`
+        !! determines the number of registers to read, unless optional argument
+        !! `n` is passed. The function uses the Modbus function code `0x04`
+        !! (read input registers).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
+        !! * `E_INVALID` if argument `data` is invalid.
+        !! * `E_MODBUS` if reading the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)              :: address !! Address to read from.
+        integer(kind=u2),   intent(inout)           :: data(:) !! Register values (unsigned).
+        integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
+
+        integer :: nregisters, stat
+
+        data(:) = 0_u2
+
+        nregisters = size(data)
+
+        if (present(n)) then
+            nregisters = n
+            n = 0
+        end if
+
+        rc = E_BOUNDS
+        if (nregisters > size(data)) return
+
+        rc = E_NULL
+        if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_INVALID
+        if (size(data) == 0 .or. nregisters <= 0) return
+
+        rc = E_MODBUS
+        stat = modbus_read_input_registers(modbus%ctx, address, nregisters, data)
+        if (stat == -1) return
+        if (present(n)) n = stat
+
+        rc = E_NONE
+    end function dm_modbus_read_input_registers
 
     integer function dm_modbus_read_int16(modbus, address, value) result(rc)
         !! Reads 2-byte signed integer from register and returns result in
@@ -420,7 +467,7 @@ contains
         integer(kind=u2) :: data(1)
 
         value = 0
-        rc = dm_modbus_read_registers(modbus, address, data)
+        rc = dm_modbus_read_input_registers(modbus, address, data)
         if (dm_is_error(rc)) return
         value = data(1)
     end function dm_modbus_read_int16
@@ -435,7 +482,7 @@ contains
         integer(kind=u2) :: data(2)
 
         value = 0
-        rc = dm_modbus_read_registers(modbus, address, data)
+        rc = dm_modbus_read_input_registers(modbus, address, data)
         if (dm_is_error(rc)) return
         value = dm_modbus_get_int32_from_int16(data)
     end function dm_modbus_read_int32
