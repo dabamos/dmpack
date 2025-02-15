@@ -241,6 +241,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_db.f90 \
       $(SRCDIR)/dm_db_query.f90 \
       $(SRCDIR)/dm_db_stmt.f90 \
+      $(SRCDIR)/dm_db_table.f90 \
       $(SRCDIR)/dm_dp.f90 \
       $(SRCDIR)/dm_env.f90 \
       $(SRCDIR)/dm_error.f90 \
@@ -341,6 +342,7 @@ OBJ = dm_ansi.o \
       dm_db.o \
       dm_db_query.o \
       dm_db_stmt.o \
+      dm_db_table.o \
       dm_dp.o \
       dm_env.o \
       dm_error.o \
@@ -655,6 +657,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_stmt.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_query.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_table.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_zstd.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_z.f90

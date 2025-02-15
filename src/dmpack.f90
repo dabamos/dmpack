@@ -46,6 +46,7 @@ module dmpack
     use :: dm_db
     use :: dm_db_query
     use :: dm_db_stmt
+    use :: dm_db_table
     use :: dm_dp
     use :: dm_env
     use :: dm_error
