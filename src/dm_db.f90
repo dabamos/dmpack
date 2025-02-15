@@ -2531,7 +2531,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='observs.timestamp', desc)
+            call dm_db_query_set_order(db_query, by='observs.timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERV_IDS))
@@ -5163,7 +5163,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc)
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
@@ -5232,7 +5232,7 @@ contains
             call dm_db_query_add_text(db_query, 'target_id = ?',  target_id)
             call dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc)
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
@@ -5433,7 +5433,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc)
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
@@ -5502,7 +5502,7 @@ contains
             call dm_db_query_add_text(db_query, 'observ_id = ?',  observ_id)
             call dm_db_query_add_text(db_query, 'source = ?',     source)
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc)
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_LOGS))
@@ -5686,7 +5686,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='observs.timestamp', desc)
+            call dm_db_query_set_order(db_query, by='observs.timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
@@ -5760,7 +5760,7 @@ contains
             call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
             call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
 
-            call dm_db_query_set_order(db_query, by='observs.timestamp', desc)
+            call dm_db_query_set_order(db_query, by='observs.timestamp', desc=desc)
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
