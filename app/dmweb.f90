@@ -657,12 +657,12 @@ contains
                 end if
 
                 if (has_level) then
-                    rc = dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, from, to, &
-                                           min_level=level, max_level=level, limit=int(nresults, kind=i8), &
-                                           nlogs=nlogs)
-                else
-                    rc = dm_db_select_logs(db, logs, node_id, sensor_id, target_id, source, from, to, &
+                    rc = dm_db_select_logs(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                           source=source, from=from, to=to, min_level=level, max_level=level, &
                                            limit=int(nresults, kind=i8), nlogs=nlogs)
+                else
+                    rc = dm_db_select_logs(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                           source=source, from=from, to=to, limit=int(nresults, kind=i8), nlogs=nlogs)
                 end if
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1172,8 +1172,8 @@ contains
                 end if
 
                 ! Get observation stubs.
-                rc = dm_db_select_observs(db, observs, node_id, sensor_id, target_id, from, to, &
-                                          limit=int(nresults, kind=i8), stub=.true., nobservs=nobservs)
+                rc = dm_db_select_observs(db, observs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                          from=from, to=to, limit=int(nresults, kind=i8), stub=.true., nobservs=nobservs)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                     call html_error('Database Query Failed', error=rc, extra=dm_db_error_message(db))

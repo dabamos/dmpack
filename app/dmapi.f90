@@ -1249,8 +1249,8 @@ contains
             end if
 
             ! Select observations from database.
-            rc = dm_db_select_observs(db, observs, node_id, sensor_id, target_id, &
-                                      from, to, limit=int(limit, kind=i8))
+            rc = dm_db_select_observs(db, observs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                      from=from, to=to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -2003,12 +2003,12 @@ contains
 
             if (view) then
                 ! Select observation views from database.
-                rc = dm_db_select_observ_views(db, views, node_id, sensor_id, target_id, response, &
-                                               from, to, limit=int(limit, kind=i8))
+                rc = dm_db_select_observ_views(db, views, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                               response_name=response, from=from, to=to, limit=int(limit, kind=i8))
             else
                 ! Select data points from database.
-                rc = dm_db_select_data_points(db, dps, node_id, sensor_id, target_id, response, &
-                                              from, to, limit=int(limit, kind=i8))
+                rc = dm_db_select_data_points(db, dps, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                              response_name=response, from=from, to=to, limit=int(limit, kind=i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
