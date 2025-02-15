@@ -144,12 +144,18 @@ link:https://github.com/LSIR/gsn[Global Sensor Networks]:: A Java-based software
 middleware designed to facilitate the deployment and programming of sensor
 networks, by Distributed Information Systems Laboratory (EPFL), Switzerland.
 The project appears to be abandoned. (GPLv3)
-link:http://istsos.org/[istSOS2]:: A server implementation of the OGC Sensor
-Observation Service in Python, for managing and dispatching observations from
-monitoring sensors. The project also provides a graphical user interface and a
-RESTful web API to automate administration procedures. Developed by Istituto
-Scienze della Terra, University of Applied Sciences and Arts of Southern
-Switzerland. The software seems not to be actively maintained anymore. (GPLv2)
+link:https://github.com/istSOS/istsos2[istSOS2]:: A server implementation of the
+OGC Sensor Observation Service in Python, for managing and dispatching
+observations from monitoring sensors. The project also provides a graphical user
+interface and a RESTful web API to automate administration procedures. Developed
+by Istituto Scienze della Terra, University of Applied Sciences and Arts of
+Southern Switzerland. The software seems not to be actively maintained anymore.
+(GPLv2)
+link:https://github.com/istSOS/istSOS4[istSOS4]:: An OGC SensorThings API
+compliant service implementation written in Python that enables reproducibility
+of processes based on its data due to the Traveltime extension. The system
+allows for managing and dispatching observations from monitoring sensors,
+specimens or citizens. In early development stage. (GPL)
 link:https://github.com/daq-tools/kotori[Kotori]:: A multi-channel,
 multi-protocol, telemetry data acquisition and graphing toolkit for time-series
 data processing in Python. It supports scientific environmental monitoring

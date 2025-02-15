@@ -93,12 +93,12 @@ this package:
 * FastCGI
 * HDF5
 * LAPACK
-* Lua 5.4
-* PCRE2
-* SQLite 3
 * libcurl
 * libmodbus
 * libstrophe
+* Lua 5.4
+* PCRE2
+* SQLite 3
 * zlib
 * zstd
 
