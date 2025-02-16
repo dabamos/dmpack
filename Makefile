@@ -456,9 +456,9 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DM
 
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi dmtestconfig \
-      dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtesthash dmtesthdf5 \
-      dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson \
-      dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnet dmtestnml \
+      dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtestgm dmtesthash \
+      dmtesthdf5 dmtesthtml dmtestid dmtestlog dmtestlogger dmtestlua dmtestjob \
+      dmtestjson dmtestmail dmtestmodbus dmtestmqtt dmtestmqueue dmtestnet dmtestnml \
       dmtestobserv dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
       dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
       dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
@@ -725,6 +725,9 @@ dmtestdp: test/dmtestdp.f90 $(TARGET)
 
 dmtestfile: test/dmtestfile.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestfile test/dmtestfile.f90 $(TARGET) $(LDLIBS)
+
+dmtestgm: test/dmtestgm.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestgm test/dmtestgm.f90 $(TARGET) $(LDLIBS) $(LIBCRYPTO)
 
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
@@ -1168,6 +1171,7 @@ purge: clean
 	if [ -e testobserv.sqlite ];        then $(RM) testobserv.sqlite;        fi
 	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
 	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
+	if [ -e test.png ];                 then $(RM) test.png;                 fi
 
 # ******************************************************************************
 #

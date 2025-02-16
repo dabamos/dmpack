@@ -344,6 +344,7 @@ module dm_gm
     end type gm_text_box_type
 
     public :: dm_gm_add_text_box
+    public :: dm_gm_create
     public :: dm_gm_get_dimensions
     public :: dm_gm_get_directory
     public :: dm_gm_get_file_extension
@@ -351,6 +352,7 @@ module dm_gm
     public :: dm_gm_get_file_name
     public :: dm_gm_get_mime
 
+    private :: gm_convert
     private :: gm_identify
     private :: gm_prepare_add_text_box
 contains
@@ -396,6 +398,34 @@ contains
         if (present(command)) command = trim(command_)
     end function dm_gm_add_text_box
 
+    integer function dm_gm_create(path, width, height, color) result(rc)
+        !! Creates image file of given dimensions and color with
+        !! GraphicsMagick.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if the image file already exists.
+        !! * `E_IO` if calling GraphicsMagick failed.
+        !! * `E_WRITE` if command preparation failed.
+        !!
+        use :: dm_string, only: dm_string_is_present
+
+        character(len=*), intent(in)           :: path   !! Image file path.
+        integer,          intent(in)           :: width  !! Image width.
+        integer,          intent(in)           :: height !! Image height.
+        character(len=*), intent(in), optional :: color  !! Background color.
+
+        character(len=128) :: arguments
+
+        rc = E_EXIST
+        if (dm_file_exists(path)) return
+
+        write (arguments, '("-size ", i0, "x", i0)') width, height
+        if (dm_string_is_present(color)) arguments = trim(arguments) // ' xc:"' // trim(color) // '"'
+
+        rc = gm_convert(path, arguments)
+    end function dm_gm_create
+
     integer function dm_gm_get_dimensions(path, width, height) result(rc)
         !! Uses GraphicsMagick to determine the dimensions of the image at
         !! given path. On error, width and height are 0.
@@ -438,7 +468,7 @@ contains
         character(len=*),              intent(in)  :: path      !! Image file path.
         character(len=:), allocatable, intent(out) :: directory !! Image file directory.
 
-        character(len=FILE_PATH_LEN) :: buffer
+        character(len=GM_COMMAND_LEN) :: buffer
 
         rc = gm_identify(path, '%d', buffer)
         directory = trim(buffer)
@@ -535,8 +565,41 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
+    integer function gm_convert(path, arguments) result(rc)
+        !! Converts image file with GraphicsMagick.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_IO` if calling GraphicsMagick failed.
+        !! * `E_WRITE` if command preparation failed.
+        !!
+        character(len=*), intent(in) :: path      !! Image file path.
+        character(len=*), intent(in) :: arguments !! GraphicsMagick convert arguments.
+
+        character(len=GM_COMMAND_LEN) :: command
+        integer                       :: stat
+
+        rc = E_WRITE
+        write (command, '("gm convert ", a, 1x, a)', iostat=stat) trim(arguments), trim(path)
+        if (stat /= 0) return
+
+        rc = E_IO
+        call execute_command_line(trim(command), exitstat=stat)
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function gm_convert
+
     integer function gm_identify(path, format, output) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if the output string is of length 0.
+        !! * `E_NOT_FOUND` if the image file could not be found.
+        !! * `E_SYSTEM` if calling GraphicsMagick failed.
+        !!
+        !! ## References
         !!
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         use :: dm_kind
@@ -557,11 +620,14 @@ contains
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(path)) return
 
-        rc = dm_pipe_open(pipe, 'gm identify -format "' // trim(format) // '" ' // trim(path), PIPE_RDONLY)
-        if (dm_is_error(rc)) return
+        io_block: block
+            rc = dm_pipe_open(pipe, 'gm identify -format "' // trim(format) // '" ' // trim(path), PIPE_RDONLY)
+            if (dm_is_error(rc)) exit io_block
+            n = dm_pipe_read(pipe, output)
+        end block io_block
 
-        n  = dm_pipe_read(pipe, output)
         call dm_pipe_close(pipe)
+        if (dm_is_error(rc)) return
 
         ! Remove null character.
         if (n == 0) then

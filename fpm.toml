@@ -215,6 +215,10 @@ name = "dmtestfile"
 main = "dmtestfile.f90"
 
 [[test]]
+name = "dmtestgm"
+main = "dmtestgm.f90"
+
+[[test]]
 name = "dmtesthash"
 main = "dmtesthash.f90"
 
