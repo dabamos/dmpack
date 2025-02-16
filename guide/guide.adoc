@@ -294,11 +294,11 @@ $ sudo apt-get install --no-install-recommends curl gnuplot libblas-dev libcurl4
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
 to SVG). Depending on the Linux distribution, the names of the HDF5 and Lua
-packages may differ. The packages `ffmpeg` and `graphicsmagick` are only
-required for client-side camera access and may be omitted:
+packages may differ. Optionally, install FFmpeg, GraphicsMagick, and
+GhostScript fonts for camera access and image manipulation:
 
 ....
-$ sudo apt-get install --no-install-recommends ffmpeg graphicsmagick
+$ sudo apt-get install --no-install-recommends ffmpeg graphicsmagick gsfonts
 ....
 
 In the next step, build DMPACK with Make or FPM.

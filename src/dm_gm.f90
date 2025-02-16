@@ -1,11 +1,11 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_gm
-    !! Abstraction layer over GraphicsMagick. On Linux, install the package
-    !! `graphicsmagick`:
+    !! Abstraction layer over GraphicsMagick. On Linux, install the packages
+    !! `graphicsmagick` and `gsfonts`:
     !!
     !! ```
-    !! $ sudo apt-get install graphicsmagick
+    !! $ sudo apt-get install graphicsmagick gsfonts
     !! ```
     !!
     !! For a list of all fonts supported by GraphicsMagick, run:
@@ -602,6 +602,7 @@ contains
         !! ## References
         !!
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
+        !!
         use :: dm_kind
         use :: dm_pipe
 
@@ -643,7 +644,10 @@ contains
         !! Prepares GraphicsMagick command to add text to image. The string
         !! `text` must not contain the quote characters `'` and `"`.
         !!
+        !! ## References
+        !!
         !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
+        !!
         character(len=GM_COMMAND_LEN), intent(out)          :: command  !! Prepared command string.
         character(len=*),              intent(in)           :: path     !! Image file path.
         character(len=*),              intent(in)           :: text     !! Text to add.
