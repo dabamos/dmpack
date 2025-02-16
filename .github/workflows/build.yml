@@ -34,8 +34,9 @@ jobs:
         sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} make pkg-config
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
+        sudo apt-get install -y fonts-urw-base35 gsfonts
         sudo apt-get install -y --no-install-recommends curl gnuplot-nox graphicsmagick \
-          gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
+          lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
           libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev \
           libmodbus5 libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev \
           libstrophe0 libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev
@@ -43,6 +44,7 @@ jobs:
     - name: List Fonts
       if: contains(matrix.os, 'ubuntu')
       run: |
+        fc-list
         gm convert -list font
 
     - name: Configure System
