@@ -33,7 +33,8 @@ module dm_gm
     !! ```
     !!
     !! Copy the type file to the `config/` directory of GraphicsMagick and
-    !! modify the path to the include file in `type.mgk` accordingly.
+    !! modify the path to the include file in `type.mgk` accordingly or replace
+    !! `type.mgk` with `type-custom.mgk` altogether.
     !!
     !! Example to read meta data of image `/tmp/image.jpg`:
     !!
@@ -58,6 +59,7 @@ module dm_gm
     !! ```
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     implicit none (type, external)
     private
 
@@ -354,7 +356,6 @@ module dm_gm
 
     private :: gm_convert
     private :: gm_identify
-    private :: gm_prepare_add_text_box
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -362,7 +363,8 @@ contains
     integer function dm_gm_add_text_box(path, text, text_box, command) result(rc)
         !! Draws text camera image file, using GraphicsMagick. By default, the
         !! text box is drawn to the bottom-left corner of the image. If no text
-        !! box is passed, the default values of the derived type are used.
+        !! box is passed, the default values of the derived type are used. The
+        !! string `text` must not contain the quote characters `'` and `"`.
         !!
         !! The function returns the following error codes:
         !!
@@ -370,27 +372,46 @@ contains
         !! * `E_IO` if GraphicsMagick command execution failed.
         !! * `E_NOT_FOUND` if image at given path does no exist.
         !!
+        !! ## References
+        !!
+        !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
+        !!
         character(len=*),              intent(in)            :: path     !! Image file path.
         character(len=*),              intent(in)            :: text     !! Text to add.
         type(gm_text_box_type),        intent(in),  optional :: text_box !! Image text box type.
         character(len=:), allocatable, intent(out), optional :: command  !! Executed command.
 
         character(len=GM_COMMAND_LEN) :: command_
+        character(len=32)             :: point_size
         integer                       :: stat
+        type(gm_text_box_type)        :: box
 
         command_ = ' '
+        if (present(text_box)) box = text_box
 
         io_block: block
             rc = E_EMPTY
-            if (len_trim(path) == 0 .or. len_trim(text) == 0) return
+            if (len_trim(path) == 0 .or. len_trim(text) == 0) exit io_block
 
             rc = E_NOT_FOUND
-            if (.not. dm_file_exists(path)) return
+            if (.not. dm_file_exists(path)) exit io_block
+
+            rc = E_FORMAT
+            write (command_, '(" -gravity ", a, " -box ", a, " -fill ", a, " -draw ''text 0,0 """, a, """''", 2(1x, a))', iostat=stat) &
+                trim(box%gravity), trim(box%background), trim(box%foreground), trim(text), trim(path), path
+            if (stat /= 0) exit io_block
+
+            if (box%font_size > 0) then
+                write (point_size, '(" -pointsize ", i0)') box%font_size
+                command_ = trim(point_size) // command_
+            end if
+
+            if (len_trim(box%font) > 0) command_ = ' -font ' // trim(box%font) // command_
+            command_ = GM_BINARY // ' convert' // trim(command_)
 
             rc = E_IO
-            call gm_prepare_add_text_box(command_, path, text, text_box)
             call execute_command_line(trim(command_), exitstat=stat)
-            if (stat /= 0) return
+            if (stat /= 0) exit io_block
 
             rc = E_NONE
         end block io_block
@@ -406,7 +427,6 @@ contains
         !!
         !! * `E_EXIST` if the image file already exists.
         !! * `E_IO` if calling GraphicsMagick failed.
-        !! * `E_WRITE` if command preparation failed.
         !!
         use :: dm_string, only: dm_string_is_present
 
@@ -432,9 +452,9 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         character(len=*), intent(in)  :: path   !! Image file path.
         integer,          intent(out) :: width  !! Image width.
@@ -461,14 +481,14 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         character(len=*),              intent(in)  :: path      !! Image file path.
         character(len=:), allocatable, intent(out) :: directory !! Image file directory.
 
-        character(len=GM_COMMAND_LEN) :: buffer
+        character(len=FILE_PATH_LEN) :: buffer
 
         rc = gm_identify(path, '%d', buffer)
         directory = trim(buffer)
@@ -481,9 +501,9 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         character(len=*),              intent(in)  :: path      !! Image file path.
         character(len=:), allocatable, intent(out) :: extension !! Image file extension.
@@ -501,9 +521,9 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         character(len=*),              intent(in)  :: path        !! Image file path.
         character(len=:), allocatable, intent(out) :: file_format !! Image file format.
@@ -520,9 +540,9 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         character(len=*),              intent(in)  :: path      !! Image file path.
         character(len=:), allocatable, intent(out) :: file_name !! Image file name.
@@ -540,9 +560,9 @@ contains
         !!
         !! The function returns the followin error codes:
         !!
+        !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
-        !! * `E_SYSTEM` if execution of GraphicsMagick failed.
         !!
         use :: dm_mime
 
@@ -570,8 +590,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_FORMAT` if command preparation failed.
         !! * `E_IO` if calling GraphicsMagick failed.
-        !! * `E_WRITE` if command preparation failed.
         !!
         character(len=*), intent(in) :: path      !! Image file path.
         character(len=*), intent(in) :: arguments !! GraphicsMagick convert arguments.
@@ -579,8 +599,8 @@ contains
         character(len=GM_COMMAND_LEN) :: command
         integer                       :: stat
 
-        rc = E_WRITE
-        write (command, '("gm convert ", a, 1x, a)', iostat=stat) trim(arguments), trim(path)
+        rc = E_FORMAT
+        write (command, '(a, " convert ", a, 1x, a)', iostat=stat) GM_BINARY, trim(arguments), trim(path)
         if (stat /= 0) return
 
         rc = E_IO
@@ -590,30 +610,36 @@ contains
         rc = E_NONE
     end function gm_convert
 
-    integer function gm_identify(path, format, output) result(rc)
+    integer function gm_identify(path, format, output, nbytes) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
+        !! The string `output` must be large enough to hold the result.
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_FORMAT` if command preparation failed.
         !! * `E_INVALID` if the output string is of length 0.
+        !! * `E_IO` if calling GraphicsMagick failed.
         !! * `E_NOT_FOUND` if the image file could not be found.
-        !! * `E_SYSTEM` if calling GraphicsMagick failed.
+        !! * `E_READ` if no result was read from GraphicsMagick.
         !!
         !! ## References
         !!
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         !!
-        use :: dm_kind
         use :: dm_pipe
 
-        character(len=*), intent(in)    :: path   !! Image file path.
-        character(len=*), intent(in)    :: format !! GraphicsMagick format attributes.
-        character(len=*), intent(inout) :: output !! Output string.
+        character(len=*), intent(in)            :: path   !! Image file path.
+        character(len=*), intent(in)            :: format !! GraphicsMagick format attributes.
+        character(len=*), intent(inout)         :: output !! Output string.
+        integer(kind=i8), intent(out), optional :: nbytes !! Number of bytes read from pipe.
 
-        integer(kind=i8) :: n
-        type(pipe_type)  :: pipe
+        character(len=GM_COMMAND_LEN) :: command
+        integer                       :: stat
+        integer(kind=i8)              :: n
+        type(pipe_type)               :: pipe
 
         output = ' '
+        if (present(nbytes)) nbytes = 0_i8
 
         rc = E_INVALID
         if (len(output) == 0) return
@@ -621,10 +647,19 @@ contains
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(path)) return
 
+        rc = E_FORMAT
+        write (command, '(a, " identify -format """, a, """ ", a)', iostat=stat) GM_BINARY, trim(format), trim(path)
+        if (stat /= 0) return
+
+        rc = E_IO
         io_block: block
-            rc = dm_pipe_open(pipe, 'gm identify -format "' // trim(format) // '" ' // trim(path), PIPE_RDONLY)
-            if (dm_is_error(rc)) exit io_block
+            stat = dm_pipe_open(pipe, command, PIPE_RDONLY)
+            if (dm_is_error(stat)) exit io_block
+
             n = dm_pipe_read(pipe, output)
+            if (present(nbytes)) nbytes = n
+
+            rc = E_NONE
         end block io_block
 
         call dm_pipe_close(pipe)
@@ -639,37 +674,4 @@ contains
             rc = E_NONE
         end if
     end function gm_identify
-
-    subroutine gm_prepare_add_text_box(command, path, text, text_box)
-        !! Prepares GraphicsMagick command to add text to image. The string
-        !! `text` must not contain the quote characters `'` and `"`.
-        !!
-        !! ## References
-        !!
-        !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
-        !!
-        character(len=GM_COMMAND_LEN), intent(out)          :: command  !! Prepared command string.
-        character(len=*),              intent(in)           :: path     !! Image file path.
-        character(len=*),              intent(in)           :: text     !! Text to add.
-        type(gm_text_box_type),        intent(in), optional :: text_box !! Image text box type.
-
-        character(len=32)      :: point_size
-        type(gm_text_box_type) :: box
-
-        if (present(text_box)) box = text_box
-
-        write (command, '(" -gravity ", a, " -box ", a, " -fill ", a, " -draw ''text 0,0 """, a, """''", 2(1x, a))') &
-            trim(box%gravity), trim(box%background), trim(box%foreground), trim(text), trim(path), path
-
-        if (box%font_size > 0) then
-            write (point_size, '(" -pointsize ", i0)') box%font_size
-            command = trim(point_size) // command
-        end if
-
-        if (len_trim(box%font) > 0) then
-            command = ' -font ' // trim(box%font) // command
-        end if
-
-        command = GM_BINARY // ' convert' // trim(command)
-    end subroutine gm_prepare_add_text_box
 end module dm_gm

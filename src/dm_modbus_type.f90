@@ -16,10 +16,10 @@ module dm_modbus_type
 
     ! Modbus number types.
     integer, parameter, public :: MODBUS_TYPE_NONE    = 0                 !! None (invalid).
-    integer, parameter, public :: MODBUS_TYPE_INT16   = 1                 !! Signed 2-byte integer.
-    integer, parameter, public :: MODBUS_TYPE_INT32   = 2                 !! Signed 2-byte integer.
-    integer, parameter, public :: MODBUS_TYPE_UINT16  = 3                 !! Unsigned 2-byte integer.
-    integer, parameter, public :: MODBUS_TYPE_UINT32  = 4                 !! Unsigned 4-byte integer.
+    integer, parameter, public :: MODBUS_TYPE_INT16   = 1                 !! 2-byte signed integer.
+    integer, parameter, public :: MODBUS_TYPE_INT32   = 2                 !! 2-byte signed integer.
+    integer, parameter, public :: MODBUS_TYPE_UINT16  = 3                 !! 2-byte unsigned integer.
+    integer, parameter, public :: MODBUS_TYPE_UINT32  = 4                 !! 4-byte unsigned integer.
     integer, parameter, public :: MODBUS_TYPE_FLOAT   = 5                 !! 4-byte float.
     integer, parameter, public :: MODBUS_TYPE_LAST    = 5                 !! Never use this.
     integer, parameter, public :: MODBUS_TYPE_DEFAULT = MODBUS_TYPE_INT16 !! Default number type.
