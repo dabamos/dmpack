@@ -26,10 +26,11 @@ $ export DM_MQTT_HOST="localhost"
 $ export DM_MQTT_PORT="1883"
 ```
 
-If not set, the affected tests will be skipped. To skip the pipe, plotting and
-message queue tests, set:
+If not set, the affected tests will be skipped. To skip the gm, pipe, plotting,
+and message queue tests, set:
 
 ```
+$ export DM_GM_SKIP=1
 $ export DM_MQUEUE_SKIP=1
 $ export DM_PIPE_SKIP=1
 ```

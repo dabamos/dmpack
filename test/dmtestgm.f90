@@ -31,6 +31,9 @@ contains
         integer(kind=i8)                   :: nbytes
         type(gm_text_box_type)             :: text_box
 
+        stat = TEST_PASSED
+        if (dm_test_skip('DM_GM_SKIP')) return
+
         stat = TEST_FAILED
         if (dm_file_exists(IMAGE_PATH)) call dm_file_delete(IMAGE_PATH)
 
