@@ -8473,5 +8473,5 @@ the DMPACK Makefile.
 | 132  | `E_HDF5`            | HDF5 library error.
 | 133  | `E_ZLIB`            | Zlib library error.
 | 134  | `E_ZSTD`            | Zstandard library error.
-| 135  | `E_XMPP`            | libstrophe library error.
+| 135  | `E_XMPP`            | XMPP library error.
 |===

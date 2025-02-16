@@ -136,7 +136,7 @@ module dm_geocom_error
     integer, parameter, public :: GRC_EDM_INTERNAL_ERR           = 785   !! Internal EDM subsystem error.
     integer, parameter, public :: GRC_EDM_BUSY                   = 786   !! Sensor is working already, abort current measuring first.
     integer, parameter, public :: GRC_EDM_NO_MEASACTIVITY        = 787   !! No measurement activity started.
-    integer, parameter, public :: GRC_EDM_CHKSUM_ERR             = 788   !! Calculated checksum, resp. received data wrong.
+    integer, parameter, public :: GRC_EDM_CHKSUM_ERR             = 788   !! Calculated checksum or received data invalid.
     integer, parameter, public :: GRC_EDM_INIT_OR_STOP_ERR       = 789   !! During start up or shut down phase an error occured.
     integer, parameter, public :: GRC_EDM_SRL_NOT_AVAILABLE      = 790   !! Red laser not available on this sensor HW.
     integer, parameter, public :: GRC_EDM_MEAS_ABORTED           = 791   !! Measurement will be aborted (will be used for the laser security).
@@ -419,7 +419,7 @@ contains
             case (GRC_EDM_INTERNAL_ERR);           message = 'internal EDM subsystem error'
             case (GRC_EDM_BUSY);                   message = 'sensor is working already, abort current measuring first'
             case (GRC_EDM_NO_MEASACTIVITY);        message = 'no measurement activity started'
-            case (GRC_EDM_CHKSUM_ERR);             message = 'calculated checksum, resp. received data wrong'
+            case (GRC_EDM_CHKSUM_ERR);             message = 'calculated checksum or received data invalid'
             case (GRC_EDM_INIT_OR_STOP_ERR);       message = 'during start up or shut down phase an error occured'
             case (GRC_EDM_SRL_NOT_AVAILABLE);      message = 'red laser not available on this sensor hardware'
             case (GRC_EDM_MEAS_ABORTED);           message = 'measurement will be aborted for laser security'

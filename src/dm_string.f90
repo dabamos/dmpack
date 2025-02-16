@@ -36,7 +36,7 @@ module dm_string
     end interface dm_to_upper
 
     interface dm_string_hex_to_int
-        !! Converts hexadecimal string to integer.
+        !! Converts hexadecimal number to integer.
         module procedure :: string_hex_to_int32
         module procedure :: string_hex_to_int64
     end interface dm_string_hex_to_int

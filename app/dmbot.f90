@@ -67,8 +67,6 @@ program dmbot
         logical                                     :: tls             = .true.   !! Force TLS encryption.
         logical                                     :: reconnect       = .false.  !! Reconnect on error.
         character(len=IM_ID_LEN)                    :: ping_id         = ' '      !! XMPP ping id (XEP-0199).
-        character(len=FILE_PATH_LEN)                :: database_log    = ' '      !! Path to log database.
-        character(len=FILE_PATH_LEN)                :: database_observ = ' '      !! Path to observation database.
         character(len=IM_JID_FULL_LEN), allocatable :: group(:)                   !! Authorised JIDs.
     end type bot_type
 
@@ -239,16 +237,6 @@ contains
             return
         end if
 
-        if (len_trim(bot%database_log) > 0 .and. .not. dm_file_exists(bot%database_log)) then
-            call dm_error_out(rc, 'log database does not exist')
-            return
-        end if
-
-        if (len_trim(bot%database_observ) > 0 .and. .not. dm_file_exists(bot%database_observ)) then
-            call dm_error_out(rc, 'observ database does not exist')
-            return
-        end if
-
         ! Additional bot settings.
         bot%node_id = app%node_id
         if (bot%port == 0) bot%port = IM_PORT
@@ -281,12 +269,6 @@ contains
             call dm_config_get(config, 'group',     bot%group)
             call dm_config_get(config, 'debug',     app%debug)
             call dm_config_get(config, 'verbose',   app%verbose)
-
-            if (dm_is_ok(dm_config_field(config, 'db'))) then
-                call dm_config_get(config, 'log',    bot%database_log)
-                call dm_config_get(config, 'observ', bot%database_observ)
-                call dm_config_remove(config)
-            end if
         end if
 
         call dm_config_close(config)

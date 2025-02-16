@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmbackup
-    !! Creates an online backup of a running database.
+    !! Creates an online backup of an SQLite database.
     use :: dmpack
     implicit none (type, external)
 

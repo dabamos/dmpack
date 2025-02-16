@@ -117,6 +117,11 @@ contains
         call dm_arg_get(args(13), app%value,       passed=has_value)
         call dm_arg_get(args(14), app%debug)
 
+        if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
+        if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
+        if (has_parity)    app%rtu%parity    = dm_tty_parity_from_name(parity)
+        if (has_stop_bits) app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+
         ! Parse and validate settings.
         rc = E_INVALID
 
@@ -172,11 +177,6 @@ contains
                 call dm_error_out(rc, 'device ' // trim(app%rtu%path) // ' not found')
                 return
             end if
-
-            app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-            app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-            app%rtu%parity    = dm_tty_parity_from_name(parity)
-            app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
 
             ! TTY baud rate.
             if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then

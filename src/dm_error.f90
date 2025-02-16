@@ -107,11 +107,11 @@ module dm_error
     integer, parameter, public :: E_LUA_FILE       = 126 !! Lua file I/O error.
     ! Additional errors.
     integer, parameter, public :: E_LIB            = 130 !! Generic library error.
-    integer, parameter, public :: E_MODBUS         = 131 !! Modbus error.
-    integer, parameter, public :: E_HDF5           = 132 !! HDF5 error.
-    integer, parameter, public :: E_ZLIB           = 133 !! zlib error.
-    integer, parameter, public :: E_ZSTD           = 134 !! Zstandard error.
-    integer, parameter, public :: E_XMPP           = 135 !! libstrophe error.
+    integer, parameter, public :: E_MODBUS         = 131 !! Modbus library error.
+    integer, parameter, public :: E_HDF5           = 132 !! HDF5 library error.
+    integer, parameter, public :: E_ZLIB           = 133 !! zlib library error.
+    integer, parameter, public :: E_ZSTD           = 134 !! Zstandard library error.
+    integer, parameter, public :: E_XMPP           = 135 !! XMPP library error.
     integer, parameter, public :: E_LAST           = 135 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
@@ -232,11 +232,11 @@ contains
             case (E_LUA_FILE);       message = 'Lua file I/O error'
             ! Libraries.
             case (E_LIB);            message = 'library error'
-            case (E_MODBUS);         message = 'Modbus error'
-            case (E_HDF5);           message = 'HDF5 error'
-            case (E_ZLIB);           message = 'zlib error'
-            case (E_ZSTD);           message = 'zstd error'
-            case (E_XMPP);           message = 'XMPP error'
+            case (E_MODBUS);         message = 'Modbus library error'
+            case (E_HDF5);           message = 'HDF5 library error'
+            case (E_ZLIB);           message = 'zlib library error'
+            case (E_ZSTD);           message = 'zstd library error'
+            case (E_XMPP);           message = 'XMPP library error'
             ! Unknown.
             case default;            message = 'unknown error'
         end select

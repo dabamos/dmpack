@@ -98,7 +98,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_camera_capture(camera, output, command) result(rc)
+    integer function dm_camera_capture(camera, path, command) result(rc)
         !! Captures a single frame from a V4L2 device or RTSP stream with
         !! FFmpeg, and optionally adds a timestamp with GraphicsMagick. If the
         !! input is an RTSP stream, the URL must start with `rtsp://`.
@@ -110,7 +110,7 @@ contains
         !! * `E_IO` if FFmpeg command execution failed.
         !!
         type(camera_type),             intent(in)            :: camera  !! Camera type.
-        character(len=*),              intent(in)            :: output  !! Output file.
+        character(len=*),              intent(in)            :: path    !! Output file.
         character(len=:), allocatable, intent(out), optional :: command !! Executed command.
 
         character(len=CAMERA_COMMAND_LEN) :: command_
@@ -120,7 +120,7 @@ contains
 
         io_block: block
             rc = E_EMPTY
-            if (len_trim(camera%input) == 0 .or. len_trim(output) == 0) exit io_block
+            if (len_trim(camera%input) == 0 .or. len_trim(path) == 0) exit io_block
 
             rc = E_INVALID
             if (.not. dm_camera_device_is_valid(camera%device)) exit io_block
@@ -130,9 +130,9 @@ contains
             end if
 
             rc = E_IO
-            call camera_prepare_capture(command_, camera, output)
+            call camera_prepare_capture(command_, camera, path)
             call execute_command_line(trim(command_), exitstat=stat)
-            if (stat /= 0 .or. .not. dm_file_exists(output)) exit io_block
+            if (stat /= 0 .or. .not. dm_file_exists(path)) exit io_block
 
             rc = E_NONE
         end block io_block
@@ -168,17 +168,17 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental subroutine camera_prepare_capture(command, camera, output)
+    pure elemental subroutine camera_prepare_capture(command, camera, path)
         !! Creates FFmpeg command to capture a single camera frame through V4L2
         !! or RTSP. The function returns `E_INVALID` on error.
         character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
         type(camera_type),                 intent(in)  :: camera  !! Camera type.
-        character(len=*),                  intent(in)  :: output  !! Output file.
+        character(len=*),                  intent(in)  :: path    !! Output file.
 
         character(len=32) :: video_size
 
         ! Disable logging and set output file.
-        command = ' -hide_banner -loglevel quiet -nostats -y ' // output
+        command = ' -hide_banner -loglevel quiet -nostats -y ' // path
 
         select case (camera%device)
             case (CAMERA_DEVICE_RTSP)

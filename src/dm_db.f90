@@ -571,6 +571,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB` if closing the database failed.
+        !! * `E_DB_BUSY` if database is still busy.
         !! * `E_DB_PREPARE` if database optimisation failed.
         !! * `E_DB_STEP` if database optimisation failed (no write access).
         !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
@@ -578,13 +579,20 @@ contains
         type(db_type), intent(inout)        :: db       !! Database type.
         logical,       intent(in), optional :: optimize !! Optimise on close.
 
+        integer :: stat
+
         if (dm_present(optimize, .false.)) then
             rc = dm_db_optimize(db)
             if (dm_is_error(rc)) return
         end if
 
+        stat = sqlite3_close(db%ctx)
+
+        rc = E_DB_BUSY
+        if (stat == SQLITE_BUSY) return
+
         rc = E_DB
-        if (sqlite3_close(db%ctx) /= SQLITE_OK) return
+        if (stat /= SQLITE_OK) return
 
         rc = E_EXIST
         db%ctx = c_null_ptr

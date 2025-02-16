@@ -27,12 +27,12 @@ module dm_nml
         module procedure :: nml_from_sensor
         module procedure :: nml_from_target
 
-        module procedure :: nml_from_beat_alloc
-        module procedure :: nml_from_log_alloc
-        module procedure :: nml_from_node_alloc
-        module procedure :: nml_from_observ_alloc
-        module procedure :: nml_from_sensor_alloc
-        module procedure :: nml_from_target_alloc
+        module procedure :: nml_from_beat_allocatable
+        module procedure :: nml_from_log_allocatable
+        module procedure :: nml_from_node_allocatable
+        module procedure :: nml_from_observ_allocatable
+        module procedure :: nml_from_sensor_allocatable
+        module procedure :: nml_from_target_allocatable
     end interface dm_nml_from
 
     interface dm_nml_to
@@ -71,12 +71,12 @@ module dm_nml
     private :: nml_from_sensor
     private :: nml_from_target
 
-    private :: nml_from_beat_alloc
-    private :: nml_from_log_alloc
-    private :: nml_from_node_alloc
-    private :: nml_from_observ_alloc
-    private :: nml_from_sensor_alloc
-    private :: nml_from_target_alloc
+    private :: nml_from_beat_allocatable
+    private :: nml_from_log_allocatable
+    private :: nml_from_node_allocatable
+    private :: nml_from_observ_allocatable
+    private :: nml_from_sensor_allocatable
+    private :: nml_from_target_allocatable
 
     private :: nml_to_beat
     private :: nml_to_log
@@ -95,8 +95,8 @@ contains
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
     integer function nml_from_beat(beat, string) result(rc)
-        !! Writes beat namelist to string. The passed character string must have
-        !! a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
+        !! Writes beat namelist to string. The passed character string must
+        !! have a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
         use :: dm_beat, only: beat_type
 
         type(beat_type),  intent(inout) :: beat   !! Beat type.
@@ -116,9 +116,9 @@ contains
         rc = E_NONE
     end function nml_from_beat
 
-    integer function nml_from_beat_alloc(beat, string, n) result(rc)
+    integer function nml_from_beat_allocatable(beat, string, n) result(rc)
         !! Writes beat namelist to allocatable string of given length. Returns
-        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if the
         !! serialisation failed.
         use :: dm_beat, only: beat_type
 
@@ -142,12 +142,11 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_beat_alloc
+    end function nml_from_beat_allocatable
 
     integer function nml_from_log(log, string) result(rc)
-        !! Writes log namelist to string. The passed character string must
-        !! have a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on
-        !! error.
+        !! Writes log namelist to string. The passed character string must have
+        !! a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on error.
         use :: dm_log, only: log_type
 
         type(log_type),   intent(inout) :: log    !! Log type.
@@ -167,9 +166,9 @@ contains
         rc = E_NONE
     end function nml_from_log
 
-    integer function nml_from_log_alloc(log, string, n) result(rc)
+    integer function nml_from_log_allocatable(log, string, n) result(rc)
         !! Writes log namelist to allocatable string of given length. Returns
-        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if the
         !! serialisation failed.
         use :: dm_log, only: log_type
 
@@ -193,7 +192,7 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_log_alloc
+    end function nml_from_log_allocatable
 
     integer function nml_from_node(node, string) result(rc)
         !! Writes node namelist to string. The passed character string must
@@ -218,9 +217,9 @@ contains
         rc = E_NONE
     end function nml_from_node
 
-    integer function nml_from_node_alloc(node, string, n) result(rc)
+    integer function nml_from_node_allocatable(node, string, n) result(rc)
         !! Writes node namelist to allocatable string of given length. Returns
-        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
+        !! `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if the
         !! serialisation failed.
         use :: dm_node, only: node_type
 
@@ -244,7 +243,7 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_node_alloc
+    end function nml_from_node_allocatable
 
     integer function nml_from_observ(observ, string) result(rc)
         !! Writes observation namelist to string. The passed character string
@@ -269,10 +268,10 @@ contains
         rc = E_NONE
     end function nml_from_observ
 
-    integer function nml_from_observ_alloc(observ, string, n) result(rc)
+    integer function nml_from_observ_allocatable(observ, string, n) result(rc)
         !! Writes observation namelist to allocatable string of given length.
-        !! Returns `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
-        !! serialisation failed.
+        !! Returns `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if
+        !! the serialisation failed.
         use :: dm_observ, only: observ_type
 
         type(observ_type),             intent(inout) :: observ !! Observation type.
@@ -295,12 +294,12 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_observ_alloc
+    end function nml_from_observ_allocatable
 
     integer function nml_from_sensor(sensor, string) result(rc)
-        !! Writes sensor namelist to string. The passed character string
-        !! must have a minimum length of `NML_SENSOR_LEN`. Returns `E_WRITE`
-        !! on error.
+        !! Writes sensor namelist to string. The passed character string must
+        !! have a minimum length of `NML_SENSOR_LEN`. Returns `E_WRITE` on
+        !! error.
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
@@ -320,10 +319,10 @@ contains
         rc = E_NONE
     end function nml_from_sensor
 
-    integer function nml_from_sensor_alloc(sensor, string, n) result(rc)
-        !! Writes sensor namelist to allocatable string of given length. Returns
-        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
-        !! serialisation failed.
+    integer function nml_from_sensor_allocatable(sensor, string, n) result(rc)
+        !! Writes sensor namelist to allocatable string of given length.
+        !! Returns `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if
+        !! the serialisation failed.
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type),             intent(inout) :: sensor !! Sensor type.
@@ -346,12 +345,12 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_sensor_alloc
+    end function nml_from_sensor_allocatable
 
     integer function nml_from_target(target, string) result(rc)
-        !! Writes target namelist to string. The passed character string
-        !! must have a minimum length of `NML_TARGET_LEN`. Returns `E_WRITE`
-        !! on error.
+        !! Writes target namelist to string. The passed character string must
+        !! have a minimum length of `NML_TARGET_LEN`. Returns `E_WRITE` on
+        !! error.
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: target !! Target type.
@@ -371,10 +370,10 @@ contains
         rc = E_NONE
     end function nml_from_target
 
-    integer function nml_from_target_alloc(target, string, n) result(rc)
-        !! Writes target namelist to allocatable string of given length. Returns
-        !! `E_ALLOC` if allocation of `str` failed, or `E_WRITE` if the
-        !! serialisation failed.
+    integer function nml_from_target_allocatable(target, string, n) result(rc)
+        !! Writes target namelist to allocatable string of given length.
+        !! Returns `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if
+        !! the serialisation failed.
         use :: dm_target, only: target_type
 
         type(target_type),             intent(inout) :: target !! Target type.
@@ -397,7 +396,7 @@ contains
         end if
 
         rc = E_NONE
-    end function nml_from_target_alloc
+    end function nml_from_target_allocatable
 
     integer function nml_read_log(log, unit) result(rc)
         !! Reads log from file or standard input. Returns `E_READ` on error.

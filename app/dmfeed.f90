@@ -43,7 +43,7 @@ program dmfeed
     call create_feed(app, rc)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
-    logical function is_stale_file(path, time) result(is_stale)
+    logical function is_stale_file(path, time) result(is)
         !! Returns `.true.` if last modification time of file at `path` is
         !! before `time`.
         character(len=*),        intent(in) :: path !! Path to file.
@@ -52,7 +52,7 @@ contains
         integer(kind=i8)       :: epoch
         type(file_status_type) :: file_status
 
-        is_stale = .true.
+        is = .true.
 
         ! File is stale if it does not exist yet.
         if (.not. dm_file_exists(path)) return
@@ -69,7 +69,7 @@ contains
         ! Last file modification time is older than given time stamp?
         if (file_status%m_time < epoch) return
 
-        is_stale = .false.
+        is = .false.
     end function is_stale_file
 
     integer function read_args(app) result(rc)
