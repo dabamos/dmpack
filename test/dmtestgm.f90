@@ -59,6 +59,8 @@ contains
 
         print *, 'Adding text box to image ...'
         text_box%background = GM_COLOR_DARK_VIOLET
+        text_box%font       = 'sans'
+
         rc = dm_gm_add_text_box(IMAGE_PATH, dm_time_now(), text_box); if (dm_is_error(rc)) return
 
         call dm_file_read(IMAGE_PATH, image2, size=nbytes)
