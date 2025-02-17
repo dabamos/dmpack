@@ -21,7 +21,7 @@ program dmtestgm
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: IMAGE_PATH   = 'dmtestgm.png'
+        character(len=*), parameter :: IMAGE_PATH   = 'testgm.png'
         integer,          parameter :: IMAGE_WIDTH  = 640
         integer,          parameter :: IMAGE_HEIGHT = 480
 

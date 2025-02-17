@@ -1021,6 +1021,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmlog.1    > $(IMANDIR)/dmlog.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmlogger.1 > $(IMANDIR)/dmlogger.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmlua.1    > $(IMANDIR)/dmlua.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmmbctl.1  > $(IMANDIR)/dmmbctl.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmpipe.1   > $(IMANDIR)/dmpipe.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmplot.1   > $(IMANDIR)/dmplot.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmrecv.1   > $(IMANDIR)/dmrecv.1.gz
@@ -1056,6 +1057,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmlog
 	$(RM) -f $(IBINDIR)/dmlogger
 	$(RM) -f $(IBINDIR)/dmlua
+	$(RM) -f $(IBINDIR)/dmmbctl
 	$(RM) -f $(IBINDIR)/dmpipe
 	$(RM) -f $(IBINDIR)/dmrecv
 	$(RM) -f $(IBINDIR)/dmreport
@@ -1081,6 +1083,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmlog.1.gz
 	$(RM) -f $(IMANDIR)/dmlogger.1.gz
 	$(RM) -f $(IMANDIR)/dmlua.1.gz
+	$(RM) -f $(IMANDIR)/dmmbctl.1.gz
 	$(RM) -f $(IMANDIR)/dmpipe.1.gz
 	$(RM) -f $(IMANDIR)/dmplot.1.gz
 	$(RM) -f $(IMANDIR)/dmrecv.1.gz
@@ -1171,7 +1174,7 @@ purge: clean
 	if [ -e testobserv.sqlite ];        then $(RM) testobserv.sqlite;        fi
 	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
 	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
-	if [ -e dmtestgm.png ];             then $(RM) dmtestgm.png;             fi
+	if [ -e testgm.png ];               then $(RM) testgm.png;               fi
 
 # ******************************************************************************
 #
