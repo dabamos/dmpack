@@ -224,18 +224,16 @@ contains
 
         character(len=REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
 
-        integer          :: delay_msec
+        integer          :: msec
         integer          :: i, j, n
-        integer(kind=i8) :: sz
+        integer(kind=i8) :: nbytes
         logical          :: debug_
 
         type(request_type),  pointer :: request  ! Next request to execute.
         type(response_type), pointer :: response ! Response in request.
 
-        rc = E_EMPTY
-
-        debug_ = .true.
-        if (present(debug)) debug_ = debug
+        rc     = E_EMPTY
+        debug_ = dm_present(debug, .true.)
 
         ! Initialise observation.
         observ%id        = dm_uuid4()
@@ -253,16 +251,16 @@ contains
         end if
 
         ! Read pipes in requests sequentially.
-        req_loop: do i = 1, n
+        request_loop: do i = 1, n
             ! Get pointer to next request.
             request => observ%requests(i)
 
             if (request%state == REQUEST_STATE_DISABLED) then
-                if (debug_) call logger%debug(request_name_string(request%name, i, n, observ%name) // ' is disabled', observ=observ)
-                cycle
+                if (debug_) call logger%debug(request_name_string(request%name, observ%name) // ' is disabled', observ=observ)
+                cycle request_loop
             end if
 
-            if (debug_) call logger%debug('starting ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+            if (debug_) call logger%debug('starting ' // request_name_string(request%name, observ%name), observ=observ)
 
             ! Initialise request.
             request%timestamp = dm_time_now()
@@ -274,32 +272,29 @@ contains
             if (dm_is_error(rc)) then
                 call dm_pipe_close(pipe)
                 call logger%error('failed to open pipe to ' // request%request, observ=observ, error=rc)
-                cycle req_loop
+                cycle request_loop
             end if
 
             ! Read until the request pattern matches or end is reached.
             pipe_loop: do
                 ! Read from pipe.
                 rc = E_READ
-                sz = dm_pipe_read(pipe, raw)
-                if (sz == 0) exit pipe_loop
+                nbytes = dm_pipe_read(pipe, raw)
+                if (nbytes == 0) exit pipe_loop
 
                 request%response = dm_ascii_escape(raw)
 
                 ! Try to extract the response values.
                 if (len_trim(request%pattern) == 0) then
                     rc = E_NONE
-                    if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, i), observ=observ)
+                    if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, observ%name), observ=observ)
                     exit pipe_loop
                 end if
 
                 rc = dm_regex_request(request)
 
                 if (dm_is_error(rc)) then
-                    if (debug_) then
-                        call logger%debug('response of ' // request_name_string(request%name, i) // &
-                                          ' does not match pattern', observ=observ, error=request%error)
-                    end if
+                    if (debug_) call logger%debug('response of ' // request_name_string(request%name, observ%name) // ' does not match pattern', observ=observ, error=request%error)
                     cycle pipe_loop
                 end if
 
@@ -307,61 +302,45 @@ contains
                 do j = 1, request%nresponses
                     response => request%responses(j)
                     if (dm_is_ok(response%error)) cycle
-                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // &
-                                        request_name_string(request%name, i), observ=observ, error=response%error)
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(request%name, observ%name), observ=observ, error=response%error)
                 end do
 
                 ! Re-read on error.
-                if (dm_is_error(rc)) cycle pipe_loop
-
-                exit pipe_loop
+                if (dm_is_ok(rc)) exit pipe_loop
             end do pipe_loop
 
-            ! Close pipe.
             call dm_pipe_close(pipe)
-
-            request%error = rc
+            call dm_request_set_error(request, rc)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from process ' // request%request, observ=observ, error=rc)
                 call dm_sleep(10) ! Wait grace period.
-                cycle req_loop
+                cycle request_loop
             end if
 
-            if (debug_) call logger%debug('finished ' // request_name_string(request%name, i, n, observ%name), observ=observ)
+            if (debug_) call logger%debug('finished ' // request_name_string(request%name, observ%name), observ=observ)
 
             ! Wait the set delay time of the request.
-            delay_msec = max(0, request%delay)
-            if (delay_msec == 0) cycle req_loop
+            msec = max(0, request%delay)
+            if (msec == 0) cycle request_loop
 
-            if (debug_ .and. i < n) then
-                call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, i + 1, n, observ%name) // &
-                                  ' in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
-            else if (debug_) then
-                call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
+            if (i < n) then
+                if (debug_) call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, observ%name) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+            else
+                if (debug_) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             end if
 
-            call dm_msleep(delay_msec)
-        end do req_loop
+            call dm_msleep(msec)
+        end do request_loop
     end function read_observ
 
-    pure function request_name_string(request_name, i, n, observ_name) result(str)
+    pure function request_name_string(request_name, observ_name) result(string)
         !! Returns string of request name and index for logging.
-        character(len=*), intent(in)           :: request_name !! Request name.
-        integer,          intent(in)           :: i            !! Request index.
-        integer,          intent(in), optional :: n            !! Number of requests in observation.
-        character(len=*), intent(in), optional :: observ_name  !! Observation name.
-        character(len=:), allocatable          :: str          !! Result.
+        character(len=*), intent(in)  :: request_name !! Request name.
+        character(len=*), intent(in)  :: observ_name  !! Observation name.
+        character(len=:), allocatable :: string       !! Result.
 
-        if (present(n)) then
-            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')'
-        else
-            str = 'request ' // trim(request_name) // ' (' // dm_itoa(i) // ')'
-        end if
-
-        if (present(observ_name)) then
-            str = str // ' of observ ' // trim(observ_name)
-        end if
+        string = 'request ' // trim(request_name) // ' of observ ' // trim(observ_name)
     end function request_name_string
 
     integer function write_observ(observ, unit, format) result(rc)
@@ -370,15 +349,10 @@ contains
         integer,           intent(in)    :: unit
         integer,           intent(in)    :: format
 
-        rc = E_INVALID
-
         select case (format)
-            case (FORMAT_CSV)
-                rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
-            case (FORMAT_JSONL)
-                rc = dm_json_write(observ, unit=unit)
-            case default
-                return
+            case (FORMAT_CSV);   rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
+            case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
+            case default;        rc = E_INVALID
         end select
     end function write_observ
 
@@ -386,7 +360,7 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer :: delay_msec, njobs
+        integer :: msec, njobs
         integer :: rc
         logical :: debug
 
@@ -435,10 +409,10 @@ contains
             end if observ_if
 
             ! Wait the set (absolute) delay time of the job.
-            delay_msec = max(0, job%delay)
-            if (delay_msec <= 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(delay_msec)) // ' sec', observ=observ)
-            call dm_msleep(delay_msec)
+            msec = max(0, job%delay)
+            if (msec <= 0) cycle job_loop
+            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+            call dm_msleep(msec)
         end do job_loop
     end subroutine run
 

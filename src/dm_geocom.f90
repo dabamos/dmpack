@@ -887,12 +887,7 @@ contains
             end if
 
             ! Set initial response errors.
-            rc = dm_request_set_response_error(request, E_INCOMPLETE)
-
-            if (dm_is_error(rc)) then
-                call this%output(rc, 'failed to initialize responses')
-                exit tty_block
-            end if
+            call dm_request_set_response_error(request, E_INCOMPLETE)
 
             ! Prepare request.
             request%timestamp = dm_time_now()

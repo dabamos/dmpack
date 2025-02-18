@@ -88,6 +88,7 @@ module dm_observ
     public :: dm_observ_index
     public :: dm_observ_is_valid
     public :: dm_observ_out
+    public :: dm_observ_set
     public :: dm_observ_view_equals
 contains
     ! **************************************************************************
@@ -360,4 +361,37 @@ contains
             end do
         end do
     end subroutine dm_observ_out
+
+    pure elemental subroutine dm_observ_set(observ, id, node_id, sensor_id, target_id, name, timestamp, source, device, &
+                                            priority, error, next, nreceivers, nrequests)
+        !! Sets attributes of observation, except receivers and requests.
+        type(observ_type), intent(inout)        :: observ     !! Observation type.
+        character(len=*),  intent(in), optional :: id         !! Observation id.
+        character(len=*),  intent(in), optional :: node_id    !! Node id.
+        character(len=*),  intent(in), optional :: sensor_id  !! Sensor id.
+        character(len=*),  intent(in), optional :: target_id  !! Target id.
+        character(len=*),  intent(in), optional :: name       !! Observation name.
+        character(len=*),  intent(in), optional :: timestamp  !! ISO 8601 timestamp.
+        character(len=*),  intent(in), optional :: source     !! Observation source.
+        character(len=*),  intent(in), optional :: device     !! Physical device.
+        integer,           intent(in), optional :: priority   !! Message queue priority.
+        integer,           intent(in), optional :: error      !! Error code.
+        integer,           intent(in), optional :: next       !! Next receiver index.
+        integer,           intent(in), optional :: nreceivers !! Number of receivers.
+        integer,           intent(in), optional :: nrequests  !! Number of requests.
+
+        if (present(id))         observ%id         = id
+        if (present(node_id))    observ%node_id    = node_id
+        if (present(sensor_id))  observ%sensor_id  = sensor_id
+        if (present(target_id))  observ%target_id  = target_id
+        if (present(name))       observ%name       = name
+        if (present(timestamp))  observ%timestamp  = timestamp
+        if (present(source))     observ%source     = source
+        if (present(device))     observ%device     = device
+        if (present(priority))   observ%priority   = priority
+        if (present(error))      observ%error      = error
+        if (present(next))       observ%next       = next
+        if (present(nreceivers)) observ%nreceivers = nreceivers
+        if (present(nrequests))  observ%nrequests  = nrequests
+    end subroutine dm_observ_set
 end module dm_observ

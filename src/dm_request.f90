@@ -77,10 +77,12 @@ module dm_request
     public :: dm_request_add
     public :: dm_request_equals
     public :: dm_request_get
+    public :: dm_request_has_pattern
     public :: dm_request_index
     public :: dm_request_is_valid
     public :: dm_request_out
     public :: dm_request_set
+    public :: dm_request_set_error
     public :: dm_request_set_response_error
 
     ! Private procedures.
@@ -157,6 +159,13 @@ contains
         equals = .true.
     end function dm_request_equals
 
+    pure elemental logical function dm_request_has_pattern(request) result(has)
+        !! Returns `.true.` if attribute `pattern` of request is not empty.
+        type(request_type), intent(in) :: request !! Request type.
+
+        has = (len_trim(request%pattern) > 0)
+    end function dm_request_has_pattern
+
     pure elemental integer function dm_request_index(request, name) result(index)
         !! Searches request for responses of passed name and returns the index
         !! of the first found. If no response of this name is found,
@@ -178,7 +187,7 @@ contains
         end do
     end function dm_request_index
 
-    pure elemental logical function dm_request_is_valid(request, timestamp) result(valid)
+    pure elemental logical function dm_request_is_valid(request, timestamp) result(is)
         !! Returns `.true.` if given observation request is valid. A request is
         !! valid if it conforms to the following requirements:
         !!
@@ -198,7 +207,7 @@ contains
         type(request_type), intent(in)           :: request   !! Request type.
         logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
-        valid = .false.
+        is = .false.
 
         if (.not. dm_id_is_valid(request%name)) return
 
@@ -224,14 +233,21 @@ contains
             if (.not. all(dm_response_is_valid(request%responses(1:request%nresponses)))) return
         end if
 
-        valid = .true.
+        is = .true.
     end function dm_request_is_valid
 
-    integer function dm_request_set_response_error(request, error, name) result(rc)
+    pure elemental subroutine dm_request_set_error(request, error)
+        !! Sets request error.
+        type(request_type), intent(inout) :: request !! Request type.
+        integer,            intent(in)    :: error   !! Error code.
+
+        request%error = error
+    end subroutine dm_request_set_error
+
+    pure elemental subroutine dm_request_set_response_error(request, error, name)
         !! Sets error code of all responses of the given request. If argument
         !! `name` is given, the error is set only for the first response of the
-        !! same name. The function returns `E_NOT_FOUND` is argument `name` is
-        !! given and not found within the responses.
+        !! same name.
         type(request_type), intent(inout)        :: request !! Request type.
         integer,            intent(in)           :: error   !! Error code.
         character(len=*),   intent(in), optional :: name    !! Response name.
@@ -240,7 +256,6 @@ contains
 
         ! Set error code for single response.
         if (present(name)) then
-            rc = E_NOT_FOUND
             i = dm_request_index(request, name)
             if (i == 0) return
             request%responses(i)%error = error
@@ -253,9 +268,7 @@ contains
         do i = 1, n
             request%responses(i)%error = error
         end do
-
-        rc = E_NONE
-    end function dm_request_set_response_error
+    end subroutine dm_request_set_response_error
 
     subroutine dm_request_out(request, unit)
         !! Prints request to standard output or given file unit.
