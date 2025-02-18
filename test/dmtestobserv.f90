@@ -125,11 +125,11 @@ contains
 
         print *, 'Setting responses ...'
         request%nresponses = 5
-        call dm_request_set(request, 1, 'ival4', ival4)
-        call dm_request_set(request, 2, 'ival8', ival8)
-        call dm_request_set(request, 3, 'lval1', lval1)
-        call dm_request_set(request, 4, 'rval4', rval4)
-        call dm_request_set(request, 5, 'rval8', rval8)
+        request%responses(1)%name = 'ival4'; request%responses(1)%value = dm_to_real64(ival4)
+        request%responses(2)%name = 'ival8'; request%responses(1)%value = dm_to_real64(ival8)
+        request%responses(3)%name = 'lval1'; request%responses(1)%value = dm_to_real64(lval1)
+        request%responses(4)%name = 'rval4'; request%responses(1)%value = dm_to_real64(rval4)
+        request%responses(5)%name = 'rval8'; request%responses(1)%value = rval8
 
         print *, 'Validating indices ...'
         rc = dm_observ_add_request(observ, request)

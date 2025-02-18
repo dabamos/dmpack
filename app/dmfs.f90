@@ -262,7 +262,7 @@ contains
 
             if (debug_) call logger%debug('starting ' // request_name_string(request%name, observ%name) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
             rc = read_request(observ, request, debug_)
-            call dm_request_set_error(request, rc)
+            call dm_request_set(request, error=rc)
 
             ! Create log message on error and try next request.
             if (dm_is_error(rc)) then

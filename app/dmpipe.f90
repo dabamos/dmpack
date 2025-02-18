@@ -310,7 +310,7 @@ contains
             end do pipe_loop
 
             call dm_pipe_close(pipe)
-            call dm_request_set_error(request, rc)
+            call dm_request_set(request, error=rc)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from process ' // request%request, observ=observ, error=rc)

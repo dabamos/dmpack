@@ -62,15 +62,6 @@ module dm_request
         module procedure :: request_get_type
     end interface dm_request_get
 
-    interface dm_request_set
-        !! Generic function to set value, unit, type, and error of a response.
-        module procedure :: request_set_int32
-        module procedure :: request_set_int64
-        module procedure :: request_set_logical
-        module procedure :: request_set_real32
-        module procedure :: request_set_real64
-    end interface dm_request_set
-
     public :: operator (==)
 
     ! Public procedures.
@@ -82,16 +73,9 @@ module dm_request
     public :: dm_request_is_valid
     public :: dm_request_out
     public :: dm_request_set
-    public :: dm_request_set_error
     public :: dm_request_set_response_error
 
     ! Private procedures.
-    private :: request_set_int32
-    private :: request_set_int64
-    private :: request_set_logical
-    private :: request_set_real32
-    private :: request_set_real64
-
     private :: request_get_int32
     private :: request_get_int64
     private :: request_get_logical
@@ -236,13 +220,38 @@ contains
         is = .true.
     end function dm_request_is_valid
 
-    pure elemental subroutine dm_request_set_error(request, error)
-        !! Sets request error.
-        type(request_type), intent(inout) :: request !! Request type.
-        integer,            intent(in)    :: error   !! Error code.
+    pure elemental subroutine dm_request_set(request, name, timestamp, raw_request, raw_response, delimiter, &
+                                             pattern, delay, error, mode, retries, state, timeout, nresponses)
+        !! Sets request attributes, except responses.
+        type(request_type), intent(inout)        :: request      !! Request type.
+        character(len=*),   intent(in), optional :: name         !! Request name.
+        character(len=*),   intent(in), optional :: timestamp    !! ISO 8601 time stamp.
+        character(len=*),   intent(in), optional :: raw_request  !! Raw request command.
+        character(len=*),   intent(in), optional :: raw_response !! Raw response.
+        character(len=*),   intent(in), optional :: delimiter    !! Response delimiter.
+        character(len=*),   intent(in), optional :: pattern      !! Regular expression pattern.
+        integer,            intent(in), optional :: delay        !! Delay in [msec].
+        integer,            intent(in), optional :: error        !! Error code.
+        integer,            intent(in), optional :: mode         !! Request mode.
+        integer,            intent(in), optional :: retries      !! Number of executed retries.
+        integer,            intent(in), optional :: state        !! Request state.
+        integer,            intent(in), optional :: timeout      !! Timeout in [msec].
+        integer,            intent(in), optional :: nresponses   !! Number of responses.
 
-        request%error = error
-    end subroutine dm_request_set_error
+        if (present(name))         request%name       = name
+        if (present(timestamp))    request%timestamp  = timestamp
+        if (present(raw_request))  request%request    = raw_request
+        if (present(raw_response)) request%response   = raw_response
+        if (present(delimiter))    request%delimiter  = delimiter
+        if (present(pattern))      request%pattern    = pattern
+        if (present(delay))        request%delay      = delay
+        if (present(error))        request%error      = error
+        if (present(mode))         request%mode       = mode
+        if (present(retries))      request%retries    = retries
+        if (present(state))        request%state      = state
+        if (present(timeout))      request%timeout    = timeout
+        if (present(nresponses))   request%nresponses = nresponses
+    end subroutine dm_request_set
 
     pure elemental subroutine dm_request_set_response_error(request, error, name)
         !! Sets error code of all responses of the given request. If argument
@@ -638,114 +647,4 @@ contains
         if (present(status)) status = rc
         if (present(default) .and. dm_is_error(rc)) response = default
     end subroutine request_get_type
-
-    pure elemental subroutine request_set_int32(request, index, name, value, unit, error)
-        !! Updates response name, value, and optional unit and error, of
-        !! response at position `index` to given 4-byte integer value. This
-        !! routine does not update the number of responses
-        !! `request%nresponses`. No update is performed if `index` is out of
-        !! bounds. An existing response at `index` will be overwritten.
-        type(request_type), intent(inout)        :: request !! Request type.
-        integer,            intent(in)           :: index   !! Response index.
-        character(len=*),   intent(in)           :: name    !! Response name.
-        integer(kind=i4),   intent(in)           :: value   !! Response value.
-        character(len=*),   intent(in), optional :: unit    !! Response unit.
-        integer,            intent(in), optional :: error   !! Response error.
-
-        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-        call dm_response_set(response = request%responses(index), &
-                             name     = name, &
-                             unit     = unit, &
-                             type     = RESPONSE_TYPE_INT32, &
-                             error    = dm_present(error, E_NONE), &
-                             value    = dm_to_real64(value))
-    end subroutine request_set_int32
-
-    pure elemental subroutine request_set_int64(request, index, name, value, unit, error)
-        !! Updates response name, value, and optional unit and error, of
-        !! response at position `index` to given 8-byte integer value. This
-        !! routine does not update the number of responses
-        !! `request%nresponses`. No update is performed if `index` is out of
-        !! bounds. An existing response at `index` will be overwritten.
-        type(request_type), intent(inout)        :: request !! Request type.
-        integer,            intent(in)           :: index   !! Response index.
-        character(len=*),   intent(in)           :: name    !! Response name.
-        integer(kind=i8),   intent(in)           :: value   !! Response value.
-        character(len=*),   intent(in), optional :: unit    !! Response unit.
-        integer,            intent(in), optional :: error   !! Response error.
-
-        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-        call dm_response_set(response = request%responses(index), &
-                             name     = name, &
-                             unit     = unit, &
-                             type     = RESPONSE_TYPE_INT64, &
-                             error    = dm_present(error, E_NONE), &
-                             value    = dm_to_real64(value))
-    end subroutine request_set_int64
-
-    pure elemental subroutine request_set_logical(request, index, name, value, unit, error)
-        !! Updates response name, value, and optional unit and error, of
-        !! response at position `index` to given logical value. This routine
-        !! does not update the number of responses `request%nresponses`. No
-        !! update is performed if `index` is out of bounds. An existing
-        !! response at `index` will be overwritten.
-        type(request_type), intent(inout)        :: request !! Request type.
-        integer,            intent(in)           :: index   !! Response index.
-        character(len=*),   intent(in)           :: name    !! Response name.
-        logical,            intent(in)           :: value   !! Response value.
-        character(len=*),   intent(in), optional :: unit    !! Response unit.
-        integer,            intent(in), optional :: error   !! Response error.
-
-        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-        call dm_response_set(response = request%responses(index), &
-                             name     = name, &
-                             unit     = unit, &
-                             type     = RESPONSE_TYPE_LOGICAL, &
-                             error    = dm_present(error, E_NONE), &
-                             value    = dm_to_real64(value))
-    end subroutine request_set_logical
-
-    pure elemental subroutine request_set_real32(request, index, name, value, unit, error)
-        !! Updates response name, value, and optional unit and error, of
-        !! response at position `index` to given 4-byte real value. This
-        !! routine does not update the number of responses
-        !! `request%nresponses`. No update is performed if `index` is out of
-        !! bounds. An existing response at `index` will be overwritten.
-        type(request_type), intent(inout)        :: request !! Request type.
-        integer,            intent(in)           :: index   !! Response index.
-        character(len=*),   intent(in)           :: name    !! Response name.
-        real(kind=r4),      intent(in)           :: value   !! Response value.
-        character(len=*),   intent(in), optional :: unit    !! Response unit.
-        integer,            intent(in), optional :: error   !! Response error.
-
-        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-        call dm_response_set(response = request%responses(index), &
-                             name     = name, &
-                             unit     = unit, &
-                             type     = RESPONSE_TYPE_REAL32, &
-                             error    = dm_present(error, E_NONE), &
-                             value    = dm_to_real64(value))
-    end subroutine request_set_real32
-
-    pure elemental subroutine request_set_real64(request, index, name, value, unit, error)
-        !! Updates response name, value, and optional unit and error, of
-        !! response at position `index` to given 8-byte real value. This
-        !! routine does not update the number of responses
-        !! `request%nresponses`. No update is performed if `index` is out of
-        !! bounds. An existing response at `index` will be overwritten.
-        type(request_type), intent(inout)        :: request !! Request type.
-        integer,            intent(in)           :: index   !! Response index.
-        character(len=*),   intent(in)           :: name    !! Response name.
-        real(kind=r8),      intent(in)           :: value   !! Response value.
-        character(len=*),   intent(in), optional :: unit    !! Response unit.
-        integer,            intent(in), optional :: error   !! Response error.
-
-        if (index < 1 .or. index > REQUEST_MAX_NRESPONSES) return
-        call dm_response_set(response = request%responses(index), &
-                             name     = name, &
-                             unit     = unit, &
-                             type     = RESPONSE_TYPE_REAL64, &
-                             error    = dm_present(error, E_NONE), &
-                             value    = value)
-    end subroutine request_set_real64
 end module dm_request
