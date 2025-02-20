@@ -19,20 +19,20 @@ program dmmb
     integer, parameter :: OUTPUT_STDOUT = 1 !! Output to standard output.
     integer, parameter :: OUTPUT_FILE   = 2 !! Output to file.
 
-    type :: rtu_type
+    type :: app_rtu_type
         !! Modbus RTU settings.
         character(len=FILE_PATH_LEN) :: path      = ' '             !! Path.
         integer                      :: baud_rate = TTY_B19200      !! Baud rate.
         integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
         integer                      :: parity    = TTY_PARITY_EVEN !! Parity name.
         integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
-    end type rtu_type
+    end type app_rtu_type
 
-    type :: tcp_type
+    type :: app_tcp_type
         !! Modbus TCP settings.
         character(len=NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
         integer                     :: port    = 0   !! Port.
-    end type tcp_type
+    end type app_tcp_type
 
     type :: app_type
         !! Application settings.
@@ -48,8 +48,8 @@ program dmmb
         integer                        :: mode        = MODBUS_MODE_NONE !! Modbus RTU or TCP.
         logical                        :: debug       = .false.          !! Forward debug messages via IPC.
         logical                        :: verbose     = .false.          !! Print debug messages to stderr.
-        type(rtu_type)                 :: rtu                            !! Modbus RTU settings.
-        type(tcp_type)                 :: tcp                            !! Modbus TCP settings.
+        type(app_rtu_type)             :: rtu                            !! Modbus RTU settings.
+        type(app_tcp_type)             :: tcp                            !! Modbus TCP settings.
         type(job_list_type)            :: jobs                           !! Job list.
     end type app_type
 
@@ -151,7 +151,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(9)
+
+        type(arg_type) :: args(9)
 
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
@@ -346,11 +347,10 @@ contains
         type(observ_type), target, intent(inout)        :: observ !! Observation to read.
         logical,                   intent(in), optional :: debug  !! Output debug messages.
 
-        type(request_type),  pointer :: request  ! Next request to execute.
-
-        integer :: msec, sec
-        integer :: i, n
-        logical :: debug_
+        integer                     :: msec, sec
+        integer                     :: i, n
+        logical                     :: debug_
+        type(request_type), pointer :: request
 
         rc     = E_EMPTY
         debug_ = dm_present(debug, .true.)
@@ -520,9 +520,9 @@ contains
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
 
         integer                    :: msec, njobs, sec
-        logical                    :: debug  ! Create debug messages only if necessary.
-        type(job_type),    target  :: job    ! Next job to start.
-        type(observ_type), pointer :: observ ! Next observation to perform.
+        logical                    :: debug
+        type(job_type),    target  :: job
+        type(observ_type), pointer :: observ
 
         debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)

@@ -12,33 +12,33 @@ program dmmbctl
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    type :: rtu_type
+    type :: app_rtu_type
         !! Modbus RTU settings.
         character(len=FILE_PATH_LEN) :: path      = ' '             !! Path.
         integer                      :: baud_rate = TTY_B19200      !! Baud rate.
         integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
         integer                      :: parity    = TTY_PARITY_EVEN !! Parity name.
         integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
-    end type rtu_type
+    end type app_rtu_type
 
-    type :: tcp_type
+    type :: app_tcp_type
         !! Modbus TCP settings.
         character(len=NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
         integer                     :: port    = 0   !! Port.
-    end type tcp_type
+    end type app_tcp_type
 
     type :: app_type
         !! Application settings.
-        integer        :: mode     = MODBUS_MODE_NONE    !! Modbus mode (RTU, TCP).
-        integer        :: slave    = 1                   !! Modbus slave id.
-        integer        :: register = 0                   !! Modbus register address.
-        integer        :: access   = MODBUS_ACCESS_NONE  !! Read or write operation.
-        integer        :: type     = MODBUS_TYPE_DEFAULT !! Number type.
-        integer        :: order    = MODBUS_ORDER_NONE   !! Byte order of type float.
-        integer        :: value    = 0                   !! Value to write.
-        logical        :: debug    = .false.             !! Enable debug mode of libmodbus.
-        type(rtu_type) :: rtu                            !! Modbus RTU settings.
-        type(tcp_type) :: tcp                            !! Modbus TCP settings.
+        integer            :: mode     = MODBUS_MODE_NONE    !! Modbus mode (RTU, TCP).
+        integer            :: slave    = 1                   !! Modbus slave id.
+        integer            :: register = 0                   !! Modbus register address.
+        integer            :: access   = MODBUS_ACCESS_NONE  !! Read or write operation.
+        integer            :: type     = MODBUS_TYPE_DEFAULT !! Number type.
+        integer            :: order    = MODBUS_ORDER_NONE   !! Byte order of type float.
+        integer            :: value    = 0                   !! Value to write.
+        logical            :: debug    = .false.             !! Enable debug mode of libmodbus.
+        type(app_rtu_type) :: rtu                            !! Modbus RTU settings.
+        type(app_tcp_type) :: tcp                            !! Modbus TCP settings.
     end type app_type
 
     integer        :: rc  ! Return code.

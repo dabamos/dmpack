@@ -79,7 +79,7 @@ dmmb = {
     sensor = "dummy-sensor",
     output = "",
     format = "jsonl",
-    mode = "tcp",
+    mode = "rtu",
     rtu = {
         -- Modbus RTU interface.
         path = "/dev/ttyUSB0",
