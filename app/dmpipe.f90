@@ -213,20 +213,16 @@ contains
         !!
         !! * `E_EMPTY` if the observation contains no requests.
         !!
-        type(observ_type), target, intent(inout)        :: observ    !! Observation to read.
-        character(len=*),          intent(in)           :: node_id   !! Node id of observation.
-        character(len=*),          intent(in)           :: sensor_id !! Sensor id of observation.
-        character(len=*),          intent(in)           :: source    !! Source of observation.
-        logical,                   intent(in), optional :: debug     !! Output debug messages.
+        type(observ_type), target, intent(inout) :: observ    !! Observation to read.
+        character(len=*),          intent(in)    :: node_id   !! Node id of observation.
+        character(len=*),          intent(in)    :: sensor_id !! Sensor id of observation.
+        character(len=*),          intent(in)    :: source    !! Source of observation.
+        logical,                   intent(in)    :: debug     !! Output debug messages.
 
-        integer :: msec
-        integer :: i, n
-        logical :: debug_
+        integer                     :: i, msec, n
+        type(request_type), pointer :: request
 
-        type(request_type), pointer :: request ! Next request to execute.
-
-        rc     = E_EMPTY
-        debug_ = dm_present(debug, .true.)
+        rc = E_EMPTY
 
         ! Prepare observation.
         call dm_observ_set(observ    = observ,     &
@@ -239,7 +235,7 @@ contains
         n = observ%nrequests
 
         if (n == 0) then
-            if (debug_) call logger%debug('no requests in observ ' // observ%name, observ=observ)
+            if (debug) call logger%debug('no requests in observ ' // observ%name, observ=observ)
             return
         end if
 
@@ -248,8 +244,8 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
-            if (debug_) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-            rc = read_request(observ, request, debug_)
+            if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+            rc = read_request(observ, request, debug)
             call dm_request_set(request, error=rc)
 
             if (dm_is_error(rc)) then
@@ -258,16 +254,16 @@ contains
                 cycle request_loop
             end if
 
-            if (debug_) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
+            if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
             ! Wait the set delay time of the request.
             msec = max(0, request%delay)
             if (msec == 0) cycle request_loop
 
             if (i < n) then
-                if (debug_) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             else
-                if (debug_) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             end if
 
             call dm_msleep(msec)
@@ -277,24 +273,22 @@ contains
     end function read_observ
 
     integer function read_request(observ, request, debug) result(rc)
-        type(observ_type),          intent(inout)        :: observ  !! Observation type.
-        type(request_type), target, intent(inout)        :: request !! Request type.
-        logical,                    intent(in), optional :: debug   !! Output debug messages.
+        type(observ_type),          intent(inout) :: observ  !! Observation type.
+        type(request_type), target, intent(inout) :: request !! Request type.
+        logical,                    intent(in)    :: debug   !! Output debug messages.
 
         character(len=REQUEST_RESPONSE_LEN) :: raw      ! Raw response (unescaped).
         type(pipe_type)                     :: pipe     ! Pipe to process.
         type(response_type), pointer        :: response ! Single response in request.
 
-        logical          :: debug_
         integer          :: i
         integer(kind=i8) :: nbytes
 
-        rc     = E_NONE
-        debug_ = dm_present(debug, .true.)
+        rc = E_NONE
 
         ! Return if request is disabled.
         if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug_) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
+            if (debug) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
             return
         end if
 
@@ -324,14 +318,14 @@ contains
                 ! Try to extract the response values.
                 if (len_trim(request%pattern) == 0) then
                     rc = E_NONE
-                    if (debug_) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
+                    if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
                     exit read_loop
                 end if
 
                 rc = dm_regex_request(request)
 
                 if (dm_is_error(rc)) then
-                    if (debug_) call logger%debug('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=request%error)
+                    if (debug) call logger%debug('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=request%error)
                     cycle read_loop
                 end if
 
@@ -411,7 +405,7 @@ contains
 
                 ! Read observation.
                 if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug=debug)
+                rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation.
