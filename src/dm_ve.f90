@@ -725,7 +725,7 @@ contains
         i = findloc(VE_PRODUCTS%pid, pid, dim=1)
 
         if (i > 0) then
-            rc = E_NONE
+            rc   = E_NONE
             name = VE_PRODUCTS(i)%name
         end if
     end function dm_ve_product_name

@@ -10,7 +10,7 @@ program dmfs
     character(len=*), parameter :: APP_NAME  = 'dmfs'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 4
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -109,7 +109,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App settings.
-        type(arg_type)              :: args(9)
+
+        type(arg_type) :: args(9)
 
         args = [ &
             arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
@@ -238,10 +239,10 @@ contains
         integer :: i, n
         logical :: debug_
 
+        rc     = E_EMPTY
         debug_ = dm_present(debug, .true.)
 
         ! Initialise observation.
-        rc = E_EMPTY
         call dm_observ_set(observ    = observ,     &
                            id        = dm_uuid4(), &
                            node_id   = node_id,    &
@@ -301,7 +302,7 @@ contains
         !! * `E_READ` if reading from the file failed.
         !!
         !! The function returns `E_NONE` if the request is disabled.
-        type(observ_type),  target, intent(inout)        :: observ  !! Observation type.
+        type(observ_type),          intent(inout)        :: observ  !! Observation type.
         type(request_type), target, intent(inout)        :: request !! Request type.
         logical,                    intent(in), optional :: debug   !! Output debug messages.
 
@@ -311,24 +312,22 @@ contains
         integer :: i, stat, unit
         logical :: debug_
 
+        rc     = E_NONE
         debug_ = dm_present(debug, .true.)
 
-        ! Check if request is disabled.
-        rc = E_NONE
-
+        ! Return if request is disabled.
         if (request%state == REQUEST_STATE_DISABLED) then
             if (debug_) call logger%debug(request_name_string(request%name, observ%name) // ' is disabled', observ=observ)
             return
         end if
 
-        ! Start request.
+        ! Prepare request.
         request%timestamp = dm_time_now()
         call dm_request_set_response_error(request, rc)
 
-        ! Check if file path passed as observation request exists.
-        rc = E_NOT_FOUND
-
+        ! Return if file path passed as observation request exists.
         if (.not. dm_file_exists(request%request)) then
+            rc = E_NOT_FOUND
             call logger%error('file ' // trim(request%request) // ' not found', observ=observ, error=rc)
             return
         end if
@@ -359,9 +358,8 @@ contains
                 request%response = dm_ascii_escape(raw)
 
                 ! Look for regular expression pattern.
-                rc = E_EMPTY
-
                 if (dm_request_has_pattern(request)) then
+                    rc = E_EMPTY
                     if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, observ%name), observ=observ, error=rc)
                     exit read_loop
                 end if
@@ -381,7 +379,6 @@ contains
                     call logger%warning('failed to extract response ' // trim(response%name) // ' in ' // request_name_string(request%name, observ%name), observ=observ, error=response%error)
                 end do
 
-                ! Exit loop on success.
                 exit read_loop
             end do read_loop
         end block io_block
@@ -446,12 +443,10 @@ contains
             if (job%valid) then
                 ! Get observation of job.
                 observ => job%observ
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation from file system.
+                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
                 rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug=debug)
-
-                ! Set observation error code.
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation via message queue.

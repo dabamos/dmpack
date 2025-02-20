@@ -154,7 +154,7 @@ contains
         mail_block: block
             print *, 'Creating server ...'
             rc = dm_mail_create(server, env_host, env_username, env_password, &
-                                tls=MAIL_TLS, verify_ssl=.false.)
+                                tls=MAIL_TLS_IMPLICIT, verify_tls=.false.)
             if (dm_is_error(rc)) exit mail_block
 
             print *, 'Creating mail ...'

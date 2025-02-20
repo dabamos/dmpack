@@ -39,9 +39,10 @@ module dm_mail
     implicit none (type, external)
     private
 
-    integer, parameter, public :: MAIL_PLAIN = 0 !! No transport-layer security.
-    integer, parameter, public :: MAIL_SSL   = 1 !! Explicit SSL.
-    integer, parameter, public :: MAIL_TLS   = 2 !! Implicit TLS (StartTLS).
+    integer, parameter, public :: MAIL_TLS_NONE     = 0 !! No transport-layer security.
+    integer, parameter, public :: MAIL_TLS_EXPLICIT = 1 !! Explicit SSL.
+    integer, parameter, public :: MAIL_TLS_IMPLICIT = 2 !! Implicit TLS (StartTLS).
+    integer, parameter, public :: MAIL_TLS_LAST     = 2 !! Never use thise.
 
     type :: payload_type
         !! Private payload type.
@@ -53,14 +54,14 @@ module dm_mail
     type, public :: mail_server_type
         !! Opaque SMTP server type that stores connection settings.
         private
-        character(len=:), allocatable :: url                          !! SMTP server URL.
-        character(len=:), allocatable :: username                     !! SMTP user name.
-        character(len=:), allocatable :: password                     !! SMTP password.
-        integer                       :: connect_timeout = 30         !! Connection timeout [sec].
-        integer                       :: timeout         = 30         !! Timeout [sec].
-        integer                       :: tls             = MAIL_PLAIN !! Transport-layer security.
-        logical                       :: verify_ssl      = .false.    !! Verify SSL cert and host name.
-        logical                       :: allocated       = .false.    !! Allocation status.
+        character(len=:), allocatable :: url                             !! SMTP server URL.
+        character(len=:), allocatable :: username                        !! SMTP user name.
+        character(len=:), allocatable :: password                        !! SMTP password.
+        integer                       :: connect_timeout = 30            !! Connection timeout [sec].
+        integer                       :: timeout         = 30            !! Timeout [sec].
+        integer                       :: tls             = MAIL_TLS_NONE !! Transport-layer security.
+        logical                       :: verify_tls      = .false.       !! Verify SSL cert and host name.
+        logical                       :: allocated       = .false.       !! Allocation status.
     end type mail_server_type
 
     type, public :: mail_type
@@ -157,14 +158,14 @@ contains
     end function dm_mail_create_mail
 
     integer function dm_mail_create_server(server, host, username, password, port, tls, &
-                                           timeout, connect_timeout, verify_ssl) result(rc)
+                                           timeout, connect_timeout, verify_tls) result(rc)
         !! Returns SMTP server type. Argument `tls` may be one of the following:
         !!
-        !! * `MAIL_PLAIN` – No transport-layer security.
-        !! * `MAIL_SSL` – Explicit SSL.
-        !! * `MAIL_TLS` – Implicit TLS (StartTLS).
+        !! * `MAIL_TLS_NONE`     – No transport-layer security.
+        !! * `MAIL_TLS_EXPLICIT` – Explicit SSL.
+        !! * `MAIL_TLS_IMPLICIT` – Implicit TLS (StartTLS).
         !!
-        !! Parameter `MAIL_PLAIN` is used by default. The function returns
+        !! Parameter `MAIL_TLS_NONE` is used by default. The function returns
         !! `E_INVALID` on error.
         type(mail_server_type), intent(out)          :: server          !! Mail server type.
         character(len=*),       intent(in)           :: host            !! SMTP server host.
@@ -174,24 +175,24 @@ contains
         integer,                intent(in), optional :: tls             !! SMTP transport-layer security.
         integer,                intent(in), optional :: timeout         !! cURL timeout in seconds.
         integer,                intent(in), optional :: connect_timeout !! cURL connection timeout in seconds.
-        logical,                intent(in), optional :: verify_ssl      !! Verify SSL cert.
+        logical,                intent(in), optional :: verify_tls      !! Verify SSL cert.
 
         integer :: port_
         logical :: tls_
 
-        rc = E_INVALID
-
         port_ = dm_present(port, 0)
+        tls_  = .false.
+
+        rc = E_INVALID
         if (len_trim(host) == 0 .or. port_ < 0) return
 
-        tls_ = .false.
         if (present(tls)) server%tls = tls
-        if (server%tls < MAIL_PLAIN .or. server%tls > MAIL_TLS) return
-        if (server%tls /= MAIL_PLAIN) tls_ = .true.
+        if (server%tls < MAIL_TLS_NONE .or. server%tls > MAIL_TLS_LAST) return
+        tls_ = (server%tls /= MAIL_TLS_NONE)
 
         if (present(timeout))         server%timeout         = timeout
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
-        if (present(verify_ssl))      server%verify_ssl      = verify_ssl
+        if (present(verify_tls))      server%verify_tls      = verify_tls
 
         if (server%connect_timeout < 0) return
 
@@ -341,14 +342,14 @@ contains
                 if (stat /= CURLE_OK) exit curl_block
 
                 ! Transport-Layer Security.
-                if (server%tls /= MAIL_PLAIN) then
+                if (server%tls /= MAIL_TLS_NONE) then
                     ! StartTLS.
-                    if (server%tls == MAIL_TLS) then
+                    if (server%tls == MAIL_TLS_IMPLICIT) then
                         stat = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL)
                         if (stat /= CURLE_OK) exit curl_block
                     end if
 
-                    if (.not. server%verify_ssl) then
+                    if (.not. server%verify_tls) then
                         ! Skip peer verification.
                         stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0)
                         if (stat /= CURLE_OK) exit curl_block
@@ -432,7 +433,7 @@ contains
         !! URL. By default, Transport Layer Security is disabled.
         character(len=*), intent(in)           :: host !! SMTP server host name.
         integer,          intent(in), optional :: port !! SMTP server port (up to 5 digits).
-        logical,          intent(in), optional :: tls  !! Transport-layer security.
+        logical,          intent(in), optional :: tls  !! Transport-layer security (`MAIL_TLS_*`).
         character(len=:), allocatable          :: url  !! URL of SMTP server.
 
         integer     :: port_
@@ -630,6 +631,6 @@ contains
         write (unit_, '("mail_server.connect_timeout: ", i0)') server%connect_timeout
         write (unit_, '("mail_server.timeout: ", i0)')         server%timeout
         write (unit_, '("mail_server.tls: ", i0)')             server%tls
-        write (unit_, '("mail_server.verify_ssl: ", l1)')      server%verify_ssl
+        write (unit_, '("mail_server.verify_tls: ", l1)')      server%verify_tls
     end subroutine mail_out_server
 end module dm_mail

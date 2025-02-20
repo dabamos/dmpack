@@ -34,6 +34,10 @@
 #
 #   export DM_PIPE_SKIP=1
 #
+# Skipping GraphicsMagick tests:
+#
+#   export DM_GM_SKIP=1
+#
 TESTS="dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
 dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile dmtestgm \
 dmtesthash dmtesthdf5 dmtesthtml dmtestid dmtestjob dmtestjson dmtestlog \

@@ -450,7 +450,7 @@ contains
         !! Uses GraphicsMagick to determine the dimensions of the image at
         !! given path. On error, width and height are 0.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -479,7 +479,7 @@ contains
         !! Uses GraphicsMagick to return the directory part of the image path.
         !! On error, the string `directory` is allocated but empty.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -499,7 +499,7 @@ contains
         !! `png`, ...). On error, the string `file_format` is allocated but
         !! empty.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -519,7 +519,7 @@ contains
         !! `PNG`, ...). On error, the string `file_format` is allocated but
         !! empty.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -538,7 +538,7 @@ contains
         !! Uses GraphicsMagick to return the file name part of the image path.
         !! On error, the string `file_name` is allocated but empty.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -558,7 +558,7 @@ contains
         !! following file formats are recognised: GIF, JPEG, PNG, SVG. On
         !! error, the string `mime` is allocated but empty.
         !!
-        !! The function returns the followin error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
@@ -658,20 +658,17 @@ contains
 
             n = dm_pipe_read(pipe, output)
             if (present(nbytes)) nbytes = n
-
-            rc = E_NONE
         end block io_block
 
         call dm_pipe_close(pipe)
-        if (dm_is_error(rc)) return
 
         ! Remove null character.
         if (n == 0) then
-            output(1:1) = ' '
             rc = E_READ
+            output(1:1) = ' '
         else
-            output(n:n) = ' '
             rc = E_NONE
+            output(n:n) = ' '
         end if
     end function gm_identify
 end module dm_gm
