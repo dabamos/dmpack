@@ -15,6 +15,7 @@ jobs:
     env:
       GCC_V: 14
       NO_COLOR: 1
+      DM_GM_SKIP: 1
 
     steps:
     - name: Checkout Source Code
@@ -57,5 +58,4 @@ jobs:
         gcc --version
         sqlite3 --version
         make build OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1"
-        export DM_GM_SKIP=1
         sh runtests.sh
