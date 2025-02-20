@@ -5,7 +5,7 @@
 program dmbot
     !! This program is an XMPP bot for remote control of sensor nodes.
     use, intrinsic :: iso_c_binding
-    use :: dmpack
+    use :: dmpack, NL => ASCII_LF
     use :: xmpp
     implicit none (type, external)
 
@@ -57,17 +57,17 @@ program dmbot
 
     type :: bot_type
         !! User data to be passed to libstrophe callbacks.
-        type(im_type)                               :: im                         !! IM context type.
-        character(len=ID_LEN)                       :: name            = APP_NAME !! Bot name.
-        character(len=NODE_ID_LEN)                  :: node_id         = ' '      !! Node id.
-        character(len=IM_JID_LEN)                   :: jid             = ' '      !! JID of bot account.
-        character(len=IM_PASSWORD_LEN)              :: password        = ' '      !! Password of bot account.
-        character(len=IM_HOST_LEN)                  :: host            = ' '      !! Domain of XMPP server.
-        integer                                     :: port            = IM_PORT  !! Port of XMPP server.
-        logical                                     :: tls             = .true.   !! Force TLS encryption.
-        logical                                     :: reconnect       = .false.  !! Reconnect on error.
-        character(len=IM_ID_LEN)                    :: ping_id         = ' '      !! XMPP ping id (XEP-0199).
-        character(len=IM_JID_FULL_LEN), allocatable :: group(:)                   !! Authorised JIDs.
+        type(im_type)                               :: im                   !! IM context type.
+        character(len=ID_LEN)                       :: name      = APP_NAME !! Bot name.
+        character(len=NODE_ID_LEN)                  :: node_id   = ' '      !! Node id.
+        character(len=IM_JID_LEN)                   :: jid       = ' '      !! JID of bot account.
+        character(len=IM_PASSWORD_LEN)              :: password  = ' '      !! Password of bot account.
+        character(len=IM_HOST_LEN)                  :: host      = ' '      !! Domain of XMPP server.
+        integer                                     :: port      = IM_PORT  !! Port of XMPP server.
+        logical                                     :: tls       = .true.   !! Force TLS encryption.
+        logical                                     :: reconnect = .false.  !! Reconnect on error.
+        character(len=IM_ID_LEN)                    :: ping_id   = ' '      !! XMPP ping id (XEP-0199).
+        character(len=IM_JID_FULL_LEN), allocatable :: group(:)             !! Authorised JIDs.
     end type bot_type
 
     type :: bot_upload_type
@@ -123,21 +123,20 @@ program dmbot
             end if
 
             ! Connect to XMPP server.
-            rc = dm_im_connect(im           = bot%im, &
-                               host         = bot%host, &
-                               port         = bot%port, &
-                               jid          = bot%jid, &
-                               password     = bot%password, &
+            rc = dm_im_connect(im           = bot%im,              &
+                               host         = bot%host,            &
+                               port         = bot%port,            &
+                               jid          = bot%jid,             &
+                               password     = bot%password,        &
                                callback     = connection_callback, &
-                               user_data    = c_loc(bot), &
-                               resource     = bot%name, &
-                               keep_alive   = APP_TCP_KEEP_ALIVE, &
-                               tls_required = bot%tls, &
+                               user_data    = c_loc(bot),          &
+                               resource     = bot%name,            &
+                               keep_alive   = APP_TCP_KEEP_ALIVE,  &
+                               tls_required = bot%tls,             &
                                tls_trusted  = APP_TLS_TRUSTED)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to connect to ' // trim(bot%host) // ':' // &
-                                  dm_itoa(bot%port), error=rc)
+                call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
                 exit init_block
             end if
 
@@ -309,7 +308,7 @@ contains
         character(len=:), allocatable   :: reply   !! Reply string.
 
         character(len=:), allocatable :: argument, command, output
-        integer                       :: c
+        integer                       :: bot_command
 
         ! Do not answer to empty messages.
         if (len_trim(message) == 0) then
@@ -317,9 +316,9 @@ contains
             return
         end if
 
-        c = bot_parse_message(message, command, argument)
+        bot_command = bot_parse_message(message, command, argument)
 
-        if (c == BOT_COMMAND_NONE) then
+        if (bot_command == BOT_COMMAND_NONE) then
             reply = 'unrecognized command (send !help for a list of all commands)'
             call logger%debug('received invalid command from ' // from)
             return
@@ -327,7 +326,7 @@ contains
 
         call logger%debug('received command ' // command // ' from ' // from)
 
-        select case (c)
+        select case (bot_command)
             case (BOT_COMMAND_BEATS);     output = bot_response_beats()
             case (BOT_COMMAND_CAMERA);    output = bot_response_camera(bot)
             case (BOT_COMMAND_DATE);      output = bot_response_date()
@@ -351,7 +350,7 @@ contains
         character(len=IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
         character(len=*),               intent(in)    :: jid      !! JIDs to validate.
 
-        integer :: i, j, n
+        integer :: i, n
 
         is = .false.
 
@@ -363,18 +362,13 @@ contains
 
         n = len_trim(jid)
         if (n == 0) return
-        j = index(jid, '/') - 1
-        if (j < 1) j = n
+        i = index(jid, '/') - 1
+        if (i < 1) i = n
 
-        do i = 1, size(group)
-            if (jid(:j) == group(i)) then
-                is = .true.
-                exit
-            end if
-        end do
+        is = (findloc(group, jid(:i), dim=1) > 0)
     end function bot_is_authorized
 
-    integer function bot_parse_message(message, command, argument) result(c)
+    integer function bot_parse_message(message, command, argument) result(bot_command)
         !! Return bot command parsed from string or `BOT_COMMAND_NONE` on error.
         !! Optionally returns the command string in `command` and the argument
         !! string in `argument`.
@@ -385,7 +379,7 @@ contains
         character(len=BOT_COMMAND_NAME_LEN) :: name
         integer                             :: i, j, n
 
-        c = BOT_COMMAND_NONE
+        bot_command = BOT_COMMAND_NONE
 
         parse_block: block
             ! Split message into command and argument.
@@ -401,12 +395,7 @@ contains
             if (present(argument) .and. j < n) argument = adjustl(trim(message(j:)))
 
             ! Search for command name.
-            do i = 1, BOT_NCOMMANDS
-                if (name == BOT_COMMAND_NAMES(i)) then
-                    c = i
-                    exit parse_block
-                end if
-            end do
+            bot_command = findloc(BOT_COMMAND_NAMES, name, dim=1)
         end block parse_block
 
         if (present(command)) then
@@ -459,17 +448,17 @@ contains
         !! Returns help text.
         character(len=:), allocatable :: output !! Response string.
 
-        output = 'you may enter one of the following commands:'     // ASCII_LF // &
-                 '!beats     - return time in Swatch Internet Time' // ASCII_LF // &
-                 '!date      - return date and time in ISO 8601'    // ASCII_LF // &
-                 '!help      - return this help text'               // ASCII_LF // &
-                 '!jid       - return bot JID'                      // ASCII_LF // &
-                 '!log       - send log message to logger'          // ASCII_LF // &
-                 '!node      - return node id'                      // ASCII_LF // &
-                 '!poke      - return message if bot is online'     // ASCII_LF // &
-                 '!reconnect - reconnect to server'                 // ASCII_LF // &
-                 '!uname     - return system name'                  // ASCII_LF // &
-                 '!uptime    - return system uptime'                // ASCII_LF // &
+        output = 'you may enter one of the following commands:'     // NL // &
+                 '!beats     - return time in Swatch Internet Time' // NL // &
+                 '!date      - return date and time in ISO 8601'    // NL // &
+                 '!help      - return this help text'               // NL // &
+                 '!jid       - return bot JID'                      // NL // &
+                 '!log       - send log message to logger'          // NL // &
+                 '!node      - return node id'                      // NL // &
+                 '!poke      - return message if bot is online'     // NL // &
+                 '!reconnect - reconnect to server'                 // NL // &
+                 '!uname     - return system name'                  // NL // &
+                 '!uptime    - return system uptime'                // NL // &
                  '!version   - return bot version'
     end function bot_response_help
 
@@ -661,8 +650,7 @@ contains
 
         if (event == XMPP_CONN_CONNECT) then
             ! Connected to server.
-            call logger%debug('connected as ' // trim(im%jid_full) // ' to server ' // &
-                              trim(im%host) // ':' // dm_itoa(im%port))
+            call logger%debug('connected as ' // trim(im%jid_full) // ' to server ' // trim(im%host) // ':' // dm_itoa(im%port))
 
             ! Add handlers.
             call xmpp_handler_add(connection, ping_response_callback, IM_STANZA_NS_PING, IM_STANZA_NAME_IQ,      '', user_data)
