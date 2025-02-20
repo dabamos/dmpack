@@ -68,20 +68,21 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STRING1 = 'access=read,slave=10,address=50,type=float,order=abcd'
-        character(len=*), parameter :: STRING2 = 'ACCESS = WRITE, SLAVE = 9, ADDRESS = 1, VALUE = 10, TYPE = INT32'
+        character(len=*), parameter :: STRING1 = 'ACCESS = READ, SLAVE = 10, ADDRESS = 50, TYPE = FLOAT, ORDER = ABCD'
+        character(len=*), parameter :: STRING2 = 'access=write,slave=9,address=1,value=123,type=int32,scale=10'
         character(len=*), parameter :: STRING3 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
         character(len=*), parameter :: STRING4 = 'access=write,slave=10,address=50,value=abc'
         character(len=*), parameter :: STRING5 = 'access-read.slave-10.address-50'
 
-        type(modbus_register_type) :: register
         integer                    :: rc
+        real(kind=r8)              :: value
+        type(modbus_register_type) :: register
 
         stat = TEST_FAILED
 
         print *, 'Parsing strings ...'
 
-        print *, STRING1
+        print *, '(1) ', STRING1
         call dm_modbus_register_parse(STRING1, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
@@ -91,7 +92,7 @@ contains
         if (register%type /= MODBUS_TYPE_FLOAT)    return
         if (register%order /= MODBUS_ORDER_ABCD)   return
 
-        print *, STRING2
+        print *, '(2) ', STRING2
         call dm_modbus_register_parse(STRING2, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
@@ -100,17 +101,28 @@ contains
         if (register%address /= 1)                  return
         if (register%type /= MODBUS_TYPE_INT32)     return
         if (register%order /= MODBUS_ORDER_NONE)    return
-        if (register%value /= 10)                   return
+        if (register%value /= 123)                  return
+        if (register%scale /= 10)                   return
 
-        print *, STRING3
+        value = dm_to_real64(register%value)
+
+        print '(" Value:  ", i0)',   register%value
+        print '(" Scale:  ", i0)',   register%scale
+        print '(" Float:  ", f5.1)', value
+
+        call dm_modbus_register_scale(register, value)
+        print '(" Scaled: ", f0.1)', value
+        if (.not. dm_equals(value, 12.3_r8)) return
+
+        print *, '(3) ', STRING3
         call dm_modbus_register_parse(STRING3, register, error=rc)
         if (rc /= E_TYPE) return
 
-        print *, STRING4
+        print *, '(4) ', STRING4
         call dm_modbus_register_parse(STRING4, register, error=rc)
         if (rc /= E_TYPE) return
 
-        print *, STRING5
+        print *, '(5) ', STRING5
         call dm_modbus_register_parse(STRING5, register, error=rc)
         if (rc /= E_FORMAT) return
 
