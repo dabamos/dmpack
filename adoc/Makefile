@@ -33,6 +33,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlog.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlogger.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlua.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmmb.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmmbctl.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmpipe.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmplot.adoc
@@ -63,6 +64,7 @@ pdf:
 	$(MAN) -t $(MANDIR)/dmlog.1    | $(PS2PDF) - $(PDFDIR)/dmlog.pdf
 	$(MAN) -t $(MANDIR)/dmlogger.1 | $(PS2PDF) - $(PDFDIR)/dmlogger.pdf
 	$(MAN) -t $(MANDIR)/dmlua.1    | $(PS2PDF) - $(PDFDIR)/dmlua.pdf
+	$(MAN) -t $(MANDIR)/dmmb.1     | $(PS2PDF) - $(PDFDIR)/dmmb.pdf
 	$(MAN) -t $(MANDIR)/dmmbctl.1  | $(PS2PDF) - $(PDFDIR)/dmmbctl.pdf
 	$(MAN) -t $(MANDIR)/dmpipe.1   | $(PS2PDF) - $(PDFDIR)/dmpipe.pdf
 	$(MAN) -t $(MANDIR)/dmplot.1   | $(PS2PDF) - $(PDFDIR)/dmplot.pdf
@@ -93,6 +95,7 @@ html:
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmlog.1    > $(HTMLDIR)/dmlog.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmlogger.1 > $(HTMLDIR)/dmlogger.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmlua.1    > $(HTMLDIR)/dmlua.html
+	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmmb.1     > $(HTMLDIR)/dmmb.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmmbctl.1  > $(HTMLDIR)/dmmbctl.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmpipe.1   > $(HTMLDIR)/dmpipe.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmplot.1   > $(HTMLDIR)/dmplot.html

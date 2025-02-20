@@ -1,0 +1,108 @@
+--
+-- Example configuration file for dmmb to read values from a Modbus RTU sensor.
+--
+-- The Modbus register parameters must be passed as a string in the request.
+-- For example, to read a float value in ABCD byte order from register 40050:
+--
+-- ```
+-- access=read, slave=10, address=40050, type=float, order=abcd
+-- ```
+--
+-- Or, to write value 10 as 16-bit signed integer to register 30060:
+--
+-- ```
+-- access=write, slave=10, address=30060, value=10, type=int16
+-- ```
+--
+-- Rename table "dmmb" to the instance name (parameter `--name`).
+--
+-- General settings:
+--
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      format   - Output format, either `csv` or `jsonl`.
+--      jobs     - Jobs to perform.
+--      logger   - Name of logger instance (implies log forwarding).
+--      mode     - Modbus mode, either `rtu` or `tcp`.
+--      node     - Node id.
+--      output   - Path of output file, or `-` for stdout (optional).
+--      rtu      - Modbus RTU settings.
+--      sensor   - Sensor id.
+--      tcp      - Modbus TCP settings.
+--      verbose  - Print logs to standard error.
+--
+-- Modbus RTU:
+--
+--      baudrate - Baud rate (4800, 9600, 19200, 115200, ...).
+--      bytesize - Byte size (5, 6, 7, 8)
+--      parity   - Parity (`none`, `even`, `odd`).
+--      path     - Path of TTY/PTY device (for example, `/dev/ttyUSB0`).
+--      stopbits - Stop bits (1 or 2).
+--
+-- Modbus TCP:
+--
+--      address  - IPv4 address.
+--      port     - Port.
+--
+
+get_values = {
+    --
+    -- Read temperature and humidity from Modbus registers.
+    --
+    name = "get_values",
+    target_id = "dummy-target",
+    receivers = { },
+    requests = {
+        {
+            -- Read temperature as 4-byte float.
+            name = "get_temperature",
+            request = "access=read, slave=1, address=40050, type=float, order=abcd",
+            delay = 0,
+            responses = {
+                { name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }
+            }
+        },
+        {
+            -- Read humidity as 2-byte unsigned integer.
+            name = "get_humidity",
+            request = "access=read, slave=1, address=40060, type=uint16",
+            delay = 0,
+            responses = {
+                { name = "hum", unit = "%", type = RESPONSE_TYPE_INT32 }
+            }
+        }
+    }
+}
+
+dmmb = {
+    logger = "",
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    output = "",
+    format = "jsonl",
+    mode = "tcp",
+    rtu = {
+        -- Modbus RTU interface.
+        path = "/dev/ttyUSB0",
+        baudrate = 19200,
+        bytesize = 8,
+        parity = "none",
+        stopbits = 2
+    },
+    tcp = {
+        -- Modbus TCP interface.
+        address = "192.168.1.100",
+        port = 502
+    },
+    jobs = {
+        -- Jobs to perform.
+        {
+            -- Read temperature and humidity every 60 seconds.
+            disabled = false,
+            onetime = false,
+            observation = get_values,
+            delay = 60 * 1000
+        }
+    },
+    debug = false,
+    verbose = true
+}

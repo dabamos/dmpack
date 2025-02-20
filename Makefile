@@ -209,6 +209,7 @@ DMINIT   = $(DISTDIR)/dminit
 DMLOG    = $(DISTDIR)/dmlog
 DMLOGGER = $(DISTDIR)/dmlogger
 DMLUA    = $(DISTDIR)/dmlua
+DMMB     = $(DISTDIR)/dmmb
 DMMBCTL  = $(DISTDIR)/dmmbctl
 DMPIPE   = $(DISTDIR)/dmpipe
 DMPLOT   = $(DISTDIR)/dmplot
@@ -451,7 +452,7 @@ build: $(TARGET) $(SHARED) test app
 # Apps target.
 app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
      $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-     $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
+     $(DMMB) $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
      $(DMSYNC) $(DMUUID) $(DMVED) $(DMWEB)
 
 # Tests target.
@@ -885,6 +886,9 @@ $(DMLOGGER): app/dmlogger.f90 $(TARGET)
 $(DMLUA): app/dmlua.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
+$(DMMB): app/dmmb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMMB) app/dmmb.f90 $(TARGET) $(LIBLUA54) $(LIBMODBUS) $(LIBRT) $(LDLIBS)
+
 $(DMMBCTL): app/dmmbctl.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMMBCTL) app/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
 
@@ -979,6 +983,7 @@ install:
 	$(INSTALL) -m 755 $(DMLOG)    $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMLOGGER) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMLUA)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMMB)     $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMMBCTL)  $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMPIPE)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMPLOT)   $(IBINDIR)/
@@ -1021,6 +1026,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmlog.1    > $(IMANDIR)/dmlog.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmlogger.1 > $(IMANDIR)/dmlogger.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmlua.1    > $(IMANDIR)/dmlua.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmmb.1     > $(IMANDIR)/dmmb.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmmbctl.1  > $(IMANDIR)/dmmbctl.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmpipe.1   > $(IMANDIR)/dmpipe.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmplot.1   > $(IMANDIR)/dmplot.1.gz
@@ -1057,6 +1063,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmlog
 	$(RM) -f $(IBINDIR)/dmlogger
 	$(RM) -f $(IBINDIR)/dmlua
+	$(RM) -f $(IBINDIR)/dmmb
 	$(RM) -f $(IBINDIR)/dmmbctl
 	$(RM) -f $(IBINDIR)/dmpipe
 	$(RM) -f $(IBINDIR)/dmrecv
@@ -1083,6 +1090,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmlog.1.gz
 	$(RM) -f $(IMANDIR)/dmlogger.1.gz
 	$(RM) -f $(IMANDIR)/dmlua.1.gz
+	$(RM) -f $(IMANDIR)/dmmb.1.gz
 	$(RM) -f $(IMANDIR)/dmmbctl.1.gz
 	$(RM) -f $(IMANDIR)/dmpipe.1.gz
 	$(RM) -f $(IMANDIR)/dmplot.1.gz

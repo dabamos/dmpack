@@ -1,0 +1,99 @@
+= dmmb(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMMB
+
+== NAME
+
+dmmb - reads observations from Modbus RTU/TCP device
+
+== SYNOPSIS
+
+*dmmb* --help
+
+*dmmb* --version
+
+*dmmb* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*logger* _name_] [--*format* _name_] [--*output* _file_] [--*debug*]
+[--*verbose*]
+
+== DESCRIPTION
+
+The *dmmb* program read from or writes to Modbus registers by processing
+jobs from the configuration file sequentially. Each request of an observation
+must contain the Modbus register parameters in the request string of attribute
+`request`. The value of the first response is set to the result of the read
+operation.
+
+Observations will be forwarded to the next receiver via POSIX message queue if
+any receiver is specified. The program can act as a sole data logger if output
+and format are set. If the output path is set to `-`, observations are printed
+to _stdout_, else to file.
+
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the specified
+node, sensor, and targets.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--format*, *-f* [csv|jsonl]::
+  Output format of observations if `--output` is set. Either CSV or JSON Lines.
+
+*--help*, *-h*::
+  Print available command-line arguments and quit.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmmb`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--output*, *-o* _file_::
+  Output file to append observations to (`-` for _stdout_).
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Print version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read the jobs to perform from configuration file and execute them sequentially:
+
+....
+$ dmmb --name dmmb --config /usr/local/etc/dmpack/dmmb.conf --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2025 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.
