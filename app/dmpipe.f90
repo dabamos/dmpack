@@ -108,15 +108,15 @@ contains
         type(arg_type)              :: args(9)
 
         args = [ &
-            arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <id>
             arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
-            arg_type('node',    short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
-            arg_type('output',  short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
-            arg_type('format',  short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
-            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <id>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),                    & ! -N, --node <id>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <id>
+            arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <path>
+            arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -248,7 +248,7 @@ contains
             ! Get pointer to next request.
             request => observ%requests(i)
 
-            if (debug_) call logger%debug('starting ' // request_name_string(request%name, observ%name) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+            if (debug_) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
             rc = read_request(observ, request, debug_)
             call dm_request_set(request, error=rc)
 
@@ -258,14 +258,14 @@ contains
                 cycle request_loop
             end if
 
-            if (debug_) call logger%debug('finished ' // request_name_string(request%name, observ%name), observ=observ)
+            if (debug_) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
             ! Wait the set delay time of the request.
             msec = max(0, request%delay)
             if (msec == 0) cycle request_loop
 
             if (i < n) then
-                if (debug_) call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, observ%name) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                if (debug_) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             else
                 if (debug_) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             end if
@@ -294,12 +294,13 @@ contains
 
         ! Return if request is disabled.
         if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug_) call logger%debug(request_name_string(request%name, observ%name) // ' is disabled', observ=observ)
+            if (debug_) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
             return
         end if
 
         ! Prepare request.
-        request%timestamp = dm_time_now()
+        call dm_request_set(request, timestamp=dm_time_now())
+        call dm_request_set_response_error(request, E_INCOMPLETE)
 
         pipe_block: block
             ! Open pipe.
@@ -323,14 +324,14 @@ contains
                 ! Try to extract the response values.
                 if (len_trim(request%pattern) == 0) then
                     rc = E_NONE
-                    if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, observ%name), observ=observ)
+                    if (debug_) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
                     exit read_loop
                 end if
 
                 rc = dm_regex_request(request)
 
                 if (dm_is_error(rc)) then
-                    if (debug_) call logger%debug('response of ' // request_name_string(request%name, observ%name) // ' does not match pattern', observ=observ, error=request%error)
+                    if (debug_) call logger%debug('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=request%error)
                     cycle read_loop
                 end if
 
@@ -338,7 +339,7 @@ contains
                 do i = 1, request%nresponses
                     response => request%responses(i)
                     if (dm_is_ok(response%error)) cycle
-                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(request%name, observ%name), observ=observ, error=response%error)
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
                 end do
 
                 exit read_loop
@@ -348,13 +349,13 @@ contains
         call dm_pipe_close(pipe)
     end function read_request
 
-    pure function request_name_string(request_name, observ_name) result(string)
-        !! Returns string of request name and index for logging.
-        character(len=*), intent(in)  :: request_name !! Request name.
-        character(len=*), intent(in)  :: observ_name  !! Observation name.
-        character(len=:), allocatable :: string       !! Result.
+    function request_name_string(observ, request) result(string)
+        !! Returns string of observation and request name for logging.
+        type(observ_type),  intent(inout) :: observ  !! Observation type.
+        type(request_type), intent(inout) :: request !! Request type.
+        character(len=:), allocatable     :: string  !! Result.
 
-        string = 'request ' // trim(request_name) // ' of observ ' // trim(observ_name)
+        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
     end function request_name_string
 
     integer function write_observ(observ, unit, format) result(rc)

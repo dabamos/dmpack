@@ -94,7 +94,6 @@ module dm_lua
         module procedure :: lua_to_job
         module procedure :: lua_to_job_list
         module procedure :: lua_to_jobs
-        module procedure :: lua_to_modbus_register
         module procedure :: lua_to_observ
         module procedure :: lua_to_observs
         module procedure :: lua_to_report
@@ -174,7 +173,6 @@ module dm_lua
     private :: lua_to_job
     private :: lua_to_job_list
     private :: lua_to_jobs
-    private :: lua_to_modbus_register
     private :: lua_to_observ
     private :: lua_to_observs
     private :: lua_to_report
@@ -1359,33 +1357,6 @@ contains
 
         call dm_lua_pop(lua)
     end function lua_to_jobs
-
-    integer function lua_to_modbus_register(lua, register) result(rc)
-        !! Reads Lua table into Fortran Modbus register type. The table has to
-        !! be on top of the stack and will be removed once finished.
-        use :: dm_modbus_type
-
-        type(lua_state_type),       intent(inout) :: lua      !! Lua type.
-        type(modbus_register_type), intent(out)   :: register !! Modbus register type.
-
-        lua_block: block
-            rc = E_TYPE
-            if (.not. dm_lua_is_table(lua)) exit lua_block
-
-            ! Ignore error codes, just assume defaults if missing.
-            rc = dm_lua_field(lua, 'name',    register%name)
-            rc = dm_lua_field(lua, 'unit',    register%unit)
-            rc = dm_lua_field(lua, 'access',  register%access)
-            rc = dm_lua_field(lua, 'slave',   register%slave)
-            rc = dm_lua_field(lua, 'address', register%address)
-            rc = dm_lua_field(lua, 'type',    register%type)
-            rc = dm_lua_field(lua, 'order',   register%order)
-            rc = dm_lua_field(lua, 'value',   register%value)
-        end block lua_block
-
-        call dm_lua_pop(lua)
-        rc = E_NONE
-    end function lua_to_modbus_register
 
     integer function lua_to_observ(lua, observ) result(rc)
         !! Reads Lua table into Fortran observation type. The table has to be on

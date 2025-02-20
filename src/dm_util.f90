@@ -50,6 +50,7 @@ module dm_util
 
     interface dm_to_real64
         !! Converts type to 8-byte real (for response values).
+        module procedure :: dm_int16_to_real64
         module procedure :: dm_int32_to_real64
         module procedure :: dm_int64_to_real64
         module procedure :: dm_logical_to_real64
@@ -105,6 +106,7 @@ module dm_util
     public :: dm_from_real64
     public :: dm_to_real64
 
+    public :: dm_int16_to_real64
     public :: dm_int32_to_real64
     public :: dm_int64_to_real64
     public :: dm_logical_to_real64
@@ -273,6 +275,14 @@ contains
     ! **************************************************************************
     ! PUBLIC INTRINSIC TYPE TO REAL FUNCTIONS.
     ! **************************************************************************
+    pure elemental function dm_int16_to_real64(i16) result(r64)
+        !! Converts 2-byte integer to 8-byte real.
+        integer(kind=i2), intent(in) :: i16 !! 2-byte integer value.
+        real(kind=r8)                :: r64 !! Value as 8-byte real.
+
+        r64 = real(i16, kind=r8)
+    end function dm_int16_to_real64
+
     pure elemental function dm_int32_to_real64(i32) result(r64)
         !! Converts 4-byte integer to 8-byte real.
         integer(kind=i4), intent(in) :: i32 !! 4-byte integer value.

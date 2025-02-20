@@ -373,17 +373,17 @@ contains
             ! Read next request.
             request => observ%requests(i)
 
-            if (debug_) call logger%debug('starting ' // request_name_string(request%name, observ%name) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+            if (debug_) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
             rc = read_request(tty, observ, request)
             call dm_request_set(request, error=rc)
-            if (debug_) call logger%debug('finished ' // request_name_string(request%name, observ%name), observ=observ)
+            if (debug_) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
             ! Wait the set delay time of the request.
             msec = max(0, request%delay)
             if (msec == 0) cycle request_loop
 
             if (i < n) then
-                if (debug_) call logger%debug('next ' // request_name_string(observ%requests(i + 1)%name, observ%name) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                if (debug_) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             else
                 if (debug_) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
             end if
@@ -410,13 +410,12 @@ contains
 
         ! Return if request is disabled.
         if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug_) call logger%debug(request_name_string(request%name, observ%name) // ' is disabled', observ=observ)
+            if (debug_) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
             return
         end if
 
         ! Prepare request.
-        request%response  = ' '
-        request%timestamp = dm_time_now()
+        call dm_request_set(request, timestamp=dm_time_now(), raw_response=' ')
         call dm_request_set_response_error(request, E_INCOMPLETE)
 
         ! Flush buffers.
@@ -428,14 +427,14 @@ contains
         rc = dm_tty_write(tty, request)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to write ' // request_name_string(request%name, observ%name) // ' to TTY ' // tty%path, observ=observ, error=rc)
+            call logger%error('failed to write ' // request_name_string(observ, request) // ' to TTY ' // tty%path, observ=observ, error=rc)
             return
         end if
 
         ! Ignore sensor response if no delimiter is set.
         if (len_trim(request%delimiter) == 0) then
             rc = E_NONE
-            if (debug_) call logger%debug('no delimiter in ' // request_name_string(request%name, observ%name), observ=observ)
+            if (debug_) call logger%debug('no delimiter in ' // request_name_string(observ, request), observ=observ)
             return
         end if
 
@@ -443,7 +442,7 @@ contains
         rc = dm_tty_read(tty, request)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to read response of ' // request_name_string(request%name, observ%name) // ' from TTY ' // tty%path, observ=observ, error=rc)
+            call logger%error('failed to read response of ' // request_name_string(observ, request) // ' from TTY ' // tty%path, observ=observ, error=rc)
             return
         end if
 
@@ -452,7 +451,7 @@ contains
         ! Do not extract responses if no pattern is set.
         if (len_trim(request%pattern) == 0) then
             rc = E_NONE
-            if (debug_) call logger%debug('no pattern in ' // request_name_string(request%name, observ%name), observ=observ)
+            if (debug_) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
             return
         end if
 
@@ -460,7 +459,7 @@ contains
         rc = dm_regex_request(request)
 
         if (dm_is_error(rc)) then
-            call logger%warning('response of ' // request_name_string(request%name, observ%name) // ' does not match pattern', observ=observ, error=rc)
+            call logger%warning('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=rc)
             return
         end if
 
@@ -469,19 +468,19 @@ contains
             response => request%responses(i)
 
             if (dm_is_error(response%error)) then
-                call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(request%name, observ%name), observ=observ, error=response%error)
+                call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
                 cycle
             end if
         end do
     end function read_request
 
-    pure function request_name_string(request_name, observ_name) result(string)
-        !! Returns string of request name and index for logging.
-        character(len=*), intent(in)  :: request_name !! Request name.
-        character(len=*), intent(in)  :: observ_name  !! Observation name.
-        character(len=:), allocatable :: string       !! Result.
+    function request_name_string(observ, request) result(string)
+        !! Returns string of observation and request name for logging.
+        type(observ_type),  intent(inout) :: observ  !! Observation type.
+        type(request_type), intent(inout) :: request !! Request type.
+        character(len=:), allocatable     :: string  !! Result.
 
-        string = 'request ' // trim(request_name) // ' of observ ' // trim(observ_name)
+        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
     end function request_name_string
 
     integer function run(app, tty) result(rc)
@@ -578,17 +577,14 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%info('exit on signal ' // dm_signal_name(signum))
 
-                if (dm_tty_is_connected(tty)) then
-                    call logger%debug('closing TTY ' // tty%path)
-                    call dm_tty_close(tty)
-                end if
+        if (dm_tty_is_connected(tty)) then
+            call logger%debug('closing TTY ' // tty%path)
+            call dm_tty_close(tty)
+        end if
 
-                call dm_stop(STOP_SUCCESS)
-        end select
+        call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 
     subroutine version_callback()

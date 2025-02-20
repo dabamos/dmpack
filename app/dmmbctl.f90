@@ -12,17 +12,13 @@ program dmmbctl
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: APP_MODE_NONE = 0 !! Unset mode.
-    integer, parameter :: APP_MODE_RTU  = 1 !! Modbus RTU mode.
-    integer, parameter :: APP_MODE_TCP  = 2 !! Modbus TCP mode.
-
     type :: rtu_type
         !! Modbus RTU settings.
-        character(len=FILE_PATH_LEN) :: path      = ' '             !! Path (required).
-        integer                      :: baud_rate = TTY_B19200      !! Baud rate (required).
-        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size (required).
-        integer                      :: parity    = TTY_PARITY_EVEN !! Parity name (required).
-        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits (required).
+        character(len=FILE_PATH_LEN) :: path      = ' '             !! Path.
+        integer                      :: baud_rate = TTY_B19200      !! Baud rate.
+        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
+        integer                      :: parity    = TTY_PARITY_EVEN !! Parity name.
+        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
     end type rtu_type
 
     type :: tcp_type
@@ -33,7 +29,7 @@ program dmmbctl
 
     type :: app_type
         !! Application settings.
-        integer        :: mode     = APP_MODE_NONE       !! Modbus mode (RTU, TCP).
+        integer        :: mode     = MODBUS_MODE_NONE    !! Modbus mode (RTU, TCP).
         integer        :: slave    = 1                   !! Modbus slave id.
         integer        :: register = 0                   !! Modbus register address.
         integer        :: access   = MODBUS_ACCESS_NONE  !! Read or write operation.
@@ -138,12 +134,12 @@ contains
 
         ! Modbus mode (RTU/TCP).
         if (has_path) then
-            app%mode = APP_MODE_RTU
+            app%mode = MODBUS_MODE_RTU
         else
-            app%mode = APP_MODE_TCP
+            app%mode = MODBUS_MODE_TCP
         end if
 
-        if (app%mode == APP_MODE_RTU) then
+        if (app%mode == MODBUS_MODE_RTU) then
             ! Modbus RTU.
             if (.not. has_baud_rate) then
                 call dm_error_out(rc, 'argument --baudrate is required')
@@ -328,7 +324,7 @@ contains
 
             ! Create Modbus RTU/TCP context.
             select case (app%mode)
-                case (APP_MODE_RTU)
+                case (MODBUS_MODE_RTU)
                     rc = dm_modbus_create(modbus    = modbus_rtu,        &
                                           path      = app%rtu%path,      &
                                           baud_rate = app%rtu%baud_rate, &
@@ -336,7 +332,7 @@ contains
                                           parity    = app%rtu%parity,    &
                                           stop_bits = app%rtu%stop_bits)
                     modbus => modbus_rtu
-                case (APP_MODE_TCP)
+                case (MODBUS_MODE_TCP)
                     rc = dm_modbus_create_tcp(modbus_tcp, app%tcp%address, app%tcp%port)
                     modbus => modbus_tcp
             end select

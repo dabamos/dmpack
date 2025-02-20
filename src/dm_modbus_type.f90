@@ -14,6 +14,18 @@ module dm_modbus_type
     integer, parameter, public :: MODBUS_ACCESS_READ  = 1 !! Read access.
     integer, parameter, public :: MODBUS_ACCESS_WRITE = 2 !! Write access.
 
+    ! Modbus mode.
+    integer, parameter, public :: MODBUS_MODE_NONE = 0 !! Invalid mode.
+    integer, parameter, public :: MODBUS_MODE_RTU  = 1 !! Modbus RTU.
+    integer, parameter, public :: MODBUS_MODE_TCP  = 2 !! Modbus TCP.
+
+    ! Byte order of 4-byte real values.
+    integer, parameter, public :: MODBUS_ORDER_NONE = 0 !! None (integer or invalid).
+    integer, parameter, public :: MODBUS_ORDER_ABCD = 1 !! ABCD byte order.
+    integer, parameter, public :: MODBUS_ORDER_BADC = 2 !! BADC byte order.
+    integer, parameter, public :: MODBUS_ORDER_CDAB = 3 !! CDBA byte order.
+    integer, parameter, public :: MODBUS_ORDER_DCBA = 4 !! DCBA byte order.
+
     ! Modbus number types.
     integer, parameter, public :: MODBUS_TYPE_NONE    = 0                 !! None (invalid).
     integer, parameter, public :: MODBUS_TYPE_INT16   = 1                 !! 2-byte signed integer.
@@ -24,53 +36,45 @@ module dm_modbus_type
     integer, parameter, public :: MODBUS_TYPE_LAST    = 5                 !! Never use this.
     integer, parameter, public :: MODBUS_TYPE_DEFAULT = MODBUS_TYPE_INT16 !! Default number type.
 
-    ! Byte order of 4-byte real values.
-    integer, parameter, public :: MODBUS_ORDER_NONE = 0 !! None (integer or invalid).
-    integer, parameter, public :: MODBUS_ORDER_ABCD = 1 !! ABCD byte order.
-    integer, parameter, public :: MODBUS_ORDER_BADC = 2 !! BADC byte order.
-    integer, parameter, public :: MODBUS_ORDER_CDAB = 3 !! CDBA byte order.
-    integer, parameter, public :: MODBUS_ORDER_DCBA = 4 !! DCBA byte order.
-
     ! String lengths.
     integer, parameter, public :: MODBUS_ACCESS_NAME_LEN = 5 !! Max. access name length.
+    integer, parameter, public :: MODBUS_MODE_NAME_LEN   = 4 !! Max. mode name length.
     integer, parameter, public :: MODBUS_ORDER_NAME_LEN  = 4 !! Max. byte order name length.
     integer, parameter, public :: MODBUS_TYPE_NAME_LEN   = 6 !! Max. number type name length.
 
-    integer, parameter, public :: MODBUS_REGISTER_NAME_LEN = RESPONSE_NAME_LEN
-    integer, parameter, public :: MODBUS_REGISTER_UNIT_LEN = RESPONSE_UNIT_LEN
+    character(len=*), parameter, public :: MODBUS_MODE_NAMES(MODBUS_MODE_NONE:MODBUS_MODE_TCP) = [ &
+        character(len=MODBUS_MODE_NAME_LEN) :: 'none', 'rtu', 'tcp' &
+    ] !! Modbus mode names.
 
     character(len=*), parameter, public :: MODBUS_TYPE_NAMES(MODBUS_TYPE_NONE:MODBUS_TYPE_LAST) = [ &
         character(len=MODBUS_TYPE_NAME_LEN) :: 'none', 'int16', 'int32', 'uint16', 'uint32', 'float' &
     ] !! Modbus number type names.
 
     type, public :: modbus_register_type
-        !! Modbus register value type. Changes to this derived type must be
-        !! regarded in module `dm_lua`. Only integer values can be written to a
-        !! Modbus register. Any value read from a Modbus register must be
-        !! stored separately from this derived type.
-        character(len=MODBUS_REGISTER_NAME_LEN) :: name    = ' '                !! Register name.
-        character(len=MODBUS_REGISTER_UNIT_LEN) :: unit    = ' '                !! Register value unit.
-        integer                                 :: access  = MODBUS_ACCESS_NONE !! Read or write access.
-        integer                                 :: slave   = 0                  !! Slave id.
-        integer                                 :: address = 0                  !! Register address.
-        integer                                 :: type    = MODBUS_TYPE_INT16  !! Number type.
-        integer                                 :: order   = MODBUS_ORDER_NONE  !! Byte order of float.
-        integer                                 :: value   = 0                  !! Register value to write.
+        !! Modbus register value type.
+        integer  :: access  = MODBUS_ACCESS_NONE !! Read or write access.
+        integer  :: slave   = 0                  !! Slave id.
+        integer  :: address = 0                  !! Register address.
+        integer  :: type    = MODBUS_TYPE_INT16  !! Number type.
+        integer  :: order   = MODBUS_ORDER_NONE  !! Byte order of float.
+        integer  :: value   = 0                  !! Register value to write.
     end type modbus_register_type
 
     public :: dm_modbus_access_from_name
     public :: dm_modbus_access_is_valid
-    public :: dm_modbus_parse
+    public :: dm_modbus_mode_is_valid
+    public :: dm_modbus_mode_from_name
     public :: dm_modbus_order_is_valid
     public :: dm_modbus_order_from_name
     public :: dm_modbus_register_is_valid
     public :: dm_modbus_register_out
+    public :: dm_modbus_register_parse
     public :: dm_modbus_type_from_name
     public :: dm_modbus_type_is_valid
 contains
     pure integer function dm_modbus_access_from_name(name) result(access)
-        !! Returns access enumerator from string. Returns `MODBUS_ACCESS_NONE`
-        !! on error.
+        !! Returns access enumerator from string or `MODBUS_ACCESS_NONE` on
+        !! error.
         character(len=*), intent(in) :: name !! Input string.
 
         character(len=MODBUS_ACCESS_NAME_LEN) :: name_
@@ -84,15 +88,107 @@ contains
         end select
     end function dm_modbus_access_from_name
 
-    pure elemental logical function dm_modbus_access_is_valid(access) result(valid)
+    pure elemental logical function dm_modbus_access_is_valid(access) result(is)
         !! Returns `.true.` if access is a valid enumerator.
         !! `MODBUS_ACCESS_NONE` is invalid.
         integer, intent(in) :: access !! Modbus access enumerator.
 
-        valid = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
+        is = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
     end function dm_modbus_access_is_valid
 
-    pure elemental subroutine dm_modbus_parse(string, register, error)
+    pure integer function dm_modbus_mode_from_name(name) result(mode)
+        !! Returns mode enumerator from string or `MODBUS_MODE_NONE` on
+        !! error.
+        character(len=*), intent(in) :: name !! Input string.
+
+        character(len=MODBUS_MODE_NAME_LEN) :: name_
+
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case ('rtu'); mode = MODBUS_MODE_RTU
+            case ('tcp'); mode = MODBUS_MODE_TCP
+            case default; mode = MODBUS_MODE_NONE
+        end select
+    end function dm_modbus_mode_from_name
+
+    pure elemental logical function dm_modbus_mode_is_valid(mode) result(is)
+        !! Returns `.true.` if mode is a valid enumerator. `MODBUS_MODE_NONE`
+        !! is invalid.
+        integer, intent(in) :: mode !! Modbus mode enumerator.
+
+        is = (mode == MODBUS_MODE_RTU .or. mode == MODBUS_MODE_TCP)
+    end function dm_modbus_mode_is_valid
+
+    pure integer function dm_modbus_order_from_name(name) result(order)
+        !! Returns byte order named parameter associated with given string.
+        !! For example, the result will be `MODBUS_ORDER_ACBD` if `name` is
+        !! `ABCD` (case-insensitive). Returns `MODBUS_ORDER_NONE` if the string
+        !! is invalid.
+        character(len=*), intent(in) :: name !! Input string.
+
+        character(len=MODBUS_ORDER_NAME_LEN) :: name_
+
+        ! Normalise name.
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case ('abcd'); order = MODBUS_ORDER_ABCD
+            case ('badc'); order = MODBUS_ORDER_BADC
+            case ('cdab'); order = MODBUS_ORDER_CDAB
+            case ('dcba'); order = MODBUS_ORDER_DCBA
+            case default;  order = MODBUS_ORDER_NONE
+        end select
+    end function dm_modbus_order_from_name
+
+    pure elemental logical function dm_modbus_order_is_valid(order) result(is)
+        !! Returns `.true.` if argument is a valid float byte order enumerator.
+        !! `MODBUS_ORDER_NONE` is not a valid byte order.
+        integer, intent(in) :: order !! Modbus byte order enumerator.
+
+        is = (order == MODBUS_ORDER_ABCD .or. &
+              order == MODBUS_ORDER_BADC .or. &
+              order == MODBUS_ORDER_CDAB .or. &
+              order == MODBUS_ORDER_DCBA)
+    end function dm_modbus_order_is_valid
+
+    pure elemental logical function dm_modbus_register_is_valid(register) result(is)
+        !! Returns `.true.` if Modbus register type is valid.
+        type(modbus_register_type), intent(in) :: register !! Modbus register type.
+
+        is = .false.
+
+        if (register%slave < 1)   return
+        if (register%address < 1) return
+
+        if (.not. dm_modbus_access_is_valid(register%access)) return
+        if (.not. dm_modbus_type_is_valid(register%type))     return
+        if (.not. dm_modbus_order_is_valid(register%order) .and. &
+            register%order /= MODBUS_ORDER_NONE) return
+
+        is = .true.
+    end function dm_modbus_register_is_valid
+
+    subroutine dm_modbus_register_out(register, unit)
+        !! Outputs Modbus register type.
+        use :: dm_util, only: dm_present
+
+        type(modbus_register_type), intent(inout)        :: register !! Modbus register type.
+        integer,                    intent(in), optional :: unit     !! File unit.
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, stdout)
+
+        write (unit_, '("modbus_register.access: ", i0)')  register%access
+        write (unit_, '("modbus_register.slave: ", i0)')   register%slave
+        write (unit_, '("modbus_register.address: ", i0)') register%address
+        write (unit_, '("modbus_register.type: ", i0)')    register%type
+        write (unit_, '("modbus_register.order: ", i0)')   register%order
+        write (unit_, '("modbus_register.value: ", i0)')   register%value
+    end subroutine dm_modbus_register_out
+
+    pure elemental subroutine dm_modbus_register_parse(string, register, error)
         !! Parses string for the following Modbus parameters and returns the
         !! values in `register`:
         !!
@@ -193,89 +289,14 @@ contains
         end block parse_block
 
         if (present(error)) error = rc
-    end subroutine dm_modbus_parse
+    end subroutine dm_modbus_register_parse
 
-    pure integer function dm_modbus_order_from_name(name) result(order)
-        !! Returns byte order named parameter associated with given string.
-        !! For example, the result will be `MODBUS_ORDER_ACBD` if `name` is
-        !! `ABCD` (case-insensitive). Returns `MODBUS_ORDER_NONE` if the string
-        !! is invalid.
-        character(len=*), intent(in) :: name !! Input string.
-
-        character(len=MODBUS_ORDER_NAME_LEN) :: name_
-
-        ! Normalise name.
-        name_ = dm_to_lower(name)
-
-        select case (name_)
-            case ('abcd'); order = MODBUS_ORDER_ABCD
-            case ('badc'); order = MODBUS_ORDER_BADC
-            case ('cdab'); order = MODBUS_ORDER_CDAB
-            case ('dcba'); order = MODBUS_ORDER_DCBA
-            case default;  order = MODBUS_ORDER_NONE
-        end select
-    end function dm_modbus_order_from_name
-
-    pure elemental logical function dm_modbus_order_is_valid(order) result(valid)
-        !! Returns `.true.` if argument is a valid float byte order enumerator.
-        !! `MODBUS_ORDER_NONE` is not a valid byte order.
-        integer, intent(in) :: order !! Modbus byte order enumerator.
-
-        valid = (order == MODBUS_ORDER_ABCD .or. &
-                 order == MODBUS_ORDER_BADC .or. &
-                 order == MODBUS_ORDER_CDAB .or. &
-                 order == MODBUS_ORDER_DCBA)
-    end function dm_modbus_order_is_valid
-
-    pure elemental logical function dm_modbus_register_is_valid(register) result(valid)
-        !! Returns `.true.` if Modbus register type is valid.
-        use :: dm_id, only: dm_id_is_valid
-
-        type(modbus_register_type), intent(in) :: register !! Modbus register type.
-
-        valid = .false.
-
-        if (register%slave < 1)   return
-        if (register%address < 1) return
-
-        if (.not. dm_id_is_valid(register%name))              return
-        if (.not. dm_string_is_printable(register%unit))      return
-        if (.not. dm_modbus_access_is_valid(register%access)) return
-        if (.not. dm_modbus_type_is_valid(register%type))     return
-
-        if (.not. dm_modbus_order_is_valid(register%order) .and. &
-            register%order /= MODBUS_ORDER_NONE) return
-
-        valid = .true.
-    end function dm_modbus_register_is_valid
-
-    subroutine dm_modbus_register_out(register, unit)
-        !! Outputs Modbus register type.
-        use :: dm_util, only: dm_present
-
-        type(modbus_register_type), intent(inout)        :: register !! Modbus register type.
-        integer,                    intent(in), optional :: unit     !! File unit.
-
-        integer :: unit_
-
-        unit_ = dm_present(unit, stdout)
-
-        write (unit_, '("modbus_register.name: ", a)')     trim(register%name)
-        write (unit_, '("modbus_register.unit: ", a)')     trim(register%unit)
-        write (unit_, '("modbus_register.access: ", i0)')  register%access
-        write (unit_, '("modbus_register.slave: ", i0)')   register%slave
-        write (unit_, '("modbus_register.address: ", i0)') register%address
-        write (unit_, '("modbus_register.type: ", i0)')    register%type
-        write (unit_, '("modbus_register.order: ", i0)')   register%order
-        write (unit_, '("modbus_register.value: ", i0)')   register%value
-    end subroutine dm_modbus_register_out
-
-    pure elemental logical function dm_modbus_type_is_valid(type) result(valid)
+    pure elemental logical function dm_modbus_type_is_valid(type) result(is)
         !! Returns `.true.` if the given Modbus number type is valid.
         !! `MODBUS_TYPE_NONE` is invalid.
         integer, intent(in) :: type !! Modbus number type.
 
-        valid = (type >= MODBUS_TYPE_INT16 .and. type <= MODBUS_TYPE_LAST)
+        is = (type >= MODBUS_TYPE_INT16 .and. type <= MODBUS_TYPE_LAST)
     end function dm_modbus_type_is_valid
 
     pure elemental integer function dm_modbus_type_from_name(name) result(type)

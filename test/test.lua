@@ -108,25 +108,7 @@ dmtestconfig = {
     string = "a\\r\\n",
     integer = 420,
     logical = true,
-    real = 1.0,
-    registers = {
-        {
-            access = MODBUS_ACCESS_READ,
-            slave = 10,
-            address = 50,
-            type = MODBUS_TYPE_FLOAT,
-            order = MODBUS_ORDER_ABCD
-        },
-        {
-            name = "test",
-            unit = "none",
-            access = MODBUS_ACCESS_WRITE,
-            slave = 99,
-            address = 10,
-            type = MODBUS_TYPE_INT16,
-            value = 16
-        }
-    }
+    real = 1.0
 }
 
 function process(table)

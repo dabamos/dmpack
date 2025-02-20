@@ -82,7 +82,7 @@ contains
         print *, 'Parsing strings ...'
 
         print *, STRING1
-        call dm_modbus_parse(STRING1, register, error=rc)
+        call dm_modbus_register_parse(STRING1, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
         if (register%access /= MODBUS_ACCESS_READ) return
@@ -92,7 +92,7 @@ contains
         if (register%order /= MODBUS_ORDER_ABCD)   return
 
         print *, STRING2
-        call dm_modbus_parse(STRING2, register, error=rc)
+        call dm_modbus_register_parse(STRING2, register, error=rc)
         call dm_error_out(rc); if (dm_is_error(rc)) return
 
         if (register%access /= MODBUS_ACCESS_WRITE) return
@@ -103,15 +103,15 @@ contains
         if (register%value /= 10)                   return
 
         print *, STRING3
-        call dm_modbus_parse(STRING3, register, error=rc)
+        call dm_modbus_register_parse(STRING3, register, error=rc)
         if (rc /= E_TYPE) return
 
         print *, STRING4
-        call dm_modbus_parse(STRING4, register, error=rc)
+        call dm_modbus_register_parse(STRING4, register, error=rc)
         if (rc /= E_TYPE) return
 
         print *, STRING5
-        call dm_modbus_parse(STRING5, register, error=rc)
+        call dm_modbus_register_parse(STRING5, register, error=rc)
         if (rc /= E_FORMAT) return
 
         stat = TEST_PASSED

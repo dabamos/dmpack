@@ -22,8 +22,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_lua_api_register(lua, errors, log_levels, procedures, &
-                                         response_types, modbus_types) result(rc)
+    integer function dm_lua_api_register(lua, errors, log_levels, procedures, response_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
         !! the given Lua environment `lua`.
         !!
@@ -66,33 +65,12 @@ contains
         !! * `RESPONSE_TYPE_BYTE`
         !! * `RESPONSE_TYPE_STRING`
         !!
-        !! The following Modbus type parameters are injected if `modbus_types`
-        !! is `.true.`:
-        !!
-        !! * `MODBUS_ACCESS_NONE`
-        !! * `MODBUS_ACCESS_READ`
-        !! * `MODBUS_ACCESS_WRITE`
-        !!
-        !! * `MODBUS_TYPE_NONE`
-        !! * `MODBUS_TYPE_INT16`
-        !! * `MODBUS_TYPE_INT32`
-        !! * `MODBUS_TYPE_UINT16`
-        !! * `MODBUS_TYPE_UINT32`
-        !! * `MODBUS_TYPE_FLOAT`
-        !!
-        !! * `MODBUS_ORDER_NONE`
-        !! * `MODBUS_ORDER_ABCD`
-        !! * `MODBUS_ORDER_BADC`
-        !! * `MODBUS_ORDER_CDAB`
-        !! * `MODBUS_ORDER_DCBA`
-        !!
         !! The GeoCOM API is registered through function `dm_lua_geocom_register()`
         !! in module `dm_lua_geocom`.
         !!
         !! This function returns `E_INVALID` if the Lua interpreter has not been
         !! initialised, or `E_LUA` if the registration failed.
         use :: dm_log
-        use :: dm_modbus_type
         use :: dm_response
 
         type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
@@ -100,7 +78,6 @@ contains
         logical,              intent(in), optional :: log_levels     !! Export log level.
         logical,              intent(in), optional :: procedures     !! Export procedures.
         logical,              intent(in), optional :: response_types !! Export response type parameters.
-        logical,              intent(in), optional :: modbus_types   !! Export Modbus type parameters.
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
@@ -237,26 +214,6 @@ contains
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_LOGICAL', RESPONSE_TYPE_LOGICAL); if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_BYTE',    RESPONSE_TYPE_BYTE);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_STRING',  RESPONSE_TYPE_STRING);  if (dm_is_error(rc)) return
-        end if
-
-        ! Register Modbus type parameters.
-        if (dm_present(modbus_types, .false.)) then
-            rc = dm_lua_set(lua, 'MODBUS_ACCESS_NONE',  MODBUS_ACCESS_NONE);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ACCESS_READ',  MODBUS_ACCESS_READ);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ACCESS_WRITE', MODBUS_ACCESS_WRITE); if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_NONE',    MODBUS_TYPE_NONE);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_INT16',   MODBUS_TYPE_INT16);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_INT32',   MODBUS_TYPE_INT32);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_UINT16',  MODBUS_TYPE_UINT16);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_UINT32',  MODBUS_TYPE_UINT32);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_TYPE_FLOAT',   MODBUS_TYPE_FLOAT);   if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'MODBUS_ORDER_NONE',   MODBUS_ORDER_NONE);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ORDER_ABCD',   MODBUS_ORDER_ABCD);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ORDER_BADC',   MODBUS_ORDER_BADC);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ORDER_CDAB',   MODBUS_ORDER_CDAB);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'MODBUS_ORDER_DCBA',   MODBUS_ORDER_DCBA);   if (dm_is_error(rc)) return
         end if
 
         rc = E_NONE
