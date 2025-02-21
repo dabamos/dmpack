@@ -2,7 +2,37 @@
 ! Licence: ISC
 module dm_hash_table
     !! Very basic hash table implementation for a modest number of elements that
-    !! stores only pointers to values.
+    !! stores only unlimited polymorphic pointers to values. The hash table uses
+    !! the FNV-1a algorithm to generate hashes.
+    !!
+    !! Make sure that the values do not go out of scope.
+    !!
+    !! In the following example, the hash table stores pointers to values of a
+    !! string array:
+    !!
+    !! ```fortran
+    !! character(len=32), target :: values(3)
+    !! class(*), pointer         :: ptr
+    !! integer                   :: rc
+    !! type(hash_table_type)     :: table
+    !!
+    !! values(1) = 'bar'
+    !! values(2) = 'baz'
+    !! values(3) = 'qux'
+    !!
+    !! rc = dm_hash_table_create(table, size(values))
+    !! rc = dm_hash_table_set(table, 'foo', values(1))
+    !! rc = dm_hash_table_set(table, 'zap', values(2))
+    !! rc = dm_hash_table_set(table, 'uxn', values(3))
+    !! rc = dm_hash_table_get(table, 'zap', ptr)
+    !!
+    !! select type (value => ptr)
+    !!    type is (character(len=*)); print '(a)', trim(value)
+    !!    class default;              error stop
+    !! end select
+    !!
+    !! call dm_hash_table_destroy(table)
+    !! ```
     use :: dm_error
     use :: dm_hash
     use :: dm_kind

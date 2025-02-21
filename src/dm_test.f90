@@ -346,11 +346,7 @@ contains
         print '("Options.: ", a)', compiler_options()
         print '("DMPACK..: ", a, /)', DM_VERSION_STRING
 
-        if (n == 1) then
-            print '("Running ", i0, " test ...")', n
-        else
-            print '("Running ", i0, " tests ...")', n
-        end if
+        print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')
 
         total_time = 0.0
 
@@ -374,12 +370,12 @@ contains
         call test_title('TEST SUMMARY', TEST_LINE_LEN, '-')
         npass = count(stats)
         call dm_ansi_color(COLOR_GREEN, no_color_)
-        print '(i0, " passed")', npass
+        print '(i0, 1x, a, " passed")', npass, dm_btoa((npass == 1), 'test', 'tests')
         call dm_ansi_reset(no_color_)
 
         nfail = n - npass
         if (nfail > 0) call dm_ansi_color(COLOR_RED, no_color_)
-        print '(i0, " failed")', nfail
+        print '(i0, 1x, a, " failed")', nfail, dm_btoa((nfail == 1), 'test', 'tests')
         call dm_ansi_reset(no_color_)
 
         print '("Total execution time: ", f8.4, " sec")', total_time
@@ -422,16 +418,16 @@ contains
         call dm_ansi_reset(no_color_)
     end subroutine test_print
 
-    subroutine test_title(text, length, ch)
+    subroutine test_title(text, length, glyph)
         !! Prints a header with given `test` and line length `len`.
         character(len=*), intent(in)           :: text   !! Title text.
         integer,          intent(in)           :: length !! Line length.
-        character,        intent(in), optional :: ch     !! Optional line character.
+        character,        intent(in), optional :: glyph  !! Optional line character.
 
         character :: a
         integer   :: i, j, k
 
-        a = dm_present(ch, '*')
+        a = dm_present(glyph, '*')
         i = length - len_trim(text) - 2
         j = i / 2
         k = modulo(i, 2)
