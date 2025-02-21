@@ -866,6 +866,9 @@ synchronisation from client to server is supported.
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
 program be used to read values from sensors connected via 1-Wire (OWFS).
 Observations are forwarded via POSIX message queue and/or written to file.
+<<dmmb>>:: Sensor control program for Modbus RTU/TCP. Loads the observations to
+perform from a configuration file and either reads from or writes to Modbus
+registers.
 <<dmmbctl>>:: A command-line utility to read a value from or write a value to a
 register of a Modbus RTU/TCP device.
 <<dmpipe>>:: Executes a program as a sub-process connected through an anonymous
@@ -1925,6 +1928,173 @@ Any observation sent to receiver `dmlua` will be passed to the Lua function
 
 ....
 $ dmlua --name dmlua --node dummy-node --script script.lua --verbose
+....
+
+=== dmmb [[dmmb]]
+
+The *dmmb* program reads values from or writes values to Modbus RTU/TCP
+registers by sequentially processing the job list loaded from a configuration
+file. Each request of an observation must contain the Modbus register parameters
+in the request string. The value of the first response is set to the result of
+the read operation. Up to 8 requests to read and/or write values are permitted.
+Integers read from a register may be scaled using an optional scale denominator.
+
+For example, to read a 2-byte unsigned integer from holding register 40050 of
+slave device 2 with a scale factor of 1/10, the attribute `request` of a request
+must be set to:
+
+....
+access=read, slave=1, address=40050, type=uint16, scale=10
+....
+
+Or, to read a 4-byte floating-point value in ABCD byte order from register
+40060:
+
+....
+access=read, slave=1, address=40060, type=float, order=abcd
+....
+
+Only integer values may be written to an input register, for instance:
+
+....
+access=write, slave=2, address=30010, type=uint16, value=1
+....
+
+The value is converted to `uint16` automatically. The command string can be in
+lower or upper case. White spaces will be ignored.
+
+The following fields are supported in the command string:
+
+[cols="1,2,4"]
+|===
+| Field     | Value         | Description
+
+| `access`  | `read`        | Read value of `type`.
+|           | `write`       | Write value of `type` (integer only).
+| `address` | 30001 – 39999 | Input register address.
+|           | 40001 – 49999 | Holding register address.
+| `order`   | `abcd`        | ABCD byte order of type `float`.
+|           | `badc`        | BADC byte order of type `float`.
+|           | `cdab`        | CDAB byte order of type `float`.
+|           | `dcba`        | DCBA byte order of type `float`.
+| `scale`   | > 0           | Optional integer scale denominator.
+| `slave`   | > 0           | Slave id.
+| `type`    | `int16`       | 2-byte signed integer.
+|           | `int32`       | 4-byte signed integer.
+|           | `uint16`      | 2-byte unsigned integer.
+|           | `uint32`      | 4-byte unsigned integer.
+|           | `float`       | 4-byte float.
+| `value`   |               | Integer value to write.
+|===
+
+Observations will be forwarded to the next receiver via POSIX message queue if
+any receiver is specified. The program can act as a sole data logger if output
+and format are set. If the output path is set to `-`, observations are printed
+to _stdout_, else to file.
+
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the specified
+node, sensor, and targets if observations will be forwarded to <<dmdb>>.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,6"]
+|===
+| Option              | Short | Default | Description
+
+| `--config _file_`   | `-c`  | –       | Path to configuration file (required).
+| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
+| `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
+| `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmmb`  | Name of instance and table in configuration.
+| `--node _id_`       | `-N`  | –       | Node id.
+| `--output _file_`   | `-o`  | –       | Output file to append observations to (`-` for _stdout_).
+| `--sensor _id_`     | `-S`  | –       | Sensor id.
+| `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
+| `--version`         | `-v`  | –       | Print version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+The following example can be used as a starting point for a custom configuration
+file. The job list contains one observation with two requests to read
+temperature and humidity values from the holding register. The temperature is
+provided as a 4-byte float in ABCD byte order in register 40060, the humidity as
+a 2-byte unsigned integer in register 40050. The humidity will be scaled
+automatically by 1/10, i.e., an integer value of `600` is converted to the real
+value `60.0`.
+
+[source,lua]
+....
+-- dmmb.conf
+
+dmmb = {
+  logger = "",
+  node = "dummy-node",
+  sensor = "dummy-sensor",
+  output = "-",
+  format = "jsonl",
+  mode = "rtu",
+  rtu = {
+    -- Modbus RTU interface.
+    path = "/dev/ttyUSB0",
+    baudrate = 19200,
+    bytesize = 8,
+    parity = "none",
+    stopbits = 2
+  },
+  tcp = {
+    -- Modbus TCP interface.
+    address = "192.168.1.100",
+    port = 502
+  },
+  jobs = {
+    {
+      -- Read temperature and humidity from Modbus registers.
+      disabled = false,
+      onetime = false,
+      observation = {
+        name = "get_values",
+        target_id = "dummy-target",
+        receivers = { },
+        requests = {
+          {
+            -- (1) Read temperature as 4-byte float (ABCD) from register 40060.
+            name = "get_temperature",
+            request = "access=read,slave=1,address=40060,type=float,order=abcd",
+            delay = 0,
+            responses = {
+                { name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }
+            }
+          },
+          {
+            -- (2) Read humidity as 2-byte unsigned integer from register 40050.
+            name = "get_humidity",
+            request = "access=read,slave=1,address=40050,type=uint16,scale=10",
+            delay = 0,
+            responses = {
+                { name = "hum", unit = "%", type = RESPONSE_TYPE_REAL64 }
+            }
+          }
+        }
+      },
+      delay = 60 * 1000
+    }
+  },
+  debug = false,
+  verbose = false
+}
+....
+
+The *dmmb* program opens a Modbus RTU connection to slave device 1, then reads
+temperature and humidity every 60 seconds. The observations are printed to
+_stdout_ in JSONL format:
+
+....
+$ dmmb --name dmmb --config /usr/local/etc/dmpack/dmmb.conf --verbose
 ....
 
 === dmmbctl [[dmmbctl]]

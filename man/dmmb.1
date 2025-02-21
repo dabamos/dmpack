@@ -1,0 +1,185 @@
+'\" t
+.\"     Title: dmmb
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-02-21
+.\"    Manual: User Commands
+.\"    Source: DMMB
+.\"  Language: English
+.\"
+.TH "DMMB" "1" "2025-02-21" "DMMB" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmmb \- reads observations from Modbus RTU/TCP device
+.SH "SYNOPSIS"
+.sp
+\fBdmmb\fP \-\-help
+.sp
+\fBdmmb\fP \-\-version
+.sp
+\fBdmmb\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBformat\fP \fIname\fP] [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBdebug\fP]
+[\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmmb\fP program reads values from or writes values to Modbus RTU/TCP
+registers by sequentially processing the job list loaded from a configuration
+file. Each request of an observation must contain the Modbus register parameters
+in the request string. The value of the first response is set to the result of
+the read operation. Up to 8 requests to read and/or write values are permitted.
+Integers read from a register may be scaled using an optional scale denominator.
+.sp
+For example, to read a 2\-byte unsigned integer from holding register 40050 of
+slave device 1 with a scale factor of 1/10, the attribute \f(CRrequest\fP of a request
+must be set to:
+.sp
+.if n .RS 4
+.nf
+.fam C
+access=read, slave=1, address=40050, type=uint16, scale=10
+.fam
+.fi
+.if n .RE
+.sp
+Or, to read a 4\-byte floating\-point value in ABCD byte order from register
+40060:
+.sp
+.if n .RS 4
+.nf
+.fam C
+access=read, slave=1, address=40060, type=float, order=abcd
+.fam
+.fi
+.if n .RE
+.sp
+Only integer values may be written to an input register, for instance:
+.sp
+.if n .RS 4
+.nf
+.fam C
+access=write, slave=1, address=30010, type=uint16, value=1
+.fam
+.fi
+.if n .RE
+.sp
+The value is converted to \f(CRuint16\fP automatically. The command string can be in
+lower or upper case. White spaces will be ignored.
+.sp
+Observations will be forwarded to the next receiver via POSIX message queue if
+any receiver is specified. The program can act as a sole data logger if output
+and format are set. If the output path is set to \f(CR\-\fP, observations are printed
+to \fIstdout\fP, else to file.
+.sp
+A configuration file is required to configure the jobs to perform. Each
+observation must have a valid target id. The database must contain the specified
+node, sensor, and targets.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-format\fP, \fB\-f\fP [csv|jsonl]
+.RS 4
+Output format of observations if \f(CR\-\-output\fP is set. Either CSV or JSON Lines.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Print available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmmb\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-output\fP, \fB\-o\fP \fIfile\fP
+.RS 4
+Output file to append observations to (\f(CR\-\fP for \fIstdout\fP).
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Print version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Process terminated without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Process failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Read the jobs to perform from configuration file and execute them sequentially:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmmb \-\-name dmmb \-\-config /usr/local/etc/dmpack/dmmb.conf \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

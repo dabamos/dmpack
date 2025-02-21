@@ -21,11 +21,36 @@ dmmb - reads observations from Modbus RTU/TCP device
 
 == DESCRIPTION
 
-The *dmmb* program read from or writes to Modbus registers by processing
-jobs from the configuration file sequentially. Each request of an observation
-must contain the Modbus register parameters in the request string of attribute
-`request`. The value of the first response is set to the result of the read
-operation.
+The *dmmb* program reads values from or writes values to Modbus RTU/TCP
+registers by sequentially processing the job list loaded from a configuration
+file. Each request of an observation must contain the Modbus register parameters
+in the request string. The value of the first response is set to the result of
+the read operation. Up to 8 requests to read and/or write values are permitted.
+Integers read from a register may be scaled using an optional scale denominator.
+
+For example, to read a 2-byte unsigned integer from holding register 40050 of
+slave device 1 with a scale factor of 1/10, the attribute `request` of a request
+must be set to:
+
+....
+access=read, slave=1, address=40050, type=uint16, scale=10
+....
+
+Or, to read a 4-byte floating-point value in ABCD byte order from register
+40060:
+
+....
+access=read, slave=1, address=40060, type=float, order=abcd
+....
+
+Only integer values may be written to an input register, for instance:
+
+....
+access=write, slave=1, address=30010, type=uint16, value=1
+....
+
+The value is converted to `uint16` automatically. The command string can be in
+lower or upper case. White spaces will be ignored.
 
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output
