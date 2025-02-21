@@ -352,7 +352,7 @@ contains
                 request%response = dm_ascii_escape(raw)
 
                 ! Look for regular expression pattern.
-                if (dm_request_has_pattern(request)) then
+                if (.not. dm_request_has_pattern(request)) then
                     rc = E_EMPTY
                     if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ, error=rc)
                     exit read_loop
