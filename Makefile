@@ -278,6 +278,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_mail.f90 \
       $(SRCDIR)/dm_mime.f90 \
       $(SRCDIR)/dm_modbus.f90 \
+      $(SRCDIR)/dm_modbus_register.f90 \
       $(SRCDIR)/dm_modbus_type.f90 \
       $(SRCDIR)/dm_mqtt.f90 \
       $(SRCDIR)/dm_mqueue.f90 \
@@ -379,6 +380,7 @@ OBJ = dm_ansi.o \
       dm_mail.o \
       dm_mime.o \
       dm_modbus.o \
+      dm_modbus_register.o \
       dm_modbus_type.o \
       dm_mqtt.o \
       dm_mqueue.o \
@@ -655,6 +657,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom_api.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_geocom.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus_type.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus_register.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_modbus.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_lua_api.f90

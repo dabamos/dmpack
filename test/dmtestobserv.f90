@@ -9,7 +9,7 @@ program dmtestobserv
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestobserv'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -17,7 +17,8 @@ program dmtestobserv
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
     ]
 
     call dm_init()
@@ -173,4 +174,28 @@ contains
 
         print '(" Observation size: ", i0)', OBSERV_SIZE
     end function test03
+
+    logical function test04() result(stat)
+        character(len=REQUEST_NAME_LEN) :: name
+        character(len=TIME_LEN)         :: timestamp
+        integer                         :: delay, i
+        type(request_type)              :: requests(2)
+
+        stat = TEST_FAILED
+
+        name      = 'test'
+        timestamp = dm_time_now()
+        delay     = dm_sec_to_msec(60)
+
+        print *, 'Testing request setter routine ...'
+        call dm_request_set(requests, name=name, timestamp=timestamp, delay=delay)
+
+        do i = 1, size(requests)
+            if (requests(i)%name      /= name)       return
+            if (requests(i)%timestamp /= timestamp)  return
+            if (requests(i)%delay     /= delay)      return
+        end do
+
+        stat = TEST_PASSED
+    end function test04
 end program dmtestobserv

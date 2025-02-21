@@ -306,12 +306,13 @@ contains
         has_receiver = (len_trim(app%receiver) > 0)
 
         ! Set serial port parameters.
-        tty%path      = app%path
-        tty%access    = VE_TTY_ACCESS
-        tty%baud_rate = VE_TTY_BAUD_RATE
-        tty%byte_size = VE_TTY_BYTE_SIZE
-        tty%parity    = VE_TTY_PARITY
-        tty%stop_bits = VE_TTY_STOP_BITS
+        call dm_tty_set(tty       = tty,              &
+                        path      = app%path,         &
+                        access    = VE_TTY_ACCESS,    &
+                        baud_rate = VE_TTY_BAUD_RATE, &
+                        byte_size = VE_TTY_BYTE_SIZE, &
+                        parity    = VE_TTY_PARITY,    &
+                        stop_bits = VE_TTY_STOP_BITS)
 
         ! Try to open TTY.
         call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
@@ -440,20 +441,19 @@ contains
         timestamp = dm_time_now()
 
         ! Prepare observation.
-        observ%id        = dm_uuid4()
-        observ%node_id   = app%node_id
-        observ%sensor_id = app%sensor_id
-        observ%target_id = app%target_id
-        observ%timestamp = timestamp
-        observ%source    = app%name
-        observ%device    = trim(app%path)
+        call dm_observ_set(observ    = observ,        &
+                           id        = dm_uuid4(),    &
+                           node_id   = app%node_id,   &
+                           sensor_id = app%sensor_id, &
+                           target_id = app%target_id, &
+                           timestamp = timestamp,     &
+                           source    = app%name,      &
+                           device    = app%path)
 
         rc = dm_observ_add_receiver(observ, app%receiver)
 
         ! Prepare requests.
-        requests(:)%name      = 'ved'
-        requests(:)%timestamp = timestamp
-        requests(:)%delay     = dm_sec_to_msec(app%interval)
+        call dm_request_set(requests, name='ved', timestamp=timestamp, delay=dm_sec_to_msec(app%interval))
 
         select case (app%device)
             case (VE_DEVICE_MPPT)

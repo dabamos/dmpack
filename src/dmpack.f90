@@ -82,6 +82,7 @@ module dmpack
     use :: dm_mail
     use :: dm_mime
     use :: dm_modbus
+    use :: dm_modbus_register
     use :: dm_modbus_type
     use :: dm_mqtt
     use :: dm_mqueue

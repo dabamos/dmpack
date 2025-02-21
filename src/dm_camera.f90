@@ -78,7 +78,7 @@ module dm_camera
         character(len=CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l2' &
     ] !! Camera device names.
 
-    character(len=*), parameter :: CAMERA_BINARY      = 'ffmpeg'      !! FFmpeg binary name.
+    character(len=*), parameter :: CAMERA_FFMPEG      = 'ffmpeg'      !! FFmpeg binary name.
     integer,          parameter :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
 
     type, public :: camera_type
@@ -200,6 +200,6 @@ contains
         end select
 
         ! Concatenate command string.
-        command = CAMERA_BINARY // trim(command)
+        command = CAMERA_FFMPEG // trim(command)
     end subroutine camera_prepare_capture
 end module dm_camera

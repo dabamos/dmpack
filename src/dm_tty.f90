@@ -98,6 +98,7 @@ module dm_tty
     public :: dm_tty_read_byte
     public :: dm_tty_read_bytes
     public :: dm_tty_read_request
+    public :: dm_tty_set
     public :: dm_tty_set_attributes
     public :: dm_tty_set_blocking
     public :: dm_tty_set_timeout
@@ -108,6 +109,9 @@ module dm_tty
     public :: dm_tty_write_bytes
     public :: dm_tty_write_request
 contains
+    ! **************************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! **************************************************************************
     integer function dm_tty_baud_rate_from_value(value, error) result(baud_rate)
         !! Returns baud rate enumerator from numeric value. If the value is
         !! invalid, returns `TTY_B0` and sets optional argument `error` to
@@ -719,6 +723,35 @@ contains
         raw = dm_ascii_unescape(request%request)
         rc  = dm_tty_write(tty, raw, nbytes=len_trim(raw))
     end function dm_tty_write_request
+
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
+    pure elemental subroutine dm_tty_set(tty, path, access, baud_rate, byte_size, stop_bits, parity, timeout, dtr, rts, blocking)
+        !! TTY setter routine.
+        type(tty_type),   intent(inout)        :: tty       !! TTY type.
+        character(len=*), intent(in), optional :: path      !! TTY/PTY path.
+        integer,          intent(in), optional :: access    !! Access mode enumerator.
+        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator.
+        integer,          intent(in), optional :: byte_size !! Byte size enumerator.
+        integer,          intent(in), optional :: stop_bits !! Stop bits enumerator.
+        integer,          intent(in), optional :: parity    !! Parity enumerator.
+        integer,          intent(in), optional :: timeout   !! Read timeout in seconds.
+        logical,          intent(in), optional :: dtr       !! Data Terminal Ready (DTR).
+        logical,          intent(in), optional :: rts       !! Request To Send (RTS).
+        logical,          intent(in), optional :: blocking  !! Blocking read.
+
+        if (present(path))       tty%path      = path
+        if (present(access))     tty%access    = access
+        if (present(baud_rate))  tty%baud_rate = baud_rate
+        if (present(byte_size))  tty%byte_size = byte_size
+        if (present(stop_bits))  tty%stop_bits = stop_bits
+        if (present(parity))     tty%parity    = parity
+        if (present(timeout))    tty%timeout   = timeout
+        if (present(dtr))        tty%dtr       = dtr
+        if (present(rts))        tty%rts       = rts
+        if (present(blocking))   tty%blocking  = blocking
+    end subroutine dm_tty_set
 
     subroutine dm_tty_close(tty)
         !! Closes file descriptor.

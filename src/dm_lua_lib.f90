@@ -41,7 +41,7 @@ contains
     function luaopen_libdmpack(ptr) bind(c) result(rc)
         !! Registers the Lua parameters and interfaces of the DMPACK API,
         !! including the GeoCOM API. This function is invoked automatically by
-        !! Lua 5.4 if library `libdmpack.so` is loaded.
+        !! Lua 5.4 when library `libdmpack.so` is loaded.
         use :: dm_lua,        only: lua_state_type
         use :: dm_lua_api,    only: dm_lua_api_register
         use :: dm_lua_geocom, only: dm_lua_geocom_register

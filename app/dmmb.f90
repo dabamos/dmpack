@@ -432,6 +432,12 @@ contains
             return
         end if
 
+        if (.not. dm_modbus_register_is_valid(register)) then
+            rc = E_INVALID
+            call logger%error('invalid Modbus parameters in ' // request_name_string(observ, request), observ=observ, error=rc)
+            return
+        end if
+
         ! Set slave device.
         rc = dm_modbus_set_slave(modbus, slave=register%slave)
 
