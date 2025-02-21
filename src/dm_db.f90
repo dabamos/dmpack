@@ -60,6 +60,8 @@ module dm_db
     integer, parameter, public :: DB_JOURNAL_PERSIST  = 3             !! Overwrite journal instead of deleting (may be faster than deleting or truncating).
     integer, parameter, public :: DB_JOURNAL_MEMORY   = 4             !! Store journal in memory (fast, volatile).
     integer, parameter, public :: DB_JOURNAL_WAL      = 5             !! Use Write-Ahead Log (WAL) journal.
+    integer, parameter, public :: DB_JOURNAL_WAL2     = 6             !! Use Write-Ahead Log 2 (WAL2) journal.
+    integer, parameter, public :: DB_JOURNAL_LAST     = 6             !! Never use this.
 
     ! SQLite 3 auto vacuum modes.
     integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0      !! No auto-vacuum (default).
@@ -1201,6 +1203,7 @@ contains
             case ('persist');  mode = DB_JOURNAL_PERSIST
             case ('memory');   mode = DB_JOURNAL_MEMORY
             case ('wal');      mode = DB_JOURNAL_WAL
+            case ('wal2');     mode = DB_JOURNAL_WAL2
             case default;      mode = DB_JOURNAL_OFF
         end select
 
@@ -3322,16 +3325,17 @@ contains
         if (db%read_only) return
 
         rc = E_INVALID
-        if (mode < DB_JOURNAL_OFF .or. mode > DB_JOURNAL_WAL) return
+        if (mode < DB_JOURNAL_OFF .or. mode > DB_JOURNAL_LAST) return
 
         sql_block: block
             select case (mode)
-                case (DB_JOURNAL_OFF);      rc = dm_db_prepare(db, db_stmt, QUERY // 'OFF')
-                case (DB_JOURNAL_DELETE);   rc = dm_db_prepare(db, db_stmt, QUERY // 'DELETE')
-                case (DB_JOURNAL_TRUNCATE); rc = dm_db_prepare(db, db_stmt, QUERY // 'TRUNCATE')
-                case (DB_JOURNAL_PERSIST);  rc = dm_db_prepare(db, db_stmt, QUERY // 'PERSIST')
-                case (DB_JOURNAL_MEMORY);   rc = dm_db_prepare(db, db_stmt, QUERY // 'MEMORY')
-                case (DB_JOURNAL_WAL);      rc = dm_db_prepare(db, db_stmt, QUERY // 'WAL')
+                case (DB_JOURNAL_OFF);      rc = dm_db_prepare(db, db_stmt, QUERY // 'off')
+                case (DB_JOURNAL_DELETE);   rc = dm_db_prepare(db, db_stmt, QUERY // 'delete')
+                case (DB_JOURNAL_TRUNCATE); rc = dm_db_prepare(db, db_stmt, QUERY // 'truncate')
+                case (DB_JOURNAL_PERSIST);  rc = dm_db_prepare(db, db_stmt, QUERY // 'persist')
+                case (DB_JOURNAL_MEMORY);   rc = dm_db_prepare(db, db_stmt, QUERY // 'memory')
+                case (DB_JOURNAL_WAL);      rc = dm_db_prepare(db, db_stmt, QUERY // 'wal')
+                case (DB_JOURNAL_WAL2);     rc = dm_db_prepare(db, db_stmt, QUERY // 'wal2')
             end select
             if (dm_is_error(rc)) exit sql_block
 
