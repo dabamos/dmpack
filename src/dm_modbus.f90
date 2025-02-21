@@ -328,11 +328,11 @@ contains
         value = modbus_get_float_dcba(data)
     end function dm_modbus_get_float_dcba
 
-    pure elemental character function dm_modbus_get_high_byte(data) result(value)
+    pure elemental character function dm_modbus_get_high_byte(data) result(byte)
         !! Returns high byte from 2-byte integer.
         integer(kind=u2), intent(in) :: data !! Register data.
 
-        value = achar(iand(shiftr(data, 8), int(z'FF', kind=u2)))
+        byte = char(iand(shiftr(data, 8), int(z'FF', kind=u2)))
     end function dm_modbus_get_high_byte
 
     pure integer(kind=i4) function dm_modbus_get_int32_from_int16(data) result(value)
@@ -355,11 +355,11 @@ contains
         value = ior(ior(ior(shiftl(d(1), 48), shiftl(d(2), 32)), shiftl(d(3), 16)), d(4))
     end function dm_modbus_get_int64_from_int16
 
-    pure elemental character function dm_modbus_get_low_byte(data) result(value)
+    pure elemental character function dm_modbus_get_low_byte(data) result(byte)
         !! Returns low byte from 2-byte integer.
         integer(kind=u2), intent(in) :: data !! Register data.
 
-        value = achar(iand(data, int(z'FF', kind=u2)))
+        byte = char(iand(data, int(z'FF', kind=u2)))
     end function dm_modbus_get_low_byte
 
     integer function dm_modbus_get_serial_mode(modbus, mode) result(rc)

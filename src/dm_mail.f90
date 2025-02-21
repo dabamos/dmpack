@@ -40,7 +40,7 @@ module dm_mail
     private
 
     integer, parameter, public :: MAIL_TLS_NONE     = 0 !! No transport-layer security.
-    integer, parameter, public :: MAIL_TLS_EXPLICIT = 1 !! Explicit SSL.
+    integer, parameter, public :: MAIL_TLS_EXPLICIT = 1 !! Explicit SSL/TLS.
     integer, parameter, public :: MAIL_TLS_IMPLICIT = 2 !! Implicit TLS (StartTLS).
     integer, parameter, public :: MAIL_TLS_LAST     = 2 !! Never use thise.
 

@@ -139,7 +139,7 @@ The following programs are based on the **DMPACK** library.
 | [dmlogger](adoc/dmlogger.adoc) | Stores log messages received from message queue in database.        |
 | [dmlua](adoc/dmlua.adoc)       | Runs Lua script to handle observations received from message queue. |
 | [dmmb](adoc/dmmb.adoc)         | Sensor control program for Modbus RTU/TCP.                          |
-| [dmmbctl](adoc/dmmbctl.adoc)   | Read or writes a single value from or to Modbus RTU/TCP register.   |
+| [dmmbctl](adoc/dmmbctl.adoc)   | Reads or writes a single value from or to Modbus RTU/TCP register.  |
 | [dmpipe](adoc/dmpipe.adoc)     | Reads sensor values from sub-process.                               |
 | [dmplot](adoc/dmplot.adoc)     | Generates plots from observations in database.                      |
 | [dmrecv](adoc/dmrecv.adoc)     | Receives logs and observations from message queue.                  |
