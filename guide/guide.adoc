@@ -2030,7 +2030,6 @@ value `60.0`.
 [source,lua]
 ....
 -- dmmb.conf
-
 dmmb = {
   logger = "",
   node = "dummy-node",
