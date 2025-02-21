@@ -930,7 +930,7 @@ $(DMWEB): app/dmweb.f90 $(TARGET)
 
 # Documentation from source code.
 doc:
-	$(FORD) ford.yml
+	$(FORD) ford.md
 
 # AsciiDoc to man pages.
 man:

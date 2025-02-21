@@ -1,3 +1,4 @@
+---
 project:         DMPACK
 version:         0.9.6
 license:         isc
@@ -20,6 +21,7 @@ summary:         **Deformation Monitoring Package (DMPACK)** – A software
 author:          Philipp Engel
 project_github:  https://github.com/dabamos/dmpack
 project_website: https://www.dabamos.de
+---
 
 ![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
