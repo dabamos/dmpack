@@ -156,62 +156,62 @@ contains
 
     pure subroutine dm_transform_cartesian_to_polar_3d_array(c, p)
         !! Transforms cartesian coordinates to polar (spherical) coordinates.
-        !! Array `c` must contain X, Y, Z. Array `p` will contain horizontal
-        !! angle [rad], vertical angle [rad], and radius.
+        !! Array `c` must contain `[ x, y, z ]`, array `p` will contain
+        !! `[ r, omega, phi ]`.
         real(kind=r8), intent(in)  :: c(3) !! Cartesian coordinates (X, Y, Z).
-        real(kind=r8), intent(out) :: p(3) !! Polar coordinates (phi, omega, radius).
+        real(kind=r8), intent(out) :: p(3) !! Polar coordinates (r, omega, phi).
 
         real(kind=r8) :: r
 
         associate (x => c(1), y => c(2), z => c(3))
             r = norm2(c)
-            p = [ atan2(y, x), acos(z / r), r ]
+            p = [ r, acos(z / r), atan2(y, x) ]
         end associate
     end subroutine dm_transform_cartesian_to_polar_3d_array
 
-    pure elemental subroutine dm_transform_cartesian_to_polar_3d_scalar(x, y, z, hz, v, r)
+    pure elemental subroutine dm_transform_cartesian_to_polar_3d_scalar(x, y, z, r, omega, phi)
         !! Transforms cartesian coordinates to polar (spherical) coordinates.
-        real(kind=r8), intent(in)  :: x  !! X coordinate.
-        real(kind=r8), intent(in)  :: y  !! Y coordinate.
-        real(kind=r8), intent(in)  :: z  !! Z coordinate.
-        real(kind=r8), intent(out) :: hz !! Horizontal angle (phi) [rad].
-        real(kind=r8), intent(out) :: v  !! Vertical angle (omega) [rad].
-        real(kind=r8), intent(out) :: r  !! Radius.
+        real(kind=r8), intent(in)  :: x     !! X coordinate.
+        real(kind=r8), intent(in)  :: y     !! Y coordinate.
+        real(kind=r8), intent(in)  :: z     !! Z coordinate.
+        real(kind=r8), intent(out) :: r     !! Radial distance.
+        real(kind=r8), intent(out) :: omega !! Polar (vertical) angle [rad].
+        real(kind=r8), intent(out) :: phi   !! Azimuthal (horizontal) angle [rad].
 
-        r  = sqrt(x**2 + y**2 + z**2)
-        hz = atan2(y, x)
-        v  = acos(z / r)
+        r     = sqrt(x**2 + y**2 + z**2)
+        omega = acos(z / r)
+        phi   = atan2(y, x)
     end subroutine dm_transform_cartesian_to_polar_3d_scalar
 
     pure subroutine dm_transform_polar_to_cartesian_3d_array(p, c)
         !! Transforms polar (spherical) coordinates to cartesian coordinates.
-        !! Array `p` must contain horizontal angle [rad], vertical angle [rad],
-        !! and radius. Array `c` will contain X, Y, Z.
-        real(kind=r8), intent(in)  :: p(3) !! Polar coordinates (phi, omega, radius).
-        real(kind=r8), intent(out) :: c(3) !! Cartesian coordinates (X, Y, Z).
+        !! Array `p` must contain `[ r, omega, phi ]`, array `c` will contain
+        !! `[ x, y, z ]`.
+        real(kind=r8), intent(in)  :: p(3) !! Polar coordinates (r, omega, phi).
+        real(kind=r8), intent(out) :: c(3) !! Cartesian coordinates (x, y, z).
 
         real(kind=r8) :: s
 
-        associate (hz => p(1), v => p(2), r => p(3))
-            s = sin(v)
-            c = r * [ s, s, cos(v) ] * [ cos(hz), sin(hz), 1.0_r8 ]
+        associate (r => p(1), omega => p(2), phi => p(3))
+            s = sin(omega)
+            c = r * [ s, s, cos(omega) ] * [ cos(phi), sin(phi), 1.0_r8 ]
         end associate
     end subroutine dm_transform_polar_to_cartesian_3d_array
 
-    pure elemental subroutine dm_transform_polar_to_cartesian_3d_scalar(hz, v, r, x, y, z)
+    pure elemental subroutine dm_transform_polar_to_cartesian_3d_scalar(r, omega, phi, x, y, z)
         !! Transforms polar (spherical) coordinates to cartesian coordinates.
-        real(kind=r8), intent(in)  :: hz !! Horizontal angle (phi) [rad].
-        real(kind=r8), intent(in)  :: v  !! Vertical angle (omega) [rad].
-        real(kind=r8), intent(in)  :: r  !! Radius.
-        real(kind=r8), intent(out) :: x  !! X coordinate.
-        real(kind=r8), intent(out) :: y  !! Y coordinate.
-        real(kind=r8), intent(out) :: z  !! Z coordinate.
+        real(kind=r8), intent(in)  :: r     !! Radial distance.
+        real(kind=r8), intent(in)  :: omega !! Polar (vertical) angle [rad].
+        real(kind=r8), intent(in)  :: phi   !! Azimuthal (horizontal) angle [rad].
+        real(kind=r8), intent(out) :: x     !! X coordinate.
+        real(kind=r8), intent(out) :: y     !! Y coordinate.
+        real(kind=r8), intent(out) :: z     !! Z coordinate.
 
         real(kind=r8) :: s
 
-        s = sin(v)
-        x = r * s * cos(hz)
-        y = r * s * sin(hz)
-        z = r * cos(v)
+        s = sin(omega)
+        x = r * s * cos(phi)
+        y = r * s * sin(phi)
+        z = r * cos(omega)
     end subroutine dm_transform_polar_to_cartesian_3d_scalar
 end module dm_transform

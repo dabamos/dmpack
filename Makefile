@@ -464,8 +464,8 @@ test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
       dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus dmtestmqtt \
       dmtestmqueue dmtestnet dmtestnml dmtestobserv dmtestpath dmtestpipe \
       dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
-      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestve \
-      dmtestversion dmtestz dmtestzlib dmtestzstd
+      dmtesttime dmtesttransform dmtesttty dmtestunit dmtestutil dmtestuuid \
+      dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -808,6 +808,9 @@ dmtestthread: test/dmtestthread.f90 $(TARGET)
 
 dmtesttime: test/dmtesttime.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttime test/dmtesttime.f90 $(TARGET) $(LDLIBS)
+
+dmtesttransform: test/dmtesttransform.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttransform test/dmtesttransform.f90 $(TARGET) $(LDLIBS) $(LIBLAPACK)
 
 dmtesttty: test/dmtesttty.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesttty test/dmtesttty.f90 $(TARGET) $(LDLIBS)
