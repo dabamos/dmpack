@@ -33,6 +33,42 @@ contains
 
         stat = TEST_FAILED
 
+        print *, 'Testing cartesian to polar transformation (array) ...'
+
+        c = [ REF_X, REF_Y, REF_Z ]
+
+        call dm_transform_cartesian_to_polar_3d(c, p)
+
+        print '(" r:     ", f8.6)', p(1)
+        print '(" omega: ", f8.6)', p(2)
+        print '(" phi:   ", f8.6)', p(3)
+        print '(" x:     ", f8.6)', c(1)
+        print '(" y:     ", f8.6)', c(2)
+        print '(" z:     ", f8.6)', c(3)
+
+        if (.not. dm_equals(p(1), REF_R)     .or. &
+            .not. dm_equals(p(2), REF_OMEGA) .or. &
+            .not. dm_equals(p(3), REF_PHI)) return
+
+        print *, 'Testing cartesian to polar transformation (scalar) ...'
+
+        x = REF_X
+        y = REF_Y
+        z = REF_Z
+
+        call dm_transform_cartesian_to_polar_3d(x, y, z, r, omega, phi)
+
+        print '(" r:     ", f8.6)', r
+        print '(" omega: ", f8.6)', omega
+        print '(" phi:   ", f8.6)', phi
+        print '(" x:     ", f8.6)', x
+        print '(" y:     ", f8.6)', y
+        print '(" z:     ", f8.6)', z
+
+        if (.not. dm_equals(r,     REF_R)     .or. &
+            .not. dm_equals(omega, REF_OMEGA) .or. &
+            .not. dm_equals(phi,   REF_PHI)) return
+
         print *, 'Testing polar to cartesian transformation (array) ...'
 
         p = [ REF_R, REF_OMEGA, REF_PHI ]
@@ -68,42 +104,6 @@ contains
         if (.not. dm_equals(x, REF_X) .or. &
             .not. dm_equals(y, REF_Y) .or. &
             .not. dm_equals(z, REF_Z)) return
-
-        print *, 'Testing polar to cartesian transformation (array) ...'
-
-        c = [ REF_X, REF_Y, REF_Z ]
-
-        call dm_transform_cartesian_to_polar_3d(c, p)
-
-        print '(" r:     ", f8.6)', p(1)
-        print '(" omega: ", f8.6)', p(2)
-        print '(" phi:   ", f8.6)', p(3)
-        print '(" x:     ", f8.6)', c(1)
-        print '(" y:     ", f8.6)', c(2)
-        print '(" z:     ", f8.6)', c(3)
-
-        if (.not. dm_equals(p(1), REF_R)     .or. &
-            .not. dm_equals(p(2), REF_OMEGA) .or. &
-            .not. dm_equals(p(3), REF_PHI)) return
-
-        print *, 'Testing polar to cartesian transformation (scalar) ...'
-
-        x = REF_X
-        y = REF_Y
-        z = REF_Z
-
-        call dm_transform_cartesian_to_polar_3d(x, y, z, r, omega, phi)
-
-        print '(" r:     ", f8.6)', r
-        print '(" omega: ", f8.6)', omega
-        print '(" phi:   ", f8.6)', phi
-        print '(" x:     ", f8.6)', x
-        print '(" y:     ", f8.6)', y
-        print '(" z:     ", f8.6)', z
-
-        if (.not. dm_equals(r,     REF_R)     .or. &
-            .not. dm_equals(omega, REF_OMEGA) .or. &
-            .not. dm_equals(phi,   REF_PHI)) return
 
         stat = TEST_PASSED
     end function test01
