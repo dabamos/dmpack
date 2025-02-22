@@ -87,7 +87,7 @@ program dmmb
                                   stop_bits = app%rtu%stop_bits)
             modbus => modbus_rtu
         else
-            rc = dm_modbus_create_tcp(modbus_tcp, app%tcp%address, app%tcp%port)
+            rc = dm_modbus_create(modbus_tcp, app%tcp%address, app%tcp%port)
             modbus => modbus_tcp
         end if
 
