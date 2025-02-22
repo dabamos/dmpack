@@ -3,11 +3,12 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtesthash
+    !! Hash and hash table tests.
     use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtesthash'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -15,7 +16,8 @@ program dmtesthash
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
     ]
 
     call dm_init()
@@ -56,4 +58,49 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        character(len=32), target :: values(3)
+        class(*), pointer         :: ptr
+        integer                   :: rc
+        type(hash_table_type)     :: table
+
+        stat = TEST_FAILED
+
+        values = [ character(len=32) :: 'bar', 'baz', 'qux' ]
+
+        test_block: block
+            print *, 'Creating hash table ...'
+            rc = dm_hash_table_create(table, size(values));  if (dm_is_error(rc)) exit test_block
+
+            print *, 'Setting values to hash table ...'
+            rc = dm_hash_table_set(table, 'foo', values(1)); if (dm_is_error(rc)) exit test_block
+            rc = dm_hash_table_set(table, 'zap', values(2)); if (dm_is_error(rc)) exit test_block
+            rc = dm_hash_table_set(table, 'uxn', values(3)); if (dm_is_error(rc)) exit test_block
+
+            print *, 'Getting key from hash table ...'
+            rc = dm_hash_table_get(table, 'zap', ptr);       if (dm_is_error(rc)) exit test_block
+
+            rc = E_NULL
+            if (.not. associated(ptr)) exit test_block
+
+            rc = E_CORRUPT
+            select type (value => ptr)
+                type is (character(len=*))
+                    print '(" zap: ", a)', trim(value)
+                    if (value /= 'baz') exit test_block
+                    rc = E_NONE
+
+                class default
+                    exit test_block
+            end select
+        end block test_block
+
+        call dm_hash_table_destroy(table)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test04
 end program dmtesthash
