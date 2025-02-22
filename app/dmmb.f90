@@ -529,7 +529,8 @@ contains
         type(app_type),    intent(inout) :: app    !! App type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
 
-        integer        :: msec, njobs, sec
+        integer        :: msec, sec
+        integer        :: njobs
         logical        :: debug
         type(job_type) :: job
 
@@ -538,9 +539,9 @@ contains
 
         ! Create Modbus connection.
         if (app%mode == MODBUS_MODE_RTU) then
-            call logger%debug('connecting to ' // trim(app%rtu%path))
+            call logger%debug('connecting to Modbus RTU device ' // trim(app%rtu%path))
         else
-            call logger%debug('connecting to ' // trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
+            call logger%debug('connecting to Modbus TCP device ' // trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
         end if
 
         rc = dm_modbus_connect(modbus)
@@ -559,8 +560,9 @@ contains
                 exit job_loop
             end if
 
+            if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
+
             ! Get next job as deep copy.
-            if (debug) call logger%debug(dm_itoa(njobs) // ' job(s) left in job queue')
             rc = dm_job_list_next(app%jobs, job)
 
             if (dm_is_error(rc)) then
@@ -568,30 +570,31 @@ contains
                 cycle job_loop
             end if
 
-            associate (observ => job%observ)
-                if (job%valid) then
-                    ! Read observation from TTY.
-                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                    rc = read_observ(app, modbus, observ, debug)
-                    call dm_observ_set(observ, error=rc)
+            observ_block: associate (observ => job%observ)
+                if (.not. job%valid) exit observ_block
+                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
-                    ! Forward observation via POSIX message queue.
-                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                ! Read observation from TTY.
+                rc = read_observ(app, modbus, observ, debug)
+                call dm_observ_set(observ, error=rc)
 
-                    ! Output observation.
-                    rc = output_observ(observ, app%output_type)
-                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                end if
+                ! Forward observation via POSIX message queue.
+                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
-                ! Wait the set delay time of the job (absolute).
-                msec = max(0, job%delay)
-                sec  = dm_msec_to_sec(msec)
+                ! Output observation.
+                rc = output_observ(observ, app%output_type)
 
-                if (msec == 0) cycle job_loop
-                if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec', observ=observ)
+                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+            end associate observ_block
 
-                call dm_msleep(msec)
-            end associate
+            ! Wait the set delay time of the job (absolute).
+            msec = max(0, job%delay)
+            sec  = dm_msec_to_sec(msec)
+
+            if (msec == 0) cycle job_loop
+            if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
+
+            call dm_msleep(msec)
         end do job_loop
 
         rc = E_NONE

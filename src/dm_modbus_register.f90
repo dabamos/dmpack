@@ -27,10 +27,10 @@ module dm_modbus_register
     public :: dm_modbus_register_scale
 contains
     pure elemental logical function dm_modbus_register_has_scale(register) result(has)
-        !! Returns `.true.` if register attribute `scale` is not 0 and not 1.
+        !! Returns `.true.` if register attribute `scale` is greater 1.
         type(modbus_register_type), intent(in) :: register !! Modbus register type.
 
-        has = (register%scale /= 0 .and. register%scale /= 1)
+        has = (register%scale > 1)
     end function dm_modbus_register_has_scale
 
     pure elemental logical function dm_modbus_register_is_valid(register) result(is)

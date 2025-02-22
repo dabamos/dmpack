@@ -658,17 +658,17 @@ contains
 
             n = dm_pipe_read(pipe, output)
             if (present(nbytes)) nbytes = n
+
+            ! Remove null character.
+            if (n == 0) then
+                rc = E_READ
+                output(1:1) = ' '
+            else
+                rc = E_NONE
+                output(n:n) = ' '
+            end if
         end block io_block
 
         call dm_pipe_close(pipe)
-
-        ! Remove null character.
-        if (n == 0) then
-            rc = E_READ
-            output(1:1) = ' '
-        else
-            rc = E_NONE
-            output(n:n) = ' '
-        end if
     end function gm_identify
 end module dm_gm

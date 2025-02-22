@@ -71,10 +71,7 @@ contains
             ! Invalid receiver name?
             if (.not. dm_id_is_valid(observ%receivers(next))) then
                 rc = E_INVALID
-                if (verbose_) then
-                    call logger%error('invalid receiver ' // trim(observ%receivers(next)) // &
-                                      ' in observ ' // observ%name, observ=observ, error=rc)
-                end if
+                if (verbose_) call logger%error('invalid receiver ' // trim(observ%receivers(next)) // ' in observ ' // observ%name, observ=observ, error=rc)
                 return
             end if
 
@@ -86,10 +83,7 @@ contains
             ! Forwarding to self is allowed, or valid receiver is found?
             if (allow_self_ .or. observ%receivers(next) /= name) exit
 
-            if (verbose_) then
-                call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // &
-                                  ' (' // dm_itoa(next) // ') of observ ' // observ%name)
-            end if
+            if (verbose_) call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // ' (' // dm_itoa(next) // ') of observ ' // observ%name)
         end do
 
         mqueue_block: block
@@ -102,10 +96,7 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (verbose_) then
-                    call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // &
-                                      dm_system_error_message(), observ=observ, error=rc)
-                end if
+                if (verbose_) call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // dm_system_error_message(), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
@@ -115,17 +106,11 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (verbose_) then
-                    call logger%error('failed to send observ ' // trim(observ%name) // ' to mqueue /' // &
-                                      observ%receivers(next), observ=observ, error=rc)
-                end if
+                if (verbose_) call logger%error('failed to send observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            if (verbose_) then
-                call logger%debug('sent observ ' // trim(observ%name) // ' to mqueue /' // &
-                                  observ%receivers(next), observ=observ)
-            end if
+            if (verbose_) call logger%debug('sent observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ)
         end block mqueue_block
 
         ! Close message queue.
@@ -133,8 +118,7 @@ contains
 
         if (dm_is_error(stat) .and. verbose_) then
             rc = stat
-            call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // &
-                                dm_system_error_message(), observ=observ, error=rc)
+            call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // dm_system_error_message(), observ=observ, error=rc)
         end if
     end function mqueue_forward_observ
 end module dm_mqueue_util

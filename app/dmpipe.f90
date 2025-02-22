@@ -219,7 +219,8 @@ contains
         character(len=*),  intent(in)    :: source    !! Source of observation.
         logical,           intent(in)    :: debug     !! Output debug messages.
 
-        integer :: i, msec, n
+        integer :: i, n
+        integer :: msec, sec
 
         rc = E_EMPTY
 
@@ -240,7 +241,6 @@ contains
 
         ! Read pipes in requests sequentially.
         request_loop: do i = 1, n
-            ! Get pointer to next request.
             associate (request => observ%requests(i))
                 if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
@@ -257,12 +257,14 @@ contains
 
                 ! Wait the set delay time of the request.
                 msec = max(0, request%delay)
+                sec  = dm_msec_to_sec(msec)
+
                 if (msec == 0) cycle request_loop
 
                 if (i < n) then
-                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
                 else
-                    if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                    if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
                 end if
 
                 call dm_msleep(msec)
@@ -330,8 +332,7 @@ contains
                 ! Check responses.
                 do i = 1, request%nresponses
                     associate (response => request%responses(i))
-                        if (dm_is_ok(response%error)) cycle
-                        call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+                        if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
                     end associate
                 end do
 
@@ -368,8 +369,8 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer        :: msec, njobs
-        integer        :: rc
+        integer        :: msec, sec
+        integer        :: njobs, rc
         logical        :: debug
         type(job_type) :: job
 
@@ -386,7 +387,7 @@ contains
                 exit job_loop
             end if
 
-            if (debug) call logger%debug(dm_itoa(njobs) // ' job(s) left in job queue')
+            if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
 
             ! Get next job as deep copy.
             rc = dm_job_list_next(app%jobs, job)
@@ -396,27 +397,31 @@ contains
                 cycle job_loop
             end if
 
-            associate (observ => job%observ)
-                observ_if: if (job%valid) then
-                    ! Read observation.
-                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                    rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
-                    call dm_observ_set(observ, error=rc)
+            observ_block: associate (observ => job%observ)
+                if (.not. job%valid) exit observ_block
+                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
-                    ! Forward observation.
-                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                ! Read observation.
+                rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
+                call dm_observ_set(observ, error=rc)
 
-                    ! Output observation.
-                    rc = output_observ(observ, app%output_type)
-                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                end if observ_if
+                ! Forward observation.
+                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
-                ! Wait the set (absolute) delay time of the job.
-                msec = max(0, job%delay)
-                if (msec <= 0) cycle job_loop
-                if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-                call dm_msleep(msec)
-            end associate
+                ! Output observation.
+                rc = output_observ(observ, app%output_type)
+
+                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+            end associate observ_block
+
+            ! Wait the set (absolute) delay time of the job.
+            msec = max(0, job%delay)
+            sec  = dm_msec_to_sec(msec)
+
+            if (msec <= 0) cycle job_loop
+            if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
+
+            call dm_msleep(msec)
         end do job_loop
     end subroutine run
 
@@ -424,11 +429,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call dm_stop(STOP_SUCCESS)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 
     subroutine version_callback()

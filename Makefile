@@ -460,12 +460,12 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DM
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
       dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestfile \
-      dmtestgm dmtesthash dmtesthashtable dmtesthdf5 dmtesthtml dmtestid \
-      dmtestlog dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail \
-      dmtestmodbus dmtestmqtt dmtestmqueue dmtestnet dmtestnml dmtestobserv  \
-      dmtestpath dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts \
-      dmteststring dmtestthread dmtesttime dmtesttty dmtestunit dmtestutil \
-      dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
+      dmtestgm dmtesthash dmtesthdf5 dmtesthtml dmtestid dmtestlog dmtestlogger \
+      dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus dmtestmqtt \
+      dmtestmqueue dmtestnet dmtestnml dmtestobserv dmtestpath dmtestpipe \
+      dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
+      dmtesttime dmtesttty dmtestunit dmtestutil dmtestuuid dmtestve \
+      dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -736,9 +736,6 @@ dmtestgm: test/dmtestgm.f90 $(TARGET)
 
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
-
-dmtesthashtable: test/dmtesthashtable.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthashtable test/dmtesthashtable.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS)
