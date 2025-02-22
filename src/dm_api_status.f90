@@ -33,6 +33,7 @@ module dm_api_status
 
     public :: dm_api_status_from_string
     public :: dm_api_status_equals
+    public :: dm_api_status_set
     public :: dm_api_status_to_string
 contains
     integer function dm_api_status_from_string(string, status) result(rc)
@@ -121,4 +122,25 @@ contains
 
         string = string // NL // 'error=' // dm_itoa(status%error)
     end function dm_api_status_to_string
+
+    subroutine dm_api_status_set(status, version, dmpack, host, server, timestamp, message, error)
+        !! Sets attributes of API status type. This routine does not validate
+        !! the arguments.
+        type(api_status_type), intent(inout)   :: status    !! API status type.
+        character(len=*), intent(in), optional :: version   !! Server application version.
+        character(len=*), intent(in), optional :: dmpack    !! Server library version.
+        character(len=*), intent(in), optional :: host      !! Server host name.
+        character(len=*), intent(in), optional :: server    !! Server software (web server).
+        character(len=*), intent(in), optional :: timestamp !! Server date and time in ISO 8601.
+        character(len=*), intent(in), optional :: message   !! Status message.
+        integer,          intent(in), optional :: error     !! Error code.
+
+        if (present(version))   status%version   = version
+        if (present(dmpack))    status%dmpack    = dmpack
+        if (present(host))      status%host      = host
+        if (present(server))    status%server    = server
+        if (present(timestamp)) status%timestamp = timestamp
+        if (present(message))   status%message   = message
+        if (present(error))     status%error     = error
+    end subroutine dm_api_status_set
 end module dm_api_status

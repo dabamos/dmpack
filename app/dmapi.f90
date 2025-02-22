@@ -1324,7 +1324,7 @@ contains
 
         character(len=API_STATUS_LEN) :: message
         integer                       :: rc
-        type(api_status_type)         :: api
+        type(api_status_type)         :: status
 
         rc = E_NONE
 
@@ -1342,16 +1342,17 @@ contains
             message = 'online'
         end if
 
-        api = api_status_type(version   = dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH), &
-                              dmpack    = DM_VERSION_STRING, &
-                              host      = env%server_name, &
-                              server    = env%server_software, &
-                              timestamp = dm_time_now(), &
-                              message   = message, &
-                              error     = rc)
+        call dm_api_status_set(status    = status, &
+                               version   = dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH), &
+                               dmpack    = DM_VERSION_STRING, &
+                               host      = env%server_name, &
+                               server    = env%server_software, &
+                               timestamp = dm_time_now(), &
+                               message   = message, &
+                               error     = rc)
 
         call dm_fcgi_header(MIME_TEXT, HTTP_OK)
-        call dm_fcgi_out(dm_api_status_to_string(api))
+        call dm_fcgi_out(dm_api_status_to_string(status))
     end subroutine route_root
 
     subroutine route_sensor(env)
