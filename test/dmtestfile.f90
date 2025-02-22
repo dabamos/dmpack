@@ -93,8 +93,11 @@ contains
     logical function test02() result(stat)
         stat = TEST_FAILED
 
-        print *, 'Checking file type of directory ./test ...'
+        print *, 'Checking if file is a directory ...'
         if (.not. dm_file_is_directory('test')) return
+
+        print *, 'Checking if file is not a directory ...'
+        if (dm_file_is_directory('Makefile')) return
 
         stat = TEST_PASSED
     end function test02
