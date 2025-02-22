@@ -383,7 +383,7 @@ Or, to install to directory `/opt`, run:
 $ sudo make install PREFIX=/opt
 ....
 
-Path `/opt/bin/` must be added to the global `PATH` environment variable to run
+Path `/opt/bin` must be added to the global `PATH` environment variable to run
 DMPACK programs from the command-line.
 
 [NOTE]
@@ -1237,10 +1237,10 @@ through command-line arguments.
 |===
 | Option              | Short | Default | Description
 
-| `--alt _alt_`       | `-A`  | –       | Node, sensor, or target altitude (optional).
 | `--create _type_`   | `-C`  | –       | Create record of given type (`node`, `sensor`, or `target`).
 | `--database _file_` | `-d`  | –       | Path to SQLite observation database (required).
 | `--delete _type_`   | `-D`  | –       | Delete record of given type (`node`, `sensor`, or `target`).
+| `--elev _elev_`     | `-E`  | –       | Node, sensor, or target elevation (optional).
 | `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--id _id_`         | `-I`  | –       | Node, sensor, or target id (required).
 | `--lat _lat_`       | `-L`  | –       | Node, sensor, or target latitude (optional).
@@ -1292,7 +1292,7 @@ sensor.y: 0.000000000000
 sensor.z: 0.000000000000
 sensor.lon: 0.000000000000
 sensor.lat: 0.000000000000
-sensor.alt: 0.000000000000
+sensor.elev: 0.000000000000
 ....
 
 === dmexport [[dmexport]]
@@ -1961,7 +1961,7 @@ access=write, slave=2, address=30010, type=uint16, value=1
 ....
 
 The value is converted to `uint16` automatically. The command string can be in
-lower or upper case. White spaces will be ignored.
+lower or upper case, white spaces are optional.
 
 The following fields are supported in the command string:
 
@@ -2088,9 +2088,9 @@ dmmb = {
 }
 ....
 
-The *dmmb* program opens a Modbus RTU connection to slave device 1, then reads
-temperature and humidity every 60 seconds. The observations are printed to
-_stdout_ in JSONL format:
+The *dmmb* program opens a Modbus RTU connection to `/dev/ttyUSB0` (19200 baud,
+8N2), then reads temperature and humidity from slave device 1 every 60 seconds.
+The observations are printed to _stdout_ in JSONL format:
 
 ....
 $ dmmb --name dmmb --config /usr/local/etc/dmpack/dmmb.conf --verbose
@@ -2153,13 +2153,13 @@ an I/O module with Modbus RTU interface:
 
 ....
 $ dmmbctl --path /dev/ttyUSB0 --baudrate 19200 --bytesize 8 --parity even --stopbits 1 \
-  --slave 1 --read 50 --type float --order abcd
+  --slave 1 --read 40050 --type float --order abcd
 21.217552185059
 ....
 
 The I/O module is attached through an RS-485 adapter on `/dev/ttyUSB` (19200
-baud, 8E1) and configured to use slave id 1. The value is read from register 50
-and converted to float in `abcd` byte order.
+baud, 8E1) and configured to use slave id 1. The value is read from register
+40050 and converted to float in `abcd` byte order.
 
 === dmpipe [[dmpipe]]
 
@@ -7543,7 +7543,7 @@ LOG%MESSAGE="dummy log message",
 | `z`       | double  | 8    | Node local z (optional).
 | `lon`     | double  | 8    | Node longitude (optional).
 | `lat`     | double  | 8    | Node latitude (optional).
-| `alt`     | double  | 8    | Node altitude (optional).
+| `elev`    | double  | 8    | Node elevation (optional).
 |===
 
 ==== CSV [[data-node-csv]]
@@ -7560,7 +7560,7 @@ LOG%MESSAGE="dummy log message",
 | 9      | `z`       | Node local z.
 | 4      | `lon`     | Node longitude.
 | 5      | `lat`     | Node latitude.
-| 6      | `alt`     | Node altitude.
+| 6      | `elev`    | Node elevation.
 |===
 
 ==== GeoJSON [[data-node-geojson]]
@@ -7584,7 +7584,7 @@ LOG%MESSAGE="dummy log message",
       "z": 0.0,
       "lon": 0.0,
       "lat": 0.0,
-      "alt": 0.0
+      "elev": 0.0
     }
   }
 }
@@ -7619,7 +7619,7 @@ DATASET "node_type" {
     H5T_IEEE_F64LE "z";
     H5T_IEEE_F64LE "lon";
     H5T_IEEE_F64LE "lat";
-    H5T_IEEE_F64LE "alt";
+    H5T_IEEE_F64LE "elev";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -7638,7 +7638,7 @@ DATASET "node_type" {
   "z": 0.0,
   "lon": 0.0,
   "lat": 0.0,
-  "alt": 0.0
+  "elev": 0.0
 }
 ....
 
@@ -7998,10 +7998,10 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | `meta`    | string  | 32   | Sensor description (optional).
 | `x`       | double  | 8    | Sensor x or easting (optional).
 | `y`       | double  | 8    | Sensor y or northing (optional).
-| `z`       | double  | 8    | Sensor z or altitude (optional).
+| `z`       | double  | 8    | Sensor z or elevation (optional).
 | `lon`     | double  | 8    | Sensor longitude (optional).
 | `lat`     | double  | 8    | Sensor latitude (optional).
-| `alt`     | double  | 8    | Sensor altitude (optional).
+| `elev`    | double  | 8    | Sensor elevation (optional).
 |===
 
 ==== CSV [[data-sensor-csv]]
@@ -8018,10 +8018,10 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 6      | `meta`    | Sensor description.
 | 7      | `x`       | Sensor x or easting.
 | 8      | `y`       | Sensor y or northing.
-| 9      | `z`       | Sensor z or altitude.
+| 9      | `z`       | Sensor z or elevation.
 | 10     | `lon`     | Sensor longitude.
 | 11     | `lat`     | Sensor latitude.
-| 12     | `alt`     | Sensor altitude.
+| 12     | `elev`    | Sensor elevation.
 |===
 
 ==== GeoJSON [[data-sensor-geojson]]
@@ -8048,7 +8048,7 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
       "z": 0.0,
       "lon": 0.0,
       "lat": 0.0,
-      "alt": 0.0
+      "elev": 0.0
     }
   }
 }
@@ -8096,7 +8096,7 @@ DATASET "sensor_type" {
     H5T_IEEE_F64LE "z";
     H5T_IEEE_F64LE "lon";
     H5T_IEEE_F64LE "lat";
-    H5T_IEEE_F64LE "alt";
+    H5T_IEEE_F64LE "elev";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -8118,7 +8118,7 @@ DATASET "sensor_type" {
   "z": 0.0,
   "lon": 0.0,
   "lat": 0.0,
-  "alt": 0.0
+  "elev": 0.0
 }
 ....
 
@@ -8170,10 +8170,10 @@ SENSOR%ALT=0.0
 | `state`   | integer | 4    | Target <<data-target-states,state>> (optional).
 | `x`       | double  | 8    | Target x or easting (optional).
 | `y`       | double  | 8    | Target y or northing (optional).
-| `z`       | double  | 8    | Target z or altitude (optional).
+| `z`       | double  | 8    | Target z or elevation (optional).
 | `lon`     | double  | 8    | Target longitude (optional).
 | `lat`     | double  | 8    | Target latitude (optional).
-| `alt`     | double  | 8    | Target altitude (optional).
+| `elev`    | double  | 8    | Target elevation (optional).
 |===
 
 ==== CSV [[data-target-csv]]
@@ -8188,10 +8188,10 @@ SENSOR%ALT=0.0
 | 4      | `state`   | Target state.
 | 5      | `x`       | Target x or easting.
 | 6      | `y`       | Target y or northing.
-| 7      | `z`       | Target z or altitude.
+| 7      | `z`       | Target z or elevation.
 | 8      | `lon`     | Target longitude.
 | 9      | `lat`     | Target latitude.
-| 10     | `alt`     | Target altitude.
+| 10     | `elev`    | Target elevation.
 |===
 
 ==== GeoJSON [[data-target-geojson]]
@@ -8216,7 +8216,7 @@ SENSOR%ALT=0.0
       "z": 0.0,
       "lon": 0.0,
       "lat": 0.0,
-      "alt": 0.0
+      "elev": 0.0
     }
   }
 }
@@ -8252,7 +8252,7 @@ DATASET "target_type" {
     H5T_IEEE_F64LE "z";
     H5T_IEEE_F64LE "lon";
     H5T_IEEE_F64LE "lat";
-    H5T_IEEE_F64LE "alt";
+    H5T_IEEE_F64LE "elev";
   }
   DATASPACE SIMPLE { ( 8 ) / ( 8 ) }
 }
@@ -8272,7 +8272,7 @@ DATASET "target_type" {
   "z": 0.0,
   "lon": 0.0,
   "lat": 0.0,
-  "alt": 0.0
+  "elev": 0.0
 }
 ....
 

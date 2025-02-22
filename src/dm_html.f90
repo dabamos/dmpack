@@ -1031,8 +1031,8 @@ contains
                        H_TD // dm_ftoa(node%lon) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Latitude' // H_TH_END // &
                        H_TD // dm_ftoa(node%lat) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Altitude' // H_TH_END // &
-                       H_TD // dm_ftoa(node%alt) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation' // H_TH_END // &
+                       H_TD // dm_ftoa(node%elev) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
@@ -1433,8 +1433,8 @@ contains
                        H_TD // dm_ftoa(sensor%lon) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Latitude' // H_TH_END // &
                        H_TD // dm_ftoa(sensor%lat) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Altitude' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%alt) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation' // H_TH_END // &
+                       H_TD // dm_ftoa(sensor%elev) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_sensor
 
@@ -1541,8 +1541,8 @@ contains
                        H_TD // dm_ftoa(target%lon) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Latitude' // H_TH_END // &
                        H_TD // dm_ftoa(target%lat) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Altitude' // H_TH_END // &
-                       H_TD // dm_ftoa(target%alt) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation' // H_TH_END // &
+                       H_TD // dm_ftoa(target%elev) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_target
 

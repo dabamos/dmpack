@@ -86,25 +86,25 @@ contains
         !!
         !! Key and value are separated by character `=`, parameter fields by
         !! character `,`. The parsing of parameter keys and values is
-        !! case-insensitive, i.e., `INT16` equals `int16 and `ABCD` equals
+        !! case-insensitive, i.e., `INT16` equals `int16` and `ABCD` equals
         !! `abcd`.
         !!
         !! A string of parameters to read a register value as 2-byte signed
         !! integer and scale it by 1/10:
         !!
-        !! ```
+        !! ```text
         !! access=read,slave=10,address=40050,scale=10
         !! ```
         !!
         !! A string of parameters to read a float value in ABCD byte order:
         !!
-        !! ```
+        !! ```text
         !! access=read,slave=10,address=40060,type=float,order=abcd
         !! ```
         !!
         !! A string of parameters to write value `10` to register `30050`:
         !!
-        !! ```
+        !! ```text
         !! access=write,slave=10,address=30050,value=10,type=int16
         !! ```
         !!

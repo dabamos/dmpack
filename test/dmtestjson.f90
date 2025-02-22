@@ -279,7 +279,7 @@ contains
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-node","name":"Dummy Node","meta":"",' // &
             '"x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"lon":1.00000000000,"lat":2.00000000000,"alt":3.00000000000}'
+            '"lon":1.00000000000,"lat":2.00000000000,"elev":3.00000000000}'
 
         character(len=:), allocatable :: buf
         type(node_type)               :: node
@@ -294,7 +294,7 @@ contains
                          z    = 10.0_r8, &
                          lon  = 1.0_r8, &
                          lat  = 2.0_r8, &
-                         alt  = 3.0_r8)
+                         elev = 3.0_r8)
 
         buf = dm_json_from(node)
 
@@ -319,7 +319,7 @@ contains
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-sensor","node_id":"dummy-node","type":0,"name":"Dummy Sensor",' // &
             '"sn":"12345","meta":"","x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"lon":1.00000000000,"lat":2.00000000000,"alt":3.00000000000}'
+            '"lon":1.00000000000,"lat":2.00000000000,"elev":3.00000000000}'
 
         character(len=:), allocatable :: buf
         type(sensor_type)             :: sensor
@@ -337,7 +337,7 @@ contains
                              z       = 10.0_r8, &
                              lon     = 1.0_r8, &
                              lat     = 2.0_r8, &
-                             alt     = 3.0_r8)
+                             elev    = 3.0_r8)
 
         buf = dm_json_from(sensor)
 
@@ -362,7 +362,7 @@ contains
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-target","name":"Dummy Target","meta":"",' // &
             '"state":1,"x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"lon":1.00000000000,"lat":2.00000000000,"alt":3.00000000000}'
+            '"lon":1.00000000000,"lat":2.00000000000,"elev":3.00000000000}'
 
         character(len=:), allocatable :: buf
         type(target_type)             :: target
@@ -378,7 +378,7 @@ contains
                              z     = 10.0_r8, &
                              lon   = 1.0_r8, &
                              lat   = 2.0_r8, &
-                             alt   = 3.0_r8)
+                             elev  = 3.0_r8)
 
         buf = dm_json_from(target)
 

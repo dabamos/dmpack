@@ -947,7 +947,7 @@ contains
                 rc = dm_cgi_get(param, 'z',    node%z)
                 rc = dm_cgi_get(param, 'lon',  node%lon)
                 rc = dm_cgi_get(param, 'lat',  node%lat)
-                rc = dm_cgi_get(param, 'alt',  node%alt)
+                rc = dm_cgi_get(param, 'elev', node%elev)
 
                 ! Validate node data.
                 if (.not. dm_node_is_valid(node)) then
@@ -1520,7 +1520,7 @@ contains
                 rc = dm_cgi_get(param, 'z',    sensor%z)
                 rc = dm_cgi_get(param, 'lon',  sensor%lon)
                 rc = dm_cgi_get(param, 'lat',  sensor%lat)
-                rc = dm_cgi_get(param, 'alt',  sensor%alt)
+                rc = dm_cgi_get(param, 'elev', sensor%elev)
 
                 ! Validate sensor data.
                 if (.not. dm_sensor_is_valid(sensor)) then
@@ -1833,7 +1833,7 @@ contains
                 rc = dm_cgi_get(param, 'z',     target%z)
                 rc = dm_cgi_get(param, 'lon',   target%lon)
                 rc = dm_cgi_get(param, 'lat',   target%lat)
-                rc = dm_cgi_get(param, 'alt',   target%alt)
+                rc = dm_cgi_get(param, 'elev',  target%elev)
 
                 ! Validate target data.
                 if (.not. dm_target_is_valid(target)) then
@@ -2051,9 +2051,9 @@ contains
                dm_html_label('Latitude', for='lat') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Altitude', for='alt') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+               dm_html_label('Elevation', for='elev') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
@@ -2346,9 +2346,9 @@ contains
                dm_html_label('Latitude', for='lat') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Altitude', for='alt') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+               dm_html_label('Elevation', for='elev') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 4
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &
@@ -2414,9 +2414,9 @@ contains
                dm_html_label('Latitude', for='lat') // &
                dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Altitude', for='alt') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='alt', name='alt', &
-                             pattern='[\+\-\.0-9]+', placeholder='Enter altitude (optional)') // &
+               dm_html_label('Elevation', for='elev') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+                             pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1
                dm_html_input(HTML_INPUT_TYPE_SUBMIT, disabled=disabled_, name='submit', value='Submit') // &

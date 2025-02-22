@@ -108,7 +108,7 @@ module dm_sql
         "z      REAL NOT NULL DEFAULT 0.0," // NL // &
         "lon    REAL NOT NULL DEFAULT 0.0," // NL // &
         "lat    REAL NOT NULL DEFAULT 0.0," // NL // &
-        "alt    REAL NOT NULL DEFAULT 0.0) STRICT"
+        "elev   REAL NOT NULL DEFAULT 0.0) STRICT"
 
     ! Sensors schema.
     character(len=*), parameter, public :: SQL_CREATE_SENSORS = &
@@ -125,7 +125,7 @@ module dm_sql
         "z       REAL    NOT NULL DEFAULT 0.0," // NL // &
         "lon     REAL    NOT NULL DEFAULT 0.0," // NL // &
         "lat     REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "alt     REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "elev    REAL    NOT NULL DEFAULT 0.0," // NL // &
         "FOREIGN KEY (node_id) REFERENCES nodes(row_id)) STRICT"
 
     ! Targets schema.
@@ -141,7 +141,7 @@ module dm_sql
         "z      REAL    NOT NULL DEFAULT 0.0,"  // NL // &
         "lon    REAL    NOT NULL DEFAULT 0.0,"  // NL // &
         "lat    REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "alt    REAL    NOT NULL DEFAULT 0.0) STRICT"
+        "elev   REAL    NOT NULL DEFAULT 0.0) STRICT"
 
     ! Observations schema.
     character(len=*), parameter, public :: SQL_CREATE_OBSERVS = &
@@ -408,28 +408,28 @@ module dm_sql
 
     ! Query to insert node.
     ! Arguments: nodes.id, nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z,
-    !            nodes.lon, nodes.lat, nodes.alt
+    !            nodes.lon, nodes.lat, nodes.elev
     character(len=*), parameter, public :: SQL_INSERT_NODE = &
-        "INSERT OR FAIL INTO "                           // &
-        "nodes(id, name, meta, x, y, z, lon, lat, alt) " // &
+        "INSERT OR FAIL INTO "                            // &
+        "nodes(id, name, meta, x, y, z, lon, lat, elev) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
     !            sensors.sn, sensors.meta, sensors.x, sensors.y, sensors.z,
-    !            sensors.lon, sensors.lat, sensors.alt
+    !            sensors.lon, sensors.lat, sensors.elev
     character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
-        "INSERT OR FAIL INTO "                                                // &
-        "sensors(id, node_id, type, name, sn, meta, x, y, z, lon, lat, alt) " // &
+        "INSERT OR FAIL INTO "                                                 // &
+        "sensors(id, node_id, type, name, sn, meta, x, y, z, lon, lat, elev) " // &
         "VALUES (?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert target.
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
     !            targets.x, targets.y, targets.z, targets.lon, targets.lat,
-    !            targets.alt
+    !            targets.elev
     character(len=*), parameter, public :: SQL_INSERT_TARGET = &
-        "INSERT OR FAIL INTO "                                    // &
-        "targets(id, name, meta, state, x, y, z, lon, lat, alt) " // &
+        "INSERT OR FAIL INTO "                                     // &
+        "targets(id, name, meta, state, x, y, z, lon, lat, elev) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert observation.
@@ -479,24 +479,24 @@ module dm_sql
     ! **************************************************************************
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z
-    !            nodes.lon, nodes.lat, nodes.alt, nodes.id
+    !            nodes.lon, nodes.lat, nodes.elev, nodes.id
     character(len=*), parameter, public :: SQL_UPDATE_NODE = &
-        "UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, alt = ? WHERE id = ?"
+        "UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, elev = ? WHERE id = ?"
 
     ! Query to update sensor.
     ! Arguments: nodes.id, sensors.type, sensors.id, sensors.name, sensors.sn,
     !            sensors.meta, sensors.x, sensors.y, sensors.z, sensors.lon,
-    !            sensors.lat, sensors.alt, sensors.id
+    !            sensors.lat, sensors.elev, sensors.id
     character(len=*), parameter, public :: SQL_UPDATE_SENSOR = &
         "UPDATE OR FAIL sensors SET node_id = (SELECT row_id FROM nodes WHERE id = ?), " // &
-        "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, alt = ? WHERE id = ?"
+        "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, elev = ? WHERE id = ?"
 
     ! Query to update target.
     ! Arguments: targets.name, targets.meta, targets.state, targets.x, targets.y,
-    !            targets.z, targets.lon, targets.lat, targets.alt, targets.id
+    !            targets.z, targets.lon, targets.lat, targets.elev, targets.id
     character(len=*), parameter, public :: SQL_UPDATE_TARGET = &
         "UPDATE OR FAIL targets SET name = ?, meta = ?, state = ?, x = ?, y = ?, z = ?, " // &
-        "lon = ?, lat = ?, alt = ? WHERE id = ?"
+        "lon = ?, lat = ?, elev = ? WHERE id = ?"
 
     ! **************************************************************************
     ! SELECT EXISTS QUERIES.
@@ -618,7 +618,7 @@ module dm_sql
         "nodes.z, "    // &
         "nodes.lon, "  // &
         "nodes.lat, "  // &
-        "nodes.alt "   // &
+        "nodes.elev "  // &
         "FROM nodes"
 
     ! Query to select observation ids.
@@ -772,7 +772,7 @@ module dm_sql
         "sensors.z, "    // &
         "sensors.lon, "  // &
         "sensors.lat, "  // &
-        "sensors.alt "   // &
+        "sensors.elev "  // &
         "FROM sensors "  // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
@@ -788,7 +788,7 @@ module dm_sql
         "targets.z, "     // &
         "targets.lon, "   // &
         "targets.lat, "   // &
-        "targets.alt "    // &
+        "targets.elev "   // &
         "FROM targets"
 
     ! **************************************************************************
@@ -969,7 +969,7 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'x', x, 'y', y, 'z', z, " // &
-        "'lon', lon, 'lat', lat, 'alt', alt) "                                       // &
+        "'lon', lon, 'lat', lat, 'elev', elev) "                                     // &
         "FROM nodes"
 
     ! Query to select sensors in JSON format.
@@ -977,7 +977,7 @@ module dm_sql
         "SELECT " // &
         "json_object('id', sensors.id, 'node_id', nodes.id, 'type', sensors.type, 'name', 'sensors.name, " // &
         "'sn', sensors.sn, 'meta', sensors.meta, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "         // &
-        "'lon', sensors.lon, 'lat', sensors.lat, 'alt', sensors.alt) "                                     // &
+        "'lon', sensors.lon, 'lat', sensors.lat, 'elev', sensors.elev) "                                   // &
         "FROM sensors " // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
@@ -985,6 +985,6 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'state', state, 'x', x, 'y', y, 'z', z, " // &
-        "'lon', lon, 'lat', lat, 'alt', alt) "                                                       // &
+        "'lon', lon, 'lat', lat, 'elev', elev) "                                                     // &
         "FROM targets"
 end module dm_sql

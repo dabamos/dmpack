@@ -33,7 +33,7 @@ program dmdbctl
     integer, parameter :: ATTR_Z     = 9
     integer, parameter :: ATTR_LON   = 10
     integer, parameter :: ATTR_LAT   = 11
-    integer, parameter :: ATTR_ALT   = 12
+    integer, parameter :: ATTR_ELEV  = 12
     integer, parameter :: ATTR_LAST  = 12
 
     type :: app_type
@@ -305,7 +305,7 @@ contains
                 if (.not. app%mask(ATTR_Z))    app%node%z    = old_node%z
                 if (.not. app%mask(ATTR_LON))  app%node%lon  = old_node%lon
                 if (.not. app%mask(ATTR_LAT))  app%node%lat  = old_node%lat
-                if (.not. app%mask(ATTR_ALT))  app%node%alt  = old_node%alt
+                if (.not. app%mask(ATTR_ELEV)) app%node%elev = old_node%elev
 
                 rc = dm_db_update(db, app%node)
 
@@ -333,7 +333,7 @@ contains
                 if (.not. app%mask(ATTR_Z))    app%sensor%z       = old_sensor%z
                 if (.not. app%mask(ATTR_LON))  app%sensor%lon     = old_sensor%lon
                 if (.not. app%mask(ATTR_LAT))  app%sensor%lat     = old_sensor%lat
-                if (.not. app%mask(ATTR_ALT))  app%sensor%alt     = old_sensor%alt
+                if (.not. app%mask(ATTR_ELEV)) app%sensor%elev    = old_sensor%elev
 
                 if (len_trim(app%sensor%node_id) == 0) then
                     rc = E_INVALID
@@ -371,7 +371,7 @@ contains
                 if (.not. app%mask(ATTR_Z))     app%target%z     = old_target%z
                 if (.not. app%mask(ATTR_LON))   app%target%lon   = old_target%lon
                 if (.not. app%mask(ATTR_LAT))   app%target%lat   = old_target%lat
-                if (.not. app%mask(ATTR_ALT))   app%target%alt   = old_target%alt
+                if (.not. app%mask(ATTR_ELEV))  app%target%elev  = old_target%elev
 
                 rc = dm_db_update(db, app%target)
         end select db_select
@@ -403,7 +403,7 @@ contains
         integer, parameter :: OPT_Z        = 15
         integer, parameter :: OPT_LON      = 16
         integer, parameter :: OPT_LAT      = 17
-        integer, parameter :: OPT_ALT      = 18
+        integer, parameter :: OPT_ELEV     = 18
         integer, parameter :: OPT_VERBOSE  = 19
 
         type(app_type), intent(out) :: app !! App settings.
@@ -433,7 +433,7 @@ contains
         args(OPT_Z)        = arg_type('z',         short='Z', type=ARG_TYPE_REAL)                                 ! -Z, --z <z>
         args(OPT_LON)      = arg_type('lon',       short='G', type=ARG_TYPE_REAL)                                 ! -G, --lon <lng>
         args(OPT_LAT)      = arg_type('lat',       short='L', type=ARG_TYPE_REAL)                                 ! -L, --lat <lat>
-        args(OPT_ALT)      = arg_type('alt',       short='A', type=ARG_TYPE_REAL)                                 ! -A, --alt <alt>
+        args(OPT_ELEV)     = arg_type('elev',      short='E', type=ARG_TYPE_REAL)                                 ! -E, --elev <elev>
         args(OPT_VERBOSE)  = arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                              ! -V, --verbose
 
         ! Read command-line arguments.
@@ -471,7 +471,7 @@ contains
                 call dm_arg_get(args(OPT_Z),    app%node%z,    passed=app%mask(ATTR_Z))
                 call dm_arg_get(args(OPT_LON),  app%node%lon,  passed=app%mask(ATTR_LON))
                 call dm_arg_get(args(OPT_LAT),  app%node%lat,  passed=app%mask(ATTR_LAT))
-                call dm_arg_get(args(OPT_ALT),  app%node%alt,  passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args(OPT_ELEV), app%node%elev, passed=app%mask(ATTR_ELEV))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
@@ -486,7 +486,7 @@ contains
                 call dm_arg_get(args(OPT_Z),    app%sensor%z,       passed=app%mask(ATTR_Z))
                 call dm_arg_get(args(OPT_LON),  app%sensor%lon,     passed=app%mask(ATTR_LON))
                 call dm_arg_get(args(OPT_LAT),  app%sensor%lat,     passed=app%mask(ATTR_LAT))
-                call dm_arg_get(args(OPT_ALT),  app%sensor%alt,     passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args(OPT_ELEV), app%sensor%elev,    passed=app%mask(ATTR_ELEV))
 
                 app%sensor%type = dm_sensor_type_from_name(sensor)
 
@@ -501,7 +501,7 @@ contains
                 call dm_arg_get(args(OPT_Z),     app%target%z,     passed=app%mask(ATTR_Z))
                 call dm_arg_get(args(OPT_LON),   app%target%lon,   passed=app%mask(ATTR_LON))
                 call dm_arg_get(args(OPT_LAT),   app%target%lat,   passed=app%mask(ATTR_LAT))
-                call dm_arg_get(args(OPT_ALT),   app%target%alt,   passed=app%mask(ATTR_ALT))
+                call dm_arg_get(args(OPT_ELEV),  app%target%elev,  passed=app%mask(ATTR_ELEV))
 
             case default
                 rc = E_INVALID
@@ -536,7 +536,7 @@ contains
                         if (.not. app%mask(ATTR_NAME) .and. .not. app%mask(ATTR_META) .and. &
                             .not. app%mask(ATTR_X)    .and. .not. app%mask(ATTR_Y)    .and. &
                             .not. app%mask(ATTR_Z)    .and. .not. app%mask(ATTR_LON)  .and. &
-                            .not. app%mask(ATTR_LAT)  .and. .not. app%mask(ATTR_ALT)) then
+                            .not. app%mask(ATTR_LAT)  .and. .not. app%mask(ATTR_ELEV)) then
                             call dm_error_out(rc, 'command-line option --name, --meta, --x, --y, --z, ' // &
                                                   '--lon, --lat, or --alt required')
                             return
@@ -547,7 +547,7 @@ contains
                             .not. app%mask(ATTR_STATE) .and. .not. app%mask(ATTR_X)    .and. &
                             .not. app%mask(ATTR_Y)     .and. .not. app%mask(ATTR_Z)    .and. &
                             .not. app%mask(ATTR_LON)   .and. .not. app%mask(ATTR_LAT)  .and. &
-                            .not. app%mask(ATTR_ALT)) then
+                            .not. app%mask(ATTR_ELEV)) then
                             call dm_error_out(rc, 'command-line option --name, --meta, --state, --x, --y, --z, ' // &
                                                   '--lon, --lat, or --alt required')
                             return

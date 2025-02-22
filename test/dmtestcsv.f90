@@ -224,11 +224,11 @@ contains
         integer, parameter :: LEN_BEAT   = 66    !! Beats header length.
         integer, parameter :: LEN_DP     = 4     !! Data points header length.
         integer, parameter :: LEN_LOG    = 71    !! Logs header length.
-        integer, parameter :: LEN_NODE   = 31    !! Nodes header length.
+        integer, parameter :: LEN_NODE   = 32    !! Nodes header length.
         integer, parameter :: LEN_OBSERV = 22100 !! Observations header length.
         integer, parameter :: LEN_VIEW   = 180   !! Observation views header length.
-        integer, parameter :: LEN_SENSOR = 47    !! Sensors header length.
-        integer, parameter :: LEN_TARGET = 37    !! Targets header length.
+        integer, parameter :: LEN_SENSOR = 48    !! Sensors header length.
+        integer, parameter :: LEN_TARGET = 38    !! Targets header length.
 
         integer :: n
 

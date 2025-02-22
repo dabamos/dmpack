@@ -19,7 +19,7 @@ dmdbctl - command-line interface to DMPACK observation databases
 [--*create*|--*read*|--*update*|--*delete* _type_] [--*name* _name_]
 [--*meta* _meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_]
 [--*state* _n_]  [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*lon* _lon_]
-[--*lat* _lat_] [--*alt* _alt_] [--*verbose*]
+[--*lat* _lat_] [--*elev* _elev_] [--*verbose*]
 
 == DESCRIPTION
 
@@ -44,9 +44,6 @@ through command-line arguments.
 
 == OPTIONS
 
-*--alt*, *-A* _alt_::
-  Altitude of node, sensor, or target in metres.
-
 *--create*, *-C* [node|sensor|target]::
   Create database record (node, sensor, or target).
 
@@ -55,6 +52,9 @@ through command-line arguments.
 
 *--delete*, *-D* [node|sensor|target]::
   Delete database record (node, sensor, or target).
+
+*--elev*, *-E* _elev_::
+  Elevation of node, sensor, or target in metres.
 
 *--help*, *-h*::
   Print available command-line arguments and quit.

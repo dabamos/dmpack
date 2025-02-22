@@ -208,7 +208,7 @@ contains
                  'z'    // s // &
                  'lon'  // s // &
                  'lat'  // s // &
-                 'alt'
+                 'elev'
     end function dm_csv_header_node
 
     function dm_csv_header_observ(separator) result(header)
@@ -320,7 +320,7 @@ contains
                  'z'       // s // &
                  'lon'     // s // &
                  'lat'     // s // &
-                 'alt'
+                 'elev'
     end function dm_csv_header_sensor
 
     function dm_csv_header_target(separator) result(header)
@@ -342,7 +342,7 @@ contains
                  'z'     // s // &
                  'lon'   // s // &
                  'lat'   // s // &
-                 'alt'
+                 'elev'
     end function dm_csv_header_target
 
     ! **************************************************************************
@@ -504,7 +504,7 @@ contains
               dm_ftoa(node%z)               // s // &
               dm_ftoa(node%lon)             // s // &
               dm_ftoa(node%lat)             // s // &
-              dm_ftoa(node%alt)
+              dm_ftoa(node%elev)
     end function csv_from_node
 
     function csv_from_nodes(nodes, header, separator) result(csv)
@@ -703,7 +703,7 @@ contains
               dm_ftoa(sensor%z)               // s // &
               dm_ftoa(sensor%lon)             // s // &
               dm_ftoa(sensor%lat)             // s // &
-              dm_ftoa(sensor%alt)
+              dm_ftoa(sensor%elev)
     end function csv_from_sensor
 
     function csv_from_sensors(sensors, header, separator) result(csv)
@@ -752,7 +752,7 @@ contains
               dm_ftoa(target%z)               // s // &
               dm_ftoa(target%lon)             // s // &
               dm_ftoa(target%lat)             // s // &
-              dm_ftoa(target%alt)
+              dm_ftoa(target%elev)
     end function csv_from_target
 
     function csv_from_targets(targets, header, separator) result(csv)
@@ -1012,7 +1012,7 @@ contains
         rc = csv_next(buffer, node%z,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, node%lon,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, node%lat,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%alt,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%elev, s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_node
@@ -1148,7 +1148,7 @@ contains
         rc = csv_next(buffer, sensor%z,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%lon,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%lat,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%alt,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%elev,    s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_sensor
@@ -1198,7 +1198,7 @@ contains
         rc = csv_next(buffer, target%z,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%lon,   s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%lat,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%alt,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%elev,  s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_target
@@ -1414,7 +1414,7 @@ contains
             node%z,                    s, &
             node%lon,                  s, &
             node%lat,                  s, &
-            node%alt
+            node%elev
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1603,7 +1603,7 @@ contains
             sensor%z,                    s, &
             sensor%lon,                  s, &
             sensor%lat,                  s, &
-            sensor%alt
+            sensor%elev
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1667,7 +1667,7 @@ contains
             target%z,                    s, &
             target%lon,                  s, &
             target%lat,                  s, &
-            target%alt
+            target%elev
         if (stat /= 0) return
 
         rc = E_NONE

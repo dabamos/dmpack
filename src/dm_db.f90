@@ -75,7 +75,7 @@ module dm_db
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
-    integer, parameter, public :: DB_SCHEMA_VERSION  = 2              !! Database schema version, increased on updates.
+    integer, parameter, public :: DB_SCHEMA_VERSION  = 3              !! Database schema version, increased on updates.
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
 
     ! Private parameters.
@@ -1541,7 +1541,7 @@ contains
             rc = dm_db_bind(db_stmt, 6, node%z);    if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 7, node%lon);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 8, node%lat);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 9, node%alt);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 9, node%elev); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -1763,7 +1763,7 @@ contains
             rc = dm_db_bind(db_stmt,  9, sensor%z);       if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 10, sensor%lon);     if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 11, sensor%lat);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 12, sensor%alt);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 12, sensor%elev);    if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -1945,7 +1945,7 @@ contains
             rc = dm_db_bind(db_stmt,  7, target%z);     if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt,  8, target%lon);   if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt,  9, target%lat);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 10, target%alt);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 10, target%elev);  if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -3550,7 +3550,7 @@ contains
             rc = dm_db_bind(db_stmt, 5, node%z);    if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 6, node%lon);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 7, node%lat);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 8, node%alt);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 8, node%elev); if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 9, node%id);   if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -3604,7 +3604,7 @@ contains
             rc = dm_db_bind(db_stmt,  8, sensor%z);       if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt,  9, sensor%lon);     if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 10, sensor%lat);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 11, sensor%alt);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 11, sensor%elev);    if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 12, sensor%id);      if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -3656,7 +3656,7 @@ contains
             rc = dm_db_bind(db_stmt,  6, target%z);     if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt,  7, target%lon);   if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt,  8, target%lat);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, target%alt);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, target%elev);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 10, target%id);    if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -4456,7 +4456,7 @@ contains
         call dm_db_column(db_stmt, 5, node%z)
         call dm_db_column(db_stmt, 6, node%lon)
         call dm_db_column(db_stmt, 7, node%lat)
-        call dm_db_column(db_stmt, 8, node%alt)
+        call dm_db_column(db_stmt, 8, node%elev)
 
         rc = E_NONE
     end function db_next_row_node
@@ -4591,7 +4591,7 @@ contains
         call dm_db_column(db_stmt,  8, sensor%z)
         call dm_db_column(db_stmt,  9, sensor%lon)
         call dm_db_column(db_stmt, 10, sensor%lat)
-        call dm_db_column(db_stmt, 11, sensor%alt)
+        call dm_db_column(db_stmt, 11, sensor%elev)
 
         rc = E_NONE
     end function db_next_row_sensor
@@ -4688,7 +4688,7 @@ contains
         call dm_db_column(db_stmt, 6, target%z)
         call dm_db_column(db_stmt, 7, target%lon)
         call dm_db_column(db_stmt, 8, target%lat)
-        call dm_db_column(db_stmt, 9, target%alt)
+        call dm_db_column(db_stmt, 9, target%elev)
 
         rc = E_NONE
     end function db_next_row_target

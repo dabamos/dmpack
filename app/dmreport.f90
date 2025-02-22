@@ -147,7 +147,7 @@ contains
                H_TR // H_TH // 'Node Y:'    // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // &
                        H_TH // 'Latitude:'  // H_TH_END // H_TD // dm_ftoa(node%lat)         // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node Z:'    // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // &
-                       H_TH // 'Altitude:'  // H_TH_END // H_TD // dm_ftoa(node%alt)         // H_TD_END // H_TR_END // &
+                       H_TH // 'Elevation:' // H_TH_END // H_TD // dm_ftoa(node%elev)        // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 

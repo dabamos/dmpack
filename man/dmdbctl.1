@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-02-11
+.\"      Date: 2025-02-22
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2025-02-11" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2025-02-22" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -39,7 +39,7 @@ dmdbctl \- command\-line interface to DMPACK observation databases
 [\-\-\fBcreate\fP|\-\-\fBread\fP|\-\-\fBupdate\fP|\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP]
 [\-\-\fBmeta\fP \fImeta\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP]
 [\-\-\fBstate\fP \fIn\fP]  [\-\-\fBx\fP \fIx\fP] [\-\-\fBy\fP \fIy\fP] [\-\-\fBz\fP \fIz\fP] [\-\-\fBlon\fP \fIlon\fP]
-[\-\-\fBlat\fP \fIlat\fP] [\-\-\fBalt\fP \fIalt\fP] [\-\-\fBverbose\fP]
+[\-\-\fBlat\fP \fIlat\fP] [\-\-\fBelev\fP \fIelev\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmdbctl\fP utility program performs create, read, update, or delete
@@ -70,11 +70,6 @@ Only nodes, sensors, and targets are supported. All data attributes are passed
 through command\-line arguments.
 .SH "OPTIONS"
 .sp
-\fB\-\-alt\fP, \fB\-A\fP \fIalt\fP
-.RS 4
-Altitude of node, sensor, or target in metres.
-.RE
-.sp
 \fB\-\-create\fP, \fB\-C\fP [node|sensor|target]
 .RS 4
 Create database record (node, sensor, or target).
@@ -88,6 +83,11 @@ Path to SQLite observation database.
 \fB\-\-delete\fP, \fB\-D\fP [node|sensor|target]
 .RS 4
 Delete database record (node, sensor, or target).
+.RE
+.sp
+\fB\-\-elev\fP, \fB\-E\fP \fIelev\fP
+.RS 4
+Elevation of node, sensor, or target in metres.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

@@ -145,7 +145,7 @@ contains
         node%z    = 10.0_r8
         node%lon  = 10.4541194_r8
         node%lat  = 51.1642292_r8
-        node%alt  = 100.0_r8
+        node%elev = 100.0_r8
 
         if (present(id))   node%id   = id
         if (present(name)) node%name = name

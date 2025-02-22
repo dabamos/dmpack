@@ -49,10 +49,10 @@ module dm_sensor
         character(len=SENSOR_META_LEN) :: meta    = ' '              !! Meta information (optional).
         real(kind=r8)                  :: x       = 0.0_r8           !! Sensor x or easting (optional).
         real(kind=r8)                  :: y       = 0.0_r8           !! Sensor y or northing (optional).
-        real(kind=r8)                  :: z       = 0.0_r8           !! Sensor z or alt (optional).
+        real(kind=r8)                  :: z       = 0.0_r8           !! Sensor z or elevation (optional).
         real(kind=r8)                  :: lon     = 0.0_r8           !! Longitude in degrees (optional).
         real(kind=r8)                  :: lat     = 0.0_r8           !! Latitude in degrees (optional).
-        real(kind=r8)                  :: alt     = 0.0_r8           !! Altitude or elevation in metres (optional).
+        real(kind=r8)                  :: elev    = 0.0_r8           !! Elevation in metres (optional).
     end type sensor_type
 
     integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
@@ -94,9 +94,9 @@ contains
         if (.not. dm_equals(sensor1%y, sensor2%y)) return
         if (.not. dm_equals(sensor1%z, sensor2%z)) return
 
-        if (.not. dm_equals(sensor1%lon, sensor2%lon)) return
-        if (.not. dm_equals(sensor1%lat, sensor2%lat)) return
-        if (.not. dm_equals(sensor1%alt, sensor2%alt)) return
+        if (.not. dm_equals(sensor1%lon,  sensor2%lon))  return
+        if (.not. dm_equals(sensor1%lat,  sensor2%lat))  return
+        if (.not. dm_equals(sensor1%elev, sensor2%elev)) return
 
         equals = .true.
     end function dm_sensor_equals
@@ -173,17 +173,17 @@ contains
 
         unit_ = dm_present(unit, stdout)
 
-        write (unit_, '("sensor.id: ", a)')        trim(sensor%id)
-        write (unit_, '("sensor.node_id: ", a)')   trim(sensor%node_id)
-        write (unit_, '("sensor.type: ", a)')      dm_sensor_type_to_name(sensor%type)
-        write (unit_, '("sensor.name: ", a)')      trim(sensor%name)
-        write (unit_, '("sensor.sn: ", a)')        trim(sensor%sn)
-        write (unit_, '("sensor.meta: ", a)')      trim(sensor%meta)
-        write (unit_, '("sensor.x: ", 1pg0.12)')   sensor%x
-        write (unit_, '("sensor.y: ", 1pg0.12)')   sensor%y
-        write (unit_, '("sensor.z: ", 1pg0.12)')   sensor%z
-        write (unit_, '("sensor.lon: ", 1pg0.12)') sensor%lon
-        write (unit_, '("sensor.lat: ", 1pg0.12)') sensor%lat
-        write (unit_, '("sensor.alt: ", 1pg0.12)') sensor%alt
+        write (unit_, '("sensor.id: ", a)')         trim(sensor%id)
+        write (unit_, '("sensor.node_id: ", a)')    trim(sensor%node_id)
+        write (unit_, '("sensor.type: ", i0)')      sensor%type
+        write (unit_, '("sensor.name: ", a)')       trim(sensor%name)
+        write (unit_, '("sensor.sn: ", a)')         trim(sensor%sn)
+        write (unit_, '("sensor.meta: ", a)')       trim(sensor%meta)
+        write (unit_, '("sensor.x: ", 1pg0.12)')    sensor%x
+        write (unit_, '("sensor.y: ", 1pg0.12)')    sensor%y
+        write (unit_, '("sensor.z: ", 1pg0.12)')    sensor%z
+        write (unit_, '("sensor.lon: ", 1pg0.12)')  sensor%lon
+        write (unit_, '("sensor.lat: ", 1pg0.12)')  sensor%lat
+        write (unit_, '("sensor.elev: ", 1pg0.12)') sensor%elev
     end subroutine dm_sensor_out
 end module dm_sensor

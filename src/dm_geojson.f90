@@ -40,9 +40,9 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    subroutine dm_geojson_feature_point(geojson, type, lon, lat, alt, data, comma)
+    subroutine dm_geojson_feature_point(geojson, type, lon, lat, elev, data, comma)
         !! Returns GeoJSON feature point of given DMPACK type, longitude,
-        !! latitude, altitude, and type data in JSON. The output string
+        !! latitude, elevation, and type data in JSON. The output string
         !! `geojson` is of the following form:
         !!
         !! ```json
@@ -67,7 +67,7 @@ contains
         !!       "z": 0.0,
         !!       "lon": 10.4541194000,
         !!       "lat": 51.1642292000,
-        !!       "alt": 10.0000000000
+        !!       "elev": 10.0000000000
         !!     }
         !!   }
         !! }
@@ -78,7 +78,7 @@ contains
         integer,                       intent(in)           :: type    !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
         real(kind=r8),                 intent(in)           :: lon     !! Point longitude (decimal).
         real(kind=r8),                 intent(in)           :: lat     !! Point latitude (decimal).
-        real(kind=r8),                 intent(in)           :: alt     !! Point altitude.
+        real(kind=r8),                 intent(in)           :: elev    !! Point elevation.
         character(len=*),              intent(in)           :: data    !! Point JSON data.
         logical,                       intent(in), optional :: comma   !! Append comma separator.
 
@@ -88,7 +88,7 @@ contains
         if (dm_type_is_valid(type)) type_ = type
 
         geojson = '{"type":"Feature","geometry":{"type":"Point","coordinates":[' // &
-                  dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(alt) // &
+                  dm_ftoa(lon) // ',' // dm_ftoa(lat) // ',' // dm_ftoa(elev) // &
                   ']},"properties":{"type":"' // trim(TYPE_NAMES(type_)) // '","data":' // &
                   trim(data) // '}}'
         if (dm_present(comma, .false.)) geojson = geojson // ','
@@ -105,7 +105,7 @@ contains
         logical,         intent(in), optional :: comma   !! Append comma separator.
         character(len=:), allocatable         :: geojson !! GeoJSON string.
 
-        call dm_geojson_feature_point(geojson, TYPE_NODE, node%lon, node%lat, node%alt, dm_json_from(node), comma)
+        call dm_geojson_feature_point(geojson, TYPE_NODE, node%lon, node%lat, node%elev, dm_json_from(node), comma)
     end function geojson_from_node
 
     function geojson_from_sensor(sensor, comma) result(geojson)
@@ -116,7 +116,7 @@ contains
         logical,           intent(in), optional :: comma   !! Append comma separator.
         character(len=:), allocatable           :: geojson !! GeoJSON string.
 
-        call dm_geojson_feature_point(geojson, TYPE_SENSOR, sensor%lon, sensor%lat, sensor%alt, dm_json_from(sensor), comma)
+        call dm_geojson_feature_point(geojson, TYPE_SENSOR, sensor%lon, sensor%lat, sensor%elev, dm_json_from(sensor), comma)
     end function geojson_from_sensor
 
     function geojson_from_target(target, comma) result(geojson)
@@ -127,7 +127,7 @@ contains
         logical,           intent(in), optional :: comma   !! Append comma separator.
         character(len=:), allocatable           :: geojson !! GeoJSON string.
 
-        call dm_geojson_feature_point(geojson, TYPE_TARGET, target%lon, target%lat, target%alt, dm_json_from(target), comma)
+        call dm_geojson_feature_point(geojson, TYPE_TARGET, target%lon, target%lat, target%elev, dm_json_from(target), comma)
     end function geojson_from_target
 
     integer function geojson_write_node(node, unit, comma) result(rc)

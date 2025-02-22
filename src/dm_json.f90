@@ -251,7 +251,7 @@ contains
                '"z":'     // dm_ftoa(node%z)           // ','  // &
                '"lon":'   // dm_ftoa(node%lon)         // ','  // &
                '"lat":'   // dm_ftoa(node%lat)         // ','  // &
-               '"alt":'   // dm_ftoa(node%alt)         // '}'
+               '"elev":'  // dm_ftoa(node%elev)        // '}'
     end function json_from_node
 
     function json_from_nodes(nodes) result(json)
@@ -406,7 +406,7 @@ contains
                '"z":'        // dm_ftoa(sensor%z)           // ','  // &
                '"lon":'      // dm_ftoa(sensor%lon)         // ','  // &
                '"lat":'      // dm_ftoa(sensor%lat)         // ','  // &
-               '"alt":'      // dm_ftoa(sensor%alt)         // '}'
+               '"elev":'     // dm_ftoa(sensor%elev)        // '}'
     end function json_from_sensor
 
     function json_from_sensors(sensors) result(json)
@@ -454,7 +454,7 @@ contains
                '"z":'     // dm_ftoa(target%z)           // ','  // &
                '"lon":'   // dm_ftoa(target%lon)         // ','  // &
                '"lat":'   // dm_ftoa(target%lat)         // ','  // &
-               '"alt":'   // dm_ftoa(target%alt)         // '}'
+               '"elev":'  // dm_ftoa(target%elev)        // '}'
     end function json_from_target
 
     function json_from_targets(targets) result(json)
