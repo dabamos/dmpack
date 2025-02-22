@@ -122,17 +122,17 @@ contains
         dy = ty - vy
 
         if (dm_equals(dx, 0.0_r8)) then
-            if (dy > 0.0) then
-                z = 0.5 * PI
-            else if (dy < 0.0) then
-                z = 1.5 * PI
-            else
+            if (dm_equals(dy, 0.0_r8)) then
                 ! View point position equals azimuth position.
                 rc = E_INVALID
                 return
+            else if (dy > 0.0) then
+                z = 0.5 * PI
+            else if (dy < 0.0) then
+                z = 1.5 * PI
             end if
         else
-            z = modulo(atan2(dx, dy), PI2)
+            z = modulo(atan2(dy, dx), PI2)
         end if
 
         if (present(azimuth)) then
@@ -163,8 +163,10 @@ contains
 
         real(kind=r8) :: r
 
-        r = norm2(c)
-        p = [ atan2(c(2), c(1)), acos(c(3) / r), r ]
+        associate (x => c(1), y => c(2), z => c(3))
+            r = norm2(c)
+            p = [ atan2(y, x), acos(z / r), r ]
+        end associate
     end subroutine dm_transform_cartesian_to_polar_3d_array
 
     pure elemental subroutine dm_transform_cartesian_to_polar_3d_scalar(x, y, z, hz, v, r)
@@ -190,8 +192,10 @@ contains
 
         real(kind=r8) :: s
 
-        s = sin(p(2))
-        c = p(3) * [ s, s, cos(p(2)) ] * [ cos(p(1)), sin(p(1)), 1.0_r8 ]
+        associate (hz => p(1), v => p(2), r => p(3))
+            s = sin(v)
+            c = r * [ s, s, cos(v) ] * [ cos(hz), sin(hz), 1.0_r8 ]
+        end associate
     end subroutine dm_transform_polar_to_cartesian_3d_array
 
     pure elemental subroutine dm_transform_polar_to_cartesian_3d_scalar(hz, v, r, x, y, z)

@@ -1598,7 +1598,7 @@ db.foreign_keys: true
 db.journal_mode: wal
 db.library: libsqlite3/3.46.1
 db.path: /var/dmpack/observ.sqlite
-db.schema_version: 2
+db.schema_version: 3
 db.size: 286720
 db.table.beats.rows: 0
 db.table.logs.rows: 0
