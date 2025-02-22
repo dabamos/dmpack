@@ -566,6 +566,6 @@ contains
         integer(kind=i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
-        loc  = findloc(param%hashes, hash, dim=1, back=.true.)
+        loc  = findloc(param%hashes, hash, dim=1)
     end function cgi_param_loc
 end module dm_cgi

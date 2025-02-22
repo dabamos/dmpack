@@ -213,14 +213,13 @@ contains
         !!
         !! * `E_EMPTY` if the observation contains no requests.
         !!
-        type(observ_type), target, intent(inout) :: observ    !! Observation to read.
-        character(len=*),          intent(in)    :: node_id   !! Node id of observation.
-        character(len=*),          intent(in)    :: sensor_id !! Sensor id of observation.
-        character(len=*),          intent(in)    :: source    !! Source of observation.
-        logical,                   intent(in)    :: debug     !! Output debug messages.
+        type(observ_type), intent(inout) :: observ    !! Observation to read.
+        character(len=*),  intent(in)    :: node_id   !! Node id of observation.
+        character(len=*),  intent(in)    :: sensor_id !! Sensor id of observation.
+        character(len=*),  intent(in)    :: source    !! Source of observation.
+        logical,           intent(in)    :: debug     !! Output debug messages.
 
-        integer                     :: i, msec, n
-        type(request_type), pointer :: request
+        integer :: i, msec, n
 
         rc = E_EMPTY
 
@@ -242,47 +241,46 @@ contains
         ! Read pipes in requests sequentially.
         request_loop: do i = 1, n
             ! Get pointer to next request.
-            request => observ%requests(i)
+            associate (request => observ%requests(i))
+                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
-            if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-            rc = read_request(observ, request, debug)
-            call dm_request_set(request, error=rc)
+                rc = read_request(observ, request, debug)
+                call dm_request_set(request, error=rc)
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to read from process ' // request%request, observ=observ, error=rc)
-                call dm_sleep(10) ! Wait grace period.
-                cycle request_loop
-            end if
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to read from process ' // request%request, observ=observ, error=rc)
+                    call dm_sleep(10) ! Wait grace period.
+                    cycle request_loop
+                end if
 
-            if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
+                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
-            ! Wait the set delay time of the request.
-            msec = max(0, request%delay)
-            if (msec == 0) cycle request_loop
+                ! Wait the set delay time of the request.
+                msec = max(0, request%delay)
+                if (msec == 0) cycle request_loop
 
-            if (i < n) then
-                if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            else
-                if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            end if
+                if (i < n) then
+                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                else
+                    if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                end if
 
-            call dm_msleep(msec)
+                call dm_msleep(msec)
+            end associate
         end do request_loop
 
         rc = E_NONE
     end function read_observ
 
     integer function read_request(observ, request, debug) result(rc)
-        type(observ_type),          intent(inout) :: observ  !! Observation type.
-        type(request_type), target, intent(inout) :: request !! Request type.
-        logical,                    intent(in)    :: debug   !! Output debug messages.
+        type(observ_type),  intent(inout) :: observ  !! Observation type.
+        type(request_type), intent(inout) :: request !! Request type.
+        logical,            intent(in)    :: debug   !! Output debug messages.
 
-        character(len=REQUEST_RESPONSE_LEN) :: raw      ! Raw response (unescaped).
-        type(pipe_type)                     :: pipe     ! Pipe to process.
-        type(response_type), pointer        :: response ! Single response in request.
-
-        integer          :: i
-        integer(kind=i8) :: nbytes
+        character(len=REQUEST_RESPONSE_LEN) :: raw
+        integer                             :: i
+        integer(kind=i8)                    :: nbytes
+        type(pipe_type)                     :: pipe
 
         rc = E_NONE
 
@@ -331,9 +329,10 @@ contains
 
                 ! Check responses.
                 do i = 1, request%nresponses
-                    response => request%responses(i)
-                    if (dm_is_ok(response%error)) cycle
-                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+                    associate (response => request%responses(i))
+                        if (dm_is_ok(response%error)) cycle
+                        call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+                    end associate
                 end do
 
                 exit read_loop
@@ -369,12 +368,10 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer :: msec, njobs
-        integer :: rc
-        logical :: debug
-
-        type(job_type),    target  :: job    ! Next job to run.
-        type(observ_type), pointer :: observ ! Next observation to perform.
+        integer        :: msec, njobs
+        integer        :: rc
+        logical        :: debug
+        type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
 
@@ -399,28 +396,27 @@ contains
                 cycle job_loop
             end if
 
-            observ_if: if (job%valid) then
-                ! Get pointer to job observation.
-                observ => job%observ
+            associate (observ => job%observ)
+                observ_if: if (job%valid) then
+                    ! Read observation.
+                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                    rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
+                    call dm_observ_set(observ, error=rc)
 
-                ! Read observation.
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
-                call dm_observ_set(observ, error=rc)
+                    ! Forward observation.
+                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
-                ! Forward observation.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                    ! Output observation.
+                    rc = output_observ(observ, app%output_type)
+                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                end if observ_if
 
-                ! Output observation.
-                rc = output_observ(observ, app%output_type)
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end if observ_if
-
-            ! Wait the set (absolute) delay time of the job.
-            msec = max(0, job%delay)
-            if (msec <= 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            call dm_msleep(msec)
+                ! Wait the set (absolute) delay time of the job.
+                msec = max(0, job%delay)
+                if (msec <= 0) cycle job_loop
+                if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                call dm_msleep(msec)
+            end associate
         end do job_loop
     end subroutine run
 

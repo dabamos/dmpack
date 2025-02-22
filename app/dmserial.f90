@@ -337,14 +337,12 @@ contains
         !!
         !! * `E_EMPTY` if the observation contains no requests.
         !!
-        type(tty_type),            intent(inout) :: tty       !! TTY type.
-        type(observ_type), target, intent(inout) :: observ    !! Observation to read.
-        character(len=*),          intent(in)    :: node_id   !! Node id of observation.
-        character(len=*),          intent(in)    :: sensor_id !! Sensor id of observation.
-        character(len=*),          intent(in)    :: source    !! Source of observation.
-        logical,                   intent(in)    :: debug     !! Output debug messages.
-
-        type(request_type),  pointer :: request  ! Next request to execute.
+        type(tty_type),    intent(inout) :: tty       !! TTY type.
+        type(observ_type), intent(inout) :: observ    !! Observation to read.
+        character(len=*),  intent(in)    :: node_id   !! Node id of observation.
+        character(len=*),  intent(in)    :: sensor_id !! Sensor id of observation.
+        character(len=*),  intent(in)    :: source    !! Source of observation.
+        logical,           intent(in)    :: debug     !! Output debug messages.
 
         integer :: msec
         integer :: i, n
@@ -368,38 +366,36 @@ contains
 
         ! Send requests sequentially to sensor.
         request_loop: do i = 1, n
-            ! Read next request.
-            request => observ%requests(i)
+            associate (request => observ%requests(i))
+                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+                rc = read_request(tty, observ, request, debug)
+                call dm_request_set(request, error=rc)
+                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
-            if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-            rc = read_request(tty, observ, request, debug)
-            call dm_request_set(request, error=rc)
-            if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
+                ! Wait the set delay time of the request.
+                msec = max(0, request%delay)
+                if (msec == 0) cycle request_loop
 
-            ! Wait the set delay time of the request.
-            msec = max(0, request%delay)
-            if (msec == 0) cycle request_loop
+                if (i < n) then
+                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                else
+                    if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                end if
 
-            if (i < n) then
-                if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            else
-                if (debug) call logger%debug('next observ in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            end if
-
-            call dm_msleep(msec)
+                call dm_msleep(msec)
+            end associate
         end do request_loop
 
         rc = E_NONE
     end function read_observ
 
     integer function read_request(tty, observ, request, debug) result(rc)
-        type(tty_type),             intent(inout) :: tty     !! TTY type.
-        type(observ_type),          intent(inout) :: observ  !! Observation type.
-        type(request_type), target, intent(inout) :: request !! Request type.
-        logical,                    intent(in)    :: debug   !! Output debug messages.
+        type(tty_type),     intent(inout) :: tty     !! TTY type.
+        type(observ_type),  intent(inout) :: observ  !! Observation type.
+        type(request_type), intent(inout) :: request !! Request type.
+        logical,            intent(in)    :: debug   !! Output debug messages.
 
-        integer                      :: i
-        type(response_type), pointer :: response
+        integer :: i
 
         rc = E_NONE
 
@@ -460,12 +456,12 @@ contains
 
         ! Check response groups for errors.
         do i = 1, request%nresponses
-            response => request%responses(i)
-
-            if (dm_is_error(response%error)) then
-                call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
-                cycle
-            end if
+            associate (response => request%responses(i))
+                if (dm_is_error(response%error)) then
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+                    cycle
+                end if
+            end associate
         end do
     end function read_request
 
@@ -483,10 +479,9 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer                    :: msec, njobs
-        logical                    :: debug
-        type(job_type),    target  :: job
-        type(observ_type), pointer :: observ
+        integer        :: msec, njobs
+        logical        :: debug
+        type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)
@@ -514,37 +509,37 @@ contains
                 exit job_loop
             end if
 
-            ! Get next job as deep copy.
             if (debug) call logger%debug(dm_itoa(njobs) // ' job(s) left in job queue')
+
+            ! Get next job as deep copy.
             rc = dm_job_list_next(app%jobs, job)
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to fetch next job', error=rc)
-                cycle job_loop
-            end if
+            associate (observ => job%observ)
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to fetch next job', error=rc)
+                    cycle job_loop
+                end if
 
-            if (job%valid) then
-                ! Get pointer to job observation.
-                observ => job%observ
+                if (job%valid) then
+                    ! Read observation from TTY.
+                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                    rc = read_observ(tty, observ, app%node_id, app%sensor_id, app%name, debug)
+                    call dm_observ_set(observ, error=rc)
 
-                ! Read observation from TTY.
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                rc = read_observ(tty, observ, app%node_id, app%sensor_id, app%name, debug)
-                call dm_observ_set(observ, error=rc)
+                    ! Forward observation via POSIX message queue.
+                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
-                ! Forward observation via POSIX message queue.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                    ! Output observation.
+                    rc = output_observ(observ, app%output_type)
+                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                end if
 
-                ! Output observation.
-                rc = output_observ(observ, app%output_type)
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end if
-
-            ! Wait the set delay time of the job (absolute).
-            msec = max(0, job%delay)
-            if (msec == 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
-            call dm_msleep(msec)
+                ! Wait the set delay time of the job (absolute).
+                msec = max(0, job%delay)
+                if (msec == 0) cycle job_loop
+                if (debug) call logger%debug('next job in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec', observ=observ)
+                call dm_msleep(msec)
+            end associate
         end do job_loop
 
         if (dm_tty_is_connected(tty)) then

@@ -155,10 +155,8 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), target, intent(out) :: app !! App type.
 
-        integer                         :: format, i, n
-        type(arg_type)                  :: args(7)
-        type(report_log_type),  pointer :: log
-        type(report_plot_type), pointer :: plot
+        integer        :: format, i, n
+        type(arg_type) :: args(7)
 
         args = [ &
             arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
@@ -206,68 +204,66 @@ contains
             return
         end if
 
-        ! Associate pointers.
-        plot => app%report%plot
-        log  => app%report%log
-
-        ! Validate plot settings.
-        if (.not. plot%disabled) then
-            if (len_trim(plot%database) == 0) then
-                call dm_error_out(rc, 'missing path to observation database')
-                return
-            end if
-
-            n = 0
-            if (allocated(plot%observs)) n = size(plot%observs)
-
-            do i = 1, n
-                format = dm_plot_terminal_from_name(plot%observs(i)%format)
-
-                if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
-                    format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
-                    call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
+        associate (plot => app%report%plot, log => app%report%log)
+            ! Validate plot settings.
+            if (.not. plot%disabled) then
+                if (len_trim(plot%database) == 0) then
+                    call dm_error_out(rc, 'missing path to observation database')
                     return
                 end if
 
-                if (.not. dm_id_is_valid(plot%observs(i)%sensor)) then
-                    call dm_error_out(rc, 'invalid sensor id ' // plot%observs(i)%sensor)
+                n = 0
+                if (allocated(plot%observs)) n = size(plot%observs)
+
+                do i = 1, n
+                    format = dm_plot_terminal_from_name(plot%observs(i)%format)
+
+                    if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
+                        format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
+                        call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
+                        return
+                    end if
+
+                    if (.not. dm_id_is_valid(plot%observs(i)%sensor)) then
+                        call dm_error_out(rc, 'invalid sensor id ' // plot%observs(i)%sensor)
+                        return
+                    end if
+
+                    if (.not. dm_id_is_valid(plot%observs(i)%target)) then
+                        call dm_error_out(rc, 'invalid target id ' // plot%observs(i)%target)
+                        return
+                    end if
+
+                    if (len_trim(plot%observs(i)%response) == 0) then
+                        call dm_error_out(rc, 'invalid response name ' // plot%observs(i)%response)
+                        return
+                    end if
+                end do
+            end if
+
+            ! Validate log settings.
+            if (.not. log%disabled) then
+                if (.not. dm_log_level_is_valid(log%min_level)) then
+                    call dm_error_out(rc, 'invalid minimum log level')
                     return
                 end if
 
-                if (.not. dm_id_is_valid(plot%observs(i)%target)) then
-                    call dm_error_out(rc, 'invalid target id ' // plot%observs(i)%target)
+                if (.not. dm_log_level_is_valid(log%max_level)) then
+                    call dm_error_out(rc, 'invalid maximum log level')
                     return
                 end if
 
-                if (len_trim(plot%observs(i)%response) == 0) then
-                    call dm_error_out(rc, 'invalid response name ' // plot%observs(i)%response)
+                if (log%min_level > log%max_level) then
+                    call dm_error_out(rc, 'minimum log level must be less than maximum')
+                    return
+               end if
+
+                if (len_trim(log%database) == 0) then
+                    call dm_error_out(rc, 'missing path to log database')
                     return
                 end if
-            end do
-        end if
-
-        ! Validate log settings.
-        if (.not. log%disabled) then
-            if (.not. dm_log_level_is_valid(log%min_level)) then
-                call dm_error_out(rc, 'invalid minimum log level')
-                return
             end if
-
-            if (.not. dm_log_level_is_valid(log%max_level)) then
-                call dm_error_out(rc, 'invalid maximum log level')
-                return
-            end if
-
-            if (log%min_level > log%max_level) then
-                call dm_error_out(rc, 'minimum log level must be less than maximum')
-                return
-           end if
-
-            if (len_trim(log%database) == 0) then
-                call dm_error_out(rc, 'missing path to log database')
-                return
-            end if
-        end if
+        end associate
 
         ! Validate a second time, just to be sure.
         if (.not. dm_report_is_valid(app%report)) then

@@ -130,7 +130,7 @@ contains
             end if
 
             rc = E_IO
-            call camera_prepare_capture(command_, camera, path)
+            call camera_prepare_capture(camera, path, command_)
             call execute_command_line(trim(command_), exitstat=stat)
             if (stat /= 0 .or. .not. dm_file_exists(path)) exit io_block
 
@@ -168,12 +168,12 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental subroutine camera_prepare_capture(command, camera, path)
+    pure elemental subroutine camera_prepare_capture(camera, path, command)
         !! Creates FFmpeg command to capture a single camera frame through V4L2
         !! or RTSP. The function returns `E_INVALID` on error.
-        character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
         type(camera_type),                 intent(in)  :: camera  !! Camera type.
         character(len=*),                  intent(in)  :: path    !! Output file.
+        character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
 
         character(len=32) :: video_size
 

@@ -11,13 +11,13 @@ module dm_modbus_register
 
     type, public :: modbus_register_type
         !! Modbus register value type.
-        integer  :: access  = MODBUS_ACCESS_NONE !! Read or write access.
-        integer  :: slave   = 0                  !! Slave id.
-        integer  :: address = 0                  !! Register address.
-        integer  :: type    = MODBUS_TYPE_INT16  !! Number type.
-        integer  :: order   = MODBUS_ORDER_NONE  !! Byte order of float.
-        integer  :: scale   = 1                  !! Scale denominator.
-        integer  :: value   = 0                  !! Register value to write.
+        integer :: access  = MODBUS_ACCESS_NONE !! Read or write access.
+        integer :: slave   = 0                  !! Slave id.
+        integer :: address = 0                  !! Register address.
+        integer :: type    = MODBUS_TYPE_INT16  !! Number type.
+        integer :: order   = MODBUS_ORDER_NONE  !! Byte order of float.
+        integer :: scale   = 1                  !! Scale denominator.
+        integer :: value   = 0                  !! Register value to write.
     end type modbus_register_type
 
     public :: dm_modbus_register_has_scale

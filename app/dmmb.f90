@@ -155,15 +155,15 @@ contains
         type(arg_type) :: args(9)
 
         args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),                    & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <string>
-            arg_type('output',   short='o', type=ARG_TYPE_STRING),                & ! -o, --output <string>
-            arg_type('format',   short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
+            arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
+            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <string>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),                    & ! -N, --node <string>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <string>
+            arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <string>
+            arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -342,14 +342,13 @@ contains
         !!
         !! * `E_EMPTY` if the observation contains no requests.
         !!
-        type(app_type),            intent(inout) :: app    !! App type.
-        type(modbus_type),         intent(inout) :: modbus !! Modbus context type.
-        type(observ_type), target, intent(inout) :: observ !! Observation to read.
-        logical,                   intent(in)    :: debug  !! Output debug messages.
+        type(app_type),    intent(inout) :: app    !! App type.
+        type(modbus_type), intent(inout) :: modbus !! Modbus context type.
+        type(observ_type), intent(inout) :: observ !! Observation to read.
+        logical,           intent(in)    :: debug  !! Output debug messages.
 
-        integer                     :: msec, sec
-        integer                     :: i, n
-        type(request_type), pointer :: request
+        integer :: msec, sec
+        integer :: i, n
 
         rc = E_EMPTY
 
@@ -376,28 +375,28 @@ contains
 
         ! Send requests sequentially to sensor.
         request_loop: do i = 1, n
-            ! Read next request.
-            request => observ%requests(i)
-            if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+            associate (request => observ%requests(i))
+                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
-            rc = read_request(modbus, observ, request, debug)
-            call dm_request_set(request, error=rc)
+                rc = read_request(modbus, observ, request, debug)
+                call dm_request_set(request, error=rc)
 
-            if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
+                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
 
-            ! Wait the set delay time of the request.
-            msec = max(0, request%delay)
-            sec  = dm_msec_to_sec(msec)
+                ! Wait the set delay time of the request.
+                msec = max(0, request%delay)
+                sec  = dm_msec_to_sec(msec)
 
-            if (msec == 0) cycle request_loop
+                if (msec == 0) cycle request_loop
 
-            if (i < n) then
-                if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
-            else
-                if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
-            end if
+                if (i < n) then
+                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
+                else
+                    if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
+                end if
 
-            call dm_msleep(msec)
+                call dm_msleep(msec)
+            end associate
         end do request_loop
 
         rc = E_NONE
@@ -530,10 +529,9 @@ contains
         type(app_type),    intent(inout) :: app    !! App type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
 
-        integer                    :: msec, njobs, sec
-        logical                    :: debug
-        type(job_type),    target  :: job
-        type(observ_type), pointer :: observ
+        integer        :: msec, njobs, sec
+        logical        :: debug
+        type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
         call logger%info('started ' // APP_NAME)
@@ -570,31 +568,30 @@ contains
                 cycle job_loop
             end if
 
-            if (job%valid) then
-                ! Get pointer to job observation.
-                observ => job%observ
+            associate (observ => job%observ)
+                if (job%valid) then
+                    ! Read observation from TTY.
+                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                    rc = read_observ(app, modbus, observ, debug)
+                    call dm_observ_set(observ, error=rc)
 
-                ! Read observation from TTY.
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-                rc = read_observ(app, modbus, observ, debug)
-                call dm_observ_set(observ, error=rc)
+                    ! Forward observation via POSIX message queue.
+                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
-                ! Forward observation via POSIX message queue.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                    ! Output observation.
+                    rc = output_observ(observ, app%output_type)
+                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                end if
 
-                ! Output observation.
-                rc = output_observ(observ, app%output_type)
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end if
+                ! Wait the set delay time of the job (absolute).
+                msec = max(0, job%delay)
+                sec  = dm_msec_to_sec(msec)
 
-            ! Wait the set delay time of the job (absolute).
-            msec = max(0, job%delay)
-            sec  = dm_msec_to_sec(msec)
+                if (msec == 0) cycle job_loop
+                if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec', observ=observ)
 
-            if (msec == 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec', observ=observ)
-
-            call dm_msleep(msec)
+                call dm_msleep(msec)
+            end associate
         end do job_loop
 
         rc = E_NONE
