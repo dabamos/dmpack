@@ -8,13 +8,14 @@ program dmtestfile
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestfile'
-    integer,          parameter :: NTESTS    = 1
+    integer,          parameter :: NTESTS    = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
@@ -88,4 +89,13 @@ contains
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        stat = TEST_FAILED
+
+        print *, 'Checking file type of directory ./test ...'
+        if (.not. dm_file_is_directory('test')) return
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestfile

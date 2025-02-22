@@ -34,6 +34,7 @@ module dm_file
 
     public :: dm_file_exists
     public :: dm_file_delete
+    public :: dm_file_is_directory
     public :: dm_file_line_count
     public :: dm_file_read
     public :: dm_file_size
@@ -51,6 +52,28 @@ contains
         inquire (exist=exists, file=trim(path))
     end function dm_file_exists
 
+    logical function dm_file_is_directory(path) result(is)
+        !! Returns `.true.` if file at given file path is a directory.
+        use :: unix
+        use :: dm_c, only: dm_to_signed
+
+        character(len=*), intent(in) :: path !! File path.
+
+        integer           :: file_type, stat
+        integer(kind=i8)  :: mode
+        type(c_stat_type) :: fs
+
+        is = .false.
+
+        stat = c_stat(trim(path) // c_null_char, fs)
+        if (stat /= 0) return
+
+        mode = dm_to_signed(fs%st_mode)
+        file_type = int(iand(mode, int(S_IFMT, kind=i8)))
+
+        is = (file_type == S_IFDIR)
+    end function dm_file_is_directory
+
     integer(kind=i8) function dm_file_line_count(path, error) result(n)
         !! Returns number of lines in given file by counting new lines. Sets
         !! `error` to `E_IO` if opening the file failed, and to `E_EMPTY` if
@@ -59,21 +82,21 @@ contains
         integer,          intent(out), optional :: error !! Error code.
 
         character :: a
-        integer   :: fu, rc, stat
+        integer   :: rc, stat, unit
 
         n = 0_i8
 
         if (present(error)) error = E_IO
-        open (action='read', file=trim(path), iostat=stat, newunit=fu, status='old')
+        open (action='read', file=trim(path), iostat=stat, newunit=unit, status='old')
         if (stat /= 0) return
 
         do
-            read (fu, *, iostat=stat) a
+            read (unit, *, iostat=stat) a
             if (is_iostat_end(stat)) exit
             n = n + 1
         end do
 
-        close (fu)
+        close (unit)
 
         rc = E_EMPTY
         if (n > 0) rc = E_NONE
@@ -143,12 +166,12 @@ contains
         character(len=*), intent(in)            :: path  !! File to delete.
         integer,          intent(out), optional :: error !! Error code.
 
-        integer :: fu, stat
+        integer :: stat, unit
 
         if (present(error)) error = E_IO
-        open (action='write', file=trim(path), iostat=stat, newunit=fu, status='old')
+        open (action='write', file=trim(path), iostat=stat, newunit=unit, status='old')
         if (stat /= 0) return
-        close (fu, iostat=stat, status='delete')
+        close (unit, iostat=stat, status='delete')
         if (stat == 0 .and. present(error)) error = E_NONE
     end subroutine dm_file_delete
 
@@ -157,12 +180,12 @@ contains
         character(len=*), intent(in)            :: path  !! File to create.
         integer,          intent(out), optional :: error !! Error code.
 
-        integer :: fu, stat
+        integer :: stat, unit
 
         if (present(error)) error = E_IO
-        open (action='write', file=trim(path), iostat=stat, newunit=fu, status='unknown')
+        open (action='write', file=trim(path), iostat=stat, newunit=unit, status='unknown')
         if (stat /= 0) return
-        close (fu, iostat=stat)
+        close (unit, iostat=stat)
         if (stat == 0 .and. present(error)) error = E_NONE
     end subroutine dm_file_touch
 
