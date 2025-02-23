@@ -7,13 +7,18 @@ program dmtestdwd
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestdwd'
-    integer,          parameter :: NTESTS    = 1
+    integer,          parameter :: NTESTS    = 3
 
-    type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
+    logical         :: no_color
+    type(test_type) :: tests(NTESTS)
+
+    no_color = dm_env_has('NO_COLOR')
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -86,11 +91,111 @@ contains
         call dm_dwd_mosmix_station_out(station)
         print '(72("."))'
 
-        print *, 'Writing (subset of) station catalog ...'
+        print *, 'Writing first entries of station catalog ...'
         print '(72("."))'
         call dm_dwd_mosmix_station_catalog_write(stations(1:5), unit=stdout, header=.true.)
         print '(72("."))'
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        character(len=*), parameter :: INPUT = 'test/test_poi.csv'
+
+        integer                                    :: iostat, rc, unit
+        type(dwd_weather_report_type), allocatable :: reports(:)
+
+        stat = TEST_FAILED
+
+        if (.not. dm_file_exists(INPUT)) then
+            print *, 'Test file ' // INPUT // ' not found'
+            return
+        end if
+
+        print *, 'Reading weather report records from ' // INPUT // ' ...'
+
+        open (action='read', file=INPUT, iostat=iostat, newunit=unit, status='old')
+        if (iostat /= 0) return
+        rc = dm_dwd_weather_report_read(reports, unit, header=.true.)
+        close (unit)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+        if (size(reports) /= 25) return
+
+        print *, 'Printing report ...'
+        print '(72("."))'
+        call dm_dwd_weather_report_out(reports(1))
+        print '(72("."))'
+
+        stat = TEST_PASSED
+    end function test02
+
+    logical function test03() result(stat)
+        character(len=*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg
+
+        integer                 :: iostat, rc, unit
+        logical                 :: enabled
+        type(rpc_request_type)  :: request
+        type(rpc_response_type) :: response
+
+        stat = TEST_PASSED
+
+        rc = dm_env_get('DM_DWD_API', enabled, default=.false.)
+
+        if (.not. enabled) then
+            call dm_ansi_color(COLOR_YELLOW, no_color)
+            print '("> Set environment variable DM_DWD_API to 1. This test will be skipped.")'
+            call dm_ansi_reset(no_color)
+            return
+        end if
+
+        stat = TEST_FAILED
+
+        rc = dm_rpc_init()
+        if (dm_is_error(rc)) return
+
+        print *, 'Opening scratch file ...'
+        ! open (access='stream', action='readwrite', form='unformatted', iostat=iostat, newunit=unit, status='scratch')
+        open (action='readwrite', form='formatted', iostat=iostat, newunit=unit, status='scratch')
+        if (iostat /= 0) return
+
+        rpc_block: block
+            character(len=:), allocatable              :: url
+            type(dwd_weather_report_type), allocatable :: reports(:)
+
+            rc = E_INVALID
+            print *, 'Creating URL ...'
+            url = dm_dwd_api_weather_report_url(id=STATION_ID, tls=.false.)
+            if (len(url) == 0) exit rpc_block
+
+            print *, 'Fetching ' // url // ' ...'
+            response%unit = unit
+            rc = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
+
+            if (dm_is_error(rc)) then
+                print '(" HTTP ", i0, ": ", a)', response%code, response%error_message
+                exit rpc_block
+            end if
+
+            rewind (unit)
+
+            print *, 'Reading weather report ...'
+            rc = dm_dwd_weather_report_read(reports, response%unit)
+            if (dm_is_error(rc)) exit rpc_block
+
+            print *, 'Printing report ...'
+            print '(72("."))'
+            call dm_dwd_weather_report_out(reports(1))
+            print '(72("."))'
+        end block rpc_block
+
+        close (unit)
+        call dm_rpc_shutdown()
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestdwd

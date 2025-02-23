@@ -218,6 +218,7 @@ main = "dmtestdp.f90"
 [[test]]
 name = "dmtestdwd"
 main = "dmtestdwd.f90"
+link = [ "curl", "z", "zstd" ]
 
 [[test]]
 name = "dmtestfile"

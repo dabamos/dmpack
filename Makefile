@@ -245,6 +245,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_db_table.f90 \
       $(SRCDIR)/dm_dp.f90 \
       $(SRCDIR)/dm_dwd.f90 \
+      $(SRCDIR)/dm_dwd_api.f90 \
       $(SRCDIR)/dm_env.f90 \
       $(SRCDIR)/dm_error.f90 \
       $(SRCDIR)/dm_fcgi.f90 \
@@ -348,6 +349,7 @@ OBJ = dm_ansi.o \
       dm_db_table.o \
       dm_dp.o \
       dm_dwd.o \
+      dm_dwd_api.o \
       dm_env.o \
       dm_error.o \
       dm_fcgi.o \
@@ -675,6 +677,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_im.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_ve.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_dwd.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_dwd_api.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -732,7 +735,7 @@ dmtestdp: test/dmtestdp.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdp test/dmtestdp.f90 $(TARGET) $(LDLIBS)
 
 dmtestdwd: test/dmtestdwd.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdwd test/dmtestdwd.f90 $(TARGET) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestdwd test/dmtestdwd.f90 $(TARGET) $(LDLIBS) $(LIBCURL) $(LIBZ) $(LDLIBS)
 
 dmtestfile: test/dmtestfile.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtestfile test/dmtestfile.f90 $(TARGET) $(LDLIBS)

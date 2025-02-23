@@ -50,6 +50,8 @@ module dm_rpc
     character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
     character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
+    integer, parameter, public :: RPC_RESPONSE_UNIT_DEFAULT = -99999 !! Default file unit.
+
     ! HTTP Auth.
     integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
     integer, parameter, public :: RPC_AUTH_BASIC = 1 !! HTTP Basic Auth.
@@ -79,13 +81,14 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code       = 0        !! HTTP response code.
-        integer                       :: error      = E_NONE   !! DMPACK error code.
-        integer                       :: error_curl = CURLE_OK !! cURL error code.
-        real(kind=r8)                 :: total_time = 0.0_r8   !! Total transmission time.
-        character(len=:), allocatable :: error_message         !! cURL error message.
-        character(len=:), allocatable :: content_type          !! Response payload type (MIME).
-        character(len=:), allocatable :: payload               !! Response payload.
+        integer                       :: code       = 0                         !! HTTP response code.
+        integer                       :: error      = E_NONE                    !! DMPACK error code.
+        integer                       :: error_curl = CURLE_OK                  !! cURL error code.
+        integer                       :: unit       = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
+        real(kind=r8)                 :: total_time = 0.0_r8                    !! Total transmission time.
+        character(len=:), allocatable :: error_message                          !! cURL error message.
+        character(len=:), allocatable :: content_type                           !! Response payload type (MIME).
+        character(len=:), allocatable :: payload                                !! Response payload.
     end type rpc_response_type
 
     type, public :: rpc_request_type
@@ -131,6 +134,7 @@ module dm_rpc
     public :: dm_rpc_error
     public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
+    public :: dm_rpc_get
     public :: dm_rpc_init
     public :: dm_rpc_post
     public :: dm_rpc_post_type
@@ -262,6 +266,43 @@ contains
                 rc = E_RPC
         end select
     end function dm_rpc_error_multi
+
+    integer function dm_rpc_get(request, response, url, accept, username, password, user_agent, callback) result(rc)
+        !! Sends generic HTTP GET request to URL.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
+        !! * `E_RPC` if the HTTP request failed.
+        !!
+        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
+        type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
+        character(len=*),        intent(in), optional :: url        !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: accept     !! HTTP Accept header.
+        character(len=*),        intent(in), optional :: username   !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password   !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent !! HTTP User Agent.
+        procedure(dm_rpc_callback),          optional :: callback   !! Callback function to pass to libcurl.
+
+        ! Set request parameters.
+        if (present(url))        request%url        = trim(url)
+        if (present(accept))     request%accept     = trim(accept)
+        if (present(user_agent)) request%user_agent = trim(user_agent)
+
+        if (present(username) .and. present(password)) then
+            request%auth     = RPC_AUTH_BASIC
+            request%username = trim(username)
+            request%password = trim(password)
+        end if
+
+        if (present(callback)) then
+            request%callback => callback
+        else
+            if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
+        end if
+
+        rc = rpc_request_single(request, response)
+    end function dm_rpc_get
 
     integer function dm_rpc_init() result(rc)
         !! Initialises RPC backend. The function returns `E_RPC` on error.
@@ -791,6 +832,16 @@ contains
 
         integer :: stat
 
+        ! Reset response.
+        response%code       = 0
+        response%error      = E_NONE
+        response%error_curl = CURLE_OK
+        response%total_time = 0.0_r8
+
+        if (allocated(response%error_message)) deallocate (response%error_message)
+        if (allocated(response%content_type))  deallocate (response%content_type)
+        if (allocated(response%payload))       deallocate (response%payload)
+
         rc = E_NULL
         if (.not. c_associated(request%curl_ctx)) return
 
@@ -894,7 +945,7 @@ contains
         !! A more specific error code may be available in response attribute
         !! `error`.
         type(rpc_request_type),  intent(inout) :: request  !! Request type.
-        type(rpc_response_type), intent(out)   :: response !! Response type.
+        type(rpc_response_type), intent(inout) :: response !! Response type.
 
         integer :: error, stat
 

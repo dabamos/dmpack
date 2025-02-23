@@ -26,6 +26,10 @@
 #   export DM_MAIL_USERNAME=alice
 #   export DM_MAIL_PASSWORD=secret
 #
+# Enable DWD API tests:
+#
+#   export DM_DWD_API=1
+#
 # Skipping POSIX message queue tests:
 #
 #   export DM_MQUEUE_SKIP=1
