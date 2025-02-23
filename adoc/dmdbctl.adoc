@@ -18,8 +18,8 @@ dmdbctl - command-line interface to DMPACK observation databases
 *dmdbctl* --*database* _file_ --*id* _id_
 [--*create*|--*read*|--*update*|--*delete* _type_] [--*name* _name_]
 [--*meta* _meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_]
-[--*state* _n_]  [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*lon* _lon_]
-[--*lat* _lat_] [--*elev* _elev_] [--*verbose*]
+[--*state* _n_]  [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*longitude* _lon_]
+[--*latitude* _lat_] [--*elevation* _elev_] [--*verbose*]
 
 == DESCRIPTION
 
@@ -53,7 +53,7 @@ through command-line arguments.
 *--delete*, *-D* [node|sensor|target]::
   Delete database record (node, sensor, or target).
 
-*--elev*, *-E* _elev_::
+*--elevation*, *-E* _elev_::
   Elevation of node, sensor, or target in metres.
 
 *--help*, *-h*::
@@ -62,10 +62,10 @@ through command-line arguments.
 *--id*, *-I* _id_::
   ID of node, sensor, or target.
 
-*--lat*, *-L* _lat_::
+*--latitude*, *-L* _lat_::
   Latitude of node, sensor, or target in degrees (decimal).
 
-*--lon*, *-G* _lon_::
+*--longitude*, *-G* _lon_::
   Longitude node, sensor, or target in degrees (decimal).
 
 *--meta*, *-M* _meta_::

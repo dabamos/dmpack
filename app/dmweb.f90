@@ -761,14 +761,14 @@ contains
 
         ! Select view point.
         if (size(nodes) > 0) then
-            lon = nodes(1)%lon
-            lat = nodes(1)%lat
+            lon = nodes(1)%longitude
+            lat = nodes(1)%latitude
         else if (size(sensors) > 0) then
-            lon = sensors(1)%lon
-            lat = sensors(1)%lat
+            lon = sensors(1)%longitude
+            lat = sensors(1)%latitude
         else if (size(targets) > 0) then
-            lon = targets(1)%lon
-            lat = targets(1)%lat
+            lon = targets(1)%longitude
+            lat = targets(1)%latitude
         end if
 
         ! Use default coordinates for view point.
@@ -941,13 +941,13 @@ contains
                 end if
 
                 ! Optional parameters.
-                rc = dm_cgi_get(param, 'meta', node%meta)
-                rc = dm_cgi_get(param, 'x',    node%x)
-                rc = dm_cgi_get(param, 'y',    node%y)
-                rc = dm_cgi_get(param, 'z',    node%z)
-                rc = dm_cgi_get(param, 'lon',  node%lon)
-                rc = dm_cgi_get(param, 'lat',  node%lat)
-                rc = dm_cgi_get(param, 'elev', node%elev)
+                rc = dm_cgi_get(param, 'meta',      node%meta)
+                rc = dm_cgi_get(param, 'x',         node%x)
+                rc = dm_cgi_get(param, 'y',         node%y)
+                rc = dm_cgi_get(param, 'z',         node%z)
+                rc = dm_cgi_get(param, 'longitude', node%longitude)
+                rc = dm_cgi_get(param, 'latitude',  node%latitude)
+                rc = dm_cgi_get(param, 'elevation', node%elevation)
 
                 ! Validate node data.
                 if (.not. dm_node_is_valid(node)) then
@@ -1513,14 +1513,14 @@ contains
                     exit response_block
                 end if
 
-                rc = dm_cgi_get(param, 'sn',   sensor%sn)
-                rc = dm_cgi_get(param, 'meta', sensor%meta)
-                rc = dm_cgi_get(param, 'x',    sensor%x)
-                rc = dm_cgi_get(param, 'y',    sensor%y)
-                rc = dm_cgi_get(param, 'z',    sensor%z)
-                rc = dm_cgi_get(param, 'lon',  sensor%lon)
-                rc = dm_cgi_get(param, 'lat',  sensor%lat)
-                rc = dm_cgi_get(param, 'elev', sensor%elev)
+                rc = dm_cgi_get(param, 'sn',        sensor%sn)
+                rc = dm_cgi_get(param, 'meta',      sensor%meta)
+                rc = dm_cgi_get(param, 'x',         sensor%x)
+                rc = dm_cgi_get(param, 'y',         sensor%y)
+                rc = dm_cgi_get(param, 'z',         sensor%z)
+                rc = dm_cgi_get(param, 'longitude', sensor%longitude)
+                rc = dm_cgi_get(param, 'latitude',  sensor%latitude)
+                rc = dm_cgi_get(param, 'elevation', sensor%elevation)
 
                 ! Validate sensor data.
                 if (.not. dm_sensor_is_valid(sensor)) then
@@ -1826,14 +1826,14 @@ contains
                 end if
 
                 ! Invalid state, x, y, and z are replaced with the default values.
-                rc = dm_cgi_get(param, 'meta',  target%meta)
-                rc = dm_cgi_get(param, 'state', target%state)
-                rc = dm_cgi_get(param, 'x',     target%x)
-                rc = dm_cgi_get(param, 'y',     target%y)
-                rc = dm_cgi_get(param, 'z',     target%z)
-                rc = dm_cgi_get(param, 'lon',   target%lon)
-                rc = dm_cgi_get(param, 'lat',   target%lat)
-                rc = dm_cgi_get(param, 'elev',  target%elev)
+                rc = dm_cgi_get(param, 'meta',      target%meta)
+                rc = dm_cgi_get(param, 'state',     target%state)
+                rc = dm_cgi_get(param, 'x',         target%x)
+                rc = dm_cgi_get(param, 'y',         target%y)
+                rc = dm_cgi_get(param, 'z',         target%z)
+                rc = dm_cgi_get(param, 'longitude', target%longitude)
+                rc = dm_cgi_get(param, 'latitude',  target%latitude)
+                rc = dm_cgi_get(param, 'elevation', target%elevation)
 
                 ! Validate target data.
                 if (.not. dm_target_is_valid(target)) then
@@ -2045,14 +2045,14 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 2
                H_DIV_COL // & ! column 3
-               dm_html_label('Longitude', for='lon') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
+               dm_html_label('Longitude', for='longitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='longitude', name='longitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
-               dm_html_label('Latitude', for='lat') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
+               dm_html_label('Latitude', for='latitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='latitude', name='latitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Elevation', for='elev') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+               dm_html_label('Elevation', for='elevation') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elevation', name='elevation', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1
@@ -2340,14 +2340,14 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_COL // & ! column 4
-               dm_html_label('Longitude', for='lon') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
+               dm_html_label('Longitude', for='longitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='longitude', name='longitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
-               dm_html_label('Latitude', for='lat') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
+               dm_html_label('Latitude', for='latitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='latitude', name='latitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Elevation', for='elev') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+               dm_html_label('Elevation', for='elevation') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elevation', name='elevation', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 4
                H_DIV_END // & ! end row 1
@@ -2408,14 +2408,14 @@ contains
                              pattern='[\+\-\.0-9]+', placeholder='Enter Z or elevation (optional)') // &
                H_DIV_END // & ! end column 2
                H_DIV_COL // & ! column 3
-               dm_html_label('Longitude', for='lon') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lon', name='lon', &
+               dm_html_label('Longitude', for='longitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='longitude', name='longitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter longitude (optional)') // &
-               dm_html_label('Latitude', for='lat') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='lat', name='lat', &
+               dm_html_label('Latitude', for='latitude') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='latitude', name='latitude', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter latitude (optional)') // &
-               dm_html_label('Elevation', for='elev') // &
-               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elev', name='elev', &
+               dm_html_label('Elevation', for='elevation') // &
+               dm_html_input(HTML_INPUT_TYPE_TEXT, disabled=disabled_, id='elevation', name='elevation', &
                              pattern='[\+\-\.0-9]+', placeholder='Enter elevation (optional)') // &
                H_DIV_END // & ! end column 3
                H_DIV_END // & ! end row 1

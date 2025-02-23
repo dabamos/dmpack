@@ -98,50 +98,50 @@ module dm_sql
 
     ! Sensor nodes schema.
     character(len=*), parameter, public :: SQL_CREATE_NODES = &
-        "CREATE TABLE IF NOT EXISTS nodes(" // NL // &
-        "row_id INTEGER PRIMARY KEY,"       // NL // & ! Explicit alias for rowid.
-        "id     TEXT NOT NULL UNIQUE,"      // NL // &
-        "name   TEXT NOT NULL,"             // NL // &
-        "meta   TEXT,"                      // NL // &
-        "x      REAL NOT NULL DEFAULT 0.0," // NL // &
-        "y      REAL NOT NULL DEFAULT 0.0," // NL // &
-        "z      REAL NOT NULL DEFAULT 0.0," // NL // &
-        "lon    REAL NOT NULL DEFAULT 0.0," // NL // &
-        "lat    REAL NOT NULL DEFAULT 0.0," // NL // &
-        "elev   REAL NOT NULL DEFAULT 0.0) STRICT"
+        "CREATE TABLE IF NOT EXISTS nodes("    // NL // &
+        "row_id    INTEGER PRIMARY KEY,"       // NL // & ! Explicit alias for rowid.
+        "id        TEXT NOT NULL UNIQUE,"      // NL // &
+        "name      TEXT NOT NULL,"             // NL // &
+        "meta      TEXT,"                      // NL // &
+        "x         REAL NOT NULL DEFAULT 0.0," // NL // &
+        "y         REAL NOT NULL DEFAULT 0.0," // NL // &
+        "z         REAL NOT NULL DEFAULT 0.0," // NL // &
+        "longitude REAL NOT NULL DEFAULT 0.0," // NL // &
+        "latitude  REAL NOT NULL DEFAULT 0.0," // NL // &
+        "elevation REAL NOT NULL DEFAULT 0.0) STRICT"
 
     ! Sensors schema.
     character(len=*), parameter, public :: SQL_CREATE_SENSORS = &
-        "CREATE TABLE IF NOT EXISTS sensors("   // NL // &
-        "row_id  INTEGER PRIMARY KEY,"          // NL // & ! Explicit alias for rowid.
-        "node_id INTEGER NOT NULL,"             // NL // &
-        "id      TEXT    NOT NULL UNIQUE,"      // NL // &
-        "type    INTEGER NOT NULL DEFAULT 0,"   // NL // &
-        "name    TEXT    NOT NULL,"             // NL // &
-        "sn      TEXT,"                         // NL // &
-        "meta    TEXT,"                         // NL // &
-        "x       REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "y       REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "z       REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "lon     REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "lat     REAL    NOT NULL DEFAULT 0.0," // NL // &
-        "elev    REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "CREATE TABLE IF NOT EXISTS sensors("     // NL // &
+        "row_id    INTEGER PRIMARY KEY,"          // NL // & ! Explicit alias for rowid.
+        "node_id   INTEGER NOT NULL,"             // NL // &
+        "id        TEXT    NOT NULL UNIQUE,"      // NL // &
+        "type      INTEGER NOT NULL DEFAULT 0,"   // NL // &
+        "name      TEXT    NOT NULL,"             // NL // &
+        "sn        TEXT,"                         // NL // &
+        "meta      TEXT,"                         // NL // &
+        "x         REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "y         REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "z         REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "longitude REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "latitude  REAL    NOT NULL DEFAULT 0.0," // NL // &
+        "elevation REAL    NOT NULL DEFAULT 0.0," // NL // &
         "FOREIGN KEY (node_id) REFERENCES nodes(row_id)) STRICT"
 
     ! Targets schema.
     character(len=*), parameter, public :: SQL_CREATE_TARGETS = &
-        "CREATE TABLE IF NOT EXISTS targets("   // NL // &
-        "row_id INTEGER PRIMARY KEY,"           // NL // & ! Explicit alias for rowid.
-        "id     TEXT    NOT NULL UNIQUE,"       // NL // &
-        "name   TEXT,"                          // NL // &
-        "meta   TEXT,"                          // NL // &
-        "state  INTEGER NOT NULL DEFAULT 0,"    // NL // &
-        "x      REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "y      REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "z      REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "lon    REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "lat    REAL    NOT NULL DEFAULT 0.0,"  // NL // &
-        "elev   REAL    NOT NULL DEFAULT 0.0) STRICT"
+        "CREATE TABLE IF NOT EXISTS targets("      // NL // &
+        "row_id    INTEGER PRIMARY KEY,"           // NL // & ! Explicit alias for rowid.
+        "id        TEXT    NOT NULL UNIQUE,"       // NL // &
+        "name      TEXT,"                          // NL // &
+        "meta      TEXT,"                          // NL // &
+        "state     INTEGER NOT NULL DEFAULT 0,"    // NL // &
+        "x         REAL    NOT NULL DEFAULT 0.0,"  // NL // &
+        "y         REAL    NOT NULL DEFAULT 0.0,"  // NL // &
+        "z         REAL    NOT NULL DEFAULT 0.0,"  // NL // &
+        "longitude REAL    NOT NULL DEFAULT 0.0,"  // NL // &
+        "latitude  REAL    NOT NULL DEFAULT 0.0,"  // NL // &
+        "elevation REAL    NOT NULL DEFAULT 0.0) STRICT"
 
     ! Observations schema.
     character(len=*), parameter, public :: SQL_CREATE_OBSERVS = &
@@ -408,28 +408,28 @@ module dm_sql
 
     ! Query to insert node.
     ! Arguments: nodes.id, nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z,
-    !            nodes.lon, nodes.lat, nodes.elev
+    !            nodes.longitude, nodes.latitude, nodes.elevation
     character(len=*), parameter, public :: SQL_INSERT_NODE = &
-        "INSERT OR FAIL INTO "                            // &
-        "nodes(id, name, meta, x, y, z, lon, lat, elev) " // &
+        "INSERT OR FAIL INTO "                                            // &
+        "nodes(id, name, meta, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert sensor.
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
     !            sensors.sn, sensors.meta, sensors.x, sensors.y, sensors.z,
-    !            sensors.lon, sensors.lat, sensors.elev
+    !            sensors.longitude, sensors.latitude, sensors.elevation
     character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
-        "INSERT OR FAIL INTO "                                                 // &
-        "sensors(id, node_id, type, name, sn, meta, x, y, z, lon, lat, elev) " // &
+        "INSERT OR FAIL INTO "                                                                 // &
+        "sensors(id, node_id, type, name, sn, meta, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert target.
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
-    !            targets.x, targets.y, targets.z, targets.lon, targets.lat,
-    !            targets.elev
+    !            targets.x, targets.y, targets.z, targets.longitude,
+    !            targets.latitude, targets.elevation
     character(len=*), parameter, public :: SQL_INSERT_TARGET = &
-        "INSERT OR FAIL INTO "                                     // &
-        "targets(id, name, meta, state, x, y, z, lon, lat, elev) " // &
+        "INSERT OR FAIL INTO "                                                     // &
+        "targets(id, name, meta, state, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert observation.
@@ -479,24 +479,25 @@ module dm_sql
     ! **************************************************************************
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z
-    !            nodes.lon, nodes.lat, nodes.elev, nodes.id
+    !            nodes.longitude, nodes.latitude, nodes.elevation, nodes.id
     character(len=*), parameter, public :: SQL_UPDATE_NODE = &
-        "UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, elev = ? WHERE id = ?"
+        "UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
     ! Query to update sensor.
     ! Arguments: nodes.id, sensors.type, sensors.id, sensors.name, sensors.sn,
-    !            sensors.meta, sensors.x, sensors.y, sensors.z, sensors.lon,
-    !            sensors.lat, sensors.elev, sensors.id
+    !            sensors.meta, sensors.x, sensors.y, sensors.z, sensors.longitude,
+    !            sensors.latitude, sensors.elevation, sensors.id
     character(len=*), parameter, public :: SQL_UPDATE_SENSOR = &
         "UPDATE OR FAIL sensors SET node_id = (SELECT row_id FROM nodes WHERE id = ?), " // &
-        "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, lon = ?, lat = ?, elev = ? WHERE id = ?"
+        "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
     ! Query to update target.
     ! Arguments: targets.name, targets.meta, targets.state, targets.x, targets.y,
-    !            targets.z, targets.lon, targets.lat, targets.elev, targets.id
+    !            targets.z, targets.longitude, targets.latitude, targets.elevation,
+    !            targets.id
     character(len=*), parameter, public :: SQL_UPDATE_TARGET = &
         "UPDATE OR FAIL targets SET name = ?, meta = ?, state = ?, x = ?, y = ?, z = ?, " // &
-        "lon = ?, lat = ?, elev = ? WHERE id = ?"
+        "longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
     ! **************************************************************************
     ! SELECT EXISTS QUERIES.
@@ -609,16 +610,16 @@ module dm_sql
 
     ! Query to select nodes.
     character(len=*), parameter, public :: SQL_SELECT_NODES = &
-        "SELECT "      // &
-        "nodes.id, "   // &
-        "nodes.name, " // &
-        "nodes.meta, " // &
-        "nodes.x, "    // &
-        "nodes.y, "    // &
-        "nodes.z, "    // &
-        "nodes.lon, "  // &
-        "nodes.lat, "  // &
-        "nodes.elev "  // &
+        "SELECT "           // &
+        "nodes.id, "        // &
+        "nodes.name, "      // &
+        "nodes.meta, "      // &
+        "nodes.x, "         // &
+        "nodes.y, "         // &
+        "nodes.z, "         // &
+        "nodes.longitude, " // &
+        "nodes.latitude, "  // &
+        "nodes.elevation "  // &
         "FROM nodes"
 
     ! Query to select observation ids.
@@ -760,35 +761,35 @@ module dm_sql
 
     ! Query to select sensors.
     character(len=*), parameter, public :: SQL_SELECT_SENSORS = &
-        "SELECT "        // &
-        "sensors.id, "   // &
-        "nodes.id, "     // &
-        "sensors.type, " // &
-        "sensors.name, " // &
-        "sensors.sn, "   // &
-        "sensors.meta, " // &
-        "sensors.x, "    // &
-        "sensors.y, "    // &
-        "sensors.z, "    // &
-        "sensors.lon, "  // &
-        "sensors.lat, "  // &
-        "sensors.elev "  // &
-        "FROM sensors "  // &
+        "SELECT "             // &
+        "sensors.id, "        // &
+        "nodes.id, "          // &
+        "sensors.type, "      // &
+        "sensors.name, "      // &
+        "sensors.sn, "        // &
+        "sensors.meta, "      // &
+        "sensors.x, "         // &
+        "sensors.y, "         // &
+        "sensors.z, "         // &
+        "sensors.longitude, " // &
+        "sensors.latitude, "  // &
+        "sensors.elevation "  // &
+        "FROM sensors "       // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
     ! Query to select targets.
     character(len=*), parameter, public :: SQL_SELECT_TARGETS = &
-        "SELECT "         // &
-        "targets.id, "    // &
-        "targets.name, "  // &
-        "targets.meta, "  // &
-        "targets.state, " // &
-        "targets.x, "     // &
-        "targets.y, "     // &
-        "targets.z, "     // &
-        "targets.lon, "   // &
-        "targets.lat, "   // &
-        "targets.elev "   // &
+        "SELECT "             // &
+        "targets.id, "        // &
+        "targets.name, "      // &
+        "targets.meta, "      // &
+        "targets.state, "     // &
+        "targets.x, "         // &
+        "targets.y, "         // &
+        "targets.z, "         // &
+        "targets.longitude, " // &
+        "targets.latitude, "  // &
+        "targets.elevation "  // &
         "FROM targets"
 
     ! **************************************************************************
@@ -969,7 +970,7 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'x', x, 'y', y, 'z', z, " // &
-        "'lon', lon, 'lat', lat, 'elev', elev) "                                     // &
+        "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "     // &
         "FROM nodes"
 
     ! Query to select sensors in JSON format.
@@ -977,7 +978,7 @@ module dm_sql
         "SELECT " // &
         "json_object('id', sensors.id, 'node_id', nodes.id, 'type', sensors.type, 'name', 'sensors.name, " // &
         "'sn', sensors.sn, 'meta', sensors.meta, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "         // &
-        "'lon', sensors.lon, 'lat', sensors.lat, 'elev', sensors.elev) "                                   // &
+        "'longitude', sensors.longitude, 'latitude', sensors.latitude, 'elevation', sensors.elevation) "   // &
         "FROM sensors " // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
@@ -985,6 +986,6 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'state', state, 'x', x, 'y', y, 'z', z, " // &
-        "'lon', lon, 'lat', lat, 'elev', elev) "                                                     // &
+        "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "                     // &
         "FROM targets"
 end module dm_sql

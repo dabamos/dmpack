@@ -143,11 +143,11 @@ contains
                H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // &
                        H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node X:'    // H_TH_END // H_TD // dm_ftoa(node%x)           // H_TD_END // &
-                       H_TH // 'Longitude:' // H_TH_END // H_TD // dm_ftoa(node%lon)         // H_TD_END // H_TR_END // &
+                       H_TH // 'Longitude:' // H_TH_END // H_TD // dm_ftoa(node%longitude)   // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node Y:'    // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // &
-                       H_TH // 'Latitude:'  // H_TH_END // H_TD // dm_ftoa(node%lat)         // H_TD_END // H_TR_END // &
+                       H_TH // 'Latitude:'  // H_TH_END // H_TD // dm_ftoa(node%latitude)    // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node Z:'    // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // &
-                       H_TH // 'Elevation:' // H_TH_END // H_TD // dm_ftoa(node%elev)        // H_TD_END // H_TR_END // &
+                       H_TH // 'Elevation:' // H_TH_END // H_TD // dm_ftoa(node%elevation)   // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 

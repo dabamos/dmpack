@@ -1533,15 +1533,15 @@ contains
             rc = dm_db_prepare(db, db_stmt, SQL_INSERT_NODE)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, 1, node%id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 2, node%name); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 3, node%meta); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 4, node%x);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 5, node%y);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 6, node%z);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 7, node%lon);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 8, node%lat);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 9, node%elev); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 1, node%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 2, node%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 3, node%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 4, node%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 5, node%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 6, node%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 7, node%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 8, node%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 9, node%elevation); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -1752,18 +1752,18 @@ contains
             rc = dm_db_prepare(db, db_stmt, SQL_INSERT_SENSOR)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt,  1, sensor%id);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  2, sensor%node_id); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  3, sensor%type);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  4, sensor%name);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  5, sensor%sn);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  6, sensor%meta);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  7, sensor%x);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  8, sensor%y);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, sensor%z);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 10, sensor%lon);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 11, sensor%lat);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 12, sensor%elev);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  1, sensor%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  2, sensor%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  3, sensor%type);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  4, sensor%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  5, sensor%sn);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  6, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  7, sensor%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  8, sensor%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, sensor%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 10, sensor%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 11, sensor%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 12, sensor%elevation); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -1936,16 +1936,16 @@ contains
             rc = dm_db_prepare(db, db_stmt, SQL_INSERT_TARGET)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt,  1, target%id);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  2, target%name);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  3, target%meta);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  4, target%state); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  5, target%x);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  6, target%y);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  7, target%z);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  8, target%lon);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, target%lat);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 10, target%elev);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  1, target%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  2, target%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  3, target%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  4, target%state);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  5, target%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  6, target%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  7, target%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  8, target%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, target%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 10, target%elevation); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -3543,15 +3543,15 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             ! Node id must be last argument!
-            rc = dm_db_bind(db_stmt, 1, node%name); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 2, node%meta); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 3, node%x);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 4, node%y);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 5, node%z);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 6, node%lon);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 7, node%lat);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 8, node%elev); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 9, node%id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 1, node%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 2, node%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 3, node%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 4, node%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 5, node%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 6, node%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 7, node%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 8, node%elevation); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 9, node%id);        if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -3594,18 +3594,18 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             ! Sensor id must be last argument!
-            rc = dm_db_bind(db_stmt,  1, sensor%node_id); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  2, sensor%type);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  3, sensor%name);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  4, sensor%sn);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  5, sensor%meta);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  6, sensor%x);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  7, sensor%y);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  8, sensor%z);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, sensor%lon);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 10, sensor%lat);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 11, sensor%elev);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 12, sensor%id);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  1, sensor%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  2, sensor%type);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  3, sensor%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  4, sensor%sn);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  5, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  6, sensor%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  7, sensor%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  8, sensor%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, sensor%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 10, sensor%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 11, sensor%elevation); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 12, sensor%id);        if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -3648,16 +3648,16 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             ! Target id must be last argument!
-            rc = dm_db_bind(db_stmt,  1, target%name);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  2, target%meta);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  3, target%state); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  4, target%x);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  5, target%y);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  6, target%z);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  7, target%lon);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  8, target%lat);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, target%elev);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 10, target%id);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  1, target%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  2, target%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  3, target%state);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  4, target%x);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  5, target%y);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  6, target%z);         if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  7, target%longitude); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  8, target%latitude);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, target%elevation); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 10, target%id);        if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -4454,9 +4454,9 @@ contains
         call dm_db_column(db_stmt, 3, node%x)
         call dm_db_column(db_stmt, 4, node%y)
         call dm_db_column(db_stmt, 5, node%z)
-        call dm_db_column(db_stmt, 6, node%lon)
-        call dm_db_column(db_stmt, 7, node%lat)
-        call dm_db_column(db_stmt, 8, node%elev)
+        call dm_db_column(db_stmt, 6, node%longitude)
+        call dm_db_column(db_stmt, 7, node%latitude)
+        call dm_db_column(db_stmt, 8, node%elevation)
 
         rc = E_NONE
     end function db_next_row_node
@@ -4589,9 +4589,9 @@ contains
         call dm_db_column(db_stmt,  6, sensor%x)
         call dm_db_column(db_stmt,  7, sensor%y)
         call dm_db_column(db_stmt,  8, sensor%z)
-        call dm_db_column(db_stmt,  9, sensor%lon)
-        call dm_db_column(db_stmt, 10, sensor%lat)
-        call dm_db_column(db_stmt, 11, sensor%elev)
+        call dm_db_column(db_stmt,  9, sensor%longitude)
+        call dm_db_column(db_stmt, 10, sensor%latitude)
+        call dm_db_column(db_stmt, 11, sensor%elevation)
 
         rc = E_NONE
     end function db_next_row_sensor
@@ -4686,9 +4686,9 @@ contains
         call dm_db_column(db_stmt, 4, target%x)
         call dm_db_column(db_stmt, 5, target%y)
         call dm_db_column(db_stmt, 6, target%z)
-        call dm_db_column(db_stmt, 7, target%lon)
-        call dm_db_column(db_stmt, 8, target%lat)
-        call dm_db_column(db_stmt, 9, target%elev)
+        call dm_db_column(db_stmt, 7, target%longitude)
+        call dm_db_column(db_stmt, 8, target%latitude)
+        call dm_db_column(db_stmt, 9, target%elevation)
 
         rc = E_NONE
     end function db_next_row_target

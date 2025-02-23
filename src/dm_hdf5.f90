@@ -440,18 +440,18 @@ contains
         if (stat < 0) return
 
         ! Node longitude.
-        offset = h5offsetof(c_loc(node), c_loc(node%lon))
-        call h5tinsert_f(type_id, 'lon', offset, h5kind_to_type(kind(node%lon), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(node), c_loc(node%longitude))
+        call h5tinsert_f(type_id, 'longitude', offset, h5kind_to_type(kind(node%longitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Node latitude.
-        offset = h5offsetof(c_loc(node), c_loc(node%lat))
-        call h5tinsert_f(type_id, 'lat', offset, h5kind_to_type(kind(node%lat), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(node), c_loc(node%latitude))
+        call h5tinsert_f(type_id, 'latitude', offset, h5kind_to_type(kind(node%latitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Node elevation.
-        offset = h5offsetof(c_loc(node), c_loc(node%elev))
-        call h5tinsert_f(type_id, 'elev', offset, h5kind_to_type(kind(node%elev), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(node), c_loc(node%elevation))
+        call h5tinsert_f(type_id, 'elevation', offset, h5kind_to_type(kind(node%elevation), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         rc = E_NONE
@@ -774,18 +774,18 @@ contains
         if (stat < 0) return
 
         ! Sensor longitude.
-        offset = h5offsetof(c_loc(sensor), c_loc(sensor%lon))
-        call h5tinsert_f(type_id, 'lon', offset, h5kind_to_type(kind(sensor%lon), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%longitude))
+        call h5tinsert_f(type_id, 'longitude', offset, h5kind_to_type(kind(sensor%longitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Sensor latitude.
-        offset = h5offsetof(c_loc(sensor), c_loc(sensor%lat))
-        call h5tinsert_f(type_id, 'lat', offset, h5kind_to_type(kind(sensor%lat), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%latitude))
+        call h5tinsert_f(type_id, 'latitude', offset, h5kind_to_type(kind(sensor%latitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Sensor elevation.
-        offset = h5offsetof(c_loc(sensor), c_loc(sensor%elev))
-        call h5tinsert_f(type_id, 'elev', offset, h5kind_to_type(kind(sensor%elev), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%elevation))
+        call h5tinsert_f(type_id, 'elevation', offset, h5kind_to_type(kind(sensor%elevation), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         rc = E_NONE
@@ -852,18 +852,18 @@ contains
         if (stat < 0) return
 
         ! Target longitude.
-        offset = h5offsetof(c_loc(target), c_loc(target%lon))
-        call h5tinsert_f(type_id, 'lon', offset, h5kind_to_type(kind(target%lon), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(target), c_loc(target%longitude))
+        call h5tinsert_f(type_id, 'longitude', offset, h5kind_to_type(kind(target%longitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Target latitude.
-        offset = h5offsetof(c_loc(target), c_loc(target%lat))
-        call h5tinsert_f(type_id, 'lat', offset, h5kind_to_type(kind(target%lat), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(target), c_loc(target%latitude))
+        call h5tinsert_f(type_id, 'latitude', offset, h5kind_to_type(kind(target%latitude), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         ! Target elevation.
-        offset = h5offsetof(c_loc(target), c_loc(target%elev))
-        call h5tinsert_f(type_id, 'elev', offset, h5kind_to_type(kind(target%elev), H5_REAL_KIND), stat)
+        offset = h5offsetof(c_loc(target), c_loc(target%elevation))
+        call h5tinsert_f(type_id, 'elevation', offset, h5kind_to_type(kind(target%elevation), H5_REAL_KIND), stat)
         if (stat < 0) return
 
         rc = E_NONE

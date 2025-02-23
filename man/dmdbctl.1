@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-02-22
+.\"      Date: 2025-02-23
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2025-02-22" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2025-02-23" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -38,8 +38,8 @@ dmdbctl \- command\-line interface to DMPACK observation databases
 \fBdmdbctl\fP \-\-\fBdatabase\fP \fIfile\fP \-\-\fBid\fP \fIid\fP
 [\-\-\fBcreate\fP|\-\-\fBread\fP|\-\-\fBupdate\fP|\-\-\fBdelete\fP \fItype\fP] [\-\-\fBname\fP \fIname\fP]
 [\-\-\fBmeta\fP \fImeta\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBtype\fP \fIsensor\fP] [\-\-\fBsn\fP \fIsn\fP]
-[\-\-\fBstate\fP \fIn\fP]  [\-\-\fBx\fP \fIx\fP] [\-\-\fBy\fP \fIy\fP] [\-\-\fBz\fP \fIz\fP] [\-\-\fBlon\fP \fIlon\fP]
-[\-\-\fBlat\fP \fIlat\fP] [\-\-\fBelev\fP \fIelev\fP] [\-\-\fBverbose\fP]
+[\-\-\fBstate\fP \fIn\fP]  [\-\-\fBx\fP \fIx\fP] [\-\-\fBy\fP \fIy\fP] [\-\-\fBz\fP \fIz\fP] [\-\-\fBlongitude\fP \fIlon\fP]
+[\-\-\fBlatitude\fP \fIlat\fP] [\-\-\fBelevation\fP \fIelev\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmdbctl\fP utility program performs create, read, update, or delete
@@ -85,7 +85,7 @@ Path to SQLite observation database.
 Delete database record (node, sensor, or target).
 .RE
 .sp
-\fB\-\-elev\fP, \fB\-E\fP \fIelev\fP
+\fB\-\-elevation\fP, \fB\-E\fP \fIelev\fP
 .RS 4
 Elevation of node, sensor, or target in metres.
 .RE
@@ -100,12 +100,12 @@ Print available command\-line arguments and quit.
 ID of node, sensor, or target.
 .RE
 .sp
-\fB\-\-lat\fP, \fB\-L\fP \fIlat\fP
+\fB\-\-latitude\fP, \fB\-L\fP \fIlat\fP
 .RS 4
 Latitude of node, sensor, or target in degrees (decimal).
 .RE
 .sp
-\fB\-\-lon\fP, \fB\-G\fP \fIlon\fP
+\fB\-\-longitude\fP, \fB\-G\fP \fIlon\fP
 .RS 4
 Longitude node, sensor, or target in degrees (decimal).
 .RE

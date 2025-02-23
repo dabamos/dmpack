@@ -200,15 +200,15 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        header = '#id'  // s // &
-                 'name' // s // &
-                 'meta' // s // &
-                 'x'    // s // &
-                 'y'    // s // &
-                 'z'    // s // &
-                 'lon'  // s // &
-                 'lat'  // s // &
-                 'elev'
+        header = '#id'       // s // &
+                 'name'      // s // &
+                 'meta'      // s // &
+                 'x'         // s // &
+                 'y'         // s // &
+                 'z'         // s // &
+                 'longitude' // s // &
+                 'latitude'  // s // &
+                 'elevation'
     end function dm_csv_header_node
 
     function dm_csv_header_observ(separator) result(header)
@@ -309,18 +309,18 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        header = '#id'     // s // &
-                 'node_id' // s // &
-                 'type'    // s // &
-                 'name'    // s // &
-                 'sn'      // s // &
-                 'meta'    // s // &
-                 'x'       // s // &
-                 'y'       // s // &
-                 'z'       // s // &
-                 'lon'     // s // &
-                 'lat'     // s // &
-                 'elev'
+        header = '#id'       // s // &
+                 'node_id'   // s // &
+                 'type'      // s // &
+                 'name'      // s // &
+                 'sn'        // s // &
+                 'meta'      // s // &
+                 'x'         // s // &
+                 'y'         // s // &
+                 'z'         // s // &
+                 'longitude' // s // &
+                 'latitude'  // s // &
+                 'elevation'
     end function dm_csv_header_sensor
 
     function dm_csv_header_target(separator) result(header)
@@ -333,16 +333,16 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        header = '#id'   // s // &
-                 'name'  // s // &
-                 'meta'  // s // &
-                 'state' // s // &
-                 'x'     // s // &
-                 'y'     // s // &
-                 'z'     // s // &
-                 'lon'   // s // &
-                 'lat'   // s // &
-                 'elev'
+        header = '#id'       // s // &
+                 'name'      // s // &
+                 'meta'      // s // &
+                 'state'     // s // &
+                 'x'         // s // &
+                 'y'         // s // &
+                 'z'         // s // &
+                 'longitude' // s // &
+                 'latitude'  // s // &
+                 'elevation'
     end function dm_csv_header_target
 
     ! **************************************************************************
@@ -502,9 +502,9 @@ contains
               dm_ftoa(node%x)               // s // &
               dm_ftoa(node%y)               // s // &
               dm_ftoa(node%z)               // s // &
-              dm_ftoa(node%lon)             // s // &
-              dm_ftoa(node%lat)             // s // &
-              dm_ftoa(node%elev)
+              dm_ftoa(node%longitude)       // s // &
+              dm_ftoa(node%latitude)        // s // &
+              dm_ftoa(node%elevation)
     end function csv_from_node
 
     function csv_from_nodes(nodes, header, separator) result(csv)
@@ -701,9 +701,9 @@ contains
               dm_ftoa(sensor%x)               // s // &
               dm_ftoa(sensor%y)               // s // &
               dm_ftoa(sensor%z)               // s // &
-              dm_ftoa(sensor%lon)             // s // &
-              dm_ftoa(sensor%lat)             // s // &
-              dm_ftoa(sensor%elev)
+              dm_ftoa(sensor%longitude)       // s // &
+              dm_ftoa(sensor%latitude)        // s // &
+              dm_ftoa(sensor%elevation)
     end function csv_from_sensor
 
     function csv_from_sensors(sensors, header, separator) result(csv)
@@ -750,9 +750,9 @@ contains
               dm_ftoa(target%x)               // s // &
               dm_ftoa(target%y)               // s // &
               dm_ftoa(target%z)               // s // &
-              dm_ftoa(target%lon)             // s // &
-              dm_ftoa(target%lat)             // s // &
-              dm_ftoa(target%elev)
+              dm_ftoa(target%longitude)       // s // &
+              dm_ftoa(target%latitude)        // s // &
+              dm_ftoa(target%elevation)
     end function csv_from_target
 
     function csv_from_targets(targets, header, separator) result(csv)
@@ -1004,15 +1004,15 @@ contains
 
         p = 0 ! Cursor in buffer string.
 
-        rc = csv_next(buffer, node%id,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%name, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%meta, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%x,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%y,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%z,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%lon,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%lat,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, node%elev, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%id,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%name,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%meta,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%x,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%y,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%z,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%longitude, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%latitude,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, node%elevation, s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_node
@@ -1137,18 +1137,18 @@ contains
 
         p = 0 ! Cursor in buffer string.
 
-        rc = csv_next(buffer, sensor%id,      s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%node_id, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%type,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%name,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%sn,      s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%meta,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%x,       s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%y,       s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%z,       s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%lon,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%lat,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%elev,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%id,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%node_id,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%type,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%name,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%sn,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%meta,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%x,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%y,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%z,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%longitude, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%latitude,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%elevation, s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_sensor
@@ -1189,16 +1189,16 @@ contains
 
         p = 0 ! Cursor in buffer string.
 
-        rc = csv_next(buffer, target%id,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%name,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%meta,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%state, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%x,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%y,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%z,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%lon,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%lat,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, target%elev,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%id,        s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%name,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%meta,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%state,     s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%x,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%y,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%z,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%longitude, s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%latitude,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, target%elevation, s, n, p, q); if (rc /= E_NONE) return
 
         rc = E_NONE
     end function csv_read_target
@@ -1412,9 +1412,9 @@ contains
             node%x,                    s, &
             node%y,                    s, &
             node%z,                    s, &
-            node%lon,                  s, &
-            node%lat,                  s, &
-            node%elev
+            node%longitude,            s, &
+            node%latitude,             s, &
+            node%elevation
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1601,9 +1601,9 @@ contains
             sensor%x,                    s, &
             sensor%y,                    s, &
             sensor%z,                    s, &
-            sensor%lon,                  s, &
-            sensor%lat,                  s, &
-            sensor%elev
+            sensor%longitude,            s, &
+            sensor%latitude,             s, &
+            sensor%elevation
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1665,9 +1665,9 @@ contains
             target%x,                    s, &
             target%y,                    s, &
             target%z,                    s, &
-            target%lon,                  s, &
-            target%lat,                  s, &
-            target%elev
+            target%longitude,            s, &
+            target%latitude,             s, &
+            target%elevation
         if (stat /= 0) return
 
         rc = E_NONE

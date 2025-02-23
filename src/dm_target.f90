@@ -31,16 +31,16 @@ module dm_target
 
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id    = ' '               !! Target id (`-0-9A-Z_a-z`).
-        character(len=TARGET_NAME_LEN) :: name  = ' '               !! Target name.
-        character(len=TARGET_META_LEN) :: meta  = ' '               !! Target meta information (optional).
-        integer                        :: state = TARGET_STATE_NONE !! Target state (optional).
-        real(kind=r8)                  :: x     = 0.0_r8            !! Target x or easting (optional).
-        real(kind=r8)                  :: y     = 0.0_r8            !! Target y or northing (optional).
-        real(kind=r8)                  :: z     = 0.0_r8            !! Target z or elevation (optional).
-        real(kind=r8)                  :: lon   = 0.0_r8            !! Longitude in degrees (optional).
-        real(kind=r8)                  :: lat   = 0.0_r8            !! Latitude in degrees (optional).
-        real(kind=r8)                  :: elev  = 0.0_r8            !! Elevation in metres (optional).
+        character(len=TARGET_ID_LEN)   :: id        = ' '               !! Target id (`-0-9A-Z_a-z`).
+        character(len=TARGET_NAME_LEN) :: name      = ' '               !! Target name.
+        character(len=TARGET_META_LEN) :: meta      = ' '               !! Target meta information (optional).
+        integer                        :: state     = TARGET_STATE_NONE !! Target state (optional).
+        real(kind=r8)                  :: x         = 0.0_r8            !! Target x or easting (optional).
+        real(kind=r8)                  :: y         = 0.0_r8            !! Target y or northing (optional).
+        real(kind=r8)                  :: z         = 0.0_r8            !! Target z or elevation (optional).
+        real(kind=r8)                  :: longitude = 0.0_r8            !! Longitude in degrees (optional).
+        real(kind=r8)                  :: latitude  = 0.0_r8            !! Latitude in degrees (optional).
+        real(kind=r8)                  :: elevation = 0.0_r8            !! Elevation in metres (optional).
     end type target_type
 
     integer, parameter, public :: TARGET_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -74,9 +74,9 @@ contains
         if (.not. dm_equals(target1%y, target2%y)) return
         if (.not. dm_equals(target1%z, target2%z)) return
 
-        if (.not. dm_equals(target1%lon,  target2%lon))  return
-        if (.not. dm_equals(target1%lat,  target2%lat))  return
-        if (.not. dm_equals(target1%elev, target2%elev)) return
+        if (.not. dm_equals(target1%longitude,  target2%longitude))  return
+        if (.not. dm_equals(target1%latitude,  target2%latitude))  return
+        if (.not. dm_equals(target1%elevation, target2%elevation)) return
 
         equals= .true.
     end function dm_target_equals
@@ -123,15 +123,15 @@ contains
 
         unit_ = dm_present(unit, stdout)
 
-        write (unit_, '("target.id: ", a)')         trim(target%id)
-        write (unit_, '("target.name: ", a)')       trim(target%name)
-        write (unit_, '("target.meta: ", a)')       trim(target%meta)
-        write (unit_, '("target.state: ", i0)')     target%state
-        write (unit_, '("target.x: ", 1pg0.12)')    target%x
-        write (unit_, '("target.y: ", 1pg0.12)')    target%y
-        write (unit_, '("target.z: ", 1pg0.12)')    target%z
-        write (unit_, '("target.lon: ", 1pg0.12)')  target%lon
-        write (unit_, '("target.lat: ", 1pg0.12)')  target%lat
-        write (unit_, '("target.elev: ", 1pg0.12)') target%elev
+        write (unit_, '("target.id: ", a)')              trim(target%id)
+        write (unit_, '("target.name: ", a)')            trim(target%name)
+        write (unit_, '("target.meta: ", a)')            trim(target%meta)
+        write (unit_, '("target.state: ", i0)')          target%state
+        write (unit_, '("target.x: ", 1pg0.12)')         target%x
+        write (unit_, '("target.y: ", 1pg0.12)')         target%y
+        write (unit_, '("target.z: ", 1pg0.12)')         target%z
+        write (unit_, '("target.longitude: ", 1pg0.12)') target%longitude
+        write (unit_, '("target.latitude: ", 1pg0.12)')  target%latitude
+        write (unit_, '("target.elevation: ", 1pg0.12)') target%elevation
     end subroutine dm_target_out
 end module dm_target
