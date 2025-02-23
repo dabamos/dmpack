@@ -216,6 +216,10 @@ name = "dmtestdp"
 main = "dmtestdp.f90"
 
 [[test]]
+name = "dmtestdwd"
+main = "dmtestdwd.f90"
+
+[[test]]
 name = "dmtestfile"
 main = "dmtestfile.f90"
 
