@@ -26,8 +26,14 @@ $ export DM_MQTT_HOST="localhost"
 $ export DM_MQTT_PORT="1883"
 ```
 
-If not set, the affected tests will be skipped. To skip the gm, pipe, plotting,
-and message queue tests, set:
+If not set, the affected tests will be skipped. Enable DWD API tests in
+`dmtestdwd`:
+
+```
+$ export DM_DWD_API=1
+```
+
+To skip the gm, pipe, plotting, and message queue tests, set:
 
 ```
 $ export DM_GM_SKIP=1

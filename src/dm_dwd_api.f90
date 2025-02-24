@@ -1,10 +1,12 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_dwd_api
-    !! HTTP abstraction layer for Deutsche Wetterdienst (DWD) API.
+    !! HTTP abstraction layer for Deutsche Wetterdienst (DWD) API. This module
+    !! must be linked against libcurl (`-lcurl`).
     !!
     !! To fetch weather data, create an URL of the DWD weather report directory
-    !! and make an HTTP GET request. The data will be cached in a scratch file:
+    !! and make an HTTP GET request. The data will be cached in a scratch file.
+    !! The file may be opened as `formatted` or `unformatted` (byte stream):
     !!
     !! ```fortran
     !! character(len=:), allocatable              :: url
@@ -19,15 +21,13 @@ module dm_dwd_api
     !! ! Create and open new scratch file.
     !! open (action='readwrite', form='formatted', iostat=stat, newunit=response%unit, status='scratch')
     !!
-    !! ! Send HTTP GET request to DWD server and fetch weather report of station Ramstein.
-    !! url = dm_dwd_api_weather_report_url(id='Y0209', tls=.false.)
+    !! ! Send HTTP GET request to DWD server and fetch weather report of Trollenhagen.
+    !! url = dm_dwd_api_weather_report_url(id='10281', tls=.false.)
     !! rc  = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
     !!
-    !! ! Rewind scratch file and read weather report of response.
+    !! ! Rewind, read weather report of response, and delete scratch file.
     !! rewind (response%unit)
     !! rc = dm_dwd_weather_report_read(reports, response%unit)
-    !!
-    !! ! Close and delete scratch file.
     !! close (response%unit)
     !!
     !! ! Shutdown RPC backend.
@@ -126,7 +126,8 @@ contains
             stat = curl_url_set(ptr, CURLUPART_HOST, DWD_HOST)
             if (stat /= CURLUE_OK) exit url_block
 
-            ! URL path.
+            ! URL path. If the station id is shorter than 5 characters, pad it
+            ! with underscores.
             id_      = repeat('_', len(id_))
             n        = len_trim(id)
             id_(1:n) = id(1:n)

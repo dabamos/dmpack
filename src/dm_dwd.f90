@@ -30,7 +30,7 @@ module dm_dwd
         !! Weather report data (POI).
         character(len=TIME_LEN) :: timestamp                            = TIME_DEFAULT !! Date and time [UTC].
         real                    :: cloud_cover                          = huge(0.0)    !! Cloud cover total [%].
-        real                    :: daily_mean_temperature_prev_day      = huge(0.0)    !! Daily mean of temperature previous day [°C].
+        real                    :: temperature_mean_prev_day            = huge(0.0)    !! Daily mean of temperature previous day [°C].
         real                    :: depth_new_snow                       = huge(0.0)    !! Depth of new snow [cm].
         real                    :: dew_point_temperature_2_m            = huge(0.0)    !! Dew point temperature at 2 meters above ground [°C].
         real                    :: diffuse_solar_radiation_last_hour    = huge(0.0)    !! Diffuse solar radiation last hour [W/m^2].
@@ -42,15 +42,15 @@ module dm_dwd
         real                    :: global_radiation_last_24_hours       = huge(0.0)    !! Global radiation last 24 hours [W/m^2].
         real                    :: height_lowest_cloud_above_station    = huge(0.0)    !! Height of base of lowest cloud above station [m].
         real                    :: horizontal_visibility                = huge(0.0)    !! Horizontal visibility [km].
-        real                    :: max_mean_wind_speed_prev_day         = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
+        real                    :: max_wind_speed_mean_prev_day         = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
         real                    :: max_temperature_prev_day             = huge(0.0)    !! Maximum of temperature for previous day [°C].
         real                    :: max_temperature_last_12_hours_2_m    = huge(0.0)    !! Maximum temperature last 12 hours 2 meters above ground [°C].
         real                    :: max_wind_speed_mean_last_hour        = huge(0.0)    !! Maximum wind speed as 10 minutes mean during last hour [km/h].
         real                    :: max_wind_speed_last_6_hours          = huge(0.0)    !! Maximum wind speed during last 6 hours [km/h].
         real                    :: max_wind_speed_prev_day              = huge(0.0)    !! Maximum wind speed for previous day [km/h].
         real                    :: max_wind_speed_last_hour             = huge(0.0)    !! Maximum wind speed last hour [km/h].
-        real                    :: mean_wind_direction_last_10_min_10_m = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
-        real                    :: mean_wind_speed_last_10_min_10_m     = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
+        real                    :: wind_direction_mean_last_10_min_10_m = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
+        real                    :: wind_speed_mean_last_10_min_10_m     = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
         real                    :: min_temperature_prev_day_5_cm        = huge(0.0)    !! Minimum of temperature at 5 cm above ground for previous day [°C].
         real                    :: min_temperature_prev_day             = huge(0.0)    !! Minimum of temperature for previous day [°C].
         real                    :: min_temperature_last_12_hours_2_m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
@@ -136,6 +136,8 @@ contains
         integer           :: nlines, nstations, stat
         logical           :: header_
 
+        type(dwd_mosmix_station_type), allocatable :: buffer(:)
+
         nlines    = 0
         nstations = 0
         header_   = dm_present(header, .true.)
@@ -145,33 +147,30 @@ contains
         if (stat /= 0) return
 
         read_loop: do
-            block
-                type(dwd_mosmix_station_type), allocatable :: buffer(:)
+            nlines = nlines + 1
 
-                nlines = nlines + 1
+            rc = E_READ
+            read (unit, '(a)', iostat=stat) line
 
-                rc = E_READ
-                read (unit, '(a)', iostat=stat) line
+            if (is_iostat_end(stat)) exit read_loop
+            if (stat /= 0)           return
 
-                if (is_iostat_end(stat)) exit read_loop
-                if (stat /= 0)           return
+            if (header_ .and. nlines < 3) cycle read_loop
 
-                if (header_ .and. nlines < 3) cycle read_loop
+            nstations = nstations + 1
 
-                nstations = nstations + 1
+            rc = E_ALLOC
+            if (allocated(buffer)) deallocate (buffer)
+            allocate (buffer(nstations), stat=stat)
+            if (stat /= 0) return
 
-                rc = E_ALLOC
-                allocate (buffer(nstations), stat=stat)
-                if (stat /= 0) return
+            buffer(1:size(stations)) = stations
 
-                buffer(1:size(stations)) = stations
+            rc = E_FORMAT
+            read (line, DWD_MOSMIX_STATION_FMT, iostat=stat) buffer(nstations)
+            if (stat /= 0) return
 
-                rc = E_FORMAT
-                read (line, DWD_MOSMIX_STATION_FMT, iostat=stat) buffer(nstations)
-                if (stat /= 0) return
-
-                call move_alloc(from=buffer, to=stations)
-            end block
+            call move_alloc(from=buffer, to=stations)
         end do read_loop
 
         rc = E_NONE
@@ -283,7 +282,7 @@ contains
 
                 ! Weather report data.
                 report%cloud_cover                          = read_real   (fields( 3))
-                report%daily_mean_temperature_prev_day      = read_real   (fields( 4))
+                report%temperature_mean_prev_day            = read_real   (fields( 4))
                 report%depth_new_snow                       = read_real   (fields( 5))
                 report%dew_point_temperature_2_m            = read_real   (fields( 6))
                 report%diffuse_solar_radiation_last_hour    = read_real   (fields( 7))
@@ -295,15 +294,15 @@ contains
                 report%global_radiation_last_24_hours       = read_real   (fields(13))
                 report%height_lowest_cloud_above_station    = read_real   (fields(14))
                 report%horizontal_visibility                = read_real   (fields(15))
-                report%max_mean_wind_speed_prev_day         = read_real   (fields(16))
+                report%max_wind_speed_mean_prev_day         = read_real   (fields(16))
                 report%max_temperature_prev_day             = read_real   (fields(17))
                 report%max_temperature_last_12_hours_2_m    = read_real   (fields(18))
                 report%max_wind_speed_mean_last_hour        = read_real   (fields(19))
                 report%max_wind_speed_last_6_hours          = read_real   (fields(20))
                 report%max_wind_speed_prev_day              = read_real   (fields(21))
                 report%max_wind_speed_last_hour             = read_real   (fields(22))
-                report%mean_wind_direction_last_10_min_10_m = read_real   (fields(23))
-                report%mean_wind_speed_last_10_min_10_m     = read_real   (fields(24))
+                report%wind_direction_mean_last_10_min_10_m = read_real   (fields(23))
+                report%wind_speed_mean_last_10_min_10_m     = read_real   (fields(24))
                 report%min_temperature_prev_day_5_cm        = read_real   (fields(25))
                 report%min_temperature_prev_day             = read_real   (fields(26))
                 report%min_temperature_last_12_hours_2_m    = read_real   (fields(27))
@@ -404,7 +403,7 @@ contains
         write (unit_, '("dwd_weather_report.timestamp: ", a)') report%timestamp
 
         if (report%cloud_cover                           < huge(0.0)) write (unit_, '("dwd_weather_report.cloud_cover: ", f0.1)')                          report%cloud_cover
-        if (report%daily_mean_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.daily_mean_temperature_prev_day: ", f0.1)')      report%daily_mean_temperature_prev_day
+        if (report%temperature_mean_prev_day             < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_mean_prev_day: ", f0.1)')            report%temperature_mean_prev_day
         if (report%depth_new_snow                        < huge(0.0)) write (unit_, '("dwd_weather_report.depth_new_snow: ", f0.1)')                       report%depth_new_snow
         if (report%dew_point_temperature_2_m             < huge(0.0)) write (unit_, '("dwd_weather_report.dew_point_temperature_2_m: ", f0.1)')            report%dew_point_temperature_2_m
         if (report%diffuse_solar_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.diffuse_solar_radiation_last_hour: ", f0.1)')    report%diffuse_solar_radiation_last_hour
@@ -416,15 +415,15 @@ contains
         if (report%global_radiation_last_24_hours        < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_24_hours: ", f0.1)')       report%global_radiation_last_24_hours
         if (report%height_lowest_cloud_above_station     < huge(0.0)) write (unit_, '("dwd_weather_report.height_lowest_cloud_above_station: ", f0.1)')    report%height_lowest_cloud_above_station
         if (report%horizontal_visibility                 < huge(0.0)) write (unit_, '("dwd_weather_report.horizontal_visibility: ", f0.1)')                report%horizontal_visibility
-        if (report%max_mean_wind_speed_prev_day          < huge(0.0)) write (unit_, '("dwd_weather_report.max_mean_wind_speed_prev_day: ", f0.1)')         report%max_mean_wind_speed_prev_day
+        if (report%max_wind_speed_mean_prev_day          < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_prev_day: ", f0.1)')         report%max_wind_speed_mean_prev_day
         if (report%max_temperature_prev_day              < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_prev_day: ", f0.1)')             report%max_temperature_prev_day
         if (report%max_temperature_last_12_hours_2_m     < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_last_12_hours_2_m: ", f0.1)')    report%max_temperature_last_12_hours_2_m
         if (report%max_wind_speed_mean_last_hour         < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_last_hour: ", f0.1)')        report%max_wind_speed_mean_last_hour
         if (report%max_wind_speed_last_6_hours           < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_6_hours: ", f0.1)')          report%max_wind_speed_last_6_hours
         if (report%max_wind_speed_prev_day               < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_prev_day: ", f0.1)')              report%max_wind_speed_prev_day
         if (report%max_wind_speed_last_hour              < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_hour: ", f0.1)')             report%max_wind_speed_last_hour
-        if (report%mean_wind_direction_last_10_min_10_m  < huge(0.0)) write (unit_, '("dwd_weather_report.mean_wind_direction_last_10_min_10_m: ", f0.1)') report%mean_wind_direction_last_10_min_10_m
-        if (report%mean_wind_speed_last_10_min_10_m      < huge(0.0)) write (unit_, '("dwd_weather_report.mean_wind_speed_last_10_min_10_m: ", f0.1)')     report%mean_wind_speed_last_10_min_10_m
+        if (report%wind_direction_mean_last_10_min_10_m  < huge(0.0)) write (unit_, '("dwd_weather_report.wind_direction_mean_last_10_min_10_m: ", f0.1)') report%wind_direction_mean_last_10_min_10_m
+        if (report%wind_speed_mean_last_10_min_10_m      < huge(0.0)) write (unit_, '("dwd_weather_report.wind_speed_mean_last_10_min_10_m: ", f0.1)')     report%wind_speed_mean_last_10_min_10_m
         if (report%min_temperature_prev_day_5_cm         < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day_5_cm: ", f0.1)')        report%min_temperature_prev_day_5_cm
         if (report%min_temperature_prev_day              < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", f0.1)')             report%min_temperature_prev_day
         if (report%min_temperature_last_12_hours_2_m     < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12_hours_2_m: ", f0.1)')    report%min_temperature_last_12_hours_2_m

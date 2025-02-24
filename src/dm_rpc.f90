@@ -832,7 +832,7 @@ contains
 
         integer :: stat
 
-        ! Reset response.
+        ! Reset response, keep any file unit.
         response%code       = 0
         response%error      = E_NONE
         response%error_curl = CURLE_OK

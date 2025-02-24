@@ -21,7 +21,7 @@ and FreeBSD only.
 
 Breaking API changes have to be expected until version 1.0.0.
 
-## Description
+## Overview
 
 **DMPACK** is a scientific monitoring system and sensor network middleware
 developed for automated control measurements of buildings, infrastructure,
@@ -68,6 +68,7 @@ POSIX semaphores.
 * distributed logging
 * Leica GeoCOM API for Fortran
 * MPPT and solar battery monitoring (VE.Direct)
+* Deutscher Wetterdienst (DWD) API
 * camera access (V4L2, RTSP)
 * time series plotting
 * Lua scripting

@@ -9,8 +9,8 @@ program dmtestdwd
     character(len=*), parameter :: TEST_NAME = 'dmtestdwd'
     integer,          parameter :: NTESTS    = 3
 
-    logical         :: stats(NTESTS)
     logical         :: no_color
+    logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
     no_color = dm_env_has('NO_COLOR')
@@ -25,9 +25,9 @@ program dmtestdwd
     call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: CATALOG    = 'share/dmdwd/catalog.cfg'
-        character(len=*), parameter :: STATION_ID = 'Y0209'
-        integer,          parameter :: NSTATIONS  = 5995
+        character(len=*), parameter :: CATALOG    = './share/dmdwd/catalog.cfg'
+        character(len=*), parameter :: STATION_ID = '10281' ! Airport Trollenhagen.
+        integer,          parameter :: NSTATIONS  = 5995    ! Records in catalog.
 
         integer                                    :: rc, unit
         logical                                    :: found
@@ -132,7 +132,7 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg
+        character(len=*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg.
 
         integer                 :: iostat, rc, unit
         logical                 :: enabled
@@ -162,29 +162,36 @@ contains
 
         rpc_block: block
             character(len=:), allocatable              :: url
+            real(kind=r8)                              :: dt
             type(dwd_weather_report_type), allocatable :: reports(:)
+            type(timer_type)                           :: timer
 
             rc = E_INVALID
-            print *, 'Creating URL ...'
+            print *, 'Creating URL to records of Airport Berlin-Brandenburg ...'
             url = dm_dwd_api_weather_report_url(id=STATION_ID, tls=.false.)
             if (len(url) == 0) exit rpc_block
 
             print *, 'Fetching ' // url // ' ...'
             response%unit = unit
+
+            call dm_timer_start(timer)
             rc = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
+            call dm_timer_stop(timer, duration=dt)
 
             if (dm_is_error(rc)) then
                 print '(" HTTP ", i0, ": ", a)', response%code, response%error_message
                 exit rpc_block
             end if
 
+            print '(" Finished in ", f0.6, " sec")', dt
+
             rewind (unit)
 
-            print *, 'Reading weather report ...'
+            print *, 'Reading weather report records ...'
             rc = dm_dwd_weather_report_read(reports, response%unit)
             if (dm_is_error(rc)) exit rpc_block
 
-            print *, 'Printing report ...'
+            print '(" Printing report ", i0, " of ", i0, " ...")', 1, size(reports)
             print '(72("."))'
             call dm_dwd_weather_report_out(reports(1))
             print '(72("."))'
