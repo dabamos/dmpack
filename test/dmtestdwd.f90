@@ -161,6 +161,7 @@ contains
         if (iostat /= 0) return
 
         rpc_block: block
+            character(len=TIME_LEN)                    :: timestamp
             character(len=:), allocatable              :: url
             real(kind=r8)                              :: dt
             type(dwd_weather_report_type), allocatable :: reports(:)
@@ -185,6 +186,11 @@ contains
 
             print '(" Finished in ", f0.6, " sec")', dt
 
+            if (response%last_modified > 0) then
+                rc = dm_time_from_unix(response%last_modified, timestamp)
+                print '(" Last modified: ", a)', timestamp
+            end if
+
             rewind (unit)
 
             print *, 'Reading weather report records ...'
@@ -195,6 +201,12 @@ contains
             print '(72("."))'
             call dm_dwd_weather_report_out(reports(1))
             print '(72("."))'
+
+            print *, 'Fetching ' // url // ' ...'
+            rc = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback, modified_since=1000 + response%last_modified)
+            print '(" HTTP ", i0)', response%code
+            if (response%code /= HTTP_NOT_MODIFIED) return
+            print *, 'File has not been modified'
         end block rpc_block
 
         close (unit)

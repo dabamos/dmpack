@@ -81,14 +81,15 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code       = 0                         !! HTTP response code.
-        integer                       :: error      = E_NONE                    !! DMPACK error code.
-        integer                       :: error_curl = CURLE_OK                  !! cURL error code.
-        integer                       :: unit       = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
-        real(kind=r8)                 :: total_time = 0.0_r8                    !! Total transmission time.
-        character(len=:), allocatable :: error_message                          !! cURL error message.
-        character(len=:), allocatable :: content_type                           !! Response payload type (MIME).
-        character(len=:), allocatable :: payload                                !! Response payload.
+        integer                       :: code          = 0                         !! HTTP response code.
+        integer                       :: error         = E_NONE                    !! DMPACK error code.
+        integer                       :: error_curl    = CURLE_OK                  !! cURL error code.
+        integer                       :: unit          = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
+        integer(kind=i8)              :: last_modified = -1_i8                     !! File time as Unix epoch, -1 if unavailable.
+        real(kind=r8)                 :: total_time    = 0.0_r8                    !! Total transmission time.
+        character(len=:), allocatable :: error_message                             !! cURL error message.
+        character(len=:), allocatable :: content_type                              !! Response payload type (MIME).
+        character(len=:), allocatable :: payload                                   !! Response payload.
     end type rpc_response_type
 
     type, public :: rpc_request_type
@@ -98,6 +99,7 @@ module dm_rpc
         integer                                     :: compression     = Z_TYPE_NONE    !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer                                     :: connect_timeout = 30             !! Connection timeout in seconds.
         integer                                     :: timeout         = 30             !! Timeout in seconds.
+        integer(kind=i8)                            :: modified_since  = 0_i8           !! If-modified-since timestamp (Epoch).
         logical                                     :: follow_location = .true.         !! Follow HTTP 3xx redirects.
         character(len=:), allocatable               :: payload                          !! Request payload.
         character(len=:), allocatable               :: content_type                     !! Request payload type (MIME).
@@ -116,6 +118,12 @@ module dm_rpc
         module procedure :: rpc_request_multi
         module procedure :: rpc_request_single
     end interface rpc_request
+
+    interface dm_rpc_reset
+        !! Generic RPC reset routine.
+        module procedure :: rpc_reset_request
+        module procedure :: rpc_reset_response
+    end interface dm_rpc_reset
 
     interface dm_rpc_post
         !! Generic RPC post function.
@@ -153,6 +161,8 @@ module dm_rpc
     private :: rpc_request_multi
     private :: rpc_request_prepare
     private :: rpc_request_single
+    private :: rpc_reset_request
+    private :: rpc_reset_response
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -267,7 +277,8 @@ contains
         end select
     end function dm_rpc_error_multi
 
-    integer function dm_rpc_get(request, response, url, accept, username, password, user_agent, callback) result(rc)
+    integer function dm_rpc_get(request, response, url, accept, username, password, user_agent, callback, &
+                                modified_since) result(rc)
         !! Sends generic HTTP GET request to URL.
         !!
         !! The function returns the following error codes:
@@ -275,19 +286,21 @@ contains
         !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
         !! * `E_RPC` if the HTTP request failed.
         !!
-        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
-        character(len=*),        intent(in), optional :: url        !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: accept     !! HTTP Accept header.
-        character(len=*),        intent(in), optional :: username   !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password   !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent !! HTTP User Agent.
-        procedure(dm_rpc_callback),          optional :: callback   !! Callback function to pass to libcurl.
+        type(rpc_request_type),  intent(inout)        :: request        !! RPC request type.
+        type(rpc_response_type), intent(inout)        :: response       !! RPC response type.
+        character(len=*),        intent(in), optional :: url            !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: accept         !! HTTP Accept header.
+        character(len=*),        intent(in), optional :: username       !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password       !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent     !! HTTP User Agent.
+        procedure(dm_rpc_callback),          optional :: callback       !! Callback function to pass to libcurl.
+        integer(kind=i8),        intent(in), optional :: modified_since !! Only fetch if modified since given time (Epoch).
 
         ! Set request parameters.
-        if (present(url))        request%url        = trim(url)
-        if (present(accept))     request%accept     = trim(accept)
-        if (present(user_agent)) request%user_agent = trim(user_agent)
+        if (present(url))            request%url            = trim(url)
+        if (present(accept))         request%accept         = trim(accept)
+        if (present(user_agent))     request%user_agent     = trim(user_agent)
+        if (present(modified_since)) request%modified_since = modified_since
 
         if (present(username) .and. present(password)) then
             request%auth     = RPC_AUTH_BASIC
@@ -619,24 +632,6 @@ contains
         if (.not. allocated(url)) url = ''
     end function dm_rpc_url
 
-    impure elemental subroutine dm_rpc_reset(request)
-        !! Auxiliary destructor routine to free allocated request memory.
-        !! Cleans-up the cURL handles of the request.
-        type(rpc_request_type), intent(inout) :: request !! Request type.
-
-        if (c_associated(request%list_ctx)) then
-            call curl_slist_free_all(request%list_ctx)
-            request%list_ctx = c_null_ptr
-        end if
-
-        if (c_associated(request%curl_ctx)) then
-            call curl_easy_cleanup(request%curl_ctx)
-            request%curl_ctx = c_null_ptr
-        end if
-
-        request = rpc_request_type()
-    end subroutine dm_rpc_reset
-
     subroutine dm_rpc_shutdown()
         !! Cleans up RPC backend.
         call curl_global_cleanup()
@@ -781,23 +776,8 @@ contains
 
             ! Get response info and clean-up requests.
             do i = 1, n
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_RESPONSE_CODE, responses(i)%code)         ! HTTP response code.
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_CONTENT_TYPE,  responses(i)%content_type) ! Content type of response.
-                stat = curl_easy_getinfo(requests(i)%curl_ctx, CURLINFO_TOTAL_TIME,    responses(i)%total_time)   ! Transmission time.
+                call rpc_set_response(requests(i), responses(i), responses(i)%error_curl)
 
-                ! Set error code and message.
-                if (responses(i)%error_curl /= CURLE_OK) then
-                    responses(i)%error         = dm_rpc_error(responses(i)%error_curl)
-                    responses(i)%error_message = dm_rpc_error_message(responses(i)%error_curl)
-                else
-                    responses(i)%error         = E_NONE
-                    responses(i)%error_message = ''
-                end if
-
-                if (.not. allocated(responses(i)%content_type)) responses(i)%content_type = ''
-                if (.not. allocated(responses(i)%payload))      responses(i)%payload      = ''
-
-                ! Clean-up requests.
                 stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl_ctx)
                 call curl_slist_free_all(requests(i)%list_ctx)
                 call curl_easy_cleanup(requests(i)%curl_ctx)
@@ -832,15 +812,7 @@ contains
 
         integer :: stat
 
-        ! Reset response, keep any file unit.
-        response%code       = 0
-        response%error      = E_NONE
-        response%error_curl = CURLE_OK
-        response%total_time = 0.0_r8
-
-        if (allocated(response%error_message)) deallocate (response%error_message)
-        if (allocated(response%content_type))  deallocate (response%content_type)
-        if (allocated(response%payload))       deallocate (response%payload)
+        call dm_rpc_reset(response)
 
         rc = E_NULL
         if (.not. c_associated(request%curl_ctx)) return
@@ -883,13 +855,13 @@ contains
             stat = curl_easy_setopt(request%curl_ctx, CURLOPT_WRITEDATA,     c_loc(response));            if (stat /= CURLE_OK) return ! Set write function client data.
         end if
 
-        ! Set HTTP POST method.
-        post_if: if (request%method == RPC_METHOD_POST) then
+        method_if: &
+        if (request%method == RPC_METHOD_POST) then
             ! Enable POST.
             stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
 
             ! Exit if POST payload is missing.
-            if (.not. allocated(request%payload)) exit post_if
+            if (.not. allocated(request%payload)) exit method_if
 
             ! Pass POST data directly.
             stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8)); if (stat /= CURLE_OK) return
@@ -904,7 +876,13 @@ contains
             if (.not. dm_string_is_empty(request%content_type)) then
                 request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Type: ' // request%content_type)
             end if
-        end if post_if
+        else
+            ! Only fetch if file has been modified since timestamp. May not be supported by the server.
+            if (request%modified_since > 0) then
+                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE); if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMEVALUE,     request%modified_since);   if (stat /= CURLE_OK) return
+            end if
+        end if method_if
 
         ! Set follow location header.
         if (request%follow_location) then
@@ -912,13 +890,14 @@ contains
         end if
 
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_ACCEPT_ENCODING, 'deflate');                      if (stat /= CURLE_OK) return ! Set HTTP Accept header.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_NOSIGNAL,        1);                              if (stat /= CURLE_OK) return ! No debug messages to stdout.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_VERBOSE,         0);                              if (stat /= CURLE_OK) return ! No verbose output.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMEOUT,         request%timeout);                if (stat /= CURLE_OK) return ! Set read timeout.
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_CONNECTTIMEOUT,  request%connect_timeout);        if (stat /= CURLE_OK) return ! Set connection timeout.
+        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_FILETIME,        1);                              if (stat /= CURLE_OK) return ! Get last modified time.
+        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_NOSIGNAL,        1);                              if (stat /= CURLE_OK) return ! No debug messages to stdout.
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPALIVE,   dm_f_c_logical(RPC_KEEP_ALIVE)); if (stat /= CURLE_OK) return ! Enable TCP keep-alive.
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPIDLE,    RPC_KEEP_ALIVE_IDLE);            if (stat /= CURLE_OK) return ! Set TCP keep-alive idle time in seconds.
         stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPINTVL,   RPC_KEEP_ALIVE_INTERVAL);        if (stat /= CURLE_OK) return ! Interval time between TCP keep-alive probes in seconds.
+        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMEOUT,         request%timeout);                if (stat /= CURLE_OK) return ! Set read timeout.
+        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_VERBOSE,         0);                              if (stat /= CURLE_OK) return ! No verbose output.
 
         ! Set HTTP headers.
         if (c_associated(request%list_ctx)) then
@@ -947,7 +926,7 @@ contains
         type(rpc_request_type),  intent(inout) :: request  !! Request type.
         type(rpc_response_type), intent(inout) :: response !! Response type.
 
-        integer :: error, stat
+        integer :: error
 
         rc = E_RPC
 
@@ -967,27 +946,8 @@ contains
             ! Perform request.
             error = curl_easy_perform(request%curl_ctx)
             rc    = dm_rpc_error(error)
+            call rpc_set_response(request, response, error)
         end block curl_block
-
-        ! Get response info.
-        if (dm_is_ok(rc)) then
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_RESPONSE_CODE, response%code)         ! Get HTTP response code.
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_CONTENT_TYPE,  response%content_type) ! Get connection info.
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_TOTAL_TIME,    response%total_time)   ! Get transmission time.
-        end if
-
-        ! Set error code and message.
-        if (dm_is_error(rc)) then
-            response%error         = dm_rpc_error(error)
-            response%error_curl    = error
-            response%error_message = dm_rpc_error_message(error)
-        else
-            response%error         = rc
-            response%error_message = ''
-        end if
-
-        if (.not. allocated(response%content_type)) response%content_type = ''
-        if (.not. allocated(response%payload))      response%payload      = ''
 
         ! Clean-up.
         call curl_slist_free_all(request%list_ctx)
@@ -998,11 +958,71 @@ contains
 
         if (dm_is_error(rc)) return
 
-        ! Possible compiler bug? (I'm looking at you, ifx!)
+        ! Check for possible compiler bug. (I'm looking at you, ifx!)
         rc = E_EXIST
         if (c_associated(request%list_ctx)) return
         if (c_associated(request%curl_ctx)) return
 
         rc = E_NONE
     end function rpc_request_single
+
+    impure elemental subroutine rpc_reset_request(request)
+        !! Auxiliary destructor routine to free allocated request memory.
+        !! Cleans-up the cURL handles of the request.
+        type(rpc_request_type), intent(inout) :: request !! Request type.
+
+        if (c_associated(request%list_ctx)) then
+            call curl_slist_free_all(request%list_ctx)
+            request%list_ctx = c_null_ptr
+        end if
+
+        if (c_associated(request%curl_ctx)) then
+            call curl_easy_cleanup(request%curl_ctx)
+            request%curl_ctx = c_null_ptr
+        end if
+
+        request = rpc_request_type()
+    end subroutine rpc_reset_request
+
+    pure elemental subroutine rpc_reset_response(response)
+        !! Auxiliary destructor routine to free allocated response memory. Does
+        !! not change the file unit.
+        type(rpc_response_type), intent(inout) :: response !! Response type.
+
+        response%code          = 0
+        response%error         = E_NONE
+        response%error_curl    = CURLE_OK
+        response%last_modified = -1_i8
+        response%total_time    = 0.0_r8
+
+        if (allocated(response%error_message)) deallocate (response%error_message)
+        if (allocated(response%content_type))  deallocate (response%content_type)
+        if (allocated(response%payload))       deallocate (response%payload)
+    end subroutine rpc_reset_response
+
+    subroutine rpc_set_response(request, response, error_curl)
+        type(rpc_request_type),  intent(inout) :: request
+        type(rpc_response_type), intent(inout) :: response
+        integer,                 intent(in)    :: error_curl
+
+        integer :: stat
+
+        if (error_curl == CURLE_OK) then
+            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get connection info.
+            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
+            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
+            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
+
+            response%error         = E_NONE
+            response%error_curl    = CURLE_OK
+            response%error_message = ''
+        else
+            response%error         = dm_rpc_error(error_curl)
+            response%error_curl    = error_curl
+            response%error_message = dm_rpc_error_message(error_curl)
+        end if
+
+        if (.not. allocated(response%content_type))  response%content_type  = ''
+        if (.not. allocated(response%payload))       response%payload       = ''
+    end subroutine rpc_set_response
 end module dm_rpc

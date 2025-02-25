@@ -11,6 +11,16 @@ module dm_http
     integer, parameter, public :: HTTP_ACCEPTED                      = 202
     integer, parameter, public :: HTTP_NO_CONTENT                    = 204
     integer, parameter, public :: HTTP_RESET_CONTENT                 = 205
+    integer, parameter, public :: HTTP_PARTIAL_CONTENT               = 206
+
+    integer, parameter, public :: HTTP_MULTIPLE_CHOICES              = 300
+    integer, parameter, public :: HTTP_MOVED_PERMANENTLY             = 301
+    integer, parameter, public :: HTTP_FOUND                         = 302
+    integer, parameter, public :: HTTP_SEE_OTHER                     = 303
+    integer, parameter, public :: HTTP_NOT_MODIFIED                  = 304
+    integer, parameter, public :: HTTP_USE_PROXY                     = 305
+    integer, parameter, public :: HTTP_TEMPORARY_REDIRECT            = 307
+    integer, parameter, public :: HTTP_PERMANENT_REDIRECT            = 308
 
     integer, parameter, public :: HTTP_BAD_REQUEST                   = 400
     integer, parameter, public :: HTTP_UNAUTHORIZED                  = 401
