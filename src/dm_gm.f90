@@ -346,6 +346,7 @@ module dm_gm
     end type gm_text_box_type
 
     public :: dm_gm_add_text_box
+    public :: dm_gm_convert
     public :: dm_gm_create
     public :: dm_gm_get_dimensions
     public :: dm_gm_get_directory
@@ -354,7 +355,6 @@ module dm_gm
     public :: dm_gm_get_file_name
     public :: dm_gm_get_mime
 
-    private :: gm_convert
     private :: gm_identify
 contains
     ! **************************************************************************
@@ -419,6 +419,39 @@ contains
         if (present(command)) command = trim(command_)
     end function dm_gm_add_text_box
 
+    integer function dm_gm_convert(input_file, input_args, output_file, output_args) result(rc)
+        !! Converts image file with GraphicsMagick.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FORMAT` if command preparation failed.
+        !! * `E_IO` if calling GraphicsMagick failed.
+        !!
+        character(len=*), intent(in)           :: input_file  !! Input image path.
+        character(len=*), intent(in)           :: input_args  !! Input convert arguments.
+        character(len=*), intent(in), optional :: output_file !! Output image path.
+        character(len=*), intent(in), optional :: output_args !! Output convert arguments.
+
+        character(len=GM_COMMAND_LEN) :: command
+        integer                       :: stat
+
+        rc = E_FORMAT
+        if (present(output_file) .and. present(output_args)) then
+            write (command, '(a, " convert ", a, 3(1x, a))', iostat=stat) GM_BINARY, trim(input_args), trim(input_file), trim(output_args), trim(output_file)
+        else if (present(output_file)) then
+            write (command, '(a, " convert ", a, 2(1x, a))', iostat=stat) GM_BINARY, trim(input_args), trim(input_file), trim(output_file)
+        else
+            write (command, '(a, " convert ", a, 1x, a)', iostat=stat)    GM_BINARY, trim(input_args), trim(input_file)
+        end if
+        if (stat /= 0) return
+
+        rc = E_IO
+        call execute_command_line(trim(command), exitstat=stat)
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function dm_gm_convert
+
     integer function dm_gm_create(path, width, height, color) result(rc)
         !! Creates image file of given dimensions and color with
         !! GraphicsMagick.
@@ -443,7 +476,7 @@ contains
         write (arguments, '("-size ", i0, "x", i0)') width, height
         if (dm_string_is_present(color)) arguments = trim(arguments) // ' xc:"' // trim(color) // '"'
 
-        rc = gm_convert(path, arguments)
+        rc = dm_gm_convert(path, arguments)
     end function dm_gm_create
 
     integer function dm_gm_get_dimensions(path, width, height) result(rc)
@@ -585,31 +618,6 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function gm_convert(path, arguments) result(rc)
-        !! Converts image file with GraphicsMagick.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_FORMAT` if command preparation failed.
-        !! * `E_IO` if calling GraphicsMagick failed.
-        !!
-        character(len=*), intent(in) :: path      !! Image file path.
-        character(len=*), intent(in) :: arguments !! GraphicsMagick convert arguments.
-
-        character(len=GM_COMMAND_LEN) :: command
-        integer                       :: stat
-
-        rc = E_FORMAT
-        write (command, '(a, " convert ", a, 1x, a)', iostat=stat) GM_BINARY, trim(arguments), trim(path)
-        if (stat /= 0) return
-
-        rc = E_IO
-        call execute_command_line(trim(command), exitstat=stat)
-        if (stat /= 0) return
-
-        rc = E_NONE
-    end function gm_convert
-
     integer function gm_identify(path, format, output, nbytes) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
         !! The string `output` must be large enough to hold the result.

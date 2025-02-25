@@ -538,23 +538,13 @@ contains
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (size(observs2) /= size(observs1)) return
 
-            print *, 'Selecting observations by time range ...'
-            call dm_timer_start(t)
-            rc = dm_db_select_observs_by_time(db, observs2, node1%id, sensor1%id, target1%id, &
-                                              '1970', '2100', limit=int(NOBSERVS, kind=i8))
-            call dm_timer_stop(t, dt)
-            if (dm_is_error(rc)) exit test_block
-            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
-            if (size(observs2) /= size(observs1)) return
-
             print *, 'Selecting observations by id range ...'
             print *, 'After:  ', observs1(1)%id
             print *, 'Before: ', observs1(NOBSERVS)%id
 
             deallocate (observs2)
             call dm_timer_start(t)
-            rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, &
-                                            nobservs=nobs)
+            rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, nobservs=nobs)
             call dm_timer_stop(t, dt)
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (dm_is_error(rc)) exit test_block

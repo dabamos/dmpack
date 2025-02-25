@@ -437,7 +437,7 @@ contains
     impure elemental integer function time_from_unix_integer(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to broken-down time
         !! representation. The argument `epoch` is the number of seconds
-        !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).  The
+        !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). The
         !! function calls `gmtime_r()` internally (SUSv2).
         !!
         !! Returns `E_SYSTEM` if the system call failed.

@@ -360,7 +360,6 @@ module dm_db
     public :: dm_db_select_observ_views
     public :: dm_db_select_observs
     public :: dm_db_select_observs_by_id
-    public :: dm_db_select_observs_by_time
     public :: dm_db_select_sensor
     public :: dm_db_select_sensors
     public :: dm_db_select_sync_log
@@ -2771,103 +2770,6 @@ contains
 
         rc = db_select_observs_data(db, observs)
     end function dm_db_select_observs_by_id
-
-    integer function dm_db_select_observs_by_time(db, observs, node_id, sensor_id, target_id, from, to, &
-                                                  limit, stub, nobservs) result(rc)
-        !! Returns observations of a given time span in `observs`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_FINALIZE` if statement finalisation failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_observ
-
-        type(db_type),                  intent(inout)         :: db         !! Database type.
-        type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
-        character(len=*),               intent(in)            :: node_id    !! Node id.
-        character(len=*),               intent(in)            :: sensor_id  !! Sensor id.
-        character(len=*),               intent(in)            :: target_id  !! Target id.
-        character(len=*),               intent(in)            :: from       !! Beginning of time span.
-        character(len=*),               intent(in)            :: to         !! End of time span.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! No receivers, requests, responses.
-        integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
-
-        integer             :: stat
-        integer(kind=i8)    :: i, n
-        type(db_query_type) :: db_query
-        type(db_stmt_type)  :: db_stmt
-
-        if (present(nobservs)) nobservs = 0_i8
-
-        call dm_db_query_add_text(db_query, 'nodes.id = ?',           node_id)
-        call dm_db_query_add_text(db_query, 'sensors.id = ?',         sensor_id)
-        call dm_db_query_add_text(db_query, 'targets.id = ?',         target_id)
-        call dm_db_query_add_text(db_query, 'observs.timestamp >= ?', from)
-        call dm_db_query_add_text(db_query, 'observs.timestamp < ?',  to)
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_bind(db_stmt, db_query)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            call dm_db_column(db_stmt, 0, n)
-
-            if (present(nobservs)) nobservs = n
-            if (present(limit))    n        = min(n, limit)
-
-            rc = dm_db_finalize(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_ALLOC
-            allocate (observs(n), stat=stat)
-            if (stat /= 0) exit sql_block
-
-            rc = E_DB_NO_ROWS
-            if (n == 0) exit sql_block
-
-            call dm_db_query_set_order(db_query, by='observs.timestamp', desc=.false.)
-            call dm_db_query_set_limit(db_query, limit)
-
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_OBSERVS))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_bind(db_stmt, db_query)
-            if (dm_is_error(rc)) exit sql_block
-
-            do i = 1, n
-                rc = dm_db_step(db_stmt)
-                if (dm_is_error(rc)) exit sql_block
-
-                rc = db_next_row(db_stmt, observs(i), (i == 1))
-                if (dm_is_error(rc)) exit sql_block
-            end do
-
-            rc = E_NONE
-        end block sql_block
-
-        call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
-
-        if (.not. allocated(observs)) allocate (observs(0))
-
-        if (dm_is_error(rc))           return
-        if (dm_present(stub, .false.)) return
-        if (size(observs) == 0)        return
-
-        rc = db_select_observs_data(db, observs)
-    end function dm_db_select_observs_by_time
 
     integer function dm_db_select_sensor(db, sensor, sensor_id) result(rc)
         !! Returns sensor data associated with given sensor id from database.
@@ -5633,9 +5535,6 @@ contains
         !!
         !! The total number of observations is returned in optional argument
         !! `nobservs`.
-        !!
-        !! Calling this function is usually slower than
-        !! `db_select_observs_by_id()` or `db_select_observs_by_time()`.
         !!
         !! The function returns the following error codes:
         !!
