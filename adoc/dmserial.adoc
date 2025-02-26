@@ -30,7 +30,7 @@ pseudo-terminal (PTY) may be used to connect a virtual sensor.
 Each request of an observation must contain the raw request intended for the
 sensor in attribute `request`. Response values are extracted by group from the
 raw response using the given regular expression pattern. Each group name must
-match a response name. Response names are limited to eight characters.
+match a response name. Response names are limited to 32 characters.
 
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output

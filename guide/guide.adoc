@@ -2474,13 +2474,16 @@ $ tail -f /tmp/fifo_dmrecv
 
 Responses in block format can also be piped to a graph tool like
 link:https://www.thregr.org/wavexx/software/trend/[trend] to update a chart in
-real-time. For instance, to pipe the responses of name `tz0` for observations
+real-time. For instance, to pipe the responses of name `tz0` in observations
 received through message queue `/dmrecv` to _trend(1)_, run:
 
 ....
 $ dmrecv --name dmrecv --type observ --format block --response tz0 \
-  | awk '{ print $2 | "trend - 60" }'
+  | gawk '{ print $2 | "trend - 60" }'
 ....
+
+link:https://en.wikipedia.org/wiki/AWK[GNU awk] is used here to extract the
+response value from the stream.
 
 === dmreport [[dmreport]]
 
@@ -2696,7 +2699,7 @@ pseudo-terminal (PTY) may be used to connect a virtual sensor.
 Each request of an observation must contains the raw request intended for the
 sensor in attribute `request`. Response values are extracted by group from the
 raw response using the given regular expression pattern. Each group name must
-match a response name. Response names are limited to eight characters.
+match a response name. Response names are limited to 32 characters.
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output
 file and format are set. If the output is set to `-`, observations are printed

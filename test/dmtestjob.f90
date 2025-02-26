@@ -10,8 +10,8 @@ program dmtestjob
     character(len=*), parameter :: TEST_NAME = 'dmtestjob'
     integer,          parameter :: NTESTS    = 1
 
-    type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
+    type(test_type) :: tests(NTESTS)
 
     tests = [ &
         test_type('test01', test01) &
