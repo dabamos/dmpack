@@ -9,6 +9,7 @@ module dm_http
     integer, parameter, public :: HTTP_OK                            = 200
     integer, parameter, public :: HTTP_CREATED                       = 201
     integer, parameter, public :: HTTP_ACCEPTED                      = 202
+    integer, parameter, public :: HTTP_NON_AUTHORITATIVE_INFORMATION = 203
     integer, parameter, public :: HTTP_NO_CONTENT                    = 204
     integer, parameter, public :: HTTP_RESET_CONTENT                 = 205
     integer, parameter, public :: HTTP_PARTIAL_CONTENT               = 206
@@ -19,6 +20,7 @@ module dm_http
     integer, parameter, public :: HTTP_SEE_OTHER                     = 303
     integer, parameter, public :: HTTP_NOT_MODIFIED                  = 304
     integer, parameter, public :: HTTP_USE_PROXY                     = 305
+    integer, parameter, public :: HTTP_SWITCH_PROXY                  = 306 ! No longer used.
     integer, parameter, public :: HTTP_TEMPORARY_REDIRECT            = 307
     integer, parameter, public :: HTTP_PERMANENT_REDIRECT            = 308
 
@@ -54,8 +56,20 @@ contains
             case (HTTP_OK);                            string = 'OK'
             case (HTTP_CREATED);                       string = 'Created'
             case (HTTP_ACCEPTED);                      string = 'Accepted'
+            case (HTTP_NON_AUTHORITATIVE_INFORMATION); string = 'Non-Authoritative Information'
             case (HTTP_NO_CONTENT);                    string = 'No Content'
             case (HTTP_RESET_CONTENT);                 string = 'Reset Content'
+            case (HTTP_PARTIAL_CONTENT);               string = 'Partial Content'
+            ! 30X
+            case (HTTP_MULTIPLE_CHOICES);              string = 'Multiple Choices'
+            case (HTTP_MOVED_PERMANENTLY);             string = 'Moved Permanently'
+            case (HTTP_FOUND);                         string = 'Found'
+            case (HTTP_SEE_OTHER);                     string = 'See Other'
+            case (HTTP_NOT_MODIFIED);                  string = 'Not Modified'
+            case (HTTP_USE_PROXY);                     string = 'Use Proxy'
+            case (HTTP_SWITCH_PROXY);                  string = 'Switch Proxy'
+            case (HTTP_TEMPORARY_REDIRECT);            string = 'Temporary Redirect'
+            case (HTTP_PERMANENT_REDIRECT);            string = 'Permanent Redirect'
             ! 4XX
             case (HTTP_BAD_REQUEST);                   string = 'Bad Request'
             case (HTTP_UNAUTHORIZED);                  string = 'Unauthorized'
