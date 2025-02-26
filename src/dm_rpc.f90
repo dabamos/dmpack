@@ -82,12 +82,12 @@ module dm_rpc
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
         integer                       :: code          = 0                         !! HTTP response code.
-        integer                       :: error         = E_NONE                    !! DMPACK error code.
-        integer                       :: error_curl    = CURLE_OK                  !! cURL error code.
+        integer                       :: error         = E_NONE                    !! Error code of DMPACK.
+        integer                       :: error_curl    = CURLE_OK                  !! Error code of libcurl easy.
         integer                       :: unit          = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
         integer(kind=i8)              :: last_modified = -1_i8                     !! File time as Unix epoch, -1 if unavailable.
         real(kind=r8)                 :: total_time    = 0.0_r8                    !! Total transmission time.
-        character(len=:), allocatable :: error_message                             !! cURL error message.
+        character(len=:), allocatable :: error_message                             !! libcurl error message.
         character(len=:), allocatable :: content_type                              !! Response payload type (MIME).
         character(len=:), allocatable :: payload                                   !! Response payload.
     end type rpc_response_type
@@ -109,8 +109,8 @@ module dm_rpc
         character(len=:), allocatable               :: url                              !! Request URL.
         character(len=:), allocatable               :: user_agent                       !! User Agent.
         procedure(dm_rpc_callback), pointer, nopass :: callback        => null()        !! C-interoperable write callback function.
-        type(c_ptr), private                        :: curl_ctx        = c_null_ptr     !! cURL handle.
-        type(c_ptr), private                        :: list_ctx        = c_null_ptr     !! cURL list handle.
+        type(c_ptr), private                        :: curl_ctx        = c_null_ptr     !! libcurl handle.
+        type(c_ptr), private                        :: list_ctx        = c_null_ptr     !! libcurl list handle.
     end type rpc_request_type
 
     interface rpc_request
@@ -176,8 +176,8 @@ contains
     end function dm_rpc_version
 
     integer function dm_rpc_error(error_curl) result(rc)
-        !! Converts cURL easy stack error code to DMPACK error code.
-        integer, intent(in) :: error_curl !! cURL easy error code.
+        !! Converts libcurl easy stack error code to DMPACK error code.
+        integer, intent(in) :: error_curl !! libcurl easy error code.
 
         select case (error_curl)
             case (CURLE_OK)
@@ -247,17 +247,17 @@ contains
     end function dm_rpc_error
 
     function dm_rpc_error_message(error_curl) result(message)
-        !! Return message associated with given cURL error code as allocatable
-        !! character string.
-        integer, intent(in)           :: error_curl !! cURL error code.
+        !! Return message associated with given libcurl error code as
+        !! allocatable character string.
+        integer, intent(in)           :: error_curl !! libcurl error code.
         character(len=:), allocatable :: message    !! Error message.
 
         message = curl_easy_strerror(error_curl)
     end function dm_rpc_error_message
 
     integer function dm_rpc_error_multi(multi_error) result(rc)
-        !! Converts cURL multi stack error code to DMPACK error code.
-        integer, intent(in) :: multi_error !! cURL multi error code.
+        !! Converts libcurl multi stack error code to DMPACK error code.
+        integer, intent(in) :: multi_error !! libcurl multi error code.
 
         select case (multi_error)
             case (CURLM_OK)
@@ -725,7 +725,7 @@ contains
 
             do i = 1, n
                 stat = curl_multi_add_handle(multi_ptr, requests(i)%curl_ctx)
-                rc = dm_rpc_error_multi(stat)
+                rc   = dm_rpc_error_multi(stat)
                 if (dm_is_error(rc)) exit curl_block
             end do
 
@@ -744,7 +744,7 @@ contains
                 end if
             end do
 
-            ! Get DMPACK error code from cURL error.
+            ! Get DMPACK error code from curl error.
             rc = dm_rpc_error_multi(error)
 
             ! Get status of each transfer.
@@ -918,7 +918,7 @@ contains
         type(rpc_request_type),  intent(inout) :: request  !! Request type.
         type(rpc_response_type), intent(inout) :: response !! Response type.
 
-        integer :: error
+        integer :: error ! libcurl error code.
 
         rc = E_RPC
 
@@ -961,7 +961,7 @@ contains
 
     impure elemental subroutine rpc_reset_request(request)
         !! Auxiliary destructor routine to free allocated request memory.
-        !! Cleans-up the cURL handles of the request.
+        !! Cleans-up the libcurl handles of the request.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
         if (c_associated(request%list_ctx)) then

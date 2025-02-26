@@ -451,11 +451,10 @@ contains
             ! URL scheme.
             if (tls_) then
                 stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtps')
-                if (stat /= CURLUE_OK) exit url_block
             else
                 stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtp')
-                if (stat /= CURLUE_OK) exit url_block
             end if
+            if (stat /= CURLUE_OK) exit url_block
 
             ! URL host.
             stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))

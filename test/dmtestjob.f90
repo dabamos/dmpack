@@ -23,13 +23,14 @@ contains
     logical function test01() result(stat)
         integer, parameter :: MAX_SIZE = 32
 
-        type(observ_type)       :: observs(5)
-        type(job_type)          :: job
-        type(job_list_type)     :: job_list
-        integer                 :: i, j, rc
+        integer                        :: i, j, rc
+        type(job_type)                 :: job
+        type(job_list_type)            :: job_list
+        type(observ_type), allocatable :: observs(:)
 
         stat = TEST_FAILED
 
+        allocate (observs(5))
         call dm_test_dummy(observs)
 
         print *, 'Creating job list ...'

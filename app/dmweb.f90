@@ -934,7 +934,7 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id', node%id)) .or. &
+                if (dm_is_error(dm_cgi_get(param, 'id',   node%id)) .or. &
                     dm_is_error(dm_cgi_get(param, 'name', node%name))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
@@ -1660,10 +1660,12 @@ contains
             mode = dm_btoa(read_only, 'yes', 'no')
 
             content = H_TABLE // H_THEAD // &
-                      H_TR // H_TH // 'Type'      // H_TH_END // &
-                              H_TH // 'Path'      // H_TH_END // &
-                              H_TH // 'Size'      // H_TH_END // &
-                              H_TH // 'Read-Only' // H_TH_END // H_TR_END // &
+                      H_TR // &
+                      H_TH // 'Type'      // H_TH_END // &
+                      H_TH // 'Path'      // H_TH_END // &
+                      H_TH // 'Size'      // H_TH_END // &
+                      H_TH // 'Read-Only' // H_TH_END // &
+                      H_TR_END // &
                       H_THEAD_END // H_TBODY
 
             ! The sizes will be at least 1 MiB, even if a file is actually smaller.
@@ -1819,7 +1821,7 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id', target%id)) .or. &
+                if (dm_is_error(dm_cgi_get(param, 'id',   target%id)) .or. &
                     dm_is_error(dm_cgi_get(param, 'name', target%name))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block

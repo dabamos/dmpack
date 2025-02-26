@@ -9,28 +9,23 @@ module dm_dwd_api
     !! The file may be opened as `formatted` or `unformatted` (byte stream):
     !!
     !! ```fortran
-    !! character(len=:), allocatable              :: url
-    !! integer                                    :: rc, stat
-    !! type(rpc_request_type)                     :: request
-    !! type(rpc_response_type)                    :: response
+    !! character(len=:), allocatable :: url
+    !! integer                       :: rc
+    !! type(rpc_request_type)        :: request
+    !! type(rpc_response_type)       :: response
+    !!
     !! type(dwd_weather_report_type), allocatable :: reports(:)
     !!
-    !! ! Initialise RPC backend.
     !! rc = dm_rpc_init()
     !!
-    !! ! Create and open new scratch file.
-    !! open (action='readwrite', form='formatted', iostat=stat, newunit=response%unit, status='scratch')
-    !!
-    !! ! Send HTTP GET request to DWD server and fetch weather report of Trollenhagen.
+    !! open (action='readwrite', form='formatted', newunit=response%unit, status='scratch')
     !! url = dm_dwd_api_weather_report_url(id='10281', tls=.false.)
     !! rc  = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
     !!
-    !! ! Rewind, read weather report of response, and delete scratch file.
     !! rewind (response%unit)
     !! rc = dm_dwd_weather_report_read(reports, response%unit)
     !! close (response%unit)
     !!
-    !! ! Shutdown RPC backend.
     !! call dm_rpc_shutdown()
     !! ```
     use, intrinsic :: iso_c_binding
@@ -97,7 +92,7 @@ contains
         character(len=*), parameter :: WEATHER_REPORT_SUFFIX = '-BEOB.csv'
 
         character(len=DWD_MOSMIX_STATION_ID_LEN), intent(in)           :: id  !! MOSMIX station id.
-        logical,                                  intent(in), optional :: tls !! Enable TLS encryption.
+        logical,                                  intent(in), optional :: tls !! Use HTTPS.
         character(len=:), allocatable                                  :: url !! DWD weather report URL.
 
         character(len=DWD_MOSMIX_STATION_ID_LEN) :: id_
@@ -116,11 +111,10 @@ contains
             ! URL scheme.
             if (tls_) then
                 stat = curl_url_set(ptr, CURLUPART_SCHEME, 'https')
-                if (stat /= CURLUE_OK) exit url_block
             else
                 stat = curl_url_set(ptr, CURLUPART_SCHEME, 'http')
-                if (stat /= CURLUE_OK) exit url_block
             end if
+            if (stat /= CURLUE_OK) exit url_block
 
             ! URL host.
             stat = curl_url_set(ptr, CURLUPART_HOST, DWD_HOST)

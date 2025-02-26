@@ -119,7 +119,7 @@ contains
         !!
         !! * https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_stationskatalog.cfg?view=nasPublication&nn=16102
         !!
-        !! Or, use local file `share/dmdwd/catalog.cfg`.
+        !! Or, use local catalog file `share/dmdwd/catalog.cfg`.
         !!
         !! The function returns the following error codes:
         !!
