@@ -1,7 +1,7 @@
 --
 -- Example configuration file for dmsync.
 --
--- Rename table "dmsync" to the instance name (parameter `--name`).
+-- Rename table `dmsync` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

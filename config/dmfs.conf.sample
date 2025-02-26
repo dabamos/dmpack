@@ -6,7 +6,7 @@
 -- dmfs as a sole data logger, remove the receiver from the observation, and
 -- set output file and format.
 --
--- Rename table "dmfs" to the instance name (parameter `--name`).
+-- Rename table `dmfs` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

@@ -1,7 +1,7 @@
 --
 -- Example configuration file for dmbeat.
 --
--- Rename variable "dmbeat" to the instance name (parameter `--name`).
+-- Rename variable `dmbeat` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

@@ -6,7 +6,7 @@
 -- Observations are forwarded to `dmrecv`. To run dmpipe as a sole data logger,
 -- remove the receiver from the observation, and set output file and format.
 --
--- Rename table "dmpipe" to the instance name (parameter `--name`).
+-- Rename table `dmpipe` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

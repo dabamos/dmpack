@@ -7,7 +7,7 @@
 --
 -- All backslashes `\` in this file have to be escaped as `\\`.
 --
--- Rename table "dmserial" to the instance name (parameter `--name`).
+-- Rename table `dmserial` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

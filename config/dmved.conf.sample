@@ -5,7 +5,7 @@
 -- message queue. Set the device to either `mppt` or `shunt`, depending on the
 -- connected device.
 --
--- Rename table "dmved" to the instance name (parameter `--name`).
+-- Rename table `dmved` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

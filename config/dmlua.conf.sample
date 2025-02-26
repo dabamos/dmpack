@@ -1,7 +1,7 @@
 --
 -- Example configuration file for dmlua.
 --
--- Rename table "dmlua" to the instance name (parameter `--name`).
+-- Rename table `dmlua` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

@@ -14,7 +14,7 @@
 -- access=write, slave=10, address=30060, value=10, type=int16
 -- ```
 --
--- Rename table "dmmb" to the instance name (parameter `--name`).
+-- Rename table `dmmb` to the instance name (parameter `--name`).
 --
 -- General settings:
 --

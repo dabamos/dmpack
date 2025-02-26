@@ -11,7 +11,7 @@
 --      LL_CRITICAL - 5
 --      LL_USER     - 6
 --
--- Rename table "dmreport" to the instance name (parameter `--name`).
+-- Rename table `dmreport` to the instance name (parameter `--name`).
 --
 -- Settings:
 --

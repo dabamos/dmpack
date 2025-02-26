@@ -1,7 +1,7 @@
 --
 -- Example configuration file for dmrecv.
 --
--- Rename table "dmrecv" to the instance name (parameter `--name`). If no output
+-- Rename table `dmrecv` to the instance name (parameter `--name`). If no output
 -- file is given, the program prints received data to standard output.
 --
 -- Settings:

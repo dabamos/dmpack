@@ -1,7 +1,7 @@
 --
 -- Example configuration file for dmsend.
 --
--- Rename table "dmsend" to the instance name (parameter `--name`). If no input
+-- Rename table `dmsend` to the instance name (parameter `--name`). If no input
 -- file is given, the program expects the data to be passed via standard input.
 --
 -- Settings:

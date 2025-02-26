@@ -21,7 +21,7 @@
 -- If the value is set to `feed.xsl`, the style sheet file must be located in
 -- the same directory as the Atom feed `feed.xml`.
 --
--- Rename table "dmfeed" to the instance name (parameter `--name`).
+-- Rename table `dmfeed` to the instance name (parameter `--name`).
 --
 -- Settings:
 --
