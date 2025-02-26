@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2025-01-27
+:docdate: 2025-02-26
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -2475,15 +2475,15 @@ $ tail -f /tmp/fifo_dmrecv
 Responses in block format can also be piped to a graph tool like
 link:https://www.thregr.org/wavexx/software/trend/[trend] to update a chart in
 real-time. For instance, to pipe the responses of name `tz0` in observations
-received through message queue `/dmrecv` to _trend(1)_, run:
+received through message queue `/dmrecv` to the trend graph program, run:
 
 ....
 $ dmrecv --name dmrecv --type observ --format block --response tz0 \
   | gawk '{ print $2 | "trend - 60" }'
 ....
 
-link:https://en.wikipedia.org/wiki/AWK[GNU awk] is used here to extract the
-response value from the stream.
+link:https://en.wikipedia.org/wiki/AWK[GNU awk] is used to extract the response
+value from the stream, before it is piped to _trend(1)_.
 
 === dmreport [[dmreport]]
 
@@ -3753,7 +3753,6 @@ Set the regular expression pattern as value of attribute `pattern` in request
 [source,lua]
 ....
 -- dmserial.conf
-
 -- Global variables of identifiers used in the configuration. The values must
 -- match the records added to the database.
 node_id   = "node-1"
@@ -3975,7 +3974,6 @@ following *dmfs* configuration to `/opt/etc/dmpack/dmfs.conf`:
 [source,lua]
 ....
 -- dmfs.conf
-
 -- Global identifiers and sensor file path used in the configuration. The
 -- identifiers must match the records in the database.
 node_id   = "node-1"
@@ -4045,6 +4043,109 @@ Finally, start *dmfs* to execute the configured job:
 ....
 $ dmfs --config /opt/etc/dmpack/dmfs.conf
 ....
+
+=== Digital Multimeter (RS-232)
+
+Digital multimeters are used to measure voltage, resistance, current, and
+temperature. If equipped with a serial interface, modern devices are even
+programmable through protocols like
+link:https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments[SCPI].
+
+In this example, a PeakTech 4094 graphical bench multimeter with RS-232
+interface and SCPI support is connected to a sensor node using an USB adapter.
+By default, the serial port of the multimeter is configured to 11500 baud
+(8N1). The measurement function has to be selected using the keys on the front
+panel or via the SCPI command `SENSe:FUNCtion`. See the
+link:https://www.peaktech.de/media/28/84/1c/1636710959/PeakTech_4094_Programming_Manual_V1.0.0_EN.pdf[official programming manual]
+(PDF) for an overview of supported SCPI commands.
+
+The captured measurement values will be filtered with GNU awk first and then
+displayed in a trend graph. On Linux, install the required packages first:
+
+....
+$ sudo apt-get install gawk trend
+....
+
+==== Configuration
+
+The multimeter is attached to `/dev/ttyUSB0`. The sensor control program
+*dmserial* will send the measurement command `MEAS1?` once every second to the
+PeakTech 4094 to read the voltage, then forward the observation to *dmrecv* for
+plotting.
+
+[source,lua]
+....
+-- dmserial.conf
+dmserial = {
+  logger = "",                      -- Name of logger instance (implies log forwarding).
+  node = "node-1",                  -- Sensor node id (required).
+  sensor = "peaktech-4094",         -- Sensor id (required).
+  output = "",                      -- Path of optional output file, or `-` for stdout.
+  format = "",                      -- Output file format (`csv`, `jsonl`).
+  path = "/dev/ttyUSB0",            -- TTY device path.
+  baudrate = 115200,                -- TTY baud rate.
+  bytesize = 8,                     -- TTY byte size (5, 6, 7, 8).
+  parity = "none",                  -- TTY parity (`none`, `even`, `odd`).
+  stopbits = 1,                     -- TTY stop bits (1, 2).
+  timeout = 0,                      -- TTY timeout in seconds (max. 25).
+  dtr = false,                      -- TTY Data Terminal Ready (DTR) enabled.
+  rts = false,                      -- TTY Request To Send (RTS) enabled.
+  jobs = {                          -- List of jobs to perform.
+    {
+      disabled = false,             -- Skip job.
+      onetime = false,              -- Run job only once.
+      observation = {               -- Observation to execute.
+        name = "meter",             -- Observation name (required).
+        target_id = "target-1",     -- Target id (required).
+        receivers = { "dmrecv" },   -- List of receivers (up to 16).
+        requests = {
+          {
+            name = "get_voltage",                -- Request name (required).
+            request = "MEAS1?\\r\\n",            -- Raw request to send to sensor.
+            delimiter = "\\r\\n",                -- Response delimiter.
+            pattern = "^(?<voltage>[-+.0-9E]+)", -- RegEx pattern of the response.
+            delay = 0,                           -- Delay in msec to wait afterwards.
+            responses = {                        -- List of expected responses.
+              {
+                name = "voltage",                -- RegEx group name (max. 32 characters).
+                unit = "VDC",                    -- Response unit (max. 8 characters).
+                type = RESPONSE_TYPE_REAL64      -- Response value type.
+              },
+            }
+          }
+        }
+      },
+      delay = 1000                  -- Delay in msec to wait afterwards.
+    }
+  },
+  debug = false,                    -- Forward logs of level DEBUG via IPC.
+  verbose = false                   -- Print messages to standard output.
+}
+....
+
+Additionally, we can add a job to select the measurement function before
+starting observation `meter` (AC/DC voltage, AC/DC current, frequency, period,
+resistance, …).
+
+==== Monitoring
+
+Set the measurement mode of the multimeter to voltage (DC). Start *dmserial*
+and pass the path to the configuration file as a command-line argument:
+
+....
+$ dmserial --name dmserial --config config/dmserial.conf --verbose
+....
+
+The program *dmrecv* will print responses of name `voltage` in ASCII block
+format to standard output. _gawk(1)_ then extracts the response value and pipes
+it to _trend(1)_:
+
+....
+$ dmrecv --name dmrecv --type observ --format block --response voltage \
+  | gawk '{ print $2 | "trend - 60" }'
+....
+
+The trend graph is rendered in real-time with OpenGL.
 
 == RPC API [[rpc-api]]
 
