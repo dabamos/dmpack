@@ -352,8 +352,8 @@ If Git is not available, download the archive of the master branch instead and
 run the shell script `fetchvendor.sh` to fetch the missing submodules:
 
 ....
-$ curl -L -s -o dmpack-master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip dmpack-master.zip
+$ curl -L -s -O https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
 ....
@@ -465,8 +465,8 @@ If Git is not available, download the archive of the master branch and run the
 shell script `fetchvendor.sh` to fetch the submodules:
 
 ....
-$ curl -L -s -o dmpack.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip dmpack.zip
+$ curl -L -s -O https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
 ....
@@ -4046,21 +4046,29 @@ $ dmfs --config /opt/etc/dmpack/dmfs.conf
 
 === Digital Multimeter (RS-232)
 
-Digital multimeters are used to measure voltage, resistance, current, and
-temperature. If equipped with a serial interface, modern devices are even
-programmable through protocols like
+.PeakTech 4094 digital multimeter
+[#img-peaktech4094]
+image::peaktech4094.jpg[PeakTech 4094,align="center"]
+
+Digital multimeters are used to measure values like voltage, resistance,
+current, and temperature. If equipped with a serial interface, modern devices
+are even programmable through protocols like
 link:https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments[SCPI].
 
-In this example, a PeakTech 4094 graphical bench multimeter with RS-232
-interface and SCPI support is connected to a sensor node using an USB adapter.
-By default, the serial port of the multimeter is configured to 11500 baud
-(8N1). The measurement function has to be selected using the keys on the front
-panel or via the SCPI command `SENSe:FUNCtion`. See the
+In this example, the voltage of a 24{nbsp}VDC power supply unit is monitored
+using a PeakTech 4094 graphical bench multimeter. The multimeter features an
+RS-232 interface and SCPI protocol support. The voltage values will be read by
+*dmserial*, forwarded to *dmrecv*, and displayed as a trend graph without
+additional persistence. The serial port is configured to the default parameters
+of the device (11500 baud, 8N1). The 50{nbsp}VDC measurement function has to be
+selected using the keys on the front panel or via the SCPI command
+`SENSe:FUNCtion`. See the
 link:https://www.peaktech.de/media/28/84/1c/1636710959/PeakTech_4094_Programming_Manual_V1.0.0_EN.pdf[official programming manual]
 (PDF) for an overview of supported SCPI commands.
 
-The captured measurement values will be filtered with GNU awk first and then
-displayed in a trend graph. On Linux, install the required packages first:
+The captured voltage is filtered by GNU awk first and then rendered with
+link:https://www.thregr.org/wavexx/software/trend/[trend]. On Linux, install the
+required packages first:
 
 ....
 $ sudo apt-get install gawk trend
@@ -4071,7 +4079,9 @@ $ sudo apt-get install gawk trend
 The multimeter is attached to `/dev/ttyUSB0`. The sensor control program
 *dmserial* will send the measurement command `MEAS1?` once every second to the
 PeakTech 4094 to read the voltage, then forward the observation to *dmrecv* for
-plotting.
+plotting. Values are usually returned in scientific notation. Therefore, the
+regular expression pattern for response extraction has to include the letter
+`E`.
 
 [source,lua]
 ....
@@ -4123,14 +4133,14 @@ dmserial = {
 }
 ....
 
-Additionally, we can add a job to select the measurement function before
-starting observation `meter` (AC/DC voltage, AC/DC current, frequency, period,
-resistance, …).
+Additionally, we can add a job to select the measurement function via SCPI
+before starting observation `meter` (for instance, AC/DC voltage, AC/DC current,
+frequency, or resistance).
 
 ==== Monitoring
 
-Set the measurement mode of the multimeter to voltage (DC). Start *dmserial*
-and pass the path to the configuration file as a command-line argument:
+Start *dmserial* and pass the path to the configuration file as a command-line
+argument:
 
 ....
 $ dmserial --name dmserial --config config/dmserial.conf --verbose
@@ -8525,8 +8535,8 @@ version 8.12.1, unpack the archive, and create a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -o curl.tar.gz https://github.com/curl/curl/releases/download/curl-8_12_1/curl-8.12.1.tar.gz
-$ tar xfvz curl.tar.gz
+$ curl -L -s -O https://github.com/curl/curl/releases/download/curl-8_12_1/curl-8.12.1.tar.gz
+$ tar xfvz curl-8.12.1.tar.gz
 $ cd curl-8.12.1/
 $ ./configure --with-openssl --prefix=/opt
 ....
@@ -8557,8 +8567,8 @@ generate a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -o libmodbus.tar.gz https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz
-$ tar xfvz libmodbus.tar.gz
+$ curl -L -s -O https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz
+$ tar xfvz libmodbus-3.1.11.tar.gz
 $ cd libmodbus-3.1.11/
 $ ./configure --prefix=/opt
 ....
@@ -8584,7 +8594,8 @@ release] and create a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -o libstrophe.tar.gz https://github.com/strophe/libstrophe/releases/download/0.13.1/libstrophe-0.13.1.tar.gz
+$ curl -L -s -O https://github.com/strophe/libstrophe/releases/download/0.13.1/libstrophe-0.13.1.tar.gz
+$ tar xfvz libstrophe-0.13.1.tar.gz
 $ cd libstrophe-0.13.1/
 $ ./configure --prefix=/opt
 ....
@@ -8608,8 +8619,8 @@ case, version 3.49.0:
 
 ....
 $ cd /tmp/
-$ curl -L -s -o sqlite.zip https://www.sqlite.org/2025/sqlite-src-3490000.zip
-$ unzip sqlite.zip
+$ curl -L -s -O https://www.sqlite.org/2025/sqlite-src-3490000.zip
+$ unzip sqlite-src-3490000.zip
 $ cd sqlite-src-3490000/
 $ ./configure --prefix=/opt
 ....
@@ -8635,7 +8646,8 @@ CMake:
 
 ....
 $ cd /tmp/
-$ curl -L -s -o zstd.tar.gz https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz
+$ curl -L -s -O https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz
+$ tar xfvz zstd-1.5.6.tar.gz
 $ cd zstd-1.5.6/build/cmake/
 $ mkdir build && cd build/
 $ cmake ..

@@ -2,12 +2,12 @@
 .\"     Title: dmserial
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-02-11
+.\"      Date: 2025-02-26
 .\"    Manual: User Commands
 .\"    Source: DMSERIAL
 .\"  Language: English
 .\"
-.TH "DMSERIAL" "1" "2025-02-11" "DMSERIAL" "User Commands"
+.TH "DMSERIAL" "1" "2025-02-26" "DMSERIAL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -49,7 +49,7 @@ pseudo\-terminal (PTY) may be used to connect a virtual sensor.
 Each request of an observation must contain the raw request intended for the
 sensor in attribute \f(CRrequest\fP. Response values are extracted by group from the
 raw response using the given regular expression pattern. Each group name must
-match a response name. Response names are limited to eight characters.
+match a response name. Response names are limited to 32 characters.
 .sp
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output
