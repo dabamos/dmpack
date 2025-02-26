@@ -163,6 +163,7 @@ contains
         rpc_block: block
             character(len=TIME_LEN)                    :: timestamp
             character(len=:), allocatable              :: url
+            integer(kind=i8)                           :: epoch
             real(kind=r8)                              :: dt
             type(dwd_weather_report_type), allocatable :: reports(:)
             type(timer_type)                           :: timer
@@ -203,10 +204,12 @@ contains
             print '(72("."))'
 
             print *, 'Fetching ' // url // ' ...'
-            rc = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback, modified_since=1000 + response%last_modified)
+            epoch = 1000 + response%last_modified
+            rc = dm_rpc_get(request, response, url, modified_since=epoch, callback=dm_dwd_api_callback)
             print '(" HTTP ", i0)', response%code
             if (response%code /= HTTP_NOT_MODIFIED) return
-            print *, 'File has not been modified'
+            rc = dm_time_from_unix(epoch, timestamp)
+            print *, 'File has not been modified since ' // timestamp
         end block rpc_block
 
         close (unit)

@@ -153,7 +153,7 @@ contains
             read (unit, '(a)', iostat=stat) line
 
             if (is_iostat_end(stat)) exit read_loop
-            if (stat /= 0)           return
+            if (stat /= 0) return
 
             if (header_ .and. nlines < 3) cycle read_loop
 
@@ -187,7 +187,7 @@ contains
         !!
         type(dwd_mosmix_station_type),            intent(inout)         :: stations(:) !! MOSMIX stations.
         character(len=DWD_MOSMIX_STATION_ID_LEN), intent(in)            :: id          !! Station id.
-        type(dwd_mosmix_station_type),            intent(out)           :: station     !! MOSMIX station of id.
+        type(dwd_mosmix_station_type),            intent(out), optional :: station     !! MOSMIX station of id.
         logical,                                  intent(out), optional :: found       !! Station found.
 
         integer :: i, loc
@@ -200,19 +200,17 @@ contains
         loc = 0
 
         do i = 1, size(stations)
-            if (stations(i)%id == id) then
-                loc = i
-                exit
-            end if
+            if (stations(i)%id /= id) cycle
+            loc = i
+            exit
         end do
 
         rc = E_NOT_FOUND
         if (loc == 0) return
 
         rc = E_NONE
-        station = stations(loc)
-
-        if (present(found)) found = .true.
+        if (present(station)) station = stations(loc)
+        if (present(found))   found   = .true.
     end function dm_dwd_mosmix_station_find
 
     integer function dm_dwd_weather_report_read(reports, unit, header) result(rc)
@@ -257,10 +255,10 @@ contains
             read (unit, '(a)', iostat=stat) line
 
             if (is_iostat_end(stat)) exit read_loop
-            if (stat /= 0)           return
+            if (stat /= 0) return
 
             if (header_ .and. nlines < 4) cycle read_loop
-            if (len_trim(line) == 0)      exit read_loop
+            if (len_trim(line) == 0) exit read_loop
 
             nreports = nreports + 1
 

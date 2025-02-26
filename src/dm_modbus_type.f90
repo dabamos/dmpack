@@ -94,7 +94,7 @@ contains
         select case (name_)
             case (MODBUS_MODE_NAMES(MODBUS_MODE_RTU)); mode = MODBUS_MODE_RTU
             case (MODBUS_MODE_NAMES(MODBUS_MODE_TCP)); mode = MODBUS_MODE_TCP
-            case default; mode = MODBUS_MODE_NONE
+            case default;                              mode = MODBUS_MODE_NONE
         end select
     end function dm_modbus_mode_from_name
 
