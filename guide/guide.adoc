@@ -1290,9 +1290,9 @@ sensor.meta: dummy sensor
 sensor.x: 0.000000000000
 sensor.y: 0.000000000000
 sensor.z: 0.000000000000
-sensor.lon: 0.000000000000
-sensor.lat: 0.000000000000
-sensor.elev: 0.000000000000
+sensor.longitude: 0.000000000000
+sensor.latitude: 0.000000000000
+sensor.elevation: 0.000000000000
 ....
 
 === dmexport [[dmexport]]
