@@ -2243,7 +2243,7 @@ dmpipe = {
             delay = 0,              -- Delay in mseconds.
             responses = {
               {
-                name = "battery",   -- RegEx group name (max. 8 characters).
+                name = "battery",   -- RegEx group name (max. 32 characters).
                 unit = "%"          -- Response unit (max. 8 characters).
                 type = RESPONSE_TYPE_REAL64 -- Response value type.
               }
@@ -3730,7 +3730,7 @@ responses of the DKRF400:
 
 The group names `temp`, `humrel`, `humabs`, `dew`, and `wetbulb` within the
 pattern must match the names given in the responses list. The name length is
-limited to 8 characters. Optionally, the responses can be given a unit in
+limited to 32 characters. Optionally, the responses can be given a unit in
 attribute `unit` and a <<data-response-types,response type>> in attribute
 `type`. If no response type is set, `RESPONSE_TYPE_REAL64` (double precision
 number) is assumed by default.
@@ -4001,7 +4001,7 @@ dmfs = {
             delay = 500,                      -- Delay in msec to wait afterwards.
             responses = {
               {
-                name = "temp",                -- RegEx group name (max. 8 characters).
+                name = "temp",                -- RegEx group name (max. 32 characters).
                 unit = "degC",                -- Response unit (max. 8 characters).
                 type = RESPONSE_TYPE_REAL64   -- Response value type.
               }
@@ -7696,7 +7696,7 @@ NODE%ELEVATION=0.0
 | `nreceiver` | integer | 4    | Number of receivers (0 to 16).
 | `nrequests` | integer | 4    | Number of sensor requests (0 to 8).
 | `receivers` | array   | 16{nbsp}×{nbsp}32  | Array of receiver names (16).
-| `requests`  | array   | 8{nbsp}×{nbsp}1380 | Array of requests (8).
+| `requests`  | array   | 8{nbsp}×{nbsp}1764 | Array of requests (8).
 |===
 
 .Request derived type of an observation [[data-request]]
@@ -7717,7 +7717,7 @@ NODE%ELEVATION=0.0
 | `state`      | integer | 4    | Request state (unused, for future additions).
 | `timeout`    | integer | 4    | Request timeout in mseconds.
 | `nresponses` | integer | 4    | Number of responses (0 to 16).
-| `responses`  | array   | 16{nbsp}×{nbsp}32 | Extracted values from the raw response (16).
+| `responses`  | array   | 16{nbsp}×{nbsp}56 | Extracted values from the raw response (16).
 |===
 
 .Response derived type of a request [[data-response]]
@@ -7725,7 +7725,7 @@ NODE%ELEVATION=0.0
 |===
 | Attribute | Type    | Size | Description
 
-| `name`    | string  | 8    | Response name (`-0-9A-Z_a-z`).
+| `name`    | string  | 32   | Response name (`-0-9A-Z_a-z`).
 | `unit`    | string  | 8    | Response unit.
 | `type`    | integer | 4    | Response <<data-response-types,value type>>.
 | `error`   | integer | 4    | Response <<error-codes,error code>>.

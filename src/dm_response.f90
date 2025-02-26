@@ -27,8 +27,8 @@ module dm_response
         'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' &
     ] !! Response value type names.
 
-    integer, parameter, public :: RESPONSE_NAME_LEN = 8 !! Max. response name length.
-    integer, parameter, public :: RESPONSE_UNIT_LEN = 8 !! Max. response unit length.
+    integer, parameter, public :: RESPONSE_NAME_LEN = 32 !! Max. response name length.
+    integer, parameter, public :: RESPONSE_UNIT_LEN = 8  !! Max. response unit length.
 
     type, public :: response_type
         !! Response of a sensor.
