@@ -158,7 +158,7 @@ contains
         !! Transforms cartesian coordinates to polar (spherical) coordinates.
         !! Array `c` must contain `[ x, y, z ]`, array `p` will contain
         !! `[ r, omega, phi ]`.
-        real(kind=r8), intent(in)  :: c(3) !! Cartesian coordinates (X, Y, Z).
+        real(kind=r8), intent(in)  :: c(3) !! Cartesian coordinates (x, y, z).
         real(kind=r8), intent(out) :: p(3) !! Polar coordinates (r, omega, phi).
 
         real(kind=r8) :: r

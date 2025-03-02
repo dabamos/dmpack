@@ -123,7 +123,7 @@ contains
         type(dp_type),   intent(inout) :: dps(:) !! Data points array.
 
         rc = E_INVALID
-        if (plot%terminal <= PLOT_TERMINAL_NONE .or. plot%terminal > PLOT_TERMINAL_LAST) return
+        if (.not. dm_plot_terminal_is_valid(plot%terminal)) return
 
         if (.not. plot%bidirect) then
             rc = dm_pipe_open(plot%stdin, PLOT_BINARY, PIPE_WRONLY)
@@ -343,7 +343,6 @@ contains
             case (PLOT_TERMINAL_ANSI)
                 ! Dumb terminal with ANSI colours.
                 rc = plot_write(plot, 'set term dumb ansi ' // trim(args))
-                if (dm_is_error(rc)) return
 
             case (PLOT_TERMINAL_ASCII)
                 ! Dumb terminal, output to stdout or file.
@@ -391,8 +390,6 @@ contains
             case default
                 return
         end select
-
-        rc = E_NONE
     end function plot_set_terminal
 
     integer function plot_set_title(plot) result(rc)

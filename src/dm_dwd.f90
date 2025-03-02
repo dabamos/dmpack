@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_dwd
-    !! I/O module for meteorological data of Deutsche Wetterdienst (DWD).
+    !! I/O module for meteorological data of Deutscher Wetterdienst (DWD).
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -72,6 +72,11 @@ module dm_dwd
         real                    :: total_time_sunshine_last_day         = huge(0.0)    !! Total time of sunshine last day [h].
     end type dwd_weather_report_type
 
+    interface dwd_read_value
+        module procedure :: dwd_read_value_integer
+        module procedure :: dwd_read_value_real
+    end interface dwd_read_value
+
     interface dm_dwd_weather_report_has_value
         module procedure :: dwd_weather_report_has_value_int32
         module procedure :: dwd_weather_report_has_value_real32
@@ -85,6 +90,9 @@ module dm_dwd
     public :: dm_dwd_weather_report_out
     public :: dm_dwd_weather_report_read
 
+    private :: dwd_read_value
+    private :: dwd_read_value_integer
+    private :: dwd_read_value_real
     private :: dwd_weather_report_has_value_int32
     private :: dwd_weather_report_has_value_real32
 contains
@@ -279,47 +287,47 @@ contains
                 if (.not. dm_time_is_valid(report%timestamp)) return
 
                 ! Weather report data.
-                report%cloud_cover                          = read_real   (fields( 3))
-                report%temperature_mean_prev_day            = read_real   (fields( 4))
-                report%depth_new_snow                       = read_real   (fields( 5))
-                report%dew_point_temperature_2_m            = read_real   (fields( 6))
-                report%diffuse_solar_radiation_last_hour    = read_real   (fields( 7))
-                report%direct_solar_radiation_last_24_hours = read_real   (fields( 8))
-                report%direct_solar_radiation_last_hour     = read_real   (fields( 9))
-                report%dry_bulb_temperature_2_m             = read_real   (fields(10))
-                report%evaporation_last_24_hours            = read_real   (fields(11))
-                report%global_radiation_last_hour           = read_real   (fields(12))
-                report%global_radiation_last_24_hours       = read_real   (fields(13))
-                report%height_lowest_cloud_above_station    = read_real   (fields(14))
-                report%horizontal_visibility                = read_real   (fields(15))
-                report%max_wind_speed_mean_prev_day         = read_real   (fields(16))
-                report%max_temperature_prev_day             = read_real   (fields(17))
-                report%max_temperature_last_12_hours_2_m    = read_real   (fields(18))
-                report%max_wind_speed_mean_last_hour        = read_real   (fields(19))
-                report%max_wind_speed_last_6_hours          = read_real   (fields(20))
-                report%max_wind_speed_prev_day              = read_real   (fields(21))
-                report%max_wind_speed_last_hour             = read_real   (fields(22))
-                report%wind_direction_mean_last_10_min_10_m = read_real   (fields(23))
-                report%wind_speed_mean_last_10_min_10_m     = read_real   (fields(24))
-                report%min_temperature_prev_day_5_cm        = read_real   (fields(25))
-                report%min_temperature_prev_day             = read_real   (fields(26))
-                report%min_temperature_last_12_hours_2_m    = read_real   (fields(27))
-                report%min_temperature_last_12_hours_5_cm   = read_real   (fields(28))
-                report%last_weather_1                       = read_integer(fields(29))
-                report%last_weather_2                       = read_integer(fields(30))
-                report%precipitation_last_24_hours          = read_real   (fields(31))
-                report%precipitation_last_3_hours           = read_real   (fields(32))
-                report%precipitation_last_6_hours           = read_real   (fields(33))
-                report%precipitation_last_hour              = read_real   (fields(34))
-                report%precipitation_last_12_hours          = read_real   (fields(35))
-                report%present_weather                      = read_integer(fields(36))
-                report%pressure_mean_sea_level              = read_real   (fields(37))
-                report%relative_humidity                    = read_real   (fields(38))
-                report%water_temperature                    = read_real   (fields(39))
-                report%temperature_5_cm                     = read_real   (fields(40))
-                report%total_snow_depth                     = read_real   (fields(41))
-                report%total_time_sunshine_last_hour        = read_real   (fields(42))
-                report%total_time_sunshine_last_day         = read_real   (fields(43))
+                call dwd_read_value(fields( 3), report%cloud_cover)
+                call dwd_read_value(fields( 4), report%temperature_mean_prev_day)
+                call dwd_read_value(fields( 5), report%depth_new_snow)
+                call dwd_read_value(fields( 6), report%dew_point_temperature_2_m)
+                call dwd_read_value(fields( 7), report%diffuse_solar_radiation_last_hour)
+                call dwd_read_value(fields( 8), report%direct_solar_radiation_last_24_hours)
+                call dwd_read_value(fields( 9), report%direct_solar_radiation_last_hour)
+                call dwd_read_value(fields(10), report%dry_bulb_temperature_2_m)
+                call dwd_read_value(fields(11), report%evaporation_last_24_hours)
+                call dwd_read_value(fields(12), report%global_radiation_last_hour)
+                call dwd_read_value(fields(13), report%global_radiation_last_24_hours)
+                call dwd_read_value(fields(14), report%height_lowest_cloud_above_station)
+                call dwd_read_value(fields(15), report%horizontal_visibility)
+                call dwd_read_value(fields(16), report%max_wind_speed_mean_prev_day)
+                call dwd_read_value(fields(17), report%max_temperature_prev_day)
+                call dwd_read_value(fields(18), report%max_temperature_last_12_hours_2_m)
+                call dwd_read_value(fields(19), report%max_wind_speed_mean_last_hour)
+                call dwd_read_value(fields(20), report%max_wind_speed_last_6_hours)
+                call dwd_read_value(fields(21), report%max_wind_speed_prev_day)
+                call dwd_read_value(fields(22), report%max_wind_speed_last_hour)
+                call dwd_read_value(fields(23), report%wind_direction_mean_last_10_min_10_m)
+                call dwd_read_value(fields(24), report%wind_speed_mean_last_10_min_10_m)
+                call dwd_read_value(fields(25), report%min_temperature_prev_day_5_cm)
+                call dwd_read_value(fields(26), report%min_temperature_prev_day)
+                call dwd_read_value(fields(27), report%min_temperature_last_12_hours_2_m)
+                call dwd_read_value(fields(28), report%min_temperature_last_12_hours_5_cm)
+                call dwd_read_value(fields(29), report%last_weather_1)
+                call dwd_read_value(fields(30), report%last_weather_2)
+                call dwd_read_value(fields(31), report%precipitation_last_24_hours)
+                call dwd_read_value(fields(32), report%precipitation_last_3_hours)
+                call dwd_read_value(fields(33), report%precipitation_last_6_hours)
+                call dwd_read_value(fields(34), report%precipitation_last_hour)
+                call dwd_read_value(fields(35), report%precipitation_last_12_hours)
+                call dwd_read_value(fields(36), report%present_weather)
+                call dwd_read_value(fields(37), report%pressure_mean_sea_level)
+                call dwd_read_value(fields(38), report%relative_humidity)
+                call dwd_read_value(fields(39), report%water_temperature)
+                call dwd_read_value(fields(40), report%temperature_5_cm)
+                call dwd_read_value(fields(41), report%total_snow_depth)
+                call dwd_read_value(fields(42), report%total_time_sunshine_last_hour)
+                call dwd_read_value(fields(43), report%total_time_sunshine_last_day)
             end associate
 
             call move_alloc(from=buffer, to=reports)
@@ -327,26 +335,6 @@ contains
 
         rc = E_NONE
         if (size(reports) == 0) rc = E_EMPTY
-    contains
-        pure integer function read_integer(field) result(value)
-            character(len=*), intent(in) :: field !! Data field.
-
-            integer :: stat
-
-            value = 0
-            if (field == '---') return
-            read (field, *, iostat=stat) value
-        end function read_integer
-
-        pure real function read_real(field) result(value)
-            character(len=*), intent(in) :: field !! Data field.
-
-            integer :: stat
-
-            value = huge(0.0)
-            if (field == '---') return
-            read (field, *, decimal='comma', iostat=stat) value
-        end function read_real
     end function dm_dwd_weather_report_read
 
     ! **************************************************************************
@@ -459,4 +447,26 @@ contains
 
         has = (attribute < huge(0.0))
     end function dwd_weather_report_has_value_real32
+
+    pure subroutine dwd_read_value_integer(field, value)
+        character(len=*), intent(in)  :: field !! Data field.
+        integer,          intent(out) :: value !! Field value.
+
+        integer :: stat
+
+        value = 0
+        if (field == '---') return
+        read (field, *, iostat=stat) value
+    end subroutine dwd_read_value_integer
+
+    pure subroutine dwd_read_value_real(field, value)
+        character(len=*), intent(in)  :: field !! Data field.
+        real,             intent(out) :: value !! Field value.
+
+        integer :: stat
+
+        value = huge(0.0)
+        if (field == '---') return
+        read (field, *, decimal='comma', iostat=stat) value
+    end subroutine dwd_read_value_real
 end module dm_dwd

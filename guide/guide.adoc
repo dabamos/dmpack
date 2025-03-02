@@ -352,7 +352,7 @@ If Git is not available, download the archive of the master branch instead and
 run the shell script `fetchvendor.sh` to fetch the missing submodules:
 
 ....
-$ curl -L -s -O https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
@@ -465,7 +465,7 @@ If Git is not available, download the archive of the master branch and run the
 shell script `fetchvendor.sh` to fetch the submodules:
 
 ....
-$ curl -L -s -O https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
@@ -4080,7 +4080,7 @@ The multimeter is attached to `/dev/ttyUSB0`. The sensor control program
 *dmserial* will send the measurement command `MEAS1?` once every second to the
 PeakTech 4094 to read the voltage, then forward the observation to *dmrecv* for
 plotting. Values are usually returned in scientific notation. Therefore, the
-regular expression pattern for response extraction has to include the letter
+regular expression pattern for response extraction has to include the character
 `E`.
 
 [source,lua]
@@ -8535,7 +8535,7 @@ version 8.12.1, unpack the archive, and create a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -O https://github.com/curl/curl/releases/download/curl-8_12_1/curl-8.12.1.tar.gz
+$ curl -O -L -s https://github.com/curl/curl/releases/download/curl-8_12_1/curl-8.12.1.tar.gz
 $ tar xfvz curl-8.12.1.tar.gz
 $ cd curl-8.12.1/
 $ ./configure --with-openssl --prefix=/opt
@@ -8567,7 +8567,7 @@ generate a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -O https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz
+$ curl -O -L -s https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz
 $ tar xfvz libmodbus-3.1.11.tar.gz
 $ cd libmodbus-3.1.11/
 $ ./configure --prefix=/opt
@@ -8594,7 +8594,7 @@ release] and create a Makefile:
 
 ....
 $ cd /tmp/
-$ curl -L -s -O https://github.com/strophe/libstrophe/releases/download/0.13.1/libstrophe-0.13.1.tar.gz
+$ curl -O -L -s https://github.com/strophe/libstrophe/releases/download/0.13.1/libstrophe-0.13.1.tar.gz
 $ tar xfvz libstrophe-0.13.1.tar.gz
 $ cd libstrophe-0.13.1/
 $ ./configure --prefix=/opt
@@ -8619,7 +8619,7 @@ case, version 3.49.0:
 
 ....
 $ cd /tmp/
-$ curl -L -s -O https://www.sqlite.org/2025/sqlite-src-3490000.zip
+$ curl -O -L -s https://www.sqlite.org/2025/sqlite-src-3490000.zip
 $ unzip sqlite-src-3490000.zip
 $ cd sqlite-src-3490000/
 $ ./configure --prefix=/opt
@@ -8646,7 +8646,7 @@ CMake:
 
 ....
 $ cd /tmp/
-$ curl -L -s -O https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz
+$ curl -O -L -s https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz
 $ tar xfvz zstd-1.5.6.tar.gz
 $ cd zstd-1.5.6/build/cmake/
 $ mkdir build && cd build/

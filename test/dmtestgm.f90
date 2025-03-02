@@ -73,7 +73,7 @@ contains
 
         if (w /= IMAGE_WIDTH .or. h /= IMAGE_HEIGHT) return
         if (format /= 'PNG')                         return
-        if (mime /= 'image/png')                     return
+        if (mime /= MIME_PNG)                        return
 
         print *, 'Adding text box to image ...'
         text_box%background = GM_COLOR_DARK_VIOLET

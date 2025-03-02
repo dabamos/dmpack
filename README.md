@@ -173,8 +173,8 @@ If Git is not available, download the archive of the master branch instead and
 run the shell script `fetchvendor.sh` to fetch the missing submodules:
 
 ```
-$ curl -L -s -o dmpack-master.zip https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip dmpack-master.zip
+$ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip master.zip
 $ cd dmpack-master/
 $ sh fetchvendor.sh
 $ make [freebsd|linux|linux_aarch64]

@@ -22,7 +22,7 @@ program dmtestdwd
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, no_color)
 contains
     logical function test01() result(stat)
         character(len=*), parameter :: CATALOG    = './share/dmdwd/catalog.cfg'
