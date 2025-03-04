@@ -1,0 +1,164 @@
+'\" t
+.\"     Title: dmdwd
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-03-03
+.\"    Manual: User Commands
+.\"    Source: DMDWD
+.\"  Language: English
+.\"
+.TH "DMDWD" "1" "2025-03-03" "DMDWD" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmdwd \- reads weather reports from Deutscher Wetterdienst (DWD)
+.SH "SYNOPSIS"
+.sp
+\fBdmdwd\fP \-\-help
+.sp
+\fBdmdwd\fP \-\-version
+.sp
+\fBdmdwd\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
+[\-\-\fBtarget\fP \fIid\fP] [\-\-\fBcatalog\fP \fIpath\fP] [\-\-\fBstation\fP \fIid\fP] [\-\-\fBreceiver\fP \fIname\fP]
+[\-\-\fBread\fP \fItype\fP] [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP]
+[\-\-\fBverbose\fP]
+.SH "DESCRIPTION"
+.sp
+This program reads and forwards weather reports from the open data API of
+Deutscher Wetterdienst (DWD).
+.SH "OPTIONS"
+.sp
+\fB\-\-catalog\fP, \fB\-C\fP \fIpath\fP
+.RS 4
+Path to the MOSMIX catalog file. The catalog is only used to verify the
+station id. A valid station id does not ensure that Deutscher Wetterdienst
+provides weather reports for this station, as the catalog contains stations
+that are out of service.
+.RE
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+File path to the configuration file.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Print available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
+.RS 4
+Interval in seconds in which weather reports are fetched. If set to 0
+(default), exits after the first report has been fetched and forwarded.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance and configuration (default is \f(CRdmdwd\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-read\fP, \fB\-R\fP [all|last|next]
+.RS 4
+Weather report records to read and forward. On \f(CRall\fP, reads and sends all
+records found in the report. On \f(CRlast\fP, sends only the last record in the
+report. On \f(CRnext\fP, waits until the weather report is updated the next time
+and then sends the newest record.
+.RE
+.sp
+\fB\-\-receiver\fP, \fB\-r\fP \fIname\fP
+.RS 4
+Name of the observation receiver, without leading \f(CR/\fP.
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id.
+.RE
+.sp
+\fB\-\-station\fP, \fB\-m\fP \fIid\fP
+.RS 4
+MOSMIX station id.
+.RE
+.sp
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
+.RS 4
+Target id.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Print version information and quit.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Process terminated without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Process failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Read weather reports from station set in configuration file:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmdwd \-\-name dmdwd \-\-config /usr/local/etc/dmpack/dmdwd.conf \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

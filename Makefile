@@ -199,6 +199,7 @@ DMBEAT   = $(DISTDIR)/dmbeat
 DMBOT    = $(DISTDIR)/dmbot
 DMDB     = $(DISTDIR)/dmdb
 DMDBCTL  = $(DISTDIR)/dmdbctl
+DMDWD    = $(DISTDIR)/dmdwd
 DMEXPORT = $(DISTDIR)/dmexport
 DMFEED   = $(DISTDIR)/dmfeed
 DMFS     = $(DISTDIR)/dmfs
@@ -456,10 +457,10 @@ all:
 build: $(TARGET) $(SHARED) test app
 
 # Apps target.
-app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMEXPORT) $(DMFEED) \
-     $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) $(DMLUA) \
-     $(DMMB) $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) $(DMSERIAL) \
-     $(DMSYNC) $(DMUUID) $(DMVED) $(DMWEB)
+app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMDWD) $(DMEXPORT) \
+     $(DMFEED) $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
+     $(DMLUA) $(DMMB) $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) \
+     $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMVED) $(DMWEB)
 
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
@@ -872,6 +873,9 @@ $(DMDB): app/dmdb.f90 $(TARGET)
 $(DMDBCTL): app/dmdbctl.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDBCTL) app/dmdbctl.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
+$(DMDWD): app/dmdwd.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMDWD) app/dmdwd.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LIBZ) $(LDLIBS)
+
 $(DMEXPORT): app/dmexport.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
@@ -989,6 +993,7 @@ install:
 	$(INSTALL) -m 755 $(DMBOT)    $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDB)     $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDBCTL)  $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMDWD)    $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMEXPORT) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMFEED)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMFS)     $(IBINDIR)/
@@ -1032,6 +1037,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmbot.1    > $(IMANDIR)/dmbot.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdb.1     > $(IMANDIR)/dmdb.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdbctl.1  > $(IMANDIR)/dmdbctl.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmdwd.1    > $(IMANDIR)/dmdwd.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmexport.1 > $(IMANDIR)/dmexport.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfeed.1   > $(IMANDIR)/dmfeed.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmfs.1     > $(IMANDIR)/dmfs.1.gz
@@ -1068,6 +1074,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmbot
 	$(RM) -f $(IBINDIR)/dmdb
 	$(RM) -f $(IBINDIR)/dmdbctl
+	$(RM) -f $(IBINDIR)/dmdwd
 	$(RM) -f $(IBINDIR)/dmexport
 	$(RM) -f $(IBINDIR)/dmfeed
 	$(RM) -f $(IBINDIR)/dmfs
@@ -1096,6 +1103,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmbot.1.gz
 	$(RM) -f $(IMANDIR)/dmdb.1.gz
 	$(RM) -f $(IMANDIR)/dmdbctl.1.gz
+	$(RM) -f $(IMANDIR)/dmdwd.1.gz
 	$(RM) -f $(IMANDIR)/dmexport.1.gz
 	$(RM) -f $(IMANDIR)/dmfeed.1.gz
 	$(RM) -f $(IMANDIR)/dmfs.1.gz

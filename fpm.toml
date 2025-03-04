@@ -61,6 +61,11 @@ main = "dmdbctl.f90"
 link = [ "sqlite3" ]
 
 [[executable]]
+name = "dmdwd"
+main = "dmdwd.f90"
+link = [ "curl", "lua-5.4", "z" ]
+
+[[executable]]
 name = "dmexport"
 main = "dmexport.f90"
 link = [ "sqlite3" ]
@@ -218,7 +223,7 @@ main = "dmtestdp.f90"
 [[test]]
 name = "dmtestdwd"
 main = "dmtestdwd.f90"
-link = [ "curl", "z", "zstd" ]
+link = [ "curl", "rt", "z" ]
 
 [[test]]
 name = "dmtestfile"

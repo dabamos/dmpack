@@ -1,0 +1,33 @@
+--
+-- Example configuration file for dmdwd.
+--
+-- Rename table `dmdwd` to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      catalog  - Path to MOSMIX catalog for station id validation (optional).
+--      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
+--      interval - Fetch interval in seconds.
+--      logger   - Name of logger to send logs to (optional).
+--      node     - Node id.
+--      read     - Which weather report records to read and forward (`all`, `last`, `next`).
+--      receiver - Name of the process to send the observations to.
+--      sensor   - Sensor id.
+--      station  - MOSMIX station id.
+--      target   - Target id.
+--      verbose  - Print logs to standard error.
+--
+
+dmdwd = {
+    logger = "",
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    target = "dummy-target",
+    catalog = "/usr/local/share/dmpack/dmdwd/catalog.cfg",
+    station = "10385",
+    receiver = "".
+    read = "last",
+    interval = 0,
+    debug = false,
+    verbose = false
+}

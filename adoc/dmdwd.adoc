@@ -1,0 +1,107 @@
+= dmdwd(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMDWD
+
+== NAME
+
+dmdwd - reads weather reports from Deutscher Wetterdienst (DWD)
+
+== SYNOPSIS
+
+*dmdwd* --help
+
+*dmdwd* --version
+
+*dmdwd* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*target* _id_] [--*catalog* _path_] [--*station* _id_] [--*receiver* _name_]
+[--*read* _type_] [--*interval* _seconds_] [--*logger* _name_] [--*debug*]
+[--*verbose*]
+
+== DESCRIPTION
+
+This program reads and forwards weather reports from the open data API of
+Deutscher Wetterdienst (DWD).
+
+== OPTIONS
+
+*--catalog*, *-C* _path_::
+  Path to the MOSMIX catalog file. The catalog is only used to verify the
+  station id. A valid station id does not ensure that Deutscher Wetterdienst
+  provides weather reports for this station, as the catalog contains stations
+  that are out of service.
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--help*, *-h*::
+  Print available command-line arguments and quit.
+
+*--interval*, *-I* _seconds_::
+  Interval in seconds in which weather reports are fetched. If set to 0
+  (default), exits after the first report has been fetched and forwarded.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmdwd`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--read*, *-R* [all|last|next]::
+  Weather report records to read and forward. On `all`, reads and sends all
+  records found in the report. On `last`, sends only the last record in the
+  report. On `next`, waits until the weather report is updated the next time
+  and then sends the newest record.
+
+*--receiver*, *-r* _name_::
+  Name of the observation receiver, without leading `/`.
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--station*, *-m* _id_::
+  MOSMIX station id.
+
+*--target*, *-T* _id_::
+  Target id.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Print version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read weather reports from station set in configuration file:
+
+....
+$ dmdwd --name dmdwd --config /usr/local/etc/dmpack/dmdwd.conf --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2025 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

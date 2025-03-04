@@ -23,6 +23,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmbot.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdb.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdbctl.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdwd.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmexport.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfeed.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfs.adoc
@@ -54,6 +55,7 @@ pdf:
 	$(MAN) -t $(MANDIR)/dmbot.1    | $(PS2PDF) - $(PDFDIR)/dmbot.pdf
 	$(MAN) -t $(MANDIR)/dmdb.1     | $(PS2PDF) - $(PDFDIR)/dmdb.pdf
 	$(MAN) -t $(MANDIR)/dmdbctl.1  | $(PS2PDF) - $(PDFDIR)/dmdbctl.pdf
+	$(MAN) -t $(MANDIR)/dmdwd.1    | $(PS2PDF) - $(PDFDIR)/dmdwd.pdf
 	$(MAN) -t $(MANDIR)/dmexport.1 | $(PS2PDF) - $(PDFDIR)/dmexport.pdf
 	$(MAN) -t $(MANDIR)/dmfeed.1   | $(PS2PDF) - $(PDFDIR)/dmfeed.pdf
 	$(MAN) -t $(MANDIR)/dmfs.1     | $(PS2PDF) - $(PDFDIR)/dmfs.pdf
@@ -85,6 +87,7 @@ html:
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmbot.1    > $(HTMLDIR)/dmbot.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmdb.1     > $(HTMLDIR)/dmdb.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmdbctl.1  > $(HTMLDIR)/dmdbctl.html
+	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmdwd.1    > $(HTMLDIR)/dmdwd.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmexport.1 > $(HTMLDIR)/dmexport.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfeed.1   > $(HTMLDIR)/dmfeed.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmfs.1     > $(HTMLDIR)/dmfs.html
