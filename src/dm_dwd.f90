@@ -55,8 +55,8 @@ module dm_dwd
         real                    :: min_temperature_prev_day             = huge(0.0)    !! Minimum of temperature for previous day [°C].
         real                    :: min_temperature_last_12_hours_2_m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
         real                    :: min_temperature_last_12_hours_5_cm   = huge(0.0)    !! Minimum temperature last 12 hours 5 cm above ground [°C].
-        integer                 :: last_weather_1                       = 0            !! Past weather 1 [code].
-        integer                 :: last_weather_2                       = 0            !! Past weather 2 [code].
+        integer                 :: last_weather1                        = 0            !! Past weather 1 [code].
+        integer                 :: last_weather2                        = 0            !! Past weather 2 [code].
         real                    :: precipitation_last_24_hours          = huge(0.0)    !! Precipitation amount last 24 hours [mm].
         real                    :: precipitation_last_3_hours           = huge(0.0)    !! Precipitation amount last 3 hours [mm].
         real                    :: precipitation_last_6_hours           = huge(0.0)    !! Precipitation amount last 6 hours [mm].
@@ -193,12 +193,15 @@ contains
         !! * `E_EMPTY` if array is empty.
         !! * `E_NOT_FOUND` if station id was not found.
         !!
-        type(dwd_mosmix_station_type),            intent(inout)         :: stations(:) !! MOSMIX stations.
-        character(len=DWD_MOSMIX_STATION_ID_LEN), intent(in)            :: id          !! Station id.
-        type(dwd_mosmix_station_type),            intent(out), optional :: station     !! MOSMIX station of id.
-        logical,                                  intent(out), optional :: found       !! Station found.
+        use :: dm_string, only: dm_to_upper
 
-        integer :: i, loc
+        type(dwd_mosmix_station_type), intent(inout)         :: stations(:) !! MOSMIX stations.
+        character(len=*),              intent(in)            :: id          !! Station id.
+        type(dwd_mosmix_station_type), intent(out), optional :: station     !! MOSMIX station of id.
+        logical,                       intent(out), optional :: found       !! Station found.
+
+        character(len=DWD_MOSMIX_STATION_ID_LEN) :: id_
+        integer                                  :: i, loc
 
         if (present(found)) found = .false.
 
@@ -206,9 +209,10 @@ contains
         if (size(stations) == 0) return
 
         loc = 0
+        id_ = dm_to_upper(id)
 
         do i = 1, size(stations)
-            if (stations(i)%id /= id) cycle
+            if (id_ /= stations(i)%id) cycle
             loc = i
             exit
         end do
@@ -286,7 +290,7 @@ contains
                 write (report%timestamp, '("20", a2, "-", a2, "-", a2, "T", a5, ":00.000000+00:00")') date(7:8), date(4:5), date(1:2), time(1:5)
                 if (.not. dm_time_is_valid(report%timestamp)) return
 
-                ! Weather report data.
+                ! Read weather report record data.
                 call dwd_read_value(fields( 3), report%cloud_cover)
                 call dwd_read_value(fields( 4), report%temperature_mean_prev_day)
                 call dwd_read_value(fields( 5), report%depth_new_snow)
@@ -313,8 +317,8 @@ contains
                 call dwd_read_value(fields(26), report%min_temperature_prev_day)
                 call dwd_read_value(fields(27), report%min_temperature_last_12_hours_2_m)
                 call dwd_read_value(fields(28), report%min_temperature_last_12_hours_5_cm)
-                call dwd_read_value(fields(29), report%last_weather_1)
-                call dwd_read_value(fields(30), report%last_weather_2)
+                call dwd_read_value(fields(29), report%last_weather1)
+                call dwd_read_value(fields(30), report%last_weather2)
                 call dwd_read_value(fields(31), report%precipitation_last_24_hours)
                 call dwd_read_value(fields(32), report%precipitation_last_3_hours)
                 call dwd_read_value(fields(33), report%precipitation_last_6_hours)
@@ -414,8 +418,8 @@ contains
         if (report%min_temperature_prev_day              < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", f0.1)')             report%min_temperature_prev_day
         if (report%min_temperature_last_12_hours_2_m     < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12_hours_2_m: ", f0.1)')    report%min_temperature_last_12_hours_2_m
         if (report%min_temperature_last_12_hours_5_cm    < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12_hours_5_cm: ", f0.1)')   report%min_temperature_last_12_hours_5_cm
-        if (report%last_weather_1                        > 0)         write (unit_, '("dwd_weather_report.last_weather_1: ", i0)')                         report%last_weather_1
-        if (report%last_weather_2                        > 0)         write (unit_, '("dwd_weather_report.last_weather_2: ", i0)')                         report%last_weather_2
+        if (report%last_weather1                         > 0)         write (unit_, '("dwd_weather_report.last_weather1: ", i0)')                          report%last_weather1
+        if (report%last_weather2                         > 0)         write (unit_, '("dwd_weather_report.last_weather2: ", i0)')                          report%last_weather2
         if (report%precipitation_last_24_hours           < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_24_hours: ", f0.1)')          report%precipitation_last_24_hours
         if (report%precipitation_last_3_hours            < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_3_hours: ", f0.1)')           report%precipitation_last_3_hours
         if (report%precipitation_last_6_hours            < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_6_hours: ", f0.1)')           report%precipitation_last_6_hours

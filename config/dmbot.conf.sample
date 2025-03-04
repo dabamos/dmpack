@@ -19,8 +19,8 @@
 --
 
 dmbot = {
-    node = "dummy-node",
     logger = "",
+    node = "dummy-node",
     jid = "juliet@capulet.example",
     password = "secret",
     host = "example.com",
@@ -29,5 +29,5 @@ dmbot = {
     reconnect = false,
     group = { "romeo@montague.tld" },
     debug = false,
-    verbose = true
+    verbose = false
 }

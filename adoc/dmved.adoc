@@ -16,8 +16,9 @@ dmved - reads status of connected MPPT charger or battery shunt
 *dmved* --version
 
 *dmved* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*target* _id_] [--*logger* _name_] [--*path* _path_] [--*receiver* _name_]
-[--*interval* _seconds_] [--*dump* _path_] [--*debug*] [--*verbose*]
+[--*target* _id_] [--*device* _type_] [--*path* _path_] [--*receiver* _name_]
+[--*interval* _seconds_] [--*dump* _path_] [--*logger* _name_] [--*debug*]
+[--*verbose*]
 
 == DESCRIPTION
 

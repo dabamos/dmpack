@@ -583,11 +583,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call halt(E_NONE)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

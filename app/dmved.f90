@@ -124,15 +124,6 @@ program dmved
     call close_dump(app%dump)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
-    subroutine close_dump(path)
-        !! Closes dump file.
-        character(len=*), intent(in) :: path !! Path of dump file.
-
-        if (len_trim(path) == 0) return
-        call logger%debug('closing dump file ' // path)
-        close (APP_DUMP_UNIT)
-    end subroutine close_dump
-
     integer function open_dump(path) result(rc)
         !! Opens dump file.
         character(len=*), intent(in) :: path !! Path of dump file.
@@ -428,6 +419,15 @@ contains
         end if
     end function run
 
+    subroutine close_dump(path)
+        !! Closes dump file.
+        character(len=*), intent(in) :: path !! Path of dump file.
+
+        if (len_trim(path) == 0) return
+        call logger%debug('closing dump file ' // path)
+        close (APP_DUMP_UNIT)
+    end subroutine close_dump
+
     subroutine create_observ(observ, app, responses)
         !! Creates new observation from VE.Direct responses.
         type(observ_type),   intent(out)   :: observ       !! Created observation.
@@ -524,19 +524,16 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%info('exit on signal ' // dm_signal_name(signum))
 
-                if (dm_tty_is_connected(tty)) then
-                    call logger%debug('closing TTY ' // app%path)
-                    call dm_tty_close(tty)
-                end if
+        if (dm_tty_is_connected(tty)) then
+            call logger%debug('closing TTY ' // app%path)
+            call dm_tty_close(tty)
+        end if
 
-                call close_dump(app%dump)
+        call close_dump(app%dump)
 
-                call dm_stop(STOP_SUCCESS)
-        end select
+        call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 
     subroutine version_callback()
