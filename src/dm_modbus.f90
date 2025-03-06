@@ -25,17 +25,17 @@ module dm_modbus
     !! type(modbus_rtu_type) :: modbus
     !!
     !! ! Create Modbus RTU context and connect to device 10.
-    !! rc = dm_modbus_create(modbus    = modbus, &
-    !!                       path      = '/dev/ttyUSB0', &
-    !!                       baud_rate = TTY_B19200, &
-    !!                       byte_size = TTY_BYTE_SIZE8, &
+    !! rc = dm_modbus_create(modbus    = modbus,          &
+    !!                       path      = '/dev/ttyUSB0',  &
+    !!                       baud_rate = TTY_B19200,      &
+    !!                       byte_size = TTY_BYTE_SIZE8,  &
     !!                       parity    = TTY_PARITY_EVEN, &
     !!                       stop_bits = TTY_STOP_BITS1)
     !! rc = dm_modbus_connect(modbus)
     !! rc = dm_modbus_set_slave(modbus, slave=10)
     !!
     !! ! Read and output two registers.
-    !! rc = dm_modbus_read_registers(modbus, address=50, data=data)
+    !! rc = dm_modbus_read_registers(modbus, address=30050, data=data)
     !!
     !! do i = 1, size(data)
     !!     s = dm_to_signed(data(i))
@@ -455,12 +455,14 @@ contains
 
     integer function dm_modbus_read_float(modbus, address, value, order) result(rc)
         !! Reads 4-byte real from input or holding register, depending on the
-        !! address, and returns result in `value`.
+        !! address, and returns result in `value`. If the address is not in
+        !! input register or holding register range, it is interpreted as a
+        !! holding register address.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
-        !! * `E_INVALID` if argument `address` or `data` is invalid.
+        !! * `E_INVALID` if argument `address` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
@@ -474,7 +476,7 @@ contains
         select case (address)
             case (30001:39999); rc = dm_modbus_read_input_registers(modbus, address, data) ! Input registers.
             case (40001:49999); rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers.
-            case default;       rc = E_INVALID
+            case default;       rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers (non-default).
         end select
 
         if (dm_is_error(rc)) return
@@ -575,12 +577,14 @@ contains
 
     integer function dm_modbus_read_int16(modbus, address, value) result(rc)
         !! Reads 2-byte signed integer from input or holding register, depending
-        !! on the address, and returns result in `value`.
+        !! on the address, and returns result in `value`. If the address is not
+        !! in input register or holding register range, it is interpreted as a
+        !! holding register address.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
-        !! * `E_INVALID` if argument `address` or `data` is invalid.
+        !! * `E_INVALID` if argument `address` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
@@ -595,7 +599,7 @@ contains
         select case (address)
             case (30001:39999); rc = dm_modbus_read_input_registers(modbus, address, data) ! Input registers.
             case (40001:49999); rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers.
-            case default;       rc = E_INVALID
+            case default;       rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers (non-default).
         end select
 
         if (dm_is_error(rc)) return
@@ -604,12 +608,14 @@ contains
 
     integer function dm_modbus_read_int32(modbus, address, value) result(rc)
         !! Reads 4-byte signed integer from input or holding register, depending
-        !! on the address, and returns result in `value`.
+        !! on the address, and returns result in `value`. If the address is not
+        !! in input register or holding register range, it is interpreted as a
+        !! holding register address.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
-        !! * `E_INVALID` if argument `address` or `data` is invalid.
+        !! * `E_INVALID` if argument `address` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
@@ -624,7 +630,7 @@ contains
         select case (address)
             case (30001:39999); rc = dm_modbus_read_input_registers(modbus, address, data) ! Input registers.
             case (40001:49999); rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers.
-            case default;       rc = E_INVALID
+            case default;       rc = dm_modbus_read_registers      (modbus, address, data) ! Holding registers (non-default).
         end select
 
         if (dm_is_error(rc)) return
@@ -680,12 +686,14 @@ contains
     integer function dm_modbus_read_uint16(modbus, address, value) result(rc)
         !! Reads 2-byte unsigned integer from input or holding register,
         !! depending on the address, and returns result in `value`. Stores the
-        !! 2-byte unsigned value in a 4-byte signed integer.
+        !! 2-byte unsigned value in a 4-byte signed integer. If the address is
+        !! not in input register or holding register range, it is interpreted
+        !! as a holding register address.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
-        !! * `E_INVALID` if argument `address` or `data` is invalid.
+        !! * `E_INVALID` if argument `address` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
@@ -704,12 +712,14 @@ contains
     integer function dm_modbus_read_uint32(modbus, address, value) result(rc)
         !! Reads 4-byte unsigned integer from input or holding register,
         !! depending on the address, and returns result in `value`. Stores the
-        !! 4-byte unsigned value in a 8-byte signed integer.
+        !! 4-byte unsigned value in a 8-byte signed integer. If the address is
+        !! not in input register or holding register range, it is interpreted
+        !! as a holding register address.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if argument `n` is larger than size of `data`.
-        !! * `E_INVALID` if argument `address` or `data` is invalid.
+        !! * `E_INVALID` if argument `address` is invalid.
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
