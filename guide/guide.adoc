@@ -1973,6 +1973,7 @@ The following fields are supported in the command string:
 |           | `write`       | Write value of `type` (integer only).
 | `address` | 30001 – 39999 | Input register address.
 |           | 40001 – 49999 | Holding register address.
+|           | default       | Holding register address.
 | `order`   | `abcd`        | ABCD byte order of type `float`.
 |           | `badc`        | BADC byte order of type `float`.
 |           | `cdab`        | CDAB byte order of type `float`.
@@ -4042,6 +4043,314 @@ Finally, start *dmfs* to execute the configured job:
 
 ....
 $ dmfs --config /opt/etc/dmpack/dmfs.conf
+....
+
+=== Weather Station (Modbus RTU)
+
+This section describes the set-up of DMPACK programs to capture sensor data of a
+Weather Station Compact WSC11 made by Adolf Thies GmbH & Co KG. The weather
+station is connected through RS-485 and uses the Modbus RTU protocol. The input
+registers will be read by the Modbus control program *dmmb*. All observations
+are forwarded to *dmdb*.
+
+Depending on the hardware version, the sensor provides the following values:
+
+* wind speed and direction;
+* global radiation, twilight, and brightness (north, east, south, west);
+* precipitation status, intensity (option) and amount (option);
+* ice/frost/snow detection (option);
+* temperature and dew point;
+* absolute and relative humidity;
+* absolute air pressure and air pressure at sea level (QNH);
+* sun position, elevation, azimuth;
+* date and time;
+* longitude, latitude, and elevation.
+
+By default, the RS-485 interface of the WSC11 is set to 9600 baud (8N1) with
+slave id 1. Change parameter `slave` in the request strings of the *dmdb*
+configuration to the actual slave id.
+
+==== Databases
+
+In order to store any observations or logs, initialise the databases with
+*dminit* first:
+
+....
+$ cd /opt/var/dmpack/
+$ dminit --database observ.sqlite --type observ --wal
+$ dminit --database log.sqlite --type log --wal
+....
+
+Create node `node-1`, sensor `thies-wsc11`, and target `target-1` in database
+`/opt/var/dmpack/observ.sqlite` through *dmdbctl*:
+
+....
+$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor --id thies-wsc11 --name "Thies WSC11" --node node-1
+$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+....
+
+Optionally, set the sensor type to `meteo` (for meteorological sensors) with
+argument `--type`.
+
+==== Configuration
+
+The weather station is connected via a WaveShare RS-232/RS-485/TTL converter on
+`/dev/ttyUSB0` in this example. The Modbus connection may be tested with
+*dmmbctl* first. Read input register `34601` to output the current date in
+format `YYYYMMDD`:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopbits 1 \
+  --slave 1 --read 34601 --type uint32
+20250305
+....
+
+As each observation can have a maximum of eight requests, reading the input
+registers is split into multiple observations. Unwanted measurement jobs can
+simply be disabled. See the
+link:https://www.thiesclima.com/db/dnl/4.9056.1x.x0x_WSC11_eng.pdf[user manual]
+(PDF) for an overview of all Modbus registers. The register values are
+automatically scaled and converted to floating-point where applicable. The last
+job does not contain an observation and only causes the program to wait 60
+seconds before the next cycle.
+
+The target and the receivers of all observations are declared globally at the
+top of the file. Copy the *dmmb* configuration to `/opt/etc/dmpack/dmmb.conf`:
+
+[source,lua]
+....
+-- dmmb.conf
+-- Global attributes used in the configuration.
+target_id = "target-1"
+receivers = { "dmdb" }
+
+dmmb = {
+  logger = "dmlogger",
+  node = "node-1",
+  sensor = "thies-wsc11",
+  output = "",
+  format = "",
+  mode = "rtu",
+  rtu = {
+    path = "/dev/ttyUSB0",
+    baudrate = 9600,
+    bytesize = 8,
+    parity = "none",
+    stopbits = 1
+  },
+  tcp = {
+    address = "127.0.0.1",
+    port = 502
+  },
+  jobs = {
+    {
+      --
+      -- (1) Get wind speed and direction.
+      --
+      disabled = false,
+      onetime = false,
+      delay = 0,
+      observation = {
+        name = "get_wind",
+        target_id = target_id,
+        receivers = receivers,
+        requests = {
+          {
+            name = "get_wind_speed",
+            request = "access=read, slave=1, address=30001, type=uint32, scale=10",
+            responses = {{ name = "wind_speed", unit = "m/s", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_wind_speed_avg",
+            request = "access=read, slave=1, address=30003, type=uint32, scale=10",
+            responses = {{ name = "wind_speed_avg", unit = "m/s", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_wind_dir",
+            request = "access=read, slave=1, address=30201, type=uint32, scale=10",
+            responses = {{ name = "wind_dir", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_wind_dir_avg",
+            request = "access=read, slave=1, address=30203, type=uint32, scale=10",
+            responses = {{ name = "wind_dir_avg", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          }
+        }
+      }
+    },
+    {
+      --
+      -- (2) Get temperature, humidity, and air pressure.
+      --
+      disabled = false,
+      onetime = false,
+      delay = 0,
+      observation = {
+        name = "get_temp_hum_press",
+        target_id = target_id,
+        receivers = receivers,
+        requests = {
+          {
+            name = "get_temperature",
+            request = "access=read, slave=1, address=30401, type=int32, scale=10",
+            responses = {{ name = "temperature", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_internal_temperature",
+            request = "access=read, slave=1, address=30403, type=int32, scale=10",
+            responses = {{ name = "internal_temperature", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_relative_humidity",
+            request = "access=read, slave=1, address=30601, type=uint32, scale=10",
+            responses = {{ name = "rel_humidity", unit = "%rh", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_absolute_humidity",
+            request = "access=read, slave=1, address=30603, type=uint32, scale=100",
+            responses = {{ name = "abs_humidity", unit = "g/m3", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_dew_point",
+            request = "access=read, slave=1, address=30605, type=int32, scale=10",
+            responses = {{ name = "dew_point", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_absolute_pressure",
+            request = "access=read, slave=1, address=30801, type=uint32, scale=100",
+            responses = {{ name = "abs_pressure", unit = "hPa", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_relative_pressure",
+            request = "access=read, slave=1, address=30803, type=uint32, scale=100",
+            responses = {{ name = "rel_pressure", unit = "hPa", type = RESPONSE_TYPE_REAL64 }}
+          }
+        }
+      }
+    },
+    {
+      --
+      -- (3) Get global radiation, brightness, and sun position.
+      --
+      disabled = false,
+      onetime = false,
+      delay = 0,
+      observation = {
+        name = "get_radiation",
+        target_id = target_id,
+        receivers = receivers,
+        requests = {
+          {
+            name = "get_global_radiation",
+            request = "access=read, slave=1, address=31001, type=int32, scale=10",
+            responses = {{ name = "radiation", unit = "W/m2", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_brightness_north",
+            request = "access=read, slave=1, address=31201, type=uint32, scale=10",
+            responses = {{ name = "bright_north", unit = "kLux", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_brightness_east",
+            request = "access=read, slave=1, address=31203, type=uint32, scale=10",
+            responses = {{ name = "bright_east", unit = "kLux", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_brightness_south",
+            request = "access=read, slave=1, address=31205, type=uint32, scale=10",
+            responses = {{ name = "bright_south", unit = "kLux", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_brightness_west",
+            request = "access=read, slave=1, address=31207, type=uint32, scale=10",
+            responses = {{ name = "bright_west", unit = "kLux", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_twilight",
+            request = "access=read, slave=1, address=31209, type=uint32, scale=1",
+            responses = {{ name = "twilight", unit = "Lux", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_sun_elevation",
+            request = "access=read, slave=1, address=34805, type=int32, scale=10",
+            responses = {{ name = "sun_elevation", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_sun_azimuth",
+            request = "access=read, slave=1, address=34807, type=int32, scale=10",
+            responses = {{ name = "sun_azimuth", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          }
+        }
+      }
+    },
+    {
+      --
+      -- (4) Get GPS position (longitude, latitude, elevation in NN/NHN).
+      --
+      disabled = false,
+      onetime = false,
+      delay = 0,
+      observation = {
+        name = "get_position",
+        target_id = target_id,
+        receivers = receivers,
+        requests = {
+          {
+            name = "get_longitude",
+            request = "access=read, slave=1, address=34801, type=int32, scale=1000000",
+            responses = {{ name = "longitude", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_latitude",
+            request = "access=read, slave=1, address=34803, type=int32, scale=1000000",
+            responses = {{ name = "latitude", unit = "deg", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_elevation_nn",
+            request = "access=read, slave=1, address=34809, type=uint32, scale=1",
+            responses = {{ name = "elevation_nn", unit = "m", type = RESPONSE_TYPE_REAL64 }}
+          },
+          {
+            name = "get_elevation_nhn",
+            request = "access=read, slave=1, address=34817, type=uint32, scale=10",
+            responses = {{ name = "elevation_nhn", unit = "m", type = RESPONSE_TYPE_REAL64 }}
+          },
+        }
+      }
+    },
+    {
+      --
+      -- (5) Wait 60 seconds.
+      --
+      disabled = false,
+      onetime = false,
+      delay = 60 * 1000
+    }
+  },
+  debug = false,
+  verbose = false
+}
+....
+
+==== Monitoring
+
+Start the *dmlogger* process first:
+
+....
+$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+....
+
+Start the *dmdb* database process:
+
+....
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+....
+
+Start *dmmb* to execute the configured jobs:
+
+....
+$ dmmb --name dmmb --config /opt/etc/dmpack/dmmb.conf --verbose
 ....
 
 === Digital Multimeter (RS-232)
