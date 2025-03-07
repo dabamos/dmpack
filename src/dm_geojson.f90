@@ -42,7 +42,7 @@ contains
     ! **************************************************************************
     subroutine dm_geojson_feature_point(geojson, type, longitude, latitude, elevation, json, comma)
         !! Returns GeoJSON feature point of given DMPACK type, longitude,
-        !! latitude, elevation, and type data in JSON. The output string
+        !! latitude, elevation, and type properties in JSON. The output string
         !! `geojson` is of the following form:
         !!
         !! ```json
@@ -58,7 +58,7 @@ contains
         !!   },
         !!   "properties": {
         !!     "type": "node",
-        !!     "data": {
+        !!     "properties": {
         !!       "id": "dummy-node",
         !!       "name": "Dummy Node",
         !!       "meta": "dummy description",
@@ -72,8 +72,6 @@ contains
         !!   }
         !! }
         !! ```
-        !!
-        !! The property _data_ is set to the passed JSON string `data`.
         character(len=:), allocatable, intent(out)          :: geojson   !! Output GeoJSON string.
         integer,                       intent(in)           :: type      !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
         real(kind=r8),                 intent(in)           :: longitude !! Point longitude (decimal).
@@ -89,7 +87,7 @@ contains
 
         geojson = '{"type":"Feature","geometry":{"type":"Point","coordinates":[' // &
                   dm_ftoa(longitude) // ',' // dm_ftoa(latitude) // ',' // dm_ftoa(elevation) // &
-                  ']},"properties":{"type":"' // trim(TYPE_NAMES(type_)) // '","data":' // &
+                  ']},"properties":{"type":"' // trim(TYPE_NAMES(type_)) // '","properties":' // &
                   trim(json) // '}}'
         if (dm_present(comma, .false.)) geojson = geojson // ','
     end subroutine dm_geojson_feature_point

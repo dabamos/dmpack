@@ -450,7 +450,7 @@ contains
             case (MODBUS_ACCESS_READ)
                 if (debug) call logger%debug('reading value from register address ' // dm_itoa(register%address))
 
-                rc = read_value(modbus, register, value)
+                rc = read_value(modbus, register, value, raw=request%response)
                 call dm_response_set(request%responses(1), error=rc)
 
                 if (dm_is_error(rc)) then
@@ -482,36 +482,55 @@ contains
         end select
     end function read_request
 
-    integer function read_value(modbus, register, value) result(rc)
+    integer function read_value(modbus, register, value, raw) result(rc)
         !! Reads value from register.
-        class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
-        type(modbus_register_type), intent(inout) :: register !! Modbus register type.
-        real(kind=r8),              intent(out)   :: value    !! Value read from register.
+        class(modbus_type),         intent(inout)           :: modbus   !! Modbus context type.
+        type(modbus_register_type), intent(inout)           :: register !! Modbus register type.
+        real(kind=r8),              intent(out)             :: value    !! Value read from register.
+        character(len=*),           intent(inout), optional :: raw      !! Raw response string.
 
+        integer          :: stat
         integer(kind=i2) :: i16
         integer(kind=i4) :: i32
         integer(kind=i8) :: i64
         real(kind=r4)    :: r32
 
         value = 0.0_r8
+        if (present(raw)) raw = ' '
 
         select case (register%type)
-            case (MODBUS_TYPE_INT16);  rc = dm_modbus_read_int16 (modbus, register%address, i16)
-            case (MODBUS_TYPE_INT32);  rc = dm_modbus_read_int32 (modbus, register%address, i32)
-            case (MODBUS_TYPE_UINT16); rc = dm_modbus_read_uint16(modbus, register%address, i32)
-            case (MODBUS_TYPE_UINT32); rc = dm_modbus_read_uint32(modbus, register%address, i64)
-            case (MODBUS_TYPE_FLOAT);  rc = dm_modbus_read_float (modbus, register%address, r32, register%order)
-            case default;              rc = E_INVALID
-        end select
+            case (MODBUS_TYPE_INT16)
+                rc = dm_modbus_read_int16 (modbus, register%address, i16)
+                if (dm_is_error(rc)) return
+                value = dm_to_real64(i16)
+                if (present(raw)) write (raw, '(i0)', iostat=stat) i16
 
-        if (dm_is_error(rc)) return
+            case (MODBUS_TYPE_INT32)
+                rc = dm_modbus_read_int32 (modbus, register%address, i32)
+                if (dm_is_error(rc)) return
+                value = dm_to_real64(i32)
+                if (present(raw)) write (raw, '(i0)', iostat=stat) i32
 
-        select case (register%type)
-            case (MODBUS_TYPE_INT16);  value = dm_to_real64(i16)
-            case (MODBUS_TYPE_INT32);  value = dm_to_real64(i32)
-            case (MODBUS_TYPE_UINT16); value = dm_to_real64(i32)
-            case (MODBUS_TYPE_UINT32); value = dm_to_real64(i64)
-            case (MODBUS_TYPE_FLOAT);  value = dm_to_real64(r32)
+            case (MODBUS_TYPE_UINT16)
+                rc = dm_modbus_read_uint16(modbus, register%address, i32)
+                if (dm_is_error(rc)) return
+                value = dm_to_real64(i32)
+                if (present(raw)) write (raw, '(i0)', iostat=stat) i32
+
+            case (MODBUS_TYPE_UINT32)
+                rc = dm_modbus_read_uint32(modbus, register%address, i64)
+                if (dm_is_error(rc)) return
+                value = dm_to_real64(i64)
+                if (present(raw)) write (raw, '(i0)', iostat=stat) i64
+
+            case (MODBUS_TYPE_FLOAT)
+                rc = dm_modbus_read_float (modbus, register%address, r32, register%order)
+                if (dm_is_error(rc)) return
+                value = dm_to_real64(r32)
+                if (present(raw)) write (raw, '(f0.12)', iostat=stat) r32
+
+            case default
+                rc = E_INVALID
         end select
     end function read_value
 

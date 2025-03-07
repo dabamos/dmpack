@@ -55,22 +55,22 @@ function onEachFeature(feature, layer)
 
     let content = '';
 
-    if (feature.properties && feature.properties.type && feature.properties.data)
+    if (feature.properties && feature.properties.type && feature.properties.properties)
     {
-        if (feature.properties.data.id && feature.properties.data.name)
+        if (feature.properties.properties.id && feature.properties.properties.name)
         {
             let name;
 
             if (isValidType(feature.properties.type))
-                name = `<a href="${base}/${feature.properties.type}?id=${feature.properties.data.id}">${feature.properties.data.name}</a>`;
+                name = `<a href="${base}/${feature.properties.type}?id=${feature.properties.properties.id}">${feature.properties.properties.name}</a>`;
             else
-                name = `${feature.properties.data.name}`;
+                name = `${feature.properties.properties.name}`;
 
             content += `<strong>${name}</strong> `;
         }
 
         content += `<em>${feature.properties.type}</em><br>`;
-        if (feature.properties.data.meta) content += encode(feature.properties.data.meta);
+        if (feature.properties.properties.meta) content += encode(feature.properties.properties.meta);
     }
 
     layer.bindPopup(content);

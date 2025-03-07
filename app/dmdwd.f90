@@ -344,7 +344,7 @@ contains
                 exit io_block
             end if
 
-            call logger%debug('selected station ' // trim(station%name) // ' (' // trim(station_id) // ')')
+            call logger%debug('selected station ' // trim(station_id) // ': ' // station%name)
         end block io_block
 
         close (unit)
