@@ -70,6 +70,12 @@ contains
     integer function dm_mqtt_publish(url, message, timeout, error_message, error_curl) result(rc)
         !! Publishes MQTT message `message` on topic with address `url` by
         !! calling libcurl.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if URL is invalid.
+        !! * `E_MQTT` if publishing the message failed.
+        !!
         character(len=*),              intent(in)            :: url           !! URL to MQTT server/topic.
         character(len=*), target,      intent(in)            :: message       !! Message to publish.
         integer,                       intent(in),  optional :: timeout       !! Connection timeout.
@@ -79,32 +85,28 @@ contains
         integer     :: stat
         type(c_ptr) :: curl_ctx
 
-        rc = E_MQTT
-
         if (present(error_message)) error_message = ''
         if (present(error_curl))    error_curl    = CURLE_OK
 
+        rc = E_MQTT
         curl_ctx = curl_easy_init()
         if (.not. c_associated(curl_ctx)) return
 
+        rc = E_INVALID
+        if (len_trim(url) == 0) return
+
         curl_block: block
+            integer(kind=i8) :: n
+            type(c_ptr)      :: ptr
+
+            n   = len(message, kind=i8)
+            ptr = c_loc(message)
+
             ! Prepare request.
-            rc = E_INVALID
-
-            ! Set URL.
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_URL, url)
-            if (stat /= CURLE_OK) exit curl_block
-
-            ! Enable POST.
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_POST, 1)
-            if (stat /= CURLE_OK) exit curl_block
-
-            ! Pass POST data directly.
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_POSTFIELDSIZE, len(message, kind=i8))
-            if (stat /= CURLE_OK) exit curl_block
-
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_POSTFIELDS, c_loc(message))
-            if (stat /= CURLE_OK) exit curl_block
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_URL,           url); if (stat /= CURLE_OK) exit curl_block ! Set URL.
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_POST,          1);   if (stat /= CURLE_OK) exit curl_block ! Enable POST.
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_POSTFIELDSIZE, n);   if (stat /= CURLE_OK) exit curl_block ! Payload size.
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_POSTFIELDS,    ptr); if (stat /= CURLE_OK) exit curl_block ! Pass payload directly.
 
             ! Set connection timeout.
             if (present(timeout)) then
@@ -112,17 +114,13 @@ contains
                 if (stat /= CURLE_OK) exit curl_block
             end if
 
-            ! No output.
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1)
-            if (stat /= CURLE_OK) exit curl_block
-
-            stat = curl_easy_setopt(curl_ctx, CURLOPT_NOPROGRESS, 1)
-            if (stat /= CURLE_OK) exit curl_block
+            ! Set verbosity.
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL,   1); if (stat /= CURLE_OK) exit curl_block ! No output.
+            stat = curl_easy_setopt(curl_ctx, CURLOPT_NOPROGRESS, 1); if (stat /= CURLE_OK) exit curl_block ! No progress output.
 
             ! Send request.
             rc = E_MQTT
-            stat = curl_easy_perform(curl_ctx)
-            if (stat /= CURLE_OK) exit curl_block
+            stat = curl_easy_perform(curl_ctx); if (stat /= CURLE_OK) exit curl_block
 
             rc = E_NONE
         end block curl_block

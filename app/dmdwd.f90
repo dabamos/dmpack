@@ -120,23 +120,6 @@ contains
         if (.not. allocated(reports)) allocate (reports(0))
     end function fetch_weather_reports
 
-    integer function read_type_from_name(name) result(type)
-        !! Returns read type from string. Returns `APP_READ_TYPE_NONE` on
-        !! error.
-        character(len=*), intent(in) :: name !! Read type name.
-
-        character(len=APP_READ_TYPE_NAME_LEN) :: name_
-
-        name_ = dm_to_lower(name)
-
-        select case (name_)
-            case ('all');  type = APP_READ_TYPE_ALL
-            case ('last'); type = APP_READ_TYPE_LAST
-            case ('next'); type = APP_READ_TYPE_NEXT
-            case default;  type = APP_READ_TYPE_NONE
-        end select
-    end function read_type_from_name
-
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
@@ -264,6 +247,23 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function read_type_from_name(name) result(type)
+        !! Returns read type from string. Returns `APP_READ_TYPE_NONE` on
+        !! error.
+        character(len=*), intent(in) :: name !! Read type name.
+
+        character(len=APP_READ_TYPE_NAME_LEN) :: name_
+
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case ('all');  type = APP_READ_TYPE_ALL
+            case ('last'); type = APP_READ_TYPE_LAST
+            case ('next'); type = APP_READ_TYPE_NEXT
+            case default;  type = APP_READ_TYPE_NONE
+        end select
+    end function read_type_from_name
 
     integer function run(app) result(rc)
         type(app_type), intent(inout) :: app !! App type.

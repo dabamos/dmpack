@@ -3874,7 +3874,7 @@ Save the configuration to `/opt/etc/dmpack/dmserial.conf`.
 Start the *dmlogger* process first:
 
 ....
-$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
 ....
 
 Then, start the *dmdb* database process:
@@ -4032,7 +4032,7 @@ default name `dmdb`.
 Start the *dmlogger* process first:
 
 ....
-$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
 ....
 
 Then, start the *dmdb* database process:
@@ -4053,7 +4053,7 @@ This section describes the set-up of DMPACK programs to capture sensor data of a
 Weather Station Compact WSC11 made by Adolf Thies GmbH & Co KG. The weather
 station is connected through RS-485 and uses the Modbus RTU protocol. The input
 registers will be read by the Modbus control program *dmmb*. All observations
-are forwarded to *dmdb*.
+are forwarded to *dmdb* for storage in database.
 
 Depending on the hardware version, the sensor provides the following values:
 
@@ -4265,7 +4265,7 @@ dmmb = {
           },
           {
             name = "get_brightness_west",
-            request = "access=read,slave=1,address=31207, type=uint32, scale=10",
+            request = "access=read,slave=1,address=31207,type=uint32,scale=10",
             responses = {{ name = "bright_west", unit = "kLux" }}
           },
           {
@@ -4340,7 +4340,7 @@ dmmb = {
 Start the *dmlogger* process first:
 
 ....
-$ dmlogger --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
 ....
 
 Start the *dmdb* database process:

@@ -27,8 +27,8 @@ module dm_hash_table
     !! rc = dm_hash_table_get(table, 'zap', ptr)
     !!
     !! select type (value => ptr)
-    !!    type is (character(len=*)); print '(a)', trim(value)
-    !!    class default;              error stop
+    !!     type is (character(len=*)); print '(a)', trim(value)
+    !!     class default;              error stop
     !! end select
     !!
     !! call dm_hash_table_destroy(table)

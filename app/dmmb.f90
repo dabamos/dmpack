@@ -345,7 +345,7 @@ contains
         type(app_type),    intent(inout) :: app    !! App type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
         type(observ_type), intent(inout) :: observ !! Observation to read.
-        logical,           intent(in)    :: debug  !! Output debug messages.
+        logical,           intent(in)    :: debug  !! Log debug messages.
 
         integer :: msec, sec
         integer :: i, n
@@ -406,9 +406,8 @@ contains
         type(modbus_type),  intent(inout) :: modbus  !! Modbus context type.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Output debug messages.
+        logical,            intent(in)    :: debug   !! Log debug messages.
 
-        real(kind=r8)              :: value
         type(modbus_register_type) :: register
 
         rc = E_NONE
@@ -449,25 +448,15 @@ contains
         select case (register%access)
             case (MODBUS_ACCESS_READ)
                 if (debug) call logger%debug('reading value from register address ' // dm_itoa(register%address))
-
-                rc = read_value(modbus, register, value, raw=request%response)
-                call dm_response_set(request%responses(1), error=rc)
+                rc = read_value(modbus, register, request, debug)
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ':' // dm_modbus_error_message(), error=rc)
                     return
                 end if
 
-                if (dm_modbus_register_has_scale(register)) then
-                    if (debug) call logger%debug('scaling value by ' // dm_itoa(register%scale))
-                    call dm_modbus_register_scale(register, value)
-                end if
-
-                call dm_response_set(request%responses(1), value=value)
-
             case (MODBUS_ACCESS_WRITE)
                 if (debug) call logger%debug('writing value to register address ' // dm_itoa(register%address))
-
                 rc = write_value(modbus, register)
 
                 if (dm_is_error(rc)) then
@@ -482,56 +471,76 @@ contains
         end select
     end function read_request
 
-    integer function read_value(modbus, register, value, raw) result(rc)
-        !! Reads value from register.
-        class(modbus_type),         intent(inout)           :: modbus   !! Modbus context type.
-        type(modbus_register_type), intent(inout)           :: register !! Modbus register type.
-        real(kind=r8),              intent(out)             :: value    !! Value read from register.
-        character(len=*),           intent(inout), optional :: raw      !! Raw response string.
+    integer function read_value(modbus, register, request, debug) result(rc)
+        !! Reads value from register and stores it in the first response of the request.
+        character(len=*), parameter :: FMT_INT  = '(i0)'
+        character(len=*), parameter :: FMT_REAL = '(f0.8)'
 
-        integer          :: stat
+        class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
+        type(modbus_register_type), intent(inout) :: register !! Modbus register type.
+        type(request_type),         intent(inout) :: request  !! Observation request.
+        logical,                    intent(in)    :: debug    !! Log debug messages.
+
+        character(len=REQUEST_RESPONSE_LEN) :: raw
+        integer                             :: stat
+        real(kind=r8)                       :: value
+
         integer(kind=i2) :: i16
         integer(kind=i4) :: i32
         integer(kind=i8) :: i64
         real(kind=r4)    :: r32
 
-        value = 0.0_r8
-        if (present(raw)) raw = ' '
-
-        select case (register%type)
+        type_select: select case (register%type)
             case (MODBUS_TYPE_INT16)
-                rc = dm_modbus_read_int16 (modbus, register%address, i16)
-                if (dm_is_error(rc)) return
+                rc = dm_modbus_read_int16(modbus, register%address, i16)
+                if (dm_is_error(rc)) exit type_select
+                write (raw, FMT_INT, iostat=stat) i16
                 value = dm_to_real64(i16)
-                if (present(raw)) write (raw, '(i0)', iostat=stat) i16
 
             case (MODBUS_TYPE_INT32)
-                rc = dm_modbus_read_int32 (modbus, register%address, i32)
-                if (dm_is_error(rc)) return
+                rc = dm_modbus_read_int32(modbus, register%address, i32)
+                if (dm_is_error(rc)) exit type_select
+                write (raw, FMT_INT, iostat=stat) i32
                 value = dm_to_real64(i32)
-                if (present(raw)) write (raw, '(i0)', iostat=stat) i32
 
             case (MODBUS_TYPE_UINT16)
                 rc = dm_modbus_read_uint16(modbus, register%address, i32)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit type_select
+                write (raw, FMT_INT, iostat=stat) i32
                 value = dm_to_real64(i32)
-                if (present(raw)) write (raw, '(i0)', iostat=stat) i32
 
             case (MODBUS_TYPE_UINT32)
                 rc = dm_modbus_read_uint32(modbus, register%address, i64)
-                if (dm_is_error(rc)) return
+                if (dm_is_error(rc)) exit type_select
+                write (raw, FMT_INT, iostat=stat) i64
                 value = dm_to_real64(i64)
-                if (present(raw)) write (raw, '(i0)', iostat=stat) i64
 
             case (MODBUS_TYPE_FLOAT)
-                rc = dm_modbus_read_float (modbus, register%address, r32, register%order)
-                if (dm_is_error(rc)) return
+                rc = dm_modbus_read_float(modbus, register%address, r32, register%order)
+                if (dm_is_error(rc)) exit type_select
+                write (raw, FMT_REAL, iostat=stat) r32
                 value = dm_to_real64(r32)
-                if (present(raw)) write (raw, '(f0.12)', iostat=stat) r32
 
             case default
-                rc = E_INVALID
-        end select
+                rc   = E_INVALID
+                stat = 0
+        end select type_select
+
+        if (stat /= 0) rc = E_WRITE
+
+        associate (response => request%responses(1))
+            call dm_request_set(request, raw_response=raw)
+            call dm_response_set(response, error=rc)
+
+            if (dm_is_error(rc)) return
+
+            if (dm_modbus_register_has_scale(register)) then
+                if (debug) call logger%debug('scaling value by ' // dm_itoa(register%scale))
+                call dm_modbus_register_scale(register, value)
+            end if
+
+            call dm_response_set(response, value=value)
+        end associate
     end function read_value
 
     function request_name_string(observ, request) result(string)
@@ -626,7 +635,7 @@ contains
         integer,           intent(in)    :: format !! Format enumerator (`FORMAT_*`).
 
         select case (format)
-            case (FORMAT_CSV);   rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
+            case (FORMAT_CSV);   rc = dm_csv_write (observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
             case default;        rc = E_INVALID
         end select

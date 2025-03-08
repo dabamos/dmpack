@@ -134,10 +134,8 @@ contains
     logical function test03() result(stat)
         character(len=*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg.
 
-        integer                 :: iostat, rc, unit
-        logical                 :: enabled
-        type(rpc_request_type)  :: request
-        type(rpc_response_type) :: response
+        integer :: iostat, rc, unit
+        logical :: enabled
 
         stat = TEST_PASSED
 
@@ -161,12 +159,16 @@ contains
         if (iostat /= 0) return
 
         rpc_block: block
-            character(len=TIME_LEN)                    :: timestamp
-            character(len=:), allocatable              :: url
-            integer(kind=i8)                           :: epoch
-            real(kind=r8)                              :: dt
+            character(len=TIME_LEN)       :: timestamp
+            character(len=:), allocatable :: url
+
+            integer(kind=i8)        :: epoch
+            real(kind=r8)           :: dt
+            type(rpc_request_type)  :: request
+            type(rpc_response_type) :: response
+            type(timer_type)        :: timer
+
             type(dwd_weather_report_type), allocatable :: reports(:)
-            type(timer_type)                           :: timer
 
             rc = E_INVALID
             print *, 'Creating URL to records of Airport Berlin-Brandenburg ...'
