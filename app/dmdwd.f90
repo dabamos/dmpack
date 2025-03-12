@@ -269,35 +269,68 @@ contains
         type(app_type), intent(inout) :: app !! App type.
 
         type(dwd_weather_report_type), allocatable :: reports(:)
+        type(observ_type)                          :: observ
 
         call logger%info('started ' // APP_NAME)
         call find_station(app%catalog, app%station_id)
 
-        rpc_block: block
-            rc = dm_rpc_init()
+        rc = dm_rpc_init()
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed initialize RPC backend', error=rc)
-                exit rpc_block
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize RPC backend', error=rc)
+            return
+        end if
+
+        report_loop: do
+            rpc_block: block
+                rc = fetch_weather_reports(app%station_id, reports)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to fetch weather reports from DWD API', error=rc)
+                    exit rpc_block
+                end if
+
+                if (size(reports) == 0) then
+                    call logger%error('no weather reports returned', error=E_EMPTY)
+                    exit rpc_block
+                end if
+
+                if (.not. dm_dwd_is_weather_report_valid(reports(1))) then
+                    call logger%error('invalid weather report received', error=E_INVALID)
+                    exit rpc_block
+                end if
+
+                call create_observ(observ, app, reports(1))
+                call dm_dwd_weather_report_out(reports(1))
+            end block rpc_block
+
+            if (app%interval <= 0) then
+                call logger%debug('no cycle interval set')
+                exit report_loop
             end if
 
-            rc = fetch_weather_reports(app%station_id, reports)
+            call logger%debug('next weather report call in ' // dm_itoa(app%interval) // ' sec')
+            call dm_sleep(app%interval)
+        end do report_loop
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to fetch weather reports from DWD API', error=rc)
-                exit rpc_block
-            end if
-
-            if (size(reports) == 0) then
-                call logger%error('no weather reports returned', error=E_EMPTY)
-                exit rpc_block
-            end if
-
-            call dm_dwd_weather_report_out(reports(1))
-        end block rpc_block
-
+        call logger%debug('finished fetching of weather reports')
         call dm_rpc_shutdown()
     end function run
+
+    subroutine create_observ(observ, app, report)
+        type(observ_type),             intent(out)   :: observ
+        type(app_type),                intent(inout) :: app
+        type(dwd_weather_report_type), intent(inout) :: report
+
+        call dm_observ_set(observ    = observ,               &
+                           id        = dm_uuid4(),           &
+                           node_id   = app%node_id,          &
+                           sensor_id = app%sensor_id,        &
+                           target_id = app%target_id,        &
+                           name      = 'dwd_weather_report', &
+                           timestamp = report%timestamp,     &
+                           source    = app%name)
+    end subroutine create_observ
 
     subroutine find_station(catalog, station_id)
         !! Tries to find MOSMIX station in station catalog. This routine only

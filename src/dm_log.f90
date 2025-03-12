@@ -125,11 +125,18 @@ contains
 
         valid = .false.
 
-        if (.not. dm_log_level_is_valid(log%level))    return
-        if (.not. dm_error_is_valid(log%error))        return
-        if (log%id == UUID_DEFAULT)                    return
-        if (.not. dm_uuid4_is_valid(log%id))           return
-        if (.not. dm_time_is_valid(log%timestamp))     return
+        if (log%id == UUID_DEFAULT)                 return
+        if (.not. dm_uuid4_is_valid(log%id))        return
+        if (.not. dm_log_level_is_valid(log%level)) return
+        if (.not. dm_error_is_valid(log%error))     return
+        if (.not. dm_time_is_valid(log%timestamp))  return
+
+        if (len_trim(log%node_id)   > 0 .and. .not. dm_id_is_valid(log%node_id,   max_len=NODE_ID_LEN))    return
+        if (len_trim(log%sensor_id) > 0 .and. .not. dm_id_is_valid(log%sensor_id, max_len=SENSOR_ID_LEN))  return
+        if (len_trim(log%target_id) > 0 .and. .not. dm_id_is_valid(log%target_id, max_len=TARGET_ID_LEN))  return
+        if (len_trim(log%observ_id) > 0 .and. .not. dm_id_is_valid(log%observ_id, max_len=OBSERV_ID_LEN))  return
+        if (len_trim(log%source)    > 0 .and. .not. dm_id_is_valid(log%source,    max_len=LOG_SOURCE_LEN)) return
+
         if (.not. dm_string_is_printable(log%message)) return
 
         valid = .true.

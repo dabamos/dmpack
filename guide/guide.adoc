@@ -4047,15 +4047,143 @@ Finally, start *dmfs* to execute the configured job:
 $ dmfs --config /opt/etc/dmpack/dmfs.conf
 ....
 
+=== UV Sensor (Modbus RTU)
+
+The link:https://sglux.de/en/produkt/uv-cosine/[UV-Cosine] is a waterproof and
+dirt-repellent UV sensor by sglux GmbH, with analog (4–20{nbsp}mA, 0–5{nbsp}V,
+0–10{nbsp}V) or digital (USB, Modbus RTU, CAN) output. Depending on the model,
+the spectral sensitivity of the sensor is calibrated for broadband UV, UVA,
+UVB+C, UVC, UV index, bluelight, or UV+VI.
+
+For this section, the digital variant with Modbus interface and broadband UV
+sensitivity is used. See the official _Programming Manual_ on how to programm
+the UV-Cosine. The sensor uses non-standard Modbus holding register addresses:
+
+[cols="2,4,3,2,2,7"]
+|===
+| Address | Name                 | Type       | Bytes | Access | Description
+
+| 100     | hardware revision | `uint16`   | 2     | RD     | hardware revision number
+| 101     | firmware revision | `uint16`   | 2     | RD     | firmware revision number
+| 104     | serial number     | `uint32`   | 4     | RD     | sensor serial number
+| 106     | sensor address    | `uint16`   | 2     | RDWR   | Modbus slave id
+| 107     | sensor protocol   | `uint16`   | 2     | RDWR   | baud rate, parity, stop bits
+| 110     | product vendor    | `string16` | 16    | RD     | vendor name (`SGLUX GMBH`)
+| 118     | product name      | `string16` | 16    | RD     | product name
+| 126     | sensor name       | `string16` | 16    | RDWR   | user-defined device name
+| 1030    | calibration date  | `uint32`   | 4     | RD     | date of calibration
+| 1032    | calibration 1     | `string16` | 16    | RD     | name of calibration 1
+| 1040    | calibration 2     | `string16` | 16    | RD     | name of calibration 2 (or `?`)
+| 1048    | calibration 3     | `string16` | 16    | RD     | name of calibration 3 (or `?`)
+| 1056    | calibration 4     | `string16` | 16    | RD     | name of calibration 4 (or `?`)
+| 1064    | calibration 5     | `string16` | 16    | RD     | name of calibration 5 (or `?`)
+| 2000    | cycle count       | `uint16`   | 2     | RD     | measurement cycle counter
+| 2001    | status            | `uint16`   | 2     | RD     | status of ADC
+| 2002    | timestamp         | `uint32`   | 4     | RD     | internal timestamp [msec]
+| 2004    | radiation 1       | `float`    | 4     | RD     | radiation by calibration 1 [W/m^2^]
+| 2006    | radiation 2       | `float`    | 4     | RD     | radiation by calibration 2 [W/m^2^]
+| 2008    | radiation 3       | `float`    | 4     | RD     | radiation by calibration 3 [W/m^2^]
+| 2010    | radiation 4       | `float`    | 4     | RD     | radiation by calibration 4 [W/m^2^]
+| 2012    | radiation 5       | `float`    | 4     | RD     | radiation by calibration 5 [W/m^2^]
+| 2014    | temperature       | `float`    | 4     | RD     | internal sensor temperature [°C]
+|===
+
+The radiation in W/m^2^ (calibration factor 1) is read from register `2004` and
+the internal temperature in °C from register `2014`, both as floating-point
+number in ABCD byte order. We can test the register access with *dmmbctl* and
+output the UV radiation. If the sensor is connected through an USB adapter on
+`/dev/ttyUSB0`, run:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --stopbits 1 \
+  --slave 1 --read 2004 --type float --order abcd
+1.87749458
+....
+
+The RS-485 interface is configured to the sensor default of 115200 baud (8E1).
+
+==== Configuration
+
+The Modbus monitoring program *dmmb* will read radiation and internal
+temperature from the sensor. The observations are written to
+`/tmp/timeseries.jsonl` in JSONL format, without any database storage for
+simplicity. Copy the *dmdb* configuration to `/opt/etc/dmpack/dmmb.conf`:
+
+[source,lua]
+....
+-- dmmb.conf
+dmmb = {
+  logger = "",
+  node = "node-1",
+  sensor = "uv-cosine",
+  output = "/tmp/timeseries.jsonl",
+  format = "jsonl",
+  mode = "rtu",
+  rtu = {
+    path = "/dev/ttyUSB0",
+    baudrate = 115200,
+    bytesize = 8,
+    parity = "even",
+    stopbits = 1
+  },
+  tcp = {
+    address = "127.0.0.1",
+    port = 502
+  },
+  jobs = {
+    {
+      disabled = false,
+      onetime = false,
+      delay = 10 * 1000,
+      observation = {
+        name = "get_values",
+        target_id = "target-1",
+        receivers = { },
+        requests = {
+          {
+            name = "get_radiation",
+            request = "access=read,slave=1,address=2004,type=float,order=abcd",
+            responses = {{ name = "radiation", unit = "W/m2" }}
+          },
+          {
+            name = "get_internal_temperature",
+            request = "access=read,slave=1,address=2014,type=float,order=abcd",
+            responses = {{ name = "temperature", unit = "degC" }}
+          }
+        }
+      }
+    }
+  },
+  debug = false,
+  verbose = false
+}
+....
+
+==== Monitoring
+
+Start *dmmb* to write the measurement values to file `/tmp/timeseries.jsonl`:
+
+....
+$ dmmb --name dmmb --config /opt/etc/dmpack/dmmb.conf --verbose
+....
+
+Watch the output file:
+
+....
+$ tail -f /tmp/timeseries.jsonl
+....
+
 === Weather Station (Modbus RTU)
 
-This section describes the set-up of DMPACK programs to capture sensor data of a
-Weather Station Compact WSC11 made by Adolf Thies GmbH & Co KG. The weather
-station is connected through RS-485 and uses the Modbus RTU protocol. The input
+This section describes the set-up of DMPACK programs to capture sensor data of
+the digital weather station WSC11 by Adolf Thies GmbH & Co KG. The model used
+in this example is connected through Modbus RTU to the sensor node. The input
 registers will be read by the Modbus control program *dmmb*. All observations
-are forwarded to *dmdb* for storage in database.
+are forwarded to *dmdb* for database storage.
 
-Depending on the hardware version, the sensor provides the following values:
+The weather station is offered with RS-485 (ASCII, Modbus RTU) or KNX
+interface. Depending on the hardware variant, the following values are
+measured:
 
 * wind speed and direction;
 * global radiation, twilight, and brightness (north, east, south, west);
@@ -4069,8 +4197,8 @@ Depending on the hardware version, the sensor provides the following values:
 * date and time.
 
 By default, the RS-485 interface of the WSC11 is set to 9600 baud (8N1) with
-slave id 1. Change parameter `slave` in the request strings of the *dmdb*
-configuration to the actual slave id.
+Modbus slave id 1. Change parameter `slave` in the request strings of the
+*dmdb* configuration to the actual slave id.
 
 ==== Databases
 
@@ -4093,14 +4221,15 @@ $ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
 ....
 
 Optionally, set the sensor type to `meteo` (for meteorological sensors) with
-argument `--type`.
+argument `--type`. Alternatively, the entities can be added with *dmweb*
+instead.
 
 ==== Configuration
 
-The weather station is connected via a WaveShare RS-232/RS-485/TTL converter on
-`/dev/ttyUSB0` in this example. The Modbus connection may be tested with
-*dmmbctl* first. Read input register `34601` to output the current date in
-format `YYYYMMDD`:
+In this example, the weather station is connected via a WaveShare
+RS-232/RS-485/TTL converter on `/dev/ttyUSB0`. The Modbus connection may be
+tested with *dmmbctl* first. For instance, read input register `34601` to
+output the current date in format `YYYYMMDD`:
 
 ....
 $ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopbits 1 \
@@ -4108,22 +4237,22 @@ $ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopb
 20250305
 ....
 
-As each observation can have a maximum of eight requests, reading the input
+As each observation may contain a maximum of eight requests, reading the input
 registers is split into multiple observations. Unwanted measurement jobs can
 simply be disabled. See the
 link:https://www.thiesclima.com/db/dnl/4.9056.1x.x0x_WSC11_eng.pdf[user manual]
 (PDF) for an overview of all Modbus registers. The register values are
 automatically scaled and converted to response type `RESPONSE_TYPE_REAL64`. The
-last job does not contain an observation and only causes the program to wait 60
-seconds before the next cycle.
+last job does not contain an observation and only causes the program to wait
+for 60 seconds before the next cycle starts.
 
 The target and the receivers of all observations are declared globally at the
-top of the file. Copy the *dmmb* configuration to `/opt/etc/dmpack/dmmb.conf`:
+top of the file. Copy the *dmmb* configuration to `/opt/etc/dmpack/dmmb.conf`
+if DMPACK is installed to `/opt`:
 
 [source,lua]
 ....
 -- dmmb.conf
--- Global attributes used in the configuration.
 target_id = "target-1"
 receivers = { "dmdb" }
 
@@ -4337,13 +4466,13 @@ dmmb = {
 
 ==== Monitoring
 
-Start the *dmlogger* process first:
+Start the *dmlogger* process to store any logs:
 
 ....
 $ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
 ....
 
-Start the *dmdb* database process:
+Start the *dmdb* database process to store the observations:
 
 ....
 $ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose

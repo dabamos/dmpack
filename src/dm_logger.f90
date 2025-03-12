@@ -376,7 +376,7 @@ contains
 
     subroutine logger_out(this, log, unit)
         !! Prints log message to standard error.
-        character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " (", i0, ")")'
+        character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " [E", i0, "]")'
         character(len=*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
 
         class(logger_class), intent(inout)        :: this !! Logger object.

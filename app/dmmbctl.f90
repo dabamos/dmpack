@@ -386,8 +386,8 @@ contains
 
     integer function read_value(modbus, address, type, order) result(rc)
         !! Reads and prints value from register.
-        character(len=*), parameter :: FMT_INT  = '(i0)'    !! Integer output format.
-        character(len=*), parameter :: FMT_REAL = '(f0.12)' !! Real output format.
+        character(len=*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
+        character(len=*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
 
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Register address.
