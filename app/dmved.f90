@@ -225,7 +225,7 @@ contains
             return
         end if
 
-        if (.not. dm_ve_device_is_valid(app%device)) then
+        if (.not. dm_ve_is_valid_device(app%device)) then
             call dm_error_out(rc, 'invalid device')
             return
         end if

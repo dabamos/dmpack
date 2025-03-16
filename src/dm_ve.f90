@@ -587,7 +587,7 @@ module dm_ve
     ] !! Predefined products.
 
     public :: dm_ve_device_from_name
-    public :: dm_ve_device_is_valid
+    public :: dm_ve_is_valid_device
     public :: dm_ve_error_message
     public :: dm_ve_field_label
     public :: dm_ve_field_type
@@ -618,13 +618,6 @@ contains
             case default;                            device = VE_DEVICE_NONE
         end select
     end function dm_ve_device_from_name
-
-    pure elemental logical function dm_ve_device_is_valid(device) result(valid)
-        !! Returns `.true.` if given VE device enumerator is valid.
-        integer, intent(in) :: device !! Device enumerator.
-
-        valid = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
-    end function dm_ve_device_is_valid
 
     pure function dm_ve_error_message(code) result(message)
         !! Returns message associated with given VE.Direct error code.
@@ -701,6 +694,13 @@ contains
                 return
         end select
     end function dm_ve_is_error
+
+    pure elemental logical function dm_ve_is_valid_device(device) result(valid)
+        !! Returns `.true.` if given VE device enumerator is valid.
+        integer, intent(in) :: device !! Device enumerator.
+
+        valid = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
+    end function dm_ve_is_valid_device
 
     pure elemental logical function dm_ve_is_valid_field_type(type) result(valid)
         !! Returns `.true.` if given type is a valid field enumerator
