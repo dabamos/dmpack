@@ -172,7 +172,7 @@ contains
 
             rc = E_INVALID
             print *, 'Creating URL to records of Airport Berlin-Brandenburg ...'
-            url = dm_dwd_api_weather_report_url(id=STATION_ID, tls=.false.)
+            url = dm_dwd_api_weather_report_url(station_id=STATION_ID, tls=.false.)
             if (len(url) == 0) exit rpc_block
 
             print *, 'Fetching ' // url // ' ...'

@@ -80,22 +80,22 @@ contains
         n = nmemb
     end function dm_dwd_api_callback
 
-    function dm_dwd_api_weather_report_url(id, tls) result(url)
+    function dm_dwd_api_weather_report_url(station_id, tls) result(url)
         !! Returns allocatable string of URL to DWD weather report endpoint of
-        !! given station id `id`. Uses the URL API of libcurl to create the
-        !! URL. The function returns an empty string on error. TLS is disabled
-        !! by default.
+        !! given station id `station_id`. Uses the URL API of libcurl to create
+        !! the URL. The function returns an empty string on error. TLS is
+        !! disabled by default.
         use :: dm_util, only: dm_present
 
         character(len=*), parameter :: DWD_HOST              = 'opendata.dwd.de'
         character(len=*), parameter :: WEATHER_REPORT_PATH   = '/weather/weather_reports/poi/'
         character(len=*), parameter :: WEATHER_REPORT_SUFFIX = '-BEOB.csv'
 
-        character(len=DWD_MOSMIX_STATION_ID_LEN), intent(in)           :: id  !! MOSMIX station id.
-        logical,                                  intent(in), optional :: tls !! Use HTTPS.
-        character(len=:), allocatable                                  :: url !! DWD weather report URL.
+        character(len=*), intent(in)           :: station_id !! MOSMIX station id.
+        logical,          intent(in), optional :: tls        !! Use HTTPS.
+        character(len=:), allocatable          :: url        !! DWD weather report URL.
 
-        character(len=DWD_MOSMIX_STATION_ID_LEN) :: id_
+        character(len=DWD_MOSMIX_STATION_ID_LEN) :: id
         character(len=:), allocatable            :: path
 
         integer     :: n, stat
@@ -122,10 +122,12 @@ contains
 
             ! URL path. If the station id is shorter than 5 characters, pad it
             ! with underscores.
-            id_      = repeat('_', len(id_))
-            n        = len_trim(id)
-            id_(1:n) = id(1:n)
-            path     = WEATHER_REPORT_PATH // id_ // WEATHER_REPORT_SUFFIX
+            n = len_trim(station_id)
+            if (n > DWD_MOSMIX_STATION_ID_LEN) exit url_block
+
+            id(1:n) = id(1:n)
+            id(1:n) = station_id(1:n)
+            path    = WEATHER_REPORT_PATH // id // WEATHER_REPORT_SUFFIX
 
             stat = curl_url_set(ptr, CURLUPART_PATH, path)
             if (stat /= CURLUE_OK) exit url_block

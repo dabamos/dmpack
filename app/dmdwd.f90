@@ -67,49 +67,81 @@ program dmdwd
     rc = run(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
-    integer function fetch_weather_reports(station_id, reports) result(rc)
-        character(len=*),                           intent(in)  :: station_id
-        type(dwd_weather_report_type), allocatable, intent(out) :: reports(:)
+    integer function fetch_weather_reports(reports, station_id, last_modified) result(rc)
+        type(dwd_weather_report_type), allocatable, intent(out)   :: reports(:)    !! DWD weather reports.
+        character(len=*),                           intent(in)    :: station_id    !! MOSMIX station id.
+        integer(kind=i8),                           intent(inout) :: last_modified !! Last updated time [Epoch].
 
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
 
         rpc_block: block
-            character(len=:), allocatable :: url
-            integer                       :: stat
+            character(len=:), allocatable  :: url
+            character(len=LOG_MESSAGE_LEN) :: message
+            character(len=TIME_LEN)        :: timestamp
 
-            rc = E_IO
+            integer          :: stat
+            real(kind=r8)    :: dt
+            type(timer_type) :: timer
+
             open (action='readwrite', form='formatted', iostat=stat, newunit=response%unit, status='scratch')
 
             if (stat /= 0) then
-                call logger%error('failed to open scratch file', error=rc)
+                rc = E_IO
+                call logger%debug('failed to open temporary scratch file', error=rc)
                 exit rpc_block
             end if
 
-            rc = E_INVALID
-            url = dm_dwd_api_weather_report_url(id=station_id, tls=APP_RPC_TLS)
-            if (len(url) == 0) exit rpc_block
+            url = dm_dwd_api_weather_report_url(station_id=station_id, tls=APP_RPC_TLS)
 
-            call logger%debug('fetching weather reports from ' // url)
-            rc = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
-
-            if (dm_is_error(rc)) then
-                call logger%debug('failed to fetch weather reports: ' // response%error_message // ' (HTTP ' // dm_itoa(response%code) // ')', error=rc)
+            if (len(url) == 0) then
+                rc = E_INVALID
                 exit rpc_block
             end if
 
-            if (response%code /= HTTP_OK) then
-                rc = E_NOT_FOUND
-                call logger%debug('no weather reports for station ' // trim(station_id) // ' found (HTTP ' // dm_itoa(response%code) // ')', error=rc)
-                exit rpc_block
-            end if
+            call logger%debug('fetching weather reports of station ' // trim(station_id) // ' from ' // url)
 
-            rewind (response%unit)
+            call dm_timer_start(timer)
+            rc = dm_rpc_get(request, response, url, modified_since=last_modified, callback=dm_dwd_api_callback)
+            call dm_timer_stop(timer, duration=dt)
 
-            rc = dm_dwd_weather_report_read(reports, response%unit)
-            if (dm_is_error(rc)) exit rpc_block
+            select case (response%code)
+                case (0)
+                    call logger%debug('failed to fetch weather reports: ' // response%error_message, error=rc)
 
-            call logger%debug(dm_itoa(size(reports)) // ' weather reports read')
+                case (HTTP_OK)
+                    write (message, '("fetched weather reports of station ", a, " in ", f0.3, " sec")') trim(station_id), dt
+                    call logger%debug(message)
+
+                    if (response%last_modified > 0) then
+                        last_modified = response%last_modified
+                        stat = dm_time_from_unix(response%last_modified, timestamp)
+                        call logger%debug('weather reports of station ' // trim(station_id) // ' last updated ' // timestamp)
+                    end if
+
+                    rewind (response%unit)
+
+                    rc = dm_dwd_weather_report_read(reports, response%unit)
+
+                    if (dm_is_error(rc)) then
+                        call logger%debug('failed to read weather reports into derived types', error=rc)
+                        exit rpc_block
+                    end if
+
+                    call logger%debug(dm_itoa(size(reports)) // ' weather reports of station ' // trim(station_id) // ' read')
+
+                case (HTTP_NOT_MODIFIED)
+                    rc = E_LIMIT
+                    stat = dm_time_from_unix(last_modified, timestamp)
+                    call logger%debug('no new weather reports since ' // timestamp // ' (HTTP ' // dm_itoa(response%code) // ')')
+
+                case (HTTP_NOT_FOUND)
+                    rc = E_NOT_FOUND
+                    call logger%debug('no weather reports found (HTTP ' // dm_itoa(response%code) // ')', error=rc)
+
+                case default
+                    call logger%debug('failed to fetch weather reports: ' // response%error_message // ' (HTTP ' // dm_itoa(response%code) // ')', error=rc)
+            end select
         end block rpc_block
 
         close (response%unit)
@@ -197,8 +229,8 @@ contains
             return
         end if
 
-        if (len_trim(app%station_id) == 0) then
-            call dm_error_out(rc, 'missing station id')
+        if (len_trim(app%station_id) == 0 .or. len_trim(app%station_id) > DWD_MOSMIX_STATION_ID_LEN) then
+            call dm_error_out(rc, 'invalid or missing station id')
             return
         end if
 
@@ -268,6 +300,7 @@ contains
     integer function run(app) result(rc)
         type(app_type), intent(inout) :: app !! App type.
 
+        integer(kind=i8)                           :: last_modified
         type(dwd_weather_report_type), allocatable :: reports(:)
         type(observ_type)                          :: observ
 
@@ -281,9 +314,16 @@ contains
             return
         end if
 
+        last_modified = 0_i8
+
         report_loop: do
             rpc_block: block
-                rc = fetch_weather_reports(app%station_id, reports)
+                rc = fetch_weather_reports(reports, app%station_id, last_modified)
+
+                if (rc == E_LIMIT) then
+                    call logger%debug('skipped reading of stale weather reports', error=rc)
+                    exit rpc_block
+                end if
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to fetch weather reports from DWD API', error=rc)
@@ -295,8 +335,8 @@ contains
                     exit rpc_block
                 end if
 
-                if (.not. dm_dwd_is_weather_report_valid(reports(1))) then
-                    call logger%error('invalid weather report received', error=E_INVALID)
+                if (.not. all(dm_dwd_is_weather_report_valid(reports))) then
+                    call logger%error('invalid weather reports received', error=E_INVALID)
                     exit rpc_block
                 end if
 
@@ -309,7 +349,7 @@ contains
                 exit report_loop
             end if
 
-            call logger%debug('next weather report call in ' // dm_itoa(app%interval) // ' sec')
+            call logger%debug('next DWD API call in ' // dm_itoa(app%interval) // ' sec')
             call dm_sleep(app%interval)
         end do report_loop
 
@@ -361,7 +401,7 @@ contains
         end if
 
         io_block: block
-            call logger%debug('reading station catalog from ' // catalog)
+            call logger%debug('reading station catalog from file ' // catalog)
             rc = dm_dwd_mosmix_station_catalog_read(stations, unit)
 
             if (dm_is_error(rc)) then
@@ -377,7 +417,7 @@ contains
                 exit io_block
             end if
 
-            call logger%debug('selected station ' // trim(station_id) // ': ' // station%name)
+            call logger%debug('found station ' // trim(station_id) // ' in catalog: ' // station%name)
         end block io_block
 
         close (unit)
