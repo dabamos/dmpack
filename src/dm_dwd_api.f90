@@ -31,6 +31,15 @@ module dm_dwd_api
     !!
     !! call dm_rpc_shutdown()
     !! ```
+    !!
+    !! See the DWD Open Data Server for the terms and conditions of the service:
+    !!
+    !! * https://opendata.dwd.de/README.txt
+    !!
+    !! Legal notice:
+    !!
+    !! * https://www.dwd.de/EN/service/legal_notice/legal_notice_node.html
+    !!
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_dwd
@@ -128,7 +137,7 @@ contains
             n = len_trim(station_id)
             if (n > DWD_MOSMIX_STATION_ID_LEN) exit url_block
 
-            id(1:n) = id(1:n)
+            id      = repeat('_', len(id))
             id(1:n) = station_id(1:n)
             path    = WEATHER_REPORT_PATH // id // WEATHER_REPORT_SUFFIX
 
