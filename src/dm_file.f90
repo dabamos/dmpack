@@ -49,7 +49,10 @@ contains
         !! Returns `.true.` if file at given file path exists.
         character(len=*), intent(in) :: path !! File path.
 
-        inquire (exist=exists, file=trim(path))
+        logical :: l
+
+        inquire (exist=l, file=trim(path))
+        exists = l ! Workaround for Flang.
     end function dm_file_exists
 
     logical function dm_file_is_directory(path) result(is)

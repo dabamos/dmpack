@@ -45,8 +45,8 @@ module dm_observ
         integer                            :: next       = 0            !! Next receiver index.
         integer                            :: nreceivers = 0            !! Number of receivers.
         integer                            :: nrequests  = 0            !! Number of requests.
-        character(len=OBSERV_RECEIVER_LEN) :: receivers(OBSERV_MAX_NRECEIVERS) = ' ' !! Array of receivers (`-0-9A-Z_a-z`).
-        type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS)         !! Array of requests.
+        character(len=OBSERV_RECEIVER_LEN) :: receivers(OBSERV_MAX_NRECEIVERS) = ' '            !! Array of receivers (`-0-9A-Z_a-z`).
+        type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS)   = request_type() !! Array of requests.
     end type observ_type
 
     integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.

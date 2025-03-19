@@ -144,19 +144,19 @@ TARGET  = $(DISTDIR)/libdmpack.a
 SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
-DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
-RELEASE = -mtune=native -O2
+DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1 -ffree-line-length-0 -std=f2018
+RELEASE = -O2 -mtune=native -ffree-line-length-0 -std=f2018
+
+# Additional include search directories.
+INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FFLAGS  = $(RELEASE) -fPIC -ffree-line-length-0 -std=f2018
-CFLAGS  = $(RELEASE) -fPIC
+FFLAGS  = $(RELEASE) $(INCHDF5) -fPIC
+CFLAGS  = $(RELEASE) -I$(PREFIX)/include -fPIC
 PPFLAGS = -cpp -D__$(OS)__
 ARFLAGS = -rcs
 LDFLAGS = -I$(INCDIR) -J$(INCDIR) -L$(PREFIX)/lib -z execstack -z now
 LDLIBS  =
-
-# Additional include search directories.
-INCHDF5 = `pkg-config --cflags hdf5`
 
 # Shared libraries to link.
 LIBCURL    = `pkg-config --libs-only-l libcurl`
@@ -630,7 +630,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_test.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_nml.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -c src/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_hdf5.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_sql.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_stmt.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -c src/dm_db_query.f90
@@ -748,7 +748,7 @@ dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) $(INCHDF5) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS)
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)

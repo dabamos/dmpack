@@ -2,14 +2,13 @@
 ! Licence: ISC
 module dm_c
     !! Utility procedures for C interoperability.
-    use, intrinsic :: iso_c_binding
+    use :: unix, only: c_int, c_unsigned_char
     use :: dm_kind
     implicit none (type, external)
     private
 
-    integer, parameter, public :: c_unsigned_char = c_signed_char
-
     public :: c_int
+    public :: c_unsigned_char
 
     interface dm_to_signed
         !! Converts unsigned integer to signed integer.

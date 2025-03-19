@@ -192,7 +192,9 @@ contains
             if (allocated(db_query%params(i)%sql))        deallocate (db_query%params(i)%sql)
         end do
 
-        db_query = db_query_type()
+        db_query%order_desc = .false.
+        db_query%limit      = 0_i8
+        db_query%nparams    = 0
     end subroutine dm_db_query_destroy
 
     pure elemental subroutine dm_db_query_set_limit(db_query, limit)
