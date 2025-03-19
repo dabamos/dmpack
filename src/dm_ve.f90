@@ -229,7 +229,7 @@ module dm_ve
     !!
     !! ## Example
     !!
-    !! The snipped reads a single VE.Direct block from sequentially passed
+    !! The snippet reads a single VE.Direct block from sequentially passed
     !! character `byte`, adds it to a frame, and converts the frame to a
     !! response type once finished:
     !!

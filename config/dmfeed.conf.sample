@@ -33,7 +33,7 @@
 --      id       - 36 characters long UUID (with hyphens) of the Atom feed.
 --      maxlevel - Maximum log level (1 to 6, optional).
 --      minlevel - Minimum log level (1 to 6, optional).
---      node     - Sensor node id, selects only related logs (optional).
+--      node     - Select only logs of this node id (optional).
 --      output   - Path to output file (if empty, feed is printed to standard output).
 --      subtitle - Subtitle of the feed (optional).
 --      title    - Title of the feed (optional).

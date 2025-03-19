@@ -219,22 +219,13 @@ contains
             end if
 
             ! Get logs from database.
-            if (len_trim(app%node_id) > 0) then
-                rc = dm_db_select_logs(db        = db, &
-                                       logs      = logs, &
-                                       node_id   = app%node_id, &
-                                       min_level = app%min_level, &
-                                       max_level = app%max_level, &
-                                       desc      = .true., &
-                                       limit     = int(app%entries, kind=i8))
-            else
-                rc = dm_db_select_logs(db        = db, &
-                                       logs      = logs, &
-                                       min_level = app%min_level, &
-                                       max_level = app%max_level, &
-                                       desc      = .true., &
-                                       limit     = int(app%entries, kind=i8))
-            end if
+            rc = dm_db_select_logs(db        = db, &
+                                   logs      = logs, &
+                                   node_id   = app%node_id, &
+                                   min_level = app%min_level, &
+                                   max_level = app%max_level, &
+                                   desc      = .true., &
+                                   limit     = int(app%entries, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call dm_error_out(rc, 'database error')

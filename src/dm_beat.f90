@@ -37,6 +37,7 @@ module dm_beat
     public :: dm_beat_equals
     public :: dm_beat_is_valid
     public :: dm_beat_out
+    public :: dm_beat_set
 contains
     pure elemental logical function dm_beat_equals(beat1, beat2) result(equals)
         !! Returns `.true.` if given beats are equal.
@@ -90,4 +91,27 @@ contains
         write (unit_, '("beat.interval: ", i0)') beat%interval
         write (unit_, '("beat.uptime: ", i0)')   beat%uptime
     end subroutine dm_beat_out
+
+    subroutine dm_beat_set(beat, node_id, address, client, time_sent, time_recv, error, interval, uptime)
+        !! Sets attributes of beat type. This routine does not validate the
+        !! arguments.
+        type(beat_type),  intent(inout)        :: beat      !! Beat type.
+        character(len=*), intent(in), optional :: node_id   !! Node id.
+        character(len=*), intent(in), optional :: address   !! IP address.
+        character(len=*), intent(in), optional :: client    !! Client software.
+        character(len=*), intent(in), optional :: time_sent !! Time beat was sent.
+        character(len=*), intent(in), optional :: time_recv !! Time beat was received.
+        integer,          intent(in), optional :: error     !! Last error code.
+        integer,          intent(in), optional :: interval  !! Beat interval.
+        integer,          intent(in), optional :: uptime    !! Client uptime.
+
+        if (present(node_id))   beat%node_id   = node_id
+        if (present(address))   beat%address   = address
+        if (present(client))    beat%client    = client
+        if (present(time_sent)) beat%time_sent = time_sent
+        if (present(time_recv)) beat%time_recv = time_recv
+        if (present(error))     beat%error     = error
+        if (present(interval))  beat%interval  = interval
+        if (present(uptime))    beat%uptime    = uptime
+    end subroutine dm_beat_set
 end module dm_beat

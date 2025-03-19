@@ -1175,7 +1175,7 @@ contains
         call dm_geocom_api_request_download(request, block_number_)
         call this%send(request, delay)
 
-        call dm_request_get(this%request, 'blockval', block_value,  default=achar(0))
+        call dm_request_get(this%request, 'blockval', block_value,  default=char(0))
         call dm_request_get(this%request, 'blocklen', block_length, default=0)
     end subroutine geocom_download
 
@@ -1463,18 +1463,18 @@ contains
         call this%send(request, delay)
 
         call dm_request_get(this%request, 'year',   year_,   default=0)
-        call dm_request_get(this%request, 'month',  month_,  default=achar(0))
-        call dm_request_get(this%request, 'day',    day_,    default=achar(0))
-        call dm_request_get(this%request, 'hour',   hour_,   default=achar(0))
-        call dm_request_get(this%request, 'minute', minute_, default=achar(0))
-        call dm_request_get(this%request, 'second', second_, default=achar(0))
+        call dm_request_get(this%request, 'month',  month_,  default=char(0))
+        call dm_request_get(this%request, 'day',    day_,    default=char(0))
+        call dm_request_get(this%request, 'hour',   hour_,   default=char(0))
+        call dm_request_get(this%request, 'minute', minute_, default=char(0))
+        call dm_request_get(this%request, 'second', second_, default=char(0))
 
         if (present(year))   year   = year_
-        if (present(month))  month  = iachar(month_)
-        if (present(day))    day    = iachar(day_)
-        if (present(hour))   hour   = iachar(hour_)
-        if (present(minute)) minute = iachar(minute_)
-        if (present(second)) second = iachar(second_)
+        if (present(month))  month  = ichar(month_)
+        if (present(day))    day    = ichar(day_)
+        if (present(hour))   hour   = ichar(hour_)
+        if (present(minute)) minute = ichar(minute_)
+        if (present(second)) second = ichar(second_)
     end subroutine geocom_get_date_time
 
     subroutine geocom_get_date_time_centi(this, year, month, day, hour, minute, second, csecond, delay)
@@ -2340,19 +2340,19 @@ contains
         if (present(name)) this%rc = dm_regex_response_string(this%request, 'fname', name)
         if (present(size)) call dm_request_get(this%request, 'fsize', size, default=0_i8)
 
-        call dm_request_get(this%request, 'year',   year_,   default=achar(0))
-        call dm_request_get(this%request, 'month',  month_,  default=achar(0))
-        call dm_request_get(this%request, 'day',    day_,    default=achar(0))
-        call dm_request_get(this%request, 'hour',   hour_,   default=achar(0))
-        call dm_request_get(this%request, 'minute', minute_, default=achar(0))
-        call dm_request_get(this%request, 'second', second_, default=achar(0))
+        call dm_request_get(this%request, 'year',   year_,   default=char(0))
+        call dm_request_get(this%request, 'month',  month_,  default=char(0))
+        call dm_request_get(this%request, 'day',    day_,    default=char(0))
+        call dm_request_get(this%request, 'hour',   hour_,   default=char(0))
+        call dm_request_get(this%request, 'minute', minute_, default=char(0))
+        call dm_request_get(this%request, 'second', second_, default=char(0))
 
-        if (present(year))   year   = iachar(year_)
-        if (present(month))  month  = iachar(month_)
-        if (present(day))    day    = iachar(day_)
-        if (present(hour))   hour   = iachar(hour_)
-        if (present(minute)) minute = iachar(minute_)
-        if (present(second)) second = iachar(second_)
+        if (present(year))   year   = ichar(year_)
+        if (present(month))  month  = ichar(month_)
+        if (present(day))    day    = ichar(day_)
+        if (present(hour))   hour   = ichar(hour_)
+        if (present(minute)) minute = ichar(minute_)
+        if (present(second)) second = ichar(second_)
     end subroutine geocom_list
 
     subroutine geocom_lock_in(this, delay)

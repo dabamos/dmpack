@@ -7,11 +7,11 @@ program dmapi
     !! server, such as lighttpd, is required to run this web app.
     !!
     !! Observations and log messages sent via HTTP POST are expected to be in
-    !! Fortran 95 Namelist format, with optional deflate compression
-    !! (`Content-Encoding: deflate`). The server returns data in CSV format
-    !! with optional header by default. The client has to set an HTTP Accept
-    !! header to request JSON or JSON Lines format. Error and status messages
-    !! are returned as plain-text (key-value pairs).
+    !! Fortran 95 Namelist format, with optional deflate or zstd compression.
+    !! The server returns data in CSV format with optional header by default.
+    !! The client has to set an HTTP Accept header to request JSON or JSON
+    !! Lines format. Error and status messages are returned as plain-text
+    !! (key-value pairs).
     !!
     !! Configure the web app through FastCGI environment variables:
     !!
@@ -209,9 +209,8 @@ contains
                     end if
                 end if
 
-                ! Set time stamp and remote IP address.
-                beat%time_recv = dm_time_now()
-                beat%address   = env%remote_addr
+                ! Set remote IP address and time received.
+                call dm_beat_set(beat, address=env%remote_addr, time_recv=dm_time_now())
 
                 ! Insert beat into database.
                 rc = dm_db_insert(db, beat, validate=.false.)

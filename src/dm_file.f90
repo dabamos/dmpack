@@ -240,9 +240,10 @@ contains
             rc = E_NONE
         end block read_block
 
-        if (unit > -1) close (unit)
+        if (unit >= 0) close (unit)
         if (.not. allocated(content)) content = ''
-        if (present(size)) size = size_
+
+        if (present(size))  size  = size_
         if (present(error)) error = rc
     end subroutine dm_file_read
 
@@ -254,6 +255,8 @@ contains
         !! * `E_IO` if opening the file failed.
         !! * `E_WRITE` if writing to file failed.
         !!
+        use :: dm_util, only: dm_present
+
         character(len=*), intent(in)            :: path    !! Output file path.
         character(len=*), intent(in)            :: content !! Bytes to write.
         logical,          intent(in),  optional :: raw     !! Unformatted output if true.
@@ -262,10 +265,9 @@ contains
         integer :: rc, stat, unit
         logical :: raw_
 
-        raw_ = .false.
-        if (present(raw)) raw_ = raw
+        raw_ = dm_present(raw, .false.)
 
-        rc = E_IO
+        rc   = E_IO
         unit = -1
 
         write_block: block
@@ -300,7 +302,7 @@ contains
             rc = E_NONE
         end block write_block
 
-        if (unit > -1) close (unit)
+        if (unit >= 0) close (unit)
         if (present(error)) error = rc
     end subroutine dm_file_write
 end module dm_file

@@ -4,9 +4,9 @@ module dm_dwd_api
     !! HTTP abstraction layer for Deutsche Wetterdienst (DWD) API. This module
     !! must be linked against libcurl (`-lcurl`).
     !!
-    !! To fetch weather data, create an URL of the DWD weather report directory
-    !! and make an HTTP GET request. The data will be cached in a scratch file.
-    !! The file may be opened as `formatted` or `unformatted` (byte stream):
+    !! To fetch weather data, create the URL to the DWD weather report and make
+    !! an HTTP GET request. The data will be cached in a scratch file. The
+    !! file may be opened as `formatted` or `unformatted` (byte stream):
     !!
     !! ```fortran
     !! character(len=:), allocatable :: url
