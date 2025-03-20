@@ -19,7 +19,7 @@
 
 = DMPACK User Guide
 
-== Project Description
+== Overview
 
 The *Deformation Monitoring Package* (*DMPACK*) is a free and open source
 software package for sensor control and automated time series processing in
@@ -93,7 +93,7 @@ information:
 image::schema.png[schema,align="center"]
 
 The DMPACK library is based on a modular architecture that loosely follows the
-Unix philosophy, i.&nbsp;e., distinct programs cover well-defined tasks. The
+Unix philosophy, i.{nbsp}e., distinct programs cover well-defined tasks. The
 scheduling, process management and synchronisation, as well as the inter-process
 communication between programs are handled by the operating system, using POSIX
 system calls.
@@ -192,7 +192,7 @@ DMPACK has the following requirements:
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler (GNU, Intel)
+* Fortran 2018 and ANSI C compiler (GNU, LLVM, Intel)
 
 Additional dependencies have to be present to build and run the software of this
 package:
@@ -389,13 +389,14 @@ DMPACK programs from the command-line.
 [NOTE]
 .Intel oneAPI Compilers
 ====
-If Intel oneAPI is used instead of the GNU Compiler Collection, run:
+If your prefer Intel oneAPI over GCC, run:
 
 ....
-$ make build OS=linux CC=icx FC=ifx PPFLAGS="" \
-  CFLAGS="-mtune=native -O2 -fpic" FFLAGS="-mtune=native -O2 -fpic" \
-  LDFLAGS="-module ./include -I./include" \
-  INCHDF5="-I/opt/include" \
+$ make build OS=linux CC=icx FC=ifx \
+  FFLAGS="-mtune=native -O2 -fpic -I/opt/include" \
+  CFLAGS="-mtune=native -O2 -fpic" \
+  MDFLAGS="-module ./include -I./include" \
+  PPFLAGS="" \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
 
@@ -492,6 +493,24 @@ $ doas make install PREFIX=/opt
 
 In this case, path `/opt/bin` must be included in the global `PATH` environment
 variable.
+
+[NOTE]
+.LLVM Compilers
+====
+If you prefer link:https://www.freshports.org/devel/llvm20/[LLVM 20] over GCC,
+you must compile HDF5 from source, as the module files provided in the FreeBSD
+package repository have been built with GNU Fortran. See section
+<<third-party-hdf5,HDF5>> for hints. Assumed that the HDF5 library is installed
+to `/opt`, run:
+
+....
+$ make freebsd_release CC=clang20 FC=flang20 \
+  RELEASE="-O2" \
+  INCHDF5="-I/opt/include" \
+  LDFLAGS="-L/usr/local/lib" \
+  LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
+....
+====
 
 ==== FPM [[freebsd-fpm]]
 
@@ -3606,9 +3625,9 @@ image::dkrf400.png[DKRF400,align="center"]
 
 The DKRF400 is a temperature and humidity probe made by Driesen + Kern GmbH.
 The standard probe DKRF400 can be used at temperatures between –40 …
-+80&nbsp;°C, with an accuracy of ±0.3&nbsp;°C at 25&nbsp;°C. The probe is
-suitable for the range of 0 … 100&nbsp;% relative humidity and has an accuracy
-of ±1.8&nbsp;% in the range of 20 … 80&nbsp;%. The sensor returns the following
++80{nbsp}°C, with an accuracy of ±0.3{nbsp}°C at 25{nbsp}°C. The probe is
+suitable for the range of 0 … 100{nbsp}% relative humidity and has an accuracy
+of ±1.8{nbsp}% in the range of 20 … 80{nbsp}%. The sensor returns the following
 measured parameters:
 
 * temperature [°C],
@@ -8852,51 +8871,9 @@ TARGET%ELEVATION=0.0
 
 This section covers the custom installation of third-party software.
 
-=== HDFView [[third-party-hdfview]]
+=== HDF5 [[third-party-hdf5]]
 
-HDFView is a Java-based visual tool for browsing and editing HDF5 and HDF4
-files. Application images for Linux, macOS, and Windows are available for
-download on the website of
-link:https://www.hdfgroup.org/downloads/hdfview/[The HDF Group]. On FreeBSD, the
-program has to be compiled from source. The following build dependencies are
-required:
-
-* link:https://www.freshports.org/devel/apache-ant[devel/apache-ant]
-* link:https://www.freshports.org/devel/cmake[devel/cmake]
-* link:https://www.freshports.org/devel/git[devel/git]
-* link:https://www.freshports.org/java/openjdk19[java/openjdk19] (or any other version)
-* link:https://www.freshports.org/lang/gcc[lang/gcc]
-* link:https://www.freshports.org/x11-toolkits/swt[x11-toolkits/swt]
-
-The HDF4 and HDF5 libraries have to be built from source as well.
-
-==== Building HDF4
-
-Clone the HDF4 repository and compile with CMake:
-
-....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdf4.git
-$ cd hdf4/
-$ mkdir build && cd build/
-$ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
-  -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
-  -DHDF4_BUILD_TOOLS:BOOL=OFF -DHDF4_BUILD_EXAMPLES=OFF \
-  -DHDF4_BUILD_FORTRAN=ON -DHDF4_BUILD_JAVA=ON \
-  -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-  -DZLIB_INCLUDE_DIR:PATH=/usr/include \
-  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
-$ cmake --build . --config Release
-....
-
-Change argument `CMAKE_Fortran_COMPILER` to `ifx` and argument
-`CMAKE_C_COMPILER` to `icx` if you want to build with Intel oneAPI instead.
-Afterwards, copy `java/src/hdf/hdflib/jarhdf-4.3.0.jar` to `bin/` in the HDF4
-build directory.
-
-==== Building HDF5 [[third-party-hdf5]]
-
-In the next step, clone the HDF5 repository and build with CMake, too:
+In order to build HDF5 from source, clone the repository and compile with CMake:
 
 ....
 $ cd /tmp/
@@ -8913,56 +8890,12 @@ $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
 $ cmake --build . --config Release
 ....
 
-Change argument `CMAKE_Fortran_COMPILER` to `ifx` and argument
-`CMAKE_C_COMPILER` to `icx` if you want to build with Intel oneAPI instead.
-Then, copy `java/src/hdf/hdf5lib/jarhdf5-1.15.0.jar` and `src/libhdf5.settings`
-to `bin/` in the HDF5 build directory.
-
-==== Building HDFView
-
-Finally, clone the HDFView repository, set the build properties, and compile
-with _ant(1)_:
+You may have to change the path to the zlib dependency. Change argument
+`CMAKE_Fortran_COMPILER` to `ifx` and argument `CMAKE_C_COMPILER` to `icx` if
+you want to build with Intel oneAPI instead. Install the library to `/opt`:
 
 ....
-$ cd /tmp/
-$ git clone --depth 1 https://github.com/HDFGroup/hdfview.git
-$ cd hdfview/
-....
-
-Set the following properties in `build.properties`:
-
-....
-hdf.lib.dir = /tmp/hdf4/build/bin
-hdf5.lib.dir = /tmp/hdf5/build/bin
-hdf5.plugin.dir = /tmp/hdf5/build/bin/plugin
-build.debug = false
-....
-
-Build with _ant(1)_:
-
-....
-$ ant run
-....
-
-The binaries are written to `build/HDF_Group/HDFView/99.99.99/`. The archive
-`swt.jar` has to be replaced with the version installed system-wide:
-
-....
-$ cp /usr/local/share/java/classes/swt.jar build/HDF_Group/HDFView/99.99.99/
-....
-
-Replace the last line in `build/HDF_Group/HDFView/99.99.99/hdfview.sh` with:
-
-....
-java "$JAVAOPTS" -Djava.library.path=".:/usr/local/lib" -Dhdfview.root="." \
-  -cp "./*" hdf.view.HDFView "$@"
-....
-
-To start HDFView, run:
-
-....
-$ cd build/HDF_Group/HDFView/99.99.99/
-$ sh hdfview.sh
+$ sudo cmake --install . --prefix /opt
 ....
 
 === libcurl [[third-party-libcurl]]

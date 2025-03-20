@@ -86,7 +86,7 @@ POSIX semaphores.
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler (GNU, Intel)
+* Fortran 2018 and ANSI C compiler (GNU, LLVM, Intel)
 
 Third-party dependencies have to be present to build and run the software of
 this package:
