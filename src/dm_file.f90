@@ -35,6 +35,9 @@ module dm_file
     public :: dm_file_exists
     public :: dm_file_delete
     public :: dm_file_is_directory
+    public :: dm_file_is_executable
+    public :: dm_file_is_readable
+    public :: dm_file_is_writeable
     public :: dm_file_line_count
     public :: dm_file_read
     public :: dm_file_size
@@ -76,6 +79,33 @@ contains
 
         is = (file_type == S_IFDIR)
     end function dm_file_is_directory
+
+    logical function dm_file_is_executable(path) result(is)
+        !! Returns `.true.` if current user has execute permission.
+        use :: unix
+
+        character(len=*), intent(in) :: path !! File path.
+
+        is = (c_access(trim(path) // c_null_char, X_OK) == 0)
+    end function dm_file_is_executable
+
+    logical function dm_file_is_readable(path) result(is)
+        !! Returns `.true.` if current user has read permission.
+        use :: unix
+
+        character(len=*), intent(in) :: path !! File path.
+
+        is = (c_access(trim(path) // c_null_char, R_OK) == 0)
+    end function dm_file_is_readable
+
+    logical function dm_file_is_writeable(path) result(is)
+        !! Returns `.true.` if current user has write permission.
+        use :: unix
+
+        character(len=*), intent(in) :: path !! File path.
+
+        is = (c_access(trim(path) // c_null_char, W_OK) == 0)
+    end function dm_file_is_writeable
 
     integer(kind=i8) function dm_file_line_count(path, error) result(n)
         !! Returns number of lines in given file by counting new lines. Sets
