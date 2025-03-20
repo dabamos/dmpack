@@ -4,6 +4,7 @@
 ! Licence: ISC
 program dmtesthdf5
     !! Test program for HDF5 file handling.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -16,8 +17,6 @@ program dmtesthdf5
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
-    call dm_init()
-
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
@@ -28,7 +27,8 @@ program dmtesthdf5
         test_type('test07', test07)  &
     ]
 
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_init()
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'), compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
         !! Tests HDF5 library access.

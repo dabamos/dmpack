@@ -15,6 +15,7 @@ program dmtestpipe
     !!
     !! This may be necessary on test platforms where bi-directional pipes are
     !! not available.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -29,7 +30,7 @@ program dmtestpipe
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'), compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
         use, intrinsic :: iso_c_binding, only: c_associated

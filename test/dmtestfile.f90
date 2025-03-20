@@ -4,22 +4,24 @@
 ! Licence: ISC
 program dmtestfile
     !! Test program for file system access.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestfile'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'), compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
         character(len=*), parameter :: FILE_PATH = 'Makefile'
@@ -93,12 +95,23 @@ contains
     logical function test02() result(stat)
         stat = TEST_FAILED
 
-        print *, 'Checking if file is a directory ...'
+        print *, 'Testing if file is a directory ...'
         if (.not. dm_file_is_directory('test')) return
 
-        print *, 'Checking if file is not a directory ...'
+        print *, 'Testing if file is not a directory ...'
         if (dm_file_is_directory('Makefile')) return
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        stat = TEST_FAILED
+
+        print *, 'Testing file permissions ...'
+        if (.not. dm_file_is_executable(TEST_NAME)) return
+        if (.not. dm_file_is_readable(TEST_NAME))   return
+        if (.not. dm_file_is_writeable(TEST_NAME))  return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestfile

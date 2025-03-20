@@ -4,6 +4,7 @@
 ! Licence: ISC
 program dmtestjob
     !! Test program that checks job processing.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -18,7 +19,7 @@ program dmtestjob
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'), compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
         integer, parameter :: MAX_SIZE = 32

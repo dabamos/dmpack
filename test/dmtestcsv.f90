@@ -4,6 +4,7 @@
 ! Licence: ISC
 program dmtestcsv
     !! Test program that tries CSV writing/reading.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,7 +23,7 @@ program dmtestcsv
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'))
+    call dm_test_run(TEST_NAME, tests, stats, dm_env_has('NO_COLOR'), compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
         !! Prints nodes and observations to stdout in CSV format.

@@ -307,7 +307,7 @@ contains
         target%z    = 10.0_r8
     end subroutine dm_test_dummy_target
 
-    subroutine dm_test_run(name, tests, stats, no_color)
+    subroutine dm_test_run(name, tests, stats, no_color, version, options)
         !! Runs all tests in given array `tests`, returns test states in array
         !! `stats`.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
@@ -319,18 +319,34 @@ contains
         character(len=*), intent(in)           :: name     !! Test name.
         type(test_type),  intent(inout)        :: tests(:) !! Test types.
         logical,          intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
-        logical,          intent(in), optional :: no_color
+        logical,          intent(in), optional :: no_color !! Disable coloured output.
+        character(len=*), intent(in), optional :: version  !! Compiler version.
+        character(len=*), intent(in), optional :: options  !! Compiler options.
 
-        character(len=TEST_NAME_LEN) :: test_name
-        integer                      :: i, n, nfail, npass, state
-        logical                      :: no_color_
-        real(kind=r8)                :: time, total_time
-        type(timer_type)             :: timer
-        type(uname_type)             :: uname
+        character(len=:), allocatable :: options_, version_
+        character(len=TEST_NAME_LEN)  :: test_name
+
+        integer          :: i, n, nfail, npass, state
+        logical          :: no_color_
+        real(kind=r8)    :: time, total_time
+        type(timer_type) :: timer
+        type(uname_type) :: uname
 
         n = size(tests)
 
         no_color_ = dm_present(no_color, .false.)
+
+        if (present(version)) then
+            version_ = version
+        else
+            version_ = compiler_version()
+        end if
+
+        if (present(options)) then
+            options_ = options
+        else
+            options_ = compiler_options()
+        end if
 
         call dm_system_uname(uname)
         call dm_ansi_color(COLOR_GREEN, no_color_)
@@ -342,8 +358,8 @@ contains
         print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
                                                         trim(uname%release), &
                                                         trim(uname%machine)
-        print '("Compiler: ", a)', compiler_version()
-        print '("Options.: ", a)', compiler_options()
+        print '("Compiler: ", a)', version_
+        print '("Options.: ", a)', options_
         print '("DMPACK..: ", a, /)', DM_VERSION_STRING
 
         print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')
@@ -356,14 +372,21 @@ contains
             print '(a)', repeat('-', TEST_LINE_LEN)
             call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color_)
 
+            stats(i) = associated(tests(i)%proc)
+
+            if (.not. stats(i)) then
+                call dm_ansi_color(COLOR_RED, no_color_)
+                print '("[ERROR} no procedure provided for test ", a)', trim(test_name)
+                call dm_ansi_reset(no_color_)
+                cycle
+            end if
+
             call dm_timer_start(timer)
             stats(i) = tests(i)%proc()
             call dm_timer_stop(timer, time)
             total_time = total_time + time
 
-            state = TEST_STATE_FAILED
-            if (stats(i) .eqv. TEST_PASSED) state = TEST_STATE_PASSED
-
+            state = dm_btoi(stats(i), true=TEST_STATE_PASSED, false=TEST_STATE_FAILED)
             call test_print(i, n, test_name, state, time, no_color=no_color_)
         end do
 

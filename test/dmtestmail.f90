@@ -15,6 +15,7 @@ program dmtestmail
     !!      DM_MAIL_PASSWORD - SMTP password.
     !!
     !! Some tests may be skipped if these are not set.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -33,7 +34,7 @@ program dmtestmail
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, no_color)
+    call dm_test_run(TEST_NAME, tests, stats, no_color, compiler_version(), compiler_options())
 contains
     logical function get_env(from, to, host, username, password) result(has)
         character(len=:), allocatable, intent(out) :: from

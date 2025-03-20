@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtesttty
-    use :: unix
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,9 +22,11 @@ program dmtesttty
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, no_color=no_color)
+    call dm_test_run(TEST_NAME, tests, stats, no_color, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
+        use :: unix
+
         character(len=128) :: buf
         integer            :: rc
         integer(kind=i8)   :: n
