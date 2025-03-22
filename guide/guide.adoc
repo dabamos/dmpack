@@ -4,7 +4,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2025-02-26
+:docdate: 2025-03-22
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -281,7 +281,8 @@ On Debian, install the compilers and the build environment first:
 $ sudo apt-get install gcc gfortran git make pkg-config
 ....
 
-The third-party dependencies have to be installed with development headers:
+The Git client is optional. The third-party dependencies have to be installed
+with development headers:
 
 ....
 $ sudo apt-get install --no-install-recommends curl gnuplot libblas-dev libcurl4 \
@@ -307,8 +308,8 @@ In the next step, build DMPACK with Make or FPM.
 .Building Dependencies from Source
 ====
 If third-party libraries are not available in the required minimum version,
-like on Ubuntu 22.04 LTS or Debian 12 (Bookworm), you may want to build the
-missing dependencies from source, for instance:
+like on Ubuntu 22.04 LTS or Debian 12, you may want to build the missing
+dependencies from source, for instance:
 
 * <<third-party-libcurl,libcurl>>
 * <<third-party-libmodbus,libmodbus>>
@@ -321,22 +322,22 @@ specific linker flag. For example, if SQLite 3 has been installed to `/opt`,
 pass argument `LIBSQLITE3`:
 
 ....
-$ make build OS=linux LIBSQLITE3="-Wl,-rpath=/opt/lib -L/opt/lib -lsqlite3"
+$ make linux LIBSQLITE3="-Wl,-rpath=/opt/lib -L/opt/lib -lsqlite3"
 ....
 
-For the other libraries, pass `LIBMODBUS`, `LIBSTROPHE`, and `LIBZSTD`
-respectively.
+For the other libraries, pass `LIBCURL`, `LIBMODBUS`, `LIBSTROPHE`, and
+`LIBZSTD` respectively.
 ====
 
 [NOTE]
-.Intel oneAPI Compilers
+.Other Compilers
 ====
-If Intel oneAPI is used, it is necessary to build HDF5 from source, because the
-versions in the Linux package repositories have been compiled with GNU Fortran
-and are therefore incompatible. See section <<third-party-hdf5,HDF5>> for hints
-regarding the build process. Pass the library installation path additionally to
-`-lhdf5 -lhdf5_fortran` as argument `LIBHDF5` and the path to the module files
-as argument `INCHDF5`.
+If Intel oneAPI or LLVM is used, it is necessary to build HDF5 from source,
+because the versions in the Linux package repositories have been compiled with
+GNU Fortran and are therefore incompatible. See section
+<<third-party-hdf5,HDF5>> for hints regarding the build process. Pass the
+library installation path additionally to `-lhdf5 -lhdf5_fortran` as argument
+`LIBHDF5` and the path to the module files as argument `INCHDF5`.
 ====
 
 ==== Make [[linux-make]]
@@ -392,10 +393,11 @@ DMPACK programs from the command-line.
 If your prefer Intel oneAPI over GCC, run:
 
 ....
-$ make build OS=linux CC=icx FC=ifx \
-  FFLAGS="-mtune=native -O2 -fpic -I/opt/include" \
-  CFLAGS="-mtune=native -O2 -fpic" \
-  MDFLAGS="-module ./include -I./include" \
+$ make linux CC=icx FC=ifx \
+  FFLAGS="-O2 -mtune=native -I/opt/include" \
+  CFLAGS="-O2 -mtune=native" \
+  LIBFLAGS="-fpic" \
+  MODFLAGS="-module ./include -I./include" \
   PPFLAGS="" \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
@@ -504,9 +506,8 @@ package repository have been built with GNU Fortran. See section
 to `/opt`, run:
 
 ....
-$ make freebsd_release CC=clang20 FC=flang20 \
-  RELEASE="-O2" \
-  INCHDF5="-I/opt/include" \
+$ make freebsd CC=clang20 FC=flang20 \
+  FFLAGS="-O2 -march=native -I/opt/include" \
   LDFLAGS="-L/usr/local/lib" \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
@@ -7802,7 +7803,7 @@ The memory type `mem_type` has to be one of the following:
 * `GEOCOM_IMG_INTERNAL_MEMORY` – Internal memory module.
 * `GEOCOM_IMG_PC_CARD`         – External memory card.
 
-== Data Serialisation
+== Serialisation
 
 DMPACK supports the following data serialisation formats:
 

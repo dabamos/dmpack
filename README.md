@@ -56,7 +56,7 @@ POSIX semaphores.
 **DMPACK** includes modules for:
 
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
-  sub-process, named pipe, file system)
+  sub-process, file system)
 * SQLite database access
 * message passing via POSIX message queues
 * process synchronisation via POSIX semaphores
