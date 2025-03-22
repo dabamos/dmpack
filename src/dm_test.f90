@@ -307,10 +307,11 @@ contains
         target%z    = 10.0_r8
     end subroutine dm_test_dummy_target
 
-    subroutine dm_test_run(name, tests, stats, no_color, version, options)
+    subroutine dm_test_run(name, tests, stats, version, options)
         !! Runs all tests in given array `tests`, returns test states in array
         !! `stats`.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+        use :: dm_env, only: dm_env_has
         use :: dm_system
         use :: dm_time
         use :: dm_timer
@@ -319,7 +320,6 @@ contains
         character(len=*), intent(in)           :: name     !! Test name.
         type(test_type),  intent(inout)        :: tests(:) !! Test types.
         logical,          intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
-        logical,          intent(in), optional :: no_color !! Disable coloured output.
         character(len=*), intent(in), optional :: version  !! Compiler version.
         character(len=*), intent(in), optional :: options  !! Compiler options.
 
@@ -327,14 +327,13 @@ contains
         character(len=TEST_NAME_LEN)  :: test_name
 
         integer          :: i, n, nfail, npass, state
-        logical          :: no_color_
+        logical          :: no_color
         real(kind=r8)    :: time, total_time
         type(timer_type) :: timer
         type(uname_type) :: uname
 
         n = size(tests)
-
-        no_color_ = dm_present(no_color, .false.)
+        no_color = dm_env_has('NO_COLOR')
 
         if (present(version)) then
             version_ = version
@@ -349,9 +348,9 @@ contains
         end if
 
         call dm_system_uname(uname)
-        call dm_ansi_color(COLOR_GREEN, no_color_)
+        call dm_ansi_color(COLOR_GREEN, no_color)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
-        call dm_ansi_reset(no_color_)
+        call dm_ansi_reset(no_color)
 
         print '("Name....: ", a)', trim(name)
         print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
@@ -370,14 +369,14 @@ contains
             test_name = trim(name) // '.' // trim(tests(i)%name)
 
             print '(a)', repeat('-', TEST_LINE_LEN)
-            call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color_)
+            call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color)
 
             stats(i) = associated(tests(i)%proc)
 
             if (.not. stats(i)) then
-                call dm_ansi_color(COLOR_RED, no_color_)
+                call dm_ansi_color(COLOR_RED, no_color)
                 print '("[ERROR} no procedure provided for test ", a)', trim(test_name)
-                call dm_ansi_reset(no_color_)
+                call dm_ansi_reset(no_color)
                 cycle
             end if
 
@@ -387,25 +386,25 @@ contains
             total_time = total_time + time
 
             state = dm_btoi(stats(i), true=TEST_STATE_PASSED, false=TEST_STATE_FAILED)
-            call test_print(i, n, test_name, state, time, no_color=no_color_)
+            call test_print(i, n, test_name, state, time, no_color=no_color)
         end do
 
         call test_title('TEST SUMMARY', TEST_LINE_LEN, '-')
         npass = count(stats)
-        call dm_ansi_color(COLOR_GREEN, no_color_)
+        call dm_ansi_color(COLOR_GREEN, no_color)
         print '(i0, 1x, a, " passed")', npass, dm_btoa((npass == 1), 'test', 'tests')
-        call dm_ansi_reset(no_color_)
+        call dm_ansi_reset(no_color)
 
         nfail = n - npass
-        if (nfail > 0) call dm_ansi_color(COLOR_RED, no_color_)
+        if (nfail > 0) call dm_ansi_color(COLOR_RED, no_color)
         print '(i0, 1x, a, " failed")', nfail, dm_btoa((nfail == 1), 'test', 'tests')
-        call dm_ansi_reset(no_color_)
+        call dm_ansi_reset(no_color)
 
         print '("Total execution time: ", f8.4, " sec")', total_time
 
-        call dm_ansi_color(COLOR_GREEN, no_color_)
+        call dm_ansi_color(COLOR_GREEN, no_color)
         call test_title('TEST SESSION FINISHED', TEST_LINE_LEN, '-')
-        call dm_ansi_reset(no_color_)
+        call dm_ansi_reset(no_color)
 
         print *
         if (nfail > 0) call dm_stop(STOP_FAILURE)
@@ -416,8 +415,8 @@ contains
     ! **************************************************************************
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
-        character(len=*), parameter :: FMT_STATE = '("[TEST ",i2,"/",i2,"] ", a, 20x, a)'
-        character(len=*), parameter :: FMT_TIME  = '("[TEST ",i2,"/",i2,"] ", a, " in ", f8.4, " sec.", 3x, a)'
+        character(len=*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
+        character(len=*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec.", 3x, a)'
 
         integer,          intent(in)           :: index    !! Test number.
         integer,          intent(in)           :: ntests   !! Number of tests.
