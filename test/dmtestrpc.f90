@@ -35,7 +35,7 @@ program dmtestrpc
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, no_color, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function get_env(host, username, password) result(has)
         character(len=:), allocatable, intent(out) :: host
