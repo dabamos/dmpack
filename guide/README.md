@@ -17,10 +17,28 @@ $ make html
 
 Or, run `make guide` in the parent directory.
 
+## Multipage HTML
+
+For multipage HTML output, install
+[asciidoctor-multipage](https://github.com/owenh000/asciidoctor-multipage)
+first:
+
+```
+$ gem install --user-install asciidoctor-multipage
+```
+
+Then, run:
+
+```
+$ make multi
+```
+
+The HTML files are written to directory `./multi`.
+
 ## PDF
 
 The User Guide may also be compiled to PDF if
-[Asciidoctor PDF](https://docs.asciidoctor.org/pdf-converter/latest/) is
+[asciidoctor-pdf](https://docs.asciidoctor.org/pdf-converter/latest/) is
 installed:
 
 ```

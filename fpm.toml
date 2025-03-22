@@ -63,7 +63,7 @@ link = [ "sqlite3" ]
 [[executable]]
 name = "dmdwd"
 main = "dmdwd.f90"
-link = [ "curl", "lua-5.4", "z" ]
+link = [ "curl", "lua-5.4", "rt", "z" ]
 
 [[executable]]
 name = "dmexport"

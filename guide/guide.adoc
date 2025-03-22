@@ -1,5 +1,4 @@
 :description: DMPACK User Guide
-:author: Philipp Engel
 :copyright: CC BY 4.0
 :orgname: DABAMOS
 :revnumber: 0.9.6
@@ -220,9 +219,32 @@ The <<web-applications,web applications>> require a compatible web server, like:
 * link:https://www.lighttpd.net/[lighttpd]
 * link:https://httpd.apache.org/[Apache httpd]
 
-DMPACK depends on additional interface libraries. If the repository is cloned
-recursively with Git, or if the project is built using FPM, the submodules will
-be downloaded automatically. Otherwise, run script `fetchvendor.sh` first.
+== Installation
+
+This section describes the steps to build the DMPACK library and programs from
+source, either with POSIX Make or the
+link:https://fpm.fortran-lang.org/[Fortran Package Manager] (FPM). At the
+moment, support for the Fortran Package Manager is experimental, and using
+GNU/BSD Make is recommended. Display the available build targets of the
+Makefile:
+
+....
+$ make help
+....
+
+Or, output the selected build options:
+
+....
+$ make options PREFIX=/opt
+....
+
+See section <<sys-conf>> on how to configure the operating system
+following the installation. You must at least prepare <<sys-conf-mqueue,POSIX
+message queues>> in order to run DMPACK.
+
+The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
+be present on the target system if the DMPACK programs have been compiled with
+GNU Fortran.
 
 .Paths used by default [[requirements-paths]]
 [cols="3,6"]
@@ -238,40 +260,6 @@ be downloaded automatically. Otherwise, run script `fetchvendor.sh` first.
 | `/var/dmpack/`               | DMPACK databases.
 | `/var/www/`                  | WWW root directory.
 |===
-
-== Installation
-
-This section describes the steps to build the DMPACK library and programs from
-source, either with POSIX Make or the
-link:https://fpm.fortran-lang.org/[Fortran Package Manager] (FPM). At the
-moment, support for the Fortran Package Manager is experimental, and using
-GNU/BSD Make is the recommended way. Display the available build targets of the
-Makefile:
-
-....
-$ make help
-....
-
-Or, output the selected build options:
-
-....
-$ make options PREFIX=/opt
-....
-
-See section <<sys-conf>> on how to configure the operating system
-following the installation. You must at least prepare POSIX message queues in
-order to run DMPACK:
-
-* <<sys-conf-mqueue>> – Enable and configure message passing on Linux and
-  FreeBSD.
-* <<sys-conf-tz>> – Set the correct time zone of the sensor node.
-* <<sys-conf-ntp>> – Enable synchronisation with an NTP server.
-* <<sys-conf-power>> – Disable USB power saving on Linux.
-* <<sys-conf-cron>> – Add cron jobs to run programs periodically.
-
-The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
-be present on the target system if the DMPACK programs have been compiled with
-GNU Fortran.
 
 === Linux [[linux]]
 
@@ -332,9 +320,9 @@ For the other libraries, pass `LIBCURL`, `LIBMODBUS`, `LIBSTROPHE`, and
 [NOTE]
 .Other Compilers
 ====
-If Intel oneAPI or LLVM is used, it is necessary to build HDF5 from source,
-because the versions in the Linux package repositories have been compiled with
-GNU Fortran and are therefore incompatible. See section
+If Intel oneAPI Fortran or LLVM Flang is used, it is necessary to build HDF5
+from source, because the versions in the Linux package repositories have been
+compiled with GNU Fortran and are therefore incompatible. See section
 <<third-party-hdf5,HDF5>> for hints regarding the build process. Pass the
 library installation path additionally to `-lhdf5 -lhdf5_fortran` as argument
 `LIBHDF5` and the path to the module files as argument `INCHDF5`.
@@ -544,18 +532,24 @@ $ sudo make install PREFIX=/opt
 
 == System Configuration [[sys-conf]]
 
-Additional changes to the system configuration should be considered to prevent
-issues while conducting a long-term monitoring.
+This sections describes how the operating system has to be configured in order
+to run the DMPACK programs:
+
+* <<sys-conf-mqueue>> – Enable message passing on
+  <<sys-conf-mqueue-linux>> and <<sys-conf-mqueue-freebsd>> (*required*).
+* <<sys-conf-tz>> – Set the correct time zone of the sensor node.
+* <<sys-conf-ntp>> – Enable synchronisation with an NTP server.
+* <<sys-conf-power>> – Disable USB power saving on Linux.
+* <<sys-conf-cron>> – Add cron jobs to run programs periodically.
 
 === Message Queues [[sys-conf-mqueue]]
 
-The operating system must have POSIX message queues enabled to run DMPACK
-programs on sensor nodes.
+The sensor node must have POSIX message queues enabled.
 
 ==== Linux [[sys-conf-mqueue-linux]]
 
-The POSIX message queue file system should be already mounted by default.
-Otherwise, run:
+The POSIX message queue file system should already be mounted at `/dev/mqueue`
+by default. Otherwise, run:
 
 ....
 # mkdir -p /dev/mqueue
@@ -563,7 +557,7 @@ Otherwise, run:
 ....
 
 Set the maximum number of messages and the maximum message size to some
-reasonable values:
+reasonable values, for example:
 
 ....
 # sysctl fs.mqueue.msg_max=32
@@ -824,27 +818,30 @@ DMPACK includes programs for sensor I/O, database management, observation
 processing, and other tasks related to automated control measurements. The
 programs may be classified into the following categories.
 
-=== Databases
+=== Database Access
 
-<<dmbackup>>:: Creates an online backup of a database by either using the
-SQLite backup API or `VACUUM INTO`.
+<<dmbackup>>:: Creates an online backup of a database by either using the SQLite
+backup API or `VACUUM INTO`.
 <<dmdb>>:: Stores observations received from POSIX message queue in a SQLite
 database.
 <<dmdbctl>>:: A command-line interface to the DMPACK observation database, to
 read, add, update, or delete nodes, sensors, and targets.
-<<dmexport>>:: Exports beats, nodes, sensors, targets, observations, and
-logs from database to file, either in CSV, JSON, or JSON Lines format.
+<<dmexport>>:: Exports beats, nodes, sensors, targets, observations, and logs
+from database to file, either in CSV, JSON, or JSON Lines format.
 <<dmimport>>:: Imports nodes, sensors, targets, observations, and logs from CSV
 file into database.
 <<dminit>>:: Creates and initialises observation, log, and beat databases.
+
+=== Logging
+
+<<dmlog>>:: A utility program to send log messages from command-line or shell
+script to the POSIX message queue of a <<dmlogger>> process, to be stored in the
+log database.
 <<dmlogger>>:: Stores logs received from POSIX message queue in a SQLite
 database.
 
 === Message Passing
 
-<<dmlog>>:: A utility program to send log messages from command-line or
-shell script to the POSIX message queue of a <<dmlogger>> process, to be stored
-in the log database.
 <<dmrecv>>:: Receives logs or observations from POSIX message queue and writes
 them to _stdout_, file, or named pipe.
 <<dmsend>>:: Sends observations or logs from file to a DMPACK application via
@@ -3918,7 +3915,7 @@ retrieve temperature values from a single 1-Wire sensor. The following hardware
 is required:
 
 * 1-Wire temperature sensor,
-* USB adapter LinkUSB.
+* 1-Wire USB adapter iButtonLink LinkUSB.
 
 Make sure that <<sys-conf-power,USB power saving>> is disabled or the LinkUSB
 adapter may be detached after a while. The sensor data is read with *dmfs* and

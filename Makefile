@@ -972,6 +972,7 @@ pdf:
 # User Guide to HTML format.
 guide:
 	cd $(GUIDDIR) && $(MAKE)
+	cd $(GUIDDIR) && $(MAKE) multi
 
 # ******************************************************************************
 #
