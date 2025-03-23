@@ -205,7 +205,7 @@ contains
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: url
 
-        integer          :: count, rc, rc_last, sec, stat
+        integer          :: iter, rc, rc_last, sec, stat
         integer(kind=i8) :: uptime
         logical          :: has_api_status
 
@@ -226,7 +226,7 @@ contains
         end if
 
         client  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-        count   = 1
+        iter    = 1
         rc_last = E_NONE
 
         ! Initialise heartbeat.
@@ -305,9 +305,10 @@ contains
 
             rc_last = rc
 
-            if (app%count <= 1) exit emit_loop
-            count = dm_inc(count)
-            if (count >= app%count) exit emit_loop
+            if (app%count > 0) then
+                iter = dm_inc(iter)
+                if (iter >= app%count) exit emit_loop
+            end if
 
             call dm_timer_stop(timer)
             sec = max(0, int(app%interval - dm_timer_result(timer)))

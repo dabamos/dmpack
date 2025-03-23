@@ -16,7 +16,7 @@ program dmweb
     !! # Load additional modules.
     !! server.modules += ( "mod_alias", "mod_cgi", "mod_setenv" )
     !!
-    !! $HTTP["url"] =~ "^/dmpack/" {
+    !! $HTTP["url"] =~ "^/dmpack" {
     !!   # Map URL to CGI executable.
     !!   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb"
     !!
