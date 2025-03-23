@@ -107,6 +107,8 @@ program dmbot
 
     ! Initialise environment.
     init_block: block
+        call logger%info('started ' // APP_NAME)
+
         call dm_im_init()
         call logger%debug('creating libstrophe context')
         rc = dm_im_create(bot%im)
@@ -117,7 +119,6 @@ program dmbot
         end if
 
         call dm_signal_register(signal_callback)
-        call logger%info('started ' // APP_NAME)
 
         do
             ! Connect to XMPP server.
