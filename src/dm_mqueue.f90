@@ -130,12 +130,14 @@ contains
         !! * `E_INVALID` if message queue has no name.
         !! * `E_MQUEUE` if system call to unlink the queue failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         rc = E_INVALID
         if (len_trim(mqueue%name) == 0) return
         rc = E_MQUEUE
-        if (c_mq_unlink(trim(mqueue%name) // c_null_char) /= 0) return
+        if (c_mq_unlink(dm_f_c_string(mqueue%name)) /= 0) return
         rc = E_NONE
     end function dm_mqueue_unlink
 
@@ -150,6 +152,8 @@ contains
         !! * `E_INVALID` if name is empty or starts with `/`.
         !! * `E_MQUEUE` if system call to open the queue failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(mqueue_type), intent(out)          :: mqueue    !! Message queue type.
         character(len=*),  intent(in)           :: name      !! Message queue name (without leading `/`).
         integer,           intent(in)           :: max_msg   !! Maximum number of messages in queue.
@@ -202,7 +206,7 @@ contains
         attr%mq_msgsize = int(msg_size, kind=c_long)
 
         ! Open message queue.
-        mqueue%mqd = c_mq_open(name  = trim(mqueue%name) // c_null_char, &
+        mqueue%mqd = c_mq_open(name  = dm_f_c_string(mqueue%name), &
                                oflag = flag, &
                                mode  = int(mode_, kind=c_mode_t), &
                                attr  = c_loc(attr))

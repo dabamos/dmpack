@@ -254,6 +254,7 @@ contains
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         !!
         use :: unix
+        use :: dm_c, only: dm_f_c_string
 
         type(tty_type),   intent(inout)        :: tty       !! TTY type.
         character(len=*), intent(in), optional :: path      !! Device path.
@@ -305,7 +306,7 @@ contains
 
         ! Open TTY.
         rc = E_IO
-        tty%fd = c_open(trim(tty%path) // c_null_char, flags, 0_c_mode_t)
+        tty%fd = c_open(dm_f_c_string(tty%path), flags, 0_c_mode_t)
         if (tty%fd < 0) return
 
         ! Set TTY attributes.
@@ -666,12 +667,7 @@ contains
         !! Returns `.true.` if given stop bits value is valid, else `.false.`.
         integer, intent(in) :: stop_bits !! Stop bits.
 
-        select case (stop_bits)
-            case (TTY_STOP_BITS1, TTY_STOP_BITS2)
-                valid = .true.
-            case default
-                valid = .false.
-        end select
+        valid = (stop_bits == TTY_STOP_BITS1 .or. stop_bits == TTY_STOP_BITS2)
     end function dm_tty_stop_bits_is_valid
 
     pure elemental logical function dm_tty_timeout_is_valid(timeout) result(valid)

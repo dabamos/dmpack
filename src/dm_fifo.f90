@@ -77,6 +77,8 @@ contains
         !! * `E_EXIST` if the FIFO already exists.
         !! * `E_IO` if the system call to create the FIFO failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(fifo_type),  intent(inout)         :: fifo      !! FIFO type.
         character(len=*), intent(in)            :: file_path !! Path of FIFO.
         integer,          intent(in),  optional :: perm      !! File permissions.
@@ -92,7 +94,7 @@ contains
             if (present(perm)) fifo%perm = perm
 
             rc = E_IO
-            stat = c_mkfifo(trim(fifo%path) // c_null_char, int(fifo%perm, kind=c_mode_t))
+            stat = c_mkfifo(dm_f_c_string(fifo%path), int(fifo%perm, kind=c_mode_t))
             if (stat < 0) exit fifo_block
             rc = E_NONE
         end block fifo_block
@@ -108,6 +110,8 @@ contains
         !! * `E_INVALID` if the FIFO is already opened, or the path is invalid.
         !! * `E_IO` if the system call to open the FIFO failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(fifo_type), intent(inout)         :: fifo  !! FIFO type.
         integer,         intent(out), optional :: error !! Error code.
 
@@ -121,10 +125,10 @@ contains
             if (len_trim(fifo%path) == 0)   exit fifo_block
 
             rc = E_IO
-            fifo%fd = c_open(fifo%path // c_null_char, O_RDONLY, int(S_IRUSR, kind=c_mode_t))
+            fifo%fd = c_open(dm_f_c_string(fifo%path), O_RDONLY, int(S_IRUSR, kind=c_mode_t))
             if (fifo%fd < 0) exit fifo_block
 
-            fifo%stream = c_fdopen(fifo%fd, 'r' // c_null_char)
+            fifo%stream = c_fdopen(fifo%fd, dm_f_c_string('r'))
             if (.not. c_associated(fifo%stream)) exit fifo_block
             rc = E_NONE
         end block fifo_block

@@ -23,7 +23,10 @@ module dm_c
     end interface dm_to_unsigned
 
     public :: dm_c_f_logical
+    public :: dm_c_f_string_characters
+    public :: dm_c_f_string_pointer
     public :: dm_f_c_logical
+    public :: dm_f_c_string
 
     public :: dm_to_signed
     public :: dm_to_unsigned
@@ -33,6 +36,9 @@ module dm_c
     public :: dm_uint16_to_int32
     public :: dm_uint32_to_int64
 contains
+    ! **************************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! **************************************************************************
     pure elemental logical function dm_c_f_logical(c) result(f)
         !! Converts C logical value to Fortran representation.
         integer(kind=c_int), intent(in) :: c
@@ -50,6 +56,16 @@ contains
             c = 0
         end if
     end function dm_f_c_logical
+
+    pure function dm_f_c_string(f) result(c)
+        !! Returns trimmed `string` with appended null-termination.
+        use, intrinsic :: iso_c_binding, only: c_null_char
+
+        character(len=*), intent(in)   :: f !! Fortran string.
+        character(len=len_trim(f) + 1) :: c !! Null-terminated string.
+
+        c = trim(f) // c_null_char
+    end function dm_f_c_string
 
     pure elemental function dm_int32_to_uint16(s) result(u)
         !! Converts signed 4-byte integer to unsigned 2-byte integer.
@@ -106,4 +122,53 @@ contains
             s = 4294967296_i8 + int(u, kind=i8)
         end if
     end function dm_uint32_to_int64
+
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
+    subroutine dm_c_f_string_characters(c, f)
+        !! Copies a C string, passed as a C char array, to a Fortran string.
+        use, intrinsic :: iso_c_binding, only: c_char, c_null_char
+
+        character(kind=c_char), intent(inout) :: c(:) !! C char array.
+        character(len=size(c)), intent(out)   :: f    !! Fortran string.
+
+        integer :: i
+
+        f = ' '
+
+        do i = 1, size(c)
+            if (c(i) == c_null_char) exit
+            f(i:i) = c(i)
+        end do
+    end subroutine dm_c_f_string_characters
+
+    subroutine dm_c_f_string_pointer(c, f)
+        !! Copies a C string, passed as a C pointer, to a Fortran string.
+        use, intrinsic :: iso_c_binding
+        use :: unix, only: c_strlen
+
+        type(c_ptr),                   intent(in)  :: c !! C string pointer.
+        character(len=:), allocatable, intent(out) :: f !! Fortran string.
+
+        character(kind=c_char), pointer :: ptrs(:)
+        integer(kind=c_size_t)          :: i, n, stat
+
+        copy_block: block
+            if (.not. c_associated(c)) exit copy_block
+            n = c_strlen(c)
+            if (n < 0) exit copy_block
+            call c_f_pointer(c, ptrs, [ n ])
+            allocate (character(len=n) :: f, stat=stat)
+            if (stat /= 0) exit copy_block
+
+            do i = 1, n
+                f(i:i) = ptrs(i)
+            end do
+
+            return
+        end block copy_block
+
+        if (.not. allocated(f)) f = ''
+    end subroutine dm_c_f_string_pointer
 end module dm_c

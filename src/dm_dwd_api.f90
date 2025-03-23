@@ -41,7 +41,6 @@ module dm_dwd_api
     !! * https://www.dwd.de/EN/service/legal_notice/legal_notice_node.html
     !!
     use, intrinsic :: iso_c_binding
-    use :: curl
     use :: dm_dwd
     use :: dm_error
     use :: dm_kind
@@ -57,6 +56,7 @@ contains
     function dm_dwd_api_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes response
         !! chunks to file unit in passed client data of type `response_type`.
+        use :: curl,   only: c_f_str_ptr
         use :: dm_rpc, only: RPC_RESPONSE_UNIT_DEFAULT, rpc_response_type
 
         type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
@@ -97,6 +97,7 @@ contains
         !! given station id `station_id`. Uses the URL API of libcurl to create
         !! the URL. The function returns an empty string on error. TLS is
         !! disabled by default.
+        use :: curl
         use :: dm_util, only: dm_present
 
         character(len=*), parameter :: DWD_HOST              = 'opendata.dwd.de'

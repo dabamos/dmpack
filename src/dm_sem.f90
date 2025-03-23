@@ -123,6 +123,8 @@ contains
         !! * `E_INVALID` if name is empty or starts with `/`, or if value is negative.
         !! * `E_SYSTEM` if system call to open semaphore failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(sem_named_type), intent(inout)        :: sem    !! Semaphore type.
         character(len=*),     intent(in)           :: name   !! Semaphore name (without leading `/`).
         integer,              intent(in), optional :: value  !! Initial value.
@@ -147,7 +149,7 @@ contains
         sem%name = '/' // name
 
         rc = E_SYSTEM
-        sem%ctx = c_sem_open(name  = trim(sem%name) // c_null_char, &
+        sem%ctx = c_sem_open(name  = dm_f_c_string(sem%name), &
                              oflag = flag, &
                              mode  = int(mode_, kind=c_mode_t), &
                              value = value_)
@@ -166,10 +168,12 @@ contains
 
     integer function dm_sem_unlink(sem) result(rc)
         !! Unlinks named semaphore. Returns `E_SYSTEM` on error.
+        use :: dm_c, only: dm_f_c_string
+
         type(sem_named_type), intent(inout) :: sem !! Semaphore type.
 
         rc = E_SYSTEM
-        if (c_sem_unlink(trim(sem%name) // c_null_char) /= 0) return
+        if (c_sem_unlink(dm_f_c_string(sem%name)) /= 0) return
         rc = E_NONE
     end function dm_sem_unlink
 

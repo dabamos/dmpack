@@ -586,7 +586,7 @@ contains
         type(c_ptr) :: curl_ctx, list_ctx
         type(c_ptr) :: fh
 
-        fh = c_fopen(trim(upload%file_path) // c_null_char, 'rb' // c_null_char)
+        fh = c_fopen(dm_f_c_string(upload%file_path), dm_f_c_string('rb'))
         if (.not. c_associated(fh)) return
 
         stat = curl_global_init(CURL_GLOBAL_ALL)

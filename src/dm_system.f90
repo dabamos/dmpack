@@ -30,6 +30,8 @@ contains
     integer function dm_system_daemonize(command) result(rc)
         !! Turns current running program into a daemon. On FreeBSD, it is
         !! probably easier to run the process through daemon(8) instead.
+        use :: dm_c, only: dm_f_c_string
+
         character(len=*), intent(in) :: command
 
         integer(kind=c_pid_t)  :: group, pid
@@ -56,10 +58,10 @@ contains
         group = c_setsid()
 
         ! Change working directory to root directory.
-        if (c_chdir('/' // c_null_char) < 0) return
+        if (c_chdir(dm_f_c_string('/')) < 0) return
 
         ! Open the log file.
-        call c_openlog(trim(command) // c_null_char, LOG_CONS, LOG_DAEMON)
+        call c_openlog(dm_f_c_string(command), LOG_CONS, LOG_DAEMON)
 
         rc = E_NONE
     end function dm_system_daemonize
@@ -67,6 +69,8 @@ contains
     function dm_system_error_message(error) result(string)
         !! Returns system error string from _strerror(3)_. If `error` is not
         !! passed, this function used _errno(2)_ as error code.
+        use :: dm_c, only: dm_c_f_string_pointer
+
         integer, intent(in), optional :: error  !! System error code.
         character(len=:), allocatable :: string !! Error message.
 
@@ -78,7 +82,7 @@ contains
             ptr = c_strerror(c_errno())
         end if
 
-        call c_f_str_ptr(ptr, string)
+        call dm_c_f_string_pointer(ptr, string)
     end function dm_system_error_message
 
     integer function dm_system_fork() result(pid)
@@ -102,6 +106,8 @@ contains
 
     subroutine dm_system_uname(uname, error)
         !! Returns uname information (operating system, hostname, …).
+        use :: dm_c, only: dm_c_f_string_characters
+
         type(uname_type), intent(out)           :: uname !! Uname type.
         integer,          intent(out), optional :: error !! Error code.
 
@@ -113,11 +119,11 @@ contains
         stat = c_uname(utsname)
         if (stat /= 0) return
 
-        call c_f_str_chars(utsname%sysname,  uname%system_name)
-        call c_f_str_chars(utsname%nodename, uname%node_name)
-        call c_f_str_chars(utsname%release,  uname%release)
-        call c_f_str_chars(utsname%version,  uname%version)
-        call c_f_str_chars(utsname%machine,  uname%machine)
+        call dm_c_f_string_characters(utsname%sysname,  uname%system_name)
+        call dm_c_f_string_characters(utsname%nodename, uname%node_name)
+        call dm_c_f_string_characters(utsname%release,  uname%release)
+        call dm_c_f_string_characters(utsname%version,  uname%version)
+        call dm_c_f_string_characters(utsname%machine,  uname%machine)
 
         if (present(error)) error = E_NONE
     end subroutine dm_system_uname

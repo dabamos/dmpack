@@ -3661,10 +3661,12 @@ contains
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to
         !! be set through `dm_db_set_log_callback()` initially.
+        use :: dm_c, only: dm_f_c_string
+
         integer,          intent(in) :: err_code !! Error code.
         character(len=*), intent(in) :: err_msg  !! Error message.
 
-        call sqlite3_log(err_code, err_msg // c_null_char)
+        call sqlite3_log(err_code, dm_f_c_string(err_msg))
     end subroutine dm_db_log
 
     subroutine dm_db_sleep(msec)
@@ -6196,10 +6198,9 @@ contains
         integer(kind=i8),             intent(out)          :: nsyncs      !! Total number of sync records.
         integer(kind=i8),             intent(in), optional :: limit       !! Max. number of rows to fetch.
 
-        integer             :: stat
-        integer(kind=i8)    :: i, n
-        type(db_query_type) :: db_query
-        type(db_stmt_type)  :: db_stmt
+        integer            :: stat
+        integer(kind=i8)   :: i, n
+        type(db_stmt_type) :: db_stmt
 
         nsyncs = 0_i8
 
@@ -6207,7 +6208,7 @@ contains
         if (.not. dm_sync_type_is_valid(type)) return
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, trim(count_query))
+            rc = dm_db_prepare(db, db_stmt, count_query)
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -6228,9 +6229,11 @@ contains
             rc = E_DB_NO_ROWS
             if (nsyncs == 0) exit sql_block
 
-            call dm_db_query_set_limit(db_query, limit)
-
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, trim(query)))
+            if (present(limit)) then
+                rc = dm_db_prepare(db, db_stmt, query // ' LIMIT ' // dm_itoa(limit))
+            else
+                rc = dm_db_prepare(db, db_stmt, query)
+            end if
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -6245,7 +6248,6 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
         stat = dm_db_finalize(db_stmt)
         if (.not. allocated(syncs)) allocate (syncs(0))
     end function db_select_syncs

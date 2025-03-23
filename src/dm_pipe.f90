@@ -46,24 +46,26 @@ contains
         !! * `E_INVALID` if access mode is invalid.
         !! * `E_SYSTEM` if system call failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(pipe_type),  intent(inout) :: pipe    !! Pipe type.
         character(len=*), intent(in)    :: command !! Name or path of binary to open.
         integer,          intent(in)    :: access  !! Open pipe for reading or writing.
 
-        character(len=2) :: a
+        character :: a
 
         rc = E_EXIST
         if (dm_pipe_is_connected(pipe)) return
 
         rc = E_INVALID
         select case (access)
-            case (PIPE_RDONLY); a = 'r' // c_null_char
-            case (PIPE_WRONLY); a = 'w' // c_null_char
+            case (PIPE_RDONLY); a = 'r'
+            case (PIPE_WRONLY); a = 'w'
             case default;       return
         end select
 
         rc = E_SYSTEM
-        pipe%ctx = c_popen(trim(command) // c_null_char, a)
+        pipe%ctx = c_popen(dm_f_c_string(command), dm_f_c_string(a))
         if (.not. c_associated(pipe%ctx)) return
 
         rc = E_NONE
@@ -79,6 +81,8 @@ contains
         !! * `E_EXIST` if one or more pipe is already conncted.
         !! * `E_SYSTEM` if opening pipes failed.
         !!
+        use :: dm_c, only: dm_f_c_string
+
         type(pipe_type),  intent(out) :: stdin   !! Standard input handle.
         type(pipe_type),  intent(out) :: stdout  !! Standard output handle.
         type(pipe_type),  intent(out) :: stderr  !! Standard error handle.
@@ -112,9 +116,9 @@ contains
             stat = c_close(p2(2))
             stat = c_close(p3(2))
 
-            stdin%ctx  = c_fdopen(p1(2), 'w' // c_null_char)
-            stdout%ctx = c_fdopen(p2(1), 'r' // c_null_char)
-            stderr%ctx = c_fdopen(p3(1), 'r' // c_null_char)
+            stdin%ctx  = c_fdopen(p1(2), dm_f_c_string('w'))
+            stdout%ctx = c_fdopen(p2(1), dm_f_c_string('r'))
+            stderr%ctx = c_fdopen(p3(1), dm_f_c_string('r'))
 
             if (.not. dm_pipe_is_connected(stdin))  return
             if (.not. dm_pipe_is_connected(stdout)) return
@@ -132,10 +136,10 @@ contains
             stat = c_dup2(p2(2), STDOUT_FILENO)
             stat = c_dup2(p3(2), STDERR_FILENO)
 
-            stat = c_execl('/bin/sh'     // c_null_char, &
-                           '/bin/sh'     // c_null_char, &
-                           '-c'          // c_null_char, &
-                           trim(command) // c_null_char, &
+            stat = c_execl(dm_f_c_string('/bin/sh'), &
+                           dm_f_c_string('/bin/sh'), &
+                           dm_f_c_string('-c'),      &
+                           dm_f_c_string(command),   &
                            c_null_ptr)
 
             call c_exit(EXIT_SUCCESS)

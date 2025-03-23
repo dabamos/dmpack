@@ -61,7 +61,7 @@ contains
     logical function dm_file_is_directory(path) result(is)
         !! Returns `.true.` if file at given file path is a directory.
         use :: unix
-        use :: dm_c, only: dm_to_signed
+        use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(len=*), intent(in) :: path !! File path.
 
@@ -71,7 +71,7 @@ contains
 
         is = .false.
 
-        stat = c_stat(trim(path) // c_null_char, fs)
+        stat = c_stat(dm_f_c_string(path), fs)
         if (stat /= 0) return
 
         mode = dm_to_signed(fs%st_mode)
@@ -83,28 +83,31 @@ contains
     logical function dm_file_is_executable(path) result(is)
         !! Returns `.true.` if current user has execute permission.
         use :: unix
+        use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.
 
-        is = (c_access(trim(path) // c_null_char, X_OK) == 0)
+        is = (c_access(dm_f_c_string(path), X_OK) == 0)
     end function dm_file_is_executable
 
     logical function dm_file_is_readable(path) result(is)
         !! Returns `.true.` if current user has read permission.
         use :: unix
+        use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.
 
-        is = (c_access(trim(path) // c_null_char, R_OK) == 0)
+        is = (c_access(dm_f_c_string(path), R_OK) == 0)
     end function dm_file_is_readable
 
     logical function dm_file_is_writeable(path) result(is)
         !! Returns `.true.` if current user has write permission.
         use :: unix
+        use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.
 
-        is = (c_access(trim(path) // c_null_char, W_OK) == 0)
+        is = (c_access(dm_f_c_string(path), W_OK) == 0)
     end function dm_file_is_writeable
 
     integer(kind=i8) function dm_file_line_count(path, error) result(n)
@@ -156,7 +159,7 @@ contains
         !! Returns status of file at given path in `status`. The function
         !! returns `E_SYSTEM` on error.
         use :: unix
-        use :: dm_c, only: dm_to_signed
+        use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(len=*),       intent(in)  :: path   !! File path.
         type(file_status_type), intent(out) :: status !! File status type.
@@ -165,7 +168,7 @@ contains
         type(c_stat_type) :: fs
 
         rc = E_SYSTEM
-        stat = c_stat(trim(path) // c_null_char, fs)
+        stat = c_stat(dm_f_c_string(path), fs)
         if (stat /= 0) return
 
         status%size = fs%st_size               ! File size in bytes.
