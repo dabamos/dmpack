@@ -108,21 +108,20 @@ program dmbot
     ! Initialise environment.
     init_block: block
         call dm_im_init()
+        call logger%debug('creating libstrophe context')
+        rc = dm_im_create(bot%im)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to create libstrophe context', error=rc)
+            exit init_block
+        end if
+
+        call dm_signal_register(signal_callback)
         call logger%info('started ' // APP_NAME)
 
         do
-            ! Register signal handler.
-            call dm_signal_register(signal_callback)
-
-            ! Create libstrophe context.
-            rc = dm_im_create(bot%im)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to create libstrophe context', error=rc)
-                exit init_block
-            end if
-
             ! Connect to XMPP server.
+            call logger%debug('connecting to ' // trim(bot%host) // ':' // dm_itoa(bot%port))
             rc = dm_im_connect(im           = bot%im,              &
                                host         = bot%host,            &
                                port         = bot%port,            &
@@ -137,7 +136,9 @@ program dmbot
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
-                exit init_block
+                call logger%debug('reconnecting in 10 sec')
+                call dm_sleep(10)
+                cycle
             end if
 
             ! Check if authorisation is enabled.
