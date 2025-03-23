@@ -130,7 +130,7 @@ contains
         real(kind=r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].
         real(kind=r8), intent(in) :: prism      !! Additive constant of the reflector [mm].
 
-        corrected = slope_dist * (1 + (ppm * 10e-6)) + prism
+        corrected = slope_dist + dm_ppm_to_meter(ppm) + prism
     end function dm_rts_correction_distance
 
     pure elemental real(kind=r8) function dm_rts_correction_projection(east) result(ppm)

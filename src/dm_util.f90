@@ -80,6 +80,12 @@ module dm_util
         module procedure :: msec_to_sec_int64
     end interface dm_msec_to_sec
 
+    interface dm_ppm_to_meter
+        !! Generic PPM to meters function.
+        module procedure :: ppm_to_meter_real32
+        module procedure :: ppm_to_meter_real64
+    end interface dm_ppm_to_meter
+
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
@@ -118,22 +124,23 @@ module dm_util
     public :: dm_msec_to_sec
     public :: dm_sec_to_msec
 
+    public :: dm_ppm_to_meter
+
     ! Private procedures.
     private :: array_has_int32
     private :: array_has_int64
-
     private :: equals_real32
     private :: equals_real64
-
-    private :: inc_int32
-    private :: inc_int64
-
-    private :: itoa_int32
-    private :: itoa_int64
-
     private :: ftoa_real32
     private :: ftoa_real64
-
+    private :: inc_int32
+    private :: inc_int64
+    private :: itoa_int32
+    private :: itoa_int64
+    private :: msec_to_sec_int32
+    private :: msec_to_sec_int64
+    private :: ppm_to_meter_real32
+    private :: ppm_to_meter_real64
     private :: present_character
     private :: present_int32
     private :: present_int64
@@ -141,9 +148,6 @@ module dm_util
     private :: present_ptr
     private :: present_real32
     private :: present_real64
-
-    private :: msec_to_sec_int32
-    private :: msec_to_sec_int64
     private :: sec_to_msec_int32
     private :: sec_to_msec_int64
 contains
@@ -636,7 +640,7 @@ contains
         integer(kind=i4)             :: sec  !! Seconds.
 
         sec = msec / 1000_i4
-   end function msec_to_sec_int32
+    end function msec_to_sec_int32
 
     pure elemental function msec_to_sec_int64(msec) result(sec)
         !! Converts milliseconds to seconds (8 bytes).
@@ -644,21 +648,40 @@ contains
         integer(kind=i8)             :: sec  !! Seconds.
 
         sec = msec / 1000_i8
-   end function msec_to_sec_int64
+    end function msec_to_sec_int64
 
     pure elemental function sec_to_msec_int32(sec) result(msec)
         !! Converts seconds to milliseconds (4 bytes).
-        integer(kind=i4), intent(in) :: sec  !! Seconds
+        integer(kind=i4), intent(in) :: sec  !! Seconds.
         integer(kind=i4)             :: msec !! Milliseconds.
 
         msec = sec * 1000_i4
-   end function sec_to_msec_int32
+    end function sec_to_msec_int32
 
     pure elemental function sec_to_msec_int64(sec) result(msec)
         !! Converts seconds to milliseconds (8 bytes).
-        integer(kind=i8), intent(in) :: sec  !! Seconds
+        integer(kind=i8), intent(in) :: sec  !! Seconds.
         integer(kind=i8)             :: msec !! Milliseconds.
 
         msec = sec * 1000_i8
-   end function sec_to_msec_int64
+    end function sec_to_msec_int64
+
+    ! **************************************************************************
+    ! PRIVATE PPM FUNCTIONS.
+    ! **************************************************************************
+    pure elemental function ppm_to_meter_real32(ppm) result(m)
+        !! Converts PPM to meters (4 bytes).
+        real(kind=r4), intent(in) :: ppm !! PPM.
+        real(kind=r4)             :: m   !! Meters.
+
+        m = ppm * 10e-6_i4
+    end function ppm_to_meter_real32
+
+    pure elemental function ppm_to_meter_real64(ppm) result(m)
+        !! Converts PPM to meters (8 bytes).
+        real(kind=r8), intent(in) :: ppm !! PPM.
+        real(kind=r8)             :: m   !! Meters.
+
+        m = ppm * 10e-6_i8
+    end function ppm_to_meter_real64
 end module dm_util
