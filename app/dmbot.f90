@@ -47,12 +47,12 @@ program dmbot
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name      = APP_NAME !! Name of instance/configuration/resource.
-        character(len=FILE_PATH_LEN)   :: config    = ' '      !! Path to config file.
-        character(len=LOGGER_NAME_LEN) :: logger    = ' '      !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node_id   = ' '      !! Node id.
-        logical                        :: debug     = .false.  !! Forward debug messages via IPC.
-        logical                        :: verbose   = .false.  !! Print debug messages to stderr.
+        character(len=ID_LEN)          :: name    = APP_NAME !! Name of instance/configuration/resource.
+        character(len=FILE_PATH_LEN)   :: config  = ' '      !! Path to config file.
+        character(len=LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger.
+        character(len=NODE_ID_LEN)     :: node_id = ' '      !! Node id.
+        logical                        :: debug   = .false.  !! Forward debug messages via IPC.
+        logical                        :: verbose = .false.  !! Print debug messages to stderr.
     end type app_type
 
     type :: bot_type
@@ -108,9 +108,8 @@ program dmbot
     ! Initialise environment.
     init_block: block
         call logger%info('started ' // APP_NAME)
-
         call dm_im_init()
-        call logger%debug('creating libstrophe context')
+
         rc = dm_im_create(bot%im)
 
         if (dm_is_error(rc)) then
@@ -137,6 +136,7 @@ program dmbot
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
+                if (.not. bot%reconnect) exit
                 call logger%debug('reconnecting in 10 sec')
                 call dm_sleep(10)
                 cycle
@@ -173,18 +173,18 @@ contains
         type(arg_type) :: args(12)
 
         args = [ &
-            arg_type('name',      short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
-            arg_type('config',    short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('logger',    short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
-            arg_type('jid',       short='J', type=ARG_TYPE_STRING),   & ! -J, --jid <string>
-            arg_type('password',  short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
-            arg_type('host',      short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
-            arg_type('port',      short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
-            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
-            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL),  & ! -R, --reconnect
-            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
+            arg_type('name',      short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',    short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',    short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',      short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('jid',       short='J', type=ARG_TYPE_STRING),  & ! -J, --jid <string>
+            arg_type('password',  short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
+            arg_type('host',      short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
+            arg_type('port',      short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
+            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
+            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL), & ! -R, --reconnect
+            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
         ]
 
         ! Read all command-line arguments.
@@ -321,8 +321,8 @@ contains
         bot_command = bot_parse_message(message, command, argument)
 
         if (bot_command == BOT_COMMAND_NONE) then
-            reply = 'unrecognized command (send !help for a list of all commands)'
             call logger%debug('received invalid command from ' // from)
+            reply = 'unrecognized command (send !help for a list of all commands)'
             return
         end if
 
@@ -354,13 +354,9 @@ contains
 
         integer :: i, n
 
-        is = .false.
-
         ! All JIDs are authorised if the group is empty.
-        if (size(group) == 0) then
-            is = .true.
-            return
-        end if
+        is = (size(group) == 0)
+        if (is) return
 
         n = len_trim(jid)
         if (n == 0) return
@@ -775,8 +771,8 @@ contains
         if (bot_is_authorized(bot%group, from)) then
             reply = bot_dispatch(bot, from, text)
         else
-            reply = 'unauthorized'
             call logger%warning('unauthorized access by ' // from, error=E_PERM)
+            reply = 'unauthorized'
         end if
 
         ! Don't send empty reply.
@@ -871,11 +867,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call halt(E_NONE)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()
