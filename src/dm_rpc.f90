@@ -283,7 +283,6 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
         !! * `E_RPC` if the HTTP request failed.
         !!
         type(rpc_request_type),  intent(inout)        :: request        !! RPC request type.
@@ -672,7 +671,6 @@ contains
         !!
         !! * `E_ALLOC` if RPC response array allocation failed.
         !! * `E_EMPTY` if no RPC requests are given.
-        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
         !! * `E_RPC` if RPC backend initialisation failed.
         !!
         !! Other DMPACK errors may occur, depending on the result of the
@@ -784,10 +782,6 @@ contains
 
         stat = curl_multi_cleanup(multi_ptr)
         if (dm_is_error(rc)) return
-
-        ! Catch compiler bug.
-        rc = E_EXIST
-        if (c_associated(multi_ptr)) return
 
         rc = E_NONE
     end function rpc_request_multi
@@ -910,7 +904,6 @@ contains
         !! Sends single HTTP request by calling libcurl. The function returns
         !! the following error codes:
         !!
-        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
         !! * `E_RPC` if the HTTP request failed.
         !!
         !! A more specific error code may be available in response attribute
@@ -950,12 +943,6 @@ contains
         request%curl_ctx = c_null_ptr
 
         if (dm_is_error(rc)) return
-
-        ! Catch possible compiler bug. (I'm looking at you, ifx!)
-        rc = E_EXIST
-        if (c_associated(request%list_ctx)) return
-        if (c_associated(request%curl_ctx)) return
-
         rc = E_NONE
     end function rpc_request_single
 

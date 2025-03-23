@@ -446,8 +446,8 @@ contains
                     has_api_status = .false.
 
                     if (responses(i)%content_type == MIME_TEXT) then
-                        rc = dm_api_status_from_string(responses(i)%payload, api_status)
-                        has_api_status = dm_is_ok(rc)
+                        stat = dm_api_status_from_string(responses(i)%payload, api_status)
+                        has_api_status = dm_is_ok(stat)
                     end if
 
                     ! Log the HTTP response code.
