@@ -80,12 +80,6 @@ module dm_util
         module procedure :: msec_to_sec_int64
     end interface dm_msec_to_sec
 
-    interface dm_ppm_to_meter
-        !! Generic PPM to meters function.
-        module procedure :: ppm_to_meter_real32
-        module procedure :: ppm_to_meter_real64
-    end interface dm_ppm_to_meter
-
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
@@ -124,8 +118,6 @@ module dm_util
     public :: dm_msec_to_sec
     public :: dm_sec_to_msec
 
-    public :: dm_ppm_to_meter
-
     ! Private procedures.
     private :: array_has_int32
     private :: array_has_int64
@@ -139,8 +131,6 @@ module dm_util
     private :: itoa_int64
     private :: msec_to_sec_int32
     private :: msec_to_sec_int64
-    private :: ppm_to_meter_real32
-    private :: ppm_to_meter_real64
     private :: present_character
     private :: present_int32
     private :: present_int64
@@ -665,23 +655,4 @@ contains
 
         msec = sec * 1000_i8
     end function sec_to_msec_int64
-
-    ! **************************************************************************
-    ! PRIVATE PPM FUNCTIONS.
-    ! **************************************************************************
-    pure elemental function ppm_to_meter_real32(ppm) result(m)
-        !! Converts PPM to meters (4 bytes).
-        real(kind=r4), intent(in) :: ppm !! PPM.
-        real(kind=r4)             :: m   !! Meters.
-
-        m = ppm * 10e-6_i4
-    end function ppm_to_meter_real32
-
-    pure elemental function ppm_to_meter_real64(ppm) result(m)
-        !! Converts PPM to meters (8 bytes).
-        real(kind=r8), intent(in) :: ppm !! PPM.
-        real(kind=r8)             :: m   !! Meters.
-
-        m = ppm * 10e-6_i8
-    end function ppm_to_meter_real64
 end module dm_util

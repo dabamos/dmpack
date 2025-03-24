@@ -52,6 +52,8 @@ module dm_rts
 
     real(kind=r8), parameter :: EARTH_RADIUS       = 6.378_r8 * 10e6 !! Default radius of the earth.
     real(kind=r8), parameter :: MEAN_REFRACT_COEFF = 0.13_r8         !! Default mean refraction coefficient.
+    real(kind=r8), parameter :: MM_TO_M            = 10e-4           !! Millimeters to meters.
+    real(kind=r8), parameter :: PPM_TO_M           = 10e-6           !! PPM to meters.
 
     interface dm_rts_distance_std_dev
         !! Generic interface to standard deviation functions.
@@ -123,14 +125,14 @@ contains
         ppm = 286.34 - (c - d * 10.0_r8**x)
     end function dm_rts_correction_atmospheric
 
-    pure elemental real(kind=r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(corrected)
+    pure elemental real(kind=r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(dist)
         !! Applied atmospheric correction [ppm] and prism constant [mmm] to
         !! uncorrected slope distance [m].
         real(kind=r8), intent(in) :: slope_dist !! Uncorrected slope distance [m].
         real(kind=r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].
         real(kind=r8), intent(in) :: prism      !! Additive constant of the reflector [mm].
 
-        corrected = slope_dist + dm_ppm_to_meter(ppm) + prism
+        dist = slope_dist + (ppm * PPM_TO_M) + (prism * MM_TO_M)
     end function dm_rts_correction_distance
 
     pure elemental real(kind=r8) function dm_rts_correction_projection(east) result(ppm)
@@ -214,7 +216,7 @@ contains
         std_dev = s / sqrt(real(n, kind=r8))
     end function dm_rts_distance_std_dev_mean
 
-    pure elemental real(kind=r8) function dm_rts_height_difference(slope_dist, v, k) result(diff)
+    pure elemental real(kind=r8) function dm_rts_height_difference(slope_dist, v, k) result(d)
         !! Returns height difference [m] from slope distance `slope_dist` [m]
         !! and vertical angle `v` [rad]. The default mean refraction
         !! coefficient `k` is 0.13.
@@ -233,7 +235,6 @@ contains
         b = (1 - k_) / (2 * EARTH_RADIUS)
         x = slope_dist * cos(v)
         y = slope_dist * abs(sin(v))
-
-        diff = x + b * y**2
+        d = x + b * y**2
     end function dm_rts_height_difference
 end module dm_rts

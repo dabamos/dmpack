@@ -33,15 +33,15 @@ contains
         if (.not. dm_equals(ppm, 0.0_r8)) return
 
         ! Set "measured" values and constants.
-        east    = 1000.0_r8                ! Easting [km].
-        d_ref   = 99.98769_r8              ! Reference hz distance [m].
-        d_slope = 100.0_r8                 ! Measured slope distance [m].
-        height  = 10.0_r8                  ! EDM height [m].
-        v       = dm_gon_to_rad(99.0_r8)   ! Vertical angle [rad].
-        prism   = RTS_PRISM_LEICA_STANDARD ! Prism constant [mm].
-        temp    = 12.0_r8                  ! Air temperature [deg C].
-        press   = 995.45_r8                ! Air pressure [mbar].
-        hum     = 0.4_r8                   ! Humidity [%].
+        east    = 1000.0_r8              ! Easting [km].
+        d_ref   = 100.00519_r8           ! Reference hz distance [m].
+        d_slope = 100.0_r8               ! Measured slope distance [m].
+        height  = 10.0_r8                ! EDM height [m].
+        v       = dm_gon_to_rad(99.0_r8) ! Vertical angle [rad].
+        prism   = RTS_PRISM_LEICA_MINI   ! Prism constant [mm].
+        temp    = 12.0_r8                ! Air temperature [deg C].
+        press   = 995.45_r8              ! Air pressure [mbar].
+        hum     = 0.4_r8                 ! Humidity [%].
 
         ! Calculate correction values. Apply only 1 and 2.
         ppm1 = dm_rts_correction_atmospheric(temp, press, hum)
