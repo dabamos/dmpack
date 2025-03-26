@@ -1,20 +1,20 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_ftp
-    !! Module for file upload/download via FTP(S).
+    !! Module for file transfer via FTP(S).
     !!
     !! Upload a file to FTP server `192.168.0.100`:
     !!
     !! ```fortran
     !! character(len=*), parameter :: HOST        = '192.168.0.100'
     !! character(len=*), parameter :: LOCAL_FILE  = '/tmp/observ.csv'
-    !! character(len=*), parameter :: REMOTE_FILE = '/var/ftp/observ.csv'
+    !! character(len=*), parameter :: REMOTE_FILE = 'test/observ.csv'
     !!
     !! integer               :: rc
     !! type(ftp_server_type) :: server
     !!
     !! rc = dm_ftp_init()
-    !! call dm_ftp_server_set(server, host=HOST)
+    !! call dm_ftp_server_set(server, host=HOST, create_missing=.true.)
     !! rc = dm_ftp_upload(server, LOCAL_FILE, REMOTE_FILE)
     !! call dm_ftp_shutdown()
     !! ```

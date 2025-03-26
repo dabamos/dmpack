@@ -464,20 +464,87 @@ all:
 build: $(TARGET) $(SHARED) test app
 
 # Apps target.
-app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMDWD) $(DMEXPORT) \
-     $(DMFEED) $(DMFS) $(DMGRC) $(DMINFO) $(DMIMPORT) $(DMINIT) $(DMLOG) $(DMLOGGER) \
-     $(DMLUA) $(DMMB) $(DMMBCTL) $(DMPIPE) $(DMPLOT) $(DMRECV) $(DMREPORT) $(DMSEND) \
-     $(DMSERIAL) $(DMSYNC) $(DMUUID) $(DMVED) $(DMWEB)
+app: $(DMAPI) \
+     $(DMBACKUP) \
+     $(DMBEAT) \
+     $(DMBOT) \
+     $(DMDB) \
+     $(DMDBCTL) \
+     $(DMDWD) \
+     $(DMEXPORT) \
+     $(DMFEED) \
+     $(DMFS) \
+     $(DMGRC) \
+     $(DMINFO) \
+     $(DMIMPORT) \
+     $(DMINIT) \
+     $(DMLOG) \
+     $(DMLOGGER) \
+     $(DMLUA) \
+     $(DMMB) \
+     $(DMMBCTL) \
+     $(DMPIPE) \
+     $(DMPLOT) \
+     $(DMRECV) \
+     $(DMREPORT) \
+     $(DMSEND) \
+     $(DMSERIAL) \
+     $(DMSYNC) \
+     $(DMUUID) \
+     $(DMVED) \
+     $(DMWEB)
 
 # Tests target.
-test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
-      dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestdwd dmtestfile \
-      dmtestftp dmtestgm dmtesthash dmtesthdf5 dmtesthtml dmtestid dmtestlog \
-      dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus \
-      dmtestmqtt dmtestmqueue dmtestnet dmtestnml dmtestobserv dmtestpath \
-      dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring \
-      dmtestthread dmtesttime dmtesttransform dmtesttty dmtestunit dmtestutil \
-      dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
+test: dmtestapi \
+      dmtestascii \
+      dmtestatom \
+      dmtestbase64 \
+      dmtestc \
+      dmtestcgi \
+      dmtestconfig \
+      dmtestcrypto \
+      dmtestcsv \
+      dmtestdb \
+      dmtestdp \
+      dmtestdwd \
+      dmtestfile \
+      dmtestftp \
+      dmtestgm \
+      dmtesthash \
+      dmtesthdf5 \
+      dmtesthtml \
+      dmtestid \
+      dmtestlog \
+      dmtestlogger \
+      dmtestlua \
+      dmtestjob \
+      dmtestjson \
+      dmtestmail \
+      dmtestmodbus \
+      dmtestmqtt \
+      dmtestmqueue \
+      dmtestnet \
+      dmtestnml \
+      dmtestobserv \
+      dmtestpath \
+      dmtestpipe \
+      dmtestplot \
+      dmtestregex \
+      dmtestrpc \
+      dmtestrts \
+      dmteststring \
+      dmtestthread \
+      dmtesttime \
+      dmtesttransform \
+      dmtesttty \
+      dmtestunit \
+      dmtestutil \
+      dmtestuuid \
+      dmtestve \
+      dmtestversion \
+      dmtestz \
+      dmtestzlib \
+      dmtestzstd
 
 # ******************************************************************************
 #

@@ -64,6 +64,7 @@ POSIX semaphores.
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
+* FTP file transfer
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API for Fortran
@@ -204,7 +205,7 @@ containing the **DMPACK** module files is passed through argument `-I`.
 | Module          | Libraries           | Linker Libraries                                  |
 |-----------------|---------------------|---------------------------------------------------|
 | `dm_config`     | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
-| `dm_crypto`     | OpenSSL             | `-lcrypto`                                        |
+| `dm_crypto`     | libcrypto           | `-lcrypto`                                        |
 | `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`                       |
 | `dm_dwd_api`    | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_fcgi`       | FastCGI             | `-lfcgi`                                          |
