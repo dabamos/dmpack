@@ -75,6 +75,9 @@ contains
         type(observ_type), allocatable :: observs(:)
         integer                        :: error_curl, iostat, port, rc, unit
 
+        type(ftp_server_type) :: server
+        type(timer_type)      :: timer
+
         stat = TEST_PASSED
         if (.not. get_env(host, port, username, password, path)) return
 
@@ -95,31 +98,31 @@ contains
         deallocate (observs)
 
         ftp_block: block
-            type(ftp_type)   :: ftp
-            type(timer_type) :: timer
+            character(len=:), allocatable :: url
 
             print '(" Starting FTP backend ...")'
             rc = dm_ftp_init()
             if (dm_is_error(rc)) exit ftp_block
 
-            call dm_ftp_set(ftp, host=host, port=port, active=ACTIVE, username=username, password=password)
+            call dm_ftp_server_set(server, host=host, port=port, active=ACTIVE, username=username, password=password)
             remote_path = dm_path_join('/', dm_path_join(path, REMOTE_FILE)) ! absolute path
+            url         = dm_ftp_url(host, port=port, path=remote_path)
 
-            print '(" Host.......: ", a)', host
-            print '(" Port.......: ", i0)',port
-            print '(" User name..: ", a)', username
-            print '(" Password...: ", a)', password
-            print '(" Local path.: ", a)', LOCAL_PATH
-            print '(" Remote file: ", a)', REMOTE_FILE
-            print '(" Path.......: ", a)', path
-            print '(" Remote path: ", a)', remote_path
-            print '(" Rename to..: ", a)', RENAME_TO
-
+            print '(" Host.......: ", a)',          host
+            print '(" Port.......: ", i0)',         port
+            print '(" User name..: ", a)',          username
+            print '(" Password...: ", a)',          password
+            print '(" Local path.: ", a)',          LOCAL_PATH
+            print '(" Remote file: ", a)',          REMOTE_FILE
+            print '(" Path.......: ", a)',          path
+            print '(" Remote path: ", a)',          remote_path
+            print '(" Rename to..: ", a)',          RENAME_TO
+            print '(" URL........: ", a)',          url
             print '(" File size..: ", i0, " KiB")', dm_file_size(LOCAL_PATH) / 1024
-            print '(" Uploading ", a, " to ftp://", a, ":", i0, a, " ...")', LOCAL_PATH, host, port, remote_path
 
+            print '(" Uploading ", a, " to ", a, " ...")', LOCAL_PATH, url
             call dm_timer_start(timer)
-            rc = dm_ftp_upload(ftp, LOCAL_PATH, remote_path, RENAME_TO, error_message=error_message, error_curl=error_curl, debug=DEBUG)
+            rc = dm_ftp_upload(server, LOCAL_PATH, remote_path, RENAME_TO, error_message=error_message, error_curl=error_curl, debug=DEBUG)
             call dm_timer_stop(timer)
 
             if (dm_is_error(rc)) then
@@ -128,14 +131,17 @@ contains
             end if
 
             print '(" Finished upload in ", f0.2, " sec")', dm_timer_result(timer)
+            print '(" Renamed remote file ", a, " to ", a)', REMOTE_FILE, RENAME_TO
             stat = TEST_PASSED
         end block ftp_block
 
         call dm_error_out(rc)
         call dm_ftp_shutdown()
 
-        print '(" Deleting local file ", a, " ...")', LOCAL_PATH
-        call dm_file_delete(LOCAL_PATH)
+        if (dm_file_exists(LOCAL_PATH)) then
+            print '(" Deleting local file ", a, " ...")', LOCAL_PATH
+            call dm_file_delete(LOCAL_PATH)
+        end if
 
         call dm_ansi_color(COLOR_YELLOW, no_color)
         print '(" DELETE REMOTE FILE ", a, " ON THE SERVER MANUALLY!")', RENAME_TO

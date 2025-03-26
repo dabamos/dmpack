@@ -25,9 +25,6 @@ module dm_rpc
     !!
     !! The URL returned by `dm_rpc_url()` will equal
     !! `http://localhost:80/api/v1/observ` in this case.
-    !!
-    !! The procedure `dm_rpc_init()` has to be called once per process, and only
-    !! if neither the MQTT nor the mail backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error

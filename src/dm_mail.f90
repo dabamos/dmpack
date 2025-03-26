@@ -26,9 +26,6 @@ module dm_mail
     !! rc = dm_mail_send(mail, server)
     !! call dm_mail_shutdown()
     !! ```
-    !!
-    !! The procedure `dm_mail_init()` has to be called once per process, and
-    !! only if neither the RPC nor the MQTT backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error

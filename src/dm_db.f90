@@ -1952,14 +1952,14 @@ contains
         stat = dm_db_finalize(db_stmt)
     end function dm_db_insert_target
 
-    logical function dm_db_is_connected(db) result(connected)
+    logical function dm_db_is_connected(db) result(is)
         !! Returns `.true.` if database type has associated pointer.
         type(db_type), intent(inout) :: db !! Database type.
 
-        connected = c_associated(db%ctx)
+        is = c_associated(db%ctx)
     end function dm_db_is_connected
 
-    logical function dm_db_is_read_only(db) result(read_only)
+    logical function dm_db_is_read_only(db) result(is)
         !! Returns `.true.` if database is in read-only mode. This function
         !! checks only the opaque database type for the read-only flag. It is
         !! still possible to enable ready-only access by calling
@@ -1967,12 +1967,12 @@ contains
         !! returns the status of the `query_only` pragma.
         type(db_type), intent(inout) :: db !! Database type.
 
-        read_only = db%read_only
+        is = db%read_only
     end function dm_db_is_read_only
 
-    logical function dm_db_is_threadsafe() result(safe)
+    logical function dm_db_is_threadsafe() result(is)
         !! Returns true if SQLite 3 was compiled threadsafe.
-        safe = (sqlite3_threadsafe() == SQLITE_OK)
+        is = (sqlite3_threadsafe() == SQLITE_OK)
     end function dm_db_is_threadsafe
 
     integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
@@ -2001,6 +2001,7 @@ contains
         !! * `E_DB_VERSION` if the user version is incompatible.
         !! * `E_EXIST` if database is already opened.
         !! * `E_NOT_FOUND` if database has not been found.
+        !! * `E_PERM` if no read or write permission.
         !!
         use :: dm_file
 
@@ -2026,13 +2027,16 @@ contains
         wal_          = dm_present(wal,          .false.) ! WAL mode.
 
         ! Validate options.
-        exists = dm_file_exists(path)
-
         rc = E_EXIST
         if (dm_db_is_connected(db)) return
 
         rc = E_NOT_FOUND
+        exists = dm_file_exists(path)
         if (.not. create_ .and. .not. exists) return
+
+        rc = E_PERM
+        if (.not. dm_file_is_readable(path)) return
+        if (.not. db%read_only .and. .not. dm_file_is_writeable(path)) return
 
         ! Set database flags.
         rc = E_DB

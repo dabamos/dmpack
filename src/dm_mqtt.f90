@@ -44,9 +44,6 @@ module dm_mqtt
     !! ```
     !!
     !! Any client subscribing topic `/fortran` will receive the message.
-    !!
-    !! The procedure `dm_mqtt_init()` has to be called once per process, and
-    !! only if neither the RPC nor the mail backend is initialised already.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
