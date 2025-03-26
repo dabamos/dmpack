@@ -230,6 +230,11 @@ name = "dmtestfile"
 main = "dmtestfile.f90"
 
 [[test]]
+name = "dmtestftp"
+main = "dmtestftp.f90"
+link = [ "curl" ]
+
+[[test]]
 name = "dmtestgm"
 main = "dmtestgm.f90"
 

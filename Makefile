@@ -258,6 +258,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_fifo.f90 \
       $(SRCDIR)/dm_file.f90 \
       $(SRCDIR)/dm_format.f90 \
+      $(SRCDIR)/dm_ftp.f90 \
       $(SRCDIR)/dm_geocom.f90 \
       $(SRCDIR)/dm_geocom_api.f90 \
       $(SRCDIR)/dm_geocom_error.f90 \
@@ -362,6 +363,7 @@ OBJ = dm_ansi.o \
       dm_fifo.o \
       dm_file.o \
       dm_format.o \
+      dm_ftp.o \
       dm_geocom.o \
       dm_geocom_api.o \
       dm_geocom_error.o \
@@ -470,12 +472,12 @@ app: $(DMAPI) $(DMBACKUP) $(DMBEAT) $(DMBOT) $(DMDB) $(DMDBCTL) $(DMDWD) $(DMEXP
 # Tests target.
 test: dmtestapi dmtestascii dmtestatom dmtestbase64 dmtestc dmtestcgi \
       dmtestconfig dmtestcrypto dmtestcsv dmtestdb dmtestdp dmtestdwd dmtestfile \
-      dmtestgm dmtesthash dmtesthdf5 dmtesthtml dmtestid dmtestlog dmtestlogger \
-      dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus dmtestmqtt \
-      dmtestmqueue dmtestnet dmtestnml dmtestobserv dmtestpath dmtestpipe \
-      dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring dmtestthread \
-      dmtesttime dmtesttransform dmtesttty dmtestunit dmtestutil dmtestuuid \
-      dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
+      dmtestftp dmtestgm dmtesthash dmtesthdf5 dmtesthtml dmtestid dmtestlog \
+      dmtestlogger dmtestlua dmtestjob dmtestjson dmtestmail dmtestmodbus \
+      dmtestmqtt dmtestmqueue dmtestnet dmtestnml dmtestobserv dmtestpath \
+      dmtestpipe dmtestplot dmtestregex dmtestrpc dmtestrts dmteststring \
+      dmtestthread dmtesttime dmtesttransform dmtesttty dmtestunit dmtestutil \
+      dmtestuuid dmtestve dmtestversion dmtestz dmtestzlib dmtestzstd
 
 # ******************************************************************************
 #
@@ -684,6 +686,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ve.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -745,6 +748,9 @@ dmtestdwd: test/dmtestdwd.f90 $(TARGET)
 
 dmtestfile: test/dmtestfile.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestfile test/dmtestfile.f90 $(TARGET) $(LDLIBS)
+
+dmtestftp: test/dmtestftp.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestftp test/dmtestftp.f90 $(TARGET) $(LDLIBS) $(LIBCURL)
 
 dmtestgm: test/dmtestgm.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestgm test/dmtestgm.f90 $(TARGET) $(LDLIBS) $(LIBCRYPTO)

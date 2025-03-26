@@ -56,6 +56,7 @@ module dmpack
     use :: dm_fifo
     use :: dm_file
     use :: dm_format
+    use :: dm_ftp
     use :: dm_geocom
     use :: dm_geocom_api
     use :: dm_geocom_error

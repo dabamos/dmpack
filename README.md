@@ -208,6 +208,7 @@ containing the **DMPACK** module files is passed through argument `-I`.
 | `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`                       |
 | `dm_dwd_api`    | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_fcgi`       | FastCGI             | `-lfcgi`                                          |
+| `dm_ftp`        | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
 | `dm_im`         | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
 | `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |

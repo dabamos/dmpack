@@ -19,6 +19,16 @@ $ export DM_MAIL_USERNAME="username"
 $ export DM_MAIL_PASSWORD="password"
 ```
 
+Environment variables for `dmtestftp`:
+
+```
+$ export DM_FTP_HOST="127.0.0.1"
+$ export DM_FTP_PORT="0"
+$ export DM_FTP_USERNAME="username"
+$ export DM_FTP_PASSWORD="password"
+$ export DM_FTP_PATH="/tmp"
+```
+
 The program `dmtestmqtt` requires host and port of the MQTT server:
 
 ```
