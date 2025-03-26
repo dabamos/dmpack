@@ -2026,17 +2026,20 @@ contains
         validate_     = dm_present(validate,     .true.)  ! App ID validation.
         wal_          = dm_present(wal,          .false.) ! WAL mode.
 
+        exists = dm_file_exists(path)
+
         ! Validate options.
         rc = E_EXIST
         if (dm_db_is_connected(db)) return
 
-        rc = E_NOT_FOUND
-        exists = dm_file_exists(path)
-        if (.not. create_ .and. .not. exists) return
+        if (.not. create_) then
+            rc = E_NOT_FOUND
+            if (.not. exists) return
 
-        rc = E_PERM
-        if (.not. dm_file_is_readable(path)) return
-        if (.not. db%read_only .and. .not. dm_file_is_writeable(path)) return
+            rc = E_PERM
+            if (.not. dm_file_is_readable(path)) return
+            if (.not. db%read_only .and. .not. dm_file_is_writeable(path)) return
+        end if
 
         ! Set database flags.
         rc = E_DB
