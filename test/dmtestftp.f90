@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestftp
-    !! Test program for FTP file upload.
+    !! Test program for FTP file upload and download.
     !!
     !! To run this program, set the following environment variables
     !! first:
@@ -75,6 +75,7 @@ contains
         type(observ_type), allocatable :: observs(:)
         integer                        :: error_curl, iostat, port, rc, unit
 
+        integer(kind=i8)      :: nbytes, nbytes2
         type(ftp_server_type) :: server
         type(timer_type)      :: timer
 
@@ -96,6 +97,7 @@ contains
         if (dm_is_error(rc)) return
 
         deallocate (observs)
+        nbytes = dm_file_size(LOCAL_PATH)
 
         ftp_block: block
             character(len=:), allocatable :: url
@@ -120,6 +122,9 @@ contains
             print '(" URL........: ", a)',          url
             print '(" File size..: ", i0, " KiB")', dm_file_size(LOCAL_PATH) / 1024
 
+            ! ******************************************************************
+            ! UPLOAD
+            ! ******************************************************************
             print '(" Uploading ", a, " to ", a, " ...")', LOCAL_PATH, url
             call dm_timer_start(timer)
             rc = dm_ftp_upload(server, LOCAL_PATH, remote_path, RENAME_TO, error_message=error_message, error_curl=error_curl, debug=DEBUG)
@@ -132,6 +137,37 @@ contains
 
             print '(" Finished upload in ", f0.2, " sec")', dm_timer_result(timer)
             print '(" Renamed remote file ", a, " to ", a)', REMOTE_FILE, RENAME_TO
+
+            print '(" Deleting local file ", a, " ...")', LOCAL_PATH
+            call dm_file_delete(LOCAL_PATH)
+
+            ! ******************************************************************
+            ! DOWNLOAD
+            ! ******************************************************************
+            remote_path = dm_path_join('/', dm_path_join(path, RENAME_TO)) ! absolute path
+            url         = dm_ftp_url(host, port=port, path=remote_path)
+
+            print '(" Remote path: ", a)', remote_path
+            print '(" URL........: ", a)', url
+
+            print '(" Downloading ", a, " to ", a, " ...")', url, LOCAL_PATH
+            call dm_timer_start(timer)
+            rc = dm_ftp_download(server, remote_path, LOCAL_PATH, error_message=error_message, error_curl=error_curl, debug=DEBUG)
+            call dm_timer_stop(timer)
+
+            if (dm_is_error(rc)) then
+                print '("cURL error ", i0, ": ", a)', error_curl, error_message
+                exit ftp_block
+            end if
+
+            print '(" Finished download in ", f0.2, " sec")', dm_timer_result(timer)
+            nbytes2 = dm_file_size(LOCAL_PATH)
+
+            if (nbytes2 /= nbytes) then
+                print '(" File size does not match, expected ", i0, " bytes, got ", i0, " bytes")', nbytes, nbytes2
+                exit ftp_block
+            end if
+
             stat = TEST_PASSED
         end block ftp_block
 
