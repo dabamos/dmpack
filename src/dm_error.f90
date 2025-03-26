@@ -8,9 +8,12 @@ module dm_error
     private
 
     ! ********************************************************************************
-    !                                ATTENTION
+    !
+    !                                    ATTENTION
+    !
     ! Any additional error code must be exported in `dm_lua_api_register()`
     ! of module `dm_lua_api`.
+    !
     ! ********************************************************************************
 
     ! Generic errors.
@@ -95,6 +98,11 @@ module dm_error
     integer, parameter, public :: E_MAIL_CONNECT   = 101 !! Mail connection error.
     integer, parameter, public :: E_MAIL_SSL       = 102 !! Mail SSL/TLS error.
     integer, parameter, public :: E_MAIL_AUTH      = 103 !! Unauthorised.
+    ! FTP errors.
+    integer, parameter, public :: E_FTP            = 105 !! Generic FTP error.
+    integer, parameter, public :: E_FTP_CONNECT    = 106 !! FTP connection error.
+    integer, parameter, public :: E_FTP_SSL        = 107 !! FTP SSL/TLS error.
+    integer, parameter, public :: E_FTP_AUTH       = 108 !! Unauthorised.
     ! MQTT errors.
     integer, parameter, public :: E_MQTT           = 110 !! Generic MQTT error.
     ! Lua errors.
@@ -220,6 +228,11 @@ contains
             case (E_MAIL_CONNECT);   message = 'mail connection error'
             case (E_MAIL_SSL);       message = 'mail SSL error'
             case (E_MAIL_AUTH);      message = 'mail authorization error'
+            ! FTP.
+            case (E_FTP);            message = 'FTP error'
+            case (E_FTP_CONNECT);    message = 'FTP connection error'
+            case (E_FTP_SSL);        message = 'FTP SSL error'
+            case (E_FTP_AUTH);       message = 'FTP authorization error'
             ! MQTT.
             case (E_MQTT);           message = 'MQTT error'
             ! Lua.
@@ -242,18 +255,23 @@ contains
         end select
     end function dm_error_message
 
-    pure elemental logical function dm_is_error(error) result(is_error)
+    pure elemental logical function dm_is_error(error) result(is)
         !! Returns `.true.` if given code is an error (not `E_NONE`).
         integer, intent(in) :: error !! Error code.
 
-        is_error = (error /= E_NONE .and. error /= E_DB_ROW .and. error /= E_DB_DONE)
+        is = (error /= E_NONE   .and. &
+              error /= E_DB_ROW .and. &
+              error /= E_DB_DONE)
     end function dm_is_error
 
-    pure elemental logical function dm_is_ok(error) result(is_ok)
+    pure elemental logical function dm_is_ok(error) result(is)
         !! Returns `.true.` if given code is not an error (`E_NONE`).
         integer, intent(in) :: error !! Error code.
 
-        is_ok = (error == E_NONE .or. error == E_DB_ROW .or. error == E_DB_DONE)
+        is = (error == E_NONE    .or. &
+              error == E_DB_ROW  .or. &
+              error == E_DB_DONE .or. &
+              error == E_LUA_YIELD)
     end function dm_is_ok
 
     subroutine dm_error_out(error, message, verbose, extra, fatal)
@@ -266,7 +284,7 @@ contains
         !! If `fatal` is `.true.`, the routine terminates with exit code `1` on
         !! error.
         character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
-        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
+        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " [", a, "]")'
 
         integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.

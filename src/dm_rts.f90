@@ -126,7 +126,7 @@ contains
     end function dm_rts_correction_atmospheric
 
     pure elemental real(kind=r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(dist)
-        !! Applied atmospheric correction [ppm] and prism constant [mmm] to
+        !! Applied atmospheric correction [ppm] and prism constant [mm] to
         !! uncorrected slope distance [m].
         real(kind=r8), intent(in) :: slope_dist !! Uncorrected slope distance [m].
         real(kind=r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].

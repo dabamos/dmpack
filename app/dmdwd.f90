@@ -106,7 +106,7 @@ contains
             call dm_timer_stop(timer, duration=dt)
 
             select case (response%code)
-                case (0)
+                case (HTTP_NONE)
                     call logger%debug('failed to fetch weather reports: ' // response%error_message, error=rc)
 
                 case (HTTP_OK)
@@ -128,7 +128,7 @@ contains
                         exit rpc_block
                     end if
 
-                    call logger%debug(dm_itoa(size(reports)) // ' weather reports of station ' // trim(station_id) // ' read')
+                    call logger%debug('read ' // dm_itoa(size(reports)) // ' weather reports of station ' // trim(station_id))
 
                 case (HTTP_NOT_MODIFIED)
                     rc = E_LIMIT
@@ -409,7 +409,7 @@ contains
                 exit io_block
             end if
 
-            call logger%debug(dm_itoa(size(stations)) // ' stations read from catalog')
+            call logger%debug('read ' // dm_itoa(size(stations)) // ' stations from catalog')
             rc = dm_dwd_mosmix_station_find(stations, station_id, station, found)
 
             if (.not. found) then

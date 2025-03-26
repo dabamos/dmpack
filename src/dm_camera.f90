@@ -105,7 +105,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if camera input or output is empty.
+        !! * `E_EMPTY` if camera attribute input or path is empty.
         !! * `E_INVALID` if camera device or RTSP stream URL is invalid.
         !! * `E_IO` if FFmpeg command execution failed.
         !!

@@ -145,7 +145,7 @@ contains
         t = z + hz
 
         ! Calculate coordinates of the target point.
-        call dm_transform_polar_to_cartesian_3d(t, v, hz_dist, dx, dy, dz)
+        call dm_transform_polar_to_cartesian_3d(r=hz_dist, omega=v, phi=t, x=dx, y=dy, z=dz)
 
         x = vx + dx
         y = vy + dy

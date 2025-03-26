@@ -6,6 +6,8 @@ module dm_http
     private
 
     ! HTTP 1.1 status codes (incomplete).
+    integer, parameter, public :: HTTP_NONE                          = 0
+
     integer, parameter, public :: HTTP_OK                            = 200
     integer, parameter, public :: HTTP_CREATED                       = 201
     integer, parameter, public :: HTTP_ACCEPTED                      = 202

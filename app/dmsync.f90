@@ -452,7 +452,7 @@ contains
 
                     ! Log the HTTP response code.
                     select case (responses(i)%code)
-                        case (0)
+                        case (HTTP_NONE)
                             ! Failed to connect.
                             rc = E_RPC_CONNECT
                             call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // &

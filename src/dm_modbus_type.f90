@@ -51,10 +51,10 @@ module dm_modbus_type
 
     public :: dm_modbus_access_from_name
     public :: dm_modbus_access_is_valid
-    public :: dm_modbus_mode_is_valid
     public :: dm_modbus_mode_from_name
-    public :: dm_modbus_order_is_valid
+    public :: dm_modbus_mode_is_valid
     public :: dm_modbus_order_from_name
+    public :: dm_modbus_order_is_valid
     public :: dm_modbus_type_from_name
     public :: dm_modbus_type_is_valid
 contains

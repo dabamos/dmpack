@@ -166,6 +166,11 @@ contains
             rc = dm_lua_set(lua, 'E_MAIL_SSL',       E_MAIL_SSL);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_MAIL_AUTH',      E_MAIL_AUTH);      if (dm_is_error(rc)) return
 
+            rc = dm_lua_set(lua, 'E_FTP',            E_FTP);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_CONNECT',    E_FTP_CONNECT);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_SSL',        E_FTP_SSL);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_AUTH',       E_FTP_AUTH);       if (dm_is_error(rc)) return
+
             rc = dm_lua_set(lua, 'E_MQTT',           E_MQTT);           if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_LUA',            E_LUA);            if (dm_is_error(rc)) return

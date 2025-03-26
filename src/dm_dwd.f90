@@ -10,7 +10,7 @@ module dm_dwd
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: DWD_MOSMIX_STATION_FMT  = '(a5, 1x, a4, 1x, a20, 1x, f6.2, 1x, f7.2, 1x, i5)'
+    character(len=*), parameter :: DWD_MOSMIX_STATION_FMT = '(a5, 1x, a4, 1x, a20, 1x, f6.2, 1x, f7.2, 1x, i5)'
 
     integer, parameter, public :: DWD_MOSMIX_STATION_ID_LEN   = 5
     integer, parameter, public :: DWD_MOSMIX_STATION_ICAO_LEN = 4

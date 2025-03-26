@@ -27,9 +27,9 @@ module dm_file
         integer          :: type   = FILE_TYPE_NONE !! File type.
         integer(kind=i8) :: mode   = 0              !! File mode as signed integer.
         integer(kind=i8) :: size   = 0_i8           !! File size in bytes.
-        integer(kind=i8) :: a_time = 0_i8           !! Time of last access (Unix epoch).
-        integer(kind=i8) :: m_time = 0_i8           !! Time of last modification (Unix epoch).
-        integer(kind=i8) :: c_time = 0_i8           !! Time of last status change (Unix epoch).
+        integer(kind=i8) :: a_time = 0_i8           !! Time of last access [Epoch].
+        integer(kind=i8) :: m_time = 0_i8           !! Time of last modification [Epoch].
+        integer(kind=i8) :: c_time = 0_i8           !! Time of last status change [Epoch].
     end type file_status_type
 
     public :: dm_file_exists

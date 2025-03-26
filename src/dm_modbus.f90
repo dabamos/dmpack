@@ -967,7 +967,7 @@ contains
     end subroutine dm_modbus_destroy
 
     pure subroutine dm_modbus_set_int32_to_int16(value, data)
-        !! Sets 4-byte integer to two 2-byte registers.
+        !! Writes 4-byte integer to two 2-byte registers.
         integer(kind=i4), intent(in)  :: value   !! Value to convert.
         integer(kind=u2), intent(out) :: data(2) !! Returned register data.
 
@@ -978,7 +978,7 @@ contains
     end subroutine dm_modbus_set_int32_to_int16
 
     pure subroutine dm_modbus_set_int64_to_int16(value, data)
-        !! Sets 8-byte integer to four 2-byte registers.
+        !! Writes 8-byte integer to four 2-byte registers.
         integer(kind=i8), intent(in)  :: value   !! Value to convert.
         integer(kind=u2), intent(out) :: data(4) !! Returned register data.
 
@@ -991,7 +991,7 @@ contains
     end subroutine dm_modbus_set_int64_to_int16
 
     subroutine dm_modbus_set_float(value, data, order, error)
-        !! Sets real value to registers of given byte order. The argument
+        !! Writes real value to registers of given byte order. The argument
         !! `order` must be one of the following:
         !!
         !! * `MODBUS_ORDER_ABCD`
@@ -1020,7 +1020,7 @@ contains
     end subroutine dm_modbus_set_float
 
     subroutine dm_modbus_set_float_abcd(value, data)
-        !! Returns real value to registers in ABCD byte order.
+        !! Writes real value to registers in ABCD byte order.
         real,             intent(in)  :: value   !! Real value to set.
         integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
@@ -1028,7 +1028,7 @@ contains
     end subroutine dm_modbus_set_float_abcd
 
     subroutine dm_modbus_set_float_badc(value, data)
-        !! Returns real value to registers in BADC byte order.
+        !! Writes real value to registers in BADC byte order.
         real,             intent(in)  :: value   !! Real value to set.
         integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
@@ -1036,7 +1036,7 @@ contains
     end subroutine dm_modbus_set_float_badc
 
     subroutine dm_modbus_set_float_cdab(value, data)
-        !! Sets real value to registers in CDAB byte order.
+        !! Writes real value to registers in CDAB byte order.
         real,             intent(in)  :: value   !! Real value to set.
         integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 
@@ -1044,7 +1044,7 @@ contains
     end subroutine dm_modbus_set_float_cdab
 
     subroutine dm_modbus_set_float_dcba(value, data)
-        !! Sets real value to registers in DCBA byte order.
+        !! Writes real value to registers in DCBA byte order.
         real,             intent(in)  :: value   !! Real value to set.
         integer(kind=u2), intent(out) :: data(2) !! Registers to write to.
 

@@ -81,14 +81,14 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code          = 0                         !! HTTP response code.
+        integer                       :: code          = HTTP_NONE                 !! HTTP response code.
         integer                       :: error         = E_NONE                    !! Error code of DMPACK.
         integer                       :: error_curl    = CURLE_OK                  !! Error code of libcurl easy.
         integer                       :: unit          = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
-        integer(kind=i8)              :: last_modified = -1_i8                     !! File time as Unix epoch, -1 if unavailable.
+        integer(kind=i8)              :: last_modified = -1_i8                     !! File time, -1 if unavailable [Epoch].
         real(kind=r8)                 :: total_time    = 0.0_r8                    !! Total transmission time.
         character(len=:), allocatable :: error_message                             !! libcurl error message.
-        character(len=:), allocatable :: content_type                              !! Response payload type (MIME).
+        character(len=:), allocatable :: content_type                              !! Response payload type [MIME].
         character(len=:), allocatable :: payload                                   !! Response payload.
     end type rpc_response_type
 
@@ -635,7 +635,7 @@ contains
     ! **************************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.
     ! **************************************************************************
-    integer(kind=c_size_t) function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
+    function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes the
         !! received response chunks to `rpc_response_type` pointer that has to
         !! be passed through C pointer `data`. Do not call this function
@@ -644,6 +644,7 @@ contains
         integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
         integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
         type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(kind=c_size_t)                    :: n     !! Function return value.
 
         character(len=:), allocatable    :: chunk
         type(rpc_response_type), pointer :: response
@@ -975,7 +976,7 @@ contains
         reset_unit_ = dm_present(reset_unit, .false.)
         if (reset_unit_) response%unit = RPC_RESPONSE_UNIT_DEFAULT
 
-        response%code          = 0
+        response%code          = HTTP_NONE
         response%error         = E_NONE
         response%error_curl    = CURLE_OK
         response%last_modified = -1_i8

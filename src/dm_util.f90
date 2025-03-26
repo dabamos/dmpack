@@ -356,34 +356,28 @@ contains
     subroutine dm_msleep(msec)
         !! Pauses program execution for given time in mseconds.
         use :: unix, only: c_useconds_t, c_usleep
-
         integer, intent(in) :: msec !! Delay [msec].
+        integer :: stat
 
-        integer :: rc
-
-        rc = c_usleep(int(msec * 1000, kind=c_useconds_t))
+        stat = c_usleep(int(msec * 1000, kind=c_useconds_t))
     end subroutine dm_msleep
 
     subroutine dm_sleep(sec)
         !! Pauses program execution for given time in seconds.
         use :: unix, only: c_useconds_t, c_usleep
-
         integer, intent(in) :: sec !! Delay [sec].
+        integer :: stat
 
-        integer :: rc
-
-        rc = c_usleep(int(sec * 10**6, kind=c_useconds_t))
+        stat = c_usleep(int(sec * 10**6, kind=c_useconds_t))
     end subroutine dm_sleep
 
     subroutine dm_usleep(usec)
         !! Pauses program execution for given time in useconds.
         use :: unix, only: c_useconds_t, c_usleep
-
         integer, intent(in) :: usec !! Delay [usec].
+        integer :: stat
 
-        integer :: rc
-
-        rc = c_usleep(int(usec, kind=c_useconds_t))
+        stat = c_usleep(int(usec, kind=c_useconds_t))
     end subroutine dm_usleep
 
     ! **************************************************************************

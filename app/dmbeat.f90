@@ -269,7 +269,7 @@ contains
 
             ! Log the HTTP response code.
             select case (response%code)
-                case (0)
+                case (HTTP_NONE)
                     rc = E_RPC_CONNECT
                     call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
 

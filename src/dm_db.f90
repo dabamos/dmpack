@@ -1366,14 +1366,14 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end if
 
-            rc = dm_db_bind(db_stmt_, 1, beat%node_id);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 2, beat%address);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 3, beat%client);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 4, beat%time_sent);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 5, beat%time_recv);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 6, beat%error);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 7, beat%interval);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt_, 8, beat%uptime);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 1, beat%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 2, beat%address);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 3, beat%client);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 4, beat%time_sent); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 5, beat%time_recv); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 6, beat%error);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 7, beat%interval);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt_, 8, beat%uptime);    if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt_)
             if (dm_is_error(rc)) exit sql_block
